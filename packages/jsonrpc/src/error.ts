@@ -5,7 +5,9 @@ import type { JSONRPCErrorInterface } from './types.js';
  *
  * Represents an error that can occur during JSON-RPC communication.
  */
-export class JSONRPCError implements JSONRPCErrorInterface {
+export class JSONRPCError extends Error implements JSONRPCErrorInterface {
+  override name = 'JSONRPCError';
+
   /**
    * Creates a new JSONRPCError instance.
    *
@@ -15,7 +17,20 @@ export class JSONRPCError implements JSONRPCErrorInterface {
    */
   constructor(
     public code: number,
-    public message: string,
-    public data?: string,
-  ) {}
+    message: string,
+    public data?: string | Record<string, unknown>,
+  ) {
+    super(message);
+  }
+
+  override toString(): string {
+    const msg = `${this.name}(${this.code}): ${this.message}`;
+    if (this.data !== undefined) {
+      if (typeof this.data === 'string') {
+        return `${msg}, Data: ${this.data}`;
+      }
+      return `${msg}, Data: ${JSON.stringify(this.data)}`;
+    }
+    return msg;
+  }
 }

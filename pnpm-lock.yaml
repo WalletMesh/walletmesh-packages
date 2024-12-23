@@ -47,6 +47,12 @@ importers:
 
   packages/jsonrpc: {}
 
+  packages/router:
+    dependencies:
+      '@walletmesh/jsonrpc':
+        specifier: workspace:*
+        version: link:../jsonrpc
+
 packages:
 
   '@ampproject/remapping@2.3.0':

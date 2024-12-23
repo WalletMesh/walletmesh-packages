@@ -44,7 +44,7 @@ export class JSONRPCServer<T extends JSONRPCMethodMap, C extends JSONRPCContext>
   private sendResponse: (
     context: C,
     request: JSONRPCRequest<T, keyof T, JSONRPCParams>,
-    response: JSONRPCResponse<T, keyof T>
+    response: JSONRPCResponse<T, keyof T>,
   ) => Promise<void>;
 
   /**
@@ -150,7 +150,12 @@ export class JSONRPCServer<T extends JSONRPCMethodMap, C extends JSONRPCContext>
           await this.sendError(context, request, error.code, error.message, error.data);
         }
       } else {
-        await this.sendError(context, request, -32000, error instanceof Error ? error.message : 'Unknown error');
+        await this.sendError(
+          context,
+          request,
+          -32000,
+          error instanceof Error ? error.message : 'Unknown error',
+        );
       }
     }
   }
@@ -185,11 +190,17 @@ export class JSONRPCServer<T extends JSONRPCMethodMap, C extends JSONRPCContext>
    * @param message - The error message
    * @param data - Additional error data
    */
-  private async sendError(context: C, request: JSONRPCRequest<T, keyof T, JSONRPCParams>, code: number, message: string, data?: string): Promise<void> {
+  private async sendError(
+    context: C,
+    request: JSONRPCRequest<T, keyof T, JSONRPCParams>,
+    code: number,
+    message: string,
+    data?: string | Record<string, unknown>,
+  ): Promise<void> {
     const response: JSONRPCResponse<T, keyof T> = {
       jsonrpc: '2.0',
       error: { code, message, data },
-      id: request.id
+      id: request.id,
     };
     this.sendResponse(context, request, response);
   }

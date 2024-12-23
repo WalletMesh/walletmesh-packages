@@ -332,15 +332,11 @@ describe('JSONRPC', () => {
       // biome-ignore lint/suspicious/noExplicitAny: test
       await server.receiveRequest({}, invalidRequest as any);
 
-      expect(serverSendResponse).toHaveBeenCalledWith(
-        {},
-        expect.objectContaining({ method: 'add' }),
-        {
-          jsonrpc: '2.0',
-          error: { code: -32600, message: 'Invalid Request' },
-          id: 1,
-        }
-      );
+      expect(serverSendResponse).toHaveBeenCalledWith({}, expect.objectContaining({ method: 'add' }), {
+        jsonrpc: '2.0',
+        error: { code: -32600, message: 'Invalid Request' },
+        id: 1,
+      });
     });
 
     it('should handle method not found', async () => {
@@ -353,15 +349,11 @@ describe('JSONRPC', () => {
       // biome-ignore lint/suspicious/noExplicitAny: test
       await server.receiveRequest({}, request as any);
 
-      expect(serverSendResponse).toHaveBeenCalledWith(
-        {},
-        request,
-        {
-          jsonrpc: '2.0',
-          error: { code: -32601, message: 'Method not found' },
-          id: 1,
-        }
-      );
+      expect(serverSendResponse).toHaveBeenCalledWith({}, request, {
+        jsonrpc: '2.0',
+        error: { code: -32601, message: 'Method not found' },
+        id: 1,
+      });
     });
 
     it('should handle next() called multiple times error', async () => {
@@ -382,15 +374,11 @@ describe('JSONRPC', () => {
       // biome-ignore lint/suspicious/noExplicitAny: test
       await server.receiveRequest({}, request as any);
 
-      expect(serverSendResponse).toHaveBeenCalledWith(
-        {},
-        request,
-        {
-          jsonrpc: '2.0',
-          error: { code: -32000, message: 'next() called multiple times' },
-          id: 1,
-        }
-      );
+      expect(serverSendResponse).toHaveBeenCalledWith({}, request, {
+        jsonrpc: '2.0',
+        error: { code: -32000, message: 'next() called multiple times' },
+        id: 1,
+      });
     });
 
     it('should handle unknown error', async () => {
@@ -410,15 +398,11 @@ describe('JSONRPC', () => {
       // biome-ignore lint/suspicious/noExplicitAny: test
       await server.receiveRequest({}, request as any);
 
-      expect(serverSendResponse).toHaveBeenCalledWith(
-        {},
-        request,
-        {
-          jsonrpc: '2.0',
-          error: { code: -32000, message: 'Unknown error' },
-          id: 2,
-        }
-      );
+      expect(serverSendResponse).toHaveBeenCalledWith({}, request, {
+        jsonrpc: '2.0',
+        error: { code: -32000, message: 'Unknown error' },
+        id: 2,
+      });
     });
 
     it('should throw error when no middleware is available', async () => {
@@ -438,15 +422,11 @@ describe('JSONRPC', () => {
       // biome-ignore lint/suspicious/noExplicitAny: test
       await server.receiveRequest({}, request as any);
 
-      expect(serverSendResponse).toHaveBeenCalledWith(
-        {},
-        request,
-        {
-          jsonrpc: '2.0',
-          error: { code: -32000, message: 'No middleware to handle request' },
-          id: 1,
-        }
-      );
+      expect(serverSendResponse).toHaveBeenCalledWith({}, request, {
+        jsonrpc: '2.0',
+        error: { code: -32000, message: 'No middleware to handle request' },
+        id: 1,
+      });
     });
 
     it('should handle JSONRPCError thrown in method handler', async () => {
@@ -463,19 +443,15 @@ describe('JSONRPC', () => {
       // biome-ignore lint/suspicious/noExplicitAny: test
       await server.receiveRequest({}, request as any);
 
-      expect(serverSendResponse).toHaveBeenCalledWith(
-        {},
-        request,
-        {
-          jsonrpc: '2.0',
-          error: {
-            code: -32010,
-            message: 'Custom JSONRPC error',
-            data: 'throwJSONRPCError',
-          },
-          id: 'test-id',
-        }
-      );
+      expect(serverSendResponse).toHaveBeenCalledWith({}, request, {
+        jsonrpc: '2.0',
+        error: {
+          code: -32010,
+          message: 'Custom JSONRPC error',
+          data: 'throwJSONRPCError',
+        },
+        id: 'test-id',
+      });
     });
 
     // Test when error thrown is not a JSONRPCError (lines 169 & 170 failure case)
@@ -493,18 +469,14 @@ describe('JSONRPC', () => {
       // biome-ignore lint/suspicious/noExplicitAny: test
       await server.receiveRequest({}, request as any);
 
-      expect(serverSendResponse).toHaveBeenCalledWith(
-        {},
-        request,
-        {
-          jsonrpc: '2.0',
-          error: {
-            code: -32000,
-            message: 'Standard error',
-          },
-          id: 'test-id-2',
-        }
-      );
+      expect(serverSendResponse).toHaveBeenCalledWith({}, request, {
+        jsonrpc: '2.0',
+        error: {
+          code: -32000,
+          message: 'Standard error',
+        },
+        id: 'test-id-2',
+      });
     });
 
     // Test when error is thrown in deserialization (line 151)
@@ -534,18 +506,14 @@ describe('JSONRPC', () => {
       // biome-ignore lint/suspicious/noExplicitAny: test
       await server.receiveRequest({}, request as any);
 
-      expect(serverSendResponse).toHaveBeenCalledWith(
-        {},
-        request,
-        {
-          jsonrpc: '2.0',
-          error: {
-            code: -32000,
-            message: 'Deserialization error',
-          },
-          id: 'test-id-3',
-        }
-      );
+      expect(serverSendResponse).toHaveBeenCalledWith({}, request, {
+        jsonrpc: '2.0',
+        error: {
+          code: -32000,
+          message: 'Deserialization error',
+        },
+        id: 'test-id-3',
+      });
     });
 
     it('should handle string serialization for parameters and results', async () => {
@@ -581,15 +549,11 @@ describe('JSONRPC', () => {
       });
 
       // Verify that the response was sent with serialized result
-      expect(serverSendResponse).toHaveBeenCalledWith(
-        {},
-        expect.objectContaining({ method: 'add' }),
-        {
-          jsonrpc: '2.0',
-          result: { serialized: '3' },
-          id: expect.any(String),
-        }
-      );
+      expect(serverSendResponse).toHaveBeenCalledWith({}, expect.objectContaining({ method: 'add' }), {
+        jsonrpc: '2.0',
+        result: { serialized: '3' },
+        id: expect.any(String),
+      });
     });
 
     // Update notification serialization test
@@ -697,10 +661,11 @@ describe('JSONRPC', () => {
       {}, // context
       request,
       {
-      jsonrpc: '2.0',
-      error: { code: -32601, message: 'Method not found' },
-      id: 1,
-    });
+        jsonrpc: '2.0',
+        error: { code: -32601, message: 'Method not found' },
+        id: 1,
+      },
+    );
   });
 
   it('should handle exceptions thrown from middleware', async () => {
@@ -720,15 +685,11 @@ describe('JSONRPC', () => {
       },
     );
 
-    expect(serverSendResponse).toHaveBeenCalledWith(
-      {},
-      expect.objectContaining({ method: 'add' }),
-      {
-        jsonrpc: '2.0',
-        error: { code: -32000, message: 'Middleware error' },
-        id: 2,
-      }
-    );
+    expect(serverSendResponse).toHaveBeenCalledWith({}, expect.objectContaining({ method: 'add' }), {
+      jsonrpc: '2.0',
+      error: { code: -32000, message: 'Middleware error' },
+      id: 2,
+    });
   });
 
   it('should handle string serialization for parameters and results', async () => {
@@ -764,15 +725,11 @@ describe('JSONRPC', () => {
     });
 
     // Verify that the response was sent with serialized result
-    expect(serverSendResponse).toHaveBeenCalledWith(
-      {},
-      expect.objectContaining({ method: 'add' }),
-      {
-        jsonrpc: '2.0',
-        result: { serialized: '3' },
-        id: expect.any(String),
-      }
-    );
+    expect(serverSendResponse).toHaveBeenCalledWith({}, expect.objectContaining({ method: 'add' }), {
+      jsonrpc: '2.0',
+      result: { serialized: '3' },
+      id: expect.any(String),
+    });
   });
 
   // Update notification serialization test

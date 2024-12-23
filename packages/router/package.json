@@ -1,5 +1,5 @@
 {
-  "name": "template",
+  "name": "@walletmesh/router",
   "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",
@@ -22,5 +22,11 @@
     "lint:fix": "biome lint --write",
     "format": "biome format",
     "format:fix": "biome format --write"
+  },
+  "peerDependencies": {
+    "@walletmesh/jsonrpc": "^0.0.3"
+  },
+  "devDependencies": {
+    "@walletmesh/jsonrpc": "workspace:*"
   }
 }
