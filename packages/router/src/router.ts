@@ -253,7 +253,7 @@ export class WalletRouter extends JSONRPCServer<RouterMethodMap, RouterContext> 
       throw new RouterError('invalidSession');
     }
 
-    const result: Record<ChainId, string[]> = {};
+    const result: ChainPermissions = {};
     const chainsToInclude = chainIds || Object.keys(session.permissions);
 
     for (const chainId of chainsToInclude) {
@@ -415,7 +415,7 @@ export class WalletRouter extends JSONRPCServer<RouterMethodMap, RouterContext> 
     }
 
     // Otherwise get methods from all specified chains
-    const result: Record<ChainId, string[]> = {};
+    const result: ChainPermissions = {};
 
     for (const chainId of params.chainIds) {
       const client = this.validateChain(chainId);

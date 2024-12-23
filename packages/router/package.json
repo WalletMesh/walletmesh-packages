@@ -1,6 +1,6 @@
 {
   "name": "@walletmesh/router",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,12 +21,12 @@
     "lint": "biome lint",
     "lint:fix": "biome lint --write",
     "format": "biome format",
-    "format:fix": "biome format --write"
+    "format:fix": "biome format --write",
+    "docs": "typedoc",
+    "preversion": "pnpm test",
+    "version": "pnpm clean && pnpm build && pnpm run docs"
   },
-  "peerDependencies": {
-    "@walletmesh/jsonrpc": "^0.0.3"
-  },
-  "devDependencies": {
+  "dependencies": {
     "@walletmesh/jsonrpc": "workspace:*"
   }
 }

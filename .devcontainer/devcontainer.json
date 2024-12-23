@@ -5,23 +5,11 @@
   "workspaceFolder": "/home/vscode/wm-core",
   "mounts": [
     {
-      "source": "wm-core-pnpm-store-${devcontainerId}",
       "target": "/home/vscode/.pnpm-store",
       "type": "volume"
     },
     {
-      "source": "wm-core-node-modules-${devcontainerId}",
       "target": "${containerWorkspaceFolder}/node_modules",
-      "type": "volume"
-    },
-    {
-      "source": "wm-core-packages-jsonrpc-node-modules-${devcontainerId}",
-      "target": "${containerWorkspaceFolder}/packages/jsonrpc/node_modules",
-      "type": "volume"
-    },
-    {
-      "source": "wm-core-packages-discover-node-modules-${devcontainerId}",
-      "target": "${containerWorkspaceFolder}/packages/discovery/node_modules",
       "type": "volume"
     }
   ],
@@ -29,8 +17,7 @@
     "npm_config_store_dir": "/home/vscode/.pnpm-store"
   },
   "onCreateCommand": {
-    "mount_permissions": "mount | egrep 'pnpm-store|node_modules' | awk '{print $3}' | sudo xargs chown `id -u`:`id -g`",
-    "pnpm_install": "sleep 2 && pnpm install"
+    "setup": "mount | egrep 'pnpm-store|node_modules' | awk '{print $3}' | sudo xargs chown `id -u`:`id -g` && pnpm install"
   },
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
@@ -43,7 +30,8 @@
       "extensions": [
         "biomejs.biome",
         "vitest.explorer",
-        "bierner.markdown-mermaid"
+        "bierner.markdown-mermaid",
+        "github.vscode-github-actions"
       ],
       "dev.containers.mountWaylandSocket": false
     }

@@ -1,24 +1,29 @@
 {
   "name": "@walletmesh/jsonrpc",
   "version": "0.0.4",
-  "private": false,
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
-  "homepage": "https://github.com/WalletMesh/wm-core/tree/main/packages/jsonrpc#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/WalletMesh/wm-core.git"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "clean": "rimraf dist",
+    "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "clean": "rimraf dist",
-    "type-check": "tsc --noEmit"
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
+    "format": "biome format",
+    "format:fix": "biome format --write",
+    "docs": "typedoc",
+    "preversion": "pnpm test",
+    "version": "pnpm clean && pnpm build && pnpm run docs"
   }
 }

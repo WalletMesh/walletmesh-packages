@@ -8,7 +8,6 @@ import type {
   WalletClient,
   OperationType,
   PermissionApprovalCallback,
-  ChainPermissions,
 } from './types.js';
 import { JSONRPCError } from '@walletmesh/jsonrpc';
 import { createPermissivePermissions } from './permissions.js';
