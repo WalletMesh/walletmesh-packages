@@ -1,56 +1,196 @@
 # WalletMesh Router
 
-A flexible router for managing wallet connections across multiple blockchains. While initially inspired by chainagnostic.org, this implementation uses its own conventions for wallet sessions and method invocation to provide a more tailored solution.
+A flexible router for managing wallet connections across multiple blockchains with bi-directional communication support. While initially inspired by chainagnostic.org, this implementation uses its own conventions for wallet sessions and method invocation to provide a more tailored solution.
 
-## Architecture Overview
+## Architecture
+
+The WalletMesh Router is built around several key architectural concepts:
+
+### Session Management
+
+The router uses a flexible session management system that:
+- Uniquely identifies sessions using a combination of origin and sessionId
+- Supports multiple session storage backends through the `SessionStore` interface
+- Provides both in-memory (`MemorySessionStore`) and persistent (`LocalStorageSessionStore`) implementations
+- Automatically handles session validation and refresh
+- Enables session recovery after page reloads or disconnects
+- Manages session lifecycle events (creation, updates, termination)
+
+### Permission System
+
+Permissions are managed through a sophisticated callback-based system:
+
+1. **Permission Approval**
+   - Initial permission requests are handled by a dedicated approval callback
+   - Supports modifying requested permissions before approval
+   - Enables custom permission UI flows
+   - Handles both initial connect and permission update scenarios
+
+2. **Runtime Validation**
+   - Every operation is validated through a permission callback
+   - Supports granular control at method and chain level
+   - Enables context-aware permission decisions
+   - Allows dynamic permission updates based on wallet state
+
+3. **Permission Structure**
+   ```typescript
+   type ChainPermissions = {
+     [chainId: string]: string[]; // Array of allowed methods
+   };
+
+   // Example:
+   {
+     'eip155:1': ['eth_accounts', 'eth_sendTransaction'],
+     'eip155:137': ['eth_getBalance', 'eth_call']
+   }
+   ```
+
+### JSON-RPC Integration
+
+The router leverages the @walletmesh/jsonrpc package to provide:
+- Standardized communication protocol
+- Easy integration of any JSON-RPC compatible wallet
+- Bi-directional event handling
+- Built-in request/response correlation
+- Automatic message serialization
+
+Custom wallet clients can be easily implemented by extending the `JSONRPCWalletClient` class or implementing the `WalletClient` interface:
+
+```typescript
+interface WalletClient {
+  call<T = unknown>(method: string, params?: unknown): Promise<T>;
+  on?(event: string, handler: (data: unknown) => void): void;
+  off?(event: string, handler: (data: unknown) => void): void;
+  getSupportedMethods?(): Promise<{ methods: string[] }>;
+}
+```
+
+## Features
+
+- 🔗 **Multi-Chain Support**: Connect to multiple blockchain wallets simultaneously
+- 🔒 **Granular Permissions**: Fine-grained control over wallet method access
+- 🔄 **Bi-directional Events**: Real-time wallet state synchronization
+- 💾 **Session Management**: Persistent sessions with automatic recovery
+- 🚦 **Request Batching**: Efficient handling of multiple wallet requests
+- 🛡️ **Type Safety**: Full TypeScript support with comprehensive type definitions
+- 🧪 **Well Tested**: Comprehensive test coverage with Vitest
+
+## Implementation Details
 
 The WalletMesh Router is designed with a modular architecture that separates concerns between routing, session management, permissions, and wallet interactions. Here's a high-level overview of how the system works:
 
 ```mermaid
-graph TD
-    A[Application] -->|JSON-RPC| B[WalletRouterProvider]
-    B -->|JSON-RPC| C[WalletRouter]
-    C -->|Session Management| D[Session Store]
-    C -->|Permission Check| E[Permission Callback]
-    C -->|Method Call| F[Wallet Clients]
-    F -->|JSON-RPC| G[Blockchain Wallets]
+graph TB
+    subgraph Application Layer
+        App[Application] <-->|Method Calls + Events| Provider[WalletRouterProvider]
+    end
 
-    style A fill:#f9f,stroke:#333
-    style B fill:#bbf,stroke:#333
-    style C fill:#bfb,stroke:#333
-    style D fill:#fbb,stroke:#333
-    style E fill:#fbf,stroke:#333
-    style F fill:#bff,stroke:#333
-    style G fill:#ffb,stroke:#333
+    Provider <-->|JSON-RPC Messages| Router[WalletRouter]
+
+    subgraph Router Core
+        Router --> SessionMgr[Session Manager]
+        Router --> PermSystem[Permission System]
+        Router --> ClientMgr[Client Manager]
+
+        SessionMgr -->|Validate| PermSystem
+        PermSystem -->|Authorize| ClientMgr
+    end
+
+    subgraph Wallet Layer
+        ClientMgr <-->|JSON-RPC| Ethereum[Ethereum Wallet]
+        ClientMgr <-->|JSON-RPC| Polygon[Polygon Wallet]
+        ClientMgr <-->|JSON-RPC| Other[Other Wallets...]
+    end
+
+    classDef provider fill:#6366f1,stroke:#333,stroke-width:2px,color:#fff
+    classDef router fill:#3b82f6,stroke:#333,stroke-width:2px,color:#fff
+    classDef wallet fill:#22c55e,stroke:#333,stroke-width:2px,color:#fff
+
+    class Provider provider
+    class Router,SessionMgr,PermSystem,ClientMgr router
+    class Ethereum,Polygon,Other wallet
 ```
 
-### Component Roles
+### Core Components
 
-1. **WalletRouterProvider**: Client-side interface that applications use to interact with the router
-2. **WalletRouter**: Core routing component that manages sessions, permissions, and wallet connections
-3. **Session Store**: Manages active wallet sessions and their associated permissions
-4. **Permission Callback**: Flexible permission system that validates all operations
-5. **Wallet Clients**: Adapters for different wallet implementations
-6. **Blockchain Wallets**: Actual wallet implementations for different chains
+1. **WalletRouterProvider**
+   - Client-side interface for applications
+   - Handles method call serialization and event deserialization
+   - Manages connection lifecycle and session state
+   - Provides TypeScript-friendly API for wallet interactions
+   - Implements retry logic and timeout handling
 
-### Request Flow
+2. **WalletRouter**
+   - Core routing and orchestration component
+   - Manages bi-directional message flow
+   - Coordinates between sessions, permissions, and wallet connections
+   - Handles event propagation and error management
+   - Implements connection pooling and request batching
+
+3. **Session Manager**
+   - Maintains active wallet sessions
+   - Handles session creation, validation, and expiration
+   - Manages permission sets per chain
+   - Supports session persistence and recovery
+   - Implements session cleanup and garbage collection
+
+4. **Permission System**
+   - Flexible permission validation engine
+   - Supports method-level and chain-level permissions
+   - Implements permission inheritance and wildcards
+   - Handles permission updates and revocation
+   - Provides audit logging capabilities
+
+5. **Client Manager**
+   - Manages wallet client instances
+   - Handles client connection lifecycle
+   - Implements client-specific adapters
+   - Manages event subscription and cleanup
+   - Provides client health monitoring
+
+### Message Flow
 
 ```mermaid
 sequenceDiagram
     participant App as Application
     participant Provider as WalletRouterProvider
     participant Router as WalletRouter
-    participant Session as Session Store
+    participant Session as Session Manager
+    participant Perms as Permission System
     participant Wallet as Wallet Client
 
-    App->>Provider: call('eth_accounts')
+    Note over App,Wallet: Connection Flow
+    App->>Provider: connect(['eip155:1', 'eip155:137'])
+    Provider->>Router: wm_connect
+    Router->>Session: createSession()
+    Router->>Perms: validatePermissions()
+    Router->>Wallet: setupEventListeners()
+    Router-->>Provider: sessionId + permissions
+    Provider-->>App: connection ready
+
+    Note over App,Wallet: Method Call Flow
+    App->>Provider: call('eth_sendTransaction')
     Provider->>Router: wm_call
-    Router->>Session: validateSession
-    Router->>Router: checkPermissions
-    Router->>Wallet: call('eth_accounts')
-    Wallet-->>Router: accounts[]
+    Router->>Session: validateSession()
+    Router->>Perms: checkMethodPermission()
+    Router->>Wallet: sendTransaction()
+    Wallet-->>Router: txHash
     Router-->>Provider: result
-    Provider-->>App: accounts[]
+    Provider-->>App: transaction sent
+
+    Note over App,Wallet: Event Flow
+    Wallet->>Router: accountsChanged
+    Router->>Session: updateState()
+    Router->>Provider: wm_walletStateChanged
+    Provider->>App: onAccountsChanged()
+
+    Note over App,Wallet: Error Handling
+    App->>Provider: call('eth_sign')
+    Provider->>Router: wm_call
+    Router->>Perms: checkMethodPermission()
+    Perms-->>Router: permission denied
+    Router-->>Provider: error response
+    Provider-->>App: throws PermissionError
 ```
 
 ## Installation
@@ -59,300 +199,42 @@ sequenceDiagram
 pnpm add @walletmesh/router
 ```
 
-## Permission System
-
-The router uses a single permission callback to validate all operations. This callback receives complete context about the operation being performed and returns a boolean indicating whether it should be allowed.
-
-### Session Management
-
-The router uses a multi-chain session model where a single session can manage connections to multiple chains. Sessions are uniquely identified by a combination of the request origin and a session ID, ensuring proper isolation between different applications.
-
-```typescript
-interface SessionData {
-  /** Unique session identifier */
-  id: string;
-  /** Origin of the session request */
-  origin: string;
-  /** Permissions granted to this session per chain */
-  permissions: Record<ChainId, string[]>;
-}
-```
-
-### Permission Context
-
-The permission callback receives a context object containing:
-
-```typescript
-interface PermissionContext {
-  /** Type of operation being performed (connect, call, disconnect, etc) */
-  operation: OperationType;
-  /** Chain ID the operation targets */
-  chainId: ChainId;
-  /** Method being called (for call operations) */
-  method?: string;
-  /** Parameters for the operation */
-  params?: unknown;
-  /** Origin of the request */
-  origin: string;
-  /** Current session data if available */
-  session?: SessionData;
-}
-```
-
-### Example Implementations
-
-The router provides two example permission implementations:
-
-#### Fully Permissive (Development)
-
-```typescript
-import { createPermissivePermissions } from '@walletmesh/router';
-
-const router = new WalletRouter(
-  sendResponse,
-  wallets,
-  createPermissivePermissions() // Allows all operations
-);
-```
-
-#### String Pattern Matching
-
-```typescript
-import { createStringMatchPermissions } from '@walletmesh/router';
-
-const router = new WalletRouter(
-  sendResponse,
-  wallets,
-  createStringMatchPermissions([
-    // Allow eth_call on any chain
-    '*:eth_call',
-    // Allow all eth_ methods on Ethereum mainnet
-    'eip155:1:eth_*',
-    // Allow specific method on specific chain
-    'eip155:5:eth_getBalance'
-  ])
-);
-```
-
-### Custom Permission Implementation
-
-You can implement your own permission logic by providing a callback:
-
-```typescript
-const router = new WalletRouter(
-  sendResponse,
-  wallets,
-  async (context) => {
-    // Example: Allow only specific origins
-    if (!['trusted-dapp.com', 'localhost'].includes(context.origin)) {
-      return false;
-    }
-
-    // Example: Rate limit certain operations
-    if (context.method === 'eth_sendTransaction') {
-      return await checkRateLimit(context.origin);
-    }
-
-    // Example: Allow only read operations
-    if (context.method?.startsWith('eth_')) {
-      return !context.method.includes('send') &&
-             !context.method.includes('sign');
-    }
-
-    return true;
-  }
-);
-```
-
 ## Usage
 
-### Session Storage
-
-The router supports pluggable session storage through the `SessionStore` interface. This allows you to customize how wallet sessions are stored, retrieved, and managed. Two implementations are provided out of the box:
-
-#### Session Store Configuration
-
-All session stores support configuration options for expiry behavior:
-
-```typescript
-interface SessionStoreConfig {
-  /** Session lifetime in milliseconds. If not provided, sessions never expire */
-  lifetime?: number;
-  /** Whether to refresh session expiry on access. Default false */
-  refreshOnAccess?: boolean;
-}
-```
-
-#### MemorySessionStore (Default)
-
-Stores sessions in memory with configurable expiry. Sessions are lost when the application restarts.
-
-```typescript
-import { WalletRouter, MemorySessionStore } from '@walletmesh/router';
-
-// Default configuration (24 hour lifetime)
-const defaultStore = new MemorySessionStore();
-
-// Custom configuration
-const store = new MemorySessionStore({
-  lifetime: 30 * 60 * 1000, // 30 minutes
-  refreshOnAccess: true // Extend session lifetime on each access
-});
-
-const router = new WalletRouter(
-  sendResponse,
-  wallets,
-  permissionCallback,
-  store // Optional, uses defaultStore if not provided
-);
-```
-
-#### LocalStorageSessionStore
-
-Stores sessions in browser localStorage for persistence across page reloads, with the same expiry configuration options.
-
-```typescript
-import { WalletRouter, LocalStorageSessionStore } from '@walletmesh/router';
-
-const store = new LocalStorageSessionStore({
-  lifetime: 7 * 24 * 60 * 60 * 1000, // 1 week
-  refreshOnAccess: true // Keep sessions alive while in use
-});
-
-const router = new WalletRouter(
-  sendResponse,
-  wallets,
-  permissionCallback,
-  store
-);
-```
-
-#### Custom Storage Implementation
-
-You can implement your own storage solution by implementing the `SessionStore` interface:
-
-```typescript
-interface SessionStore {
-  /** Store a new session */
-  set(sessionId: string, data: SessionData): Promise<void>;
-
-  /** Retrieve a session if it exists and has not expired */
-  get(sessionId: string): Promise<SessionData | undefined>;
-
-  /** Remove a session */
-  delete(sessionId: string): Promise<void>;
-
-  /** Clear all sessions */
-  clear(): Promise<void>;
-
-  /** Validate a session and optionally refresh its expiry */
-  validateAndRefresh(sessionId: string): Promise<SessionData | undefined>;
-
-  /** Remove all expired sessions */
-  cleanExpired(): Promise<number>;
-}
-
-// Example: Redis-based session store with custom expiry handling
-class RedisSessionStore implements SessionStore {
-  constructor(config: SessionStoreConfig = {}) {
-    this.config = config;
-  }
-
-  async validateAndRefresh(sessionId: string): Promise<SessionData | undefined> {
-    const data = await this.redis.get(`session:${sessionId}`);
-    if (!data) return undefined;
-
-    const session = JSON.parse(data);
-
-    // Check expiry
-    if (session.expiresAt && Date.now() > session.expiresAt) {
-      await this.delete(sessionId);
-      return undefined;
-    }
-
-    // Refresh expiry if configured
-    if (this.config.refreshOnAccess && this.config.lifetime) {
-      session.expiresAt = Date.now() + this.config.lifetime;
-      await this.redis.set(`session:${sessionId}`, JSON.stringify(session));
-    }
-
-    return session.data;
-  }
-
-  // ... other methods
-}
-```
-
-### Custom Wallet Clients
-
-The router accepts any wallet client that implements the `WalletClient` interface:
-
-```typescript
-interface WalletClient {
-  // Call a method on the wallet
-  call<T = unknown>(method: string, params?: unknown): Promise<T>;
-
-  // Optional: Get supported capabilities
-  getSupportedMethods?(): Promise<{ methods: string[] }>;
-}
-```
-
-You can implement this interface to support any wallet implementation:
-
-```typescript
-class MyCustomWalletClient implements WalletClient {
-  async call<T = unknown>(method: string, params?: unknown): Promise<T> {
-    // Your implementation here
-    return result;
-  }
-
-  async getSupportedMethods(): Promise<{ methods: string[] }> {
-    return {
-      methods: ['eth_accounts', 'eth_sendTransaction']
-    };
-  }
-}
-```
-
-For JSON-RPC based wallets, we provide a convenient adapter:
-
-```typescript
-import { WalletRouter, JSONRPCWalletClient } from '@walletmesh/router';
-import { JSONRPCClient } from '@walletmesh/jsonrpc';
-
-// Create wallet clients
-const wallets = new Map([
-  ['eip155:1', new JSONRPCWalletClient(new JSONRPCClient(...))],  // Ethereum mainnet
-  ['eip155:5', new MyCustomWalletClient()]  // Custom implementation
-]);
-
-// Initialize router
-const router = new WalletRouter(
-  async (response) => {
-    // Handle JSON-RPC responses
-    console.log(response);
-  },
-  wallets,
-  createPermissivePermissions()
-);
-```
-
-### Client-Side Provider
+### Client-Side Provider with Event Handling
 
 ```typescript
 import { WalletRouterProvider } from '@walletmesh/router';
 
 // Initialize provider
-const provider = new WalletRouterProvider(
-  async (request) => {
-    // Send request to router
-    const response = await fetch('/api/wallet', {
+const provider = new WalletRouterProvider({
+  send: async (message) => {
+    // Send message to router
+    await fetch('/api/wallet', {
       method: 'POST',
-      body: JSON.stringify(request)
+      body: JSON.stringify(message)
     });
-    return response.json();
   }
-);
+});
+
+// Listen for wallet state changes
+provider.on('wm_walletStateChanged', ({ chainId, changes }) => {
+  if (changes.accounts) {
+    console.log(`Accounts changed on ${chainId}:`, changes.accounts);
+  }
+  if (changes.networkId) {
+    console.log(`Network changed on ${chainId}:`, changes.networkId);
+  }
+});
+
+// Listen for session changes
+provider.on('wm_permissionsChanged', ({ sessionId, permissions }) => {
+  console.log(`Permissions updated for session ${sessionId}:`, permissions);
+});
+
+provider.on('wm_sessionTerminated', ({ sessionId, reason }) => {
+  console.log(`Session ${sessionId} terminated:`, reason);
+});
 
 // Connect to multiple chains with specific permissions
 const sessionId = await provider.connect({
@@ -360,174 +242,102 @@ const sessionId = await provider.connect({
   'eip155:137': ['eth_getBalance', 'eth_call']
 });
 
-// Single method call on Ethereum mainnet
+// Use methods as before
 const accounts = await provider.call('eip155:1', {
   method: 'eth_accounts'
 });
-
-// Bulk method calls on Polygon
-const [balance, gasPrice] = await provider.bulkCall('eip155:137', [
-  {
-    method: 'eth_getBalance',
-    params: [accounts[0], 'latest']
-  },
-  {
-    method: 'eth_gasPrice'
-  }
-]);
-
-// Get chain capabilities for both networks
-const ethMethods = await provider.getSupportedMethods('eip155:1');
-const polygonMethods = await provider.getSupportedMethods('eip155:137');
 ```
 
-## API Reference
+### Server-Side Router with Event Support
 
-### WalletRouter
+```typescript
+import { WalletRouter, JSONRPCWalletClient } from '@walletmesh/router';
+import { JSONRPCPeer } from '@walletmesh/jsonrpc';
 
-Server-side router for managing wallet connections across multiple blockchains.
-
-#### Methods
-
-- `wm_reconnect`: Attempt to reconnect to an existing session
-  ```typescript
-  params: { sessionId: string }
-  returns: {
-    status: boolean, // true if reconnection successful
-    permissions: Record<ChainId, string[]> // current permissions if successful
-  }
-  ```
-
-- `wm_connect`: Create a new session with permissions for multiple chains
-  ```typescript
-  params: { permissions: Record<ChainId, string[]> }
-  returns: { sessionId: string }
-  ```
-
-- `wm_disconnect`: End an existing session and remove all chain connections
-  ```typescript
-  params: { sessionId: string }
-  returns: boolean
-  ```
-
-- `wm_getPermissions`: Get current session permissions across all chains
-  ```typescript
-  params: {
-    sessionId: string,
-    chainIds?: ChainId[] // Optional array of specific chains to get permissions for
-  }
-  returns: Record<ChainId, string[]>
-  ```
-
-- `wm_updatePermissions`: Update permissions for all chains in the session
-  ```typescript
-  params: {
-    sessionId: string,
-    permissions: Record<ChainId, string[]>
-  }
-  returns: boolean
-  ```
-
-- `wm_call`: Invoke a method on a specific chain
-  ```typescript
-  params: {
-    chainId: string,
-    sessionId: string,
-    call: {
-      method: string,
-      params?: unknown
+// Create wallet clients
+const wallets = new Map([
+  ['eip155:1', new JSONRPCWalletClient(new JSONRPCPeer({
+    send: message => {
+      // Send to Ethereum wallet
     }
+  }))],
+  ['eip155:137', new JSONRPCWalletClient(new JSONRPCPeer({
+    send: message => {
+      // Send to Polygon wallet
+    }
+  }))]
+]);
+
+// Initialize router
+const router = new WalletRouter(
+  {
+    send: async (message) => {
+      // Send response/event to provider
+      await sendToProvider(message);
+    }
+  },
+  wallets,
+  createPermissivePermissions()
+);
+```
+
+### Custom Wallet Client Implementation
+
+```typescript
+class MyCustomWalletClient implements WalletClient {
+  private eventHandlers: Map<string, Set<(data: unknown) => void>> = new Map();
+
+  async call<T = unknown>(method: string, params?: unknown): Promise<T> {
+    // Implementation
   }
-  returns: unknown
-  ```
 
-- `wm_bulkCall`: Execute multiple methods in sequence on the same chain
-  ```typescript
-  params: {
-    chainId: string,
-    sessionId: string,
-    calls: {
-      method: string,
-      params?: unknown
-    }[]
+  on(event: string, handler: (data: unknown) => void): void {
+    if (!this.eventHandlers.has(event)) {
+      this.eventHandlers.set(event, new Set());
+    }
+    this.eventHandlers.get(event)?.add(handler);
   }
-  returns: unknown[]
-  ```
 
-- `wm_getSupportedMethods`: Get supported methods for one or more chains
-  ```typescript
-  params: {
-    chainIds?: string[] // Optional - if not provided, returns router's supported methods under 'router' chain ID
+  off(event: string, handler: (data: unknown) => void): void {
+    this.eventHandlers.get(event)?.delete(handler);
   }
-  returns: Record<ChainId, string[]> // Maps chain IDs to their supported methods
-  ```
 
-### WalletRouterProvider
-
-Client-side provider for interacting with the router.
-
-#### Methods
-
-- `connect(permissions: Record<ChainId, string[]>, timeout?: number)`: Connect to multiple chains with specified permissions. Returns a session ID. Optional timeout in milliseconds.
-
-- `disconnect(timeout?: number)`: End the current session and all chain connections. Optional timeout in milliseconds.
-
-- `getPermissions(chainIds?: ChainId[], timeout?: number)`: Get current session permissions. Optionally specify chains to get permissions for. Optional timeout in milliseconds.
-
-- `updatePermissions(permissions: Record<ChainId, string[]>, timeout?: number)`: Update permissions for specified chains. Optional timeout in milliseconds.
-
-- `call<T = unknown>(chainId: string, call: { method: string, params?: unknown }, timeout?: number)`: Invoke a method on a specific chain. Returns a promise of type T. Optional timeout in milliseconds.
-
-- `bulkCall(chainId: string, calls: { method: string, params?: unknown }[], timeout?: number)`: Execute multiple methods in sequence on the same chain. Returns array of results. Optional timeout in milliseconds.
-
-- `getSupportedMethods(chainIds?: string[], timeout?: number)`: Get supported methods for one or more chains. Returns a record mapping chain IDs to their supported methods. If no chain IDs provided, returns router's supported methods under 'router' chain ID. Optional timeout in milliseconds.
-
-#### Properties
-
-- `sessionId`: Get the current session ID (undefined if not connected)
-
-All timeout parameters are optional and specify the maximum time in milliseconds to wait for the operation to complete. If not provided, the operation will not timeout.
+  protected emit(event: string, data: unknown): void {
+    this.eventHandlers.get(event)?.forEach(handler => handler(data));
+  }
+}
+```
 
 ## Error Handling
 
-The router provides specific error codes for common failure scenarios:
+The router provides comprehensive error handling through the `RouterError` class. Common error scenarios include:
 
-- `-32000`: Unknown chain ID
-  - When attempting to use a chain that isn't configured in the router
-  - When trying to connect or call methods on an unsupported blockchain
+- **Permission Denied**: When a method call is not allowed for the current session
+- **Invalid Session**: When using an expired or invalid session ID
+- **Method Not Found**: When calling an unsupported wallet method
+- **Network Error**: When communication with a wallet fails
+- **Timeout**: When a wallet operation exceeds the configured timeout
 
-- `-32001`: Invalid or expired session
-  - When using an invalid or non-existent session ID
-  - When the session has expired based on configured lifetime
-  - When attempting to use a session that was previously disconnected
-
-- `-32002`: Insufficient permissions for method
-  - When attempting to call a method not included in the session's permissions
-  - When trying to use wildcard permissions outside of updatePermissions
-  - When the permission callback explicitly denies the operation
-
-- `-32003`: Method not supported by chain
-  - When calling a method that the wallet implementation doesn't support
-  - When the wallet returns a method not found error
-
-- `-32004`: Wallet service not available
-  - When the wallet client is unreachable
-  - When the underlying wallet connection fails
-  - When the wallet returns an unexpected error
-
-- `-32005`: Partial failure in bulk operations
-  - When some calls in a bulk operation succeed but others fail
-  - The error includes partial responses for successful calls
-
-- `-32006`: Invalid request parameters
-  - When required parameters are missing
-  - When parameters are malformed or of incorrect type
-  - When attempting operations with invalid chain IDs or method names
-
-- `-32603`: Internal error
-  - For unexpected internal errors in the router
-  - When error handling itself fails
-  - For any other unhandled exceptions
+```typescript
+try {
+  await provider.call('eip155:1', {
+    method: 'eth_sendTransaction',
+    params: [/* ... */]
+  });
+} catch (error) {
+  if (error instanceof RouterError) {
+    switch (error.code) {
+      case 'PERMISSION_DENIED':
+        console.error('Missing required permissions');
+        break;
+      case 'SESSION_INVALID':
+        console.error('Session expired, reconnecting...');
+        break;
+      // Handle other error types
+    }
+  }
+}
+```
 
 ## Development
 
@@ -538,5 +348,18 @@ pnpm install
 # Run tests
 pnpm test
 
-# Build package
+# Run tests with coverage
+pnpm coverage
+
+# Build the package
 pnpm build
+
+# Generate documentation
+pnpm docs
+
+# Lint code
+pnpm lint
+
+# Format code
+pnpm format
+```

@@ -1,16 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { JSONRPCWalletClient, type WalletMethodMap } from './jsonrpc-adapter.js';
-import type { JSONRPCClient } from '@walletmesh/jsonrpc';
+import type { JSONRPCPeer } from '@walletmesh/jsonrpc';
 
 describe('JSONRPCWalletClient', () => {
-  // Create a mock JSONRPCClient
-  const mockCallMethod = vi.fn();
-  const mockClient = {
-    callMethod: mockCallMethod,
-  } as unknown as JSONRPCClient<WalletMethodMap>;
+  // Create a mock JSONRPCPeer
+  let mockCallMethod: ReturnType<typeof vi.fn>;
+  let mockOn: ReturnType<typeof vi.fn>;
+  let mockClient: JSONRPCPeer<WalletMethodMap>;
 
   beforeEach(() => {
-    mockCallMethod.mockReset();
+    mockCallMethod = vi.fn();
+    mockOn = vi.fn().mockReturnValue(() => {}); // Returns cleanup function
+    mockClient = {
+      callMethod: mockCallMethod,
+      on: mockOn,
+    } as unknown as JSONRPCPeer<WalletMethodMap>;
   });
 
   describe('call', () => {
@@ -55,6 +59,70 @@ describe('JSONRPCWalletClient', () => {
 
       expect(mockCallMethod).toHaveBeenCalledWith('test_method', undefined);
       expect(result).toBe('result');
+    });
+  });
+
+  describe('event handling', () => {
+    it('registers event handlers with on()', () => {
+      const client = new JSONRPCWalletClient(mockClient);
+      const handler = vi.fn();
+
+      client.on('accountsChanged', handler);
+
+      expect(mockOn).toHaveBeenCalledWith('accountsChanged', handler);
+    });
+
+    it('supports multiple handlers for the same event', () => {
+      const client = new JSONRPCWalletClient(mockClient);
+      const handler1 = vi.fn();
+      const handler2 = vi.fn();
+
+      client.on('accountsChanged', handler1);
+      client.on('accountsChanged', handler2);
+
+      expect(mockOn).toHaveBeenCalledWith('accountsChanged', handler1);
+      expect(mockOn).toHaveBeenCalledWith('accountsChanged', handler2);
+    });
+
+    it('removes event handlers with off()', () => {
+      const client = new JSONRPCWalletClient(mockClient);
+      const handler = vi.fn();
+      const mockCleanup = vi.fn();
+      mockOn.mockReturnValue(mockCleanup);
+
+      client.on('accountsChanged', handler);
+      client.off('accountsChanged', handler);
+
+      expect(mockCleanup).toHaveBeenCalled();
+    });
+
+    it('handles off() with non-existent handler', () => {
+      const client = new JSONRPCWalletClient(mockClient);
+      const handler = vi.fn();
+
+      // Should not throw when removing non-existent handler
+      client.off('accountsChanged', handler);
+    });
+
+    it('properly cleans up event handlers', () => {
+      const client = new JSONRPCWalletClient(mockClient);
+      const handler1 = vi.fn();
+      const handler2 = vi.fn();
+      const mockCleanup1 = vi.fn();
+      const mockCleanup2 = vi.fn();
+
+      mockOn.mockReturnValueOnce(mockCleanup1);
+      mockOn.mockReturnValueOnce(mockCleanup2);
+
+      client.on('accountsChanged', handler1);
+      client.on('accountsChanged', handler2);
+
+      client.off('accountsChanged', handler1);
+      expect(mockCleanup1).toHaveBeenCalled();
+      expect(mockCleanup2).not.toHaveBeenCalled();
+
+      client.off('accountsChanged', handler2);
+      expect(mockCleanup2).toHaveBeenCalled();
     });
   });
 

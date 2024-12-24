@@ -1,29 +1,36 @@
-import { JSONRPCClient } from '@walletmesh/jsonrpc';
+import { JSONRPCPeer } from '@walletmesh/jsonrpc';
 
-import type { ChainId, MethodCall, RouterMethodMap } from './types.js';
+import type { ChainId, MethodCall, RouterMethodMap, RouterEventMap, RouterContext } from './types.js';
 
 /**
  * Client-side provider for interacting with the multi-chain router.
  * Provides a simplified interface for applications to connect to and interact with wallets.
  *
  * The provider handles session management and method invocation, abstracting away
- * the underlying JSON-RPC communication details.
+ * the underlying JSON-RPC communication details. It uses a bi-directional peer connection
+ * to support both sending requests and receiving events from the router.
  *
  * @example
  * ```typescript
- * const provider = new WalletRouterProvider(
- *   async (request) => {
- *     // Send request to router
- *     const response = await fetch('/api/wallet', {
+ * const provider = new WalletRouterProvider({
+ *   send: async (message) => {
+ *     // Send message to router
+ *     await fetch('/api/wallet', {
  *       method: 'POST',
- *       body: JSON.stringify(request)
+ *       body: JSON.stringify(message)
  *     });
- *     return response.json();
  *   }
- * );
+ * });
  *
  * // Connect to a chain
- * const sessionId = await provider.connect('eip155:1', ['eth_accounts']);
+ * const sessionId = await provider.connect({
+ *   'eip155:1': ['eth_accounts', 'eth_sendTransaction']
+ * });
+ *
+ * // Listen for wallet state changes
+ * provider.on('wm_walletStateChanged', ({ chainId, changes }) => {
+ *   console.log(`Wallet state changed for ${chainId}:`, changes);
+ * });
  *
  * // Call methods
  * const accounts = await provider.call('eip155:1', {
@@ -31,7 +38,7 @@ import type { ChainId, MethodCall, RouterMethodMap } from './types.js';
  * });
  * ```
  */
-export class WalletRouterProvider extends JSONRPCClient<RouterMethodMap> {
+export class WalletRouterProvider extends JSONRPCPeer<RouterMethodMap, RouterEventMap, RouterContext> {
   private _sessionId: string | undefined;
 
   /**
@@ -43,23 +50,24 @@ export class WalletRouterProvider extends JSONRPCClient<RouterMethodMap> {
   }
 
   /**
-   * Connects to a wallet for a specific chain
-   * @param chainId - Target chain identifier (e.g. 'eip155:1' for Ethereum mainnet)
-   * @param permissions - Array of method names that the session requests permission to call
+   * Connects to multiple chains with specified permissions
+   * @param permissions - Map of chain IDs to their requested permissions
    * @param timeout - Optional timeout in milliseconds for the request
    * @returns Session ID that can be used for future requests
    * @throws {Error} If the connection fails or is rejected
    *
    * @example
    * ```typescript
-   * // Connect to Ethereum mainnet with specific permissions
-   * const sessionId = await provider.connect('eip155:1', [
-   *   'eth_accounts',
-   *   'eth_sendTransaction'
-   * ]);
+   * // Connect to multiple chains with specific permissions
+   * const sessionId = await provider.connect({
+   *   'eip155:1': ['eth_accounts', 'eth_sendTransaction'],
+   *   'eip155:137': ['eth_getBalance', 'eth_call']
+   * });
    *
    * // Connect with a 5 second timeout
-   * const sessionId = await provider.connect('eip155:1', ['eth_accounts'], 5000);
+   * const sessionId = await provider.connect({
+   *   'eip155:1': ['eth_accounts']
+   * }, 5000);
    * ```
    */
   async connect(permissions: Record<ChainId, string[]>, timeout?: number): Promise<string> {

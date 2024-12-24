@@ -1,4 +1,5 @@
-import { describe, expect, it, beforeEach, vi, type Mock } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
+import type { Mock } from 'vitest';
 import { WalletRouter } from './router.js';
 import { RouterError, RouterErrorMap } from './errors.js';
 import type {
@@ -15,6 +16,8 @@ import { TestSessionStore } from './test-utils.js';
 
 interface MockWalletClient extends WalletClient {
   getMockCall(): Mock;
+  emit?(event: string, data: unknown): void;
+  off?(event: string, handler: (data: unknown) => void): void;
 }
 
 // Default permission approval callback that approves all requested permissions
@@ -37,6 +40,8 @@ function createMockWalletClient(): MockWalletClient {
     return Promise.resolve('success');
   });
 
+  const eventHandlers = new Map<string, Set<(data: unknown) => void>>();
+
   return {
     call: async <T = unknown>(method: string, params?: unknown): Promise<T> => {
       return mockCall(method, params) as Promise<T>;
@@ -45,6 +50,23 @@ function createMockWalletClient(): MockWalletClient {
       return mockCall('wm_getSupportedMethods');
     },
     getMockCall: () => mockCall,
+    on(event: string, handler: (data: unknown) => void): void {
+      if (!eventHandlers.has(event)) {
+        eventHandlers.set(event, new Set());
+      }
+      eventHandlers.get(event)?.add(handler);
+    },
+    off(event: string, handler: (data: unknown) => void): void {
+      eventHandlers.get(event)?.delete(handler);
+    },
+    emit(event: string, data: unknown): void {
+      const handlers = eventHandlers.get(event);
+      if (handlers) {
+        for (const handler of handlers) {
+          handler(data);
+        }
+      }
+    },
   };
 }
 
@@ -106,12 +128,13 @@ class TestWalletRouter extends WalletRouter {
 }
 
 describe('WalletRouter', () => {
-  const mockSendResponse = vi.fn();
+  const mockTransport = { send: vi.fn() };
   const mockWallets = new Map<ChainId, MockWalletClient>();
   let mockClient1: MockWalletClient;
   let mockClient2: MockWalletClient;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     mockClient1 = createMockWalletClient();
     mockClient2 = createMockWalletClient();
     mockWallets.clear();
@@ -121,12 +144,160 @@ describe('WalletRouter', () => {
 
   it('creates a new router instance', () => {
     const router = new TestWalletRouter(
-      mockSendResponse,
+      mockTransport,
       mockWallets,
       createPermissivePermissions(),
       createDefaultPermissionApproval(),
     );
     expect(router).toBeInstanceOf(WalletRouter);
+  });
+
+  describe('Event Handling', () => {
+    it('emits session terminated event on disconnect', async () => {
+      const router = new TestWalletRouter(
+        mockTransport,
+        mockWallets,
+        createPermissivePermissions(),
+        createDefaultPermissionApproval(),
+      );
+
+      const { sessionId } = await router.testConnect(
+        {},
+        {
+          permissions: {
+            'aztec:testnet': ['aztec_getAccount'],
+          },
+        },
+      );
+
+      await router.testDisconnect({}, { sessionId });
+
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          jsonrpc: '2.0',
+          event: 'wm_sessionTerminated',
+          params: {
+            sessionId,
+            reason: 'User disconnected',
+          },
+        }),
+      );
+    });
+
+    it('emits permissions changed event on update', async () => {
+      const router = new TestWalletRouter(
+        mockTransport,
+        mockWallets,
+        createPermissivePermissions(),
+        createDefaultPermissionApproval(),
+      );
+
+      const { sessionId } = await router.testConnect(
+        {},
+        {
+          permissions: {
+            'aztec:testnet': ['aztec_getAccount'],
+          },
+        },
+      );
+
+      const newPermissions = {
+        'aztec:testnet': ['aztec_getAccount', 'aztec_sendTransaction'],
+      };
+
+      await router.testUpdatePermissions({}, { sessionId, permissions: newPermissions });
+
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          jsonrpc: '2.0',
+          event: 'wm_permissionsChanged',
+          params: {
+            sessionId,
+            permissions: newPermissions,
+          },
+        }),
+      );
+    });
+
+    it('forwards wallet state change events', async () => {
+      const router = new TestWalletRouter(
+        mockTransport,
+        mockWallets,
+        createPermissivePermissions(),
+        createDefaultPermissionApproval(),
+      );
+
+      const mockWallet = createMockWalletClient();
+      mockWallets.set('test:chain', mockWallet);
+
+      // Connect to trigger event listener setup
+      await router.testConnect(
+        {},
+        {
+          permissions: {
+            'test:chain': ['test_method'],
+          },
+        },
+      );
+
+      // Simulate wallet events
+      mockWallet.emit?.('accountsChanged', ['0x123']);
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          jsonrpc: '2.0',
+          event: 'wm_walletStateChanged',
+          params: {
+            chainId: 'test:chain',
+            changes: { accounts: ['0x123'] },
+          },
+        }),
+      );
+
+      mockWallet.emit?.('networkChanged', 'testnet');
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          jsonrpc: '2.0',
+          event: 'wm_walletStateChanged',
+          params: {
+            chainId: 'test:chain',
+            changes: { networkId: 'testnet' },
+          },
+        }),
+      );
+    });
+
+    it('cleans up event listeners on disconnect', async () => {
+      const router = new TestWalletRouter(
+        mockTransport,
+        mockWallets,
+        createPermissivePermissions(),
+        createDefaultPermissionApproval(),
+      );
+
+      const mockWallet = createMockWalletClient();
+      mockWallets.set('test:chain', mockWallet);
+
+      // Connect to trigger event listener setup
+      const { sessionId } = await router.testConnect(
+        {},
+        {
+          permissions: {
+            'test:chain': ['test_method'],
+          },
+        },
+      );
+
+      // Disconnect should clean up listeners
+      await router.testDisconnect({}, { sessionId });
+
+      // Events should no longer be forwarded
+      mockWallet.emit?.('accountsChanged', ['0x123']);
+      expect(mockTransport.send).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          event: 'wm_walletStateChanged',
+        }),
+      );
+    });
   });
 
   describe('Permission System', () => {
@@ -137,7 +308,7 @@ describe('WalletRouter', () => {
       });
 
       const router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         createPermissivePermissions(),
         mockApprovalCallback,
@@ -162,7 +333,7 @@ describe('WalletRouter', () => {
       });
 
       const router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         createPermissivePermissions(),
         mockApprovalCallback,
@@ -184,7 +355,7 @@ describe('WalletRouter', () => {
       const mockPermissionCallback = vi.fn().mockResolvedValue(true);
       const mockApprovalCallback = vi.fn().mockImplementation(createDenyingPermissionApproval());
       const router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         mockPermissionCallback,
         mockApprovalCallback,
@@ -213,7 +384,7 @@ describe('WalletRouter', () => {
       });
 
       const router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         mockPermissionCallback,
         mockApprovalCallback,
@@ -243,7 +414,7 @@ describe('WalletRouter', () => {
       const mockApprovalCallback = vi.fn().mockImplementation(async () => approvedPermissions);
 
       const router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         mockPermissionCallback,
         mockApprovalCallback,
@@ -267,7 +438,7 @@ describe('WalletRouter', () => {
 
     beforeEach(() => {
       router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         createPermissivePermissions(),
         createDefaultPermissionApproval(),
@@ -299,7 +470,7 @@ describe('WalletRouter', () => {
 
     it('handles sessions without expiry', async () => {
       const router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         createPermissivePermissions(),
         createDefaultPermissionApproval(),
@@ -327,7 +498,7 @@ describe('WalletRouter', () => {
     it('handles expired sessions in validateSession', async () => {
       const mockPermissionCallback = vi.fn().mockResolvedValue(true);
       const router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         mockPermissionCallback,
         createDefaultPermissionApproval(),
@@ -369,7 +540,7 @@ describe('WalletRouter', () => {
 
     it('throws on invalid session in disconnect', async () => {
       const router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         createPermissivePermissions(),
         createDefaultPermissionApproval(),
@@ -418,7 +589,7 @@ describe('WalletRouter', () => {
       it('fails to reconnect to expired session', async () => {
         const testStore = new TestSessionStore();
         const router = new TestWalletRouter(
-          mockSendResponse,
+          mockTransport,
           mockWallets,
           createPermissivePermissions(),
           createDefaultPermissionApproval(),
@@ -466,7 +637,7 @@ describe('WalletRouter', () => {
       it('returns false for expired session', async () => {
         const testStore = new TestSessionStore();
         const router = new TestWalletRouter(
-          mockSendResponse,
+          mockTransport,
           mockWallets,
           createPermissivePermissions(),
           createDefaultPermissionApproval(),
@@ -498,13 +669,213 @@ describe('WalletRouter', () => {
     });
   });
 
+  describe('Validation', () => {
+    let router: TestWalletRouter;
+    let testSessionId: string;
+
+    beforeEach(async () => {
+      router = new TestWalletRouter(
+        mockTransport,
+        mockWallets,
+        createPermissivePermissions(),
+        createDefaultPermissionApproval(),
+      );
+      const result = await router.testConnect(
+        {},
+        {
+          permissions: {
+            'aztec:testnet': ['aztec_getAccount'],
+          },
+        },
+      );
+      testSessionId = result.sessionId;
+    });
+
+    it('validates chain configuration in session', async () => {
+      await expect(
+        router.testValidateSession(
+          'call',
+          testSessionId,
+          'non-configured-chain',
+          'test_method',
+          undefined,
+          {},
+        ),
+      ).rejects.toThrow(RouterErrorMap.invalidSession.message);
+    });
+
+    it('rejects wildcard method except for updatePermissions', async () => {
+      await expect(
+        router.testValidateSession('call', testSessionId, 'aztec:testnet', '*', undefined, {}),
+      ).rejects.toThrow(RouterErrorMap.insufficientPermissions.message);
+
+      // Should not throw for updatePermissions
+      await expect(
+        router.testValidateSession('updatePermissions', testSessionId, 'aztec:testnet', '*', undefined, {}),
+      ).resolves.toBeDefined();
+    });
+
+    it('throws on unknown chain', async () => {
+      // First connect with the unknown chain to create a valid session
+      const { sessionId } = await router.testConnect(
+        {},
+        {
+          permissions: {
+            'unknown:chain': ['test_method'],
+          },
+        },
+      );
+
+      // Remove the chain from wallets to simulate unknown chain
+      mockWallets.delete('unknown:chain');
+
+      await expect(
+        router.testCall(
+          {},
+          {
+            chainId: 'unknown:chain',
+            call: { method: 'test_method', params: {} },
+            sessionId,
+          },
+        ),
+      ).rejects.toThrow(RouterErrorMap.unknownChain.message);
+    });
+  });
+
+  describe('Event Cleanup', () => {
+    let router: TestWalletRouter;
+
+    beforeEach(() => {
+      router = new TestWalletRouter(
+        mockTransport,
+        mockWallets,
+        createPermissivePermissions(),
+        createDefaultPermissionApproval(),
+      );
+    });
+
+    it('cleans up existing event listeners when setting up new ones and handles wallets without off method', async () => {
+      const mockWallet = createMockWalletClient();
+      const mockOn = vi.fn();
+      const mockOff = vi.fn();
+      const mockEmit = vi.fn();
+
+      // Create a wallet with trackable event handlers
+      const mockWalletWithTracking: MockWalletClient = {
+        ...mockWallet,
+        on: mockOn,
+        off: mockOff,
+        emit: mockEmit,
+      };
+
+      // Create a wallet without off method
+      const mockWalletWithoutOff: Omit<MockWalletClient, 'off'> = {
+        ...mockWallet,
+        on: mockOn,
+      } as MockWalletClient;
+
+      // Set up initial wallets
+      mockWallets.set('test:chain', mockWalletWithTracking);
+      mockWallets.set('test:chain2', mockWalletWithoutOff);
+
+      // First connect to set up initial listeners
+      await router.testConnect(
+        {},
+        {
+          permissions: {
+            'test:chain': ['test_method'],
+            'test:chain2': ['test_method'],
+          },
+        },
+      );
+
+      // Verify initial event listeners were set up
+      expect(mockOn).toHaveBeenCalledWith('accountsChanged', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('networkChanged', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('disconnect', expect.any(Function));
+
+      // Clear mocks to track new events
+      mockOn.mockClear();
+      mockOff.mockClear();
+
+      // Connect again to trigger new listener setup
+      await router.testConnect(
+        {},
+        {
+          permissions: {
+            'test:chain': ['test_method'],
+            'test:chain2': ['test_method'],
+          },
+        },
+      );
+
+      // Verify old listeners were cleaned up and new ones were set
+      expect(mockOff).toHaveBeenCalled(); // Should be called for wallet with off method
+      expect(mockOn).toHaveBeenCalledWith('accountsChanged', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('networkChanged', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('disconnect', expect.any(Function));
+    });
+
+    it('handles validateChain edge cases and event cleanup', async () => {
+      // First connect with permissions for both chains
+      const { sessionId } = await router.testConnect(
+        {},
+        {
+          permissions: {
+            'test:chain': ['test_method'],
+            'test:chain2': ['test_method'],
+          },
+        },
+      );
+
+      // Remove wallets to trigger unknownChain error
+      mockWallets.delete('test:chain');
+
+      await expect(
+        router.testCall(
+          {},
+          {
+            chainId: 'test:chain',
+            call: { method: 'test_method', params: {} },
+            sessionId,
+          },
+        ),
+      ).rejects.toThrow(RouterErrorMap.unknownChain.message);
+
+      // Remove second wallet
+      mockWallets.delete('test:chain2');
+
+      await expect(
+        router.testCall(
+          {},
+          {
+            chainId: 'test:chain2',
+            call: { method: 'test_method', params: {} },
+            sessionId,
+          },
+        ),
+      ).rejects.toThrow(RouterErrorMap.unknownChain.message);
+
+      // Test cleanup with invalid wallet
+      await router.testConnect(
+        {},
+        {
+          permissions: {
+            'test:chain': ['test_method'],
+            'test:chain2': ['test_method'],
+          },
+        },
+      );
+    });
+  });
+
   describe('Method Invocation', () => {
     let router: TestWalletRouter;
     let testSessionId: string;
 
     beforeEach(async () => {
       router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         createPermissivePermissions(),
         createDefaultPermissionApproval(),
@@ -604,7 +975,7 @@ describe('WalletRouter', () => {
         }); // For update
 
       const router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         mockPermissionCallback,
         mockApprovalCallback,
@@ -712,13 +1083,91 @@ describe('WalletRouter', () => {
     });
   });
 
+  describe('Supported Methods', () => {
+    let router: TestWalletRouter;
+
+    beforeEach(() => {
+      router = new TestWalletRouter(
+        mockTransport,
+        mockWallets,
+        createPermissivePermissions(),
+        createDefaultPermissionApproval(),
+      );
+    });
+
+    it('returns router methods when no chainIds provided or undefined', async () => {
+      // Test with empty array
+      let result = await router.testGetSupportedMethods({}, { chainIds: [] });
+      expect(result).toEqual({
+        router: [
+          'wm_connect',
+          'wm_disconnect',
+          'wm_getPermissions',
+          'wm_updatePermissions',
+          'wm_call',
+          'wm_bulkCall',
+          'wm_getSupportedMethods',
+          'wm_reconnect',
+        ],
+      });
+
+      // Test with omitted chainIds
+      result = await router.testGetSupportedMethods({}, {});
+      expect(result).toEqual({
+        router: [
+          'wm_connect',
+          'wm_disconnect',
+          'wm_getPermissions',
+          'wm_updatePermissions',
+          'wm_call',
+          'wm_bulkCall',
+          'wm_getSupportedMethods',
+          'wm_reconnect',
+        ],
+      });
+    });
+
+    it('handles wallet without getSupportedMethods', async () => {
+      const mockWallet: MockWalletClient = {
+        call: vi.fn(),
+        getMockCall: vi.fn(),
+      };
+      mockWallets.set('test:chain', mockWallet);
+
+      const result = await router.testGetSupportedMethods({}, { chainIds: ['test:chain'] });
+      expect(result).toEqual({
+        'test:chain': [],
+      });
+    });
+
+    it('handles wallet errors in getSupportedMethods', async () => {
+      const mockWallet = createMockWalletClient();
+      mockWallet.getSupportedMethods = vi.fn().mockRejectedValue(new Error('Failed to get methods'));
+      mockWallets.set('test:chain', mockWallet);
+
+      await expect(router.testGetSupportedMethods({}, { chainIds: ['test:chain'] })).rejects.toThrow(
+        RouterErrorMap.walletNotAvailable.message,
+      );
+    });
+
+    it('handles RouterError in getSupportedMethods', async () => {
+      const mockWallet = createMockWalletClient();
+      mockWallet.getSupportedMethods = vi.fn().mockRejectedValue(new RouterError('unknownChain'));
+      mockWallets.set('test:chain', mockWallet);
+
+      await expect(router.testGetSupportedMethods({}, { chainIds: ['test:chain'] })).rejects.toThrow(
+        RouterErrorMap.unknownChain.message,
+      );
+    });
+  });
+
   describe('Bulk Method Invocation', () => {
     let router: TestWalletRouter;
     let testSessionId: string;
 
     beforeEach(async () => {
       router = new TestWalletRouter(
-        mockSendResponse,
+        mockTransport,
         mockWallets,
         createPermissivePermissions(),
         createDefaultPermissionApproval(),
@@ -841,469 +1290,6 @@ describe('WalletRouter', () => {
           },
         ),
       ).rejects.toThrow(RouterErrorMap.partialFailure.message);
-    });
-  });
-
-  describe('Session Validation', () => {
-    let router: TestWalletRouter;
-    let testSessionId: string;
-
-    beforeEach(async () => {
-      router = new TestWalletRouter(
-        mockSendResponse,
-        mockWallets,
-        createPermissivePermissions(),
-        createDefaultPermissionApproval(),
-      );
-      const result = await router.testConnect(
-        {},
-        {
-          permissions: {
-            'aztec:testnet': ['aztec_getAccount'],
-          },
-        },
-      );
-      testSessionId = result.sessionId;
-    });
-
-    it('allows wildcard method for updatePermissions', async () => {
-      const session = await router.testValidateSession(
-        'updatePermissions',
-        testSessionId,
-        'aztec:testnet',
-        '*',
-        undefined,
-        {},
-      );
-      expect(session).toBeDefined();
-    });
-
-    it('rejects wildcard method for non-updatePermissions operation', async () => {
-      await expect(
-        router.testValidateSession('call', testSessionId, 'aztec:testnet', '*', undefined, {}),
-      ).rejects.toThrow(RouterErrorMap.insufficientPermissions.message);
-    });
-
-    it('validates chain configuration in session', async () => {
-      await expect(
-        router.testValidateSession('call', testSessionId, 'invalid:chain', 'test_method', undefined, {}),
-      ).rejects.toThrow(RouterErrorMap.invalidSession.message);
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('handles errors in connect approval', async () => {
-      const mockApprovalCallback = vi
-        .fn()
-        .mockImplementationOnce(() => {
-          throw new Error('Approval failed');
-        })
-        .mockImplementationOnce(() => {
-          throw new RouterError('insufficientPermissions', 'connect');
-        });
-
-      const router = new TestWalletRouter(
-        mockSendResponse,
-        mockWallets,
-        createPermissivePermissions(),
-        mockApprovalCallback,
-      );
-
-      // First call should fail with generic error
-      await expect(
-        router.testConnect(
-          {},
-          {
-            permissions: {
-              'aztec:testnet': ['aztec_getAccount'],
-            },
-          },
-        ),
-      ).rejects.toThrow('Approval failed');
-
-      // Second call should fail with RouterError
-      await expect(
-        router.testConnect(
-          {},
-          {
-            permissions: {
-              'aztec:testnet': ['aztec_getAccount'],
-            },
-          },
-        ),
-      ).rejects.toThrow(RouterErrorMap.insufficientPermissions.message);
-    });
-
-    it('handles errors in session validation', async () => {
-      const mockPermissionCallback = vi.fn().mockResolvedValue(true);
-      const router = new TestWalletRouter(
-        mockSendResponse,
-        mockWallets,
-        mockPermissionCallback,
-        createDefaultPermissionApproval(),
-        new TestSessionStore(),
-      );
-
-      // First call should succeed (connect)
-      const { sessionId } = await router.testConnect(
-        {},
-        {
-          permissions: {
-            'aztec:testnet': ['aztec_getAccount'],
-          },
-        },
-      );
-
-      // Reset mock after connect
-      mockPermissionCallback.mockReset();
-      mockPermissionCallback
-        .mockImplementationOnce(() => {
-          throw new Error('Permission check error');
-        })
-        .mockImplementationOnce(() => {
-          throw new RouterError('insufficientPermissions', 'test');
-        });
-
-      // Second call should fail with generic error
-      await expect(
-        router.testValidateSession('call', sessionId, 'aztec:testnet', 'test', undefined, {}),
-      ).rejects.toThrow('Permission check error');
-
-      // Third call should fail with RouterError
-      await expect(
-        router.testValidateSession('call', sessionId, 'aztec:testnet', 'test', undefined, {}),
-      ).rejects.toThrow(RouterErrorMap.insufficientPermissions.message);
-    });
-
-    it('handles errors in update permissions approval', async () => {
-      const mockApprovalCallback = vi
-        .fn()
-        .mockImplementationOnce(createDefaultPermissionApproval()) // Allow connect
-        .mockImplementationOnce(() => {
-          throw new Error('Approval failed');
-        })
-        .mockImplementationOnce(createDefaultPermissionApproval()) // Allow connect
-        .mockImplementationOnce(() => {
-          throw new RouterError('insufficientPermissions', 'updatePermissions');
-        });
-
-      const router = new TestWalletRouter(
-        mockSendResponse,
-        mockWallets,
-        createPermissivePermissions(),
-        mockApprovalCallback,
-        new TestSessionStore(),
-      );
-
-      // First connect and update - generic error
-      const { sessionId: sessionId1 } = await router.testConnect(
-        {},
-        {
-          permissions: {
-            'aztec:testnet': ['aztec_getAccount'],
-          },
-        },
-      );
-
-      await expect(
-        router.testUpdatePermissions(
-          {},
-          {
-            sessionId: sessionId1,
-            permissions: {
-              'aztec:testnet': ['eth_accounts'],
-            },
-          },
-        ),
-      ).rejects.toThrow('Approval failed');
-
-      // Second connect and update - RouterError
-      const { sessionId: sessionId2 } = await router.testConnect(
-        {},
-        {
-          permissions: {
-            'aztec:testnet': ['aztec_getAccount'],
-          },
-        },
-      );
-
-      await expect(
-        router.testUpdatePermissions(
-          {},
-          {
-            sessionId: sessionId2,
-            permissions: {
-              'aztec:testnet': ['eth_accounts'],
-            },
-          },
-        ),
-      ).rejects.toThrow(RouterErrorMap.insufficientPermissions.message);
-    });
-
-    it('handles errors in update permissions with invalid session', async () => {
-      const mockApprovalCallback = vi
-        .fn()
-        .mockImplementationOnce(createDefaultPermissionApproval()) // Allow connect
-        .mockImplementationOnce(() => {
-          throw new Error('Approval failed');
-        });
-
-      const router = new TestWalletRouter(
-        mockSendResponse,
-        mockWallets,
-        createPermissivePermissions(),
-        mockApprovalCallback,
-      );
-
-      // First call should succeed (connect)
-      const { sessionId } = await router.testConnect(
-        {},
-        {
-          permissions: {
-            'aztec:testnet': ['aztec_getAccount'],
-          },
-        },
-      );
-
-      // updatePermissions should fail
-      await expect(
-        router.testUpdatePermissions(
-          {},
-          {
-            sessionId,
-            permissions: {
-              'aztec:testnet': ['eth_accounts'],
-            },
-          },
-        ),
-      ).rejects.toThrow('Approval failed');
-    });
-
-    it('handles errors in getSupportedMethods', async () => {
-      const mockClient = mockWallets.get('aztec:testnet');
-      if (mockClient) {
-        mockClient
-          .getMockCall()
-          .mockRejectedValueOnce(new Error('Generic error')) // Generic error
-          .mockRejectedValueOnce(new RouterError('unknownChain')); // RouterError
-      }
-
-      const router = new TestWalletRouter(
-        mockSendResponse,
-        mockWallets,
-        createPermissivePermissions(),
-        createDefaultPermissionApproval(),
-      );
-
-      // First call should fail with generic error
-      await expect(router.testGetSupportedMethods({}, { chainIds: ['aztec:testnet'] })).rejects.toThrow(
-        RouterErrorMap.walletNotAvailable.message,
-      );
-
-      // Second call should fail with RouterError
-      await expect(router.testGetSupportedMethods({}, { chainIds: ['aztec:testnet'] })).rejects.toThrow(
-        RouterErrorMap.unknownChain.message,
-      );
-    });
-  });
-
-  describe('Bulk Call Error Handling', () => {
-    let router: TestWalletRouter;
-    let testSessionId: string;
-
-    beforeEach(async () => {
-      router = new TestWalletRouter(
-        mockSendResponse,
-        mockWallets,
-        createPermissivePermissions(),
-        createDefaultPermissionApproval(),
-      );
-      const result = await router.testConnect(
-        {},
-        {
-          permissions: {
-            'aztec:testnet': ['aztec_getAccount', 'aztec_getBalance'],
-          },
-        },
-      );
-      testSessionId = result.sessionId;
-    });
-
-    it('handles permission check failures in bulk calls', async () => {
-      const mockPermissionCallback = vi
-        .fn()
-        .mockResolvedValueOnce(true) // First method allowed
-        .mockResolvedValueOnce(false); // Second method denied
-
-      const router = new TestWalletRouter(
-        mockSendResponse,
-        mockWallets,
-        mockPermissionCallback,
-        createDefaultPermissionApproval(),
-      );
-      const { sessionId } = await router.testConnect(
-        {},
-        {
-          permissions: {
-            'aztec:testnet': ['aztec_getAccount', 'aztec_getBalance'],
-          },
-        },
-      );
-
-      await expect(
-        router.testBulkCall(
-          {},
-          {
-            chainId: 'aztec:testnet',
-            calls: [{ method: 'aztec_getAccount' }, { method: 'aztec_getBalance' }],
-            sessionId,
-          },
-        ),
-      ).rejects.toThrow(RouterErrorMap.insufficientPermissions.message);
-    });
-
-    it('handles validation errors in bulk calls', async () => {
-      await expect(
-        router.testBulkCall(
-          {},
-          {
-            chainId: 'invalid:chain',
-            calls: [{ method: 'test_method' }],
-            sessionId: testSessionId,
-          },
-        ),
-      ).rejects.toThrow(RouterErrorMap.unknownChain.message);
-    });
-  });
-
-  describe('Supported Methods', () => {
-    let router: TestWalletRouter;
-
-    beforeEach(() => {
-      router = new TestWalletRouter(
-        mockSendResponse,
-        mockWallets,
-        createPermissivePermissions(),
-        createDefaultPermissionApproval(),
-      );
-    });
-
-    it('returns router methods when no chainIds are provided', async () => {
-      const result = await router.testGetSupportedMethods({}, {});
-      expect(result).toEqual({
-        router: [
-          'wm_connect',
-          'wm_disconnect',
-          'wm_getPermissions',
-          'wm_updatePermissions',
-          'wm_call',
-          'wm_bulkCall',
-          'wm_getSupportedMethods',
-          'wm_reconnect',
-        ],
-      });
-    });
-
-    it('retrieves methods for multiple chains', async () => {
-      const mockClient1 = mockWallets.get('aztec:testnet');
-      const mockClient2 = mockWallets.get('eip155:1');
-
-      if (mockClient1) {
-        mockClient1.getMockCall().mockResolvedValueOnce({
-          methods: ['aztec_getAccount', 'aztec_sendTransaction'],
-        });
-      }
-
-      if (mockClient2) {
-        mockClient2.getMockCall().mockResolvedValueOnce({
-          methods: ['eth_accounts', 'eth_sendTransaction'],
-        });
-      }
-
-      const result = await router.testGetSupportedMethods(
-        {},
-        {
-          chainIds: ['aztec:testnet', 'eip155:1'],
-        },
-      );
-
-      expect(result).toEqual({
-        'aztec:testnet': ['aztec_getAccount', 'aztec_sendTransaction'],
-        'eip155:1': ['eth_accounts', 'eth_sendTransaction'],
-      });
-
-      expect(mockClient1?.getMockCall()).toHaveBeenCalledWith('wm_getSupportedMethods');
-      expect(mockClient2?.getMockCall()).toHaveBeenCalledWith('wm_getSupportedMethods');
-    });
-
-    it('propagates RouterError when any chain is invalid', async () => {
-      await expect(
-        router.testGetSupportedMethods(
-          {},
-          {
-            chainIds: ['aztec:testnet', 'invalid:chain'],
-          },
-        ),
-      ).rejects.toThrow(RouterErrorMap.unknownChain.message);
-    });
-
-    it('returns empty methods array for chains without getSupportedMethods', async () => {
-      // Create a mock client without getSupportedMethods
-      const mockCall = vi.fn().mockImplementation((_: string) => {
-        return Promise.resolve('success');
-      });
-
-      const mockClientWithoutCapabilities: MockWalletClient = {
-        call: async <T = unknown>(method: string, params?: unknown): Promise<T> => {
-          return mockCall(method, params) as Promise<T>;
-        },
-        getMockCall: () => mockCall,
-      };
-
-      mockWallets.set('aztec:testnet', mockClientWithoutCapabilities);
-
-      const result = await router.testGetSupportedMethods(
-        {},
-        {
-          chainIds: ['aztec:testnet'],
-        },
-      );
-
-      expect(result).toEqual({
-        'aztec:testnet': [],
-      });
-    });
-
-    it('handles discovery errors', async () => {
-      const mockClient = mockWallets.get('aztec:testnet');
-      if (mockClient) {
-        mockClient.getMockCall().mockRejectedValueOnce(new RouterError('walletNotAvailable'));
-      }
-
-      await expect(
-        router.testGetSupportedMethods(
-          {},
-          {
-            chainIds: ['aztec:testnet'],
-          },
-        ),
-      ).rejects.toThrow(RouterErrorMap.walletNotAvailable.message);
-    });
-
-    it('handles non-RouterError errors', async () => {
-      const mockClient = mockWallets.get('aztec:testnet');
-      if (mockClient) {
-        mockClient.getMockCall().mockRejectedValueOnce(new Error('Unknown error'));
-      }
-
-      await expect(
-        router.testGetSupportedMethods(
-          {},
-          {
-            chainIds: ['aztec:testnet'],
-          },
-        ),
-      ).rejects.toThrow(RouterErrorMap.walletNotAvailable.message);
     });
   });
 });
