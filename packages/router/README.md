@@ -252,16 +252,16 @@ const accounts = await provider.call('eip155:1', {
 
 ```typescript
 import { WalletRouter, JSONRPCWalletClient } from '@walletmesh/router';
-import { JSONRPCPeer } from '@walletmesh/jsonrpc';
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
 
 // Create wallet clients
 const wallets = new Map([
-  ['eip155:1', new JSONRPCWalletClient(new JSONRPCPeer({
+  ['eip155:1', new JSONRPCWalletClient(new JSONRPCNode({
     send: message => {
       // Send to Ethereum wallet
     }
   }))],
-  ['eip155:137', new JSONRPCWalletClient(new JSONRPCPeer({
+  ['eip155:137', new JSONRPCWalletClient(new JSONRPCNode({
     send: message => {
       // Send to Polygon wallet
     }

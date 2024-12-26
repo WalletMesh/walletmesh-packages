@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { JSONRPCError, JSONRPCPeer, TimeoutError } from './index.js';
+import { JSONRPCError, JSONRPCNode, TimeoutError } from './index.js';
 import { applyToMethods, isJSONRPCID, isJSONRPCVersion, isJSONRPCSerializedData } from './utils.js';
 import type { JSONRPCContext, JSONRPCRequest, JSONRPCResponse, JSONRPCSerializer } from './types.js';
 
-describe('JSONRPCPeer', () => {
+describe('JSONRPCNode', () => {
   type TestContext = JSONRPCContext & {
     user?: string;
   };
@@ -79,9 +79,9 @@ describe('JSONRPCPeer', () => {
   it('should handle method calls correctly', async () => {
     const transport = {
       send: vi.fn((message) => {
-        // Simulate response from other peer
+        // Simulate response from other node
         if ('method' in message && message.method === 'add') {
-          peer.receiveMessage({
+          node.receiveMessage({
             jsonrpc: '2.0',
             result:
               (message.params as { a: number; b: number }).a + (message.params as { a: number; b: number }).b,
@@ -91,13 +91,13 @@ describe('JSONRPCPeer', () => {
       }),
     };
 
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
     // Register local method
-    peer.registerMethod('greet', (_context, { name }) => `Hello, ${name}!`);
+    node.registerMethod('greet', (_context, { name }) => `Hello, ${name}!`);
 
     // Call remote method
-    const result = await peer.callMethod('add', { a: 2, b: 3 });
+    const result = await node.callMethod('add', { a: 2, b: 3 });
     expect(result).toBe(5);
 
     // Verify transport was called with correct message
@@ -115,14 +115,14 @@ describe('JSONRPCPeer', () => {
       send: vi.fn(),
     };
 
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
     const eventHandler = vi.fn();
 
     // Register event handler
-    peer.on('userJoined', eventHandler);
+    node.on('userJoined', eventHandler);
 
     // Simulate receiving an event
-    await peer.receiveMessage({
+    await node.receiveMessage({
       jsonrpc: '2.0',
       event: 'userJoined',
       params: { name: 'Alice', id: 123 },
@@ -132,7 +132,7 @@ describe('JSONRPCPeer', () => {
     expect(eventHandler).toHaveBeenCalledWith({ name: 'Alice', id: 123 });
 
     // Emit an event
-    peer.emit('messageReceived', { text: 'Hello!', from: 'Bob' });
+    node.emit('messageReceived', { text: 'Hello!', from: 'Bob' });
 
     // Verify transport was called with correct message
     expect(transport.send).toHaveBeenCalledWith({
@@ -143,40 +143,40 @@ describe('JSONRPCPeer', () => {
   });
 
   it('should handle bi-directional communication', async () => {
-    const peerA = new JSONRPCPeer<TestMethodMap, TestEventMap>({
+    const nodeA = new JSONRPCNode<TestMethodMap, TestEventMap>({
       send: (message) => {
-        // Forward message to peer B
-        peerB.receiveMessage(message);
+        // Forward message to node B
+        nodeB.receiveMessage(message);
       },
     });
 
-    const peerB = new JSONRPCPeer<TestMethodMap, TestEventMap>({
+    const nodeB = new JSONRPCNode<TestMethodMap, TestEventMap>({
       send: (message) => {
-        // Forward message to peer A
-        peerA.receiveMessage(message);
+        // Forward message to node A
+        nodeA.receiveMessage(message);
       },
     });
 
-    // Register methods on both peers
-    peerA.registerMethod('add', (_context, { a, b }) => a + b);
-    peerB.registerMethod('greet', (_context, { name }) => `Hello, ${name}!`);
+    // Register methods on both nodes
+    nodeA.registerMethod('add', (_context, { a, b }) => a + b);
+    nodeB.registerMethod('greet', (_context, { name }) => `Hello, ${name}!`);
 
     // Test calling methods in both directions
-    const sum = await peerB.callMethod('add', { a: 2, b: 3 });
+    const sum = await nodeB.callMethod('add', { a: 2, b: 3 });
     expect(sum).toBe(5);
 
-    const greeting = await peerA.callMethod('greet', { name: 'Alice' });
+    const greeting = await nodeA.callMethod('greet', { name: 'Alice' });
     expect(greeting).toBe('Hello, Alice!');
 
     // Test events in both directions
     const handlerA = vi.fn();
     const handlerB = vi.fn();
 
-    peerA.on('userJoined', handlerA);
-    peerB.on('messageReceived', handlerB);
+    nodeA.on('userJoined', handlerA);
+    nodeB.on('messageReceived', handlerB);
 
-    peerA.emit('messageReceived', { text: 'Hi!', from: 'Alice' });
-    peerB.emit('userJoined', { name: 'Bob', id: 456 });
+    nodeA.emit('messageReceived', { text: 'Hi!', from: 'Alice' });
+    nodeB.emit('userJoined', { name: 'Bob', id: 456 });
 
     expect(handlerA).toHaveBeenCalledWith({ name: 'Bob', id: 456 });
     expect(handlerB).toHaveBeenCalledWith({ text: 'Hi!', from: 'Alice' });
@@ -186,7 +186,7 @@ describe('JSONRPCPeer', () => {
     const transport = {
       send: vi.fn((message) => {
         if ('method' in message && message.method === 'add') {
-          peer.receiveMessage({
+          node.receiveMessage({
             jsonrpc: '2.0',
             error: {
               code: -32000,
@@ -198,17 +198,17 @@ describe('JSONRPCPeer', () => {
       }),
     };
 
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
     // Test error from remote method
-    await expect(peer.callMethod('add', { a: 2, b: 3 })).rejects.toThrow(JSONRPCError);
+    await expect(node.callMethod('add', { a: 2, b: 3 })).rejects.toThrow(JSONRPCError);
 
     // Test error in local method
-    peer.registerMethod('greet', () => {
+    node.registerMethod('greet', () => {
       throw new JSONRPCError(-32000, 'Test error');
     });
 
-    await peer.receiveMessage({
+    await node.receiveMessage({
       jsonrpc: '2.0',
       method: 'greet',
       params: { name: 'Alice' },
@@ -229,14 +229,14 @@ describe('JSONRPCPeer', () => {
 
   it('should handle errors with data correctly', async () => {
     const transport = { send: vi.fn() };
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
     // Test error with data
-    peer.registerMethod('greet', () => {
+    node.registerMethod('greet', () => {
       throw new JSONRPCError(-32000, 'Test error', { details: 'More info' });
     });
 
-    await peer.receiveMessage({
+    await node.receiveMessage({
       jsonrpc: '2.0',
       method: 'greet',
       params: { name: 'Alice' },
@@ -259,14 +259,14 @@ describe('JSONRPCPeer', () => {
   describe('Error handling', () => {
     it('should handle JSONRPCErrors', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
       // Register a method that throws an error without a message property
-      peer.registerMethod('add', () => {
+      node.registerMethod('add', () => {
         throw new JSONRPCError(-32222, 'Test error -32222', { details: 'More info' });
       });
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -286,14 +286,14 @@ describe('JSONRPCPeer', () => {
 
     it('should handle errors that are not JSONRPCErrors', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
       // Register a method that throws an error without a message property
-      peer.registerMethod('add', () => {
+      node.registerMethod('add', () => {
         throw new Error('Test error');
       });
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -312,14 +312,14 @@ describe('JSONRPCPeer', () => {
 
     it('should handle non-errors', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
       // Register a method that throws an error without a message property
-      peer.registerMethod('add', () => {
+      node.registerMethod('add', () => {
         throw 'Test error';
       });
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -338,12 +338,12 @@ describe('JSONRPCPeer', () => {
 
     it('should handle undefined params in method handler', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
-      peer.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => params.a + params.b);
 
       // Call method without params
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         id: '1',
@@ -380,7 +380,7 @@ describe('JSONRPCPeer', () => {
 
   it('should handle parameter serialization', () => {
     const transport = { send: vi.fn() };
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
     const serializer = {
       params: {
@@ -393,19 +393,19 @@ describe('JSONRPCPeer', () => {
       },
     };
 
-    peer.registerMethod('add', (_context, params) => params.a + params.b, serializer);
-    peer.registerSerializer('greet', serializer);
+    node.registerMethod('add', (_context, params) => params.a + params.b, serializer);
+    node.registerSerializer('greet', serializer);
 
     // Test parameter serialization in method call
-    peer.callMethod('greet', { name: 'Alice' });
+    node.callMethod('greet', { name: 'Alice' });
     expect(serializer.params.serialize).toHaveBeenCalledWith({ name: 'Alice' });
 
     // Test parameter serialization in notification
-    peer.notify('greet', { name: 'Bob' });
+    node.notify('greet', { name: 'Bob' });
     expect(serializer.params.serialize).toHaveBeenCalledWith({ name: 'Bob' });
 
     // Test parameter deserialization in method handler
-    peer.receiveMessage({
+    node.receiveMessage({
       jsonrpc: '2.0',
       method: 'add',
       params: { serialized: JSON.stringify({ a: 1, b: 2 }) },
@@ -419,10 +419,10 @@ describe('JSONRPCPeer', () => {
   describe('Invalid request handling', () => {
     it('should handle invalid JSON-RPC version', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
       // Register method to ensure we get past method not found error
-      peer.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => params.a + params.b);
 
       // Create a request with invalid version
       const request: JSONRPCRequest<TestMethodMap, keyof TestMethodMap> = {
@@ -433,10 +433,10 @@ describe('JSONRPCPeer', () => {
       };
 
       // Send the request directly to handleRequest
-      const peerWithPrivate = peer as unknown as {
+      const nodeWithPrivate = node as unknown as {
         handleRequest(request: JSONRPCRequest<TestMethodMap, keyof TestMethodMap>): Promise<void>;
       };
-      await peerWithPrivate.handleRequest(request);
+      await nodeWithPrivate.handleRequest(request);
 
       expect(transport.send).toHaveBeenCalledWith({
         jsonrpc: '2.0',
@@ -447,9 +447,9 @@ describe('JSONRPCPeer', () => {
 
     it('should handle method not found', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'nonexistent',
         params: {},
@@ -465,13 +465,13 @@ describe('JSONRPCPeer', () => {
 
     it('should handle undefined middleware function', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
       // Register method to ensure we get past method not found error
-      peer.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => params.a + params.b);
 
       // Force middleware stack to have an undefined entry
-      (peer as unknown as { middlewareStack: Array<unknown> }).middlewareStack = [
+      (node as unknown as { middlewareStack: Array<unknown> }).middlewareStack = [
         async (
           _context: JSONRPCContext,
           _request: JSONRPCRequest<TestMethodMap, keyof TestMethodMap>,
@@ -480,7 +480,7 @@ describe('JSONRPCPeer', () => {
         undefined,
       ];
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -496,12 +496,12 @@ describe('JSONRPCPeer', () => {
 
     it('should handle no middleware to handle request', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
       // Clear middleware stack
-      (peer as unknown as { middlewareStack: Array<unknown> }).middlewareStack = [];
+      (node as unknown as { middlewareStack: Array<unknown> }).middlewareStack = [];
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -518,14 +518,14 @@ describe('JSONRPCPeer', () => {
 
   it('should handle middleware errors', async () => {
     const transport = { send: vi.fn() };
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    peer.addMiddleware(async () => {
+    node.addMiddleware(async () => {
       throw new Error('Middleware error');
     });
 
-    await peer.receiveMessage({
+    await node.receiveMessage({
       jsonrpc: '2.0',
       method: 'add',
       params: { a: 1, b: 2 },
@@ -543,20 +543,20 @@ describe('JSONRPCPeer', () => {
 
   it('should handle event handler cleanup correctly', async () => {
     const transport = { send: vi.fn() };
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
     const handler1 = vi.fn();
     const handler2 = vi.fn();
 
     // Add two handlers for the same event
-    const cleanup1 = peer.on('userJoined', handler1);
-    const cleanup2 = peer.on('userJoined', handler2);
+    const cleanup1 = node.on('userJoined', handler1);
+    const cleanup2 = node.on('userJoined', handler2);
 
     // Remove first handler
     cleanup1();
 
     // Event should still be handled by second handler
-    await peer.receiveMessage({
+    await node.receiveMessage({
       jsonrpc: '2.0',
       event: 'userJoined',
       params: { name: 'Alice', id: 123 },
@@ -569,7 +569,7 @@ describe('JSONRPCPeer', () => {
     cleanup2();
 
     // Event should not be handled anymore
-    await peer.receiveMessage({
+    await node.receiveMessage({
       jsonrpc: '2.0',
       event: 'userJoined',
       params: { name: 'Bob', id: 456 },
@@ -580,7 +580,7 @@ describe('JSONRPCPeer', () => {
 
   it('should handle serialized results in responses', async () => {
     const transport = { send: vi.fn() };
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
     const serializer: JSONRPCSerializer<{ a: number; b: number }, number> = {
       params: {
@@ -594,17 +594,17 @@ describe('JSONRPCPeer', () => {
     };
 
     // Register serializer for the method
-    peer.registerSerializer('add', serializer);
+    node.registerSerializer('add', serializer);
 
     // Get the request ID before making the call
     const requestId = crypto.randomUUID();
     vi.spyOn(crypto, 'randomUUID').mockReturnValue(requestId);
 
     // Simulate a pending request
-    const promise = peer.callMethod('add', { a: 1, b: 2 });
+    const promise = node.callMethod('add', { a: 1, b: 2 });
 
     // Simulate receiving a response with serialized data
-    await peer.receiveMessage({
+    await node.receiveMessage({
       jsonrpc: '2.0',
       result: { serialized: '3' },
       id: requestId,
@@ -620,12 +620,12 @@ describe('JSONRPCPeer', () => {
 
   it('should handle unknown responses and event handler errors', async () => {
     const transport = { send: vi.fn() };
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Test unknown response
-    peer.receiveMessage({
+    node.receiveMessage({
       jsonrpc: '2.0',
       result: 42,
       id: 'unknown',
@@ -636,9 +636,9 @@ describe('JSONRPCPeer', () => {
     const errorHandler = () => {
       throw new Error('Event handler error');
     };
-    peer.on('userJoined', errorHandler);
+    node.on('userJoined', errorHandler);
 
-    await peer.receiveMessage({
+    await node.receiveMessage({
       jsonrpc: '2.0',
       event: 'userJoined',
       params: { name: 'Alice', id: 123 },
@@ -655,10 +655,10 @@ describe('JSONRPCPeer', () => {
       send: vi.fn(),
     };
 
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
     // Send notification
-    peer.notify('greet', { name: 'Alice' });
+    node.notify('greet', { name: 'Alice' });
 
     // Verify transport was called with notification message (no id)
     expect(transport.send).toHaveBeenCalledWith({
@@ -673,17 +673,17 @@ describe('JSONRPCPeer', () => {
       send: vi.fn(),
     };
 
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
     // Call method with 1 second timeout
-    await expect(peer.callMethod('add', { a: 2, b: 3 }, 1)).rejects.toThrow('Request timed out');
+    await expect(node.callMethod('add', { a: 2, b: 3 }, 1)).rejects.toThrow('Request timed out');
   });
 
   it('should clear timeout when response is received', async () => {
     const transport = {
       send: vi.fn(),
     };
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
     const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
 
     // Get the request ID before making the call
@@ -691,10 +691,10 @@ describe('JSONRPCPeer', () => {
     vi.spyOn(crypto, 'randomUUID').mockReturnValue(requestId);
 
     // Make method call with timeout
-    const promise = peer.callMethod('add', { a: 2, b: 3 }, 1);
+    const promise = node.callMethod('add', { a: 2, b: 3 }, 1);
 
     // Simulate receiving response before timeout
-    await peer.receiveMessage({
+    await node.receiveMessage({
       jsonrpc: '2.0',
       result: 5,
       id: requestId,
@@ -711,14 +711,14 @@ describe('JSONRPCPeer', () => {
       send: vi.fn(),
     };
 
-    const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+    const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     // Test various invalid messages
-    await peer.receiveMessage(null);
-    await peer.receiveMessage({});
-    await peer.receiveMessage({ jsonrpc: '1.0' });
-    await peer.receiveMessage({ jsonrpc: '2.0', method: 123 });
+    await node.receiveMessage(null);
+    await node.receiveMessage({});
+    await node.receiveMessage({ jsonrpc: '1.0' });
+    await node.receiveMessage({ jsonrpc: '2.0', method: 123 });
 
     expect(consoleSpy).toHaveBeenCalled();
     consoleSpy.mockRestore();
@@ -727,32 +727,32 @@ describe('JSONRPCPeer', () => {
   describe('Middleware', () => {
     it('should execute middleware in order', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap, TestContext>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap, TestContext>(transport);
       const order: number[] = [];
 
-      peer.addMiddleware(async (_context, _req, next) => {
+      node.addMiddleware(async (_context, _req, next) => {
         order.push(1);
         return await next();
       });
 
-      peer.addMiddleware(async (_context, _req, next) => {
+      node.addMiddleware(async (_context, _req, next) => {
         order.push(2);
         return await next();
       });
 
-      peer.addMiddleware(async (_context, _req, next) => {
+      node.addMiddleware(async (_context, _req, next) => {
         order.push(3);
         return await next();
       });
 
-      peer.registerMethod('add', (_context, params) => {
+      node.registerMethod('add', (_context, params) => {
         if (!params) {
           throw new JSONRPCError(-32000, "Cannot read properties of undefined (reading 'a')");
         }
         return params.a + params.b;
       });
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -764,18 +764,18 @@ describe('JSONRPCPeer', () => {
 
     it('should allow middleware to modify request', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
-      peer.addMiddleware(async (_context, req, next) => {
+      node.addMiddleware(async (_context, req, next) => {
         if (req.method === 'add') {
           req.params = { a: 10, b: 20 };
         }
         return await next();
       });
 
-      peer.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => params.a + params.b);
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -791,20 +791,20 @@ describe('JSONRPCPeer', () => {
 
     it('should support removing middleware', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
       const callLog: string[] = [];
 
-      const removeMiddleware = peer.addMiddleware(async (_context, _req, next) => {
+      const removeMiddleware = node.addMiddleware(async (_context, _req, next) => {
         callLog.push('middleware');
         return next();
       });
 
-      peer.registerMethod('add', (_context, params) => {
+      node.registerMethod('add', (_context, params) => {
         callLog.push('method');
         return params.a + params.b;
       });
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -816,7 +816,7 @@ describe('JSONRPCPeer', () => {
       callLog.length = 0;
       removeMiddleware();
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -828,33 +828,33 @@ describe('JSONRPCPeer', () => {
 
     it('should apply middleware to specified methods', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
       const callLog: string[] = [];
       const middleware = vi.fn(async (_context, req, next) => {
         callLog.push(`middleware for ${String(req.method)}`);
         return next();
       });
 
-      peer.addMiddleware(applyToMethods(['add', 'greet'], middleware));
+      node.addMiddleware(applyToMethods(['add', 'greet'], middleware));
 
-      peer.registerMethod('add', (_context, params) => {
+      node.registerMethod('add', (_context, params) => {
         callLog.push('add method');
         return params.a + params.b;
       });
 
-      peer.registerMethod('greet', (_context, params) => {
+      node.registerMethod('greet', (_context, params) => {
         callLog.push('greet method');
         return `Hello, ${params.name}!`;
       });
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
         id: '1',
       });
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'greet',
         params: { name: 'Alice' },
@@ -867,16 +867,16 @@ describe('JSONRPCPeer', () => {
 
     it('should handle next() called multiple times error', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
-      peer.addMiddleware(async (_context, _req, next) => {
+      node.addMiddleware(async (_context, _req, next) => {
         await next();
         return await next();
       });
 
-      peer.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => params.a + params.b);
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -892,10 +892,10 @@ describe('JSONRPCPeer', () => {
 
     it('should allow middleware to modify responses', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
 
       // Add middleware that modifies the response
-      peer.addMiddleware(async (_context, _request, next) => {
+      node.addMiddleware(async (_context, _request, next) => {
         const response = await next();
         if (response.result !== undefined && typeof response.result === 'number') {
           response.result = response.result * 2; // Double the number
@@ -903,9 +903,9 @@ describe('JSONRPCPeer', () => {
         return response;
       });
 
-      peer.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => params.a + params.b);
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -921,11 +921,11 @@ describe('JSONRPCPeer', () => {
 
     it('should allow multiple middleware to modify responses in order', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap>(transport);
       const order: string[] = [];
 
       // First middleware (executes last in the chain)
-      peer.addMiddleware(async (_context, _request, next) => {
+      node.addMiddleware(async (_context, _request, next) => {
         const response = await next();
         order.push('middleware1');
         if (response.result !== undefined && typeof response.result === 'number') {
@@ -935,7 +935,7 @@ describe('JSONRPCPeer', () => {
       });
 
       // Second middleware (executes first in the chain)
-      peer.addMiddleware(async (_context, _request, next) => {
+      node.addMiddleware(async (_context, _request, next) => {
         const response = await next();
         order.push('middleware2');
         if (response.result !== undefined && typeof response.result === 'number') {
@@ -944,12 +944,12 @@ describe('JSONRPCPeer', () => {
         return response;
       });
 
-      peer.registerMethod('add', (_context, params) => {
+      node.registerMethod('add', (_context, params) => {
         order.push('handler');
         return params.a + params.b;
       });
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },
@@ -972,17 +972,17 @@ describe('JSONRPCPeer', () => {
 
     it('should pass context to method handlers', async () => {
       const transport = { send: vi.fn() };
-      const peer = new JSONRPCPeer<TestMethodMap, TestEventMap, TestContext>(transport);
+      const node = new JSONRPCNode<TestMethodMap, TestEventMap, TestContext>(transport);
 
-      peer.addMiddleware(async (context, _request, next) => {
+      node.addMiddleware(async (context, _request, next) => {
         context.user = 'testUser';
         return next();
       });
 
       const handler = vi.fn((_context, params) => params.a + params.b);
-      peer.registerMethod('add', handler);
+      node.registerMethod('add', handler);
 
-      await peer.receiveMessage({
+      await node.receiveMessage({
         jsonrpc: '2.0',
         method: 'add',
         params: { a: 1, b: 2 },

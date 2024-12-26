@@ -1,4 +1,4 @@
-import { JSONRPCPeer } from '@walletmesh/jsonrpc';
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
 
 import type { ChainId, MethodCall, RouterMethodMap, RouterEventMap, RouterContext } from './types.js';
 
@@ -38,7 +38,7 @@ import type { ChainId, MethodCall, RouterMethodMap, RouterEventMap, RouterContex
  * });
  * ```
  */
-export class WalletRouterProvider extends JSONRPCPeer<RouterMethodMap, RouterEventMap, RouterContext> {
+export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext> {
   private _sessionId: string | undefined;
 
   /**

@@ -1,4 +1,4 @@
-import type { JSONRPCPeer, JSONRPCMethodMap, JSONRPCParams } from '@walletmesh/jsonrpc';
+import type { JSONRPCNode, JSONRPCMethodMap, JSONRPCParams } from '@walletmesh/jsonrpc';
 import type { WalletClient } from './types.js';
 
 /**
@@ -30,7 +30,7 @@ export interface WalletMethodMap extends JSONRPCMethodMap {
 }
 
 /**
- * Adapter class that wraps a JSONRPCPeer to implement the WalletClient interface.
+ * Adapter class that wraps a JSONRPCNode to implement the WalletClient interface.
  * This adapter allows any JSON-RPC peer to be used as a wallet client by
  * translating between the JSON-RPC protocol and the WalletClient interface.
  *
@@ -39,14 +39,14 @@ export interface WalletMethodMap extends JSONRPCMethodMap {
  *
  * @example
  * ```typescript
- * const peer = new JSONRPCPeer({
+ * const node = new JSONRPCNode({
  *   send: message => {
  *     // Send to wallet
  *     wallet.postMessage(message);
  *   }
  * });
  *
- * const walletClient = new JSONRPCWalletClient(peer);
+ * const walletClient = new JSONRPCWalletClient(node);
  *
  * // Listen for account changes
  * walletClient.on('accountsChanged', accounts => {
@@ -59,11 +59,11 @@ export interface WalletMethodMap extends JSONRPCMethodMap {
  * ```
  */
 export class JSONRPCWalletClient implements WalletClient {
-  private peer: JSONRPCPeer<WalletMethodMap>;
+  private node: JSONRPCNode<WalletMethodMap>;
   private eventCleanupFns: Map<string, Map<(data: unknown) => void, () => void>> = new Map();
 
-  constructor(peer: JSONRPCPeer<WalletMethodMap>) {
-    this.peer = peer;
+  constructor(node: JSONRPCNode<WalletMethodMap>) {
+    this.node = node;
   }
 
   /**
@@ -89,7 +89,7 @@ export class JSONRPCWalletClient implements WalletClient {
         ? (params as JSONRPCParams)
         : undefined;
 
-    return this.peer.callMethod(method, validParams) as Promise<T>;
+    return this.node.callMethod(method, validParams) as Promise<T>;
   }
 
   /**
@@ -104,7 +104,7 @@ export class JSONRPCWalletClient implements WalletClient {
    * ```
    */
   async getSupportedMethods(): Promise<{ methods: string[] }> {
-    return this.peer.callMethod('wm_getSupportedMethods') as Promise<{ methods: string[] }>;
+    return this.node.callMethod('wm_getSupportedMethods') as Promise<{ methods: string[] }>;
   }
 
   /**
@@ -128,7 +128,7 @@ export class JSONRPCWalletClient implements WalletClient {
       this.eventCleanupFns.set(event, new Map());
     }
 
-    const cleanup = this.peer.on(event, handler);
+    const cleanup = this.node.on(event, handler);
     this.eventCleanupFns.get(event)?.set(handler, cleanup);
   }
 

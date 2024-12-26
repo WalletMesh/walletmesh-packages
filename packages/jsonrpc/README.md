@@ -1,14 +1,14 @@
 # JSON-RPC TypeScript Library
 
-A JSON-RPC 2.0 library for TypeScript, providing a unified peer implementation with bi-directional communication and middleware support.
+A JSON-RPC 2.0 library for TypeScript, providing a unified node implementation with bi-directional communication and middleware support.
 
 ## Architecture
 
-The library implements a peer-to-peer architecture where each peer can both send and receive JSON-RPC messages. Here's a high-level overview:
+The library implements a node-to-node architecture where each node can both send and receive JSON-RPC messages. Here's a high-level overview:
 
 ```mermaid
 graph LR
-    subgraph Peer_B[Peer B]
+    subgraph Node_B[Node B]
         direction TB
         B_Transport[Transport Layer] --> B_Middleware[Middleware Stack]
 
@@ -16,7 +16,7 @@ graph LR
         B_Middleware --> B_Events[Event Handlers]
     end
 
-    subgraph Peer_A[Peer A]
+    subgraph Node_A[Node A]
         direction TB
         A_Transport[Transport Layer] --> A_Middleware[Middleware Stack]
 
@@ -24,7 +24,7 @@ graph LR
         A_Middleware --> A_Methods[Registered Methods]
     end
 
-    Peer_A <-->|JSONRPC Messages| Peer_B
+    Node_A <-->|JSONRPC Messages| Node_B
 ```
 
 ```mermaid
@@ -45,7 +45,7 @@ graph LR
 
 ### Key Components
 
-1. **JSONRPCPeer**: The main class that implements the JSON-RPC 2.0 protocol
+1. **JSONRPCNode**: The main class that implements the JSON-RPC 2.0 protocol
    - Handles both client and server functionality
    - Manages method registration and invocation
    - Processes incoming/outgoing messages
@@ -53,7 +53,7 @@ graph LR
 
 2. **Transport Layer**: Abstract interface for message transmission
    - Implemented by the user (e.g., WebSocket, postMessage)
-   - Handles actual message delivery between peers
+   - Handles actual message delivery between nodes
 
 3. **Middleware Stack**: Chain of request/response processors
    - Executes in order of registration
@@ -86,7 +86,7 @@ sequenceDiagram
 
 ## Features
 
-* JSON-RPC 2.0 compliant peer-to-peer communication
+* JSON-RPC 2.0 compliant node-to-node communication
 * Bi-directional support with events and method calls
 * Type-safe method and event definitions using TypeScript generics
 * Comprehensive middleware support:
@@ -107,9 +107,9 @@ sequenceDiagram
    - Method map (`T extends JSONRPCMethodMap`) - Defines available RPC methods
    - Event map (`E extends JSONRPCEventMap`) - Defines available events
    - Context type (`C extends JSONRPCContext`) - Defines shared context data
-2. Create a peer instance with your types:
+2. Create a node instance with your types:
    ```typescript
-   const peer = new JSONRPCPeer<MethodMap, EventMap, Context>({
+   const node = new JSONRPCNode<MethodMap, EventMap, Context>({
      send: message => {
        // Transport implementation
      }
@@ -117,16 +117,16 @@ sequenceDiagram
    ```
 3. Register methods and event handlers
 4. Add middleware if needed
-5. Start communicating bi-directionally with other peers
+5. Start communicating bi-directionally with other nodes
 
 The library does not provide a built-in transport layer, allowing you to use any communication method needed (WebSocket, postMessage, etc.).
 
 ### Type Parameters
 
-The `JSONRPCPeer` class takes three type parameters:
+The `JSONRPCNode` class takes three type parameters:
 
 ```typescript
-class JSONRPCPeer<
+class JSONRPCNode<
   T extends JSONRPCMethodMap = JSONRPCMethodMap,  // Method definitions
   E extends JSONRPCEventMap = JSONRPCEventMap,    // Event definitions
   C extends JSONRPCContext = JSONRPCContext       // Context type
@@ -171,47 +171,47 @@ type EventMap = {
   messageReceived: { text: string; from: string };
 };
 
-// Create peers
-const peerA = new JSONRPCPeer<MethodMap, EventMap, JSONRPCContext>({
+// Create nodes
+const nodeA = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
   send: message => {
     window.postMessage(JSON.stringify(message), '*');
   }
 });
 
-const peerB = new JSONRPCPeer<MethodMap, EventMap, JSONRPCContext>({
+const nodeB = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
   send: message => {
     window.postMessage(JSON.stringify(message), '*');
   }
 });
 
 // Register methods
-peerA.registerMethod('echo', async (_context, params) => {
+nodeA.registerMethod('echo', async (_context, params) => {
   return params;
 });
 
 // Register event handlers
-peerA.on('userTyping', ({ username }) => {
+nodeA.on('userTyping', ({ username }) => {
   console.log(`${username} is typing...`);
 });
 
-peerB.on('messageReceived', ({ text, from }) => {
+nodeB.on('messageReceived', ({ text, from }) => {
   console.log(`Message from ${from}: ${text}`);
 });
 
 // Setup message handling
 window.addEventListener('message', event => {
   const message = JSON.parse(event.data);
-  peerA.receiveMessage(message);
-  peerB.receiveMessage(message);
+  nodeA.receiveMessage(message);
+  nodeB.receiveMessage(message);
 });
 
-// Use the peers
-peerB.callMethod('echo', 'Hello, world!').then(result => {
+// Use the nodes
+nodeB.callMethod('echo', 'Hello, world!').then(result => {
   console.log('Echo result:', result);
 });
 
-peerA.emit('userTyping', { username: 'Alice' });
-peerB.emit('messageReceived', { text: 'Hi!', from: 'Bob' });
+nodeA.emit('userTyping', { username: 'Alice' });
+nodeB.emit('messageReceived', { text: 'Hi!', from: 'Bob' });
 ```
 
 #### Using WebSockets for bi-directional communication
@@ -230,32 +230,32 @@ type EventMap = {
 const wss = new WebSocket.Server({ port: 8080 });
 
 wss.on('connection', (ws) => {
-  const peer = new JSONRPCPeer<MethodMap, EventMap, JSONRPCContext>({
+  const node = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
     send: message => {
       ws.send(JSON.stringify(message));
     }
   });
 
   // Register methods
-  peer.registerMethod('echo', async (_context, params) => {
+  node.registerMethod('echo', async (_context, params) => {
     return params;
   });
 
   // Handle events
-  peer.on('userJoined', ({ username }) => {
+  node.on('userJoined', ({ username }) => {
     console.log(`${username} joined`);
-    // Broadcast to other peers
-    peer.emit('userJoined', { username });
+    // Broadcast to other nodes
+    node.emit('userJoined', { username });
   });
 
   ws.on('message', message => {
-    peer.receiveMessage(JSON.parse(message.toString()));
+    node.receiveMessage(JSON.parse(message.toString()));
   });
 });
 
 // WebSocket client
 const ws = new WebSocket('ws://localhost:8080');
-const clientPeer = new JSONRPCPeer<MethodMap, EventMap, JSONRPCContext>({
+const clientNode = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
   send: message => {
     ws.send(JSON.stringify(message));
   }
@@ -263,22 +263,22 @@ const clientPeer = new JSONRPCPeer<MethodMap, EventMap, JSONRPCContext>({
 
 ws.on('open', () => {
   // Call methods
-  clientPeer.callMethod('echo', 'Hello!').then(result => {
+  clientNode.callMethod('echo', 'Hello!').then(result => {
     console.log('Echo:', result);
   });
 
   // Emit events
-  clientPeer.emit('userJoined', { username: 'Alice' });
+  clientNode.emit('userJoined', { username: 'Alice' });
 });
 
 ws.on('message', message => {
-  clientPeer.receiveMessage(JSON.parse(message.toString()));
+  clientNode.receiveMessage(JSON.parse(message.toString()));
 });
 ```
 
 ### Events
 
-Events provide a way to broadcast messages to all connected peers without expecting a response. This is useful for notifications, status updates, or any broadcast-style communication.
+Events provide a way to broadcast messages to all connected nodes without expecting a response. This is useful for notifications, status updates, or any broadcast-style communication.
 
 ```typescript
 type EventMap = {
@@ -287,44 +287,44 @@ type EventMap = {
   statusUpdate: { user: string; status: 'online' | 'offline' };
 };
 
-// Create peer with event support
-const peer = new JSONRPCPeer<MethodMap, EventMap, JSONRPCContext>({
+// Create node with event support
+const node = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
   send: message => {
     // Transport implementation
   }
 });
 
 // Register event handlers
-peer.on('userJoined', ({ username, timestamp }) => {
+node.on('userJoined', ({ username, timestamp }) => {
   console.log(`${username} joined at ${new Date(timestamp)}`);
 });
 
-peer.on('messageReceived', ({ text, from }) => {
+node.on('messageReceived', ({ text, from }) => {
   console.log(`${from}: ${text}`);
 });
 
 // Multiple handlers for the same event
-peer.on('statusUpdate', ({ user, status }) => {
+node.on('statusUpdate', ({ user, status }) => {
   console.log(`${user} is now ${status}`);
 });
 
-peer.on('statusUpdate', ({ user, status }) => {
+node.on('statusUpdate', ({ user, status }) => {
   updateUserList(user, status);
 });
 
 // Emit events
-peer.emit('userJoined', {
+node.emit('userJoined', {
   username: 'Alice',
   timestamp: Date.now()
 });
 
-peer.emit('messageReceived', {
+node.emit('messageReceived', {
   text: 'Hello everyone!',
   from: 'Bob'
 });
 
 // Handler cleanup
-const cleanup = peer.on('statusUpdate', handler);
+const cleanup = node.on('statusUpdate', handler);
 // Later...
 cleanup(); // Remove the handler
 ```
@@ -339,15 +339,15 @@ type Context = JSONRPCContext & {
   user?: string;
 };
 
-// Create a peer instance with custom context type
-const peer = new JSONRPCPeer<MethodMap, JSONRPCEventMap, Context>({
+// Create a node instance with custom context type
+const node = new JSONRPCNode<MethodMap, JSONRPCEventMap, Context>({
   send: message => {
-    // Send message to remote peer
+    // Send message to remote node
   }
 });
 
 // Middleware that modifies the context
-peer.addMiddleware(async (context, request, next) => {
+node.addMiddleware(async (context, request, next) => {
   // Set user information in context
   context.user = request.params?.userName;
   // Proceed to the next middleware or handler
@@ -355,7 +355,7 @@ peer.addMiddleware(async (context, request, next) => {
 });
 
 // Method handler that accesses the context
-peer.registerMethod('getUser', (context, params) => {
+node.registerMethod('getUser', (context, params) => {
   // Return the user from context
   return `Current user: ${context.user}`;
 });
@@ -365,7 +365,7 @@ The context object is created per request and passed through all middleware and 
 
 ```typescript
 // Logging middleware applied to all methods
-peer.addMiddleware(async (context, request, next) => {
+node.addMiddleware(async (context, request, next) => {
     console.log('Received request:', request);
     const response = await next();
     console.log('Sending response:', response);
@@ -385,14 +385,14 @@ type Context = JSONRPCContext & {
   isAuthorized?: boolean;
 };
 
-const peer = new JSONRPCPeer<MethodMap, JSONRPCEventMap, Context>({
+const node = new JSONRPCNode<MethodMap, JSONRPCEventMap, Context>({
   send: message => {
     // Transport implementation
   }
 });
 
 // Middleware applied only to 'add' method
-peer.addMiddleware(
+node.addMiddleware(
   applyToMethods(['add'], async (context, request, next) => {
     // Perform authorization check and store result in context
     context.isAuthorized = checkAuthorization(request);
@@ -404,7 +404,7 @@ peer.addMiddleware(
 );
 
 // Method handler that relies on context
-peer.registerMethod('add', (context, params) => {
+node.registerMethod('add', (context, params) => {
   if (!context.isAuthorized) {
     throw new JSONRPCError(-32600, 'Unauthorized');
   }
@@ -417,13 +417,13 @@ peer.registerMethod('add', (context, params) => {
 The `callMethod` function supports an optional `timeoutInSeconds` parameter. A value of `0` means no timeout (wait indefinitely), which is also the default behavior.
 
 ```typescript
-import { JSONRPCPeer, TimeoutError } from '@walletmesh/jsonrpc';
+import { JSONRPCNode, TimeoutError } from '@walletmesh/jsonrpc';
 
-const peer = new JSONRPCPeer<MethodMap, JSONRPCEventMap, JSONRPCContext>(transport);
+const node = new JSONRPCNode<MethodMap, JSONRPCEventMap, JSONRPCContext>(transport);
 
 try {
     // Call method with 5 second timeout
-    const result = await peer.callMethod('slowMethod', { data: 'test' }, 5);
+    const result = await node.callMethod('slowMethod', { data: 'test' }, 5);
     console.log('Result:', result);
 } catch (error) {
     if (error instanceof TimeoutError) {
@@ -441,18 +441,18 @@ Custom errors can be thrown in method handlers or middleware using JSONRPCError:
 ```typescript
 import { JSONRPCError } from '@walletmesh/jsonrpc';
 
-const peer = new JSONRPCPeer<MethodMap, JSONRPCEventMap, JSONRPCContext>({
+const node = new JSONRPCNode<MethodMap, JSONRPCEventMap, JSONRPCContext>({
   send: message => {
     // Transport implementation
   }
 });
 
-peer.registerMethod('errorMethod', () => {
+node.registerMethod('errorMethod', () => {
     throw new JSONRPCError(-32000, 'Custom error', 'Error data');
 });
 
 // Error handling middleware
-peer.addMiddleware(async (context, request, next) => {
+node.addMiddleware(async (context, request, next) => {
     try {
         return await next();
     } catch (error) {
@@ -472,7 +472,7 @@ type MethodMap = {
   processDate: { params: { date: Date }; result: Date };
 };
 
-const peer = new JSONRPCPeer<MethodMap, EventMap, JSONRPCContext>({
+const node = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
   send: message => {
     // Transport implementation
   }
@@ -499,7 +499,7 @@ const methodSerializer: JSONRPCSerializer<{ date: Date }, Date> = {
 };
 
 // Register method with serializer
-peer.registerMethod('processDate',
+node.registerMethod('processDate',
     (_context, params) => {
         // params.date is automatically deserialized to Date
         return params.date;
@@ -508,10 +508,10 @@ peer.registerMethod('processDate',
 );
 
 // Register serializer for remote method calls
-peer.registerSerializer('processDate', methodSerializer);
+node.registerSerializer('processDate', methodSerializer);
 
 // Call method - serialization is handled automatically
-const result = await peer.callMethod('processDate', {
+const result = await node.callMethod('processDate', {
     date: new Date()
 });
 // result is automatically deserialized to Date

@@ -15,9 +15,9 @@ import { isJSONRPCSerializedData } from './utils.js';
 import { JSONRPCError } from './error.js';
 
 /**
- * Transport interface for sending JSON-RPC messages between peers.
+ * Transport interface for sending JSON-RPC messages between nodes.
  * This interface abstracts the actual message transmission mechanism,
- * allowing the peer to work with any transport layer (WebSocket, postMessage, etc.).
+ * allowing the node to work with any transport layer (WebSocket, postMessage, etc.).
  *
  * @typeParam T - The RPC method map defining available methods
  * @typeParam E - The event map defining available events
@@ -45,7 +45,7 @@ import { JSONRPCError } from './error.js';
  */
 export type Transport<T extends JSONRPCMethodMap, E extends JSONRPCEventMap> = {
   /**
-   * Sends a JSON-RPC message to the remote peer.
+   * Sends a JSON-RPC message to the remote node.
    * @param message - The message to send (request, response, or event)
    */
   send: (message: JSONRPCRequest<T, keyof T> | JSONRPCResponse<T> | JSONRPCEvent<E, keyof E>) => void;
@@ -115,7 +115,7 @@ interface RegisteredMethod<T extends JSONRPCMethodMap, M extends keyof T, C exte
  *
  * Features:
  * - Full JSON-RPC 2.0 protocol implementation
- * - Bi-directional communication (each peer can both send and receive)
+ * - Bi-directional communication (each node can both send and receive)
  * - Type-safe method and event definitions
  * - Middleware support for request/response modification
  * - Custom serialization for complex data types
@@ -151,15 +151,15 @@ interface RegisteredMethod<T extends JSONRPCMethodMap, M extends keyof T, C exte
  *   isAuthorized?: boolean;
  * };
  *
- * // Create a peer instance
- * const peer = new JSONRPCPeer<MethodMap, EventMap, Context>({
+ * // Create a node instance
+ * const node = new JSONRPCNode<MethodMap, EventMap, Context>({
  *   send: message => websocket.send(JSON.stringify(message))
  * });
  *
  * // Register methods
- * peer.registerMethod('add', (context, { a, b }) => a + b);
+ * node.registerMethod('add', (context, { a, b }) => a + b);
  *
- * peer.registerMethod('getUser', async (context, { id }) => {
+ * node.registerMethod('getUser', async (context, { id }) => {
  *   if (!context.isAuthorized) {
  *     throw new JSONRPCError(-32600, 'Unauthorized');
  *   }
@@ -167,7 +167,7 @@ interface RegisteredMethod<T extends JSONRPCMethodMap, M extends keyof T, C exte
  * });
  *
  * // Add middleware
- * peer.addMiddleware(async (context, request, next) => {
+ * node.addMiddleware(async (context, request, next) => {
  *   console.log('Request:', request);
  *   const response = await next();
  *   console.log('Response:', response);
@@ -175,14 +175,14 @@ interface RegisteredMethod<T extends JSONRPCMethodMap, M extends keyof T, C exte
  * });
  *
  * // Handle events
- * peer.on('userJoined', ({ username }) => {
+ * node.on('userJoined', ({ username }) => {
  *   console.log(`${username} joined`);
  * });
  *
  * // Call remote methods
  * try {
- *   const sum = await peer.callMethod('add', { a: 1, b: 2 });
- *   const user = await peer.callMethod('getUser', { id: '123' }, 5);
+ *   const sum = await node.callMethod('add', { a: 1, b: 2 });
+ *   const user = await node.callMethod('getUser', { id: '123' }, 5);
  * } catch (error) {
  *   if (error instanceof TimeoutError) {
  *     console.error('Request timed out');
@@ -192,13 +192,13 @@ interface RegisteredMethod<T extends JSONRPCMethodMap, M extends keyof T, C exte
  * }
  *
  * // Emit events
- * peer.emit('statusUpdate', {
+ * node.emit('statusUpdate', {
  *   user: 'Alice',
  *   status: 'online'
  * });
  * ```
  */
-export class JSONRPCPeer<
+export class JSONRPCNode<
   T extends JSONRPCMethodMap = JSONRPCMethodMap,
   E extends JSONRPCEventMap = JSONRPCEventMap,
   C extends JSONRPCContext = JSONRPCContext,
@@ -256,7 +256,7 @@ export class JSONRPCPeer<
   }
 
   /**
-   * Registers a method that can be called by remote peers.
+   * Registers a method that can be called by remote nodes.
    *
    * @param name - The name of the method to register
    * @param handler - The function that implements the method
@@ -264,7 +264,7 @@ export class JSONRPCPeer<
    *
    * @example
    * ```typescript
-   * peer.registerMethod('add', async (context, params) => {
+   * node.registerMethod('add', async (context, params) => {
    *   return params.a + params.b;
    * });
    * ```
@@ -286,7 +286,7 @@ export class JSONRPCPeer<
    *
    * @example
    * ```typescript
-   * peer.registerSerializer('processDate', {
+   * node.registerSerializer('processDate', {
    *   params: {
    *     serialize: (date) => ({ serialized: date.toISOString() }),
    *     deserialize: (data) => new Date(data.serialized)
@@ -302,7 +302,7 @@ export class JSONRPCPeer<
   }
 
   /**
-   * Calls a method on the remote peer.
+   * Calls a method on the remote node.
    *
    * @param method - The name of the method to call
    * @param params - The parameters to pass to the method
@@ -313,7 +313,7 @@ export class JSONRPCPeer<
    * @example
    * ```typescript
    * try {
-   *   const result = await peer.callMethod('add', { a: 1, b: 2 }, 5);
+   *   const result = await node.callMethod('add', { a: 1, b: 2 }, 5);
    *   console.log('Result:', result);
    * } catch (error) {
    *   console.error('Error:', error);
@@ -360,14 +360,14 @@ export class JSONRPCPeer<
   }
 
   /**
-   * Sends a notification to the remote peer (no response expected).
+   * Sends a notification to the remote node.
    *
    * @param method - The name of the method to call
    * @param params - The parameters to pass to the method
    *
    * @example
    * ```typescript
-   * peer.notify('logMessage', { level: 'info', message: 'Hello' });
+   * node.notify('logMessage', { level: 'info', message: 'Hello' });
    * ```
    */
   public notify<M extends keyof T>(method: M, params: T[M]['params']): void {
@@ -391,7 +391,7 @@ export class JSONRPCPeer<
    *
    * @example
    * ```typescript
-   * const cleanup = peer.on('userJoined', ({ username }) => {
+   * const cleanup = node.on('userJoined', ({ username }) => {
    *   console.log(`${username} joined`);
    * });
    *
@@ -416,14 +416,14 @@ export class JSONRPCPeer<
   }
 
   /**
-   * Emits an event to the remote peer.
+   * Emits an event to the remote node.
    *
    * @param event - The name of the event to emit
    * @param params - The event parameters
    *
    * @example
    * ```typescript
-   * peer.emit('statusUpdate', {
+   * node.emit('statusUpdate', {
    *   user: 'Alice',
    *   status: 'online'
    * });
@@ -439,7 +439,7 @@ export class JSONRPCPeer<
   }
 
   /**
-   * Handles an incoming message from the remote peer.
+   * Handles an incoming message from the remote node.
    * This should be called whenever a message is received through the transport.
    *
    * @param message - The received message
@@ -448,7 +448,7 @@ export class JSONRPCPeer<
    * @example
    * ```typescript
    * websocket.on('message', async (data) => {
-   *   await peer.receiveMessage(JSON.parse(data));
+   *   await node.receiveMessage(JSON.parse(data));
    * });
    * ```
    */
@@ -496,7 +496,7 @@ export class JSONRPCPeer<
    *
    * @example
    * ```typescript
-   * const cleanup = peer.addMiddleware(async (context, request, next) => {
+   * const cleanup = node.addMiddleware(async (context, request, next) => {
    *   console.log('Request:', request);
    *   const response = await next();
    *   console.log('Response:', response);

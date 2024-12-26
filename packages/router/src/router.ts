@@ -1,4 +1,4 @@
-import { JSONRPCPeer } from '@walletmesh/jsonrpc';
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
 
 import { RouterError } from './errors.js';
 import { defaultStore, type SessionStore } from './session-store.js';
@@ -31,8 +31,8 @@ import type {
  * @example
  * ```typescript
  * const wallets = new Map([
- *   ['aztec:testnet', new JSONRPCWalletClient(new JSONRPCPeer(...))],
- *   ['eip155:1', new JSONRPCWalletClient(new JSONRPCPeer(...))]
+ *   ['aztec:testnet', new JSONRPCWalletClient(new JSONRPCNode(...))],
+ *   ['eip155:1', new JSONRPCWalletClient(new JSONRPCNode(...))]
  * ]);
  *
  * const router = new WalletRouter(
@@ -51,7 +51,7 @@ import type {
  * );
  * ```
  */
-export class WalletRouter extends JSONRPCPeer<RouterMethodMap, RouterEventMap, RouterContext> {
+export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext> {
   protected sessionStore: SessionStore;
   private wallets: Wallets;
   private permissionCallback: PermissionCallback;

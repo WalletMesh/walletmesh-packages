@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { JSONRPCWalletClient, type WalletMethodMap } from './jsonrpc-adapter.js';
-import type { JSONRPCPeer } from '@walletmesh/jsonrpc';
+import type { JSONRPCNode } from '@walletmesh/jsonrpc';
 
 describe('JSONRPCWalletClient', () => {
-  // Create a mock JSONRPCPeer
+  // Create a mock JSONRPCNode
   let mockCallMethod: ReturnType<typeof vi.fn>;
   let mockOn: ReturnType<typeof vi.fn>;
-  let mockClient: JSONRPCPeer<WalletMethodMap>;
+  let mockClient: JSONRPCNode<WalletMethodMap>;
 
   beforeEach(() => {
     mockCallMethod = vi.fn();
@@ -14,7 +14,7 @@ describe('JSONRPCWalletClient', () => {
     mockClient = {
       callMethod: mockCallMethod,
       on: mockOn,
-    } as unknown as JSONRPCPeer<WalletMethodMap>;
+    } as unknown as JSONRPCNode<WalletMethodMap>;
   });
 
   describe('call', () => {
