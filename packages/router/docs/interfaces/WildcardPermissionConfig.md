@@ -1,4 +1,4 @@
-[@walletmesh/router - v0.0.5](../README.md) / [Exports](../modules.md) / WildcardPermissionConfig
+[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / WildcardPermissionConfig
 
 # Interface: WildcardPermissionConfig
 
@@ -20,4 +20,4 @@ Allowed patterns (e.g. ["eip155:1:eth_*", "eip155:*:eth_call"])
 
 #### Defined in
 
-[packages/router/src/types.ts:76](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L76)
+[packages/router/src/types.ts:121](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L121)

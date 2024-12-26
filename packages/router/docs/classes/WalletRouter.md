@@ -1,23 +1,32 @@
-[@walletmesh/router - v0.0.5](../README.md) / [Exports](../modules.md) / WalletRouter
+[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / WalletRouter
 
 # Class: WalletRouter
 
-Multi-chain router for managing wallet connections.
-Routes JSON-RPC requests to appropriate wallet instances based on chain ID.
+Multi-chain router for managing wallet connections with bi-directional communication.
+Routes JSON-RPC requests to appropriate wallet instances based on chain ID and
+forwards wallet events back to connected clients.
 
-The router manages wallet sessions and permissions through a single permission callback
-that receives complete context about each operation.
+The router manages:
+- Wallet sessions and permissions through callbacks
+- Bi-directional communication with wallets and clients
+- Event propagation for wallet state changes
+- Session lifecycle events
 
 **`Example`**
 
 ```typescript
 const wallets = new Map([
-  ['aztec:testnet', new JSONRPCClient(...)],
-  ['eip155:1', new JSONRPCClient(...)]
+  ['aztec:testnet', new JSONRPCWalletClient(new JSONRPCPeer(...))],
+  ['eip155:1', new JSONRPCWalletClient(new JSONRPCPeer(...))]
 ]);
 
 const router = new WalletRouter(
-  async (response) => console.log(response),
+  {
+    send: async (message) => {
+      // Send response/event to client
+      await sendToClient(message);
+    }
+  },
   wallets,
   // Example permission callback
   async (context) => {
@@ -29,7 +38,7 @@ const router = new WalletRouter(
 
 ## Hierarchy
 
-- `JSONRPCServer`\<[`RouterMethodMap`](../modules.md#routermethodmap), [`RouterContext`](../interfaces/RouterContext.md)\>
+- `JSONRPCPeer`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md), [`RouterEventMap`](../interfaces/RouterEventMap.md), [`RouterContext`](../interfaces/RouterContext.md)\>
 
   ↳ **`WalletRouter`**
 
@@ -41,6 +50,7 @@ const router = new WalletRouter(
 
 ### Properties
 
+- [context](WalletRouter.md#context)
 - [sessionStore](WalletRouter.md#sessionstore)
 
 ### Methods
@@ -49,13 +59,18 @@ const router = new WalletRouter(
 - [addMiddleware](WalletRouter.md#addmiddleware)
 - [bulkCall](WalletRouter.md#bulkcall)
 - [call](WalletRouter.md#call)
+- [callMethod](WalletRouter.md#callmethod)
 - [connect](WalletRouter.md#connect)
 - [disconnect](WalletRouter.md#disconnect)
+- [emit](WalletRouter.md#emit)
 - [getPermissions](WalletRouter.md#getpermissions)
 - [getSupportedMethods](WalletRouter.md#getsupportedmethods)
-- [receiveRequest](WalletRouter.md#receiverequest)
+- [notify](WalletRouter.md#notify)
+- [on](WalletRouter.md#on)
+- [receiveMessage](WalletRouter.md#receivemessage)
 - [reconnect](WalletRouter.md#reconnect)
 - [registerMethod](WalletRouter.md#registermethod)
+- [registerSerializer](WalletRouter.md#registerserializer)
 - [updatePermissions](WalletRouter.md#updatepermissions)
 - [validateChain](WalletRouter.md#validatechain)
 - [validateSession](WalletRouter.md#validatesession)
@@ -64,33 +79,71 @@ const router = new WalletRouter(
 
 ### constructor
 
-• **new WalletRouter**(`sendResponse`, `wallets`, `permissionCallback`, `permissionApprovalCallback`, `sessionStore?`): [`WalletRouter`](WalletRouter.md)
+• **new WalletRouter**(`transport`, `wallets`, `permissionCallback`, `permissionApprovalCallback`, `sessionStore?`): [`WalletRouter`](WalletRouter.md)
 
-Creates a new WalletRouter instance
+Creates a new WalletRouter instance for managing multi-chain wallet connections.
 
 #### Parameters
 
 | Name | Type | Default value | Description |
 | :------ | :------ | :------ | :------ |
-| `sendResponse` | (`response`: `unknown`) => `Promise`\<`void`\> | `undefined` | Function to send JSON-RPC responses back to the client |
-| `wallets` | [`Wallets`](../modules.md#wallets) | `undefined` | Map of chain IDs to their corresponding JSON-RPC client instances |
-| `permissionCallback` | [`PermissionCallback`](../modules.md#permissioncallback) | `undefined` | Callback to check permissions for all operations |
-| `permissionApprovalCallback` | [`PermissionApprovalCallback`](../modules.md#permissionapprovalcallback) | `undefined` | Callback to approve and return complete permission sets |
-| `sessionStore` | [`SessionStore`](../interfaces/SessionStore.md) | `defaultStore` | - |
+| `transport` | `Object` | `undefined` | Transport layer for JSON-RPC communication Must implement a send method that handles message delivery Messages include method calls, responses, and events Example: { send: msg => websocket.send(JSON.stringify(msg)) } |
+| `transport.send` | (`message`: `unknown`) => `Promise`\<`void`\> | `undefined` | - |
+| `wallets` | [`Wallets`](../modules.md#wallets) | `undefined` | Map of supported blockchain networks to their wallet clients Keys are chain IDs (e.g., 'eip155:1' for Ethereum mainnet) Values are WalletClient implementations for each chain Example: new Map([['eip155:1', ethereumWallet]]) |
+| `permissionCallback` | [`PermissionCallback`](../modules.md#permissioncallback) | `undefined` | Function to validate operation permissions Called before every method call and state change Receives complete context including chain, method, and session Must return Promise<boolean> indicating if operation is allowed |
+| `permissionApprovalCallback` | [`PermissionApprovalCallback`](../modules.md#permissionapprovalcallback) | `undefined` | Function to approve permission requests Called during connect and permission update operations Can modify requested permissions before approval Must return Promise<ChainPermissions> with approved permissions |
+| `sessionStore` | [`SessionStore`](../interfaces/SessionStore.md) | `defaultStore` | Optional custom session storage implementation Must implement SessionStore interface Defaults to in-memory store if not provided Use for persistent sessions across restarts |
 
 #### Returns
 
 [`WalletRouter`](WalletRouter.md)
 
+**`Example`**
+
+```typescript
+const router = new WalletRouter(
+  {
+    send: msg => websocket.send(JSON.stringify(msg))
+  },
+  new Map([
+    ['eip155:1', ethereumWallet],
+    ['eip155:137', polygonWallet]
+  ]),
+  async (context) => {
+    // Check if operation is allowed
+    return isOperationAllowed(context);
+  },
+  async (context) => {
+    // Approve and possibly modify permissions
+    return approvePermissions(context);
+  },
+  new CustomSessionStore()
+);
+```
+
 #### Overrides
 
-JSONRPCServer\&lt;RouterMethodMap, RouterContext\&gt;.constructor
+JSONRPCPeer\&lt;RouterMethodMap, RouterEventMap, RouterContext\&gt;.constructor
 
 #### Defined in
 
-[packages/router/src/router.ts:57](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L57)
+[packages/router/src/router.ts:116](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L116)
 
 ## Properties
+
+### context
+
+• `Readonly` **context**: [`RouterContext`](../interfaces/RouterContext.md)
+
+#### Inherited from
+
+JSONRPCPeer.context
+
+#### Defined in
+
+packages/jsonrpc/dist/peer.d.ts:154
+
+___
 
 ### sessionStore
 
@@ -98,7 +151,7 @@ JSONRPCServer\&lt;RouterMethodMap, RouterContext\&gt;.constructor
 
 #### Defined in
 
-[packages/router/src/router.ts:45](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L45)
+[packages/router/src/router.ts:55](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L55)
 
 ## Methods
 
@@ -127,7 +180,7 @@ If method is not supported or wallet is unavailable
 
 #### Defined in
 
-[packages/router/src/router.ts:331](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L331)
+[packages/router/src/router.ts:620](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L620)
 
 ___
 
@@ -135,19 +188,21 @@ ___
 
 ▸ **addMiddleware**(`middleware`): () => `void`
 
-Adds a middleware function to the stack.
+Adds a middleware function to the middleware stack.
+Middleware functions are executed in the order they are added,
+and can modify both requests and responses.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `middleware` | `JSONRPCMiddleware`\<[`RouterMethodMap`](../modules.md#routermethodmap), [`RouterContext`](../interfaces/RouterContext.md)\> | The middleware function to add. |
+| `middleware` | `JSONRPCMiddleware`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md), [`RouterContext`](../interfaces/RouterContext.md)\> | The middleware function to add |
 
 #### Returns
 
 `fn`
 
-A function to remove the middleware from the stack.
+A cleanup function that removes the middleware when called
 
 ▸ (): `void`
 
@@ -155,19 +210,33 @@ A function to remove the middleware from the stack.
 
 `void`
 
+**`Example`**
+
+```typescript
+const cleanup = peer.addMiddleware(async (context, request, next) => {
+  console.log('Request:', request);
+  const response = await next();
+  console.log('Response:', response);
+  return response;
+});
+
+// Later...
+cleanup(); // Remove the middleware
+```
+
 #### Inherited from
 
-JSONRPCServer.addMiddleware
+JSONRPCPeer.addMiddleware
 
 #### Defined in
 
-packages/jsonrpc/dist/server.d.ts:39
+packages/jsonrpc/dist/peer.d.ts:297
 
 ___
 
 ### bulkCall
 
-▸ **bulkCall**(`_context`, `params`): `Promise`\<`unknown`[]\>
+▸ **bulkCall**(`context`, `params`): `Promise`\<`unknown`[]\>
 
 Handles wm_bulkCall method
 Executes multiple method calls in sequence on the same chain
@@ -176,7 +245,7 @@ Executes multiple method calls in sequence on the same chain
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `_context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
+| `context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
 | `params` | [`BulkCallParams`](../interfaces/BulkCallParams.md) | Parameters including chain ID, session ID, and array of method calls |
 
 #### Returns
@@ -192,13 +261,13 @@ If session is invalid, chain is unknown, permissions are insufficient,
 
 #### Defined in
 
-[packages/router/src/router.ts:356](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L356)
+[packages/router/src/router.ts:645](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L645)
 
 ___
 
 ### call
 
-▸ **call**(`_context`, `params`): `Promise`\<`unknown`\>
+▸ **call**(`context`, `params`): `Promise`\<`unknown`\>
 
 Handles wm_call method
 Routes method calls to the appropriate wallet instance after validating permissions
@@ -207,7 +276,7 @@ Routes method calls to the appropriate wallet instance after validating permissi
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `_context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
+| `context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
 | `params` | [`CallParams`](../interfaces/CallParams.md) | Call parameters including chain ID, session ID, and method details |
 
 #### Returns
@@ -222,13 +291,64 @@ If session is invalid, chain is unknown, or permissions are insufficient
 
 #### Defined in
 
-[packages/router/src/router.ts:311](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L311)
+[packages/router/src/router.ts:600](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L600)
+
+___
+
+### callMethod
+
+▸ **callMethod**\<`M`\>(`method`, `params?`, `timeoutInSeconds?`): `Promise`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md)[`M`][``"result"``]\>
+
+Calls a method on the remote peer.
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `M` | extends keyof [`RouterMethodMap`](../interfaces/RouterMethodMap.md) |
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `method` | `M` | The name of the method to call |
+| `params?` | [`RouterMethodMap`](../interfaces/RouterMethodMap.md)[`M`][``"params"``] | The parameters to pass to the method |
+| `timeoutInSeconds?` | `number` | Optional timeout in seconds (0 means no timeout) |
+
+#### Returns
+
+`Promise`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md)[`M`][``"result"``]\>
+
+A promise that resolves with the method result
+
+**`Throws`**
+
+If the method call fails or times out
+
+**`Example`**
+
+```typescript
+try {
+  const result = await peer.callMethod('add', { a: 1, b: 2 }, 5);
+  console.log('Result:', result);
+} catch (error) {
+  console.error('Error:', error);
+}
+```
+
+#### Inherited from
+
+JSONRPCPeer.callMethod
+
+#### Defined in
+
+packages/jsonrpc/dist/peer.d.ts:214
 
 ___
 
 ### connect
 
-▸ **connect**(`_context`, `params`): `Promise`\<\{ `permissions`: [`ChainPermissions`](../modules.md#chainpermissions) ; `sessionId`: `string`  }\>
+▸ **connect**(`context`, `params`): `Promise`\<\{ `permissions`: [`ChainPermissions`](../modules.md#chainpermissions) ; `sessionId`: `string`  }\>
 
 Handles wm_connect method
 Creates a new session for the specified chain with requested permissions
@@ -237,7 +357,7 @@ Creates a new session for the specified chain with requested permissions
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `_context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
+| `context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
 | `params` | `Object` | Connection parameters including chain ID and permissions |
 | `params.permissions` | [`ChainPermissions`](../modules.md#chainpermissions) | - |
 
@@ -253,54 +373,116 @@ If chain ID is invalid
 
 #### Defined in
 
-[packages/router/src/router.ts:179](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L179)
+[packages/router/src/router.ts:309](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L309)
 
 ___
 
 ### disconnect
 
-▸ **disconnect**(`_context`, `params`): `Promise`\<`boolean`\>
+▸ **disconnect**(`context`, `params`): `Promise`\<`boolean`\>
 
-Handles wm_disconnect method
-Ends an existing session and removes it from the router
+Handles the wm_disconnect method to terminate an active session.
+Performs complete cleanup including:
+- Session removal from store
+- Event listener cleanup
+- State cleanup for affected chains
+- Event emission for disconnection
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `_context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
-| `params` | `Object` | Disconnect parameters including session ID |
+| `context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context containing: - origin: Origin requesting disconnect Must match the session origin for security |
+| `params` | `Object` | Disconnect parameters including: - sessionId: ID of session to terminate Must be a valid UUID from previous connect call |
 | `params.sessionId` | `string` | - |
 
 #### Returns
 
 `Promise`\<`boolean`\>
 
-true if session was successfully ended
+true if session was successfully terminated
 
 **`Throws`**
 
-If session ID is invalid
+With codes:
+        - 'invalidSession': Session doesn't exist or origin mismatch
+
+**`Emits`**
+
+wm_sessionTerminated When session is successfully terminated
+
+**`Example`**
+
+```typescript
+await disconnect(
+  { origin: 'https://app.example.com' },
+  { sessionId: 'active-session-id' }
+);
+// Emits: wm_sessionTerminated event
+```
 
 #### Defined in
 
-[packages/router/src/router.ts:220](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L220)
+[packages/router/src/router.ts:454](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L454)
 
 ___
 
-### getPermissions
+### emit
 
-▸ **getPermissions**(`_context`, `params`): `Promise`\<[`ChainPermissions`](../modules.md#chainpermissions)\>
+▸ **emit**\<`K`\>(`event`, `params`): `void`
 
-Handles wm_getPermissions method
-Returns the current permissions for an existing session
+Emits an event to the remote peer.
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `K` | extends keyof [`RouterEventMap`](../interfaces/RouterEventMap.md) |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `_context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
-| `params` | `Object` | Parameters including session ID |
+| `event` | `K` | The name of the event to emit |
+| `params` | [`RouterEventMap`](../interfaces/RouterEventMap.md)[`K`] | The event parameters |
+
+#### Returns
+
+`void`
+
+**`Example`**
+
+```typescript
+peer.emit('statusUpdate', {
+  user: 'Alice',
+  status: 'online'
+});
+```
+
+#### Inherited from
+
+JSONRPCPeer.emit
+
+#### Defined in
+
+packages/jsonrpc/dist/peer.d.ts:259
+
+___
+
+### getPermissions
+
+▸ **getPermissions**(`context`, `params`): `Promise`\<[`ChainPermissions`](../modules.md#chainpermissions)\>
+
+Handles the wm_getPermissions method to retrieve current session permissions.
+Can return permissions for specific chains or all chains in the session.
+Validates session before returning permissions.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context containing: - origin: Origin requesting permissions Must match the session origin |
+| `params` | `Object` | Permission request parameters: - sessionId: ID of session to query - chainIds: Optional array of specific chains to query If omitted, returns permissions for all chains |
 | `params.chainIds?` | `string`[] | - |
 | `params.sessionId` | `string` | - |
 
@@ -308,15 +490,36 @@ Returns the current permissions for an existing session
 
 `Promise`\<[`ChainPermissions`](../modules.md#chainpermissions)\>
 
-Array of permitted method names
+ChainPermissions object mapping chain IDs to allowed methods
 
 **`Throws`**
 
-If session ID is invalid
+With codes:
+        - 'invalidSession': Session doesn't exist or origin mismatch
+        - 'invalidSession': Requested chain not in session
+
+**`Example`**
+
+```typescript
+// Get all permissions
+const allPerms = await getPermissions(
+  { origin: 'https://app.example.com' },
+  { sessionId: 'session-id' }
+);
+
+// Get specific chain permissions
+const ethPerms = await getPermissions(
+  { origin: 'https://app.example.com' },
+  {
+    sessionId: 'session-id',
+    chainIds: ['eip155:1']
+  }
+);
+```
 
 #### Defined in
 
-[packages/router/src/router.ts:244](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L244)
+[packages/router/src/router.ts:526](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L526)
 
 ___
 
@@ -332,7 +535,7 @@ If no chainIds provided, returns the methods supported by the router itself
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `_context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
+| `_context` | [`RouterContext`](../interfaces/RouterContext.md) | - |
 | `params` | `Object` | Parameters including optional array of chain IDs |
 | `params.chainIds?` | `string`[] | - |
 
@@ -348,61 +551,177 @@ If any chain is unknown or wallet is unavailable
 
 #### Defined in
 
-[packages/router/src/router.ts:397](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L397)
+[packages/router/src/router.ts:686](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L686)
 
 ___
 
-### receiveRequest
+### notify
 
-▸ **receiveRequest**(`context`, `request`): `Promise`\<`void`\>
+▸ **notify**\<`M`\>(`method`, `params`): `void`
 
-Receives a JSON-RPC request and handles it.
+Sends a notification to the remote peer (no response expected).
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `M` | extends keyof [`RouterMethodMap`](../interfaces/RouterMethodMap.md) |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `context` | [`RouterContext`](../interfaces/RouterContext.md) | - |
-| `request` | `JSONRPCRequest`\<[`RouterMethodMap`](../modules.md#routermethodmap), keyof [`RouterMethodMap`](../modules.md#routermethodmap), `JSONRPCParams`\> | The JSON-RPC request object. |
+| `method` | `M` | The name of the method to call |
+| `params` | [`RouterMethodMap`](../interfaces/RouterMethodMap.md)[`M`][``"params"``] | The parameters to pass to the method |
+
+#### Returns
+
+`void`
+
+**`Example`**
+
+```typescript
+peer.notify('logMessage', { level: 'info', message: 'Hello' });
+```
+
+#### Inherited from
+
+JSONRPCPeer.notify
+
+#### Defined in
+
+packages/jsonrpc/dist/peer.d.ts:226
+
+___
+
+### on
+
+▸ **on**\<`K`\>(`event`, `handler`): () => `void`
+
+Registers a handler for a specific event type.
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `K` | extends keyof [`RouterEventMap`](../interfaces/RouterEventMap.md) |
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `event` | `K` | The name of the event to handle |
+| `handler` | `JSONRPCEventHandler`\<[`RouterEventMap`](../interfaces/RouterEventMap.md), `K`\> | The function to call when the event is received |
+
+#### Returns
+
+`fn`
+
+A cleanup function that removes the event handler when called
+
+▸ (): `void`
+
+##### Returns
+
+`void`
+
+**`Example`**
+
+```typescript
+const cleanup = peer.on('userJoined', ({ username }) => {
+  console.log(`${username} joined`);
+});
+
+// Later...
+cleanup(); // Remove the event handler
+```
+
+#### Inherited from
+
+JSONRPCPeer.on
+
+#### Defined in
+
+packages/jsonrpc/dist/peer.d.ts:244
+
+___
+
+### receiveMessage
+
+▸ **receiveMessage**(`message`): `Promise`\<`void`\>
+
+Handles an incoming message from the remote peer.
+This should be called whenever a message is received through the transport.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `message` | `unknown` | The received message |
 
 #### Returns
 
 `Promise`\<`void`\>
 
+A promise that resolves when the message has been handled
+
+**`Example`**
+
+```typescript
+websocket.on('message', async (data) => {
+  await peer.receiveMessage(JSON.parse(data));
+});
+```
+
 #### Inherited from
 
-JSONRPCServer.receiveRequest
+JSONRPCPeer.receiveMessage
 
 #### Defined in
 
-packages/jsonrpc/dist/server.d.ts:45
+packages/jsonrpc/dist/peer.d.ts:274
 
 ___
 
 ### reconnect
 
-▸ **reconnect**(`_context`, `params`): `Promise`\<\{ `permissions`: [`ChainPermissions`](../modules.md#chainpermissions) ; `status`: `boolean`  }\>
+▸ **reconnect**(`context`, `params`): `Promise`\<\{ `permissions`: [`ChainPermissions`](../modules.md#chainpermissions) ; `status`: `boolean`  }\>
 
-Handles wm_reconnect method
-Attempts to reconnect to an existing session
+Handles the wm_reconnect method to restore an existing session.
+Validates and refreshes an existing session without requiring new permissions.
+Used when clients need to re-establish connection after page reload or disconnect.
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `_context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context |
-| `params` | `Object` | Parameters including session ID |
+| `context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context containing: - origin: Origin attempting to reconnect Must match the original session origin |
+| `params` | `Object` | Reconnection parameters including: - sessionId: ID of session to reconnect to Must be a valid UUID from previous connect call |
 | `params.sessionId` | `string` | - |
 
 #### Returns
 
 `Promise`\<\{ `permissions`: [`ChainPermissions`](../modules.md#chainpermissions) ; `status`: `boolean`  }\>
 
-true if reconnection was successful, false if session doesn't exist or is expired
+Object containing:
+         - status: boolean indicating if reconnection succeeded
+         - permissions: Current permissions if successful, empty if failed
+
+**`Example`**
+
+```typescript
+const result = await reconnect(
+  { origin: 'https://app.example.com' },
+  { sessionId: 'previous-session-id' }
+);
+if (result.status) {
+  console.log('Reconnected with permissions:', result.permissions);
+}
+```
 
 #### Defined in
 
-[packages/router/src/router.ts:88](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L88)
+[packages/router/src/router.ts:169](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L169)
 
 ___
 
@@ -410,39 +729,92 @@ ___
 
 ▸ **registerMethod**\<`M`\>(`name`, `handler`, `serializer?`): `void`
 
-Registers a method that can be called remotely.
+Registers a method that can be called by remote peers.
 
 #### Type parameters
 
 | Name | Type |
 | :------ | :------ |
-| `M` | extends keyof [`RouterMethodMap`](../modules.md#routermethodmap) |
+| `M` | extends keyof [`RouterMethodMap`](../interfaces/RouterMethodMap.md) |
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `name` | `M` | The method name. |
-| `handler` | `MethodHandler`\<[`RouterMethodMap`](../modules.md#routermethodmap), `M`, [`RouterContext`](../interfaces/RouterContext.md)\> | The function to handle the method call. |
-| `serializer?` | `JSONRPCSerializer`\<[`RouterMethodMap`](../modules.md#routermethodmap)[`M`][``"params"``], [`RouterMethodMap`](../modules.md#routermethodmap)[`M`][``"result"``]\> | Optional serializer for parameters and result. |
+| `name` | `M` | The name of the method to register |
+| `handler` | `MethodHandler`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md), `M`, [`RouterContext`](../interfaces/RouterContext.md)\> | The function that implements the method |
+| `serializer?` | `JSONRPCSerializer`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md)[`M`][``"params"``], [`RouterMethodMap`](../interfaces/RouterMethodMap.md)[`M`][``"result"``]\> | Optional serializer for method parameters and results |
 
 #### Returns
 
 `void`
 
+**`Example`**
+
+```typescript
+peer.registerMethod('add', async (context, params) => {
+  return params.a + params.b;
+});
+```
+
 #### Inherited from
 
-JSONRPCServer.registerMethod
+JSONRPCPeer.registerMethod
 
 #### Defined in
 
-packages/jsonrpc/dist/server.d.ts:32
+packages/jsonrpc/dist/peer.d.ts:176
+
+___
+
+### registerSerializer
+
+▸ **registerSerializer**\<`M`\>(`method`, `serializer`): `void`
+
+Registers a serializer for a remote method.
+Used when calling methods that require parameter or result serialization.
+
+#### Type parameters
+
+| Name | Type |
+| :------ | :------ |
+| `M` | extends keyof [`RouterMethodMap`](../interfaces/RouterMethodMap.md) |
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `method` | `M` | The name of the method to register a serializer for |
+| `serializer` | `JSONRPCSerializer`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md)[`M`][``"params"``], [`RouterMethodMap`](../interfaces/RouterMethodMap.md)[`M`][``"result"``]\> | The serializer implementation |
+
+#### Returns
+
+`void`
+
+**`Example`**
+
+```typescript
+peer.registerSerializer('processDate', {
+  params: {
+    serialize: (date) => ({ serialized: date.toISOString() }),
+    deserialize: (data) => new Date(data.serialized)
+  }
+});
+```
+
+#### Inherited from
+
+JSONRPCPeer.registerSerializer
+
+#### Defined in
+
+packages/jsonrpc/dist/peer.d.ts:194
 
 ___
 
 ### updatePermissions
 
-▸ **updatePermissions**(`_context`, `params`): `Promise`\<`boolean`\>
+▸ **updatePermissions**(`context`, `params`): `Promise`\<`boolean`\>
 
 Handles wm_updatePermissions method
 Updates the permissions for an existing session
@@ -451,7 +823,7 @@ Updates the permissions for an existing session
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `_context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
+| `context` | [`RouterContext`](../interfaces/RouterContext.md) | Router context (unused) |
 | `params` | `Object` | Parameters including session ID and new permissions |
 | `params.permissions` | [`ChainPermissions`](../modules.md#chainpermissions) | - |
 | `params.sessionId` | `string` | - |
@@ -468,7 +840,7 @@ If session ID is invalid
 
 #### Defined in
 
-[packages/router/src/router.ts:277](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L277)
+[packages/router/src/router.ts:559](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L559)
 
 ___
 
@@ -496,7 +868,7 @@ If chain ID is unknown or not configured
 
 #### Defined in
 
-[packages/router/src/router.ts:163](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L163)
+[packages/router/src/router.ts:293](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L293)
 
 ___
 
@@ -504,29 +876,57 @@ ___
 
 ▸ **validateSession**(`operation`, `sessionId`, `chainId`, `method`, `params?`, `context?`): `Promise`\<[`SessionData`](../interfaces/SessionData.md)\>
 
-Validates a session and its permissions
+Validates a session and its permissions for an operation.
+Performs comprehensive validation including:
+- Session existence and expiration
+- Chain ID validation
+- Permission checks
+- Origin verification
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `operation` | [`OperationType`](../modules.md#operationtype) | Type of operation being performed |
-| `sessionId` | `string` | ID of the session to validate |
-| `chainId` | `string` | Chain ID for the request |
-| `method` | `string` | Method being called |
-| `params?` | `unknown` | Method parameters |
-| `context?` | [`RouterContext`](../interfaces/RouterContext.md) | Router context containing origin |
+| `operation` | [`OperationType`](../modules.md#operationtype) | Type of operation being performed Examples: 'connect', 'call', 'disconnect' Used to apply operation-specific validation rules |
+| `sessionId` | `string` | ID of the session to validate Must be a valid UUID from a previous connect call Combined with origin to form unique session key |
+| `chainId` | `string` | Chain ID for the request Must match format: namespace:reference Example: 'eip155:1' for Ethereum mainnet Use '*' only for updatePermissions operations |
+| `method` | `string` | Method being called Must be included in session's permissions Example: 'eth_sendTransaction' Wildcard '*' only allowed for permission updates |
+| `params?` | `unknown` | Method parameters (optional) Passed to permission callback for validation Type depends on the specific method |
+| `context?` | [`RouterContext`](../interfaces/RouterContext.md) | Router context containing origin Must include origin for session validation Example: { origin: 'https://app.example.com' } |
 
 #### Returns
 
 `Promise`\<[`SessionData`](../interfaces/SessionData.md)\>
 
-The validated session data
+The validated session data if all checks pass
 
 **`Throws`**
 
-If session is invalid, expired, or has insufficient permissions
+With specific error codes:
+        - 'invalidSession': Session doesn't exist or is expired
+        - 'insufficientPermissions': Method not allowed for session
+        - 'invalidRequest': Invalid parameters or chain ID
+
+**`Example`**
+
+```typescript
+try {
+  const session = await validateSession(
+    'call',
+    'session-123',
+    'eip155:1',
+    'eth_sendTransaction',
+    { to: '0x...', value: '0x...' },
+    { origin: 'https://app.example.com' }
+  );
+  // Session is valid, proceed with operation
+} catch (error) {
+  if (error instanceof RouterError) {
+    // Handle specific validation failure
+  }
+}
+```
 
 #### Defined in
 
-[packages/router/src/router.ts:114](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/router.ts#L114)
+[packages/router/src/router.ts:244](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/router.ts#L244)

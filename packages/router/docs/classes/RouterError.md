@@ -1,4 +1,4 @@
-[@walletmesh/router - v0.0.5](../README.md) / [Exports](../modules.md) / RouterError
+[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / RouterError
 
 # Class: RouterError
 
@@ -57,7 +57,7 @@ JSONRPCError.constructor
 
 #### Defined in
 
-[packages/router/src/errors.ts:28](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/errors.ts#L28)
+[packages/router/src/errors.ts:28](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/errors.ts#L28)
 
 ## Properties
 
@@ -85,7 +85,7 @@ JSONRPCError.code
 
 #### Defined in
 
-packages/jsonrpc/dist/error.d.ts:8
+packages/jsonrpc/dist/error.d.ts:27
 
 ___
 
@@ -99,7 +99,7 @@ JSONRPCError.data
 
 #### Defined in
 
-packages/jsonrpc/dist/error.d.ts:9
+packages/jsonrpc/dist/error.d.ts:28
 
 ___
 
@@ -127,7 +127,7 @@ JSONRPCError.name
 
 #### Defined in
 
-[packages/router/src/errors.ts:21](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/errors.ts#L21)
+[packages/router/src/errors.ts:21](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/errors.ts#L21)
 
 ___
 
@@ -208,7 +208,7 @@ JSONRPCError.toString
 
 #### Defined in
 
-packages/jsonrpc/dist/error.d.ts:19
+packages/jsonrpc/dist/error.d.ts:53
 
 ___
 
