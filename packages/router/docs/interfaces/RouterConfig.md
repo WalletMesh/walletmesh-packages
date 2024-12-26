@@ -1,4 +1,4 @@
-[@walletmesh/router - v0.0.5](../README.md) / [Exports](../modules.md) / RouterConfig
+[@walletmesh/router - v0.1.0](../README.md) / [Exports](../modules.md) / RouterConfig
 
 # Interface: RouterConfig
 
@@ -20,4 +20,4 @@ Default behavior when no permission rules match
 
 #### Defined in
 
-[packages/router/src/types.ts:113](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L113)
+[packages/router/src/types.ts:158](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/router/src/types.ts#L158)

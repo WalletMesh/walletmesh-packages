@@ -1,10 +1,23 @@
-[@walletmesh/router - v0.0.5](../README.md) / [Exports](../modules.md) / WalletMethodMap
+[@walletmesh/router - v0.1.0](../README.md) / [Exports](../modules.md) / WalletMethodMap
 
 # Interface: WalletMethodMap
 
-Method map for the JSON-RPC client that includes all possible wallet methods.
+Method map for wallet JSON-RPC communication.
 Extends the base JSONRPCMethodMap to include wallet-specific methods and
 allows for dynamic method names with unknown parameters and return types.
+
+**`Example`**
+
+```typescript
+// Ethereum wallet methods
+type EthereumMethods = {
+  eth_accounts: { params: undefined; result: string[] };
+  eth_sendTransaction: {
+    params: [{ to: string; value: string; data?: string }];
+    result: string
+  };
+} & WalletMethodMap;
+```
 
 ## Hierarchy
 
@@ -38,4 +51,4 @@ allows for dynamic method names with unknown parameters and return types.
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:10](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/jsonrpc-adapter.ts#L10)
+[packages/router/src/jsonrpc-adapter.ts:22](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/router/src/jsonrpc-adapter.ts#L22)

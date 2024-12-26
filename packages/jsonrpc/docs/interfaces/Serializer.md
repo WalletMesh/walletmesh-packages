@@ -1,8 +1,18 @@
-[@walletmesh/jsonrpc - v0.0.5](../README.md) / [Exports](../modules.md) / Serializer
+[@walletmesh/jsonrpc - v0.1.0](../README.md) / [Exports](../modules.md) / Serializer
 
 # Interface: Serializer\<T\>
 
 Interface for serializing and deserializing values.
+Enables custom type conversion for complex objects that need special handling.
+
+**`Example`**
+
+```typescript
+const dateSerializer: Serializer<Date> = {
+  serialize: (date) => ({ serialized: date.toISOString() }),
+  deserialize: (data) => new Date(data.serialized)
+};
+```
 
 ## Type parameters
 
@@ -39,7 +49,7 @@ The deserialized value
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:36](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/types.ts#L36)
+[packages/jsonrpc/src/types.ts:75](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/jsonrpc/src/types.ts#L75)
 
 ___
 
@@ -63,4 +73,4 @@ The serialized data
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:29](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/types.ts#L29)
+[packages/jsonrpc/src/types.ts:68](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/jsonrpc/src/types.ts#L68)

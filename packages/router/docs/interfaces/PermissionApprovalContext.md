@@ -1,4 +1,4 @@
-[@walletmesh/router - v0.0.5](../README.md) / [Exports](../modules.md) / PermissionApprovalContext
+[@walletmesh/router - v0.1.0](../README.md) / [Exports](../modules.md) / PermissionApprovalContext
 
 # Interface: PermissionApprovalContext
 
@@ -23,7 +23,7 @@ Type of operation being performed
 
 #### Defined in
 
-[packages/router/src/types.ts:48](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L48)
+[packages/router/src/types.ts:93](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/router/src/types.ts#L93)
 
 ___
 
@@ -35,7 +35,7 @@ Origin of the request
 
 #### Defined in
 
-[packages/router/src/types.ts:50](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L50)
+[packages/router/src/types.ts:95](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/router/src/types.ts#L95)
 
 ___
 
@@ -47,7 +47,7 @@ Requested permissions per chain
 
 #### Defined in
 
-[packages/router/src/types.ts:52](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L52)
+[packages/router/src/types.ts:97](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/router/src/types.ts#L97)
 
 ___
 
@@ -59,4 +59,4 @@ Current session data if available (for updatePermissions)
 
 #### Defined in
 
-[packages/router/src/types.ts:54](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L54)
+[packages/router/src/types.ts:99](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/router/src/types.ts#L99)

@@ -1,4 +1,4 @@
-[@walletmesh/router - v0.0.5](../README.md) / [Exports](../modules.md) / SessionData
+[@walletmesh/router - v0.1.0](../README.md) / [Exports](../modules.md) / SessionData
 
 # Interface: SessionData
 
@@ -24,7 +24,7 @@ Unique session identifier
 
 #### Defined in
 
-[packages/router/src/types.ts:101](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L101)
+[packages/router/src/types.ts:146](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/router/src/types.ts#L146)
 
 ___
 
@@ -36,7 +36,7 @@ Origin of the session request
 
 #### Defined in
 
-[packages/router/src/types.ts:103](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L103)
+[packages/router/src/types.ts:148](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/router/src/types.ts#L148)
 
 ___
 
@@ -48,4 +48,4 @@ Permissions granted to this session per chain
 
 #### Defined in
 
-[packages/router/src/types.ts:105](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L105)
+[packages/router/src/types.ts:150](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/router/src/types.ts#L150)

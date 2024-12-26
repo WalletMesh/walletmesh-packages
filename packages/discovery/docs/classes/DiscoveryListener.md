@@ -1,4 +1,4 @@
-[@walletmesh/discovery - v0.0.5](../README.md) / [Exports](../modules.md) / DiscoveryListener
+[@walletmesh/discovery - v0.1.0](../README.md) / [Exports](../modules.md) / DiscoveryListener
 
 # Class: DiscoveryListener
 
@@ -42,7 +42,7 @@ Creates an instance of the server.
 
 #### Defined in
 
-[server.ts:62](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/discovery/src/server.ts#L62)
+[server.ts:62](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/discovery/src/server.ts#L62)
 
 ## Accessors
 
@@ -60,7 +60,7 @@ The list of wallets.
 
 #### Defined in
 
-[server.ts:75](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/discovery/src/server.ts#L75)
+[server.ts:75](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/discovery/src/server.ts#L75)
 
 ## Methods
 
@@ -80,7 +80,7 @@ This method performs the following actions:
 
 #### Defined in
 
-[server.ts:88](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/discovery/src/server.ts#L88)
+[server.ts:88](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/discovery/src/server.ts#L88)
 
 ___
 
@@ -100,4 +100,4 @@ This method performs the following actions:
 
 #### Defined in
 
-[server.ts:102](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/discovery/src/server.ts#L102)
+[server.ts:102](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/discovery/src/server.ts#L102)

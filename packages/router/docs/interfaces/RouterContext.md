@@ -1,4 +1,4 @@
-[@walletmesh/router - v0.0.5](../README.md) / [Exports](../modules.md) / RouterContext
+[@walletmesh/router - v0.1.0](../README.md) / [Exports](../modules.md) / RouterContext
 
 # Interface: RouterContext
 
@@ -20,4 +20,4 @@
 
 #### Defined in
 
-[packages/router/src/types.ts:278](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L278)
+[packages/router/src/types.ts:347](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/router/src/types.ts#L347)

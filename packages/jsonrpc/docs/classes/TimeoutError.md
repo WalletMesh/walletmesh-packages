@@ -1,12 +1,26 @@
-[@walletmesh/jsonrpc - v0.0.5](../README.md) / [Exports](../modules.md) / TimeoutError
+[@walletmesh/jsonrpc - v0.1.0](../README.md) / [Exports](../modules.md) / TimeoutError
 
 # Class: TimeoutError
 
-TimeoutError class for sending errors when a request times out.
+Specialized error class for JSON-RPC request timeouts.
+Extends JSONRPCError with a fixed error code (-32000) and includes the request ID.
+
+**`Example`**
+
+```typescript
+try {
+  // Call method with 5 second timeout
+  const result = await peer.callMethod('slowMethod', params, 5);
+} catch (error) {
+  if (error instanceof TimeoutError) {
+    console.error(`Request ${error.id} timed out`);
+  }
+}
+```
 
 ## Hierarchy
 
-- `Error`
+- [`JSONRPCError`](JSONRPCError.md)
 
   ↳ **`TimeoutError`**
 
@@ -19,6 +33,8 @@ TimeoutError class for sending errors when a request times out.
 ### Properties
 
 - [cause](TimeoutError.md#cause)
+- [code](TimeoutError.md#code)
+- [data](TimeoutError.md#data)
 - [id](TimeoutError.md#id)
 - [message](TimeoutError.md#message)
 - [name](TimeoutError.md#name)
@@ -28,6 +44,7 @@ TimeoutError class for sending errors when a request times out.
 
 ### Methods
 
+- [toString](TimeoutError.md#tostring)
 - [captureStackTrace](TimeoutError.md#capturestacktrace)
 
 ## Constructors
@@ -42,20 +59,32 @@ Creates a new TimeoutError instance.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `message` | `string` | The error message. |
-| `id` | [`JSONRPCID`](../modules.md#jsonrpcid) | The request ID. |
+| `message` | `string` | A message describing the timeout |
+| `id` | [`JSONRPCID`](../modules.md#jsonrpcid) | The ID of the request that timed out |
 
 #### Returns
 
 [`TimeoutError`](TimeoutError.md)
 
+**`Example`**
+
+```typescript
+// Inside JSONRPCPeer implementation
+if (timeoutInSeconds > 0) {
+  timer = setTimeout(() => {
+    this.pendingRequests.delete(id);
+    reject(new TimeoutError('Request timed out', id));
+  }, timeoutInSeconds * 1000);
+}
+```
+
 #### Overrides
 
-Error.constructor
+[JSONRPCError](JSONRPCError.md).[constructor](JSONRPCError.md#constructor)
 
 #### Defined in
 
-[packages/jsonrpc/src/client.ts:21](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/client.ts#L21)
+[packages/jsonrpc/src/error.ts:108](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/jsonrpc/src/error.ts#L108)
 
 ## Properties
 
@@ -65,7 +94,7 @@ Error.constructor
 
 #### Inherited from
 
-Error.cause
+[JSONRPCError](JSONRPCError.md).[cause](JSONRPCError.md#cause)
 
 #### Defined in
 
@@ -73,15 +102,47 @@ node_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 ___
 
+### code
+
+• **code**: `number`
+
+The error code (should follow JSON-RPC 2.0 error codes)
+
+#### Inherited from
+
+[JSONRPCError](JSONRPCError.md).[code](JSONRPCError.md#code)
+
+#### Defined in
+
+[packages/jsonrpc/src/error.ts:53](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/jsonrpc/src/error.ts#L53)
+
+___
+
+### data
+
+• `Optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
+
+Optional additional error data for debugging or client handling
+
+#### Inherited from
+
+[JSONRPCError](JSONRPCError.md).[data](JSONRPCError.md#data)
+
+#### Defined in
+
+[packages/jsonrpc/src/error.ts:55](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/jsonrpc/src/error.ts#L55)
+
+___
+
 ### id
 
 • **id**: [`JSONRPCID`](../modules.md#jsonrpcid)
 
-The request ID.
+The ID of the request that timed out
 
 #### Defined in
 
-[packages/jsonrpc/src/client.ts:23](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/client.ts#L23)
+[packages/jsonrpc/src/error.ts:110](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/jsonrpc/src/error.ts#L110)
 
 ___
 
@@ -89,9 +150,11 @@ ___
 
 • **message**: `string`
 
+The error message.
+
 #### Inherited from
 
-Error.message
+[JSONRPCError](JSONRPCError.md).[message](JSONRPCError.md#message)
 
 #### Defined in
 
@@ -101,15 +164,15 @@ ___
 
 ### name
 
-• **name**: `string`
+• **name**: `string` = `'TimeoutError'`
 
-#### Inherited from
+#### Overrides
 
-Error.name
+[JSONRPCError](JSONRPCError.md).[name](JSONRPCError.md#name)
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1076
+[packages/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/jsonrpc/src/error.ts#L89)
 
 ___
 
@@ -119,7 +182,7 @@ ___
 
 #### Inherited from
 
-Error.stack
+[JSONRPCError](JSONRPCError.md).[stack](JSONRPCError.md#stack)
 
 #### Defined in
 
@@ -154,7 +217,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 #### Inherited from
 
-Error.prepareStackTrace
+[JSONRPCError](JSONRPCError.md).[prepareStackTrace](JSONRPCError.md#preparestacktrace)
 
 #### Defined in
 
@@ -168,13 +231,31 @@ ___
 
 #### Inherited from
 
-Error.stackTraceLimit
+[JSONRPCError](JSONRPCError.md).[stackTraceLimit](JSONRPCError.md#stacktracelimit)
 
 #### Defined in
 
 node_modules/@types/node/globals.d.ts:145
 
 ## Methods
+
+### toString
+
+▸ **toString**(): `string`
+
+#### Returns
+
+`string`
+
+#### Inherited from
+
+[JSONRPCError](JSONRPCError.md).[toString](JSONRPCError.md#tostring)
+
+#### Defined in
+
+[packages/jsonrpc/src/error.ts:60](https://github.com/WalletMesh/wm-core/blob/351ac0992a6d17e5eaa6dfdd01d65d52a269e856/packages/jsonrpc/src/error.ts#L60)
+
+___
 
 ### captureStackTrace
 
@@ -195,7 +276,7 @@ Create .stack property on a target object
 
 #### Inherited from
 
-Error.captureStackTrace
+[JSONRPCError](JSONRPCError.md).[captureStackTrace](JSONRPCError.md#capturestacktrace)
 
 #### Defined in
 
