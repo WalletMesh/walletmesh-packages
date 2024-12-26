@@ -1,4 +1,4 @@
-[@walletmesh/discovery - v0.0.5](../README.md) / [Exports](../modules.md) / DiscoveryAnnouncer
+[@walletmesh/discovery - v0.0.6](../README.md) / [Exports](../modules.md) / DiscoveryAnnouncer
 
 # Class: DiscoveryAnnouncer
 
@@ -38,7 +38,7 @@ Creates an instance of the announcer.
 
 #### Defined in
 
-[client.ts:103](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/discovery/src/client.ts#L103)
+[client.ts:103](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/discovery/src/client.ts#L103)
 
 ## Methods
 
@@ -58,7 +58,7 @@ This method performs the following actions:
 
 #### Defined in
 
-[client.ts:129](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/discovery/src/client.ts#L129)
+[client.ts:129](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/discovery/src/client.ts#L129)
 
 ___
 
@@ -79,4 +79,4 @@ This method performs the following actions:
 
 #### Defined in
 
-[client.ts:144](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/discovery/src/client.ts#L144)
+[client.ts:144](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/discovery/src/client.ts#L144)

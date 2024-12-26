@@ -1,16 +1,38 @@
-[@walletmesh/jsonrpc - v0.0.5](../README.md) / [Exports](../modules.md) / JSONRPCError
+[@walletmesh/jsonrpc - v0.0.6](../README.md) / [Exports](../modules.md) / JSONRPCError
 
 # Class: JSONRPCError
 
-JSON-RPC Error class.
+JSON-RPC Error class that implements the JSON-RPC 2.0 error object specification.
 
-Represents an error that can occur during JSON-RPC communication.
+Standard error codes:
+- Parse error (-32700): Invalid JSON was received
+- Invalid Request (-32600): The JSON sent is not a valid Request object
+- Method not found (-32601): The method does not exist / is not available
+- Invalid params (-32602): Invalid method parameter(s)
+- Internal error (-32603): Internal JSON-RPC error
+- Server error (-32000 to -32099): Implementation-defined server errors
+
+**`Example`**
+
+```typescript
+// Basic error
+throw new JSONRPCError(-32600, 'Invalid Request');
+
+// Error with additional data
+throw new JSONRPCError(
+  -32602,
+  'Invalid parameters',
+  { expected: ['username', 'password'], received: ['username'] }
+);
+```
 
 ## Hierarchy
 
 - `Error`
 
   ↳ **`JSONRPCError`**
+
+  ↳↳ [`TimeoutError`](TimeoutError.md)
 
 ## Implements
 
@@ -50,13 +72,29 @@ Creates a new JSONRPCError instance.
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `code` | `number` | The error code. |
-| `message` | `string` | The error message. |
-| `data?` | `string` \| `Record`\<`string`, `unknown`\> | Additional error data. |
+| `code` | `number` | The error code (should follow JSON-RPC 2.0 error codes) |
+| `message` | `string` | A short, human-readable error message |
+| `data?` | `string` \| `Record`\<`string`, `unknown`\> | Optional additional error data for debugging or client handling |
 
 #### Returns
 
 [`JSONRPCError`](JSONRPCError.md)
+
+**`Example`**
+
+```typescript
+// Method handler with error handling
+peer.registerMethod('divide', (context, { a, b }) => {
+  if (b === 0) {
+    throw new JSONRPCError(
+      -32602,
+      'Division by zero',
+      { method: 'divide', params: { a, b } }
+    );
+  }
+  return a / b;
+});
+```
 
 #### Overrides
 
@@ -64,7 +102,7 @@ Error.constructor
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:18](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/error.ts#L18)
+[packages/jsonrpc/src/error.ts:52](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/error.ts#L52)
 
 ## Properties
 
@@ -86,7 +124,7 @@ ___
 
 • **code**: `number`
 
-The error code.
+The error code (should follow JSON-RPC 2.0 error codes)
 
 #### Implementation of
 
@@ -94,7 +132,7 @@ The error code.
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:19](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/error.ts#L19)
+[packages/jsonrpc/src/error.ts:53](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/error.ts#L53)
 
 ___
 
@@ -102,7 +140,7 @@ ___
 
 • `Optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
 
-Additional error data.
+Optional additional error data for debugging or client handling
 
 #### Implementation of
 
@@ -110,7 +148,7 @@ Additional error data.
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:21](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/error.ts#L21)
+[packages/jsonrpc/src/error.ts:55](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/error.ts#L55)
 
 ___
 
@@ -144,7 +182,7 @@ Error.name
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:9](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/error.ts#L9)
+[packages/jsonrpc/src/error.ts:28](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/error.ts#L28)
 
 ___
 
@@ -221,7 +259,7 @@ node_modules/@types/node/globals.d.ts:145
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:26](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/error.ts#L26)
+[packages/jsonrpc/src/error.ts:60](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/error.ts#L60)
 
 ___
 
