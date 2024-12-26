@@ -84,7 +84,7 @@ jobs:
             This PR bumps the version of all packages${{ github.event.inputs.prerelease_id && format(' as a {0} pre-release', github.event.inputs.prerelease_id) }}.
             Please review and approve to trigger the release process.
           branch: "release/version-bump-${{ github.event.inputs.version_bump }}"
-          base: main
+          base: ${{ github.ref_name }}
           delete-branch: true
           labels: |
             chore
