@@ -4,13 +4,24 @@ on:
   workflow_dispatch:
     inputs:
       version_bump:
-        description: 'Version bump type (patch/minor/major)'
+        description: 'Version bump type'
         required: true
         type: choice
         options:
           - patch
           - minor
           - major
+          - prepatch
+          - preminor
+          - premajor
+      prerelease_id:
+        description: 'Pre-release identifier (alpha/beta/rc)'
+        required: false
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
 
 jobs:
   create-release-pr:
@@ -43,7 +54,12 @@ jobs:
           git config user.email "github-actions[bot]@github.com"
 
       - name: Bump package versions
-        run: pnpm -r exec pnpm version ${{ github.event.inputs.version_bump }} --no-git-tag-version
+        run: |
+          if [ -n "${{ github.event.inputs.prerelease_id }}" ]; then
+            pnpm -r exec pnpm version ${{ github.event.inputs.version_bump }} --preid ${{ github.event.inputs.prerelease_id }} --no-git-tag-version
+          else
+            pnpm -r exec pnpm version ${{ github.event.inputs.version_bump }} --no-git-tag-version
+          fi
 
       - name: Run tests
         run: pnpm test
@@ -62,10 +78,10 @@ jobs:
             packages/*/package.json
             packages/*/docs/**/*
             package.json
-          commit-message: "chore: bump version (${{ github.event.inputs.version_bump }})"
-          title: "chore: version bump (${{ github.event.inputs.version_bump }})"
+          commit-message: "chore: bump version (${{ github.event.inputs.version_bump }}${{ github.event.inputs.prerelease_id && format(' {0}', github.event.inputs.prerelease_id) }})"
+          title: "chore: version bump (${{ github.event.inputs.version_bump }}${{ github.event.inputs.prerelease_id && format(' {0}', github.event.inputs.prerelease_id) }})"
           body: |
-            This PR bumps the version of all packages.
+            This PR bumps the version of all packages${{ github.event.inputs.prerelease_id && format(' as a {0} pre-release', github.event.inputs.prerelease_id) }}.
             Please review and approve to trigger the release process.
           branch: "release/version-bump-${{ github.event.inputs.version_bump }}"
           base: main
