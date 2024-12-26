@@ -1,26 +1,28 @@
-name: Publish Release
+name: Release
 
 on:
-  workflow_dispatch:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - main
+  workflow_dispatch:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-  publish:
+  release:
+    name: Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
-      # required for build provenance
+      pull-requests: write
       id-token: write
       attestations: write
-    if: |
-      github.event.pull_request.merged == true &&
-      contains(github.event.pull_request.labels.*.name, 'release')
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -33,26 +35,36 @@ jobs:
         with:
           version: 9
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build packages
         run: pnpm build
 
-      - name: Get version from package.json
-        id: version
-        run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Publish packages
-        run: pnpm publish -r
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: pnpm changeset publish
+          version: pnpm changeset version
+          commit: "chore: version packages"
+          title: "chore: version packages"
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.version.outputs.version }}
-          generate_release_notes: true
+      - name: Create Git Tags
+        if: steps.changesets.outputs.published == 'true'
+        run: |
+          # Get the published packages from changesets output
+          PUBLISHED_PACKAGES=$(echo '${{ steps.changesets.outputs.publishedPackages }}' | jq -r '.[] | "@\(.name)@\(.version)"')
+
+          # Create and push tags for published packages
+          for PKG_VERSION in $PUBLISHED_PACKAGES; do
+            # Remove the @ from the start for the tag
+            TAG="${PKG_VERSION:1}"
+            echo "Creating tag $TAG"
+            git tag "$TAG"
+            git push origin "$TAG"
+          done

@@ -1,8 +1,18 @@
-[@walletmesh/jsonrpc - v0.0.5](../README.md) / [Exports](../modules.md) / JSONRPCSerializer
+[@walletmesh/jsonrpc - v0.0.6](../README.md) / [Exports](../modules.md) / JSONRPCSerializer
 
 # Interface: JSONRPCSerializer\<P, R\>
 
 Interface for RPC method parameter and result serialization.
+Allows defining separate serializers for method parameters and return values.
+
+**`Example`**
+
+```typescript
+const methodSerializer: JSONRPCSerializer<{ date: Date }, Date> = {
+  params: dateSerializer,
+  result: dateSerializer
+};
+```
 
 ## Type parameters
 
@@ -28,7 +38,7 @@ Serializer for method parameters
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:48](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/types.ts#L48)
+[packages/jsonrpc/src/types.ts:97](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L97)
 
 ___
 
@@ -40,4 +50,4 @@ Optional serializer for method result
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:53](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/jsonrpc/src/types.ts#L53)
+[packages/jsonrpc/src/types.ts:102](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L102)

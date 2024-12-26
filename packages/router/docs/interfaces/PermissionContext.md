@@ -1,4 +1,4 @@
-[@walletmesh/router - v0.0.5](../README.md) / [Exports](../modules.md) / PermissionContext
+[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / PermissionContext
 
 # Interface: PermissionContext
 
@@ -25,7 +25,7 @@ Chain ID the operation targets
 
 #### Defined in
 
-[packages/router/src/types.ts:32](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L32)
+[packages/router/src/types.ts:77](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L77)
 
 ___
 
@@ -37,7 +37,7 @@ Method being called (for call operations)
 
 #### Defined in
 
-[packages/router/src/types.ts:34](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L34)
+[packages/router/src/types.ts:79](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L79)
 
 ___
 
@@ -49,7 +49,7 @@ Type of operation being performed
 
 #### Defined in
 
-[packages/router/src/types.ts:30](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L30)
+[packages/router/src/types.ts:75](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L75)
 
 ___
 
@@ -61,7 +61,7 @@ Origin of the request
 
 #### Defined in
 
-[packages/router/src/types.ts:38](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L38)
+[packages/router/src/types.ts:83](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L83)
 
 ___
 
@@ -73,7 +73,7 @@ Parameters for the operation
 
 #### Defined in
 
-[packages/router/src/types.ts:36](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L36)
+[packages/router/src/types.ts:81](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L81)
 
 ___
 
@@ -85,4 +85,4 @@ Current session data if available
 
 #### Defined in
 
-[packages/router/src/types.ts:40](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L40)
+[packages/router/src/types.ts:85](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L85)

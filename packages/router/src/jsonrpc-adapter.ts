@@ -1,10 +1,22 @@
-import type { JSONRPCClient, JSONRPCMethodMap, JSONRPCParams } from '@walletmesh/jsonrpc';
+import type { JSONRPCNode, JSONRPCMethodMap, JSONRPCParams } from '@walletmesh/jsonrpc';
 import type { WalletClient } from './types.js';
 
 /**
- * Method map for the JSON-RPC client that includes all possible wallet methods.
+ * Method map for wallet JSON-RPC communication.
  * Extends the base JSONRPCMethodMap to include wallet-specific methods and
  * allows for dynamic method names with unknown parameters and return types.
+ *
+ * @example
+ * ```typescript
+ * // Ethereum wallet methods
+ * type EthereumMethods = {
+ *   eth_accounts: { params: undefined; result: string[] };
+ *   eth_sendTransaction: {
+ *     params: [{ to: string; value: string; data?: string }];
+ *     result: string
+ *   };
+ * } & WalletMethodMap;
+ * ```
  */
 export interface WalletMethodMap extends JSONRPCMethodMap {
   wm_getSupportedMethods: {
@@ -18,24 +30,40 @@ export interface WalletMethodMap extends JSONRPCMethodMap {
 }
 
 /**
- * Adapter class that wraps a JSONRPCClient to implement the WalletClient interface.
- * This adapter allows any JSON-RPC client to be used as a wallet client by
+ * Adapter class that wraps a JSONRPCNode to implement the WalletClient interface.
+ * This adapter allows any JSON-RPC peer to be used as a wallet client by
  * translating between the JSON-RPC protocol and the WalletClient interface.
+ *
+ * The adapter supports both method calls and event handling, making it suitable
+ * for modern wallets that require bi-directional communication.
  *
  * @example
  * ```typescript
- * const jsonRpcClient = new JSONRPCClient(...);
- * const walletClient = new JSONRPCWalletClient(jsonRpcClient);
+ * const node = new JSONRPCNode({
+ *   send: message => {
+ *     // Send to wallet
+ *     wallet.postMessage(message);
+ *   }
+ * });
  *
- * // Use as a WalletClient
+ * const walletClient = new JSONRPCWalletClient(node);
+ *
+ * // Listen for account changes
+ * walletClient.on('accountsChanged', accounts => {
+ *   console.log('Active accounts:', accounts);
+ * });
+ *
+ * // Call methods
  * const accounts = await walletClient.call('eth_accounts');
+ * const balance = await walletClient.call('eth_getBalance', [accounts[0]]);
  * ```
  */
 export class JSONRPCWalletClient implements WalletClient {
-  private client: JSONRPCClient<WalletMethodMap>;
+  private node: JSONRPCNode<WalletMethodMap>;
+  private eventCleanupFns: Map<string, Map<(data: unknown) => void, () => void>> = new Map();
 
-  constructor(client: JSONRPCClient<WalletMethodMap>) {
-    this.client = client;
+  constructor(node: JSONRPCNode<WalletMethodMap>) {
+    this.node = node;
   }
 
   /**
@@ -61,7 +89,7 @@ export class JSONRPCWalletClient implements WalletClient {
         ? (params as JSONRPCParams)
         : undefined;
 
-    return this.client.callMethod(method, validParams) as Promise<T>;
+    return this.node.callMethod(method, validParams) as Promise<T>;
   }
 
   /**
@@ -76,6 +104,57 @@ export class JSONRPCWalletClient implements WalletClient {
    * ```
    */
   async getSupportedMethods(): Promise<{ methods: string[] }> {
-    return this.client.callMethod('wm_getSupportedMethods') as Promise<{ methods: string[] }>;
+    return this.node.callMethod('wm_getSupportedMethods') as Promise<{ methods: string[] }>;
+  }
+
+  /**
+   * Register an event handler for wallet events
+   * @param event - Event name to listen for (e.g., 'accountsChanged', 'networkChanged')
+   * @param handler - Function to call when the event occurs
+   *
+   * @example
+   * ```typescript
+   * client.on('accountsChanged', (accounts: string[]) => {
+   *   console.log('Active accounts:', accounts);
+   * });
+   *
+   * client.on('networkChanged', (networkId: string) => {
+   *   console.log('Connected to network:', networkId);
+   * });
+   * ```
+   */
+  on(event: string, handler: (data: unknown) => void): void {
+    if (!this.eventCleanupFns.has(event)) {
+      this.eventCleanupFns.set(event, new Map());
+    }
+
+    const cleanup = this.node.on(event, handler);
+    this.eventCleanupFns.get(event)?.set(handler, cleanup);
+  }
+
+  /**
+   * Remove a previously registered event handler
+   * @param event - Event name to stop listening for
+   * @param handler - Handler function to remove (must be the same reference as used in 'on')
+   *
+   * @example
+   * ```typescript
+   * const handler = (accounts: string[]) => {
+   *   console.log('Active accounts:', accounts);
+   * };
+   *
+   * // Start listening
+   * client.on('accountsChanged', handler);
+   *
+   * // Stop listening
+   * client.off('accountsChanged', handler);
+   * ```
+   */
+  off(event: string, handler: (data: unknown) => void): void {
+    const cleanup = this.eventCleanupFns.get(event)?.get(handler);
+    if (cleanup) {
+      cleanup();
+      this.eventCleanupFns.get(event)?.delete(handler);
+    }
   }
 }

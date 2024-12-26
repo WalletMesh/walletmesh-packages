@@ -1,20 +1,65 @@
+import type { JSONRPCMethodMap, JSONRPCEventMap } from '@walletmesh/jsonrpc';
+
 /**
- * Interface for wallet clients that can be used with the router
+ * Interface for wallet clients that can be used with the router.
+ * Wallet clients provide a standardized way to interact with different blockchain wallets,
+ * supporting both method calls and event handling.
+ *
+ * @example
+ * ```typescript
+ * class EthereumWalletClient implements WalletClient {
+ *   async call<T>(method: string, params?: unknown): Promise<T> {
+ *     // Forward to Ethereum wallet
+ *     return ethereum.request({ method, params });
+ *   }
+ *
+ *   on(event: string, handler: (data: unknown) => void): void {
+ *     // Listen for Ethereum events
+ *     ethereum.on(event, handler);
+ *   }
+ *
+ *   off(event: string, handler: (data: unknown) => void): void {
+ *     ethereum.removeListener(event, handler);
+ *   }
+ * }
+ * ```
  */
 export interface WalletClient {
   /**
    * Call a method on the wallet
-   * @param method - Method name to invoke
-   * @param params - Method parameters
-   * @returns Promise resolving to the method result
+   * @template T - The expected return type of the method call
+   * @param method - Method name to invoke (e.g., 'eth_accounts', 'eth_sendTransaction')
+   * @param params - Method parameters, can be an array for positional params or an object for named params
+   * @returns Promise resolving to the method result of type T
+   * @throws {Error} If the method call fails or is rejected by the wallet
    */
   call<T = unknown>(method: string, params?: unknown): Promise<T>;
 
   /**
-   * Get supported capabilities
-   * @returns Promise resolving to object containing supported methods
+   * Get supported capabilities of the wallet
+   * @returns Promise resolving to object containing supported method names
+   * @throws {Error} If the capabilities request fails
    */
   getSupportedMethods?(): Promise<{ methods: string[] }>;
+
+  /**
+   * Register an event handler for wallet events
+   * Common events include:
+   * - 'accountsChanged': Emitted when the user's accounts change
+   * - 'networkChanged': Emitted when the network/chain changes
+   * - 'disconnect': Emitted when the wallet disconnects
+   *
+   * @param event - Event name to listen for
+   * @param handler - Function to call when the event occurs
+   */
+  on?(event: string, handler: (data: unknown) => void): void;
+
+  /**
+   * Remove a previously registered event handler
+   * @param event - Event name to stop listening for
+   * @param handler - Handler function to remove (must be the same reference as used in 'on')
+   */
+  off?(event: string, handler: (data: unknown) => void): void;
 }
 
 /**
@@ -146,17 +191,6 @@ export interface BulkCallParams extends Record<string, unknown> {
 }
 
 /**
- * Configuration for wallet instances
- * Maps chain IDs to their corresponding JSON-RPC client instances
- * @example
- * ```typescript
- * const wallets = new Map([
- *   ['aztec:testnet', new JSONRPCClient(...)],
- *   ['eip155:1', new JSONRPCClient(...)]
- * ]);
- * ```
- */
-/**
  * Maps chain IDs to their corresponding wallet client instances
  * @example
  * ```typescript
@@ -169,10 +203,45 @@ export interface BulkCallParams extends Record<string, unknown> {
 export type Wallets = Map<ChainId, WalletClient>;
 
 /**
+ * Router event map for bi-directional communication
+ * Defines events that can be emitted by the router
+ */
+export interface RouterEventMap extends JSONRPCEventMap {
+  /**
+   * Emitted when a wallet's state changes (e.g., account changes, network changes)
+   */
+  wm_walletStateChanged: {
+    chainId: ChainId;
+    changes: {
+      accounts?: string[];
+      networkId?: string;
+      [key: string]: unknown;
+    };
+  };
+
+  /**
+   * Emitted when a session's permissions are updated
+   */
+  wm_permissionsChanged: {
+    sessionId: string;
+    permissions: ChainPermissions;
+  };
+
+  /**
+   * Emitted when a session is terminated by the router
+   */
+  wm_sessionTerminated: {
+    sessionId: string;
+    reason: string;
+  };
+  [event: string]: unknown;
+}
+
+/**
  * Router method map following JSON-RPC spec
  * Defines all available methods that can be called on the router, their parameters and return types
  */
-export type RouterMethodMap = {
+export interface RouterMethodMap extends JSONRPCMethodMap {
   /**
    * Attempt to reconnect to an existing session
    * @param sessionId - ID of the session to reconnect to
@@ -272,7 +341,7 @@ export type RouterMethodMap = {
     };
     result: Record<ChainId, string[]>;
   };
-};
+}
 
 export interface RouterContext {
   origin?: string;

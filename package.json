@@ -1,8 +1,10 @@
 {
   "name": "wm-core",
-  "version": "0.0.1",
   "description": "WalletMesh Core Monorepo",
   "private": true,
+  "publishConfig": {
+    "access": "restricted"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/WalletMesh/wm-core.git"
@@ -11,7 +13,9 @@
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
     "coverage": "pnpm -r run coverage",
-    "publish-packages": "pnpm publish -r",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "publish": "changeset publish",
     "clean": "pnpm -r run clean",
     "lint": "biome lint",
     "lint:fix": "biome lint --write",
@@ -22,11 +26,12 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.27.11",
     "@types/node": "^22.10.1",
     "@vitest/coverage-v8": "^2.1.6",
     "rimraf": "^6.0.1",
     "tsx": "^4.19.2",
-    "typedoc": "^0.25.12",
+    "typedoc": "^0.27.6",
     "typedoc-plugin-markdown": "^3.14.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.6"

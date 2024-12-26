@@ -1,4 +1,4 @@
-[@walletmesh/router - v0.0.5](../README.md) / [Exports](../modules.md) / MethodCall
+[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / MethodCall
 
 # Interface: MethodCall
 
@@ -21,7 +21,7 @@ Method name to invoke on the wallet
 
 #### Defined in
 
-[packages/router/src/types.ts:121](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L121)
+[packages/router/src/types.ts:166](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L166)
 
 ___
 
@@ -33,4 +33,4 @@ Method parameters to pass to the wallet method. Type depends on the specific met
 
 #### Defined in
 
-[packages/router/src/types.ts:123](https://github.com/WalletMesh/wm-core/blob/1dbaf3b1e3393bf13c79604523a2ca2c274ab8a3/packages/router/src/types.ts#L123)
+[packages/router/src/types.ts:168](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L168)
