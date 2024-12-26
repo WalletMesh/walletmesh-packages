@@ -1,4 +1,8 @@
-[@walletmesh/jsonrpc - v0.0.6](../README.md) / [Exports](../modules.md) / JSONRPCError
+[**@walletmesh/jsonrpc v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/jsonrpc](../globals.md) / JSONRPCError
 
 # Class: JSONRPCError
 
@@ -12,7 +16,7 @@ Standard error codes:
 - Internal error (-32603): Internal JSON-RPC error
 - Server error (-32000 to -32099): Implementation-defined server errors
 
-**`Example`**
+## Example
 
 ```typescript
 // Basic error
@@ -26,61 +30,51 @@ throw new JSONRPCError(
 );
 ```
 
-## Hierarchy
+## Extends
 
 - `Error`
 
-  ↳ **`JSONRPCError`**
+## Extended by
 
-  ↳↳ [`TimeoutError`](TimeoutError.md)
+- [`TimeoutError`](TimeoutError.md)
 
 ## Implements
 
 - [`JSONRPCErrorInterface`](../interfaces/JSONRPCErrorInterface.md)
 
-## Table of contents
-
-### Constructors
-
-- [constructor](JSONRPCError.md#constructor)
-
-### Properties
-
-- [cause](JSONRPCError.md#cause)
-- [code](JSONRPCError.md#code)
-- [data](JSONRPCError.md#data)
-- [message](JSONRPCError.md#message)
-- [name](JSONRPCError.md#name)
-- [stack](JSONRPCError.md#stack)
-- [prepareStackTrace](JSONRPCError.md#preparestacktrace)
-- [stackTraceLimit](JSONRPCError.md#stacktracelimit)
-
-### Methods
-
-- [toString](JSONRPCError.md#tostring)
-- [captureStackTrace](JSONRPCError.md#capturestacktrace)
-
 ## Constructors
 
-### constructor
+### new JSONRPCError()
 
-• **new JSONRPCError**(`code`, `message`, `data?`): [`JSONRPCError`](JSONRPCError.md)
+> **new JSONRPCError**(`code`, `message`, `data`?): [`JSONRPCError`](JSONRPCError.md)
 
 Creates a new JSONRPCError instance.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `code` | `number` | The error code (should follow JSON-RPC 2.0 error codes) |
-| `message` | `string` | A short, human-readable error message |
-| `data?` | `string` \| `Record`\<`string`, `unknown`\> | Optional additional error data for debugging or client handling |
+##### code
+
+`number`
+
+The error code (should follow JSON-RPC 2.0 error codes)
+
+##### message
+
+`string`
+
+A short, human-readable error message
+
+##### data?
+
+Optional additional error data for debugging or client handling
+
+`string` | `Record`\<`string`, `unknown`\>
 
 #### Returns
 
 [`JSONRPCError`](JSONRPCError.md)
 
-**`Example`**
+#### Example
 
 ```typescript
 // Method handler with error handling
@@ -98,160 +92,161 @@ peer.registerMethod('divide', (context, { a, b }) => {
 
 #### Overrides
 
-Error.constructor
+`Error.constructor`
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:52](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/error.ts#L52)
+[packages/jsonrpc/src/error.ts:52](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/error.ts#L52)
 
 ## Properties
 
-### cause
+### cause?
 
-• `Optional` **cause**: `unknown`
+> `optional` **cause**: `unknown`
 
 #### Inherited from
 
-Error.cause
+`Error.cause`
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es2022.error.d.ts:26
+node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
-___
+***
 
 ### code
 
-• **code**: `number`
+> **code**: `number`
 
 The error code (should follow JSON-RPC 2.0 error codes)
 
 #### Implementation of
 
-[JSONRPCErrorInterface](../interfaces/JSONRPCErrorInterface.md).[code](../interfaces/JSONRPCErrorInterface.md#code)
+[`JSONRPCErrorInterface`](../interfaces/JSONRPCErrorInterface.md).[`code`](../interfaces/JSONRPCErrorInterface.md#code)
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:53](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/error.ts#L53)
+[packages/jsonrpc/src/error.ts:53](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/error.ts#L53)
 
-___
+***
 
-### data
+### data?
 
-• `Optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
+> `optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
 
 Optional additional error data for debugging or client handling
 
 #### Implementation of
 
-[JSONRPCErrorInterface](../interfaces/JSONRPCErrorInterface.md).[data](../interfaces/JSONRPCErrorInterface.md#data)
+[`JSONRPCErrorInterface`](../interfaces/JSONRPCErrorInterface.md).[`data`](../interfaces/JSONRPCErrorInterface.md#data)
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:55](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/error.ts#L55)
+[packages/jsonrpc/src/error.ts:55](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/error.ts#L55)
 
-___
+***
 
 ### message
 
-• **message**: `string`
+> **message**: `string`
 
 The error message.
 
 #### Implementation of
 
-[JSONRPCErrorInterface](../interfaces/JSONRPCErrorInterface.md).[message](../interfaces/JSONRPCErrorInterface.md#message)
+[`JSONRPCErrorInterface`](../interfaces/JSONRPCErrorInterface.md).[`message`](../interfaces/JSONRPCErrorInterface.md#message)
 
 #### Inherited from
 
-Error.message
+`Error.message`
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1077
+node\_modules/typescript/lib/lib.es5.d.ts:1077
 
-___
+***
 
 ### name
 
-• **name**: `string` = `'JSONRPCError'`
+> **name**: `string` = `'JSONRPCError'`
 
 #### Overrides
 
-Error.name
+`Error.name`
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:28](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/error.ts#L28)
+[packages/jsonrpc/src/error.ts:28](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/error.ts#L28)
 
-___
+***
 
-### stack
+### stack?
 
-• `Optional` **stack**: `string`
+> `optional` **stack**: `string`
 
 #### Inherited from
 
-Error.stack
+`Error.stack`
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1078
+node\_modules/typescript/lib/lib.es5.d.ts:1078
 
-___
+***
 
-### prepareStackTrace
+### prepareStackTrace()?
 
-▪ `Static` `Optional` **prepareStackTrace**: (`err`: `Error`, `stackTraces`: `CallSite`[]) => `any`
+> `static` `optional` **prepareStackTrace**: (`err`, `stackTraces`) => `any`
 
 Optional override for formatting stack traces
 
-**`See`**
+#### Parameters
 
-https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+##### err
 
-#### Type declaration
+`Error`
 
-▸ (`err`, `stackTraces`): `any`
+##### stackTraces
 
-##### Parameters
+`CallSite`[]
 
-| Name | Type |
-| :------ | :------ |
-| `err` | `Error` |
-| `stackTraces` | `CallSite`[] |
-
-##### Returns
+#### Returns
 
 `any`
 
+#### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
 #### Inherited from
 
-Error.prepareStackTrace
+`Error.prepareStackTrace`
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:143
+node\_modules/@types/node/globals.d.ts:143
 
-___
+***
 
 ### stackTraceLimit
 
-▪ `Static` **stackTraceLimit**: `number`
+> `static` **stackTraceLimit**: `number`
 
 #### Inherited from
 
-Error.stackTraceLimit
+`Error.stackTraceLimit`
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:145
+node\_modules/@types/node/globals.d.ts:145
 
 ## Methods
 
-### toString
+### toString()
 
-▸ **toString**(): `string`
+> **toString**(): `string`
+
+Returns a string representation of an object.
 
 #### Returns
 
@@ -259,22 +254,25 @@ node_modules/@types/node/globals.d.ts:145
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:60](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/error.ts#L60)
+[packages/jsonrpc/src/error.ts:60](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/error.ts#L60)
 
-___
+***
 
-### captureStackTrace
+### captureStackTrace()
 
-▸ **captureStackTrace**(`targetObject`, `constructorOpt?`): `void`
+> `static` **captureStackTrace**(`targetObject`, `constructorOpt`?): `void`
 
 Create .stack property on a target object
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `targetObject` | `object` |
-| `constructorOpt?` | `Function` |
+##### targetObject
+
+`object`
+
+##### constructorOpt?
+
+`Function`
 
 #### Returns
 
@@ -282,8 +280,8 @@ Create .stack property on a target object
 
 #### Inherited from
 
-Error.captureStackTrace
+`Error.captureStackTrace`
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:136
+node\_modules/@types/node/globals.d.ts:136

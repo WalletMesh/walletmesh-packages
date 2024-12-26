@@ -1,4 +1,8 @@
-[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / WalletMethodMap
+[**@walletmesh/router v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/router](../globals.md) / WalletMethodMap
 
 # Interface: WalletMethodMap
 
@@ -6,7 +10,7 @@ Method map for wallet JSON-RPC communication.
 Extends the base JSONRPCMethodMap to include wallet-specific methods and
 allows for dynamic method names with unknown parameters and return types.
 
-**`Example`**
+## Example
 
 ```typescript
 // Ethereum wallet methods
@@ -19,36 +23,32 @@ type EthereumMethods = {
 } & WalletMethodMap;
 ```
 
-## Hierarchy
+## Extends
 
 - `JSONRPCMethodMap`
 
-  ↳ **`WalletMethodMap`**
-
 ## Indexable
 
-▪ [method: `string`]: \{ `params?`: `JSONRPCParams` ; `result`: `unknown`  }
-
-## Table of contents
-
-### Properties
-
-- [wm\_getSupportedMethods](WalletMethodMap.md#wm_getsupportedmethods)
+ \[`method`: `string`\]: `object`
 
 ## Properties
 
 ### wm\_getSupportedMethods
 
-• **wm\_getSupportedMethods**: `Object`
+> **wm\_getSupportedMethods**: `object`
 
-#### Type declaration
+#### params
 
-| Name | Type |
-| :------ | :------ |
-| `params` | `undefined` |
-| `result` | \{ `methods`: `string`[]  } |
-| `result.methods` | `string`[] |
+> **params**: `undefined`
+
+#### result
+
+> **result**: `object`
+
+##### result.methods
+
+> **methods**: `string`[]
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:22](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/jsonrpc-adapter.ts#L22)
+[packages/router/src/jsonrpc-adapter.ts:22](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/jsonrpc-adapter.ts#L22)

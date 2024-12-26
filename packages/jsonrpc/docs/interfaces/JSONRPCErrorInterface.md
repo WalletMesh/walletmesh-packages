@@ -1,4 +1,8 @@
-[@walletmesh/jsonrpc - v0.0.6](../README.md) / [Exports](../modules.md) / JSONRPCErrorInterface
+[**@walletmesh/jsonrpc v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/jsonrpc](../globals.md) / JSONRPCErrorInterface
 
 # Interface: JSONRPCErrorInterface
 
@@ -12,7 +16,7 @@ Standard error codes:
 - Internal error (-32603)
 - Server error (-32000 to -32099)
 
-**`Example`**
+## Example
 
 ```typescript
 const error: JSONRPCErrorInterface = {
@@ -22,50 +26,38 @@ const error: JSONRPCErrorInterface = {
 };
 ```
 
-## Implemented by
-
-- [`JSONRPCError`](../classes/JSONRPCError.md)
-
-## Table of contents
-
-### Properties
-
-- [code](JSONRPCErrorInterface.md#code)
-- [data](JSONRPCErrorInterface.md#data)
-- [message](JSONRPCErrorInterface.md#message)
-
 ## Properties
 
 ### code
 
-• **code**: `number`
+> **code**: `number`
 
 The error code.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:253](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L253)
+[packages/jsonrpc/src/types.ts:253](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L253)
 
-___
+***
 
-### data
+### data?
 
-• `Optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
+> `optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
 
 Additional error data.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:257](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L257)
+[packages/jsonrpc/src/types.ts:257](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L257)
 
-___
+***
 
 ### message
 
-• **message**: `string`
+> **message**: `string`
 
 The error message.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:255](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L255)
+[packages/jsonrpc/src/types.ts:255](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L255)

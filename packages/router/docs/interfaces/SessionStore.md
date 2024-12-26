@@ -1,31 +1,18 @@
-[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / SessionStore
+[**@walletmesh/router v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/router](../globals.md) / SessionStore
 
 # Interface: SessionStore
 
 Interface for session storage implementations
 
-## Implemented by
-
-- [`LocalStorageSessionStore`](../classes/LocalStorageSessionStore.md)
-- [`MemorySessionStore`](../classes/MemorySessionStore.md)
-
-## Table of contents
-
-### Methods
-
-- [cleanExpired](SessionStore.md#cleanexpired)
-- [clear](SessionStore.md#clear)
-- [delete](SessionStore.md#delete)
-- [get](SessionStore.md#get)
-- [getAll](SessionStore.md#getall)
-- [set](SessionStore.md#set)
-- [validateAndRefresh](SessionStore.md#validateandrefresh)
-
 ## Methods
 
-### cleanExpired
+### cleanExpired()
 
-▸ **cleanExpired**(): `Promise`\<`number`\>
+> **cleanExpired**(): `Promise`\<`number`\>
 
 Remove all expired sessions
 
@@ -37,13 +24,13 @@ Promise resolving to number of sessions removed
 
 #### Defined in
 
-[packages/router/src/session-store.ts:54](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/session-store.ts#L54)
+[packages/router/src/session-store.ts:54](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/session-store.ts#L54)
 
-___
+***
 
-### clear
+### clear()
 
-▸ **clear**(): `Promise`\<`void`\>
+> **clear**(): `Promise`\<`void`\>
 
 Clear all sessions
 
@@ -53,21 +40,23 @@ Clear all sessions
 
 #### Defined in
 
-[packages/router/src/session-store.ts:41](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/session-store.ts#L41)
+[packages/router/src/session-store.ts:41](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/session-store.ts#L41)
 
-___
+***
 
-### delete
+### delete()
 
-▸ **delete**(`sessionId`): `Promise`\<`void`\>
+> **delete**(`sessionId`): `Promise`\<`void`\>
 
 Remove a session
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `sessionId` | `string` | Unique session identifier |
+##### sessionId
+
+`string`
+
+Unique session identifier
 
 #### Returns
 
@@ -75,21 +64,23 @@ Remove a session
 
 #### Defined in
 
-[packages/router/src/session-store.ts:36](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/session-store.ts#L36)
+[packages/router/src/session-store.ts:36](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/session-store.ts#L36)
 
-___
+***
 
-### get
+### get()
 
-▸ **get**(`sessionId`): `Promise`\<`undefined` \| [`SessionData`](SessionData.md)\>
+> **get**(`sessionId`): `Promise`\<`undefined` \| [`SessionData`](SessionData.md)\>
 
 Retrieve a session if it exists and has not expired
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `sessionId` | `string` | Unique session identifier |
+##### sessionId
+
+`string`
+
+Unique session identifier
 
 #### Returns
 
@@ -99,13 +90,13 @@ Promise resolving to session data if found and valid, undefined otherwise
 
 #### Defined in
 
-[packages/router/src/session-store.ts:24](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/session-store.ts#L24)
+[packages/router/src/session-store.ts:24](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/session-store.ts#L24)
 
-___
+***
 
-### getAll
+### getAll()
 
-▸ **getAll**(): `Promise`\<`Map`\<`string`, [`SessionData`](SessionData.md)\>\>
+> **getAll**(): `Promise`\<`Map`\<`string`, [`SessionData`](SessionData.md)\>\>
 
 Get all non-expired sessions
 
@@ -117,22 +108,29 @@ Promise resolving to Map of session IDs to session data
 
 #### Defined in
 
-[packages/router/src/session-store.ts:30](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/session-store.ts#L30)
+[packages/router/src/session-store.ts:30](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/session-store.ts#L30)
 
-___
+***
 
-### set
+### set()
 
-▸ **set**(`sessionId`, `data`): `Promise`\<`void`\>
+> **set**(`sessionId`, `data`): `Promise`\<`void`\>
 
 Store a new session
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `sessionId` | `string` | Unique session identifier |
-| `data` | [`SessionData`](SessionData.md) | Session data to store |
+##### sessionId
+
+`string`
+
+Unique session identifier
+
+##### data
+
+[`SessionData`](SessionData.md)
+
+Session data to store
 
 #### Returns
 
@@ -140,21 +138,23 @@ Store a new session
 
 #### Defined in
 
-[packages/router/src/session-store.ts:17](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/session-store.ts#L17)
+[packages/router/src/session-store.ts:17](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/session-store.ts#L17)
 
-___
+***
 
-### validateAndRefresh
+### validateAndRefresh()
 
-▸ **validateAndRefresh**(`sessionId`): `Promise`\<`undefined` \| [`SessionData`](SessionData.md)\>
+> **validateAndRefresh**(`sessionId`): `Promise`\<`undefined` \| [`SessionData`](SessionData.md)\>
 
 Validate a session and optionally refresh its expiry
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `sessionId` | `string` | Unique session identifier |
+##### sessionId
+
+`string`
+
+Unique session identifier
 
 #### Returns
 
@@ -164,4 +164,4 @@ Promise resolving to session data if valid, undefined if expired or not found
 
 #### Defined in
 
-[packages/router/src/session-store.ts:48](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/session-store.ts#L48)
+[packages/router/src/session-store.ts:48](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/session-store.ts#L48)

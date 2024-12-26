@@ -1,235 +1,300 @@
-[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / RouterMethodMap
+[**@walletmesh/router v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/router](../globals.md) / RouterMethodMap
 
 # Interface: RouterMethodMap
 
 Router method map following JSON-RPC spec
 Defines all available methods that can be called on the router, their parameters and return types
 
-## Hierarchy
+## Extends
 
 - `JSONRPCMethodMap`
 
-  ↳ **`RouterMethodMap`**
+## Indexable
 
-## Table of contents
-
-### Properties
-
-- [wm\_bulkCall](RouterMethodMap.md#wm_bulkcall)
-- [wm\_call](RouterMethodMap.md#wm_call)
-- [wm\_connect](RouterMethodMap.md#wm_connect)
-- [wm\_disconnect](RouterMethodMap.md#wm_disconnect)
-- [wm\_getPermissions](RouterMethodMap.md#wm_getpermissions)
-- [wm\_getSupportedMethods](RouterMethodMap.md#wm_getsupportedmethods)
-- [wm\_reconnect](RouterMethodMap.md#wm_reconnect)
-- [wm\_updatePermissions](RouterMethodMap.md#wm_updatepermissions)
+ \[`method`: `string`\]: `JSONRPCMethodDef`\<`JSONRPCParams`, `unknown`\>
 
 ## Properties
 
 ### wm\_bulkCall
 
-• **wm\_bulkCall**: `Object`
+> **wm\_bulkCall**: `object`
 
-#### Type declaration
+#### params
 
-| Name | Type |
-| :------ | :------ |
-| `params` | [`BulkCallParams`](BulkCallParams.md) |
-| `result` | `unknown`[] |
+> **params**: [`BulkCallParams`](BulkCallParams.md)
+
+#### result
+
+> **result**: `unknown`[]
 
 #### Defined in
 
-[packages/router/src/types.ts:328](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L328)
+[packages/router/src/types.ts:328](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L328)
 
-___
+***
 
 ### wm\_call
 
-• **wm\_call**: `Object`
+> **wm\_call**: `object`
 
 Invoke a method on a specific chain
 
-**`Param`**
+#### params
+
+> **params**: [`CallParams`](CallParams.md)
+
+#### result
+
+> **result**: `unknown`
+
+#### Param
 
 Chain to invoke the method on
 
-**`Param`**
+#### Param
 
 Session ID for authorization
 
-**`Param`**
+#### Param
 
 Method call details including name and parameters
 
-#### Type declaration
+#### Returns
 
-| Name | Type |
-| :------ | :------ |
-| `params` | [`CallParams`](CallParams.md) |
-| `result` | `unknown` |
+Result of the method call, type depends on the method called
 
 #### Defined in
 
-[packages/router/src/types.ts:323](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L323)
+[packages/router/src/types.ts:323](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L323)
 
-___
+***
 
 ### wm\_connect
 
-• **wm\_connect**: `Object`
+> **wm\_connect**: `object`
 
 Create a new session
 
-**`Param`**
+#### params
+
+> **params**: `object`
+
+##### params.permissions
+
+> **permissions**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
+
+#### result
+
+> **result**: `object`
+
+##### result.permissions
+
+> **permissions**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
+
+##### result.sessionId
+
+> **sessionId**: `string`
+
+#### Param
 
 The chain to connect to
 
-**`Param`**
+#### Param
 
 Array of method names that the session requests permission to call
 
-#### Type declaration
+#### Returns
 
-| Name | Type |
-| :------ | :------ |
-| `params` | \{ `permissions`: [`ChainPermissions`](../modules.md#chainpermissions)  } |
-| `params.permissions` | [`ChainPermissions`](../modules.md#chainpermissions) |
-| `result` | \{ `permissions`: [`ChainPermissions`](../modules.md#chainpermissions) ; `sessionId`: `string`  } |
-| `result.permissions` | [`ChainPermissions`](../modules.md#chainpermissions) |
-| `result.sessionId` | `string` |
+Object containing the new session ID
 
 #### Defined in
 
-[packages/router/src/types.ts:266](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L266)
+[packages/router/src/types.ts:266](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L266)
 
-___
+***
 
 ### wm\_disconnect
 
-• **wm\_disconnect**: `Object`
+> **wm\_disconnect**: `object`
 
 End an existing session
 
-**`Param`**
+#### params
+
+> **params**: `object`
+
+##### params.sessionId
+
+> **sessionId**: `string`
+
+#### result
+
+> **result**: `boolean`
+
+#### Param
 
 ID of the session to end
 
-#### Type declaration
+#### Returns
 
-| Name | Type |
-| :------ | :------ |
-| `params` | \{ `sessionId`: `string`  } |
-| `params.sessionId` | `string` |
-| `result` | `boolean` |
+true if session was successfully ended
 
 #### Defined in
 
-[packages/router/src/types.ts:281](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L281)
+[packages/router/src/types.ts:281](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L281)
 
-___
+***
 
 ### wm\_getPermissions
 
-• **wm\_getPermissions**: `Object`
+> **wm\_getPermissions**: `object`
 
 Get current session permissions
 
-**`Param`**
+#### params
+
+> **params**: `object`
+
+##### params.chainIds?
+
+> `optional` **chainIds**: `string`[]
+
+##### params.sessionId
+
+> **sessionId**: `string`
+
+#### result
+
+> **result**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
+
+#### Param
 
 ID of the session to get permissions for
 
-**`Param`**
+#### Param
 
 Optional array of chain IDs to get permissions for. If not provided, returns permissions for all chains
 
-#### Type declaration
+#### Returns
 
-| Name | Type |
-| :------ | :------ |
-| `params` | \{ `chainIds?`: `string`[] ; `sessionId`: `string`  } |
-| `params.chainIds?` | `string`[] |
-| `params.sessionId` | `string` |
-| `result` | [`ChainPermissions`](../modules.md#chainpermissions) |
+Record of chain IDs to their permissions
 
 #### Defined in
 
-[packages/router/src/types.ts:294](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L294)
+[packages/router/src/types.ts:294](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L294)
 
-___
+***
 
 ### wm\_getSupportedMethods
 
-• **wm\_getSupportedMethods**: `Object`
+> **wm\_getSupportedMethods**: `object`
 
 Get supported methods
 
-**`Param`**
+#### params
+
+> **params**: `object`
+
+##### params.chainIds?
+
+> `optional` **chainIds**: `string`[]
+
+#### result
+
+> **result**: `Record`\<`string`, `string`[]\>
+
+#### Param
 
 Optional chain to get methods for. If not provided, returns router's supported methods
 
-#### Type declaration
+#### Returns
 
-| Name | Type |
-| :------ | :------ |
-| `params` | \{ `chainIds?`: `string`[]  } |
-| `params.chainIds?` | `string`[] |
-| `result` | `Record`\<`string`, `string`[]\> |
+Object containing array of supported method names
 
 #### Defined in
 
-[packages/router/src/types.ts:338](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L338)
+[packages/router/src/types.ts:338](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L338)
 
-___
+***
 
 ### wm\_reconnect
 
-• **wm\_reconnect**: `Object`
+> **wm\_reconnect**: `object`
 
 Attempt to reconnect to an existing session
 
-**`Param`**
+#### params
+
+> **params**: `object`
+
+##### params.sessionId
+
+> **sessionId**: `string`
+
+#### result
+
+> **result**: `object`
+
+##### result.permissions
+
+> **permissions**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
+
+##### result.status
+
+> **status**: `boolean`
+
+#### Param
 
 ID of the session to reconnect to
 
-#### Type declaration
+#### Returns
 
-| Name | Type |
-| :------ | :------ |
-| `params` | \{ `sessionId`: `string`  } |
-| `params.sessionId` | `string` |
-| `result` | \{ `permissions`: [`ChainPermissions`](../modules.md#chainpermissions) ; `status`: `boolean`  } |
-| `result.permissions` | [`ChainPermissions`](../modules.md#chainpermissions) |
-| `result.status` | `boolean` |
+true if reconnection was successful, false otherwise
 
 #### Defined in
 
-[packages/router/src/types.ts:250](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L250)
+[packages/router/src/types.ts:250](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L250)
 
-___
+***
 
 ### wm\_updatePermissions
 
-• **wm\_updatePermissions**: `Object`
+> **wm\_updatePermissions**: `object`
 
 Update session permissions
 
-**`Param`**
+#### params
+
+> **params**: `object`
+
+##### params.permissions
+
+> **permissions**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
+
+##### params.sessionId
+
+> **sessionId**: `string`
+
+#### result
+
+> **result**: `boolean`
+
+#### Param
 
 ID of the session to update
 
-**`Param`**
+#### Param
 
 Record of chain IDs to their new permissions
 
-#### Type declaration
+#### Returns
 
-| Name | Type |
-| :------ | :------ |
-| `params` | \{ `permissions`: [`ChainPermissions`](../modules.md#chainpermissions) ; `sessionId`: `string`  } |
-| `params.permissions` | [`ChainPermissions`](../modules.md#chainpermissions) |
-| `params.sessionId` | `string` |
-| `result` | `boolean` |
+true if permissions were successfully updated
 
 #### Defined in
 
-[packages/router/src/types.ts:308](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L308)
+[packages/router/src/types.ts:308](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L308)

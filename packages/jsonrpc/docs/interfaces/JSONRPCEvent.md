@@ -1,11 +1,15 @@
-[@walletmesh/jsonrpc - v0.0.6](../README.md) / [Exports](../modules.md) / JSONRPCEvent
+[**@walletmesh/jsonrpc v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/jsonrpc](../globals.md) / JSONRPCEvent
 
 # Interface: JSONRPCEvent\<T, E\>
 
 Represents a JSON-RPC 2.0 event message.
 Events are similar to notifications but use 'event' instead of 'method'.
 
-**`Example`**
+## Example
 
 ```typescript
 const event: JSONRPCEvent<EventMap, 'userJoined'> = {
@@ -18,53 +22,48 @@ const event: JSONRPCEvent<EventMap, 'userJoined'> = {
 };
 ```
 
-## Type parameters
+## Type Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `T` | extends [`JSONRPCEventMap`](../modules.md#jsonrpceventmap) | The event map defining available events |
-| `E` | extends keyof `T` | The specific event being emitted |
+• **T** *extends* [`JSONRPCEventMap`](../type-aliases/JSONRPCEventMap.md)
 
-## Table of contents
+The event map defining available events
 
-### Properties
+• **E** *extends* keyof `T`
 
-- [event](JSONRPCEvent.md#event)
-- [jsonrpc](JSONRPCEvent.md#jsonrpc)
-- [params](JSONRPCEvent.md#params)
+The specific event being emitted
 
 ## Properties
 
 ### event
 
-• **event**: `E`
+> **event**: `E`
 
 The event name.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:348](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L348)
+[packages/jsonrpc/src/types.ts:348](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L348)
 
-___
+***
 
 ### jsonrpc
 
-• **jsonrpc**: ``"2.0"``
+> **jsonrpc**: `"2.0"`
 
 The JSON-RPC version ('2.0').
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:346](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L346)
+[packages/jsonrpc/src/types.ts:346](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L346)
 
-___
+***
 
 ### params
 
-• **params**: `T`[`E`]
+> **params**: `T`\[`E`\]
 
 The event payload.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:350](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L350)
+[packages/jsonrpc/src/types.ts:350](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L350)

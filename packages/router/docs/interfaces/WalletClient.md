@@ -1,4 +1,8 @@
-[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / WalletClient
+[**@walletmesh/router v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/router](../globals.md) / WalletClient
 
 # Interface: WalletClient
 
@@ -6,7 +10,7 @@ Interface for wallet clients that can be used with the router.
 Wallet clients provide a standardized way to interact with different blockchain wallets,
 supporting both method calls and event handling.
 
-**`Example`**
+## Example
 
 ```typescript
 class EthereumWalletClient implements WalletClient {
@@ -26,39 +30,33 @@ class EthereumWalletClient implements WalletClient {
 }
 ```
 
-## Implemented by
-
-- [`JSONRPCWalletClient`](../classes/JSONRPCWalletClient.md)
-
-## Table of contents
-
-### Methods
-
-- [call](WalletClient.md#call)
-- [getSupportedMethods](WalletClient.md#getsupportedmethods)
-- [off](WalletClient.md#off)
-- [on](WalletClient.md#on)
-
 ## Methods
 
-### call
+### call()
 
-▸ **call**\<`T`\>(`method`, `params?`): `Promise`\<`T`\>
+> **call**\<`T`\>(`method`, `params`?): `Promise`\<`T`\>
 
 Call a method on the wallet
 
-#### Type parameters
+#### Type Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `T` | `unknown` | The expected return type of the method call |
+• **T** = `unknown`
+
+The expected return type of the method call
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `method` | `string` | Method name to invoke (e.g., 'eth_accounts', 'eth_sendTransaction') |
-| `params?` | `unknown` | Method parameters, can be an array for positional params or an object for named params |
+##### method
+
+`string`
+
+Method name to invoke (e.g., 'eth_accounts', 'eth_sendTransaction')
+
+##### params?
+
+`unknown`
+
+Method parameters, can be an array for positional params or an object for named params
 
 #### Returns
 
@@ -66,50 +64,57 @@ Call a method on the wallet
 
 Promise resolving to the method result of type T
 
-**`Throws`**
+#### Throws
 
 If the method call fails or is rejected by the wallet
 
 #### Defined in
 
-[packages/router/src/types.ts:36](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L36)
+[packages/router/src/types.ts:36](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L36)
 
-___
+***
 
-### getSupportedMethods
+### getSupportedMethods()?
 
-▸ **getSupportedMethods**(): `Promise`\<\{ `methods`: `string`[]  }\>
+> `optional` **getSupportedMethods**(): `Promise`\<\{ `methods`: `string`[]; \}\>
 
 Get supported capabilities of the wallet
 
 #### Returns
 
-`Promise`\<\{ `methods`: `string`[]  }\>
+`Promise`\<\{ `methods`: `string`[]; \}\>
 
 Promise resolving to object containing supported method names
 
-**`Throws`**
+#### Throws
 
 If the capabilities request fails
 
 #### Defined in
 
-[packages/router/src/types.ts:43](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L43)
+[packages/router/src/types.ts:43](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L43)
 
-___
+***
 
-### off
+### off()?
 
-▸ **off**(`event`, `handler`): `void`
+> `optional` **off**(`event`, `handler`): `void`
 
 Remove a previously registered event handler
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `event` | `string` | Event name to stop listening for |
-| `handler` | (`data`: `unknown`) => `void` | Handler function to remove (must be the same reference as used in 'on') |
+##### event
+
+`string`
+
+Event name to stop listening for
+
+##### handler
+
+(`data`) => `void`
+
+Handler function to remove (must be the same reference as used in 'on')
 
 #### Returns
 
@@ -117,13 +122,13 @@ Remove a previously registered event handler
 
 #### Defined in
 
-[packages/router/src/types.ts:62](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L62)
+[packages/router/src/types.ts:62](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L62)
 
-___
+***
 
-### on
+### on()?
 
-▸ **on**(`event`, `handler`): `void`
+> `optional` **on**(`event`, `handler`): `void`
 
 Register an event handler for wallet events
 Common events include:
@@ -133,10 +138,17 @@ Common events include:
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `event` | `string` | Event name to listen for |
-| `handler` | (`data`: `unknown`) => `void` | Function to call when the event occurs |
+##### event
+
+`string`
+
+Event name to listen for
+
+##### handler
+
+(`data`) => `void`
+
+Function to call when the event occurs
 
 #### Returns
 
@@ -144,4 +156,4 @@ Common events include:
 
 #### Defined in
 
-[packages/router/src/types.ts:55](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L55)
+[packages/router/src/types.ts:55](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L55)

@@ -1,10 +1,14 @@
-[@walletmesh/jsonrpc - v0.0.6](../README.md) / [Exports](../modules.md) / JSONRPCResponse
+[**@walletmesh/jsonrpc v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/jsonrpc](../globals.md) / JSONRPCResponse
 
 # Interface: JSONRPCResponse\<T, M\>
 
 Represents a JSON-RPC 2.0 response message.
 
-**`Example`**
+## Example
 
 ```typescript
 // Successful response
@@ -25,66 +29,60 @@ const errorResponse: JSONRPCResponse<MethodMap> = {
 };
 ```
 
-## Type parameters
+## Type Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `T` | extends [`JSONRPCMethodMap`](../modules.md#jsonrpcmethodmap) | The RPC method map defining available methods |
-| `M` | extends keyof `T` = keyof `T` | The specific method that was called |
+• **T** *extends* [`JSONRPCMethodMap`](../type-aliases/JSONRPCMethodMap.md)
 
-## Table of contents
+The RPC method map defining available methods
 
-### Properties
+• **M** *extends* keyof `T` = keyof `T`
 
-- [error](JSONRPCResponse.md#error)
-- [id](JSONRPCResponse.md#id)
-- [jsonrpc](JSONRPCResponse.md#jsonrpc)
-- [result](JSONRPCResponse.md#result)
+The specific method that was called
 
 ## Properties
 
-### error
+### error?
 
-• `Optional` **error**: [`JSONRPCErrorInterface`](JSONRPCErrorInterface.md)
+> `optional` **error**: [`JSONRPCErrorInterface`](JSONRPCErrorInterface.md)
 
 The error object, if an error occurred.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:226](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L226)
+[packages/jsonrpc/src/types.ts:226](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L226)
 
-___
+***
 
 ### id
 
-• **id**: [`JSONRPCID`](../modules.md#jsonrpcid)
+> **id**: [`JSONRPCID`](../type-aliases/JSONRPCID.md)
 
 The request ID.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:228](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L228)
+[packages/jsonrpc/src/types.ts:228](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L228)
 
-___
+***
 
 ### jsonrpc
 
-• **jsonrpc**: ``"2.0"``
+> **jsonrpc**: `"2.0"`
 
 The JSON-RPC version ('2.0').
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:222](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L222)
+[packages/jsonrpc/src/types.ts:222](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L222)
 
-___
+***
 
-### result
+### result?
 
-• `Optional` **result**: `T`[`M`][``"result"``]
+> `optional` **result**: `T`\[`M`\]\[`"result"`\]
 
 The result of the method call, if successful. Can be modified by middleware.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:224](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L224)
+[packages/jsonrpc/src/types.ts:224](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L224)

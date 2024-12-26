@@ -1,53 +1,51 @@
-[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / BulkCallParams
+[**@walletmesh/router v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/router](../globals.md) / BulkCallParams
 
 # Interface: BulkCallParams
 
-## Hierarchy
+## Extends
 
 - `Record`\<`string`, `unknown`\>
 
-  ↳ **`BulkCallParams`**
+## Indexable
 
-## Table of contents
-
-### Properties
-
-- [calls](BulkCallParams.md#calls)
-- [chainId](BulkCallParams.md#chainid)
-- [sessionId](BulkCallParams.md#sessionid)
+ \[`key`: `string`\]: `unknown`
 
 ## Properties
 
 ### calls
 
-• **calls**: [`MethodCall`](MethodCall.md)[]
+> **calls**: [`MethodCall`](MethodCall.md)[]
 
 Calls
 
 #### Defined in
 
-[packages/router/src/types.ts:190](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L190)
+[packages/router/src/types.ts:190](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L190)
 
-___
+***
 
 ### chainId
 
-• **chainId**: `string`
+> **chainId**: `string`
 
 Target chain ID
 
 #### Defined in
 
-[packages/router/src/types.ts:186](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L186)
+[packages/router/src/types.ts:186](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L186)
 
-___
+***
 
 ### sessionId
 
-• **sessionId**: `string`
+> **sessionId**: `string`
 
 Session ID for authorization
 
 #### Defined in
 
-[packages/router/src/types.ts:188](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L188)
+[packages/router/src/types.ts:188](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L188)

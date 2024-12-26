@@ -76,7 +76,7 @@ export type Transport<T extends JSONRPCMethodMap, E extends JSONRPCEventMap> = {
  *   };
  * ```
  */
-type MethodHandler<T extends JSONRPCMethodMap, M extends keyof T, C extends JSONRPCContext> = (
+export type MethodHandler<T extends JSONRPCMethodMap, M extends keyof T, C extends JSONRPCContext> = (
   context: C,
   params: T[M]['params'],
 ) => Promise<T[M]['result']> | T[M]['result'];

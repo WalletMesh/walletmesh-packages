@@ -1,11 +1,15 @@
-[@walletmesh/jsonrpc - v0.0.6](../README.md) / [Exports](../modules.md) / Serializer
+[**@walletmesh/jsonrpc v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/jsonrpc](../globals.md) / Serializer
 
 # Interface: Serializer\<T\>
 
 Interface for serializing and deserializing values.
 Enables custom type conversion for complex objects that need special handling.
 
-**`Example`**
+## Example
 
 ```typescript
 const dateSerializer: Serializer<Date> = {
@@ -14,32 +18,27 @@ const dateSerializer: Serializer<Date> = {
 };
 ```
 
-## Type parameters
+## Type Parameters
 
-| Name | Description |
-| :------ | :------ |
-| `T` | The type of value to serialize/deserialize |
+• **T**
 
-## Table of contents
-
-### Methods
-
-- [deserialize](Serializer.md#deserialize)
-- [serialize](Serializer.md#serialize)
+The type of value to serialize/deserialize
 
 ## Methods
 
-### deserialize
+### deserialize()
 
-▸ **deserialize**(`value`): `T`
+> **deserialize**(`value`): `T`
 
 Deserializes JSONRPCSerializedData back to the original type
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `value` | [`JSONRPCSerializedData`](../modules.md#jsonrpcserializeddata) | The serialized data to deserialize |
+##### value
+
+[`JSONRPCSerializedData`](../type-aliases/JSONRPCSerializedData.md)
+
+The serialized data to deserialize
 
 #### Returns
 
@@ -49,28 +48,30 @@ The deserialized value
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:75](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L75)
+[packages/jsonrpc/src/types.ts:75](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L75)
 
-___
+***
 
-### serialize
+### serialize()
 
-▸ **serialize**(`value`): [`JSONRPCSerializedData`](../modules.md#jsonrpcserializeddata)
+> **serialize**(`value`): [`JSONRPCSerializedData`](../type-aliases/JSONRPCSerializedData.md)
 
 Serializes a value to JSONRPCSerializedData
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `value` | `T` | The value to serialize |
+##### value
+
+`T`
+
+The value to serialize
 
 #### Returns
 
-[`JSONRPCSerializedData`](../modules.md#jsonrpcserializeddata)
+[`JSONRPCSerializedData`](../type-aliases/JSONRPCSerializedData.md)
 
 The serialized data
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:68](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/jsonrpc/src/types.ts#L68)
+[packages/jsonrpc/src/types.ts:68](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/types.ts#L68)

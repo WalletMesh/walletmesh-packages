@@ -1,51 +1,38 @@
-[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / RouterError
+[**@walletmesh/router v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/router](../globals.md) / RouterError
 
 # Class: RouterError
 
 Custom error class for router errors
 
-## Hierarchy
+## Extends
 
 - `JSONRPCError`
 
-  ↳ **`RouterError`**
-
-## Table of contents
-
-### Constructors
-
-- [constructor](RouterError.md#constructor)
-
-### Properties
-
-- [cause](RouterError.md#cause)
-- [code](RouterError.md#code)
-- [data](RouterError.md#data)
-- [message](RouterError.md#message)
-- [name](RouterError.md#name)
-- [stack](RouterError.md#stack)
-- [prepareStackTrace](RouterError.md#preparestacktrace)
-- [stackTraceLimit](RouterError.md#stacktracelimit)
-
-### Methods
-
-- [toString](RouterError.md#tostring)
-- [captureStackTrace](RouterError.md#capturestacktrace)
-
 ## Constructors
 
-### constructor
+### new RouterError()
 
-• **new RouterError**(`err`, `data?`): [`RouterError`](RouterError.md)
+> **new RouterError**(`err`, `data`?): [`RouterError`](RouterError.md)
 
 Creates a new RouterError.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `err` | ``"unknownChain"`` \| ``"invalidSession"`` \| ``"insufficientPermissions"`` \| ``"methodNotSupported"`` \| ``"walletNotAvailable"`` \| ``"partialFailure"`` \| ``"invalidRequest"`` \| ``"unknownError"`` | The error type from RouterErrorMap |
-| `data?` | `string` \| `Record`\<`string`, `unknown`\> | Optional additional error data |
+##### err
+
+The error type from RouterErrorMap
+
+`"unknownChain"` | `"invalidSession"` | `"insufficientPermissions"` | `"methodNotSupported"` | `"walletNotAvailable"` | `"partialFailure"` | `"invalidRequest"` | `"unknownError"`
+
+##### data?
+
+Optional additional error data
+
+`string` | `Record`\<`string`, `unknown`\>
 
 #### Returns
 
@@ -53,150 +40,155 @@ Creates a new RouterError.
 
 #### Overrides
 
-JSONRPCError.constructor
+`JSONRPCError.constructor`
 
 #### Defined in
 
-[packages/router/src/errors.ts:28](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/errors.ts#L28)
+[packages/router/src/errors.ts:28](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/errors.ts#L28)
 
 ## Properties
 
-### cause
+### cause?
 
-• `Optional` **cause**: `unknown`
+> `optional` **cause**: `unknown`
 
 #### Inherited from
 
-JSONRPCError.cause
+`JSONRPCError.cause`
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es2022.error.d.ts:26
+node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
-___
+***
 
 ### code
 
-• **code**: `number`
+> **code**: `number`
+
+The error code.
 
 #### Inherited from
 
-JSONRPCError.code
+`JSONRPCError.code`
 
 #### Defined in
 
 packages/jsonrpc/dist/error.d.ts:27
 
-___
+***
 
-### data
+### data?
 
-• `Optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
+> `optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
+
+Additional error data.
 
 #### Inherited from
 
-JSONRPCError.data
+`JSONRPCError.data`
 
 #### Defined in
 
 packages/jsonrpc/dist/error.d.ts:28
 
-___
+***
 
 ### message
 
-• **message**: `string`
+> **message**: `string`
 
 #### Inherited from
 
-JSONRPCError.message
+`JSONRPCError.message`
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1077
+node\_modules/typescript/lib/lib.es5.d.ts:1077
 
-___
+***
 
 ### name
 
-• **name**: `string` = `'RouterError'`
+> **name**: `string` = `'RouterError'`
 
 #### Overrides
 
-JSONRPCError.name
+`JSONRPCError.name`
 
 #### Defined in
 
-[packages/router/src/errors.ts:21](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/errors.ts#L21)
+[packages/router/src/errors.ts:21](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/errors.ts#L21)
 
-___
+***
 
-### stack
+### stack?
 
-• `Optional` **stack**: `string`
+> `optional` **stack**: `string`
 
 #### Inherited from
 
-JSONRPCError.stack
+`JSONRPCError.stack`
 
 #### Defined in
 
-node_modules/typescript/lib/lib.es5.d.ts:1078
+node\_modules/typescript/lib/lib.es5.d.ts:1078
 
-___
+***
 
-### prepareStackTrace
+### prepareStackTrace()?
 
-▪ `Static` `Optional` **prepareStackTrace**: (`err`: `Error`, `stackTraces`: `CallSite`[]) => `any`
+> `static` `optional` **prepareStackTrace**: (`err`, `stackTraces`) => `any`
 
 Optional override for formatting stack traces
 
-**`See`**
+#### Parameters
 
-https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+##### err
 
-#### Type declaration
+`Error`
 
-▸ (`err`, `stackTraces`): `any`
+##### stackTraces
 
-##### Parameters
+`CallSite`[]
 
-| Name | Type |
-| :------ | :------ |
-| `err` | `Error` |
-| `stackTraces` | `CallSite`[] |
-
-##### Returns
+#### Returns
 
 `any`
 
+#### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
 #### Inherited from
 
-JSONRPCError.prepareStackTrace
+`JSONRPCError.prepareStackTrace`
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:143
+node\_modules/@types/node/globals.d.ts:143
 
-___
+***
 
 ### stackTraceLimit
 
-▪ `Static` **stackTraceLimit**: `number`
+> `static` **stackTraceLimit**: `number`
 
 #### Inherited from
 
-JSONRPCError.stackTraceLimit
+`JSONRPCError.stackTraceLimit`
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:145
+node\_modules/@types/node/globals.d.ts:145
 
 ## Methods
 
-### toString
+### toString()
 
-▸ **toString**(): `string`
+> **toString**(): `string`
+
+Returns a string representation of an object.
 
 #### Returns
 
@@ -204,26 +196,29 @@ node_modules/@types/node/globals.d.ts:145
 
 #### Inherited from
 
-JSONRPCError.toString
+`JSONRPCError.toString`
 
 #### Defined in
 
 packages/jsonrpc/dist/error.d.ts:53
 
-___
+***
 
-### captureStackTrace
+### captureStackTrace()
 
-▸ **captureStackTrace**(`targetObject`, `constructorOpt?`): `void`
+> `static` **captureStackTrace**(`targetObject`, `constructorOpt`?): `void`
 
 Create .stack property on a target object
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `targetObject` | `object` |
-| `constructorOpt?` | `Function` |
+##### targetObject
+
+`object`
+
+##### constructorOpt?
+
+`Function`
 
 #### Returns
 
@@ -231,8 +226,8 @@ Create .stack property on a target object
 
 #### Inherited from
 
-JSONRPCError.captureStackTrace
+`JSONRPCError.captureStackTrace`
 
 #### Defined in
 
-node_modules/@types/node/globals.d.ts:136
+node\_modules/@types/node/globals.d.ts:136

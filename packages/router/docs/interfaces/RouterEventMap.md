@@ -1,83 +1,90 @@
-[@walletmesh/router - v0.0.6](../README.md) / [Exports](../modules.md) / RouterEventMap
+[**@walletmesh/router v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/router](../globals.md) / RouterEventMap
 
 # Interface: RouterEventMap
 
 Router event map for bi-directional communication
 Defines events that can be emitted by the router
 
-## Hierarchy
+## Extends
 
 - `JSONRPCEventMap`
 
-  ↳ **`RouterEventMap`**
-
 ## Indexable
 
-▪ [event: `string`]: `unknown`
-
-## Table of contents
-
-### Properties
-
-- [wm\_permissionsChanged](RouterEventMap.md#wm_permissionschanged)
-- [wm\_sessionTerminated](RouterEventMap.md#wm_sessionterminated)
-- [wm\_walletStateChanged](RouterEventMap.md#wm_walletstatechanged)
+ \[`event`: `string`\]: `unknown`
 
 ## Properties
 
 ### wm\_permissionsChanged
 
-• **wm\_permissionsChanged**: `Object`
+> **wm\_permissionsChanged**: `object`
 
 Emitted when a session's permissions are updated
 
-#### Type declaration
+#### permissions
 
-| Name | Type |
-| :------ | :------ |
-| `permissions` | [`ChainPermissions`](../modules.md#chainpermissions) |
-| `sessionId` | `string` |
+> **permissions**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
+
+#### sessionId
+
+> **sessionId**: `string`
 
 #### Defined in
 
-[packages/router/src/types.ts:225](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L225)
+[packages/router/src/types.ts:225](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L225)
 
-___
+***
 
 ### wm\_sessionTerminated
 
-• **wm\_sessionTerminated**: `Object`
+> **wm\_sessionTerminated**: `object`
 
 Emitted when a session is terminated by the router
 
-#### Type declaration
+#### reason
 
-| Name | Type |
-| :------ | :------ |
-| `reason` | `string` |
-| `sessionId` | `string` |
+> **reason**: `string`
+
+#### sessionId
+
+> **sessionId**: `string`
 
 #### Defined in
 
-[packages/router/src/types.ts:233](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L233)
+[packages/router/src/types.ts:233](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L233)
 
-___
+***
 
 ### wm\_walletStateChanged
 
-• **wm\_walletStateChanged**: `Object`
+> **wm\_walletStateChanged**: `object`
 
 Emitted when a wallet's state changes (e.g., account changes, network changes)
 
-#### Type declaration
+#### chainId
 
-| Name | Type |
-| :------ | :------ |
-| `chainId` | `string` |
-| `changes` | \{ `[key: string]`: `unknown`; `accounts?`: `string`[] ; `networkId?`: `string`  } |
-| `changes.accounts?` | `string`[] |
-| `changes.networkId?` | `string` |
+> **chainId**: `string`
+
+#### changes
+
+> **changes**: `object`
+
+##### Index Signature
+
+ \[`key`: `string`\]: `unknown`
+
+##### changes.accounts?
+
+> `optional` **accounts**: `string`[]
+
+##### changes.networkId?
+
+> `optional` **networkId**: `string`
 
 #### Defined in
 
-[packages/router/src/types.ts:213](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/router/src/types.ts#L213)
+[packages/router/src/types.ts:213](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/router/src/types.ts#L213)
