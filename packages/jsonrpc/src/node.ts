@@ -225,10 +225,6 @@ export class JSONRPCNode<
 
     try {
       // Deserialize parameters if needed
-      if (!request.params) {
-        throw new JSONRPCError(-32000, "Cannot read properties of undefined (reading 'a')");
-      }
-
       const params = method.serializer?.params
         ? method.serializer.params.deserialize(request.params as JSONRPCSerializedData)
         : request.params;
