@@ -122,7 +122,7 @@ export interface JSONRPCSerializer<P, R> {
  * >;
  * ```
  */
-export type JSONRPCMethodDef<P extends JSONRPCParams = JSONRPCParams, R = unknown> = {
+export interface JSONRPCMethodDef<P extends JSONRPCParams = JSONRPCParams, R = unknown> {
   /** The parameters of the method. */
   params?: P;
   /** The result of the method. */
@@ -148,7 +148,7 @@ export type JSONRPCMethodDef<P extends JSONRPCParams = JSONRPCParams, R = unknow
  * };
  * ```
  */
-export type JSONRPCMethodMap = {
+export interface JSONRPCMethodMap {
   [method: string]: JSONRPCMethodDef;
 };
 
@@ -318,7 +318,7 @@ export type JSONRPCContext = Record<string, unknown>;
  * };
  * ```
  */
-export type JSONRPCEventMap = {
+export interface JSONRPCEventMap {
   [event: string]: unknown;
 };
 
