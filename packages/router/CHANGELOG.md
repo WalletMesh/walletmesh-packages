@@ -1,5 +1,13 @@
 # @walletmesh/router
 
+## 0.1.3
+
+### Patch Changes
+
+- 4d47958: fix(jsonrpc): correcth andling of no parameters
+- Updated dependencies [4d47958]
+  - @walletmesh/jsonrpc@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes
