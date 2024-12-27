@@ -1,5 +1,13 @@
 # @walletmesh/router
 
+## 0.1.2
+
+### Patch Changes
+
+- 9f85e4a: chore(jsonrpc): types->interfaces in a few places
+- Updated dependencies [9f85e4a]
+  - @walletmesh/jsonrpc@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes

@@ -1,8 +1,8 @@
-[**@walletmesh/jsonrpc v0.1.0**](README.md)
+[**@walletmesh/jsonrpc v0.1.2**](README.md)
 
 ***
 
-# @walletmesh/jsonrpc v0.1.0
+# @walletmesh/jsonrpc v0.1.2
 
 ## Classes
 
@@ -14,6 +14,9 @@
 
 - [JSONRPCErrorInterface](interfaces/JSONRPCErrorInterface.md)
 - [JSONRPCEvent](interfaces/JSONRPCEvent.md)
+- [JSONRPCEventMap](interfaces/JSONRPCEventMap.md)
+- [JSONRPCMethodDef](interfaces/JSONRPCMethodDef.md)
+- [JSONRPCMethodMap](interfaces/JSONRPCMethodMap.md)
 - [JSONRPCRequest](interfaces/JSONRPCRequest.md)
 - [JSONRPCResponse](interfaces/JSONRPCResponse.md)
 - [JSONRPCSerializer](interfaces/JSONRPCSerializer.md)
@@ -23,10 +26,7 @@
 
 - [JSONRPCContext](type-aliases/JSONRPCContext.md)
 - [JSONRPCEventHandler](type-aliases/JSONRPCEventHandler.md)
-- [JSONRPCEventMap](type-aliases/JSONRPCEventMap.md)
 - [JSONRPCID](type-aliases/JSONRPCID.md)
-- [JSONRPCMethodDef](type-aliases/JSONRPCMethodDef.md)
-- [JSONRPCMethodMap](type-aliases/JSONRPCMethodMap.md)
 - [JSONRPCMiddleware](type-aliases/JSONRPCMiddleware.md)
 - [JSONRPCParams](type-aliases/JSONRPCParams.md)
 - [JSONRPCSerializedData](type-aliases/JSONRPCSerializedData.md)

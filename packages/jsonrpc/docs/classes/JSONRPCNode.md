@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.0**](../README.md)
+[**@walletmesh/jsonrpc v0.1.2**](../README.md)
 
 ***
 
@@ -92,11 +92,11 @@ node.emit('statusUpdate', {
 
 ## Type Parameters
 
-• **T** *extends* [`JSONRPCMethodMap`](../type-aliases/JSONRPCMethodMap.md) = [`JSONRPCMethodMap`](../type-aliases/JSONRPCMethodMap.md)
+• **T** *extends* [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md) = [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md)
 
 The RPC method map defining available methods
 
-• **E** *extends* [`JSONRPCEventMap`](../type-aliases/JSONRPCEventMap.md) = [`JSONRPCEventMap`](../type-aliases/JSONRPCEventMap.md)
+• **E** *extends* [`JSONRPCEventMap`](../interfaces/JSONRPCEventMap.md) = [`JSONRPCEventMap`](../interfaces/JSONRPCEventMap.md)
 
 The event map defining available events
 
@@ -126,7 +126,7 @@ The context type for method handlers
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:250](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/node.ts#L250)
+[packages/jsonrpc/src/node.ts:250](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L250)
 
 ## Properties
 
@@ -136,7 +136,7 @@ The context type for method handlers
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:252](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/node.ts#L252)
+[packages/jsonrpc/src/node.ts:252](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L252)
 
 ## Methods
 
@@ -182,7 +182,7 @@ cleanup(); // Remove the middleware
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:510](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/node.ts#L510)
+[packages/jsonrpc/src/node.ts:510](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L510)
 
 ***
 
@@ -239,7 +239,7 @@ try {
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:323](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/node.ts#L323)
+[packages/jsonrpc/src/node.ts:323](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L323)
 
 ***
 
@@ -282,7 +282,7 @@ node.emit('statusUpdate', {
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:432](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/node.ts#L432)
+[packages/jsonrpc/src/node.ts:432](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L432)
 
 ***
 
@@ -322,7 +322,7 @@ node.notify('logMessage', { level: 'info', message: 'Hello' });
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:373](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/node.ts#L373)
+[packages/jsonrpc/src/node.ts:373](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L373)
 
 ***
 
@@ -373,7 +373,7 @@ cleanup(); // Remove the event handler
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:402](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/node.ts#L402)
+[packages/jsonrpc/src/node.ts:402](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L402)
 
 ***
 
@@ -408,7 +408,7 @@ websocket.on('message', async (data) => {
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:455](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/node.ts#L455)
+[packages/jsonrpc/src/node.ts:455](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L455)
 
 ***
 
@@ -456,7 +456,7 @@ node.registerMethod('add', async (context, params) => {
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:272](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/node.ts#L272)
+[packages/jsonrpc/src/node.ts:272](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L272)
 
 ***
 
@@ -502,4 +502,4 @@ node.registerSerializer('processDate', {
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:297](https://github.com/WalletMesh/wm-core/blob/ca24b7b8f21531f05ecff96e90cf42e8939b1d82/packages/jsonrpc/src/node.ts#L297)
+[packages/jsonrpc/src/node.ts:297](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L297)
