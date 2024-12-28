@@ -45,7 +45,7 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          publish: ${{ github.ref == 'refs/heads/main' && 'pnpm changeset publish' || '' }}
+          publish: pnpm changeset publish
           version: pnpm run version
           commit: "chore: version packages"
           title: "chore: version packages"

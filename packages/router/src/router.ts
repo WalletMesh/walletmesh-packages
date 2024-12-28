@@ -346,7 +346,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * Sets up event listeners for all wallet clients
    * @param wallets - Map of chain IDs to wallet clients
    */
-  private setupWalletEventListeners(wallets: Wallets): void {
+  protected setupWalletEventListeners(wallets: Wallets): void {
     // Clean up any existing listeners
     for (const cleanups of this.walletEventCleanups.values()) {
       for (const cleanup of cleanups.values()) {
@@ -714,7 +714,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       }
       try {
         const methods = await client.getSupportedMethods();
-        result[chainId] = methods.methods;
+        result[chainId] = Array.isArray(methods) ? methods : [];
       } catch (error) {
         throw error instanceof RouterError ? error : new RouterError('walletNotAvailable', String(error));
       }

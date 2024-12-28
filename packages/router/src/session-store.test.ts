@@ -168,7 +168,8 @@ describe('LocalStorageSessionStore', () => {
     mockLocalStorage.key.mockClear();
   });
 
-  it('should store sessions in localStorage', async () => {
+  it('should store sessions in localStorage with expiry when lifetime is set', async () => {
+    const store = new LocalStorageSessionStore({ lifetime: 1000 });
     await store.set('test-id', mockSession);
     expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
       'wm_session_test-id',
@@ -177,6 +178,20 @@ describe('LocalStorageSessionStore', () => {
     expect(mockLocalStorage.setItem.mock.calls.length).toBe(1);
     const storedData = JSON.parse((mockLocalStorage.setItem.mock.calls[0] as [string, string])[1]);
     expect(storedData.data).toEqual(mockSession);
+    expect(storedData.expiresAt).toBeDefined();
+  });
+
+  it('should store sessions in localStorage without expiry when lifetime is not set', async () => {
+    const store = new LocalStorageSessionStore(); // No lifetime set
+    await store.set('test-id', mockSession);
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'wm_session_test-id',
+      expect.stringContaining('"data":'),
+    );
+    expect(mockLocalStorage.setItem.mock.calls.length).toBe(1);
+    const storedData = JSON.parse((mockLocalStorage.setItem.mock.calls[0] as [string, string])[1]);
+    expect(storedData.data).toEqual(mockSession);
+    expect(storedData.expiresAt).toBeUndefined();
   });
 
   it('should retrieve sessions from localStorage', async () => {
