@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.4**](../README.md)
+[**@walletmesh/router v0.1.5**](../README.md)
 
 ***
 
@@ -18,7 +18,7 @@ Chain ID the operation targets
 
 #### Defined in
 
-[packages/router/src/types.ts:77](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/types.ts#L77)
+[packages/router/src/types.ts:77](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/types.ts#L77)
 
 ***
 
@@ -30,7 +30,7 @@ Method being called (for call operations)
 
 #### Defined in
 
-[packages/router/src/types.ts:79](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/types.ts#L79)
+[packages/router/src/types.ts:79](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/types.ts#L79)
 
 ***
 
@@ -42,7 +42,7 @@ Type of operation being performed
 
 #### Defined in
 
-[packages/router/src/types.ts:75](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/types.ts#L75)
+[packages/router/src/types.ts:75](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/types.ts#L75)
 
 ***
 
@@ -54,7 +54,7 @@ Origin of the request
 
 #### Defined in
 
-[packages/router/src/types.ts:83](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/types.ts#L83)
+[packages/router/src/types.ts:83](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/types.ts#L83)
 
 ***
 
@@ -66,7 +66,7 @@ Parameters for the operation
 
 #### Defined in
 
-[packages/router/src/types.ts:81](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/types.ts#L81)
+[packages/router/src/types.ts:81](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/types.ts#L81)
 
 ***
 
@@ -78,4 +78,4 @@ Current session data if available
 
 #### Defined in
 
-[packages/router/src/types.ts:85](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/types.ts#L85)
+[packages/router/src/types.ts:85](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/types.ts#L85)
