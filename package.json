@@ -14,7 +14,7 @@
     "test": "pnpm -r run test",
     "coverage": "pnpm -r run coverage",
     "changeset": "changeset",
-    "version": "changeset version",
+    "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run --filter \"[HEAD]\" docs",
     "publish": "changeset publish",
     "clean": "pnpm -r run clean",
     "lint": "biome lint",
