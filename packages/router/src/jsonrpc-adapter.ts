@@ -58,11 +58,11 @@ export interface WalletMethodMap extends JSONRPCMethodMap {
  * const balance = await walletClient.call('eth_getBalance', [accounts[0]]);
  * ```
  */
-export class JSONRPCWalletClient implements WalletClient {
-  private node: JSONRPCNode<WalletMethodMap>;
+export class JSONRPCWalletClient<M extends WalletMethodMap = WalletMethodMap> implements WalletClient {
+  private node: JSONRPCNode<M>;
   private eventCleanupFns: Map<string, Map<(data: unknown) => void, () => void>> = new Map();
 
-  constructor(node: JSONRPCNode<WalletMethodMap>) {
+  constructor(node: JSONRPCNode<M>) {
     this.node = node;
   }
 
