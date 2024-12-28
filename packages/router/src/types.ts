@@ -37,10 +37,10 @@ export interface WalletClient {
 
   /**
    * Get supported capabilities of the wallet
-   * @returns Promise resolving to object containing supported method names
+   * @returns Promise resolving to the list of supported method names
    * @throws {Error} If the capabilities request fails
    */
-  getSupportedMethods?(): Promise<{ methods: string[] }>;
+  getSupportedMethods?(): Promise<string[]>;
 
   /**
    * Register an event handler for wallet events

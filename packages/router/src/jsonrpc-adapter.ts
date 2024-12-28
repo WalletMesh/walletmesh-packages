@@ -20,8 +20,7 @@ import type { WalletClient } from './types.js';
  */
 export interface WalletMethodMap extends JSONRPCMethodMap {
   wm_getSupportedMethods: {
-    params: undefined;
-    result: { methods: string[] };
+    result: string[];
   };
   [method: string]: {
     params?: JSONRPCParams;
@@ -103,8 +102,8 @@ export class JSONRPCWalletClient<M extends WalletMethodMap = WalletMethodMap> im
    * console.log('Supported methods:', methods);
    * ```
    */
-  async getSupportedMethods(): Promise<{ methods: string[] }> {
-    return this.node.callMethod('wm_getSupportedMethods') as Promise<{ methods: string[] }>;
+  async getSupportedMethods(): Promise<string[]> {
+    return this.node.callMethod('wm_getSupportedMethods') as Promise<string[]>;
   }
 
   /**

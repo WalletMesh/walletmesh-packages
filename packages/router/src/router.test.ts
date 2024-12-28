@@ -46,8 +46,8 @@ function createMockWalletClient(): MockWalletClient {
     call: async <T = unknown>(method: string, params?: unknown): Promise<T> => {
       return mockCall(method, params) as Promise<T>;
     },
-    getSupportedMethods: async (): Promise<{ methods: string[] }> => {
-      return mockCall('wm_getSupportedMethods');
+    getSupportedMethods: async (): Promise<string[]> => {
+      return ['aztec_getAccount', 'aztec_sendTransaction'];
     },
     getMockCall: () => mockCall,
     on(event: string, handler: (data: unknown) => void): void {
@@ -261,6 +261,19 @@ describe('WalletRouter', () => {
           params: {
             chainId: 'test:chain',
             changes: { networkId: 'testnet' },
+          },
+        }),
+      );
+
+      // Test disconnect event
+      mockWallet.emit?.('disconnect', {});
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          jsonrpc: '2.0',
+          event: 'wm_walletStateChanged',
+          params: {
+            chainId: 'test:chain',
+            changes: { connected: false },
           },
         }),
       );
@@ -692,6 +705,7 @@ describe('WalletRouter', () => {
     });
 
     it('validates chain configuration in session', async () => {
+      // Test non-configured chain
       await expect(
         router.testValidateSession(
           'call',
@@ -704,14 +718,57 @@ describe('WalletRouter', () => {
       ).rejects.toThrow(RouterErrorMap.invalidSession.message);
     });
 
-    it('rejects wildcard method except for updatePermissions', async () => {
+    it('validates permissions through permission callback', async () => {
+      const mockPermissionCallback = vi.fn()
+        .mockImplementation(async (context) => {
+          // Deny if chain has no methods configured
+          return context.session?.permissions[context.chainId]?.length > 0;
+        });
+
+      const router = new TestWalletRouter(
+        mockTransport,
+        mockWallets,
+        mockPermissionCallback,
+        createDefaultPermissionApproval(),
+      );
+
+      // Create session with empty permissions
+      const { sessionId } = await router.testConnect(
+        {},
+        {
+          permissions: {
+            'aztec:testnet': [], // Empty permissions array
+          },
+        },
+      );
+
+      // Should be denied by permission callback
+      await expect(
+        router.testValidateSession(
+          'call',
+          sessionId,
+          'aztec:testnet',
+          'test_method',
+          undefined,
+          {},
+        ),
+      ).rejects.toThrow(RouterErrorMap.insufficientPermissions.message);
+    });
+
+    it('handles wildcard chainId and method for updatePermissions', async () => {
+      // Should reject wildcard method for non-updatePermissions operations
       await expect(
         router.testValidateSession('call', testSessionId, 'aztec:testnet', '*', undefined, {}),
       ).rejects.toThrow(RouterErrorMap.insufficientPermissions.message);
 
-      // Should not throw for updatePermissions
+      // Should allow wildcard chainId and method for updatePermissions
       await expect(
-        router.testValidateSession('updatePermissions', testSessionId, 'aztec:testnet', '*', undefined, {}),
+        router.testValidateSession('updatePermissions', testSessionId, '*', '*', undefined, {}),
+      ).resolves.toBeDefined();
+
+      // Should allow wildcard chainId with specific method for updatePermissions
+      await expect(
+        router.testValidateSession('updatePermissions', testSessionId, '*', 'aztec_getAccount', undefined, {}),
       ).resolves.toBeDefined();
     });
 
@@ -754,7 +811,66 @@ describe('WalletRouter', () => {
       );
     });
 
-    it('cleans up existing event listeners when setting up new ones and handles wallets without off method', async () => {
+    it('initializes event listeners for new chains and skips wallets without event support', async () => {
+      // Create a new router instance with access to private members
+      class TestRouterWithAccess extends TestWalletRouter {
+        public getWalletEventCleanups() {
+          return this['walletEventCleanups'];
+        }
+
+        public getWallets() {
+          return this['wallets'] as Map<ChainId, WalletClient>;
+        }
+
+        public setupListeners(): void {
+          this.setupWalletEventListeners(this.getWallets());
+        }
+      }
+
+      // Create router with empty wallets map
+      const router = new TestRouterWithAccess(
+        mockTransport,
+        new Map(),
+        createPermissivePermissions(),
+        createDefaultPermissionApproval(),
+      );
+
+      // Verify walletEventCleanups is initially empty
+      expect(router.getWalletEventCleanups().size).toBe(0);
+
+      // Create wallet without event capabilities (no 'on' method)
+      const mockWalletNoEvents: MockWalletClient = {
+        call: vi.fn(),
+        getMockCall: vi.fn(),
+      };
+
+      // Create wallet with event capabilities
+      const mockWalletWithEvents = createMockWalletClient();
+      const mockOn = vi.fn();
+      mockWalletWithEvents.on = mockOn;
+
+      // Add wallets to map but don't set up listeners yet
+      router.getWallets().set('test:chain1', mockWalletNoEvents);
+      router.getWallets().set('test:chain2', mockWalletWithEvents);
+
+      // Verify walletEventCleanups is still empty
+      expect(router.getWalletEventCleanups().size).toBe(0);
+
+      // Set up listeners
+      router.setupListeners();
+
+      // Verify walletEventCleanups was initialized only for wallet with events
+      expect(router.getWalletEventCleanups().has('test:chain1')).toBe(false); // No events for this wallet
+      expect(router.getWalletEventCleanups().has('test:chain2')).toBe(true);
+      expect(router.getWalletEventCleanups().get('test:chain2')?.size).toBe(3); // 3 events
+
+      // Verify event listeners were set up for wallet with events
+      expect(mockOn).toHaveBeenCalledWith('accountsChanged', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('networkChanged', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('disconnect', expect.any(Function));
+    });
+
+    it('handles event listener setup and cleanup scenarios', async () => {
       const mockWallet = createMockWalletClient();
       const mockOn = vi.fn();
       const mockOff = vi.fn();
@@ -774,20 +890,60 @@ describe('WalletRouter', () => {
         on: mockOn,
       } as MockWalletClient;
 
-      // Set up initial wallets
-      mockWallets.set('test:chain', mockWalletWithTracking);
-      mockWallets.set('test:chain2', mockWalletWithoutOff);
+      // Clear all wallets
+      mockWallets.clear();
 
-      // First connect to set up initial listeners
-      await router.testConnect(
-        {},
-        {
-          permissions: {
-            'test:chain': ['test_method'],
-            'test:chain2': ['test_method'],
-          },
-        },
+      // Create a new router instance with access to private members
+      class TestRouterWithAccess extends TestWalletRouter {
+        public getWalletEventCleanups() {
+          return this['walletEventCleanups'];
+        }
+
+        public getWallets() {
+          return this['wallets'] as Map<ChainId, WalletClient>;
+        }
+
+        public setupListeners(): void {
+          this.setupWalletEventListeners(this.getWallets());
+        }
+      }
+
+      // Create router with empty wallets map
+      const router = new TestRouterWithAccess(
+        mockTransport,
+        new Map(),
+        createPermissivePermissions(),
+        createDefaultPermissionApproval(),
       );
+
+      // Add wallet to map but don't set up listeners yet
+      const wallets = router.getWallets();
+      wallets.set('test:chain', mockWalletWithTracking);
+
+      // Verify walletEventCleanups is empty before setup
+      expect(router.getWalletEventCleanups().has('test:chain')).toBe(false);
+
+      // Set up listeners
+      router.setupListeners();
+
+      // Verify walletEventCleanups was initialized
+      expect(router.getWalletEventCleanups().has('test:chain')).toBe(true);
+      expect(router.getWalletEventCleanups().get('test:chain')?.size).toBe(3); // 3 events
+
+      // Add second wallet but don't set up listeners yet
+      wallets.set('test:chain2', mockWalletWithoutOff);
+
+      // Verify walletEventCleanups doesn't have second chain yet
+      expect(router.getWalletEventCleanups().has('test:chain2')).toBe(false);
+
+      // Set up listeners again
+      router.setupListeners();
+
+      // Verify both chains have event cleanups
+      expect(router.getWalletEventCleanups().has('test:chain')).toBe(true);
+      expect(router.getWalletEventCleanups().has('test:chain2')).toBe(true);
+      expect(router.getWalletEventCleanups().get('test:chain')?.size).toBe(3);
+      expect(router.getWalletEventCleanups().get('test:chain2')?.size).toBe(3);
 
       // Verify initial event listeners were set up
       expect(mockOn).toHaveBeenCalledWith('accountsChanged', expect.any(Function));
@@ -795,8 +951,7 @@ describe('WalletRouter', () => {
       expect(mockOn).toHaveBeenCalledWith('disconnect', expect.any(Function));
 
       // Clear mocks to track new events
-      mockOn.mockClear();
-      mockOff.mockClear();
+      vi.clearAllMocks();
 
       // Connect again to trigger new listener setup
       await router.testConnect(
@@ -1127,16 +1282,41 @@ describe('WalletRouter', () => {
       });
     });
 
-    it('handles wallet without getSupportedMethods', async () => {
-      const mockWallet: MockWalletClient = {
+    it('handles various getSupportedMethods scenarios', async () => {
+      // Test wallet without getSupportedMethods
+      const mockWalletNoMethods: MockWalletClient = {
         call: vi.fn(),
         getMockCall: vi.fn(),
       };
-      mockWallets.set('test:chain', mockWallet);
+      mockWallets.set('test:chain1', mockWalletNoMethods);
 
-      const result = await router.testGetSupportedMethods({}, { chainIds: ['test:chain'] });
+      // Test wallet returning non-array
+      const mockWalletBadReturn: MockWalletClient = {
+        ...createMockWalletClient(),
+        getSupportedMethods: async () => {
+          // biome-ignore lint/suspicious/noExplicitAny: test case
+          return undefined as any;
+        },
+      };
+      mockWallets.set('test:chain2', mockWalletBadReturn);
+
+      // Test wallet returning string array
+      const mockWalletGoodReturn: MockWalletClient = {
+        ...createMockWalletClient(),
+        getSupportedMethods: async () => {
+          return ['method1', 'method2'];
+        },
+      };
+      mockWallets.set('test:chain3', mockWalletGoodReturn);
+
+      const result = await router.testGetSupportedMethods({}, {
+        chainIds: ['test:chain1', 'test:chain2', 'test:chain3']
+      });
+
       expect(result).toEqual({
-        'test:chain': [],
+        'test:chain1': [],  // No getSupportedMethods
+        'test:chain2': [],  // Bad return value
+        'test:chain3': ['method1', 'method2']  // Good return value
       });
     });
 
