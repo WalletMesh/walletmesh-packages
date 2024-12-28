@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.4**](../README.md)
+[**@walletmesh/router v0.1.5**](../README.md)
 
 ***
 
@@ -61,7 +61,7 @@ const balance = await walletClient.call('eth_getBalance', [accounts[0]]);
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:65](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/jsonrpc-adapter.ts#L65)
+[packages/router/src/jsonrpc-adapter.ts:64](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/jsonrpc-adapter.ts#L64)
 
 ## Methods
 
@@ -115,19 +115,19 @@ const balance = await client.call('eth_getBalance', ['0x...', 'latest']);
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:85](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/jsonrpc-adapter.ts#L85)
+[packages/router/src/jsonrpc-adapter.ts:84](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/jsonrpc-adapter.ts#L84)
 
 ***
 
 ### getSupportedMethods()
 
-> **getSupportedMethods**(): `Promise`\<\{ `methods`: `string`[]; \}\>
+> **getSupportedMethods**(): `Promise`\<`string`[]\>
 
 Gets the capabilities (supported methods) of the wallet
 
 #### Returns
 
-`Promise`\<\{ `methods`: `string`[]; \}\>
+`Promise`\<`string`[]\>
 
 Promise resolving to an object containing an array of supported method names
 
@@ -148,7 +148,7 @@ console.log('Supported methods:', methods);
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:106](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/jsonrpc-adapter.ts#L106)
+[packages/router/src/jsonrpc-adapter.ts:105](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/jsonrpc-adapter.ts#L105)
 
 ***
 
@@ -196,7 +196,7 @@ client.off('accountsChanged', handler);
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:153](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/jsonrpc-adapter.ts#L153)
+[packages/router/src/jsonrpc-adapter.ts:152](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/jsonrpc-adapter.ts#L152)
 
 ***
 
@@ -242,4 +242,4 @@ client.on('networkChanged', (networkId: string) => {
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:126](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/jsonrpc-adapter.ts#L126)
+[packages/router/src/jsonrpc-adapter.ts:125](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/jsonrpc-adapter.ts#L125)

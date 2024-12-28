@@ -1,5 +1,11 @@
 # @walletmesh/router
 
+## 0.1.5
+
+### Patch Changes
+
+- 06ce1e7: feat!(router): wm_getSupportMethods now returns an array of strings
+
 ## 0.1.4
 
 ### Patch Changes
