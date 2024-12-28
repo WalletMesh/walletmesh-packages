@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.2**](../README.md)
+[**@walletmesh/router v0.1.4**](../README.md)
 
 ***
 
@@ -16,7 +16,7 @@ Session lifetime in milliseconds. If not provided, sessions never expire
 
 #### Defined in
 
-[packages/router/src/session-store.ts:3](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/router/src/session-store.ts#L3)
+[packages/router/src/session-store.ts:3](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/session-store.ts#L3)
 
 ***
 
@@ -28,4 +28,4 @@ Whether to refresh session expiry on access. Default false
 
 #### Defined in
 
-[packages/router/src/session-store.ts:5](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/router/src/session-store.ts#L5)
+[packages/router/src/session-store.ts:5](https://github.com/WalletMesh/wm-core/blob/40d9ac703a60d56bcb0a355b02e8bd000f79ddc3/packages/router/src/session-store.ts#L5)

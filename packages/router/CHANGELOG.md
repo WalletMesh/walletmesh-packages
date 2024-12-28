@@ -1,5 +1,11 @@
 # @walletmesh/router
 
+## 0.1.4
+
+### Patch Changes
+
+- 40d9ac7: fix(router): make the JSONRPCWalletClient generic
+
 ## 0.1.3
 
 ### Patch Changes
