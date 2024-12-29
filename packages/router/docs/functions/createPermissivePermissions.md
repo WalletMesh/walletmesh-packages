@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.5**](../README.md)
+[**@walletmesh/router v0.1.6**](../README.md)
 
 ***
 
@@ -17,4 +17,4 @@ Useful for development and testing.
 
 ## Defined in
 
-[packages/router/src/permissions.ts:12](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/permissions.ts#L12)
+[packages/router/src/permissions.ts:12](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/permissions.ts#L12)

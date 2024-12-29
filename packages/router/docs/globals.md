@@ -1,8 +1,8 @@
-[**@walletmesh/router v0.1.5**](README.md)
+[**@walletmesh/router v0.1.6**](README.md)
 
 ***
 
-# @walletmesh/router v0.1.5
+# @walletmesh/router v0.1.6
 
 ## Classes
 
