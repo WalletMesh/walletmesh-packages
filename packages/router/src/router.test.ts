@@ -799,6 +799,94 @@ describe('WalletRouter', () => {
     });
   });
 
+  describe('Dynamic Wallet Management', () => {
+    let router: TestWalletRouter;
+
+    beforeEach(() => {
+      router = new TestWalletRouter(
+        mockTransport,
+        new Map(), // Start with empty wallets
+        createPermissivePermissions(),
+        createDefaultPermissionApproval(),
+      );
+    });
+
+    it('successfully adds a new wallet and emits event', () => {
+      const mockWallet = createMockWalletClient();
+      router.addWallet('test:chain', mockWallet);
+
+      // Verify wallet was added
+      expect(() => router['validateChain']('test:chain')).not.toThrow();
+
+      // Verify event was emitted
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          jsonrpc: '2.0',
+          event: 'wm_walletAvailabilityChanged',
+          params: {
+            chainId: 'test:chain',
+            available: true
+          },
+        }),
+      );
+    });
+
+    it('successfully removes a wallet and emits event', () => {
+      // First add a wallet
+      const mockWallet = createMockWalletClient();
+      router.addWallet('test:chain', mockWallet);
+      vi.clearAllMocks(); // Clear previous event
+
+      // Then remove it
+      router.removeWallet('test:chain');
+
+      // Verify wallet was removed
+      expect(() => router['validateChain']('test:chain')).toThrow(RouterErrorMap.unknownChain.message);
+
+      // Verify event was emitted
+      expect(mockTransport.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          jsonrpc: '2.0',
+          event: 'wm_walletAvailabilityChanged',
+          params: {
+            chainId: 'test:chain',
+            available: false
+          },
+        }),
+      );
+    });
+
+    it('throws when adding wallet for existing chain', () => {
+      const mockWallet = createMockWalletClient();
+      router.addWallet('test:chain', mockWallet);
+
+      // Try to add another wallet for same chain
+      expect(() => router.addWallet('test:chain', mockWallet)).toThrow(RouterErrorMap.invalidRequest.message);
+    });
+
+    it('throws when removing non-existent wallet', () => {
+      expect(() => router.removeWallet('test:chain')).toThrow(RouterErrorMap.unknownChain.message);
+    });
+
+    it('properly sets up and cleans up event listeners', () => {
+      const mockWallet = createMockWalletClient();
+      const mockOn = vi.fn();
+      const mockOff = vi.fn();
+      mockWallet.on = mockOn;
+      mockWallet.off = mockOff;
+
+      // Add wallet and verify listeners are set up
+      router.addWallet('test:chain', mockWallet);
+      expect(mockOn).toHaveBeenCalledWith('accountsChanged', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('networkChanged', expect.any(Function));
+      expect(mockOn).toHaveBeenCalledWith('disconnect', expect.any(Function));
+
+      // Remove wallet and verify listeners are cleaned up
+      router.removeWallet('test:chain');
+      expect(mockOff).toHaveBeenCalled();
+    });
+  });
+
   describe('Event Cleanup', () => {
     let router: TestWalletRouter;
 
