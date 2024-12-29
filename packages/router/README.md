@@ -67,13 +67,14 @@ interface WalletClient {
 
 ## Features
 
-- 🔗 **Multi-Chain Support**: Connect to multiple blockchain wallets simultaneously
+- 🔗 **Multi-Chain Support**: Connect to multiple blockchain wallets simultaneously with dynamic addition/removal
 - 🔒 **Granular Permissions**: Fine-grained control over wallet method access
 - 🔄 **Bi-directional Events**: Real-time wallet state synchronization
 - 💾 **Session Management**: Persistent sessions with automatic recovery
 - 🚦 **Request Batching**: Efficient handling of multiple wallet requests
 - 🛡️ **Type Safety**: Full TypeScript support with comprehensive type definitions
 - 🧪 **Well Tested**: Comprehensive test coverage with Vitest
+- 🔌 **Dynamic Wallets**: Add or remove wallet clients at runtime with automatic event handling
 
 ## Implementation Details
 
@@ -126,6 +127,7 @@ graph TB
    - Coordinates between sessions, permissions, and wallet connections
    - Handles event propagation and error management
    - Implements connection pooling and request batching
+   - Supports dynamic wallet addition and removal
 
 3. **Session Manager**
    - Maintains active wallet sessions
@@ -142,11 +144,12 @@ graph TB
    - Provides audit logging capabilities
 
 5. **Client Manager**
-   - Manages wallet client instances
+   - Manages wallet client instances with dynamic addition/removal
    - Handles client connection lifecycle
    - Implements client-specific adapters
    - Manages event subscription and cleanup
    - Provides client health monitoring
+   - Notifies connected clients of wallet availability changes
 
 ### Message Flow
 
@@ -236,6 +239,15 @@ provider.on('wm_sessionTerminated', ({ sessionId, reason }) => {
   console.log(`Session ${sessionId} terminated:`, reason);
 });
 
+// Listen for wallet availability changes
+provider.on('wm_walletAvailabilityChanged', ({ chainId, available }) => {
+  if (available) {
+    console.log(`New wallet available for chain ${chainId}`);
+  } else {
+    console.log(`Wallet removed for chain ${chainId}`);
+  }
+});
+
 // Connect to multiple chains with specific permissions
 const sessionId = await provider.connect({
   'eip155:1': ['eth_accounts', 'eth_sendTransaction'],
@@ -254,7 +266,7 @@ const accounts = await provider.call('eip155:1', {
 import { WalletRouter, JSONRPCWalletClient } from '@walletmesh/router';
 import { JSONRPCNode } from '@walletmesh/jsonrpc';
 
-// Create wallet clients
+// Create initial wallet clients
 const wallets = new Map([
   ['eip155:1', new JSONRPCWalletClient(new JSONRPCNode({
     send: message => {
@@ -279,6 +291,16 @@ const router = new WalletRouter(
   wallets,
   createPermissivePermissions()
 );
+
+// Dynamically add new wallets after initialization
+router.addWallet('eip155:42161', new JSONRPCWalletClient(new JSONRPCNode({
+  send: message => {
+    // Send to Arbitrum wallet
+  }
+})));
+
+// Remove wallets when no longer needed
+router.removeWallet('eip155:42161');
 ```
 
 ### Custom Wallet Client Implementation
@@ -317,6 +339,8 @@ The router provides comprehensive error handling through the `RouterError` class
 - **Method Not Found**: When calling an unsupported wallet method
 - **Network Error**: When communication with a wallet fails
 - **Timeout**: When a wallet operation exceeds the configured timeout
+- **Invalid Request**: When trying to add a wallet for an already configured chain
+- **Unknown Chain**: When trying to remove a wallet for a non-existent chain
 
 ```typescript
 try {
@@ -332,6 +356,12 @@ try {
         break;
       case 'SESSION_INVALID':
         console.error('Session expired, reconnecting...');
+        break;
+      case 'INVALID_REQUEST':
+        console.error('Chain already configured');
+        break;
+      case 'UNKNOWN_CHAIN':
+        console.error('Chain not found');
         break;
       // Handle other error types
     }
@@ -362,4 +392,3 @@ pnpm lint
 
 # Format code
 pnpm format
-```

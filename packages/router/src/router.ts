@@ -290,6 +290,74 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * @returns JSON-RPC client for the chain
    * @throws {RouterError} If chain ID is unknown or not configured
    */
+  /**
+   * Adds a new wallet client for a specific chain ID.
+   * Sets up event listeners for the new wallet.
+   *
+   * @param chainId - Chain ID for the new wallet
+   * @param wallet - Wallet client implementation
+   * @throws {RouterError} If chain ID already has a wallet configured
+   *
+   * @example
+   * ```typescript
+   * router.addWallet('eip155:42161', new JSONRPCWalletClient(...));
+   * ```
+   */
+  public addWallet(chainId: ChainId, wallet: WalletClient): void {
+    if (this.wallets.has(chainId)) {
+      throw new RouterError('invalidRequest', `Chain ${chainId} already configured`);
+    }
+
+    // Add the wallet
+    this.wallets.set(chainId, wallet);
+
+    // Setup event listeners just for this new wallet
+    const tempMap = new Map([[chainId, wallet]]);
+    this.setupWalletEventListeners(tempMap);
+
+    // Emit availability changed event
+    this.emit('wm_walletAvailabilityChanged', {
+      chainId,
+      available: true
+    });
+  }
+
+  /**
+   * Removes a wallet client for a specific chain ID.
+   * Cleans up event listeners for the removed wallet.
+   *
+   * @param chainId - Chain ID of the wallet to remove
+   * @throws {RouterError} If chain ID is not configured
+   *
+   * @example
+   * ```typescript
+   * router.removeWallet('eip155:42161');
+   * ```
+   */
+  public removeWallet(chainId: ChainId): void {
+    if (!this.wallets.has(chainId)) {
+      throw new RouterError('unknownChain');
+    }
+
+    // Clean up event listeners
+    const cleanups = this.walletEventCleanups.get(chainId);
+    if (cleanups) {
+      for (const cleanup of cleanups.values()) {
+        cleanup();
+      }
+      this.walletEventCleanups.delete(chainId);
+    }
+
+    // Remove the wallet
+    this.wallets.delete(chainId);
+
+    // Emit availability changed event
+    this.emit('wm_walletAvailabilityChanged', {
+      chainId,
+      available: false
+    });
+  }
+
   protected validateChain(chainId: ChainId): WalletClient {
     const client = this.wallets.get(chainId);
     if (!client) {

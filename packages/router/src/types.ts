@@ -234,6 +234,14 @@ export interface RouterEventMap extends JSONRPCEventMap {
     sessionId: string;
     reason: string;
   };
+
+  /**
+   * Emitted when a wallet's availability changes (added or removed)
+   */
+  wm_walletAvailabilityChanged: {
+    chainId: ChainId;
+    available: boolean;
+  };
   [event: string]: unknown;
 }
 
