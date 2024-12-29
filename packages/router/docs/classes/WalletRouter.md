@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.5**](../README.md)
+[**@walletmesh/router v0.1.6**](../README.md)
 
 ***
 
@@ -134,7 +134,7 @@ const router = new WalletRouter(
 
 #### Defined in
 
-[packages/router/src/router.ts:116](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L116)
+[packages/router/src/router.ts:116](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L116)
 
 ## Properties
 
@@ -158,7 +158,7 @@ packages/jsonrpc/dist/node.d.ts:154
 
 #### Defined in
 
-[packages/router/src/router.ts:55](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L55)
+[packages/router/src/router.ts:55](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L55)
 
 ## Methods
 
@@ -194,7 +194,7 @@ If method is not supported or wallet is unavailable
 
 #### Defined in
 
-[packages/router/src/router.ts:620](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L620)
+[packages/router/src/router.ts:688](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L688)
 
 ***
 
@@ -248,6 +248,47 @@ packages/jsonrpc/dist/node.d.ts:297
 
 ***
 
+### addWallet()
+
+> **addWallet**(`chainId`, `wallet`): `void`
+
+Adds a new wallet client for a specific chain ID.
+Sets up event listeners for the new wallet.
+
+#### Parameters
+
+##### chainId
+
+`string`
+
+Chain ID for the new wallet
+
+##### wallet
+
+[`WalletClient`](../interfaces/WalletClient.md)
+
+Wallet client implementation
+
+#### Returns
+
+`void`
+
+#### Throws
+
+If chain ID already has a wallet configured
+
+#### Example
+
+```typescript
+router.addWallet('eip155:42161', new JSONRPCWalletClient(...));
+```
+
+#### Defined in
+
+[packages/router/src/router.ts:306](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L306)
+
+***
+
 ### bulkCall()
 
 > `protected` **bulkCall**(`context`, `params`): `Promise`\<`unknown`[]\>
@@ -282,7 +323,7 @@ If session is invalid, chain is unknown, permissions are insufficient,
 
 #### Defined in
 
-[packages/router/src/router.ts:645](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L645)
+[packages/router/src/router.ts:713](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L713)
 
 ***
 
@@ -319,7 +360,7 @@ If session is invalid, chain is unknown, or permissions are insufficient
 
 #### Defined in
 
-[packages/router/src/router.ts:600](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L600)
+[packages/router/src/router.ts:668](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L668)
 
 ***
 
@@ -419,7 +460,7 @@ If chain ID is invalid
 
 #### Defined in
 
-[packages/router/src/router.ts:309](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L309)
+[packages/router/src/router.ts:377](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L377)
 
 ***
 
@@ -481,7 +522,7 @@ await disconnect(
 
 #### Defined in
 
-[packages/router/src/router.ts:454](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L454)
+[packages/router/src/router.ts:522](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L522)
 
 ***
 
@@ -598,7 +639,7 @@ const ethPerms = await getPermissions(
 
 #### Defined in
 
-[packages/router/src/router.ts:526](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L526)
+[packages/router/src/router.ts:594](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L594)
 
 ***
 
@@ -636,7 +677,7 @@ If any chain is unknown or wallet is unavailable
 
 #### Defined in
 
-[packages/router/src/router.ts:686](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L686)
+[packages/router/src/router.ts:754](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L754)
 
 ***
 
@@ -828,7 +869,7 @@ if (result.status) {
 
 #### Defined in
 
-[packages/router/src/router.ts:169](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L169)
+[packages/router/src/router.ts:169](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L169)
 
 ***
 
@@ -934,6 +975,41 @@ packages/jsonrpc/dist/node.d.ts:194
 
 ***
 
+### removeWallet()
+
+> **removeWallet**(`chainId`): `void`
+
+Removes a wallet client for a specific chain ID.
+Cleans up event listeners for the removed wallet.
+
+#### Parameters
+
+##### chainId
+
+`string`
+
+Chain ID of the wallet to remove
+
+#### Returns
+
+`void`
+
+#### Throws
+
+If chain ID is not configured
+
+#### Example
+
+```typescript
+router.removeWallet('eip155:42161');
+```
+
+#### Defined in
+
+[packages/router/src/router.ts:337](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L337)
+
+***
+
 ### setupWalletEventListeners()
 
 > `protected` **setupWalletEventListeners**(`wallets`): `void`
@@ -954,7 +1030,7 @@ Map of chain IDs to wallet clients
 
 #### Defined in
 
-[packages/router/src/router.ts:349](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L349)
+[packages/router/src/router.ts:417](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L417)
 
 ***
 
@@ -997,7 +1073,7 @@ If session ID is invalid
 
 #### Defined in
 
-[packages/router/src/router.ts:559](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L559)
+[packages/router/src/router.ts:627](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L627)
 
 ***
 
@@ -1005,29 +1081,19 @@ If session ID is invalid
 
 > `protected` **validateChain**(`chainId`): [`WalletClient`](../interfaces/WalletClient.md)
 
-Validates a chain ID and returns its corresponding JSON-RPC client
-
 #### Parameters
 
 ##### chainId
 
 `string`
 
-Chain ID to validate
-
 #### Returns
 
 [`WalletClient`](../interfaces/WalletClient.md)
 
-JSON-RPC client for the chain
-
-#### Throws
-
-If chain ID is unknown or not configured
-
 #### Defined in
 
-[packages/router/src/router.ts:293](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L293)
+[packages/router/src/router.ts:361](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L361)
 
 ***
 
@@ -1129,4 +1195,4 @@ try {
 
 #### Defined in
 
-[packages/router/src/router.ts:244](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/router.ts#L244)
+[packages/router/src/router.ts:244](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/router.ts#L244)

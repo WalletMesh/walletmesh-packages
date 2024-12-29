@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.5**](../README.md)
+[**@walletmesh/router v0.1.6**](../README.md)
 
 ***
 
@@ -35,7 +35,7 @@ Emitted when a session's permissions are updated
 
 #### Defined in
 
-[packages/router/src/types.ts:225](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/types.ts#L225)
+[packages/router/src/types.ts:225](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L225)
 
 ***
 
@@ -55,7 +55,27 @@ Emitted when a session is terminated by the router
 
 #### Defined in
 
-[packages/router/src/types.ts:233](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/types.ts#L233)
+[packages/router/src/types.ts:233](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L233)
+
+***
+
+### wm\_walletAvailabilityChanged
+
+> **wm\_walletAvailabilityChanged**: `object`
+
+Emitted when a wallet's availability changes (added or removed)
+
+#### available
+
+> **available**: `boolean`
+
+#### chainId
+
+> **chainId**: `string`
+
+#### Defined in
+
+[packages/router/src/types.ts:241](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L241)
 
 ***
 
@@ -87,4 +107,4 @@ Emitted when a wallet's state changes (e.g., account changes, network changes)
 
 #### Defined in
 
-[packages/router/src/types.ts:213](https://github.com/WalletMesh/wm-core/blob/06ce1e7f0406bfb5c73f5b66aebbea66acb5497d/packages/router/src/types.ts#L213)
+[packages/router/src/types.ts:213](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L213)

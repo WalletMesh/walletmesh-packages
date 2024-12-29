@@ -1,5 +1,11 @@
 # @walletmesh/router
 
+## 0.1.6
+
+### Patch Changes
+
+- 5573539: feat: dynamically add/remove wallets for the WalletRouter
+
 ## 0.1.5
 
 ### Patch Changes
