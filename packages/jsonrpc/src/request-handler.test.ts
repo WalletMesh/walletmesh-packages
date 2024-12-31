@@ -200,4 +200,71 @@ describe('RequestHandler', () => {
       expect(handler).toHaveBeenCalledWith(context, { name: 'Bob' });
     });
   });
+
+  describe('Fallback Handler', () => {
+    it('should use fallback handler for unknown methods', async () => {
+      const fallbackHandler = vi.fn().mockResolvedValue({
+        success: true,
+        data: 'fallback response'
+      });
+      methodManager.setFallbackHandler(fallbackHandler);
+
+      const response = await requestHandler.handleRequest(
+        { user: 'alice' },
+        {
+          jsonrpc: '2.0',
+          method: 'unknownMethod',
+          params: { foo: 'bar' },
+          id: '1',
+        } as unknown as JSONRPCRequest<TestMethodMap, keyof TestMethodMap>,
+      );
+
+      expect(fallbackHandler).toHaveBeenCalledWith(
+        { user: 'alice' },
+        'unknownMethod',
+        { foo: 'bar' }
+      );
+      expect(response).toEqual({
+        jsonrpc: '2.0',
+        result: 'fallback response',
+        id: '1',
+      });
+    });
+
+    it('should handle fallback handler errors', async () => {
+      const fallbackHandler = vi.fn().mockResolvedValue({
+        success: false,
+        error: {
+          code: -32601,
+          message: 'Method not available',
+          data: { method: 'unknownMethod' }
+        }
+      });
+      methodManager.setFallbackHandler(fallbackHandler);
+
+      await expect(
+        requestHandler.handleRequest(
+          {},
+          {
+            jsonrpc: '2.0',
+            method: 'unknownMethod',
+            id: '1',
+          } as unknown as JSONRPCRequest<TestMethodMap, keyof TestMethodMap>,
+        ),
+      ).rejects.toThrow(new JSONRPCError(-32601, 'Method not available', { method: 'unknownMethod' }));
+    });
+
+    it('should throw method not found when no fallback handler', async () => {
+      await expect(
+        requestHandler.handleRequest(
+          {},
+          {
+            jsonrpc: '2.0',
+            method: 'unknownMethod',
+            id: '1',
+          } as unknown as JSONRPCRequest<TestMethodMap, keyof TestMethodMap>,
+        ),
+      ).rejects.toThrow(new JSONRPCError(-32601, 'Method not found', 'unknownMethod'));
+    });
+  });
 });

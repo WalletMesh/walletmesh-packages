@@ -8,6 +8,7 @@ import type {
   JSONRPCSerializer,
   JSONRPCMiddleware,
   JSONRPCID,
+  FallbackMethodHandler,
 } from './types.js';
 import { EventManager } from './event-manager.js';
 import { MiddlewareManager } from './middleware-manager.js';
@@ -387,6 +388,31 @@ export class JSONRPCNode<
 
   private handleEvent(event: JSONRPCEvent<E, keyof E>): void {
     this.eventManager.handleEvent(event.event, event.params);
+  }
+
+  /**
+   * Sets a fallback handler for unregistered methods.
+   * The fallback handler will be called when a method is not found.
+   *
+   * @param handler - The fallback handler implementation
+   *
+   * @example
+   * ```typescript
+   * node.setFallbackHandler(async (context, method, params) => {
+   *   console.log(`Unknown method called: ${method}`);
+   *   return {
+   *     success: false,
+   *     error: {
+   *       code: -32601,
+   *       message: `Method ${method} is not supported`,
+   *       data: { availableMethods: ['add', 'sum'] }
+   *     }
+   *   };
+   * });
+   * ```
+   */
+  public setFallbackHandler(handler: FallbackMethodHandler<C>): void {
+    this.methodManager.setFallbackHandler(handler);
   }
 
   /**

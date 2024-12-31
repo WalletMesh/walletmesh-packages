@@ -313,6 +313,37 @@ describe('JSONRPCNode', () => {
       await expect(promise).rejects.toThrow(TimeoutError);
     });
 
+    it('should handle fallback handler for unregistered methods', async () => {
+      // Set up fallback handler
+      node.setFallbackHandler(async (context, method, params) => ({
+        success: false,
+        error: {
+          code: -32601,
+          message: `Method ${method} is not supported`,
+          data: { availableMethods: ['add', 'greet'] }
+        }
+      }));
+
+      // Send request for unregistered method
+      await node.receiveMessage({
+        jsonrpc: '2.0',
+        method: 'subtract',
+        params: { a: 5, b: 3 },
+        id: '1'
+      });
+
+      // Verify response
+      expect(transport.send).toHaveBeenCalledWith({
+        jsonrpc: '2.0',
+        error: {
+          code: -32601,
+          message: 'Method subtract is not supported',
+          data: { availableMethods: ['add', 'greet'] }
+        },
+        id: '1'
+      });
+    });
+
     it('should handle notifications', () => {
       node.notify('add', { a: 1, b: 2 });
 

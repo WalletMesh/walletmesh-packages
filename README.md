@@ -4,9 +4,9 @@ Core libraries implementing the WalletMesh Protocol - a protocol enabling secure
 
 ## Packages
 
-- [@walletmesh/discovery](packages/discovery) - Service discovery and client-server communication
-- [@walletmesh/jsonrpc](packages/jsonrpc) - JSON-RPC implementation
-- [@walletmesh/router](packages/router) - Request routing and permissions management
+- [@walletmesh/discovery](packages/discovery) - A protocol implementation for discovering web3 wallets in both browser extensions and web applications, enabling DApps to discover available wallets and wallets to announce their presence to DApps.
+- [@walletmesh/jsonrpc](packages/jsonrpc) - A comprehensive TypeScript implementation of the JSON-RPC 2.0 protocol, designed for building robust client-server applications with bi-directional communication capabilities, featuring full type safety, middleware support, and event handling.
+- [@walletmesh/router](packages/router) - A flexible routing system for managing multi-chain wallet connections with bi-directional communication support, providing granular permissions, session management, and unified interfaces across different chains.
 
 See individual package READMEs for detailed documentation.
 
@@ -33,12 +33,18 @@ pnpm test
 
 # Run tests with coverage
 pnpm coverage
+
+# Format code
+pnpm format:fix
+
+# Lint code
+pnpm lint:fix
 ```
 
 ### Creating a New Package
 
 ```bash
-pnpm create-package <name>
+bash create-package.sh <name>
 ```
 
 This will create a new package in `packages/<name>` with the package name `@walletmesh/<name>`.
@@ -55,19 +61,11 @@ This repository uses [Changesets](https://github.com/changesets/changesets) to m
 4. Commit and push your changes
 5. Create a pull request
 
-The changeset bot will automatically check if you've included a changeset when modifying packages.
-
 ### Publishing
 
-The release process is fully automated through changesets and GitHub Actions:
+The release process is automated through changesets and GitHub Actions:
 
-1. **Change Management** (.github/workflows/changeset-bot.yml)
-   - Runs on pull requests
-   - Checks if package changes include a changeset
-   - Ensures version management consistency
-   - Changesets capture the type of change (major/minor/patch)
-
-2. **Automated Publishing** (.github/workflows/publish.yml)
+1. **Automated Publishing**
    - Monitors the main branch for merged changesets
    - Automatically creates a "Version Packages" PR that:
      - Aggregates all pending changesets

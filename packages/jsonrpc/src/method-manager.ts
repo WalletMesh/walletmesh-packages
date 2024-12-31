@@ -5,45 +5,9 @@ import type {
   JSONRPCContext,
   JSONRPCID,
   JSONRPCSerializedData,
+  MethodResponse,
+  FallbackMethodHandler,
 } from './types.js';
-
-/**
- * Represents a successful method execution result.
- *
- * @typeParam T - The type of the result data
- */
-export interface MethodResult<T> {
-  /** Indicates successful execution */
-  success: true;
-  /** The result data */
-  data: T;
-}
-
-/**
- * Represents a method execution error.
- * Follows JSON-RPC 2.0 error object structure.
- */
-export interface MethodError {
-  /** Indicates failed execution */
-  success: false;
-  /** The error details */
-  error: {
-    /** The error code (should follow JSON-RPC 2.0 error codes) */
-    code: number;
-    /** A short error message */
-    message: string;
-    /** Optional additional error data */
-    data?: string | Record<string, unknown> | undefined;
-  };
-}
-
-/**
- * Union type representing either a successful result or an error.
- * Used as the return type for method handlers.
- *
- * @typeParam T - The type of the successful result data
- */
-export type MethodResponse<T> = MethodResult<T> | MethodError;
 
 /**
  * Function type for method handlers that process JSON-RPC method calls.
@@ -144,6 +108,41 @@ export class MethodManager<
 > {
   private methods = new Map<keyof T, RegisteredMethod<C, T[keyof T]['params'], T[keyof T]['result']>>();
   private pendingRequests = new Map<JSONRPCID, PendingRequest<T[keyof T]['result']>>();
+  private fallbackHandler?: FallbackMethodHandler<C>;
+
+  /**
+   * Registers a fallback handler for unregistered methods.
+   * The fallback handler will be called when a method is not found.
+   *
+   * @param handler - The fallback handler implementation
+   *
+   * @example
+   * ```typescript
+   * methods.setFallbackHandler(async (context, method, params) => {
+   *   console.log(`Unknown method called: ${method}`);
+   *   return {
+   *     success: false,
+   *     error: {
+   *       code: -32601,
+   *       message: `Method ${method} is not supported`,
+   *       data: { availableMethods: Array.from(methods.keys()) }
+   *     }
+   *   };
+   * });
+   * ```
+   */
+  setFallbackHandler(handler: FallbackMethodHandler<C>): void {
+    this.fallbackHandler = handler;
+  }
+
+  /**
+   * Gets the registered fallback handler if one exists.
+   *
+   * @returns The fallback handler if registered, undefined otherwise
+   */
+  getFallbackHandler(): FallbackMethodHandler<C> | undefined {
+    return this.fallbackHandler;
+  }
 
   /**
    * Registers a method handler with optional serialization support.

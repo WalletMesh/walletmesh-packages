@@ -241,6 +241,27 @@ try {
     console.error('Request timed out');
   }
 }
+
+// Register a fallback handler for unknown methods
+node.setFallbackHandler(async (context, method, params) => {
+  console.log(`Unknown method called: ${method}`);
+  // You could:
+  // - Forward to another RPC server
+  // - Handle deprecated methods
+  // - Provide method suggestions
+  // - Log unknown method calls
+  return {
+    success: false,
+    error: {
+      code: -32601,
+      message: `Method ${method} is not supported`,
+      data: {
+        availableMethods: ['add', 'sum', 'slowMethod'],
+        suggestion: 'Did you mean "add"?'
+      }
+    }
+  };
+});
 ```
 
 ### Error Handling

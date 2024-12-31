@@ -1,4 +1,10 @@
-import type { JSONRPCMethodMap, JSONRPCContext, JSONRPCRequest, JSONRPCResponse } from './types.js';
+import type {
+  JSONRPCMethodMap,
+  JSONRPCContext,
+  JSONRPCRequest,
+  JSONRPCResponse,
+  MethodResponse,
+} from './types.js';
 import { JSONRPCError } from './error.js';
 import { MessageValidator } from './message-validator.js';
 import type { MethodManager } from './method-manager.js';
@@ -81,17 +87,24 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
       throw new JSONRPCError(-32600, 'Invalid Request', 'Invalid request format');
     }
 
-    // Get and validate method
+    // Get method or fallback handler
     const method = this.methodManager.getMethod(request.method as keyof T);
-    if (!method) {
-      throw new JSONRPCError(-32601, 'Method not found', request.method);
+    let methodResponse: MethodResponse<unknown>;
+
+    if (method) {
+      // Process and validate params for registered method
+      const methodParams = this.serializer.deserializeParams(request.params, method.serializer);
+      methodResponse = await method.handler(context, methodParams);
+    } else {
+      // Try fallback handler
+      const fallback = this.methodManager.getFallbackHandler();
+      if (fallback) {
+        methodResponse = await fallback(context, request.method, request.params);
+      } else {
+        throw new JSONRPCError(-32601, 'Method not found', request.method);
+      }
     }
 
-    // Process and validate params
-    const methodParams = this.serializer.deserializeParams(request.params, method.serializer);
-
-    // Execute method and handle response
-    const methodResponse = await method.handler(context, methodParams);
     if (!methodResponse.success) {
       throw new JSONRPCError(
         methodResponse.error.code,
@@ -100,8 +113,11 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
       );
     }
 
-    // Serialize result if needed
-    const serializedResult = this.serializer.serializeResult(methodResponse.data, method.serializer);
+    // Serialize result if needed (only use serializer for registered methods)
+    const serializedResult = this.serializer.serializeResult(
+      methodResponse.data,
+      method?.serializer
+    );
 
     // Return JSON-RPC response
     return {

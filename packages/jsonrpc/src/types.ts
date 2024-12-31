@@ -428,3 +428,70 @@ export interface JSONRPCEvent<T extends JSONRPCEventMap, E extends keyof T> {
  * ```
  */
 export type JSONRPCEventHandler<T extends JSONRPCEventMap, E extends keyof T> = (params: T[E]) => void;
+
+/**
+ * Represents a successful method execution result.
+ *
+ * @typeParam T - The type of the result data
+ */
+export interface MethodResult<T> {
+  /** Indicates successful execution */
+  success: true;
+  /** The result data */
+  data: T;
+}
+
+/**
+ * Represents a method execution error.
+ * Follows JSON-RPC 2.0 error object structure.
+ */
+export interface MethodError {
+  /** Indicates failed execution */
+  success: false;
+  /** The error details */
+  error: {
+    /** The error code (should follow JSON-RPC 2.0 error codes) */
+    code: number;
+    /** A short error message */
+    message: string;
+    /** Optional additional error data */
+    data?: string | Record<string, unknown> | undefined;
+  };
+}
+
+/**
+ * Union type representing either a successful result or an error.
+ * Used as the return type for method handlers.
+ *
+ * @typeParam T - The type of the successful result data
+ */
+export type MethodResponse<T> = MethodResult<T> | MethodError;
+
+/**
+ * Function type for handling unregistered JSON-RPC method calls.
+ * The fallback handler receives the context, method name, and raw parameters,
+ * and can implement custom logic for handling unknown methods.
+ *
+ * @typeParam C - The context type for method handlers
+ *
+ * @example
+ * ```typescript
+ * const fallbackHandler: FallbackMethodHandler<Context> =
+ *   async (context, method, params) => {
+ *     console.log(`Unknown method called: ${method}`);
+ *     return {
+ *       success: false,
+ *       error: {
+ *         code: -32601,
+ *         message: `Method ${method} is not supported`,
+ *         data: { availableMethods: ['add', 'subtract'] }
+ *       }
+ *     };
+ *   };
+ * ```
+ */
+export type FallbackMethodHandler<C extends JSONRPCContext> = (
+  context: C,
+  method: string,
+  params: unknown
+) => Promise<MethodResponse<unknown>> | MethodResponse<unknown>;
