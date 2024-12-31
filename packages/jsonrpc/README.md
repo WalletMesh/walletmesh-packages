@@ -391,17 +391,16 @@ const dateSerializer: JSONRPCSerializer<Date, string> = {
   }
 };
 
-// Register method with serialization
-node.registerMethod(
-  'processDate',
-  (context, { date }) => {
-    if (!(date instanceof Date)) {
-      throw new JSONRPCError(-32602, 'Invalid date parameter');
-    }
-    return new Date(date.getTime() + 86400000); // Add one day
-  },
-  dateSerializer
-);
+// Register method
+node.registerMethod('processDate', (context, { date }) => {
+  if (!(date instanceof Date)) {
+    throw new JSONRPCError(-32602, 'Invalid date parameter');
+  }
+  return new Date(date.getTime() + 86400000); // Add one day
+});
+
+// Register serializer separately
+node.registerSerializer('processDate', dateSerializer);
 
 // Use the method
 const tomorrow = await node.callMethod('processDate', { date: new Date() });
@@ -569,7 +568,7 @@ const client = new JSONRPCNode<Methods>({
       },
       body: JSON.stringify(message)
     });
-    
+
     const data = await response.json();
     client.handleMessage(data);
   }

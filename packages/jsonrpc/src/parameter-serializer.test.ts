@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ParameterSerializer } from './parameter-serializer.js';
 import { JSONRPCError } from './error.js';
 import type { JSONRPCSerializer, JSONRPCSerializedData } from './types.js';
@@ -505,6 +505,347 @@ describe('ParameterSerializer', () => {
       expect(() => serializer.deserializeResult({ serialized: 'test' }, invalidSerializer)).toThrow(
         new JSONRPCError(-32602, 'Invalid serialized data format'),
       );
+    });
+  });
+
+  describe('Fallback Serializer', () => {
+    const serializer = new ParameterSerializer();
+    const fallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+      params: {
+        serialize: (params) => ({ serialized: JSON.stringify(params) }),
+        deserialize: (data) => JSON.parse(data.serialized),
+      },
+      result: {
+        serialize: (result) => ({ serialized: JSON.stringify(result) }),
+        deserialize: (data) => JSON.parse(data.serialized),
+      },
+    };
+
+    beforeEach(() => {
+      serializer.setFallbackSerializer(fallbackSerializer);
+    });
+
+    describe('Parameter Serialization with Fallback', () => {
+      beforeEach(() => {
+        serializer.setFallbackSerializer(fallbackSerializer);
+      });
+
+      it('should handle null params with fallback serializer', () => {
+        expect(serializer.serializeParams(null)).toBeUndefined();
+      });
+
+      it('should handle undefined params with fallback serializer', () => {
+        expect(serializer.serializeParams(undefined)).toBeUndefined();
+      });
+
+      it('should use fallback serializer when no method-specific serializer is provided', () => {
+        const params = { test: 'value' };
+        const serialized = serializer.serializeParams(params);
+        expect(serialized).toEqual({ serialized: JSON.stringify(params) });
+      });
+
+      it('should prefer method-specific serializer over fallback', () => {
+        const params = { test: 'value' };
+        const methodSerializer: JSONRPCSerializer<typeof params, unknown> = {
+          params: {
+            serialize: () => ({ serialized: 'method-specific' }),
+            deserialize: () => params,
+          },
+        };
+        const serialized = serializer.serializeParams(params, methodSerializer);
+        expect(serialized).toEqual({ serialized: 'method-specific' });
+      });
+
+      it('should throw error when fallback serializer throws an error', () => {
+        const errorFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => {
+              throw new Error('Serialization error');
+            },
+            deserialize: () => ({}),
+          },
+        };
+        serializer.setFallbackSerializer(errorFallbackSerializer);
+        expect(() => serializer.serializeParams({ test: 'value' })).toThrow('Serialization error');
+      });
+
+      it('should throw error when fallback serializer produces invalid format', () => {
+        const invalidFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => ({ invalid: 'format' }) as unknown as JSONRPCSerializedData,
+            deserialize: () => ({}),
+          },
+        };
+        serializer.setFallbackSerializer(invalidFallbackSerializer);
+        expect(() => serializer.serializeParams({ test: 'value' })).toThrow(
+          new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer'),
+        );
+      });
+    });
+
+    describe('Parameter Deserialization with Fallback', () => {
+      beforeEach(() => {
+        serializer.setFallbackSerializer(fallbackSerializer);
+      });
+
+      it('should handle undefined params with fallback serializer', () => {
+        expect(serializer.deserializeParams(undefined)).toBeUndefined();
+      });
+
+      it('should handle null params with fallback serializer', () => {
+        expect(serializer.deserializeParams(null)).toBeUndefined();
+      });
+
+      it('should throw error when params is not an object with fallback serializer', () => {
+        expect(() => serializer.deserializeParams(123)).toThrow(
+          new JSONRPCError(-32602, 'Invalid params format for serialization'),
+        );
+      });
+
+      it('should throw error when serialized field is missing with fallback serializer', () => {
+        expect(() => serializer.deserializeParams({})).toThrow(
+          new JSONRPCError(-32602, 'Invalid serialized data format'),
+        );
+      });
+
+      it('should throw error when serialized field is not a string with fallback serializer', () => {
+        expect(() => serializer.deserializeParams({ serialized: 123 })).toThrow(
+          new JSONRPCError(-32602, 'Invalid serialized data format'),
+        );
+      });
+
+      it('should throw error when fallback deserializer throws non-Error', () => {
+        const invalidFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => {
+              throw 'Not an Error object';
+            },
+          },
+        };
+        serializer.setFallbackSerializer(invalidFallbackSerializer);
+        expect(() => serializer.deserializeParams({ serialized: 'test' })).toThrow(
+          new JSONRPCError(-32000, 'Unknown error'),
+        );
+      });
+
+      it('should use fallback serializer when no method-specific serializer is provided', () => {
+        const params = { test: 'value' };
+        const serialized = { serialized: JSON.stringify(params) };
+        const deserialized = serializer.deserializeParams(serialized);
+        expect(deserialized).toEqual(params);
+      });
+
+      it('should prefer method-specific serializer over fallback', () => {
+        const methodSerializer: JSONRPCSerializer<{ test: string }, unknown> = {
+          params: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({ test: 'method-specific' }),
+          },
+        };
+        const deserialized = serializer.deserializeParams({ serialized: 'test' }, methodSerializer);
+        expect(deserialized).toEqual({ test: 'method-specific' });
+      });
+
+      it('should throw error when serialized data structure validation fails', () => {
+        const invalidFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => ({ serialized: 'test-invalid' }),
+            deserialize: () => ({}),
+          },
+        };
+        serializer.setFallbackSerializer(invalidFallbackSerializer);
+        expect(() => serializer.deserializeParams({ serialized: 'test-invalid' })).toThrow(
+          new JSONRPCError(-32602, 'Invalid serialized data structure'),
+        );
+      });
+
+      it('should throw error when fallback deserializer throws an error', () => {
+        const errorFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({}),
+          },
+          result: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => {
+              throw new Error('Deserialization error');
+            },
+          },
+        };
+        serializer.setFallbackSerializer(errorFallbackSerializer);
+        expect(() => serializer.deserializeResult({ serialized: 'test' })).toThrow(
+          new JSONRPCError(-32602, 'Invalid deserialized result format from fallback serializer'),
+        );
+      });
+
+      it('should throw error when fallback deserializer produces invalid format', () => {
+        const invalidFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({ fn: () => {} }),
+          },
+        };
+        serializer.setFallbackSerializer(invalidFallbackSerializer);
+        expect(() => serializer.deserializeParams({ serialized: 'test' })).toThrow(
+          new JSONRPCError(-32602, 'Invalid deserialized params format from fallback serializer'),
+        );
+      });
+    });
+
+    describe('Result Serialization with Fallback', () => {
+      it('should use fallback serializer when no method-specific serializer is provided', () => {
+        const result = { test: 'value' };
+        const serialized = serializer.serializeResult(result);
+        expect(serialized).toEqual({ serialized: JSON.stringify(result) });
+      });
+
+      it('should prefer method-specific serializer over fallback', () => {
+        const result = { test: 'value' };
+        const methodSerializer: JSONRPCSerializer<unknown, typeof result> = {
+          params: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({}),
+          },
+          result: {
+            serialize: () => ({ serialized: 'method-specific' }),
+            deserialize: () => result,
+          },
+        };
+        const serialized = serializer.serializeResult(result, methodSerializer);
+        expect(serialized).toEqual({ serialized: 'method-specific' });
+      });
+
+      it('should throw error when fallback serializer produces invalid format', () => {
+        const invalidFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({}),
+          },
+          result: {
+            serialize: () => ({ invalid: 'format' }) as unknown as JSONRPCSerializedData,
+            deserialize: () => ({}),
+          },
+        };
+        serializer.setFallbackSerializer(invalidFallbackSerializer);
+        expect(() => serializer.serializeResult({ test: 'value' })).toThrow(
+          new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer'),
+        );
+      });
+    });
+
+    describe('Result Deserialization with Fallback', () => {
+      beforeEach(() => {
+        serializer.setFallbackSerializer(fallbackSerializer);
+      });
+
+      it('should validate serialized field format when using fallback serializer', () => {
+        const invalidResult = { serialized: { nested: 'object' } };
+        expect(() => serializer.deserializeResult(invalidResult)).toThrow(
+          new JSONRPCError(-32602, 'Invalid serialized data format'),
+        );
+      });
+
+      it('should handle undefined result with fallback serializer', () => {
+        expect(serializer.deserializeResult(undefined)).toBeUndefined();
+      });
+
+      it('should handle null result with fallback serializer', () => {
+        expect(serializer.deserializeResult(null)).toBeUndefined();
+      });
+
+      it('should throw error when result is not an object with fallback serializer', () => {
+        expect(() => serializer.deserializeResult(123)).toThrow(
+          new JSONRPCError(-32602, 'Invalid result format for serialization'),
+        );
+      });
+
+      it('should throw error when serialized field is missing with fallback serializer', () => {
+        expect(() => serializer.deserializeResult({})).toThrow(
+          new JSONRPCError(-32602, 'Invalid serialized data format'),
+        );
+      });
+
+      it('should throw error when serialized field is not a string with fallback serializer', () => {
+        expect(() => serializer.deserializeResult({ serialized: 123 })).toThrow(
+          new JSONRPCError(-32602, 'Invalid serialized data format'),
+        );
+      });
+
+      it('should throw error when fallback deserializer throws non-Error', () => {
+        const invalidFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({}),
+          },
+          result: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => {
+              throw 'Not an Error object';
+            },
+          },
+        };
+        serializer.setFallbackSerializer(invalidFallbackSerializer);
+        expect(() => serializer.deserializeResult({ serialized: 'test' })).toThrow(
+          new JSONRPCError(-32602, 'Invalid deserialized result format from fallback serializer'),
+        );
+      });
+
+      it('should use fallback serializer when no method-specific serializer is provided', () => {
+        const result = { test: 'value' };
+        const serialized = { serialized: JSON.stringify(result) };
+        const deserialized = serializer.deserializeResult(serialized);
+        expect(deserialized).toEqual(result);
+      });
+
+      it('should prefer method-specific serializer over fallback', () => {
+        const methodSerializer: JSONRPCSerializer<unknown, { test: string }> = {
+          params: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({}),
+          },
+          result: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({ test: 'method-specific' }),
+          },
+        };
+        const deserialized = serializer.deserializeResult({ serialized: 'test' }, methodSerializer);
+        expect(deserialized).toEqual({ test: 'method-specific' });
+      });
+
+      it('should throw error when serialized data structure validation fails', () => {
+        const invalidFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({}),
+          },
+          result: {
+            serialize: () => ({ serialized: 'test-invalid' }),
+            deserialize: () => ({}),
+          },
+        };
+        serializer.setFallbackSerializer(invalidFallbackSerializer);
+        expect(() => serializer.deserializeResult({ serialized: 'test-invalid' })).toThrow(
+          new JSONRPCError(-32602, 'Invalid serialized data structure'),
+        );
+      });
+
+      it('should throw error when fallback deserializer produces invalid format', () => {
+        const invalidFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({}),
+          },
+          result: {
+            serialize: () => ({ serialized: 'test' }),
+            deserialize: () => ({ fn: () => {} }),
+          },
+        };
+        serializer.setFallbackSerializer(invalidFallbackSerializer);
+        expect(() => serializer.deserializeResult({ serialized: 'test' })).toThrow(
+          new JSONRPCError(-32602, 'Invalid deserialized result format from fallback serializer'),
+        );
+      });
     });
   });
 });

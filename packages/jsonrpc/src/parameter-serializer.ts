@@ -22,9 +22,35 @@ import { MessageValidator } from './message-validator.js';
  */
 export class ParameterSerializer {
   private validator: MessageValidator;
+  private fallbackSerializer?: JSONRPCSerializer<unknown, unknown>;
 
   constructor() {
     this.validator = new MessageValidator();
+  }
+
+  /**
+   * Sets a fallback serializer to be used when no method-specific serializer is provided.
+   *
+   * @param serializer - The serializer to use as fallback
+   * @example
+   * ```typescript
+   * const serializer = new ParameterSerializer();
+   *
+   * // Set a fallback serializer for handling dates
+   * serializer.setFallbackSerializer({
+   *   params: {
+   *     serialize: value => ({ serialized: value instanceof Date ? value.toISOString() : String(value) }),
+   *     deserialize: data => new Date(data.serialized)
+   *   },
+   *   result: {
+   *     serialize: value => ({ serialized: value instanceof Date ? value.toISOString() : String(value) }),
+   *     deserialize: data => new Date(data.serialized)
+   *   }
+   * });
+   * ```
+   */
+  public setFallbackSerializer(serializer: JSONRPCSerializer<unknown, unknown>): void {
+    this.fallbackSerializer = serializer;
   }
 
   /**
@@ -57,6 +83,14 @@ export class ParameterSerializer {
       return undefined;
     }
     if (!serializer?.params) {
+      // Use fallback serializer if available
+      if (this.fallbackSerializer?.params) {
+        const serializedData = this.fallbackSerializer.params.serialize(params);
+        if (!isJSONRPCSerializedData(serializedData)) {
+          throw new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer');
+        }
+        return serializedData;
+      }
       return params;
     }
     const serializedData = serializer.params.serialize(params);
@@ -94,24 +128,28 @@ export class ParameterSerializer {
     }
 
     if (!serializer?.params) {
+      // Use fallback serializer if available
+      if (this.fallbackSerializer?.params) {
+        const serializedData = this.validateSerializedData(params, 'params');
+
+        try {
+          const deserializedParams = this.fallbackSerializer.params.deserialize(serializedData);
+          if (!this.validator.isValidParams(deserializedParams)) {
+            throw new JSONRPCError(-32602, 'Invalid deserialized params format from fallback serializer');
+          }
+          return deserializedParams as P;
+        } catch (error) {
+          throw new JSONRPCError(-32000, error instanceof Error ? error.message : 'Unknown error');
+        }
+      }
+
       if (!this.validator.isValidParams(params)) {
         throw new JSONRPCError(-32602, 'Invalid params format');
       }
       return params as P;
     }
 
-    if (!this.validator.isValidObject(params)) {
-      throw new JSONRPCError(-32602, 'Invalid params format for serialization');
-    }
-
-    if (!('serialized' in params) || typeof params.serialized !== 'string') {
-      throw new JSONRPCError(-32602, 'Invalid serialized data format');
-    }
-
-    const serializedData = { serialized: params.serialized };
-    if (!isJSONRPCSerializedData(serializedData)) {
-      throw new JSONRPCError(-32602, 'Invalid serialized data structure');
-    }
+    const serializedData = this.validateSerializedData(params, 'params');
 
     let deserializedParams: unknown;
     try {
@@ -156,12 +194,38 @@ export class ParameterSerializer {
       return undefined;
     }
     if (!serializer?.result) {
+      // Use fallback serializer if available
+      if (this.fallbackSerializer?.result) {
+        const serializedData = this.fallbackSerializer.result.serialize(result);
+        if (!isJSONRPCSerializedData(serializedData)) {
+          throw new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer');
+        }
+        return serializedData;
+      }
       return result;
     }
     const serializedData = serializer.result.serialize(result);
     if (!isJSONRPCSerializedData(serializedData)) {
       throw new JSONRPCError(-32602, 'Invalid serialized data format');
     }
+    return serializedData;
+  }
+
+  private validateSerializedData(data: unknown, type: 'params' | 'result'): { serialized: string } {
+    if (!this.validator.isValidObject(data)) {
+      throw new JSONRPCError(-32602, `Invalid ${type} format for serialization`);
+    }
+
+    const obj = data as Record<string, unknown>;
+    if (!('serialized' in obj) || typeof obj.serialized !== 'string') {
+      throw new JSONRPCError(-32602, 'Invalid serialized data format');
+    }
+
+    const serializedData = { serialized: obj.serialized };
+    if (!isJSONRPCSerializedData(serializedData)) {
+      throw new JSONRPCError(-32602, 'Invalid serialized data structure');
+    }
+
     return serializedData;
   }
 
@@ -193,22 +257,23 @@ export class ParameterSerializer {
     }
 
     if (!serializer?.result) {
+      // Use fallback serializer if available
+      if (this.fallbackSerializer?.result) {
+        const serializedData = this.validateSerializedData(result, 'result');
+        try {
+          const deserializedResult = this.fallbackSerializer.result.deserialize(serializedData);
+          if (!this.validator.isValidValue(deserializedResult)) {
+            throw new JSONRPCError(-32602, 'Invalid deserialized result format from fallback serializer');
+          }
+          return deserializedResult as R;
+        } catch (error) {
+          throw new JSONRPCError(-32602, 'Invalid deserialized result format from fallback serializer');
+        }
+      }
       return result as R;
     }
 
-    if (!this.validator.isValidObject(result)) {
-      throw new JSONRPCError(-32602, 'Invalid result format for serialization');
-    }
-
-    if (!('serialized' in result) || typeof result.serialized !== 'string') {
-      throw new JSONRPCError(-32602, 'Invalid serialized data format');
-    }
-
-    const serializedData = { serialized: result.serialized };
-    if (!isJSONRPCSerializedData(serializedData)) {
-      throw new JSONRPCError(-32602, 'Invalid serialized data structure');
-    }
-
+    const serializedData = this.validateSerializedData(result, 'result');
     let deserializedResult: unknown;
     try {
       deserializedResult = serializer.result.deserialize(serializedData);

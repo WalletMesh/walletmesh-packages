@@ -320,8 +320,8 @@ describe('JSONRPCNode', () => {
         error: {
           code: -32601,
           message: `Method ${method} is not supported`,
-          data: { availableMethods: ['add', 'greet'] }
-        }
+          data: { availableMethods: ['add', 'greet'] },
+        },
       }));
 
       // Send request for unregistered method
@@ -329,7 +329,7 @@ describe('JSONRPCNode', () => {
         jsonrpc: '2.0',
         method: 'subtract',
         params: { a: 5, b: 3 },
-        id: '1'
+        id: '1',
       });
 
       // Verify response
@@ -338,9 +338,9 @@ describe('JSONRPCNode', () => {
         error: {
           code: -32601,
           message: 'Method subtract is not supported',
-          data: { availableMethods: ['add', 'greet'] }
+          data: { availableMethods: ['add', 'greet'] },
         },
-        id: '1'
+        id: '1',
       });
     });
 

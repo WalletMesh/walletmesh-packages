@@ -493,5 +493,5 @@ export type MethodResponse<T> = MethodResult<T> | MethodError;
 export type FallbackMethodHandler<C extends JSONRPCContext> = (
   context: C,
   method: string,
-  params: unknown
+  params: unknown,
 ) => Promise<MethodResponse<unknown>> | MethodResponse<unknown>;

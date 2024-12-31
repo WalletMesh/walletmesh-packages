@@ -114,10 +114,7 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
     }
 
     // Serialize result if needed (only use serializer for registered methods)
-    const serializedResult = this.serializer.serializeResult(
-      methodResponse.data,
-      method?.serializer
-    );
+    const serializedResult = this.serializer.serializeResult(methodResponse.data, method?.serializer);
 
     // Return JSON-RPC response
     return {

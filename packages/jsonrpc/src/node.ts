@@ -95,24 +95,16 @@ export class JSONRPCNode<
    *
    * @param name - The name of the method to register
    * @param handler - Function that handles method calls
-   * @param serializer - Optional serializer for complex parameter/result types
    *
    * @example
    * ```typescript
-   * // Simple method
+   * // Register a method
    * node.registerMethod('add', (context, { a, b }) => a + b);
-   *
-   * // Method with serializer for Date objects
-   * node.registerMethod('getDate',
-   *   (context, { date }) => new Date(date.getTime() + 86400000),
-   *   dateSerializer
-   * );
    * ```
    */
   public registerMethod<M extends keyof T>(
     name: M,
     handler: (context: C, params: T[M]['params']) => Promise<T[M]['result']> | T[M]['result'],
-    serializer?: JSONRPCSerializer<T[M]['params'], T[M]['result']>,
   ): void {
     // Wrap the handler to return a MethodResponse
     const wrappedHandler: MethodHandler<C, T[M]['params'], T[M]['result']> = async (context, params) => {
@@ -143,7 +135,7 @@ export class JSONRPCNode<
         };
       }
     };
-    this.methodManager.registerMethod(name, wrappedHandler, serializer);
+    this.methodManager.registerMethod(name, wrappedHandler);
   }
 
   /**
@@ -154,6 +146,12 @@ export class JSONRPCNode<
    *
    * @example
    * ```typescript
+   * // Register a method
+   * node.registerMethod('processDate', (context, { date }) => {
+   *   return new Date(date.getTime() + 86400000);
+   * });
+   *
+   * // Register serializer for the method
    * node.registerSerializer('processDate', {
    *   params: dateSerializer,
    *   result: dateSerializer
