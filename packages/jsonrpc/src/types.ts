@@ -2,15 +2,17 @@
  * Represents a JSON-RPC message identifier.
  * - `undefined` for notifications (messages that don't require a response)
  * - `string` or `number` for request/response correlation
+ * - `null` for error responses to invalid requests
  *
  * @example
  * ```typescript
  * const id: JSONRPCID = "request-123"; // String ID
  * const id: JSONRPCID = 456; // Numeric ID
  * const id: JSONRPCID = undefined; // Notification (no response expected)
+ * const id: JSONRPCID = null; // Error response for invalid request
  * ```
  */
-export type JSONRPCID = undefined | string | number;
+export type JSONRPCID = undefined | string | number | null;
 
 /**
  * Represents JSON-RPC method parameters.
@@ -129,7 +131,7 @@ export interface JSONRPCMethodDef<P extends JSONRPCParams = JSONRPCParams, R = u
   result: R;
   /** Optional serializer for parameters and result */
   serializer?: JSONRPCSerializer<P, R>;
-};
+}
 
 /**
  * Maps method names to their definitions in a JSON-RPC interface.
@@ -150,7 +152,37 @@ export interface JSONRPCMethodDef<P extends JSONRPCParams = JSONRPCParams, R = u
  */
 export interface JSONRPCMethodMap {
   [method: string]: JSONRPCMethodDef;
-};
+}
+
+/**
+ * Function type for handling JSON-RPC method calls.
+ * Method handlers receive a context object and typed parameters,
+ * and return a promise or direct value of the specified result type.
+ *
+ * @typeParam T - The RPC method map defining available methods
+ * @typeParam M - The specific method being handled
+ * @typeParam C - The context type for method handlers
+ *
+ * @example
+ * ```typescript
+ * // Simple handler
+ * const addHandler: MethodHandler<MethodMap, 'add', Context> =
+ *   (context, { a, b }) => a + b;
+ *
+ * // Async handler with context
+ * const getUserHandler: MethodHandler<MethodMap, 'getUser', Context> =
+ *   async (context, { id }) => {
+ *     if (!context.isAuthorized) {
+ *       throw new JSONRPCError(-32600, 'Unauthorized');
+ *     }
+ *     return await db.users.findById(id);
+ *   };
+ * ```
+ */
+export type MethodHandler<T extends JSONRPCMethodMap, M extends keyof T, C extends JSONRPCContext> = (
+  context: C,
+  params: T[M]['params'],
+) => Promise<T[M]['result']> | T[M]['result'];
 
 /**
  * Represents a JSON-RPC 2.0 request message.
@@ -232,12 +264,12 @@ export interface JSONRPCResponse<T extends JSONRPCMethodMap, M extends keyof T =
  * Represents a JSON-RPC 2.0 error object.
  *
  * Standard error codes:
- * - Parse error (-32700)
- * - Invalid Request (-32600)
- * - Method not found (-32601)
- * - Invalid params (-32602)
- * - Internal error (-32603)
- * - Server error (-32000 to -32099)
+ * - Parse error (-32700): Invalid JSON was received
+ * - Invalid Request (-32600): The JSON sent is not a valid Request object
+ * - Method not found (-32601): The method does not exist / is not available
+ * - Invalid params (-32602): Invalid method parameter(s)
+ * - Internal error (-32603): Internal JSON-RPC error
+ * - Server error (-32000 to -32099): Implementation-defined server errors
  *
  * @example
  * ```typescript
@@ -307,6 +339,35 @@ export type JSONRPCMiddleware<T extends JSONRPCMethodMap, C extends JSONRPCConte
 export type JSONRPCContext = Record<string, unknown>;
 
 /**
+ * Function type for sending JSON-RPC messages between nodes.
+ * Implement this to provide the actual transport mechanism (WebSocket, postMessage, etc.).
+ *
+ * @example
+ * ```typescript
+ * // WebSocket transport
+ * const wsTransport: Transport = {
+ *   send: message => {
+ *     ws.send(JSON.stringify(message));
+ *   }
+ * };
+ *
+ * // postMessage transport
+ * const windowTransport: Transport = {
+ *   send: message => {
+ *     window.postMessage(JSON.stringify(message), '*');
+ *   }
+ * };
+ * ```
+ */
+export interface Transport {
+  /**
+   * Sends a JSON-RPC message to the remote node
+   * @param message - The message to send
+   */
+  send(message: unknown): void;
+}
+
+/**
  * Maps event names to their payload types for JSON-RPC events.
  *
  * @example
@@ -314,13 +375,13 @@ export type JSONRPCContext = Record<string, unknown>;
  * type EventMap = {
  *   userJoined: { username: string; timestamp: number };
  *   statusUpdate: { user: string; status: 'online' | 'offline' };
- *   messageReceived: { text: string; from: string };
+ *   messageReceived: { text: string; from: string; timestamp: number };
  * };
  * ```
  */
 export interface JSONRPCEventMap {
   [event: string]: unknown;
-};
+}
 
 /**
  * Represents a JSON-RPC 2.0 event message.

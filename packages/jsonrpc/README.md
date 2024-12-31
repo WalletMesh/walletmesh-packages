@@ -1,6 +1,116 @@
-# JSON-RPC TypeScript Library
+# @walletmesh/jsonrpc
 
-A JSON-RPC 2.0 library for TypeScript, providing a unified node implementation with bi-directional communication and middleware support.
+A TypeScript implementation of the JSON-RPC 2.0 protocol, designed for building robust client-server applications with bi-directional communication capabilities.
+
+## Quick Start
+
+```bash
+# Install the package
+pnpm add @walletmesh/jsonrpc
+```
+
+```typescript
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
+
+// Define shared types for type safety
+type Methods = {
+  add: {
+    params: { a: number; b: number };
+    result: number;
+  };
+  greet: {
+    params: { name: string };
+    result: string;
+  };
+};
+
+type Events = {
+  notification: { message: string };
+};
+
+// Create server node
+const server = new JSONRPCNode<Methods, Events>({
+  send: message => {
+    // In a real app, send to client (e.g., via WebSocket)
+    client.handleMessage(message);
+  }
+});
+
+// Register server methods
+server.registerMethod('add', (context, { a, b }) => a + b);
+server.registerMethod('greet', (context, { name }) => `Hello, ${name}!`);
+
+// Create client node
+const client = new JSONRPCNode<Methods, Events>({
+  send: message => {
+    // In a real app, send to server (e.g., via WebSocket)
+    server.handleMessage(message);
+  }
+});
+
+// Use client to call server methods
+async function main() {
+  // Call methods
+  const sum = await client.callMethod('add', { a: 2, b: 3 });
+  console.log('Sum:', sum); // Output: Sum: 5
+
+  const greeting = await client.callMethod('greet', { name: 'Alice' });
+  console.log('Greeting:', greeting); // Output: Greeting: Hello, Alice!
+
+  // Handle events
+  const cleanup = client.on('notification', ({ message }) => {
+    console.log('Notification:', message);
+  });
+
+  // Server can emit events
+  server.emit('notification', { message: 'Server update!' });
+
+  // Clean up when done
+  cleanup();
+}
+
+main().catch(console.error);
+```
+
+This example demonstrates:
+- Type-safe method and event definitions
+- Bi-directional communication
+- Method calls with parameters
+- Event handling
+- Proper cleanup
+
+In a real application, you would:
+1. Replace the direct message passing with your transport layer (WebSocket, postMessage, etc.)
+2. Add error handling
+3. Implement proper connection management
+4. Add middleware for logging, authentication, etc.
+
+## Features
+
+✨ **Full JSON-RPC 2.0 Compliance**
+- Complete implementation of the JSON-RPC 2.0 specification
+- Support for both request-response and notification patterns
+- Bi-directional communication capabilities
+
+🔒 **Type Safety**
+- Comprehensive TypeScript type definitions
+- Generic type parameters for methods and events
+- Compile-time parameter and result validation
+
+🔄 **Middleware System**
+- Request/response modification
+- Context passing through middleware chain
+- Automatic cleanup of middleware handlers
+
+📡 **Event System**
+- Asynchronous notification support
+- Type-safe event definitions
+- Automatic event handler cleanup
+
+⚡ **Performance & Reliability**
+- Configurable timeout support
+- Parameter serialization for complex types
+- Method response validation
 
 ## Architecture
 
@@ -50,266 +160,140 @@ graph LR
    - Manages method registration and invocation
    - Processes incoming/outgoing messages
    - Coordinates middleware execution
+   - Supports automatic cleanup of event handlers and middleware
+   - Provides comprehensive error handling with custom error types
 
 2. **Transport Layer**: Abstract interface for message transmission
    - Implemented by the user (e.g., WebSocket, postMessage)
    - Handles actual message delivery between nodes
+   - Supports both synchronous and asynchronous communication
 
 3. **Middleware Stack**: Chain of request/response processors
-   - Executes in order of registration
-   - Can modify requests/responses
-   - Supports method-specific middleware
+   - Request/response modification
+   - Context sharing
+   - Automatic cleanup on node close
 
 4. **Type System**: Comprehensive TypeScript types
    - Method definitions with params/result types
    - Event definitions with payload types
    - Context types for shared data
    - Serialization interfaces
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Client Transport
-    participant Remote
-    participant Middleware
-    participant Methods
-
-    Client->>Client Transport: callMethod()
-    Client Transport->>Remote: JSON-RPC Request
-    activate Remote
-    Remote->>Middleware: Process Middlewares
-    Remote->>Methods: Execute Method
-    Remote->>Client Transport: Return Result
-    deactivate Remote
-    Client Transport->>Client: Promise Result
-```
-
-## Features
-
-* JSON-RPC 2.0 compliant node-to-node communication
-* Bi-directional support with events and method calls
-* Type-safe method and event definitions using TypeScript generics
-* Comprehensive middleware support:
-  * Request/response modification
-  * Context passing through middleware chain
-  * Method-specific middleware
-  * Middleware ordering and removal
-* Customizable transport layer for sending messages
-* Built-in error handling with custom error codes and messages
-* Support for notifications (methods without responses)
-* Timeout support for method calls
-* Optional event handling for broadcast-style communication
-* Parameter serialization for method parameters and results
+   - Support for both object and array parameters
 
 ## Usage
 
-1. Define your types:
-   - Method map (`T extends JSONRPCMethodMap`) - Defines available RPC methods
-   - Event map (`E extends JSONRPCEventMap`) - Defines available events
-   - Context type (`C extends JSONRPCContext`) - Defines shared context data
-2. Create a node instance with your types:
-   ```typescript
-   const node = new JSONRPCNode<MethodMap, EventMap, Context>({
-     send: message => {
-       // Transport implementation
-     }
-   });
-   ```
-3. Register methods and event handlers
-4. Add middleware if needed
-5. Start communicating bi-directionally with other nodes
-
-The library does not provide a built-in transport layer, allowing you to use any communication method needed (WebSocket, postMessage, etc.).
-
-### Type Parameters
-
-The `JSONRPCNode` class takes three type parameters:
+### Basic Setup
 
 ```typescript
-class JSONRPCNode<
-  T extends JSONRPCMethodMap = JSONRPCMethodMap,  // Method definitions
-  E extends JSONRPCEventMap = JSONRPCEventMap,    // Event definitions
-  C extends JSONRPCContext = JSONRPCContext       // Context type
->
-```
-
-1. `T` - Method Map: Defines the available RPC methods
-   ```typescript
-   type MethodMap = {
-     add: { params: { a: number; b: number }; result: number };
-     greet: { params: { name: string }; result: string };
-   };
-   ```
-
-2. `E` - Event Map: Defines the available events
-   ```typescript
-   type EventMap = {
-     userJoined: { username: string };
-     statusUpdate: { user: string; status: 'online' | 'offline' };
-   };
-   ```
-
-3. `C` - Context: Defines data shared across middleware and handlers
-   ```typescript
-   type Context = JSONRPCContext & {
-     user?: string;
-     isAuthorized?: boolean;
-   };
-   ```
-
-### Examples
-
-#### Using `window.postMessage` for bi-directional communication
-
-```typescript
+// Define your types
 type MethodMap = {
-  echo: { params: string; result: string };
+  add: { params: { a: number; b: number }; result: number };
+  greet: { params: { name: string }; result: string };
 };
 
 type EventMap = {
-  userTyping: { username: string };
-  messageReceived: { text: string; from: string };
+  userJoined: { username: string; timestamp: number };
+  statusUpdate: { status: 'online' | 'offline'; lastSeen?: number };
 };
 
-// Create nodes
-const nodeA = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
-  send: message => {
-    window.postMessage(JSON.stringify(message), '*');
-  }
-});
-
-const nodeB = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
-  send: message => {
-    window.postMessage(JSON.stringify(message), '*');
-  }
-});
-
-// Register methods
-nodeA.registerMethod('echo', async (_context, params) => {
-  return params;
-});
-
-// Register event handlers
-nodeA.on('userTyping', ({ username }) => {
-  console.log(`${username} is typing...`);
-});
-
-nodeB.on('messageReceived', ({ text, from }) => {
-  console.log(`Message from ${from}: ${text}`);
-});
-
-// Setup message handling
-window.addEventListener('message', event => {
-  const message = JSON.parse(event.data);
-  nodeA.receiveMessage(message);
-  nodeB.receiveMessage(message);
-});
-
-// Use the nodes
-nodeB.callMethod('echo', 'Hello, world!').then(result => {
-  console.log('Echo result:', result);
-});
-
-nodeA.emit('userTyping', { username: 'Alice' });
-nodeB.emit('messageReceived', { text: 'Hi!', from: 'Bob' });
-```
-
-#### Using WebSockets for bi-directional communication
-
-```typescript
-type MethodMap = {
-  echo: { params: string; result: string };
+type Context = JSONRPCContext & {
+  userId?: string;
+  sessionData?: Record<string, unknown>;
 };
 
-type EventMap = {
-  userJoined: { username: string };
-  userLeft: { username: string };
-};
-
-// WebSocket server
-const wss = new WebSocket.Server({ port: 8080 });
-
-wss.on('connection', (ws) => {
-  const node = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
-    send: message => {
-      ws.send(JSON.stringify(message));
-    }
-  });
-
-  // Register methods
-  node.registerMethod('echo', async (_context, params) => {
-    return params;
-  });
-
-  // Handle events
-  node.on('userJoined', ({ username }) => {
-    console.log(`${username} joined`);
-    // Broadcast to other nodes
-    node.emit('userJoined', { username });
-  });
-
-  ws.on('message', message => {
-    node.receiveMessage(JSON.parse(message.toString()));
-  });
-});
-
-// WebSocket client
-const ws = new WebSocket('ws://localhost:8080');
-const clientNode = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
+// Create a node instance
+const node = new JSONRPCNode<MethodMap, EventMap, Context>({
   send: message => {
+    // Transport implementation (e.g., WebSocket, postMessage)
     ws.send(JSON.stringify(message));
   }
 });
+```
 
-ws.on('open', () => {
-  // Call methods
-  clientNode.callMethod('echo', 'Hello!').then(result => {
-    console.log('Echo:', result);
-  });
+### Method Registration and Calls
 
-  // Emit events
-  clientNode.emit('userJoined', { username: 'Alice' });
+```typescript
+// Register a simple method
+node.registerMethod('add', (context, { a, b }) => {
+  if (typeof a !== 'number' || typeof b !== 'number') {
+    throw new JSONRPCError(-32602, 'Invalid parameters: numbers required');
+  }
+  return a + b;
 });
 
-ws.on('message', message => {
-  clientNode.receiveMessage(JSON.parse(message.toString()));
+// Register a method with array parameters
+node.registerMethod('sum', (context, numbers: number[]) => {
+  if (!Array.isArray(numbers) || !numbers.every(n => typeof n === 'number')) {
+    throw new JSONRPCError(-32602, 'Invalid parameters: array of numbers required');
+  }
+  return numbers.reduce((a, b) => a + b, 0);
+});
+
+// Call methods
+const sum = await node.callMethod('add', { a: 1, b: 2 });
+const total = await node.callMethod('sum', [1, 2, 3, 4]);
+
+// Call with timeout
+try {
+  const result = await node.callMethod('slowMethod', { data: 'test' }, 5);
+} catch (error) {
+  if (error instanceof TimeoutError) {
+    console.error('Request timed out');
+  }
+}
+```
+
+### Error Handling
+
+```typescript
+try {
+  await node.callMethod('riskyMethod', { data: 'test' });
+} catch (error) {
+  if (error instanceof JSONRPCError) {
+    console.error(`RPC Error ${error.code}: ${error.message}`);
+    if (error.data) {
+      console.error('Additional data:', error.data);
+    }
+  }
+}
+
+// Custom error in method handler
+node.registerMethod('validateUser', (context, { username, age }) => {
+  if (!username || typeof username !== 'string') {
+    throw new JSONRPCError(-32602, 'Invalid username', {
+      field: 'username',
+      received: username,
+      expected: 'non-empty string'
+    });
+  }
+  if (!age || typeof age !== 'number' || age < 0) {
+    throw new JSONRPCError(-32602, 'Invalid age', {
+      field: 'age',
+      received: age,
+      expected: 'positive number'
+    });
+  }
+  return { valid: true };
 });
 ```
 
-### Events
-
-Events provide a way to broadcast messages to all connected nodes without expecting a response. This is useful for notifications, status updates, or any broadcast-style communication.
+### Event System
 
 ```typescript
-type EventMap = {
-  userJoined: { username: string; timestamp: number };
-  messageReceived: { text: string; from: string };
-  statusUpdate: { user: string; status: 'online' | 'offline' };
-};
+// Define event handlers with type safety
+type UserJoinedHandler = (params: { username: string; timestamp: number }) => void;
+type StatusUpdateHandler = (params: { status: 'online' | 'offline'; lastSeen?: number }) => void;
 
-// Create node with event support
-const node = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
-  send: message => {
-    // Transport implementation
+// Register event handlers with cleanup
+const userJoinedCleanup = node.on('userJoined', ({ username, timestamp }) => {
+  console.log(`${username} joined at ${new Date(timestamp).toLocaleString()}`);
+});
+
+const statusCleanup = node.on('statusUpdate', ({ status, lastSeen }) => {
+  console.log(`Status changed to ${status}`);
+  if (lastSeen) {
+    console.log(`Last seen: ${new Date(lastSeen).toLocaleString()}`);
   }
-});
-
-// Register event handlers
-node.on('userJoined', ({ username, timestamp }) => {
-  console.log(`${username} joined at ${new Date(timestamp)}`);
-});
-
-node.on('messageReceived', ({ text, from }) => {
-  console.log(`${from}: ${text}`);
-});
-
-// Multiple handlers for the same event
-node.on('statusUpdate', ({ user, status }) => {
-  console.log(`${user} is now ${status}`);
-});
-
-node.on('statusUpdate', ({ user, status }) => {
-  updateUserList(user, status);
 });
 
 // Emit events
@@ -318,206 +302,309 @@ node.emit('userJoined', {
   timestamp: Date.now()
 });
 
-node.emit('messageReceived', {
-  text: 'Hello everyone!',
-  from: 'Bob'
+node.emit('statusUpdate', {
+  status: 'offline',
+  lastSeen: Date.now()
 });
 
-// Handler cleanup
-const cleanup = node.on('statusUpdate', handler);
-// Later...
-cleanup(); // Remove the handler
+// Later: remove handlers
+userJoinedCleanup();
+statusCleanup();
 ```
 
-### Middleware
-
-Middleware functions can receive a context object that can be used to share data across middleware and method handlers.
+### Middleware System
 
 ```typescript
-// Define a custom context type
-type Context = JSONRPCContext & {
-  user?: string;
-};
-
-// Create a node instance with custom context type
-const node = new JSONRPCNode<MethodMap, JSONRPCEventMap, Context>({
-  send: message => {
-    // Send message to remote node
-  }
+// Add logging middleware
+const cleanupLogging = node.addMiddleware(async (context, request, next) => {
+  console.log('Request:', request);
+  const start = Date.now();
+  const response = await next();
+  console.log(`Response after ${Date.now() - start}ms:`, response);
+  return response;
 });
 
-// Middleware that modifies the context
-node.addMiddleware(async (context, request, next) => {
-  // Set user information in context
-  context.user = request.params?.userName;
-  // Proceed to the next middleware or handler
+// Add authentication middleware
+const cleanupAuth = node.addMiddleware(async (context, request, next) => {
+  if (!context.userId) {
+    throw new JSONRPCError(-32600, 'Unauthorized', {
+      requiredField: 'userId',
+      method: request.method
+    });
+  }
   return next();
 });
 
-// Method handler that accesses the context
-node.registerMethod('getUser', (context, params) => {
-  // Return the user from context
-  return `Current user: ${context.user}`;
-});
-```
-
-The context object is created per request and passed through all middleware and method handlers. It allows you to store and access request-specific data, enabling features like authentication, authorization, and logging.
-
-```typescript
-// Logging middleware applied to all methods
-node.addMiddleware(async (context, request, next) => {
-    console.log('Received request:', request);
-    const response = await next();
-    console.log('Sending response:', response);
-    return response;
-});
-```
-
-#### Middleware Applied to Specific Methods with Context
-
-You can apply middleware to specific methods and utilize the context:
-
-```typescript
-import { applyToMethods } from '@walletmesh/jsonrpc';
-
-// Define context with authorization
-type Context = JSONRPCContext & {
-  isAuthorized?: boolean;
-};
-
-const node = new JSONRPCNode<MethodMap, JSONRPCEventMap, Context>({
-  send: message => {
-    // Transport implementation
+// Add request validation middleware
+const cleanupValidation = node.addMiddleware(async (context, request, next) => {
+  if (!request.params) {
+    throw new JSONRPCError(-32602, 'Parameters required', {
+      method: request.method
+    });
   }
+  return next();
 });
 
-// Middleware applied only to 'add' method
-node.addMiddleware(
-  applyToMethods(['add'], async (context, request, next) => {
-    // Perform authorization check and store result in context
-    context.isAuthorized = checkAuthorization(request);
-    if (!context.isAuthorized) {
-      throw new JSONRPCError(-32600, 'Unauthorized');
-    }
-    return next();
-  }),
-);
-
-// Method handler that relies on context
-node.registerMethod('add', (context, params) => {
-  if (!context.isAuthorized) {
-    throw new JSONRPCError(-32600, 'Unauthorized');
-  }
-  return params.a + params.b;
-});
-```
-
-### Method Timeouts
-
-The `callMethod` function supports an optional `timeoutInSeconds` parameter. A value of `0` means no timeout (wait indefinitely), which is also the default behavior.
-
-```typescript
-import { JSONRPCNode, TimeoutError } from '@walletmesh/jsonrpc';
-
-const node = new JSONRPCNode<MethodMap, JSONRPCEventMap, JSONRPCContext>(transport);
-
-try {
-    // Call method with 5 second timeout
-    const result = await node.callMethod('slowMethod', { data: 'test' }, 5);
-    console.log('Result:', result);
-} catch (error) {
-    if (error instanceof TimeoutError) {
-        console.error('Request timed out');
-    } else {
-        console.error('Error:', error);
-    }
-}
-```
-
-### Error Handling
-
-Custom errors can be thrown in method handlers or middleware using JSONRPCError:
-
-```typescript
-import { JSONRPCError } from '@walletmesh/jsonrpc';
-
-const node = new JSONRPCNode<MethodMap, JSONRPCEventMap, JSONRPCContext>({
-  send: message => {
-    // Transport implementation
-  }
-});
-
-node.registerMethod('errorMethod', () => {
-    throw new JSONRPCError(-32000, 'Custom error', 'Error data');
-});
-
-// Error handling middleware
-node.addMiddleware(async (context, request, next) => {
-    try {
-        return await next();
-    } catch (error) {
-        // Log error
-        console.error('Error in method:', request.method, error);
-        throw error; // Re-throw to maintain error chain
-    }
-});
+// Later: cleanup middleware
+cleanupLogging();
+cleanupAuth();
+cleanupValidation();
 ```
 
 ### Parameter Serialization
 
-The library supports custom serialization of method parameters and results, allowing you to define custom serializers for your data types:
-
 ```typescript
-type MethodMap = {
-  processDate: { params: { date: Date }; result: Date };
+// Define serializer for complex types
+const dateSerializer: JSONRPCSerializer<Date, string> = {
+  params: {
+    serialize: date => ({
+      serialized: date instanceof Date ? date.toISOString() : new Date().toISOString()
+    }),
+    deserialize: data => new Date(data.serialized)
+  },
+  result: {
+    serialize: date => ({
+      serialized: date instanceof Date ? date.toISOString() : new Date().toISOString()
+    }),
+    deserialize: data => new Date(data.serialized)
+  }
 };
 
-const node = new JSONRPCNode<MethodMap, EventMap, JSONRPCContext>({
+// Register method with serialization
+node.registerMethod(
+  'processDate',
+  (context, { date }) => {
+    if (!(date instanceof Date)) {
+      throw new JSONRPCError(-32602, 'Invalid date parameter');
+    }
+    return new Date(date.getTime() + 86400000); // Add one day
+  },
+  dateSerializer
+);
+
+// Use the method
+const tomorrow = await node.callMethod('processDate', { date: new Date() });
+```
+
+### Transport Layer Examples
+
+The library is transport-agnostic and can work with any messaging system. Here are examples of common transport implementations:
+
+#### Browser-to-Browser using postMessage
+
+```typescript
+// website-a.com
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
+
+type Methods = {
+  getData: { params: { id: string }; result: { data: string } };
+};
+
+// Create node for Website A
+const nodeA = new JSONRPCNode<Methods>({
   send: message => {
-    // Transport implementation
+    // Send to Website B's iframe
+    const iframe = document.querySelector<HTMLIFrameElement>('#website-b-frame');
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.postMessage(message, 'https://website-b.com');
+    }
   }
 });
 
-// Define serializers for your types
-const dateSerializer: Serializer<Date> = {
-    serialize: (date: Date) => ({ serialized: date.toISOString() }),
-    deserialize: (data: JSONRPCSerializedData) => new Date(data.serialized)
-};
-
-// Create method-specific serializer
-const methodSerializer: JSONRPCSerializer<{ date: Date }, Date> = {
-    params: {
-        serialize: (params) => ({
-            serialized: JSON.stringify({ date: params.date.toISOString() })
-        }),
-        deserialize: (data) => {
-            const parsed = JSON.parse(data.serialized);
-            return { date: new Date(parsed.date) };
-        }
-    },
-    result: dateSerializer
-};
-
-// Register method with serializer
-node.registerMethod('processDate',
-    (_context, params) => {
-        // params.date is automatically deserialized to Date
-        return params.date;
-    },
-    methodSerializer
-);
-
-// Register serializer for remote method calls
-node.registerSerializer('processDate', methodSerializer);
-
-// Call method - serialization is handled automatically
-const result = await node.callMethod('processDate', {
-    date: new Date()
+// Listen for messages from Website B
+window.addEventListener('message', event => {
+  // Validate origin for security
+  if (event.origin === 'https://website-b.com') {
+    nodeA.handleMessage(event.data);
+  }
 });
-// result is automatically deserialized to Date
+
+// Use the node
+const result = await nodeA.callMethod('getData', { id: '123' });
 ```
 
-## Testing
+```typescript
+// website-b.com
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
 
-```bash
-pnpm test
+type Methods = {
+  getData: { params: { id: string }; result: { data: string } };
+};
+
+// Create node for Website B
+const nodeB = new JSONRPCNode<Methods>({
+  send: message => {
+    // Send to parent window (Website A)
+    window.parent.postMessage(message, 'https://website-a.com');
+  }
+});
+
+// Register method
+nodeB.registerMethod('getData', async (context, { id }) => {
+  return { data: `Data for ${id}` };
+});
+
+// Listen for messages from Website A
+window.addEventListener('message', event => {
+  // Validate origin for security
+  if (event.origin === 'https://website-a.com') {
+    nodeB.handleMessage(event.data);
+  }
+});
+```
+
+#### WebSocket Transport
+
+```typescript
+// Browser Client
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
+
+type Methods = {
+  subscribe: { params: { topic: string }; result: boolean };
+};
+
+type Events = {
+  update: { topic: string; data: unknown };
+};
+
+// Create WebSocket connection
+const ws = new WebSocket('wss://api.example.com');
+
+// Create JSON-RPC node
+const client = new JSONRPCNode<Methods, Events>({
+  send: message => ws.send(JSON.stringify(message))
+});
+
+// Handle incoming messages
+ws.addEventListener('message', event => {
+  client.handleMessage(JSON.parse(event.data));
+});
+
+// Subscribe to updates
+await client.callMethod('subscribe', { topic: 'prices' });
+
+// Handle updates
+client.on('update', ({ topic, data }) => {
+  console.log(`Update for ${topic}:`, data);
+});
+
+// Clean up
+ws.addEventListener('close', () => client.close());
+```
+
+```typescript
+// Node.js Server
+import { WebSocketServer } from 'ws';
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
+
+const wss = new WebSocketServer({ port: 8080 });
+
+wss.on('connection', ws => {
+  // Create JSON-RPC node for this connection
+  const server = new JSONRPCNode<Methods, Events>({
+    send: message => ws.send(JSON.stringify(message))
+  });
+
+  // Handle incoming messages
+  ws.on('message', data => {
+    server.handleMessage(JSON.parse(data.toString()));
+  });
+
+  // Register methods
+  server.registerMethod('subscribe', async (context, { topic }) => {
+    // Subscribe logic here
+    return true;
+  });
+
+  // Emit events when updates occur
+  setInterval(() => {
+    server.emit('update', {
+      topic: 'prices',
+      data: { BTC: 50000, ETH: 3000 }
+    });
+  }, 1000);
+
+  // Clean up
+  ws.on('close', () => server.close());
+});
+```
+
+#### HTTP Transport
+
+```typescript
+// Browser Client
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
+
+type Methods = {
+  getUser: { params: { id: number }; result: { name: string; email: string } };
+};
+
+const client = new JSONRPCNode<Methods>({
+  send: async message => {
+    const response = await fetch('https://api.example.com/jsonrpc', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(message)
+    });
+    
+    const data = await response.json();
+    client.handleMessage(data);
+  }
+});
+
+// Use the client
+const user = await client.callMethod('getUser', { id: 123 });
+```
+
+```typescript
+// Node.js Server (Express)
+import express from 'express';
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
+
+const app = express();
+app.use(express.json());
+
+app.post('/jsonrpc', async (req, res) => {
+  // Create new node for each request
+  const server = new JSONRPCNode<Methods>({
+    send: message => res.json(message)
+  });
+
+  // Register methods
+  server.registerMethod('getUser', async (context, { id }) => {
+    // Fetch user from database
+    return {
+      name: 'John Doe',
+      email: 'john@example.com'
+    };
+  });
+
+  // Handle the request
+  await server.handleMessage(req.body);
+});
+
+app.listen(3000);
+```
+
+### Cleanup
+
+```typescript
+// Clean shutdown
+await node.close(); // Removes all event handlers and middleware
+ws.close();
+```
+
+## Error Codes
+
+The library uses standard JSON-RPC 2.0 error codes:
+
+- Parse error (-32700): Invalid JSON received
+- Invalid Request (-32600): The JSON sent is not a valid Request object
+- Method not found (-32601): The requested method does not exist
+- Invalid params (-32602): Invalid method parameters
+- Internal error (-32603): Internal JSON-RPC error
+- Server error (-32000 to -32099): Implementation-defined server errors
+  - TimeoutError uses -32000
+  - Other codes in this range can be used for custom server errors

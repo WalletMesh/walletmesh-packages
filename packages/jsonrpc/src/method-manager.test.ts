@@ -1,0 +1,530 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MethodManager, type MethodHandler } from './method-manager.js';
+import { JSONRPCError } from './error.js';
+import type { JSONRPCContext, JSONRPCSerializer } from './types.js';
+
+describe('MethodManager', () => {
+  type TestMethodMap = {
+    add: { params: { a: number; b: number }; result: number };
+    greet: { params: { name: string }; result: string };
+    getData: { params: undefined; result: { value: string } };
+  };
+
+  let manager: MethodManager<TestMethodMap>;
+
+  beforeEach(() => {
+    manager = new MethodManager<TestMethodMap>();
+  });
+
+  describe('Method Registration', () => {
+    it('should register and retrieve methods', () => {
+      const handler: MethodHandler<JSONRPCContext, { a: number; b: number }, number> = (
+        _context,
+        params,
+      ) => ({
+        success: true,
+        data: params.a + params.b,
+      });
+
+      manager.registerMethod('add', handler);
+      const method = manager.getMethod('add');
+
+      expect(method).toBeDefined();
+      const registeredMethod = method as NonNullable<typeof method>;
+      expect(registeredMethod.handler).toBe(handler);
+    });
+
+    it('should register serializers for methods and update existing ones', () => {
+      const serializer: JSONRPCSerializer<{ name: string }, string> = {
+        params: {
+          serialize: (params) => ({ serialized: JSON.stringify(params) }),
+          deserialize: (data) => JSON.parse(data.serialized),
+        },
+        result: {
+          serialize: (result) => ({ serialized: result }),
+          deserialize: (data) => data.serialized,
+        },
+      };
+
+      // First register a method with a serializer
+      manager.registerSerializer('greet', serializer);
+      let method = manager.getMethod('greet');
+      expect(method).toBeDefined();
+      let registeredMethod = method as NonNullable<typeof method>;
+      expect(registeredMethod.serializer).toBe(serializer);
+
+      // Now register a new serializer for the same method
+      const newSerializer: JSONRPCSerializer<{ name: string }, string> = {
+        params: {
+          serialize: (params) => ({ serialized: `new-${JSON.stringify(params)}` }),
+          deserialize: (data) => JSON.parse(data.serialized.slice(4)),
+        },
+        result: {
+          serialize: (result) => ({ serialized: `new-${result}` }),
+          deserialize: (data) => data.serialized.slice(4),
+        },
+      };
+
+      manager.registerSerializer('greet', newSerializer);
+      method = manager.getMethod('greet');
+      expect(method).toBeDefined();
+      registeredMethod = method as NonNullable<typeof method>;
+      expect(registeredMethod.serializer).toBe(newSerializer);
+    });
+
+    it('should handle registering serializer before method and keep serializer when method is registered', () => {
+      const serializer: JSONRPCSerializer<{ name: string }, string> = {
+        params: {
+          serialize: (params) => ({ serialized: JSON.stringify(params) }),
+          deserialize: (data) => JSON.parse(data.serialized),
+        },
+        result: {
+          serialize: (result) => ({ serialized: result }),
+          deserialize: (data) => data.serialized,
+        },
+      };
+
+      manager.registerSerializer('greet', serializer);
+      const handler: MethodHandler<JSONRPCContext, { name: string }, string> = (_context, params) => ({
+        success: true,
+        data: `Hello ${params.name}!`,
+      });
+      manager.registerMethod('greet', handler);
+
+      const method = manager.getMethod('greet');
+      expect(method).toBeDefined();
+      const registeredMethod = method as NonNullable<typeof method>;
+      expect(registeredMethod.handler).toBe(handler);
+      expect(registeredMethod.serializer).toBe(serializer);
+    });
+
+    it('should create placeholder handler when registering serializer for non-existent method', async () => {
+      const serializer: JSONRPCSerializer<{ name: string }, string> = {
+        params: {
+          serialize: (params) => ({ serialized: JSON.stringify(params) }),
+          deserialize: (data) => JSON.parse(data.serialized),
+        },
+        result: {
+          serialize: (result) => ({ serialized: result }),
+          deserialize: (data) => data.serialized,
+        },
+      };
+
+      manager.registerSerializer('greet', serializer);
+      const method = manager.getMethod('greet');
+      expect(method).toBeDefined();
+
+      if (!method) {
+        throw new Error('Method should be defined');
+      }
+      // Test placeholder handler returns Method not found error
+      const result = await method.handler({}, { name: 'test' });
+      expect(result).toEqual({
+        success: false,
+        error: {
+          code: -32601,
+          message: 'Method not found',
+          data: 'greet',
+        },
+      });
+    });
+  });
+
+  describe('Request Handling', () => {
+    it('should handle pending requests with timeouts', () => {
+      vi.useFakeTimers();
+
+      const resolve = vi.fn();
+      const reject = vi.fn();
+
+      manager.addPendingRequest('1', resolve, reject, 1);
+
+      vi.advanceTimersByTime(1000);
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      const calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      const [firstCall] = calls;
+      const [error] = firstCall as [JSONRPCError];
+      expect(error.message).toBe('Request timed out');
+
+      vi.useRealTimers();
+    });
+
+    it('should ignore response if no pending request exists', () => {
+      const nonExistentId = 'non-existent';
+      // This should not throw and should just return
+      manager.handleResponse(nonExistentId, 42);
+    });
+
+    it('should clear timeout when handling response for request with timeout', () => {
+      vi.useFakeTimers();
+      const resolve = vi.fn();
+      const reject = vi.fn();
+
+      manager.addPendingRequest('1', resolve, reject, 1);
+      manager.handleResponse('1', 42);
+
+      // Advance time past the timeout
+      vi.advanceTimersByTime(1000);
+
+      // The timeout should have been cleared, so reject should not be called
+      expect(reject).not.toHaveBeenCalled();
+      expect(resolve).toHaveBeenCalledWith(42);
+
+      vi.useRealTimers();
+    });
+
+    it('should handle successful responses', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+
+      manager.addPendingRequest('1', resolve, reject, 0);
+      manager.handleResponse('1', 42);
+
+      expect(resolve).toHaveBeenCalledWith(42);
+      expect(reject).not.toHaveBeenCalled();
+    });
+
+    it('should handle undefined result', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+
+      manager.addPendingRequest('1', resolve, reject, 0);
+      manager.handleResponse('1', undefined);
+
+      expect(resolve).toHaveBeenCalledWith(undefined);
+      expect(reject).not.toHaveBeenCalled();
+    });
+
+    it('should handle null result', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+
+      manager.addPendingRequest('1', resolve, reject, 0);
+      manager.handleResponse('1', null);
+
+      expect(resolve).toHaveBeenCalledWith(null);
+      expect(reject).not.toHaveBeenCalled();
+    });
+
+    it('should handle primitive result types', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+
+      // Test string
+      manager.addPendingRequest('1', resolve, reject, 0);
+      manager.handleResponse('1', 'test');
+      expect(resolve).toHaveBeenCalledWith('test');
+      expect(reject).not.toHaveBeenCalled();
+
+      // Test number
+      resolve.mockClear();
+      reject.mockClear();
+      manager.addPendingRequest('2', resolve, reject, 0);
+      manager.handleResponse('2', 42);
+      expect(resolve).toHaveBeenCalledWith(42);
+      expect(reject).not.toHaveBeenCalled();
+
+      // Test boolean
+      resolve.mockClear();
+      reject.mockClear();
+      manager.addPendingRequest('3', resolve, reject, 0);
+      manager.handleResponse('3', true);
+      expect(resolve).toHaveBeenCalledWith(true);
+      expect(reject).not.toHaveBeenCalled();
+    });
+
+    it('should handle error responses', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+
+      // Test with string data
+      manager.addPendingRequest('1', resolve, reject, 0);
+      manager.handleResponse('1', undefined, {
+        code: -32601,
+        message: 'Method not found',
+        data: 'test',
+      });
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      let calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      let [firstCall] = calls;
+      let [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32601);
+      expect(error.message).toBe('Method not found');
+      expect(error.data).toBe('test');
+      expect(resolve).not.toHaveBeenCalled();
+
+      // Test with object data
+      resolve.mockClear();
+      reject.mockClear();
+      manager.addPendingRequest('2', resolve, reject, 0);
+      manager.handleResponse('2', undefined, {
+        code: -32601,
+        message: 'Method not found',
+        data: { method: 'test', details: 'not found' },
+      });
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      [firstCall] = calls;
+      [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32601);
+      expect(error.message).toBe('Method not found');
+      expect(error.data).toEqual({ method: 'test', details: 'not found' });
+      expect(resolve).not.toHaveBeenCalled();
+
+      // Test with undefined data
+      resolve.mockClear();
+      reject.mockClear();
+      manager.addPendingRequest('3', resolve, reject, 0);
+      manager.handleResponse('3', undefined, {
+        code: -32601,
+        message: 'Method not found',
+      });
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      [firstCall] = calls;
+      [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32601);
+      expect(error.message).toBe('Method not found');
+      expect(error.data).toBeUndefined();
+      expect(resolve).not.toHaveBeenCalled();
+    });
+
+    it('should handle serialized responses', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const serializer: JSONRPCSerializer<{ name: string }, string> = {
+        params: {
+          serialize: (params) => ({ serialized: JSON.stringify(params) }),
+          deserialize: (data) => JSON.parse(data.serialized),
+        },
+        result: {
+          serialize: (result) => ({ serialized: result }),
+          deserialize: (data) => data.serialized,
+        },
+      };
+
+      manager.addPendingRequest('1', resolve, reject, 0, serializer);
+      manager.handleResponse('1', { serialized: 'Hello!' });
+
+      expect(resolve).toHaveBeenCalledWith('Hello!');
+      expect(reject).not.toHaveBeenCalled();
+    });
+
+    it('should handle invalid serialized responses', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const serializer: JSONRPCSerializer<{ name: string }, string> = {
+        params: {
+          serialize: (params) => ({ serialized: JSON.stringify(params) }),
+          deserialize: (data) => JSON.parse(data.serialized),
+        },
+        result: {
+          serialize: (result) => ({ serialized: result }),
+          deserialize: (data) => data.serialized,
+        },
+      };
+
+      manager.addPendingRequest('1', resolve, reject, 0, serializer);
+      manager.handleResponse('1', { invalid: 'format' });
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      const calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      const [firstCall] = calls;
+      const [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32603);
+      expect(error.message).toBe('Invalid serialized result format');
+      expect(resolve).not.toHaveBeenCalled();
+    });
+
+    it('should handle deserialization errors', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const serializer: JSONRPCSerializer<{ name: string }, string> = {
+        params: {
+          serialize: (params) => ({ serialized: JSON.stringify(params) }),
+          deserialize: (data) => JSON.parse(data.serialized),
+        },
+        result: {
+          serialize: (result) => ({ serialized: result }),
+          deserialize: () => {
+            throw new Error('Failed to deserialize');
+          },
+        },
+      };
+
+      manager.addPendingRequest('1', resolve, reject, 0, serializer);
+      manager.handleResponse('1', { serialized: 'invalid' });
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      const calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      const [firstCall] = calls;
+      const [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32000);
+      expect(error.message).toBe('Failed to deserialize result');
+      expect(resolve).not.toHaveBeenCalled();
+    });
+
+    it('should handle non-JSON-serializable results', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const circular = { ref: {} };
+      circular.ref = circular;
+
+      manager.addPendingRequest('1', resolve, reject, 0);
+      manager.handleResponse('1', circular);
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      const calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      const [firstCall] = calls;
+      const [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32603);
+      expect(error.message).toBe('Result is not JSON-serializable');
+      expect(resolve).not.toHaveBeenCalled();
+    });
+
+    it('should handle invalid result types', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+
+      manager.addPendingRequest('1', resolve, reject, 0);
+      // Testing invalid type (function is not a valid JSON-RPC type)
+      manager.handleResponse('1', () => {});
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      const calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      const [firstCall] = calls;
+      const [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32603);
+      expect(error.message).toBe('Invalid result type');
+      expect(resolve).not.toHaveBeenCalled();
+    });
+
+    it('should handle invalid serialized data format', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const serializer: JSONRPCSerializer<{ name: string }, string> = {
+        params: {
+          serialize: (params) => ({ serialized: JSON.stringify(params) }),
+          deserialize: (data) => JSON.parse(data.serialized),
+        },
+        result: {
+          serialize: (result) => ({ serialized: result }),
+          deserialize: (data) => data.serialized,
+        },
+      };
+
+      // Test with null result
+      manager.addPendingRequest('1', resolve, reject, 0, serializer);
+      manager.handleResponse('1', null);
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      let calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      let [firstCall] = calls;
+      let [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32603);
+      expect(error.message).toBe('Invalid serialized result format');
+      expect(resolve).not.toHaveBeenCalled();
+
+      // Test with non-object result
+      resolve.mockClear();
+      reject.mockClear();
+      manager.addPendingRequest('2', resolve, reject, 0, serializer);
+      manager.handleResponse('2', 'not an object');
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      [firstCall] = calls;
+      [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32603);
+      expect(error.message).toBe('Invalid serialized result format');
+      expect(resolve).not.toHaveBeenCalled();
+
+      // Test with object missing serialized property
+      resolve.mockClear();
+      reject.mockClear();
+      manager.addPendingRequest('3', resolve, reject, 0, serializer);
+      manager.handleResponse('3', { notSerialized: 'test' });
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      [firstCall] = calls;
+      [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32603);
+      expect(error.message).toBe('Invalid serialized result format');
+      expect(resolve).not.toHaveBeenCalled();
+
+      // Test with non-string serialized value
+      resolve.mockClear();
+      reject.mockClear();
+      manager.addPendingRequest('4', resolve, reject, 0, serializer);
+      manager.handleResponse('4', { serialized: 123 });
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      [firstCall] = calls;
+      [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32603);
+      expect(error.message).toBe('Invalid serialized result format');
+      expect(resolve).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Request Cleanup', () => {
+    it('should reject all pending requests', () => {
+      const resolve1 = vi.fn();
+      const reject1 = vi.fn();
+      const resolve2 = vi.fn();
+      const reject2 = vi.fn();
+
+      manager.addPendingRequest('1', resolve1, reject1, 0);
+      manager.addPendingRequest('2', resolve2, reject2, 0);
+
+      const reason = new Error('Connection closed');
+      manager.rejectAllRequests(reason);
+
+      expect(reject1).toHaveBeenCalledWith(reason);
+      expect(reject2).toHaveBeenCalledWith(reason);
+      expect(resolve1).not.toHaveBeenCalled();
+      expect(resolve2).not.toHaveBeenCalled();
+    });
+
+    it('should clean up timeouts when rejecting all requests', () => {
+      vi.useFakeTimers();
+
+      const resolve = vi.fn();
+      const reject = vi.fn();
+
+      manager.addPendingRequest('1', resolve, reject, 1);
+      manager.rejectAllRequests(new Error('Connection closed'));
+
+      vi.advanceTimersByTime(1000);
+
+      // The timeout should have been cleared, so reject should only be called once
+      expect(reject).toHaveBeenCalledTimes(1);
+      expect(reject).toHaveBeenCalledWith(expect.any(Error));
+      const calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      const [firstCall] = calls;
+      const [error] = firstCall as [Error];
+      expect(error.message).toBe('Connection closed');
+
+      vi.useRealTimers();
+    });
+  });
+});
