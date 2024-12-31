@@ -8,15 +8,16 @@ import type {
   JSONRPCSerializer,
   JSONRPCMiddleware,
   JSONRPCID,
-  FallbackMethodHandler,
+  JSONRPCParams,
 } from './types.js';
 import { EventManager } from './event-manager.js';
 import { MiddlewareManager } from './middleware-manager.js';
-import { MethodManager, type MethodHandler } from './method-manager.js';
+import { MethodManager } from './method-manager.js';
 import { JSONRPCError } from './error.js';
 import { MessageValidator } from './message-validator.js';
 import { ParameterSerializer } from './parameter-serializer.js';
 import { RequestHandler } from './request-handler.js';
+import { wrapHandler } from './utils.js';
 
 /**
  * Core class implementing the JSON-RPC 2.0 protocol with bi-directional communication support.
@@ -67,6 +68,30 @@ export class JSONRPCNode<
   private parameterSerializer: ParameterSerializer;
 
   /**
+   * Sets a fallback serializer to be used when no method-specific serializer is provided.
+   *
+   * @param serializer - The serializer to use as fallback
+   *
+   * @example
+   * ```typescript
+   * // Set a fallback serializer for handling dates
+   * node.setFallbackSerializer({
+   *   params: {
+   *     serialize: value => ({ serialized: value instanceof Date ? value.toISOString() : String(value) }),
+   *     deserialize: data => new Date(data.serialized)
+   *   },
+   *   result: {
+   *     serialize: value => ({ serialized: value instanceof Date ? value.toISOString() : String(value) }),
+   *     deserialize: data => new Date(data.serialized)
+   *   }
+   * });
+   * ```
+   */
+  public setFallbackSerializer(serializer: JSONRPCSerializer<unknown, unknown>): void {
+    this.parameterSerializer.setFallbackSerializer(serializer);
+  }
+
+  /**
    * Creates a new JSONRPCNode instance.
    *
    * @param transport - Transport object that handles sending messages between nodes
@@ -103,58 +128,31 @@ export class JSONRPCNode<
    * ```
    */
   public registerMethod<M extends keyof T>(
-    name: M,
-    handler: (context: C, params: T[M]['params']) => Promise<T[M]['result']> | T[M]['result'],
+    name: Extract<M, string>,
+    handler: (context: C, params: T[M]['params']) => Promise<T[M]['result']>,
   ): void {
-    // Wrap the handler to return a MethodResponse
-    const wrappedHandler: MethodHandler<C, T[M]['params'], T[M]['result']> = async (context, params) => {
-      try {
-        const result = await handler(context, params);
-        return {
-          success: true,
-          data: result,
-        };
-      } catch (error) {
-        if (error instanceof JSONRPCError) {
-          return {
-            success: false,
-            error: {
-              code: error.code,
-              message: error.message,
-              data: error.data,
-            },
-          };
-        }
-        return {
-          success: false,
-          error: {
-            code: error instanceof Error && error.message === 'Method not found' ? -32601 : -32000,
-            message: error instanceof Error ? error.message : 'Unknown error',
-            data: error instanceof Error && error.message === 'Method not found' ? String(name) : undefined,
-          },
-        };
-      }
-    };
+    const wrappedHandler = wrapHandler<T, M, C>(handler);
     this.methodManager.registerMethod(name, wrappedHandler);
   }
 
   /**
-   * Registers a serializer for a specific method's parameters and results.
+   * Registers a serializer for parameters and results.
    *
-   * @param method - The name of the method to register the serializer for
-   * @param serializer - Serializer for converting complex types to/from JSON
+   * @param method - The name to register the serializer under
+   * @param serializer - The serializer implementation
    *
    * @example
    * ```typescript
-   * // Register a method
-   * node.registerMethod('processDate', (context, { date }) => {
-   *   return new Date(date.getTime() + 86400000);
-   * });
-   *
-   * // Register serializer for the method
+   * // Register Date serializer
    * node.registerSerializer('processDate', {
-   *   params: dateSerializer,
-   *   result: dateSerializer
+   *   params: {
+   *     serialize: date => ({ serialized: date.toISOString() }),
+   *     deserialize: data => new Date(data.serialized)
+   *   },
+   *   result: {
+   *     serialize: date => ({ serialized: date.toISOString() }),
+   *     deserialize: data => new Date(data.serialized)
+   *   }
    * });
    * ```
    */
@@ -197,9 +195,10 @@ export class JSONRPCNode<
   ): Promise<T[M]['result']> {
     const id = crypto.randomUUID();
 
+    const serializer = this.methodManager.getSerializer(method);
+
     // Serialize parameters if serializer exists
-    const registeredMethod = this.methodManager.getMethod(method);
-    const serializedParams = this.parameterSerializer.serializeParams(params, registeredMethod?.serializer);
+    const serializedParams = this.parameterSerializer.serializeParams(params, serializer);
 
     const request: JSONRPCRequest<T, M> = {
       jsonrpc: '2.0',
@@ -209,13 +208,7 @@ export class JSONRPCNode<
     };
 
     return new Promise((resolve, reject) => {
-      this.methodManager.addPendingRequest(
-        id,
-        resolve,
-        reject,
-        timeoutInSeconds,
-        registeredMethod?.serializer,
-      );
+      this.methodManager.addPendingRequest(id, resolve, reject, timeoutInSeconds, serializer);
       this.transport.send(request);
     });
   }
@@ -232,8 +225,8 @@ export class JSONRPCNode<
    * ```
    */
   public notify<M extends keyof T>(method: M, params: T[M]['params']): void {
-    const registeredMethod = this.methodManager.getMethod(method);
-    const serializedParams = this.parameterSerializer.serializeParams(params, registeredMethod?.serializer);
+    const serializer = this.methodManager.getSerializer(method);
+    const serializedParams = this.parameterSerializer.serializeParams(params, serializer);
 
     const request: JSONRPCRequest<T, keyof T> = {
       jsonrpc: '2.0',
@@ -391,26 +384,27 @@ export class JSONRPCNode<
   /**
    * Sets a fallback handler for unregistered methods.
    * The fallback handler will be called when a method is not found.
+   * Like registerMethod, the handler is wrapped to provide consistent error handling
+   * and response formatting.
    *
-   * @param handler - The fallback handler implementation
+   * @param handler - Function that handles unknown method calls
    *
    * @example
    * ```typescript
    * node.setFallbackHandler(async (context, method, params) => {
    *   console.log(`Unknown method called: ${method}`);
-   *   return {
-   *     success: false,
-   *     error: {
-   *       code: -32601,
-   *       message: `Method ${method} is not supported`,
-   *       data: { availableMethods: ['add', 'sum'] }
-   *     }
-   *   };
+   *   // Simply throw an error or return a value
+   *   throw new Error(`Method ${method} is not supported`);
+   *   // Or handle it by forwarding to another RPC server
+   *   return await otherServer.callMethod(method, params);
    * });
    * ```
    */
-  public setFallbackHandler(handler: FallbackMethodHandler<C>): void {
-    this.methodManager.setFallbackHandler(handler);
+  public setFallbackHandler(
+    handler: (context: C, method: string, params: JSONRPCParams) => Promise<unknown>,
+  ): void {
+    // Convert the wrapped handler back to fallback handler signature
+    this.methodManager.setFallbackHandler(wrapHandler(handler));
   }
 
   /**

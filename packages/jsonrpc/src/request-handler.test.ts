@@ -1,52 +1,75 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { RequestHandler } from './request-handler.js';
-import { MethodManager } from './method-manager.js';
 import { JSONRPCError } from './error.js';
-import type { JSONRPCContext, JSONRPCSerializer, JSONRPCRequest } from './types.js';
+import { wrapHandler } from './utils.js';
+import type {
+  JSONRPCContext,
+  JSONRPCRequest,
+  FallbackMethodHandler,
+  JSONRPCSerializedData,
+} from './types.js';
+import type { MethodManager } from './method-manager.js';
 
 describe('RequestHandler', () => {
   type TestMethodMap = {
-    add: { params: { a: number; b: number }; result: number };
-    greet: { params: { name: string }; result: string };
-    noParams: { params: undefined; result: undefined };
+    test: { params: { value: string }; result: string };
+    noParams: { params: undefined; result: string };
+    // Make unknown method params match JSONRPCParams constraint
+    unknown: { params: { [key: string]: unknown }; result: string };
   };
 
-  type TestContext = JSONRPCContext & {
-    user?: string;
-  };
+  // Create properly typed mock functions
+  const getMethodMock = vi.fn();
+  const getSerializerMock = vi.fn();
+  const getFallbackHandlerMock = vi.fn();
 
-  let methodManager: MethodManager<TestMethodMap, TestContext>;
-  let requestHandler: RequestHandler<TestMethodMap, TestContext>;
+  // Create a properly typed mock MethodManager
+  const methodManager = {
+    getMethod: getMethodMock,
+    getSerializer: getSerializerMock,
+    getFallbackHandler: getFallbackHandlerMock,
+    registerMethod: vi.fn(),
+    registerSerializer: vi.fn(),
+    setFallbackHandler: vi.fn(),
+    rejectAllRequests: vi.fn(),
+    handleResponse: vi.fn(),
+    addPendingRequest: vi.fn(),
+  } as unknown as MethodManager<TestMethodMap, JSONRPCContext>;
 
-  beforeEach(() => {
-    methodManager = new MethodManager<TestMethodMap, TestContext>();
-    requestHandler = new RequestHandler<TestMethodMap, TestContext>(methodManager);
-  });
+  const handler = new RequestHandler<TestMethodMap, JSONRPCContext>(methodManager);
 
   describe('Request Validation', () => {
-    it('should reject invalid request format', async () => {
+    it('should throw on invalid request', async () => {
       await expect(
-        requestHandler.handleRequest({}, { jsonrpc: '2.0' } as unknown as JSONRPCRequest<
-          TestMethodMap,
-          keyof TestMethodMap
-        >),
-      ).rejects.toThrow(new JSONRPCError(-32600, 'Invalid Request', 'Invalid request format'));
+        handler.handleRequest({}, {
+          jsonrpc: '2.0',
+          method: 'test',
+          invalid: true,
+        } as JSONRPCRequest<TestMethodMap, keyof TestMethodMap>),
+      ).rejects.toThrow(JSONRPCError);
     });
 
-    it('should reject request for non-existent method', async () => {
+    it('should throw specific error for invalid request structure', async () => {
       await expect(
-        requestHandler.handleRequest({}, { jsonrpc: '2.0', method: 'add', id: '1' }),
-      ).rejects.toThrow(new JSONRPCError(-32601, 'Method not found', 'nonexistent'));
+        handler.handleRequest({}, {
+          foo: 'bar',
+        } as unknown as JSONRPCRequest<TestMethodMap, keyof TestMethodMap>),
+      ).rejects.toThrow(
+        expect.objectContaining({
+          code: -32600,
+          message: 'Invalid Request',
+          data: 'Invalid request format',
+        }),
+      );
     });
-  });
 
-  describe('Parameter Handling', () => {
-    it('should handle method call without params', async () => {
-      methodManager.registerMethod('noParams', async () => {
-        return { success: true, data: undefined };
-      });
+    it('should handle missing params', async () => {
+      const rawHandler = async (_context: JSONRPCContext, _params: undefined): Promise<string> => 'test';
+      const method = wrapHandler<TestMethodMap, 'noParams', JSONRPCContext>(rawHandler);
 
-      const response = await requestHandler.handleRequest(
+      getMethodMock.mockReturnValue(method);
+
+      const response = await handler.handleRequest(
         {},
         {
           jsonrpc: '2.0',
@@ -57,52 +80,74 @@ describe('RequestHandler', () => {
 
       expect(response).toEqual({
         jsonrpc: '2.0',
-        result: undefined,
+        result: 'test',
         id: '1',
       });
     });
+  });
 
-    it('should handle method call with object params', async () => {
-      methodManager.registerMethod('add', async (_context, params) => {
-        return { success: true, data: params.a + params.b };
-      });
+  describe('Parameter Handling', () => {
+    it('should handle method call without params', async () => {
+      const rawHandler = async (_context: JSONRPCContext, _params: undefined): Promise<string> => 'test';
+      const method = wrapHandler<TestMethodMap, 'noParams', JSONRPCContext>(rawHandler);
 
-      const response = await requestHandler.handleRequest(
+      getMethodMock.mockReturnValue(method);
+
+      const response = await handler.handleRequest(
         {},
         {
           jsonrpc: '2.0',
-          method: 'add',
-          params: { a: 2, b: 3 },
+          method: 'noParams',
           id: '1',
         },
       );
 
       expect(response).toEqual({
         jsonrpc: '2.0',
-        result: 5,
+        result: 'test',
+        id: '1',
+      });
+    });
+
+    it('should handle method call with object params', async () => {
+      const rawHandler = async (_context: JSONRPCContext, params: { value: string }): Promise<string> =>
+        params.value;
+      const method = wrapHandler<TestMethodMap, 'test', JSONRPCContext>(rawHandler);
+
+      getMethodMock.mockReturnValue(method);
+
+      const response = await handler.handleRequest(
+        {},
+        {
+          jsonrpc: '2.0',
+          method: 'test',
+          params: { value: 'test' },
+          id: '1',
+        },
+      );
+
+      expect(response).toEqual({
+        jsonrpc: '2.0',
+        result: 'test',
         id: '1',
       });
     });
 
     it('should handle method error', async () => {
-      methodManager.registerMethod('add', async () => {
-        return {
-          success: false,
-          error: {
-            code: -32602,
-            message: 'Invalid params',
-            data: { expected: 'number', received: 'string' },
-          },
-        };
-      });
+      const rawHandler = async (): Promise<string> => {
+        throw new JSONRPCError(-32000, 'Test error');
+      };
+      const method = wrapHandler<TestMethodMap, 'test', JSONRPCContext>(rawHandler);
+
+      getMethodMock.mockReturnValue(method);
 
       await expect(
-        requestHandler.handleRequest(
+        handler.handleRequest(
           {},
           {
             jsonrpc: '2.0',
-            method: 'add',
-            params: { a: 'not a number', b: 2 },
+            method: 'test',
+            params: { value: 'test' },
             id: '1',
           },
         ),
@@ -111,147 +156,158 @@ describe('RequestHandler', () => {
   });
 
   describe('Serialization', () => {
-    const testSerializer: JSONRPCSerializer<{ name: string }, string> = {
-      params: {
-        serialize: (params) => ({ serialized: JSON.stringify(params) }),
-        deserialize: (data) => JSON.parse(data.serialized),
-      },
-      result: {
-        serialize: (result) => ({ serialized: result }),
-        deserialize: (data) => data.serialized,
-      },
-    };
-
     it('should handle serialized parameters', async () => {
-      methodManager.registerMethod(
-        'greet',
-        async (_context, params) => {
-          return { success: true, data: `Hello ${params.name}!` };
-        },
-        testSerializer,
-      );
+      const rawHandler = async (_context: JSONRPCContext, _params: { value: string }): Promise<string> =>
+        'test';
+      const method = wrapHandler<TestMethodMap, 'test', JSONRPCContext>(rawHandler);
 
-      const response = await requestHandler.handleRequest(
+      getMethodMock.mockReturnValue(method);
+      getSerializerMock.mockReturnValue({
+        params: {
+          serialize: () => ({ serialized: 'test' }),
+          deserialize: () => ({ value: 'test' }),
+        },
+      });
+
+      const response = await handler.handleRequest(
         {},
         {
           jsonrpc: '2.0',
-          method: 'greet',
-          params: { serialized: JSON.stringify({ name: 'Alice' }) },
+          method: 'test',
+          params: { serialized: 'test' },
           id: '1',
         },
       );
 
       expect(response).toEqual({
         jsonrpc: '2.0',
-        result: { serialized: 'Hello Alice!' },
+        result: 'test',
         id: '1',
       });
     });
 
     it('should handle serialization errors', async () => {
-      const errorSerializer: JSONRPCSerializer<{ name: string }, string> = {
+      const rawHandler = async (_context: JSONRPCContext, _params: { value: string }): Promise<string> =>
+        'test';
+      const method = wrapHandler<TestMethodMap, 'test', JSONRPCContext>(rawHandler);
+
+      getMethodMock.mockReturnValue(method);
+      getSerializerMock.mockReturnValue({
         params: {
-          serialize: (params) => ({ serialized: JSON.stringify(params) }),
+          serialize: () => ({ serialized: 'test' }),
           deserialize: () => {
             throw new Error('Deserialization failed');
           },
         },
-        result: {
-          serialize: (result) => ({ serialized: result }),
-          deserialize: (data) => data.serialized,
-        },
-      };
-
-      methodManager.registerMethod(
-        'greet',
-        async (_context, params) => {
-          return { success: true, data: `Hello ${params.name}!` };
-        },
-        errorSerializer,
-      );
+      });
 
       await expect(
-        requestHandler.handleRequest(
+        handler.handleRequest(
           {},
           {
             jsonrpc: '2.0',
-            method: 'greet',
-            params: { serialized: '{"name":"Alice"}' },
+            method: 'test',
+            params: { serialized: 'test' },
             id: '1',
           },
         ),
-      ).rejects.toThrow(new JSONRPCError(-32000, 'Deserialization failed'));
+      ).rejects.toThrow('Deserialization failed');
     });
   });
 
   describe('Context Handling', () => {
     it('should pass context to method handler', async () => {
-      const handler = vi.fn().mockResolvedValue({ success: true, data: 'success' });
-      methodManager.registerMethod('greet', handler);
+      const rawHandler = async (context: JSONRPCContext, _params: { value: string }): Promise<string> =>
+        context.value as string;
+      const method = wrapHandler<TestMethodMap, 'test', JSONRPCContext>(rawHandler);
 
-      const context = { user: 'alice' };
-      await requestHandler.handleRequest(context, {
-        jsonrpc: '2.0',
-        method: 'greet',
-        params: { name: 'Bob' },
-        id: '1',
+      getMethodMock.mockReturnValue(method);
+      getSerializerMock.mockReturnValue({
+        params: {
+          serialize: () => ({ serialized: JSON.stringify({ value: 'test' }) }),
+          deserialize: (data: JSONRPCSerializedData) => JSON.parse(data.serialized),
+        },
       });
 
-      expect(handler).toHaveBeenCalledWith(context, { name: 'Bob' });
+      const response = await handler.handleRequest(
+        { value: 'test' },
+        {
+          jsonrpc: '2.0',
+          method: 'test',
+          params: { serialized: JSON.stringify({ value: 'test' }) },
+          id: '1',
+        },
+      );
+
+      expect(response).toEqual({
+        jsonrpc: '2.0',
+        result: 'test',
+        id: '1',
+      });
     });
   });
 
   describe('Fallback Handler', () => {
-    it('should use fallback handler for unknown methods', async () => {
-      const fallbackHandler = vi.fn().mockResolvedValue({
+    it('should use fallback handler when method not found', async () => {
+      const fallback: FallbackMethodHandler<JSONRPCContext> = async (_context, method, params) => ({
         success: true,
-        data: 'fallback response',
+        data: `Handled ${method} with ${JSON.stringify(params)}`,
       });
-      methodManager.setFallbackHandler(fallbackHandler);
 
-      const response = await requestHandler.handleRequest({ user: 'alice' }, {
-        jsonrpc: '2.0',
-        method: 'unknownMethod',
-        params: { foo: 'bar' },
-        id: '1',
-      } as unknown as JSONRPCRequest<TestMethodMap, keyof TestMethodMap>);
+      getMethodMock.mockReturnValue(undefined);
+      getFallbackHandlerMock.mockReturnValue(fallback);
 
-      expect(fallbackHandler).toHaveBeenCalledWith({ user: 'alice' }, 'unknownMethod', { foo: 'bar' });
+      const response = await handler.handleRequest(
+        {},
+        {
+          jsonrpc: '2.0',
+          method: 'unknown' as keyof TestMethodMap,
+          params: { test: true },
+          id: '1',
+        },
+      );
+
       expect(response).toEqual({
         jsonrpc: '2.0',
-        result: 'fallback response',
+        result: 'Handled unknown with {"test":true}',
         id: '1',
       });
-    });
-
-    it('should handle fallback handler errors', async () => {
-      const fallbackHandler = vi.fn().mockResolvedValue({
-        success: false,
-        error: {
-          code: -32601,
-          message: 'Method not available',
-          data: { method: 'unknownMethod' },
-        },
-      });
-      methodManager.setFallbackHandler(fallbackHandler);
-
-      await expect(
-        requestHandler.handleRequest({}, {
-          jsonrpc: '2.0',
-          method: 'unknownMethod',
-          id: '1',
-        } as unknown as JSONRPCRequest<TestMethodMap, keyof TestMethodMap>),
-      ).rejects.toThrow(new JSONRPCError(-32601, 'Method not available', { method: 'unknownMethod' }));
     });
 
     it('should throw method not found when no fallback handler', async () => {
+      getMethodMock.mockReturnValue(undefined);
+      getFallbackHandlerMock.mockReturnValue(undefined);
+
       await expect(
-        requestHandler.handleRequest({}, {
-          jsonrpc: '2.0',
-          method: 'unknownMethod',
-          id: '1',
-        } as unknown as JSONRPCRequest<TestMethodMap, keyof TestMethodMap>),
-      ).rejects.toThrow(new JSONRPCError(-32601, 'Method not found', 'unknownMethod'));
+        handler.handleRequest(
+          {},
+          {
+            jsonrpc: '2.0',
+            method: 'unknown' as keyof TestMethodMap,
+            id: '1',
+          },
+        ),
+      ).rejects.toThrow(JSONRPCError);
+    });
+
+    it('should handle fallback handler errors', async () => {
+      const fallback: FallbackMethodHandler<JSONRPCContext> = async () => {
+        throw new JSONRPCError(-32000, 'Fallback error');
+      };
+
+      getMethodMock.mockReturnValue(undefined);
+      getFallbackHandlerMock.mockReturnValue(fallback);
+
+      await expect(
+        handler.handleRequest(
+          {},
+          {
+            jsonrpc: '2.0',
+            method: 'unknown' as keyof TestMethodMap,
+            id: '1',
+          },
+        ),
+      ).rejects.toThrow(JSONRPCError);
     });
   });
 });

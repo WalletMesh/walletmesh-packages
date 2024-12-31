@@ -313,6 +313,40 @@ describe('ParameterSerializer', () => {
         new JSONRPCError(-32602, 'Invalid deserialized params format'),
       );
     });
+
+    it('should handle non-Error throws from deserializer', () => {
+      const testCases = [
+        { thrown: undefined, expected: 'Unknown error' },
+        { thrown: { custom: 'error object' }, expected: 'Unknown error' },
+        { thrown: 'error string', expected: 'Unknown error' },
+        { thrown: 42, expected: 'Unknown error' },
+        { thrown: null, expected: 'Unknown error' },
+        { thrown: new Error('actual error'), expected: 'actual error' },
+      ];
+
+      for (const testCase of testCases) {
+        const testCaseSerializer: JSONRPCSerializer<unknown, unknown> = {
+          params: {
+            serialize: () => ({ serialized: '{"valid":"json"}' }),
+            deserialize: (data: { serialized: string }) => {
+              // Parse JSON to ensure it's valid, but still throw our test value
+              const parsed = JSON.parse(data.serialized);
+              if (parsed.valid === 'json') {
+                throw testCase.thrown;
+              }
+              return parsed;
+            },
+          },
+        };
+
+        // Use a valid serialized data format that will pass validateSerializedData
+        const validInput = { serialized: '{"valid":"json"}' };
+
+        expect(() => serializer.deserializeParams(validInput, testCaseSerializer)).toThrow(
+          new JSONRPCError(-32000, testCase.expected),
+        );
+      }
+    });
   });
 
   describe('Result Serialization', () => {
@@ -614,21 +648,6 @@ describe('ParameterSerializer', () => {
         );
       });
 
-      it('should throw error when fallback deserializer throws non-Error', () => {
-        const invalidFallbackSerializer: JSONRPCSerializer<unknown, unknown> = {
-          params: {
-            serialize: () => ({ serialized: 'test' }),
-            deserialize: () => {
-              throw 'Not an Error object';
-            },
-          },
-        };
-        serializer.setFallbackSerializer(invalidFallbackSerializer);
-        expect(() => serializer.deserializeParams({ serialized: 'test' })).toThrow(
-          new JSONRPCError(-32000, 'Unknown error'),
-        );
-      });
-
       it('should use fallback serializer when no method-specific serializer is provided', () => {
         const params = { test: 'value' };
         const serialized = { serialized: JSON.stringify(params) };
@@ -690,6 +709,41 @@ describe('ParameterSerializer', () => {
         expect(() => serializer.deserializeParams({ serialized: 'test' })).toThrow(
           new JSONRPCError(-32602, 'Invalid deserialized params format from fallback serializer'),
         );
+      });
+
+      it('should handle non-Error throws from fallback deserializer', () => {
+        const testCases = [
+          { thrown: undefined, expected: 'Unknown error' },
+          { thrown: { custom: 'error object' }, expected: 'Unknown error' },
+          { thrown: 'error string', expected: 'Unknown error' },
+          { thrown: 42, expected: 'Unknown error' },
+          { thrown: null, expected: 'Unknown error' },
+          { thrown: new Error('actual error'), expected: 'actual error' },
+        ];
+
+        for (const testCase of testCases) {
+          const testCaseSerializer: JSONRPCSerializer<unknown, unknown> = {
+            params: {
+              serialize: () => ({ serialized: '{"valid":"json"}' }),
+              deserialize: (data: { serialized: string }) => {
+                // Parse JSON to ensure it's valid, but still throw our test value
+                const parsed = JSON.parse(data.serialized);
+                if (parsed.valid === 'json') {
+                  throw testCase.thrown;
+                }
+                return parsed;
+              },
+            },
+          };
+
+          serializer.setFallbackSerializer(testCaseSerializer);
+          // Use a valid serialized data format that will pass validateSerializedData
+          const validInput = { serialized: '{"valid":"json"}' };
+
+          expect(() => serializer.deserializeParams(validInput)).toThrow(
+            new JSONRPCError(-32000, testCase.expected),
+          );
+        }
       });
     });
 

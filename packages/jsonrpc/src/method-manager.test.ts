@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MethodManager, type MethodHandler } from './method-manager.js';
+import { MethodManager } from './method-manager.js';
 import { JSONRPCError } from './error.js';
-import type { JSONRPCContext, JSONRPCSerializer } from './types.js';
+import type { JSONRPCContext, JSONRPCSerializer, MethodHandler } from './types.js';
 
 describe('MethodManager', () => {
   type TestMethodMap = {
@@ -13,13 +13,14 @@ describe('MethodManager', () => {
   let manager: MethodManager<TestMethodMap>;
 
   beforeEach(() => {
-    manager = new MethodManager<TestMethodMap>();
+    manager = new MethodManager<TestMethodMap, JSONRPCContext>();
   });
 
   describe('Method Registration', () => {
     it('should register and retrieve methods', () => {
-      const handler: MethodHandler<JSONRPCContext, { a: number; b: number }, number> = (
+      const handler: MethodHandler<TestMethodMap, 'add', JSONRPCContext> = async (
         _context,
+        _method,
         params,
       ) => ({
         success: true,
@@ -31,48 +32,26 @@ describe('MethodManager', () => {
 
       expect(method).toBeDefined();
       const registeredMethod = method as NonNullable<typeof method>;
-      expect(registeredMethod.handler).toBe(handler);
+      expect(registeredMethod).toBe(handler);
     });
 
-    it('should register serializers for methods and update existing ones', () => {
-      const serializer: JSONRPCSerializer<{ name: string }, string> = {
-        params: {
-          serialize: (params) => ({ serialized: JSON.stringify(params) }),
-          deserialize: (data) => JSON.parse(data.serialized),
-        },
-        result: {
-          serialize: (result) => ({ serialized: result }),
-          deserialize: (data) => data.serialized,
-        },
-      };
+    it('should register and retrieve methods independently', () => {
+      const handler: MethodHandler<TestMethodMap, 'add', JSONRPCContext> = async (
+        _context,
+        _method,
+        params,
+      ) => ({
+        success: true,
+        data: params.a + params.b,
+      });
 
-      // First register a method with a serializer
-      manager.registerSerializer('greet', serializer);
-      let method = manager.getMethod('greet');
-      expect(method).toBeDefined();
-      let registeredMethod = method as NonNullable<typeof method>;
-      expect(registeredMethod.serializer).toBe(serializer);
+      manager.registerMethod('add', handler);
+      const method = manager.getMethod('add');
 
-      // Now register a new serializer for the same method
-      const newSerializer: JSONRPCSerializer<{ name: string }, string> = {
-        params: {
-          serialize: (params) => ({ serialized: `new-${JSON.stringify(params)}` }),
-          deserialize: (data) => JSON.parse(data.serialized.slice(4)),
-        },
-        result: {
-          serialize: (result) => ({ serialized: `new-${result}` }),
-          deserialize: (data) => data.serialized.slice(4),
-        },
-      };
-
-      manager.registerSerializer('greet', newSerializer);
-      method = manager.getMethod('greet');
-      expect(method).toBeDefined();
-      registeredMethod = method as NonNullable<typeof method>;
-      expect(registeredMethod.serializer).toBe(newSerializer);
+      expect(method).toBe(handler);
     });
 
-    it('should handle registering serializer before method and keep serializer when method is registered', () => {
+    it('should register and retrieve serializers independently', () => {
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
           serialize: (params) => ({ serialized: JSON.stringify(params) }),
@@ -85,20 +64,20 @@ describe('MethodManager', () => {
       };
 
       manager.registerSerializer('greet', serializer);
-      const handler: MethodHandler<JSONRPCContext, { name: string }, string> = (_context, params) => ({
+      const retrievedSerializer = manager.getSerializer('greet');
+      expect(retrievedSerializer).toBe(serializer);
+    });
+
+    it('should handle methods and serializers independently', () => {
+      const handler: MethodHandler<TestMethodMap, 'greet', JSONRPCContext> = async (
+        _context,
+        _method,
+        params,
+      ) => ({
         success: true,
         data: `Hello ${params.name}!`,
       });
-      manager.registerMethod('greet', handler);
 
-      const method = manager.getMethod('greet');
-      expect(method).toBeDefined();
-      const registeredMethod = method as NonNullable<typeof method>;
-      expect(registeredMethod.handler).toBe(handler);
-      expect(registeredMethod.serializer).toBe(serializer);
-    });
-
-    it('should create placeholder handler when registering serializer for non-existent method', async () => {
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
           serialize: (params) => ({ serialized: JSON.stringify(params) }),
@@ -110,23 +89,16 @@ describe('MethodManager', () => {
         },
       };
 
+      // Register them independently
+      manager.registerMethod('greet', handler);
       manager.registerSerializer('greet', serializer);
-      const method = manager.getMethod('greet');
-      expect(method).toBeDefined();
 
-      if (!method) {
-        throw new Error('Method should be defined');
-      }
-      // Test placeholder handler returns Method not found error
-      const result = await method.handler({}, { name: 'test' });
-      expect(result).toEqual({
-        success: false,
-        error: {
-          code: -32601,
-          message: 'Method not found',
-          data: 'greet',
-        },
-      });
+      // Get them independently
+      const method = manager.getMethod('greet');
+      const retrievedSerializer = manager.getSerializer('greet');
+
+      expect(method).toBe(handler);
+      expect(retrievedSerializer).toBe(serializer);
     });
   });
 

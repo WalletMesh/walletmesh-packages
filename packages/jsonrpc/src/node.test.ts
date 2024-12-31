@@ -45,7 +45,7 @@ describe('JSONRPCNode', () => {
 
   describe('Method Registration and Calling', () => {
     it('should register and call methods successfully', async () => {
-      node.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => Promise.resolve(params.a + params.b));
 
       const promise = node.callMethod('add', { a: 2, b: 3 });
 
@@ -143,7 +143,7 @@ describe('JSONRPCNode', () => {
 
     it('should handle successful synchronous method registration and execution', async () => {
       // Register a method that returns a value synchronously
-      node.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => Promise.resolve(params.a + params.b));
 
       // Send a request directly to test the handler
       await node.receiveMessage({
@@ -254,7 +254,7 @@ describe('JSONRPCNode', () => {
         throw 'Middleware error'; // Throwing a string
       });
       node.addMiddleware(middleware);
-      node.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => Promise.resolve(params.a + params.b));
 
       await node.receiveMessage({
         jsonrpc: '2.0',
@@ -313,34 +313,106 @@ describe('JSONRPCNode', () => {
       await expect(promise).rejects.toThrow(TimeoutError);
     });
 
-    it('should handle fallback handler for unregistered methods', async () => {
-      // Set up fallback handler
-      node.setFallbackHandler(async (context, method, params) => ({
-        success: false,
-        error: {
-          code: -32601,
-          message: `Method ${method} is not supported`,
-          data: { availableMethods: ['add', 'greet'] },
-        },
-      }));
+    describe('Fallback Handler', () => {
+      it('should handle successful fallback execution', async () => {
+        // Set up fallback handler that returns a value
+        node.setFallbackHandler(async (_context, method, params) => {
+          return `Handled ${method} with ${JSON.stringify(params)}`;
+        });
 
-      // Send request for unregistered method
-      await node.receiveMessage({
-        jsonrpc: '2.0',
-        method: 'subtract',
-        params: { a: 5, b: 3 },
-        id: '1',
+        // Send request for unregistered method
+        await node.receiveMessage({
+          jsonrpc: '2.0',
+          method: 'subtract',
+          params: { a: 5, b: 3 },
+          id: '1',
+        });
+
+        // Verify successful response
+        expect(transport.send).toHaveBeenCalledWith({
+          jsonrpc: '2.0',
+          result: 'Handled subtract with {"a":5,"b":3}',
+          id: '1',
+        });
       });
 
-      // Verify response
-      expect(transport.send).toHaveBeenCalledWith({
-        jsonrpc: '2.0',
-        error: {
-          code: -32601,
-          message: 'Method subtract is not supported',
-          data: { availableMethods: ['add', 'greet'] },
-        },
-        id: '1',
+      it('should handle fallback handler throwing Error', async () => {
+        // Set up fallback handler that throws an Error
+        node.setFallbackHandler(async (_context, method, _params) => {
+          throw new Error(`Method ${method} is not supported`);
+        });
+
+        // Send request for unregistered method
+        await node.receiveMessage({
+          jsonrpc: '2.0',
+          method: 'subtract',
+          params: { a: 5, b: 3 },
+          id: '1',
+        });
+
+        // Verify error response
+        expect(transport.send).toHaveBeenCalledWith({
+          jsonrpc: '2.0',
+          error: {
+            code: -32000,
+            message: 'Method subtract is not supported',
+          },
+          id: '1',
+        });
+      });
+
+      it('should handle fallback handler throwing JSONRPCError', async () => {
+        // Set up fallback handler that throws a JSONRPCError
+        node.setFallbackHandler(async (_context, method, _params) => {
+          throw new JSONRPCError(-32601, `Method ${method} not found`, {
+            availableMethods: ['add', 'greet'],
+          });
+        });
+
+        // Send request for unregistered method
+        await node.receiveMessage({
+          jsonrpc: '2.0',
+          method: 'subtract',
+          params: { a: 5, b: 3 },
+          id: '1',
+        });
+
+        // Verify error response
+        expect(transport.send).toHaveBeenCalledWith({
+          jsonrpc: '2.0',
+          error: {
+            code: -32601,
+            message: 'Method subtract not found',
+            data: { availableMethods: ['add', 'greet'] },
+          },
+          id: '1',
+        });
+      });
+
+      it('should handle fallback handler throwing "Method not found"', async () => {
+        // Set up fallback handler that throws "Method not found"
+        node.setFallbackHandler(async (_context, _method, _params) => {
+          throw new Error('Method not found');
+        });
+
+        // Send request for unregistered method
+        await node.receiveMessage({
+          jsonrpc: '2.0',
+          method: 'subtract',
+          params: { a: 5, b: 3 },
+          id: '1',
+        });
+
+        // Verify error response with method name in data
+        expect(transport.send).toHaveBeenCalledWith({
+          jsonrpc: '2.0',
+          error: {
+            code: -32601,
+            message: 'Method not found',
+            data: 'subtract',
+          },
+          id: '1',
+        });
       });
     });
 
@@ -408,7 +480,7 @@ describe('JSONRPCNode', () => {
       const wrappedMiddleware = applyToMethods<TestMethodMap, TestContext>(['add'], middleware);
       node.addMiddleware(wrappedMiddleware);
 
-      node.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => Promise.resolve(params.a + params.b));
 
       await node.receiveMessage({
         jsonrpc: '2.0',
@@ -491,7 +563,7 @@ describe('JSONRPCNode', () => {
       };
 
       return expect(
-        node['methodManager'].getMethod('add')?.handler(node.context, request.params),
+        node['methodManager'].getMethod('add')?.(node.context, 'add', request.params),
       ).resolves.toEqual({
         success: false,
         error: {
@@ -519,7 +591,7 @@ describe('JSONRPCNode', () => {
       };
 
       return expect(
-        node['methodManager'].getMethod('add')?.handler(node.context, request.params),
+        node['methodManager'].getMethod('add')?.(node.context, 'add', request.params),
       ).resolves.toEqual({
         success: false,
         error: {
@@ -545,7 +617,7 @@ describe('JSONRPCNode', () => {
       };
 
       return expect(
-        node['methodManager'].getMethod('add')?.handler(node.context, request.params),
+        node['methodManager'].getMethod('add')?.(node.context, 'add', request.params),
       ).resolves.toEqual({
         success: false,
         error: {
@@ -652,7 +724,7 @@ describe('JSONRPCNode', () => {
         throw { code: 123 }; // Not an Error instance and no message property
       });
 
-      node.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => Promise.resolve(params.a + params.b));
 
       // Send a request
       await node.receiveMessage({
@@ -728,7 +800,7 @@ describe('JSONRPCNode', () => {
         throw new Error('Middleware error');
       });
 
-      node.registerMethod('add', (_context, params) => params.a + params.b);
+      node.registerMethod('add', (_context, params) => Promise.resolve(params.a + params.b));
 
       // Send a request
       await node.receiveMessage({

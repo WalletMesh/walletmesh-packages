@@ -5,52 +5,9 @@ import type {
   JSONRPCContext,
   JSONRPCID,
   JSONRPCSerializedData,
-  MethodResponse,
+  MethodHandler,
   FallbackMethodHandler,
 } from './types.js';
-
-/**
- * Function type for method handlers that process JSON-RPC method calls.
- *
- * @typeParam C - The context type shared between handlers
- * @typeParam P - The parameters type for the method
- * @typeParam R - The result type for the method
- *
- * @example
- * ```typescript
- * const addHandler: MethodHandler<Context, { a: number; b: number }, number> =
- *   async (context, params) => {
- *     if (!context.isAuthorized) {
- *       return {
- *         success: false,
- *         error: { code: -32600, message: 'Unauthorized' }
- *       };
- *     }
- *     return {
- *       success: true,
- *       data: params.a + params.b
- *     };
- *   };
- * ```
- */
-export type MethodHandler<C extends JSONRPCContext, P, R> = (
-  context: C,
-  params: P,
-) => Promise<MethodResponse<R>> | MethodResponse<R>;
-
-/**
- * Internal interface representing a registered method with its handler and optional serializer.
- *
- * @typeParam C - The context type shared between handlers
- * @typeParam P - The parameters type for the method
- * @typeParam R - The result type for the method
- */
-interface RegisteredMethod<C extends JSONRPCContext, P, R> {
-  /** The function that handles method calls */
-  handler: MethodHandler<C, P, R>;
-  /** Optional serializer for complex parameter/result types */
-  serializer: JSONRPCSerializer<P, R> | undefined;
-}
 
 /**
  * Internal interface representing a pending request waiting for a response.
@@ -106,7 +63,8 @@ export class MethodManager<
   T extends JSONRPCMethodMap = JSONRPCMethodMap,
   C extends JSONRPCContext = JSONRPCContext,
 > {
-  private methods = new Map<keyof T, RegisteredMethod<C, T[keyof T]['params'], T[keyof T]['result']>>();
+  private methods = new Map<keyof T, unknown>();
+  private serializers = new Map<keyof T, JSONRPCSerializer<unknown, unknown>>();
   private pendingRequests = new Map<JSONRPCID, PendingRequest<T[keyof T]['result']>>();
   private fallbackHandler?: FallbackMethodHandler<C>;
 
@@ -170,28 +128,19 @@ export class MethodManager<
    * );
    * ```
    */
-  registerMethod<M extends keyof T>(
-    name: M,
-    handler: MethodHandler<C, T[M]['params'], T[M]['result']>,
-    serializer?: JSONRPCSerializer<T[M]['params'], T[M]['result']>,
-  ): void {
-    const existingMethod = this.methods.get(name);
-    this.methods.set(name, {
-      handler,
-      serializer: serializer || existingMethod?.serializer,
-    });
+  registerMethod<M extends keyof T>(name: M, handler: MethodHandler<T, M, C>): void {
+    this.methods.set(name, handler as unknown);
   }
 
   /**
-   * Registers a serializer for a method's parameters and results.
-   * Can be called before or after registering the method handler.
+   * Registers a serializer for parameters and results.
    *
-   * @param method - The name of the method to register a serializer for
+   * @param name - The name to register the serializer under
    * @param serializer - The serializer implementation
    *
    * @example
    * ```typescript
-   * // Register Date serializer for a method
+   * // Register Date serializer
    * methods.registerSerializer('processDate', {
    *   params: {
    *     serialize: date => ({ serialized: date.toISOString() }),
@@ -205,24 +154,10 @@ export class MethodManager<
    * ```
    */
   registerSerializer<M extends keyof T>(
-    method: M,
+    name: M,
     serializer: JSONRPCSerializer<T[M]['params'], T[M]['result']>,
   ): void {
-    const registered = this.methods.get(method);
-    if (registered) {
-      registered.serializer = serializer;
-    } else {
-      // Create a placeholder handler that will be replaced later
-      const handler: MethodHandler<C, T[M]['params'], T[M]['result']> = () => ({
-        success: false,
-        error: {
-          code: -32601,
-          message: 'Method not found',
-          data: String(method),
-        },
-      });
-      this.methods.set(method, { handler, serializer });
-    }
+    this.serializers.set(name, serializer as JSONRPCSerializer<unknown, unknown>);
   }
 
   /**
@@ -235,12 +170,31 @@ export class MethodManager<
    * ```typescript
    * const method = methods.getMethod('add');
    * if (method) {
-   *   console.log('Method found with serializer:', !!method.serializer);
+   *   console.log('Method found');
    * }
    * ```
    */
-  getMethod<M extends keyof T>(name: M): RegisteredMethod<C, T[M]['params'], T[M]['result']> | undefined {
-    return this.methods.get(name) as RegisteredMethod<C, T[M]['params'], T[M]['result']> | undefined;
+  getMethod<M extends keyof T>(name: M): MethodHandler<T, M, C> | undefined {
+    const handler = this.methods.get(name) as MethodHandler<T, M, C> | undefined;
+    return handler;
+  }
+
+  /**
+   * Gets a registered serializer by name.
+   *
+   * @param name - The name of the serializer to retrieve
+   * @returns The registered serializer if found, undefined otherwise
+   *
+   * @example
+   * ```typescript
+   * const serializer = methods.getSerializer('processDate');
+   * if (serializer) {
+   *   console.log('Serializer found');
+   * }
+   * ```
+   */
+  getSerializer<M extends keyof T>(name: M): JSONRPCSerializer<T[M]['params'], T[M]['result']> | undefined {
+    return this.serializers.get(name) as JSONRPCSerializer<T[M]['params'], T[M]['result']> | undefined;
   }
 
   /**
@@ -265,14 +219,14 @@ export class MethodManager<
    * );
    * ```
    */
-  addPendingRequest<M extends keyof T>(
+  addPendingRequest<N extends keyof T>(
     id: JSONRPCID,
-    resolve: (value: T[M]['result']) => void,
+    resolve: (value: T[N]['result']) => void,
     reject: (reason: unknown) => void,
     timeoutInSeconds: number,
-    serializer?: JSONRPCSerializer<T[M]['params'], T[M]['result']>,
+    serializer?: JSONRPCSerializer<T[N]['params'], T[N]['result']>,
   ): void {
-    const request: PendingRequest<T[M]['result']> = {
+    const request: PendingRequest<T[N]['result']> = {
       resolve,
       reject,
       timeoutId: undefined,

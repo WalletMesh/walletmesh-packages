@@ -1,133 +1,48 @@
+import { JSONRPCError } from './error.js';
 import type {
-  JSONRPCContext,
   JSONRPCMethodMap,
+  JSONRPCContext,
+  MethodHandler,
   JSONRPCMiddleware,
-  JSONRPCRequest,
   JSONRPCID,
   JSONRPCSerializedData,
 } from './types.js';
 
 /**
- * Creates a middleware that only applies to specific JSON-RPC methods.
- * Enables selective middleware application based on method names, allowing
- * different middleware stacks for different methods.
- *
- * Common use cases:
- * - Authentication for sensitive operations
- * - Logging for specific methods
- * - Rate limiting for expensive operations
- * - Caching for read operations
- * - Validation for specific parameter types
- *
- * @typeParam T - The RPC method map defining available methods
- * @typeParam C - The context type shared between middleware and handlers
- * @param methods - Array of method names to apply the middleware to
- * @param middleware - The middleware to apply to the specified methods
- * @returns A new middleware function that only executes for the specified methods
- *
- * @example
- * ```typescript
- * // Authentication for sensitive methods
- * node.addMiddleware(
- *   applyToMethods(['transferFunds', 'updateProfile'],
- *     async (context, request, next) => {
- *       if (!context.isAuthenticated) {
- *         throw new JSONRPCError(-32600, 'Authentication required');
- *       }
- *       return next();
- *     }
- *   )
- * );
- *
- * // Logging for specific methods
- * node.addMiddleware(
- *   applyToMethods(['createUser', 'deleteUser'],
- *     async (context, request, next) => {
- *       console.log(`Admin action: ${request.method}`, request.params);
- *       const response = await next();
- *       console.log(`Result:`, response.result);
- *       return response;
- *     }
- *   )
- * );
- *
- * // Rate limiting for expensive operations
- * node.addMiddleware(
- *   applyToMethods(['generateReport', 'runAnalysis'],
- *     async (context, request, next) => {
- *       const key = `${request.method}:${context.userId}`;
- *       if (!rateLimiter.allowRequest(key)) {
- *         throw new JSONRPCError(-32000, 'Rate limit exceeded');
- *       }
- *       return next();
- *     }
- *   )
- * );
- * ```
- */
-export function applyToMethods<T extends JSONRPCMethodMap, C extends JSONRPCContext>(
-  methods: (keyof T)[],
-  middleware: JSONRPCMiddleware<T, C>,
-): JSONRPCMiddleware<T, C> {
-  return async (context: C, request: JSONRPCRequest<T, keyof T>, next) => {
-    if ('method' in request && methods.includes(request.method)) {
-      return middleware(context, request, next);
-    }
-    return next();
-  };
-}
-
-/**
- * Type guard for validating JSON-RPC message identifiers.
- * Ensures a value matches the JSON-RPC 2.0 spec for request/response correlation:
- * - string or number for request/response pairs
- * - undefined for notifications (no response expected)
- * - null for error responses to invalid requests
+ * Type guard to check if a value is a valid JSON-RPC ID.
+ * Valid IDs can be strings, numbers, or undefined.
  *
  * @param value - The value to check
- * @returns True if the value is a valid JSON-RPC ID
+ * @returns True if the value is a valid JSON-RPC ID, false otherwise
  *
  * @example
  * ```typescript
- * // Validate request ID
- * if (!isJSONRPCID(message.id)) {
- *   throw new JSONRPCError(-32600, 'Invalid Request ID');
- * }
- *
- * // Check for notification
- * if (isJSONRPCID(message.id) && message.id === undefined) {
- *   console.log('Processing notification');
- * }
- *
- * // Handle error response
- * if (isJSONRPCID(message.id) && message.id === null) {
- *   console.error('Error response for invalid request');
- * }
+ * isJSONRPCID("123");     // true
+ * isJSONRPCID(456);       // true
+ * isJSONRPCID(undefined); // true
+ * isJSONRPCID(null);      // false
+ * isJSONRPCID({});        // false
  * ```
  */
 export function isJSONRPCID(value: unknown): value is JSONRPCID {
-  return typeof value === 'string' || typeof value === 'number' || value === undefined;
+  if (value === undefined) return true;
+  if (typeof value === 'string') return true;
+  if (typeof value === 'number') return true;
+  return false;
 }
 
 /**
- * Type guard for validating JSON-RPC protocol version.
- * Ensures strict compliance with JSON-RPC 2.0 specification.
- * The version must be exactly the string '2.0' - no other values are valid.
+ * Type guard to check if a value is a valid JSON-RPC version string.
+ * The only valid version string is '2.0' as per the JSON-RPC 2.0 specification.
  *
  * @param value - The value to check
- * @returns True if the value is '2.0'
+ * @returns True if the value is '2.0', false otherwise
  *
  * @example
  * ```typescript
- * // Basic version check
- * if (!isJSONRPCVersion(message.jsonrpc)) {
- *   throw new JSONRPCError(-32600, 'Invalid JSON-RPC version');
- * }
- *
- * // Common error cases
- * isJSONRPCVersion('2') // false - must be '2.0'
- * isJSONRPCVersion(2.0) // false - must be string
- * isJSONRPCVersion('1.0') // false - version 1.0 not supported
+ * isJSONRPCVersion("2.0");  // true
+ * isJSONRPCVersion("1.0");  // false
+ * isJSONRPCVersion(2);      // false
  * ```
  */
 export function isJSONRPCVersion(value: unknown): value is '2.0' {
@@ -135,42 +50,17 @@ export function isJSONRPCVersion(value: unknown): value is '2.0' {
 }
 
 /**
- * Type guard for validating JSON-RPC serialized data.
- * Checks if a value matches the JSONRPCSerializedData structure,
- * which is used for transmitting complex objects that need special handling.
- *
- * Valid serialized data must:
- * - Be an object (not null)
- * - Have a 'serialized' property
- * - The 'serialized' property must be a string
+ * Type guard to check if a value matches the JSONRPCSerializedData format.
+ * Valid serialized data must be an object with a 'serialized' property containing a string.
  *
  * @param value - The value to check
- * @returns True if the value is valid serialized data
+ * @returns True if the value matches the JSONRPCSerializedData format, false otherwise
  *
  * @example
  * ```typescript
- * // Handling method results
- * if (isJSONRPCSerializedData(response.result)) {
- *   // Handle serialized data (e.g., Date objects)
- *   const result = deserializer.deserialize(response.result);
- *   console.log('Deserialized:', result instanceof Date); // true
- * } else {
- *   // Handle raw data (e.g., numbers, strings)
- *   const result = response.result;
- * }
- *
- * // Common serialization cases
- * const dateSerializer = {
- *   serialize: (date: Date) => ({
- *     serialized: date.toISOString() // Creates valid serialized data
- *   }),
- *   deserialize: (data) => new Date(data.serialized)
- * };
- *
- * // Invalid cases
- * isJSONRPCSerializedData({ data: 'string' }) // false - missing 'serialized'
- * isJSONRPCSerializedData({ serialized: 123 }) // false - not a string
- * isJSONRPCSerializedData(null) // false - not an object
+ * isJSONRPCSerializedData({ serialized: "data" });  // true
+ * isJSONRPCSerializedData({ serialized: 123 });     // false
+ * isJSONRPCSerializedData({ data: "string" });      // false
  * ```
  */
 export function isJSONRPCSerializedData(value: unknown): value is JSONRPCSerializedData {
@@ -178,6 +68,96 @@ export function isJSONRPCSerializedData(value: unknown): value is JSONRPCSeriali
     typeof value === 'object' &&
     value !== null &&
     'serialized' in value &&
-    typeof (value as JSONRPCSerializedData).serialized === 'string'
+    typeof value.serialized === 'string'
   );
+}
+
+/**
+ * Helper function to apply middleware only to specific methods.
+ * Creates a new middleware that only executes for the specified methods,
+ * passing through all other requests unchanged.
+ *
+ * @param methods - Array of method names to apply the middleware to
+ * @param middleware - The middleware function to apply
+ * @returns A new middleware function that only applies to specified methods
+ *
+ * @example
+ * ```typescript
+ * // Create logging middleware only for 'add' and 'subtract' methods
+ * const loggerMiddleware = applyToMethods(['add', 'subtract'],
+ *   async (context, request, next) => {
+ *     console.log(`Calling ${request.method}`);
+ *     const result = await next();
+ *     console.log(`${request.method} returned:`, result);
+ *     return result;
+ *   }
+ * );
+ * ```
+ */
+export function applyToMethods<T extends JSONRPCMethodMap, C extends JSONRPCContext>(
+  methods: Array<keyof T>,
+  middleware: JSONRPCMiddleware<T, C>,
+): JSONRPCMiddleware<T, C> {
+  return async (context, request, next) => {
+    if (methods.includes(request.method)) {
+      return middleware(context, request, next);
+    }
+    return next();
+  };
+}
+
+/**
+ * Wraps a handler function with standard error handling and response formatting.
+ * Used by both JSONRPCNode and tests to ensure consistent error handling.
+ *
+ * @param handler - The original handler function
+ * @param methodName - Optional method name for error context
+ * @returns A wrapped handler that returns MethodResponse
+ *
+ * @example
+ * ```typescript
+ * const handler = (context, params) => params.a + params.b;
+ * const wrapped = wrapHandler(handler, 'add');
+ * ```
+ */
+export function wrapHandler<T extends JSONRPCMethodMap, M extends keyof T, C extends JSONRPCContext>(
+  handler:
+    | ((context: C, params: T[M]['params']) => Promise<T[M]['result']>)
+    | ((context: C, method: M, params: T[M]['params']) => Promise<T[M]['result']>),
+): MethodHandler<T, M, C> {
+  return async (context: C, method: M, params: T[M]['params']) => {
+    try {
+      const result =
+        handler.length === 2
+          ? (handler as (context: C, params: T[M]['params']) => Promise<T[M]['result']>)(context, params) // normal handler
+          : (handler as (context: C, method: M, params: T[M]['params']) => Promise<T[M]['result']>)(
+              context,
+              method,
+              params,
+            ); // fallback handler
+      return {
+        success: true,
+        data: await result,
+      };
+    } catch (error) {
+      if (error instanceof JSONRPCError) {
+        return {
+          success: false,
+          error: {
+            code: error.code,
+            message: error.message,
+            data: error.data,
+          },
+        };
+      }
+      return {
+        success: false,
+        error: {
+          code: error instanceof Error && error.message === 'Method not found' ? -32601 : -32000,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          data: error instanceof Error && error.message === 'Method not found' ? String(method) : undefined,
+        },
+      };
+    }
+  };
 }

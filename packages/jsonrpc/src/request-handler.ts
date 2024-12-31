@@ -88,13 +88,14 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
     }
 
     // Get method or fallback handler
-    const method = this.methodManager.getMethod(request.method as keyof T);
+    const method = this.methodManager.getMethod(request.method);
     let methodResponse: MethodResponse<unknown>;
 
     if (method) {
       // Process and validate params for registered method
-      const methodParams = this.serializer.deserializeParams(request.params, method.serializer);
-      methodResponse = await method.handler(context, methodParams);
+      const serializer = this.methodManager.getSerializer(request.method);
+      const methodParams = this.serializer.deserializeParams(request.params, serializer);
+      methodResponse = await method(context, request.method, methodParams);
     } else {
       // Try fallback handler
       const fallback = this.methodManager.getFallbackHandler();
@@ -113,8 +114,9 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
       );
     }
 
-    // Serialize result if needed (only use serializer for registered methods)
-    const serializedResult = this.serializer.serializeResult(methodResponse.data, method?.serializer);
+    // Serialize result if needed
+    const serializer = this.methodManager.getSerializer(request.method);
+    const serializedResult = this.serializer.serializeResult(methodResponse.data, serializer);
 
     // Return JSON-RPC response
     return {

@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { applyToMethods, isJSONRPCID, isJSONRPCVersion, isJSONRPCSerializedData } from './utils.js';
+import {
+  applyToMethods,
+  isJSONRPCID,
+  isJSONRPCVersion,
+  isJSONRPCSerializedData,
+  wrapHandler,
+} from './utils.js';
 import type { JSONRPCContext, JSONRPCRequest, JSONRPCResponse } from './types.js';
 
 describe('Utils', () => {
@@ -112,6 +118,48 @@ describe('Utils', () => {
 
     it('should handle objects with additional properties', () => {
       expect(isJSONRPCSerializedData({ serialized: 'test', other: 'value' })).toBe(true);
+    });
+  });
+
+  describe('wrapHandler', () => {
+    type TestMethodMap = {
+      test: { params: { value: string }; result: string };
+    };
+
+    it('should handle non-JSONRPCError errors', async () => {
+      const handler = async () => {
+        throw new Error('Test error');
+      };
+
+      const wrapped = wrapHandler<TestMethodMap, 'test', JSONRPCContext>(handler);
+      const result = await wrapped({}, 'test', { value: 'test' });
+
+      expect(result).toEqual({
+        success: false,
+        error: {
+          code: -32000,
+          message: 'Test error',
+          data: undefined,
+        },
+      });
+    });
+
+    it('should handle non-Error objects', async () => {
+      const handler = async () => {
+        throw 'string error'; // not an Error instance
+      };
+
+      const wrapped = wrapHandler<TestMethodMap, 'test', JSONRPCContext>(handler);
+      const result = await wrapped({}, 'test', { value: 'test' });
+
+      expect(result).toEqual({
+        success: false,
+        error: {
+          code: -32000,
+          message: 'Unknown error',
+          data: undefined,
+        },
+      });
     });
   });
 });
