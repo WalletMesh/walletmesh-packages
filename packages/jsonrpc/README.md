@@ -1,6 +1,6 @@
 # @walletmesh/jsonrpc
 
-A TypeScript implementation of the JSON-RPC 2.0 protocol, designed for building robust client-server applications with bi-directional communication capabilities.
+A TypeScript implementation of the JSON-RPC 2.0 protocol, designed for building client-server applications with bi-directional communication capabilities.
 
 ## Quick Start
 

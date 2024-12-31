@@ -5,7 +5,7 @@ Core libraries implementing the WalletMesh Protocol - a protocol enabling secure
 ## Packages
 
 - [@walletmesh/discovery](packages/discovery) - A protocol implementation for discovering web3 wallets in both browser extensions and web applications, enabling DApps to discover available wallets and wallets to announce their presence to DApps.
-- [@walletmesh/jsonrpc](packages/jsonrpc) - A comprehensive TypeScript implementation of the JSON-RPC 2.0 protocol, designed for building robust client-server applications with bi-directional communication capabilities, featuring full type safety, middleware support, and event handling.
+- [@walletmesh/jsonrpc](packages/jsonrpc) - A comprehensive TypeScript implementation of the JSON-RPC 2.0 protocol, designed for building client-server applications with bi-directional communication capabilities, featuring full type safety, middleware support, and event handling.
 - [@walletmesh/router](packages/router) - A flexible routing system for managing multi-chain wallet connections with bi-directional communication support, providing granular permissions, session management, and unified interfaces across different chains.
 
 See individual package READMEs for detailed documentation.
