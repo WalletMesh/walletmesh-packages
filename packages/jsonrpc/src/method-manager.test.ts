@@ -54,12 +54,12 @@ describe('MethodManager', () => {
     it('should register and retrieve serializers independently', () => {
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (params) => ({ serialized: JSON.stringify(params) }),
-          deserialize: (data) => JSON.parse(data.serialized),
+          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (result) => ({ serialized: result }),
-          deserialize: (data) => data.serialized,
+          serialize: (method, result) => ({ serialized: result, method }),
+          deserialize: (_method, data) => data.serialized,
         },
       };
 
@@ -80,12 +80,12 @@ describe('MethodManager', () => {
 
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (params) => ({ serialized: JSON.stringify(params) }),
-          deserialize: (data) => JSON.parse(data.serialized),
+          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (result) => ({ serialized: result }),
-          deserialize: (data) => data.serialized,
+          serialize: (method, result) => ({ serialized: result, method }),
+          deserialize: (_method, data) => data.serialized,
         },
       };
 
@@ -274,17 +274,48 @@ describe('MethodManager', () => {
       const reject = vi.fn();
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (params) => ({ serialized: JSON.stringify(params) }),
-          deserialize: (data) => JSON.parse(data.serialized),
+          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (result) => ({ serialized: result }),
-          deserialize: (data) => data.serialized,
+          serialize: (method, result) => ({ serialized: result, method }),
+          deserialize: (_method, data) => data.serialized,
         },
       };
 
       manager.addPendingRequest('1', resolve, reject, 0, serializer);
+      manager.handleResponse('1', { serialized: 'Hello!', method: '1' });
+
+      expect(resolve).toHaveBeenCalledWith('Hello!');
+      expect(reject).not.toHaveBeenCalled();
+    });
+
+    it('should handle serialized responses with missing or invalid method', () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const serializer: JSONRPCSerializer<{ name: string }, string> = {
+        params: {
+          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: (_method, data) => JSON.parse(data.serialized),
+        },
+        result: {
+          serialize: (method, result) => ({ serialized: result, method }),
+          deserialize: (_method, data) => data.serialized,
+        },
+      };
+
+      // Test with missing method property
+      manager.addPendingRequest('1', resolve, reject, 0, serializer);
       manager.handleResponse('1', { serialized: 'Hello!' });
+
+      expect(resolve).toHaveBeenCalledWith('Hello!');
+      expect(reject).not.toHaveBeenCalled();
+
+      // Test with non-string method property
+      resolve.mockClear();
+      reject.mockClear();
+      manager.addPendingRequest('2', resolve, reject, 0, serializer);
+      manager.handleResponse('2', { serialized: 'Hello!', method: 123 });
 
       expect(resolve).toHaveBeenCalledWith('Hello!');
       expect(reject).not.toHaveBeenCalled();
@@ -295,12 +326,12 @@ describe('MethodManager', () => {
       const reject = vi.fn();
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (params) => ({ serialized: JSON.stringify(params) }),
-          deserialize: (data) => JSON.parse(data.serialized),
+          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (result) => ({ serialized: result }),
-          deserialize: (data) => data.serialized,
+          serialize: (method, result) => ({ serialized: result, method }),
+          deserialize: (_method, data) => data.serialized,
         },
       };
 
@@ -322,11 +353,11 @@ describe('MethodManager', () => {
       const reject = vi.fn();
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (params) => ({ serialized: JSON.stringify(params) }),
-          deserialize: (data) => JSON.parse(data.serialized),
+          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (result) => ({ serialized: result }),
+          serialize: (method, result) => ({ serialized: result, method }),
           deserialize: () => {
             throw new Error('Failed to deserialize');
           },
@@ -334,7 +365,7 @@ describe('MethodManager', () => {
       };
 
       manager.addPendingRequest('1', resolve, reject, 0, serializer);
-      manager.handleResponse('1', { serialized: 'invalid' });
+      manager.handleResponse('1', { serialized: 'invalid', method: '1' });
 
       expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
       const calls = reject.mock.calls;
@@ -369,15 +400,48 @@ describe('MethodManager', () => {
       const resolve = vi.fn();
       const reject = vi.fn();
 
+      // Test with arrow function
       manager.addPendingRequest('1', resolve, reject, 0);
-      // Testing invalid type (function is not a valid JSON-RPC type)
       manager.handleResponse('1', () => {});
 
       expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
-      const calls = reject.mock.calls;
+      let calls = reject.mock.calls;
       expect(calls.length).toBeGreaterThan(0);
-      const [firstCall] = calls;
-      const [error] = firstCall as [JSONRPCError];
+      let [firstCall] = calls;
+      let [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32603);
+      expect(error.message).toBe('Invalid result type');
+      expect(resolve).not.toHaveBeenCalled();
+
+      // Test with regular function
+      resolve.mockClear();
+      reject.mockClear();
+      manager.addPendingRequest('2', resolve, reject, 0);
+      function testFunc() {
+        return 'test';
+      }
+      manager.handleResponse('2', testFunc);
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      [firstCall] = calls;
+      [error] = firstCall as [JSONRPCError];
+      expect(error.code).toBe(-32603);
+      expect(error.message).toBe('Invalid result type');
+      expect(resolve).not.toHaveBeenCalled();
+
+      // Test with Symbol
+      resolve.mockClear();
+      reject.mockClear();
+      manager.addPendingRequest('3', resolve, reject, 0);
+      manager.handleResponse('3', Symbol('test'));
+
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+      calls = reject.mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      [firstCall] = calls;
+      [error] = firstCall as [JSONRPCError];
       expect(error.code).toBe(-32603);
       expect(error.message).toBe('Invalid result type');
       expect(resolve).not.toHaveBeenCalled();
@@ -388,12 +452,12 @@ describe('MethodManager', () => {
       const reject = vi.fn();
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (params) => ({ serialized: JSON.stringify(params) }),
-          deserialize: (data) => JSON.parse(data.serialized),
+          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (result) => ({ serialized: result }),
-          deserialize: (data) => data.serialized,
+          serialize: (method, result) => ({ serialized: result, method }),
+          deserialize: (_method, data) => data.serialized,
         },
       };
 
@@ -444,7 +508,7 @@ describe('MethodManager', () => {
       resolve.mockClear();
       reject.mockClear();
       manager.addPendingRequest('4', resolve, reject, 0, serializer);
-      manager.handleResponse('4', { serialized: 123 });
+      manager.handleResponse('4', { serialized: 123, method: '4' });
 
       expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
       calls = reject.mock.calls;

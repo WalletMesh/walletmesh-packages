@@ -9,8 +9,9 @@ Major refactor and enhancement of the JSON-RPC implementation and router:
 - Add MessageValidator and ParameterSerializer components
 - Rework middleware system
 - Improved error handling with standardized codes & more context
-- separate method handlers from serializers
-- improved type safety
+- Separate method handlers from serializers
+- Add support for fallback method handlers & serializers
+- Improved type safety
 
 @walletmesh/router:
 - Update session management and permission system

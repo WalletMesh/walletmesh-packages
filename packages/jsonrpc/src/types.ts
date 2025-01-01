@@ -45,7 +45,10 @@ export type JSONRPCParams = undefined | unknown[] | Record<string, unknown>;
  * };
  * ```
  */
-export type JSONRPCSerializedData = { serialized: string };
+export type JSONRPCSerializedData = {
+  serialized: string;
+  method: string;
+};
 
 /**
  * Interface for serializing and deserializing values.
@@ -65,16 +68,18 @@ export interface Serializer<T> {
   /**
    * Serializes a value to JSONRPCSerializedData
    * @param value - The value to serialize
+   * @param method - The method name associated with this serialization
    * @returns The serialized data
    */
-  serialize(value: T): JSONRPCSerializedData;
+  serialize(method: string, value: T): JSONRPCSerializedData;
 
   /**
    * Deserializes JSONRPCSerializedData back to the original type
+   * @param method - The method name associated with this deserialization
    * @param value - The serialized data to deserialize
    * @returns The deserialized value
    */
-  deserialize(value: JSONRPCSerializedData): T;
+  deserialize(method: string, value: JSONRPCSerializedData): T;
 }
 
 /**

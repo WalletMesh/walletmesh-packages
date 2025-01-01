@@ -97,8 +97,8 @@ describe('Utils', () => {
 
   describe('isJSONRPCSerializedData', () => {
     it('should validate correct serialized data', () => {
-      expect(isJSONRPCSerializedData({ serialized: 'test' })).toBe(true);
-      expect(isJSONRPCSerializedData({ serialized: '' })).toBe(true);
+      expect(isJSONRPCSerializedData({ serialized: 'test', method: 'test' })).toBe(true);
+      expect(isJSONRPCSerializedData({ serialized: '', method: 'test' })).toBe(true);
     });
 
     it('should reject invalid serialized data', () => {
@@ -117,7 +117,7 @@ describe('Utils', () => {
     });
 
     it('should handle objects with additional properties', () => {
-      expect(isJSONRPCSerializedData({ serialized: 'test', other: 'value' })).toBe(true);
+      expect(isJSONRPCSerializedData({ serialized: 'test', method: 'test', other: 'value' })).toBe(true);
     });
   });
 

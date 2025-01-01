@@ -102,20 +102,20 @@ describe('RequestManager', () => {
     const id = 'request-1';
     const serializer: JSONRPCSerializer<{ name: string }, string> = {
       params: {
-        serialize: (params) => ({ serialized: JSON.stringify(params) }),
-        deserialize: (data) => JSON.parse(data.serialized),
+        serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
+        deserialize: (_method, data) => JSON.parse(data.serialized),
       },
       result: {
-        serialize: (result) => ({ serialized: result }),
-        deserialize: (data) => data.serialized,
+        serialize: (method, result) => ({ serialized: result, method }),
+        deserialize: (_method, data) => data.serialized,
       },
     };
 
     manager.addRequest(id, resolve, reject, 0, serializer);
-    const handled = manager.handleResponse(id, { serialized: 'Hello, World!' });
+    const handled = manager.handleResponse(id, { serialized: 'Hello World!', method: 'test' });
 
     expect(handled).toBe(true);
-    expect(resolve).toHaveBeenCalledWith('Hello, World!');
+    expect(resolve).toHaveBeenCalledWith('Hello World!');
     expect(reject).not.toHaveBeenCalled();
     expect(manager.hasPendingRequest(id)).toBe(false);
   });

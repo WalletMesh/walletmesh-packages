@@ -298,8 +298,11 @@ export class MethodManager<
           'serialized' in result &&
           typeof result.serialized === 'string'
         ) {
-          const serializedData: JSONRPCSerializedData = { serialized: result.serialized };
-          const deserialized = request.serializer.result.deserialize(serializedData);
+          const serializedData: JSONRPCSerializedData = {
+            serialized: result.serialized,
+            method: 'method' in result && typeof result.method === 'string' ? result.method : String(id),
+          };
+          const deserialized = request.serializer.result.deserialize(String(id), serializedData);
           request.resolve(deserialized);
           return;
         }

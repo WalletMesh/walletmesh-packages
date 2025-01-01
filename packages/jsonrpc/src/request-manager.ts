@@ -177,7 +177,7 @@ export class RequestManager<T extends JSONRPCMethodMap = JSONRPCMethodMap> {
       // Deserialize result if needed
       const finalResult =
         result !== undefined && pendingRequest.serializer?.result && isJSONRPCSerializedData(result)
-          ? pendingRequest.serializer.result.deserialize(result as JSONRPCSerializedData)
+          ? pendingRequest.serializer.result.deserialize(String(id), result as JSONRPCSerializedData)
           : result;
 
       pendingRequest.resolve(finalResult as T[keyof T]['result']);

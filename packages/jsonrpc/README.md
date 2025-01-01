@@ -431,16 +431,16 @@ cleanupValidation();
 // Define serializer for complex types with proper error handling
 const dateSerializer: JSONRPCSerializer<Date, string> = {
   params: {
-    serialize: date => {
+    serialize: (method, date) => {
       if (!(date instanceof Date)) {
         throw new JSONRPCError(-32602, 'Invalid date parameter', {
           expected: 'Date',
           received: typeof date
         });
       }
-      return { serialized: date.toISOString() };
+      return { serialized: date.toISOString(), method };
     },
-    deserialize: data => {
+    deserialize: (method, data) => {
       try {
         return new Date(data.serialized);
       } catch (error) {
@@ -452,16 +452,16 @@ const dateSerializer: JSONRPCSerializer<Date, string> = {
     }
   },
   result: {
-    serialize: date => {
+    serialize: (method, date) => {
       if (!(date instanceof Date)) {
         throw new JSONRPCError(-32603, 'Invalid date result', {
           expected: 'Date',
           received: typeof date
         });
       }
-      return { serialized: date.toISOString() };
+      return { serialized: date.toISOString(), method };
     },
-    deserialize: data => {
+    deserialize: (method, data) => {
       try {
         return new Date(data.serialized);
       } catch (error) {

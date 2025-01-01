@@ -5,19 +5,28 @@ import { MessageValidator } from './message-validator.js';
 
 /**
  * Handles serialization and deserialization of JSON-RPC method parameters and results.
- * This class ensures complex types can be safely transmitted over JSON-RPC by converting
- * them to/from a JSON-compatible format.
+ * Supports custom serializers for complex types and provides fallback serialization.
  *
  * @example
  * ```typescript
+ * // Create serializer instance
  * const serializer = new ParameterSerializer();
  *
- * // Serialize parameters with a custom serializer
- * const params = { date: new Date() };
- * const serialized = serializer.serializeParams(params, dateSerializer);
+ * // Set fallback serializer for dates
+ * serializer.setFallbackSerializer({
+ *   params: {
+ *     serialize: (value, method) => ({
+ *       serialized: value instanceof Date ? value.toISOString() : String(value),
+ *       method
+ *     }),
+ *     deserialize: (data, method) => new Date(data.serialized)
+ *   }
+ * });
  *
- * // Deserialize parameters
- * const deserialized = serializer.deserializeParams(serialized, dateSerializer);
+ * // Use serializer
+ * const params = { date: new Date() };
+ * const serialized = serializer.serializeParams('processDate', params);
+ * const deserialized = serializer.deserializeParams('processDate', serialized);
  * ```
  */
 export class ParameterSerializer {
@@ -29,22 +38,19 @@ export class ParameterSerializer {
   }
 
   /**
-   * Sets a fallback serializer to be used when no method-specific serializer is provided.
+   * Sets a fallback serializer to use when no method-specific serializer is available.
    *
    * @param serializer - The serializer to use as fallback
+   *
    * @example
    * ```typescript
-   * const serializer = new ParameterSerializer();
-   *
-   * // Set a fallback serializer for handling dates
    * serializer.setFallbackSerializer({
    *   params: {
-   *     serialize: value => ({ serialized: value instanceof Date ? value.toISOString() : String(value) }),
-   *     deserialize: data => new Date(data.serialized)
-   *   },
-   *   result: {
-   *     serialize: value => ({ serialized: value instanceof Date ? value.toISOString() : String(value) }),
-   *     deserialize: data => new Date(data.serialized)
+   *     serialize: (value, method) => ({
+   *       serialized: JSON.stringify(value),
+   *       method
+   *     }),
+   *     deserialize: (data, method) => JSON.parse(data.serialized)
    *   }
    * });
    * ```
@@ -54,75 +60,28 @@ export class ParameterSerializer {
   }
 
   /**
-   * Serializes method parameters using the provided serializer.
-   * If no serializer is provided or parameters are undefined/null, returns the original parameters.
+   * Deserializes method parameters using the provided serializer or fallback.
    *
-   * @typeParam P - The parameters type
-   * @typeParam R - The result type
-   * @param params - The parameters to serialize
-   * @param serializer - Optional serializer for converting parameters
-   * @returns The serialized parameters or the original parameters if no serializer
-   * @throws {JSONRPCError} If serialization fails or produces invalid data
-   *
-   * @example
-   * ```typescript
-   * const params = { date: new Date() };
-   * const serialized = serializer.serializeParams(params, {
-   *   params: {
-   *     serialize: date => ({ serialized: date.toISOString() }),
-   *     deserialize: data => new Date(data.serialized)
-   *   }
-   * });
-   * ```
-   */
-  public serializeParams<P, R>(
-    params: P | undefined,
-    serializer?: JSONRPCSerializer<P, R>,
-  ): P | JSONRPCSerializedData | undefined {
-    if (params === undefined || params === null) {
-      return undefined;
-    }
-    if (!serializer?.params) {
-      // Use fallback serializer if available
-      if (this.fallbackSerializer?.params) {
-        const serializedData = this.fallbackSerializer.params.serialize(params);
-        if (!isJSONRPCSerializedData(serializedData)) {
-          throw new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer');
-        }
-        return serializedData;
-      }
-      return params;
-    }
-    const serializedData = serializer.params.serialize(params);
-    if (!isJSONRPCSerializedData(serializedData)) {
-      throw new JSONRPCError(-32602, 'Invalid serialized data format');
-    }
-    return serializedData;
-  }
-
-  /**
-   * Deserializes method parameters using the provided serializer.
-   * If no serializer is provided, validates and returns the original parameters.
-   *
-   * @typeParam P - The parameters type
-   * @typeParam R - The result type
+   * @param method - The method name associated with these parameters
    * @param params - The parameters to deserialize
-   * @param serializer - Optional serializer for converting parameters
+   * @param serializer - Optional method-specific serializer
    * @returns The deserialized parameters
    * @throws {JSONRPCError} If deserialization fails or produces invalid data
    *
    * @example
    * ```typescript
-   * const serialized = { serialized: '2023-12-31T00:00:00.000Z' };
-   * const deserialized = serializer.deserializeParams(serialized, {
-   *   params: {
-   *     serialize: date => ({ serialized: date.toISOString() }),
-   *     deserialize: data => new Date(data.serialized)
-   *   }
+   * // Deserialize date parameter
+   * const params = serializer.deserializeParams('processDate', {
+   *   serialized: '2023-01-01T00:00:00Z',
+   *   method: 'processDate'
    * });
    * ```
    */
-  public deserializeParams<P, R>(params: unknown, serializer?: JSONRPCSerializer<P, R>): P | undefined {
+  public deserializeParams<P, R>(
+    method: string,
+    params: unknown,
+    serializer?: JSONRPCSerializer<P, R>,
+  ): P | undefined {
     if (!params) {
       return undefined;
     }
@@ -133,7 +92,7 @@ export class ParameterSerializer {
         const serializedData = this.validateSerializedData(params, 'params');
 
         try {
-          const deserializedParams = this.fallbackSerializer.params.deserialize(serializedData);
+          const deserializedParams = this.fallbackSerializer.params.deserialize(method, serializedData);
           if (!this.validator.isValidParams(deserializedParams)) {
             throw new JSONRPCError(-32602, 'Invalid deserialized params format from fallback serializer');
           }
@@ -143,115 +102,85 @@ export class ParameterSerializer {
         }
       }
 
-      if (!this.validator.isValidParams(params)) {
-        throw new JSONRPCError(-32602, 'Invalid params format');
-      }
       return params as P;
     }
 
     const serializedData = this.validateSerializedData(params, 'params');
 
-    let deserializedParams: unknown;
     try {
-      deserializedParams = serializer.params.deserialize(serializedData);
+      const deserializedParams = serializer.params.deserialize(method, serializedData);
+      return deserializedParams as P;
     } catch (error) {
       throw new JSONRPCError(-32000, error instanceof Error ? error.message : 'Unknown error');
     }
-    if (!this.validator.isValidParams(deserializedParams)) {
-      throw new JSONRPCError(-32602, 'Invalid deserialized params format');
-    }
-
-    return deserializedParams as P;
   }
 
   /**
-   * Serializes a method result using the provided serializer.
-   * If no serializer is provided or result is undefined/null, returns the original result.
+   * Serializes method parameters using the provided serializer or fallback.
    *
-   * @typeParam P - The parameters type
-   * @typeParam R - The result type
-   * @param result - The result to serialize
-   * @param serializer - Optional serializer for converting the result
-   * @returns The serialized result or the original result if no serializer
-   * @throws {JSONRPCError} If serialization fails or produces invalid data
+   * @param method - The method name associated with these parameters
+   * @param params - The parameters to serialize
+   * @param serializer - Optional method-specific serializer
+   * @returns The serialized parameters
+   * @throws {JSONRPCError} If serialization fails or produces invalid format
    *
    * @example
    * ```typescript
-   * const result = new Date();
-   * const serialized = serializer.serializeResult(result, {
-   *   result: {
-   *     serialize: date => ({ serialized: date.toISOString() }),
-   *     deserialize: data => new Date(data.serialized)
-   *   }
+   * // Serialize date parameter
+   * const serialized = serializer.serializeParams('processDate', {
+   *   date: new Date()
    * });
    * ```
    */
-  public serializeResult<P, R>(
-    result: R | undefined,
+  public serializeParams<P, R>(
+    method: string,
+    params: P | undefined,
     serializer?: JSONRPCSerializer<P, R>,
-  ): R | JSONRPCSerializedData | undefined {
-    if (result === undefined || result === null) {
+  ): P | JSONRPCSerializedData | undefined {
+    if (params === undefined || params === null) {
       return undefined;
     }
-    if (!serializer?.result) {
+    if (!serializer?.params) {
       // Use fallback serializer if available
-      if (this.fallbackSerializer?.result) {
-        const serializedData = this.fallbackSerializer.result.serialize(result);
+      if (this.fallbackSerializer?.params) {
+        const serializedData = this.fallbackSerializer.params.serialize(method, params);
         if (!isJSONRPCSerializedData(serializedData)) {
           throw new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer');
         }
-        return serializedData;
+        return { ...serializedData, method };
       }
-      return result;
+      return params;
     }
-    const serializedData = serializer.result.serialize(result);
+    const serializedData = serializer.params.serialize(method, params);
     if (!isJSONRPCSerializedData(serializedData)) {
       throw new JSONRPCError(-32602, 'Invalid serialized data format');
     }
-    return serializedData;
-  }
-
-  private validateSerializedData(data: unknown, type: 'params' | 'result'): { serialized: string } {
-    if (!this.validator.isValidObject(data)) {
-      throw new JSONRPCError(-32602, `Invalid ${type} format for serialization`);
-    }
-
-    const obj = data as Record<string, unknown>;
-    if (!('serialized' in obj) || typeof obj.serialized !== 'string') {
-      throw new JSONRPCError(-32602, 'Invalid serialized data format');
-    }
-
-    const serializedData = { serialized: obj.serialized };
-    if (!isJSONRPCSerializedData(serializedData)) {
-      throw new JSONRPCError(-32602, 'Invalid serialized data structure');
-    }
-
-    return serializedData;
+    return { ...serializedData, method };
   }
 
   /**
-   * Deserializes a method result using the provided serializer.
-   * If no serializer is provided, returns the original result.
+   * Deserializes method result using the provided serializer or fallback.
    *
-   * @typeParam P - The parameters type
-   * @typeParam R - The result type
+   * @param method - The method name associated with this result
    * @param result - The result to deserialize
-   * @param serializer - Optional serializer for converting the result
+   * @param serializer - Optional method-specific serializer
    * @returns The deserialized result
    * @throws {JSONRPCError} If deserialization fails or produces invalid data
    *
    * @example
    * ```typescript
-   * const serialized = { serialized: '2023-12-31T00:00:00.000Z' };
-   * const deserialized = serializer.deserializeResult(serialized, {
-   *   result: {
-   *     serialize: date => ({ serialized: date.toISOString() }),
-   *     deserialize: data => new Date(data.serialized)
-   *   }
+   * // Deserialize date result
+   * const result = serializer.deserializeResult('processDate', {
+   *   serialized: '2023-01-01T00:00:00Z',
+   *   method: 'processDate'
    * });
    * ```
    */
-  public deserializeResult<P, R>(result: unknown, serializer?: JSONRPCSerializer<P, R>): R | undefined {
+  public deserializeResult<P, R>(
+    method: string,
+    result: unknown,
+    serializer?: JSONRPCSerializer<P, R>,
+  ): R | undefined {
     if (!result) {
       return undefined;
     }
@@ -261,12 +190,15 @@ export class ParameterSerializer {
       if (this.fallbackSerializer?.result) {
         const serializedData = this.validateSerializedData(result, 'result');
         try {
-          const deserializedResult = this.fallbackSerializer.result.deserialize(serializedData);
+          const deserializedResult = this.fallbackSerializer.result.deserialize(method, serializedData);
           if (!this.validator.isValidValue(deserializedResult)) {
             throw new JSONRPCError(-32602, 'Invalid deserialized result format from fallback serializer');
           }
           return deserializedResult as R;
         } catch (error) {
+          if (error instanceof JSONRPCError) {
+            throw error;
+          }
           throw new JSONRPCError(-32602, 'Invalid deserialized result format from fallback serializer');
         }
       }
@@ -274,17 +206,83 @@ export class ParameterSerializer {
     }
 
     const serializedData = this.validateSerializedData(result, 'result');
-    let deserializedResult: unknown;
     try {
-      deserializedResult = serializer.result.deserialize(serializedData);
+      const deserializedResult = serializer.result.deserialize(method, serializedData);
+      if (!this.validator.isValidValue(deserializedResult)) {
+        throw new JSONRPCError(-32602, 'Invalid serialized data format');
+      }
+      return deserializedResult as R;
     } catch (error) {
+      if (error instanceof JSONRPCError) {
+        throw error;
+      }
+      throw new JSONRPCError(-32602, 'Invalid serialized data format');
+    }
+  }
+
+  /**
+   * Serializes method result using the provided serializer or fallback.
+   *
+   * @param method - The method name associated with this result
+   * @param result - The result to serialize
+   * @param serializer - Optional method-specific serializer
+   * @returns The serialized result
+   * @throws {JSONRPCError} If serialization fails or produces invalid format
+   *
+   * @example
+   * ```typescript
+   * // Serialize date result
+   * const serialized = serializer.serializeResult('processDate', new Date());
+   * ```
+   */
+  public serializeResult<P, R>(
+    method: string,
+    result: R | undefined,
+    serializer?: JSONRPCSerializer<P, R>,
+  ): R | JSONRPCSerializedData | undefined {
+    if (result === undefined || result === null) {
+      return undefined;
+    }
+    if (!serializer?.result) {
+      // Use fallback serializer if available
+      if (this.fallbackSerializer?.result) {
+        const serializedData = this.fallbackSerializer.result.serialize(method, result);
+        if (!isJSONRPCSerializedData(serializedData)) {
+          throw new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer');
+        }
+        return { ...serializedData, method };
+      }
+      return result;
+    }
+    const serializedData = serializer.result.serialize(method, result);
+    if (!isJSONRPCSerializedData(serializedData)) {
+      throw new JSONRPCError(-32602, 'Invalid serialized data format');
+    }
+    return { ...serializedData, method };
+  }
+
+  /**
+   * Validates that data matches the JSONRPCSerializedData format.
+   *
+   * @param data - The data to validate
+   * @param type - Whether this is for parameters or result
+   * @returns The validated data
+   * @throws {JSONRPCError} If the data format is invalid
+   */
+  private validateSerializedData(data: unknown, type: 'params' | 'result'): JSONRPCSerializedData {
+    if (!this.validator.isValidObject(data)) {
+      throw new JSONRPCError(-32602, `Invalid ${type} format for serialization`);
+    }
+
+    const obj = data as Record<string, unknown>;
+    if (!('serialized' in obj) || typeof obj.serialized !== 'string') {
       throw new JSONRPCError(-32602, 'Invalid serialized data format');
     }
 
-    if (!this.validator.isValidValue(deserializedResult)) {
-      throw new JSONRPCError(-32602, 'Invalid serialized data format');
+    if (!isJSONRPCSerializedData(obj)) {
+      throw new JSONRPCError(-32602, 'Invalid serialized data structure');
     }
 
-    return deserializedResult as R;
+    return obj;
   }
 }

@@ -68,7 +68,9 @@ export function isJSONRPCSerializedData(value: unknown): value is JSONRPCSeriali
     typeof value === 'object' &&
     value !== null &&
     'serialized' in value &&
-    typeof value.serialized === 'string'
+    typeof value.serialized === 'string' &&
+    'method' in value &&
+    typeof value.method === 'string'
   );
 }
 

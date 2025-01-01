@@ -276,12 +276,12 @@ describe('JSONRPCNode', () => {
     it('should handle serialization', async () => {
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (params) => ({ serialized: JSON.stringify(params) }),
-          deserialize: (data) => JSON.parse(data.serialized),
+          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (result) => ({ serialized: result }),
-          deserialize: (data) => data.serialized,
+          serialize: (method, result) => ({ serialized: result, method }),
+          deserialize: (_method, data) => data.serialized,
         },
       };
 
@@ -295,7 +295,7 @@ describe('JSONRPCNode', () => {
       // Simulate serialized response
       await node.receiveMessage({
         jsonrpc: '2.0',
-        result: { serialized: 'Hello Alice!' },
+        result: { serialized: 'Hello Alice!', method: 'greet' },
         id: requestId,
       });
 

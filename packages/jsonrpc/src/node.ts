@@ -77,12 +77,12 @@ export class JSONRPCNode<
    * // Set a fallback serializer for handling dates
    * node.setFallbackSerializer({
    *   params: {
-   *     serialize: value => ({ serialized: value instanceof Date ? value.toISOString() : String(value) }),
-   *     deserialize: data => new Date(data.serialized)
+   *     serialize: (value, method) => ({ serialized: value instanceof Date ? value.toISOString() : String(value), method }),
+   *     deserialize: (data, method) => new Date(data.serialized)
    *   },
    *   result: {
-   *     serialize: value => ({ serialized: value instanceof Date ? value.toISOString() : String(value) }),
-   *     deserialize: data => new Date(data.serialized)
+   *     serialize: (value, method) => ({ serialized: value instanceof Date ? value.toISOString() : String(value), method }),
+   *     deserialize: (data, method) => new Date(data.serialized)
    *   }
    * });
    * ```
@@ -146,12 +146,12 @@ export class JSONRPCNode<
    * // Register Date serializer
    * node.registerSerializer('processDate', {
    *   params: {
-   *     serialize: date => ({ serialized: date.toISOString() }),
-   *     deserialize: data => new Date(data.serialized)
+   *     serialize: (date, method) => ({ serialized: date.toISOString(), method }),
+   *     deserialize: (data, method) => new Date(data.serialized)
    *   },
    *   result: {
-   *     serialize: date => ({ serialized: date.toISOString() }),
-   *     deserialize: data => new Date(data.serialized)
+   *     serialize: (date, method) => ({ serialized: date.toISOString(), method }),
+   *     deserialize: (data, method) => new Date(data.serialized)
    *   }
    * });
    * ```
@@ -198,7 +198,7 @@ export class JSONRPCNode<
     const serializer = this.methodManager.getSerializer(method);
 
     // Serialize parameters if serializer exists
-    const serializedParams = this.parameterSerializer.serializeParams(params, serializer);
+    const serializedParams = this.parameterSerializer.serializeParams(String(method), params, serializer);
 
     const request: JSONRPCRequest<T, M> = {
       jsonrpc: '2.0',
@@ -226,7 +226,7 @@ export class JSONRPCNode<
    */
   public notify<M extends keyof T>(method: M, params: T[M]['params']): void {
     const serializer = this.methodManager.getSerializer(method);
-    const serializedParams = this.parameterSerializer.serializeParams(params, serializer);
+    const serializedParams = this.parameterSerializer.serializeParams(String(method), params, serializer);
 
     const request: JSONRPCRequest<T, keyof T> = {
       jsonrpc: '2.0',
