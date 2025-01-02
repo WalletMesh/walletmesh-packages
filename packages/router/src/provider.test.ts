@@ -1,7 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { WalletRouterProvider } from './provider.js';
 import type { Transport } from '@walletmesh/jsonrpc';
-import type { RouterMethodMap, RouterEventMap } from './types.js';
 
 describe('WalletRouterProvider', () => {
   const mockCallMethod = vi.fn();
@@ -15,7 +14,7 @@ describe('WalletRouterProvider', () => {
 
     // Create provider with mocked callMethod
     provider = new WalletRouterProvider(
-      mockSendRequest as unknown as Transport<RouterMethodMap, RouterEventMap>,
+      mockSendRequest as unknown as Transport,
     );
     // @ts-ignore - mock private method
     provider.callMethod = mockCallMethod;

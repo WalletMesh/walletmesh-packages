@@ -1,4 +1,4 @@
-import type { JSONRPCMethodMap, JSONRPCEventMap } from '@walletmesh/jsonrpc';
+import type { JSONRPCMethodMap, JSONRPCEventMap, JSONRPCRequest } from '@walletmesh/jsonrpc';
 
 /**
  * Interface for wallet clients that can be used with the router.
@@ -44,9 +44,7 @@ export interface WalletClient {
 
   /**
    * Register an event handler for wallet events
-   * Common events include:
-   * - 'accountsChanged': Emitted when the user's accounts change
-   * - 'networkChanged': Emitted when the network/chain changes
+   * Events include:
    * - 'disconnect': Emitted when the wallet disconnects
    *
    * @param event - Event name to listen for
@@ -63,55 +61,24 @@ export interface WalletClient {
 }
 
 /**
- * Operation types that can be performed
- */
-export type OperationType = 'connect' | 'call' | 'disconnect' | 'updatePermissions' | 'reconnect';
-
-/**
- * Context provided to permission callbacks
- */
-export interface PermissionContext {
-  /** Type of operation being performed */
-  operation: OperationType;
-  /** Chain ID the operation targets */
-  chainId: ChainId;
-  /** Method being called (for call operations) */
-  method?: string;
-  /** Parameters for the operation */
-  params?: unknown;
-  /** Origin of the request */
-  origin: string;
-  /** Current session data if available */
-  session?: SessionData;
-}
-
-/**
- * Permission approval request context
- */
-export interface PermissionApprovalContext {
-  /** Type of operation being performed */
-  operation: OperationType;
-  /** Origin of the request */
-  origin: string;
-  /** Requested permissions per chain */
-  requestedPermissions: ChainPermissions;
-  /** Current session data if available (for updatePermissions) */
-  session?: SessionData;
-}
-
-/**
  * Permission callback function type
  * @param context - Complete context for the permission decision
  * @returns Promise<boolean> indicating if the operation should be permitted
  */
-export type PermissionCallback = (context: PermissionContext) => Promise<boolean>;
+export type PermissionCallback = (
+  context: RouterContext,
+  request: JSONRPCRequest<RouterMethodMap, keyof RouterMethodMap>,
+) => Promise<boolean>;
 
 /**
  * Permission approval callback function type
  * @param context - Complete context for the permission approval decision
  * @returns Promise<ChainPermissions> containing the approved permissions for each chain
  */
-export type PermissionApprovalCallback = (context: PermissionApprovalContext) => Promise<ChainPermissions>;
+export type PermissionApprovalCallback = (
+  context: RouterContext,
+  permissions: ChainPermissions,
+) => Promise<ChainPermissions>;
 
 /**
  * Configuration for string/wildcard permission matching
@@ -146,8 +113,8 @@ export interface SessionData {
   id: string;
   /** Origin of the session request */
   origin: string;
-  /** Permissions granted to this session per chain */
-  permissions: ChainPermissions;
+  /** Permissions for each connected chain */
+  permissions?: ChainPermissions;
 }
 
 /**
@@ -318,7 +285,7 @@ export interface RouterMethodMap extends JSONRPCMethodMap {
       sessionId: string;
       permissions: ChainPermissions;
     };
-    result: boolean;
+    result: ChainPermissions;
   };
 
   /**
@@ -353,5 +320,6 @@ export interface RouterMethodMap extends JSONRPCMethodMap {
 
 export interface RouterContext {
   origin?: string;
+  session?: SessionData;
   [key: string]: unknown;
 }

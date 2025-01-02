@@ -1,7 +1,7 @@
 import type {
   PermissionCallback,
-  PermissionContext,
   PermissionApprovalCallback,
+  CallParams,
   ChainPermissions,
 } from './types.js';
 
@@ -10,7 +10,7 @@ import type {
  * Useful for development and testing.
  */
 export const createPermissivePermissions = (): PermissionCallback => {
-  return async (_context: PermissionContext) => true;
+  return async (_context, _request) => true;
 };
 
 /**
@@ -18,7 +18,7 @@ export const createPermissivePermissions = (): PermissionCallback => {
  * Useful for development and testing.
  */
 export const createPermissivePermissionApproval = (): PermissionApprovalCallback => {
-  return async (context) => context.requestedPermissions;
+  return async (_context, request) => request;
 };
 
 /**
@@ -36,11 +36,11 @@ export const createStringMatchPermissionApproval = (
     return new RegExp(`^${regex}$`);
   });
 
-  return async (context) => {
+  return async (_context, requestedPermissions) => {
     const approvedPermissions: ChainPermissions = {};
 
     // For each chain and its requested permissions
-    for (const [chainId, methods] of Object.entries(context.requestedPermissions)) {
+    for (const [chainId, methods] of Object.entries(requestedPermissions)) {
       const approvedMethods: string[] = [];
 
       // Check each method against patterns
@@ -80,16 +80,35 @@ export const createStringMatchPermissions = (allowedPatterns: string[]): Permiss
     return new RegExp(`^${regex}$`);
   });
 
-  return async (context: PermissionContext) => {
-    // For non-call operations, check if the chain is allowed
-    if (context.operation !== 'call') {
-      const chainPattern = `${context.chainId}`;
-      return patterns.some((pattern) => pattern.test(chainPattern));
+  return async (context, request) => {
+    // For non-call operations, just check if the method matches
+    if (request.method !== 'wm_call' && request.method !== 'wm_bulkCall') {
+      if (patterns.some((pattern) => pattern.test(String(request.method)))) {
+        return true;
+      }
     }
 
-    // For call operations, check chain:method pattern
-    const callPattern = `${context.chainId}:${context.method}`;
-    return patterns.some((pattern) => pattern.test(callPattern));
+    const { session } = context;
+    if (!session?.permissions) {
+      console.warn('No permissions found in session, denying all requests');
+      return false;
+    }
+
+    if (request.method === 'wm_call') {
+      const p = request.params as CallParams;
+      const callPattern = `${p.chainId}:${p.call.method}`;
+      return patterns.some((pattern) => pattern.test(callPattern));
+    }
+
+    if (request.method === 'wm_bulkCall') {
+      const { chainId, calls } = request.params as { chainId: string; calls: { method: string }[] };
+      return calls.every((call) => {
+        const callPattern = `${chainId}:${call.method}`;
+        return patterns.some((pattern) => pattern.test(callPattern));
+      });
+    }
+
+    return false;
   };
 };
 

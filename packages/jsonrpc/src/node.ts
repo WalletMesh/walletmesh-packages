@@ -1,200 +1,57 @@
 import type {
+  JSONRPCMethodMap,
+  JSONRPCEventMap,
+  JSONRPCContext,
   JSONRPCRequest,
   JSONRPCResponse,
   JSONRPCEvent,
-  JSONRPCMethodMap,
-  JSONRPCEventMap,
   JSONRPCSerializer,
-  JSONRPCEventHandler,
-  JSONRPCContext,
-  JSONRPCID,
-  JSONRPCSerializedData,
   JSONRPCMiddleware,
+  JSONRPCID,
+  JSONRPCParams,
 } from './types.js';
-import { isJSONRPCSerializedData } from './utils.js';
+import { EventManager } from './event-manager.js';
+import { MiddlewareManager } from './middleware-manager.js';
+import { MethodManager } from './method-manager.js';
 import { JSONRPCError } from './error.js';
-
-/**
- * Transport interface for sending JSON-RPC messages between nodes.
- * This interface abstracts the actual message transmission mechanism,
- * allowing the node to work with any transport layer (WebSocket, postMessage, etc.).
- *
- * @typeParam T - The RPC method map defining available methods
- * @typeParam E - The event map defining available events
- *
- * @example
- * ```typescript
- * // WebSocket transport
- * const wsTransport: Transport<MethodMap, EventMap> = {
- *   send: message => ws.send(JSON.stringify(message))
- * };
- *
- * // postMessage transport
- * const windowTransport: Transport<MethodMap, EventMap> = {
- *   send: message => window.postMessage(JSON.stringify(message), '*')
- * };
- *
- * // Custom transport with encryption
- * const encryptedTransport: Transport<MethodMap, EventMap> = {
- *   send: message => {
- *     const encrypted = encrypt(JSON.stringify(message));
- *     socket.send(encrypted);
- *   }
- * };
- * ```
- */
-export type Transport<T extends JSONRPCMethodMap, E extends JSONRPCEventMap> = {
-  /**
-   * Sends a JSON-RPC message to the remote node.
-   * @param message - The message to send (request, response, or event)
-   */
-  send: (message: JSONRPCRequest<T, keyof T> | JSONRPCResponse<T> | JSONRPCEvent<E, keyof E>) => void;
-};
-
-/**
- * Function type for handling JSON-RPC method calls.
- * Method handlers receive a context object and typed parameters,
- * and return a promise or direct value of the specified result type.
- *
- * @typeParam T - The RPC method map defining available methods
- * @typeParam M - The specific method being handled
- * @typeParam C - The context type for method handlers
- *
- * @example
- * ```typescript
- * // Simple handler
- * const addHandler: MethodHandler<MethodMap, 'add', Context> =
- *   (context, { a, b }) => a + b;
- *
- * // Async handler with context
- * const getUserHandler: MethodHandler<MethodMap, 'getUser', Context> =
- *   async (context, { id }) => {
- *     if (!context.isAuthorized) {
- *       throw new JSONRPCError(-32600, 'Unauthorized');
- *     }
- *     return await db.users.findById(id);
- *   };
- * ```
- */
-export type MethodHandler<T extends JSONRPCMethodMap, M extends keyof T, C extends JSONRPCContext> = (
-  context: C,
-  params: T[M]['params'],
-) => Promise<T[M]['result']> | T[M]['result'];
-
-/**
- * Internal interface representing a registered JSON-RPC method.
- * Combines the method implementation with optional parameter/result serialization.
- *
- * @typeParam T - The RPC method map defining available methods
- * @typeParam M - The specific method being registered
- * @typeParam C - The context type for method handlers
- *
- * @internal
- * @example
- * ```typescript
- * const method: RegisteredMethod<MethodMap, 'processDate', Context> = {
- *   handler: async (context, params) => {
- *     return await processDate(params.date);
- *   },
- *   serializer: {
- *     params: dateSerializer,
- *     result: dateSerializer
- *   }
- * };
- * ```
- */
-interface RegisteredMethod<T extends JSONRPCMethodMap, M extends keyof T, C extends JSONRPCContext> {
-  /** The method implementation */
-  handler: MethodHandler<T, M, C>;
-  /** Optional serializer for method parameters and results */
-  serializer: JSONRPCSerializer<T[M]['params'], T[M]['result']> | undefined;
-}
+import { MessageValidator } from './message-validator.js';
+import { ParameterSerializer } from './parameter-serializer.js';
+import { RequestHandler } from './request-handler.js';
+import { wrapHandler } from './utils.js';
 
 /**
  * Core class implementing the JSON-RPC 2.0 protocol with bi-directional communication support.
+ * Provides a high-level interface for JSON-RPC communication while managing all the underlying complexity.
  *
- * Features:
- * - Full JSON-RPC 2.0 protocol implementation
- * - Bi-directional communication (each node can both send and receive)
- * - Type-safe method and event definitions
- * - Middleware support for request/response modification
- * - Custom serialization for complex data types
- * - Request timeouts
- * - Event system for broadcast-style communication
- * - Comprehensive error handling
- *
- * @typeParam T - The RPC method map defining available methods
- * @typeParam E - The event map defining available events
- * @typeParam C - The context type for method handlers
+ * @typeParam T - Method map defining available RPC methods and their types
+ * @typeParam E - Event map defining available events and their payload types
+ * @typeParam C - Context type shared between middleware and method handlers
  *
  * @example
  * ```typescript
- * // Define your types
- * type MethodMap = {
+ * // Define method and event types
+ * type Methods = {
  *   add: {
  *     params: { a: number; b: number };
  *     result: number;
  *   };
- *   getUser: {
- *     params: { id: string };
- *     result: User;
- *   };
  * };
  *
- * type EventMap = {
+ * type Events = {
  *   userJoined: { username: string };
- *   statusUpdate: { user: string; status: 'online' | 'offline' };
  * };
  *
- * type Context = {
- *   userId?: string;
- *   isAuthorized?: boolean;
- * };
- *
- * // Create a node instance
- * const node = new JSONRPCNode<MethodMap, EventMap, Context>({
- *   send: message => websocket.send(JSON.stringify(message))
+ * // Create node instance
+ * const node = new JSONRPCNode<Methods, Events>({
+ *   send: message => ws.send(JSON.stringify(message))
  * });
  *
- * // Register methods
+ * // Register method handler
  * node.registerMethod('add', (context, { a, b }) => a + b);
  *
- * node.registerMethod('getUser', async (context, { id }) => {
- *   if (!context.isAuthorized) {
- *     throw new JSONRPCError(-32600, 'Unauthorized');
- *   }
- *   return await db.users.findById(id);
- * });
- *
- * // Add middleware
- * node.addMiddleware(async (context, request, next) => {
- *   console.log('Request:', request);
- *   const response = await next();
- *   console.log('Response:', response);
- *   return response;
- * });
- *
- * // Handle events
+ * // Listen for events
  * node.on('userJoined', ({ username }) => {
  *   console.log(`${username} joined`);
- * });
- *
- * // Call remote methods
- * try {
- *   const sum = await node.callMethod('add', { a: 1, b: 2 });
- *   const user = await node.callMethod('getUser', { id: '123' }, 5);
- * } catch (error) {
- *   if (error instanceof TimeoutError) {
- *     console.error('Request timed out');
- *   } else if (error instanceof JSONRPCError) {
- *     console.error('RPC Error:', error.message);
- *   }
- * }
- *
- * // Emit events
- * node.emit('statusUpdate', {
- *   user: 'Alice',
- *   status: 'online'
  * });
  * ```
  */
@@ -203,89 +60,98 @@ export class JSONRPCNode<
   E extends JSONRPCEventMap = JSONRPCEventMap,
   C extends JSONRPCContext = JSONRPCContext,
 > {
-  private methods: Partial<{ [K in keyof T]: RegisteredMethod<T, K, C> }> = {};
-  private eventHandlers = new Map<keyof E, Set<JSONRPCEventHandler<E, keyof E>>>();
-  private pendingRequests = new Map<
-    JSONRPCID,
-    {
-      resolve: (value: T[keyof T]['result']) => void;
-      reject: (reason?: unknown) => void;
-      timer: ReturnType<typeof setTimeout> | null;
-      serializer: JSONRPCSerializer<T[keyof T]['params'], T[keyof T]['result']> | undefined;
-    }
-  >();
-  private serializers = new Map<keyof T, JSONRPCSerializer<T[keyof T]['params'], T[keyof T]['result']>>();
-  private middlewareStack: JSONRPCMiddleware<T, C>[] = [];
-
-  private baseHandler: JSONRPCMiddleware<T, C> = async (context, request, _next) => {
-    const method = this.methods[request.method];
-    if (!method) {
-      throw new JSONRPCError(-32601, 'Method not found');
-    }
-
-    try {
-      // Deserialize parameters if needed
-      const params = method.serializer?.params
-        ? method.serializer.params.deserialize(request.params as JSONRPCSerializedData)
-        : request.params;
-
-      const result = await Promise.resolve(method.handler(context, params));
-
-      return {
-        jsonrpc: '2.0',
-        result: method.serializer?.result ? method.serializer.result.serialize(result) : result,
-        id: request.id,
-      };
-    } catch (error) {
-      throw error instanceof JSONRPCError
-        ? error
-        : new JSONRPCError(-32000, error instanceof Error ? error.message : 'Unknown error');
-    }
-  };
-
-  constructor(
-    private transport: Transport<T, E>,
-    public readonly context: C = {} as C,
-  ) {
-    // Initialize middleware stack with base handler
-    this.middlewareStack = [this.baseHandler];
-  }
+  private methodManager: MethodManager<T, C>;
+  private eventManager: EventManager<E>;
+  private middlewareManager: MiddlewareManager<T, C>;
+  private requestHandler: RequestHandler<T, C>;
+  private messageValidator: MessageValidator;
+  private parameterSerializer: ParameterSerializer;
 
   /**
-   * Registers a method that can be called by remote nodes.
+   * Sets a fallback serializer to be used when no method-specific serializer is provided.
    *
-   * @param name - The name of the method to register
-   * @param handler - The function that implements the method
-   * @param serializer - Optional serializer for method parameters and results
+   * @param serializer - The serializer to use as fallback
    *
    * @example
    * ```typescript
-   * node.registerMethod('add', async (context, params) => {
-   *   return params.a + params.b;
+   * // Set a fallback serializer for handling dates
+   * node.setFallbackSerializer({
+   *   params: {
+   *     serialize: (value, method) => ({ serialized: value instanceof Date ? value.toISOString() : String(value), method }),
+   *     deserialize: (data, method) => new Date(data.serialized)
+   *   },
+   *   result: {
+   *     serialize: (value, method) => ({ serialized: value instanceof Date ? value.toISOString() : String(value), method }),
+   *     deserialize: (data, method) => new Date(data.serialized)
+   *   }
    * });
    * ```
    */
-  public registerMethod<M extends keyof T>(
-    name: M,
-    handler: MethodHandler<T, M, C>,
-    serializer?: JSONRPCSerializer<T[M]['params'], T[M]['result']>,
-  ): void {
-    this.methods[name] = { handler, serializer };
+  public setFallbackSerializer(serializer: JSONRPCSerializer<unknown, unknown>): void {
+    this.parameterSerializer.setFallbackSerializer(serializer);
   }
 
   /**
-   * Registers a serializer for a remote method.
-   * Used when calling methods that require parameter or result serialization.
+   * Creates a new JSONRPCNode instance.
    *
-   * @param method - The name of the method to register a serializer for
+   * @param transport - Transport object that handles sending messages between nodes
+   * @param context - Optional context object shared between middleware and method handlers
+   */
+  constructor(
+    private transport: {
+      send: (message: JSONRPCRequest<T, keyof T> | JSONRPCResponse<T> | JSONRPCEvent<E, keyof E>) => void;
+    },
+    public readonly context: C = {} as C,
+  ) {
+    this.methodManager = new MethodManager<T, C>();
+    this.eventManager = new EventManager<E>();
+    this.messageValidator = new MessageValidator();
+    this.parameterSerializer = new ParameterSerializer();
+    this.requestHandler = new RequestHandler<T, C>(this.methodManager);
+
+    // Initialize middleware manager with request handler
+    this.middlewareManager = new MiddlewareManager<T, C>((context, request) =>
+      this.requestHandler.handleRequest(context, request),
+    );
+  }
+
+  /**
+   * Registers a method handler for the specified method name.
+   *
+   * @param name - The name of the method to register
+   * @param handler - Function that handles method calls
+   *
+   * @example
+   * ```typescript
+   * // Register a method
+   * node.registerMethod('add', (context, { a, b }) => a + b);
+   * ```
+   */
+  public registerMethod<M extends keyof T>(
+    name: Extract<M, string>,
+    handler: (context: C, params: T[M]['params']) => Promise<T[M]['result']>,
+  ): void {
+    const wrappedHandler = wrapHandler<T, M, C>(handler);
+    this.methodManager.registerMethod(name, wrappedHandler);
+  }
+
+  /**
+   * Registers a serializer for parameters and results.
+   *
+   * @param method - The name to register the serializer under
    * @param serializer - The serializer implementation
    *
    * @example
    * ```typescript
+   * // Register Date serializer
    * node.registerSerializer('processDate', {
    *   params: {
-   *     serialize: (date) => ({ serialized: date.toISOString() }),
-   *     deserialize: (data) => new Date(data.serialized)
+   *     serialize: (date, method) => ({ serialized: date.toISOString(), method }),
+   *     deserialize: (data, method) => new Date(data.serialized)
+   *   },
+   *   result: {
+   *     serialize: (date, method) => ({ serialized: date.toISOString(), method }),
+   *     deserialize: (data, method) => new Date(data.serialized)
    *   }
    * });
    * ```
@@ -294,25 +160,31 @@ export class JSONRPCNode<
     method: M,
     serializer: JSONRPCSerializer<T[M]['params'], T[M]['result']>,
   ): void {
-    this.serializers.set(method, serializer);
+    this.methodManager.registerSerializer(method, serializer);
   }
 
   /**
-   * Calls a method on the remote node.
+   * Calls a remote method and returns a promise for the result.
    *
    * @param method - The name of the method to call
-   * @param params - The parameters to pass to the method
-   * @param timeoutInSeconds - Optional timeout in seconds (0 means no timeout)
-   * @returns A promise that resolves with the method result
-   * @throws {JSONRPCError} If the method call fails or times out
+   * @param params - Parameters to pass to the method
+   * @param timeoutInSeconds - Optional timeout in seconds (0 for no timeout)
+   * @returns Promise that resolves with the method result
+   * @throws {JSONRPCError} If the remote method throws an error
+   * @throws {TimeoutError} If the call times out
    *
    * @example
    * ```typescript
+   * // Simple call
+   * const sum = await node.callMethod('add', { a: 1, b: 2 });
+   *
+   * // Call with timeout
    * try {
-   *   const result = await node.callMethod('add', { a: 1, b: 2 }, 5);
-   *   console.log('Result:', result);
+   *   const result = await node.callMethod('slowMethod', { data: 'test' }, 5);
    * } catch (error) {
-   *   console.error('Error:', error);
+   *   if (error instanceof TimeoutError) {
+   *     console.error('Request timed out');
+   *   }
    * }
    * ```
    */
@@ -323,9 +195,10 @@ export class JSONRPCNode<
   ): Promise<T[M]['result']> {
     const id = crypto.randomUUID();
 
+    const serializer = this.methodManager.getSerializer(method);
+
     // Serialize parameters if serializer exists
-    const paramSerializer = this.serializers.get(method)?.params;
-    const serializedParams = params && paramSerializer ? paramSerializer.serialize(params) : params;
+    const serializedParams = this.parameterSerializer.serializeParams(String(method), params, serializer);
 
     const request: JSONRPCRequest<T, M> = {
       jsonrpc: '2.0',
@@ -335,40 +208,25 @@ export class JSONRPCNode<
     };
 
     return new Promise((resolve, reject) => {
-      let timer: ReturnType<typeof setTimeout> | null = null;
-
-      if (timeoutInSeconds > 0) {
-        timer = setTimeout(() => {
-          this.pendingRequests.delete(id);
-          reject(new JSONRPCError(-32000, 'Request timed out'));
-        }, timeoutInSeconds * 1000);
-      }
-
-      this.pendingRequests.set(id, {
-        resolve,
-        reject,
-        timer,
-        serializer: this.serializers.get(method),
-      });
-
+      this.methodManager.addPendingRequest(id, resolve, reject, timeoutInSeconds, serializer);
       this.transport.send(request);
     });
   }
 
   /**
-   * Sends a notification to the remote node.
+   * Sends a notification (a request without expecting a response).
    *
    * @param method - The name of the method to call
-   * @param params - The parameters to pass to the method
+   * @param params - Parameters to pass to the method
    *
    * @example
    * ```typescript
-   * node.notify('logMessage', { level: 'info', message: 'Hello' });
+   * node.notify('log', { message: 'User action performed' });
    * ```
    */
   public notify<M extends keyof T>(method: M, params: T[M]['params']): void {
-    const paramSerializer = this.serializers.get(method)?.params;
-    const serializedParams = params && paramSerializer ? paramSerializer.serialize(params) : params;
+    const serializer = this.methodManager.getSerializer(method);
+    const serializedParams = this.parameterSerializer.serializeParams(String(method), params, serializer);
 
     const request: JSONRPCRequest<T, keyof T> = {
       jsonrpc: '2.0',
@@ -379,11 +237,11 @@ export class JSONRPCNode<
   }
 
   /**
-   * Registers a handler for a specific event type.
+   * Registers an event handler for the specified event type.
    *
-   * @param event - The name of the event to handle
-   * @param handler - The function to call when the event is received
-   * @returns A cleanup function that removes the event handler when called
+   * @param event - The name of the event to listen for
+   * @param handler - Function that handles the event
+   * @returns Cleanup function that removes the event handler
    *
    * @example
    * ```typescript
@@ -391,38 +249,23 @@ export class JSONRPCNode<
    *   console.log(`${username} joined`);
    * });
    *
-   * // Later...
-   * cleanup(); // Remove the event handler
+   * // Later: remove handler
+   * cleanup();
    * ```
    */
-  public on<K extends keyof E>(event: K, handler: JSONRPCEventHandler<E, K>): () => void {
-    const handlers = this.eventHandlers.get(event) || new Set();
-    handlers.add(handler as JSONRPCEventHandler<E, keyof E>);
-    this.eventHandlers.set(event, handlers);
-
-    return () => {
-      const handlers = this.eventHandlers.get(event);
-      if (handlers) {
-        handlers.delete(handler as JSONRPCEventHandler<E, keyof E>);
-        if (handlers.size === 0) {
-          this.eventHandlers.delete(event);
-        }
-      }
-    };
+  public on<K extends keyof E>(event: K, handler: (params: E[K]) => void): () => void {
+    return this.eventManager.on(event, handler);
   }
 
   /**
    * Emits an event to the remote node.
    *
    * @param event - The name of the event to emit
-   * @param params - The event parameters
+   * @param params - Event payload
    *
    * @example
    * ```typescript
-   * node.emit('statusUpdate', {
-   *   user: 'Alice',
-   *   status: 'online'
-   * });
+   * node.emit('statusUpdate', { status: 'online' });
    * ```
    */
   public emit<K extends keyof E>(event: K, params: E[K]): void {
@@ -435,22 +278,60 @@ export class JSONRPCNode<
   }
 
   /**
-   * Handles an incoming message from the remote node.
-   * This should be called whenever a message is received through the transport.
+   * Adds a middleware function to the middleware stack.
    *
-   * @param message - The received message
-   * @returns A promise that resolves when the message has been handled
+   * @param middleware - Middleware function that can intercept/modify requests
+   * @returns Cleanup function that removes the middleware
    *
    * @example
    * ```typescript
-   * websocket.on('message', async (data) => {
-   *   await node.receiveMessage(JSON.parse(data));
+   * const cleanup = node.addMiddleware(async (context, request, next) => {
+   *   console.log('Request:', request);
+   *   const response = await next();
+   *   console.log('Response:', response);
+   *   return response;
    * });
+   *
+   * // Later: remove middleware
+   * cleanup();
    * ```
    */
+  public addMiddleware(middleware: JSONRPCMiddleware<T, C>): () => void {
+    return this.middlewareManager.addMiddleware(middleware);
+  }
+
+  /**
+   * Processes an incoming JSON-RPC message.
+   * This method handles requests, responses, notifications, and events.
+   *
+   * @param message - The received message to process
+   * @throws {JSONRPCError} If the message is invalid
+   */
   public async receiveMessage(message: unknown): Promise<void> {
-    if (!this.isValidMessage(message)) {
+    // Handle parse error for string messages first
+    if (typeof message === 'string') {
       console.error('Invalid message received:', message);
+      this.transport.send({
+        jsonrpc: '2.0',
+        error: {
+          code: -32700,
+          message: 'Parse error',
+        },
+        id: null,
+      });
+      return;
+    }
+
+    if (!this.messageValidator.isValidMessage(message)) {
+      console.error('Invalid message received:', message);
+      this.transport.send({
+        jsonrpc: '2.0',
+        error: {
+          code: -32600,
+          message: 'Invalid Request',
+        },
+        id: null,
+      });
       return;
     }
 
@@ -468,72 +349,16 @@ export class JSONRPCNode<
     }
   }
 
-  private isValidMessage(message: unknown): boolean {
-    if (typeof message !== 'object' || message === null) {
-      return false;
-    }
-
-    const msg = message as { jsonrpc?: string; method?: unknown; event?: unknown; id?: unknown };
-    return (
-      msg.jsonrpc === '2.0' &&
-      (typeof msg.method === 'string' || // Request
-        typeof msg.event === 'string' || // Event
-        msg.id !== undefined) // Response
-    );
-  }
-
-  /**
-   * Adds a middleware function to the middleware stack.
-   * Middleware functions are executed in the order they are added,
-   * and can modify both requests and responses.
-   *
-   * @param middleware - The middleware function to add
-   * @returns A cleanup function that removes the middleware when called
-   *
-   * @example
-   * ```typescript
-   * const cleanup = node.addMiddleware(async (context, request, next) => {
-   *   console.log('Request:', request);
-   *   const response = await next();
-   *   console.log('Response:', response);
-   *   return response;
-   * });
-   *
-   * // Later...
-   * cleanup(); // Remove the middleware
-   * ```
-   */
-  public addMiddleware(middleware: JSONRPCMiddleware<T, C>): () => void {
-    const baseHandlerIndex = this.middlewareStack.length - 1;
-    this.middlewareStack.splice(baseHandlerIndex, 0, middleware);
-    return () => {
-      const index = this.middlewareStack.indexOf(middleware);
-      if (index !== -1) {
-        this.middlewareStack.splice(index, 1);
-      }
-    };
-  }
-
   private async handleRequest(request: JSONRPCRequest<T, keyof T>): Promise<void> {
-    if (request.jsonrpc !== '2.0') {
-      const response: JSONRPCResponse<T> = {
-        jsonrpc: '2.0',
-        error: { code: -32600, message: 'Invalid Request' },
-        id: request.id,
-      };
-      this.transport.send(response);
-      return;
-    }
-
     try {
-      const composed = this.composeMiddleware(this.middlewareStack);
-      const response = await composed(this.context, request);
+      const response = await this.middlewareManager.execute(this.context, request);
 
-      // Only send response for non-notifications
+      // Only send response for non-notifications (requests with an id)
       if (request.id !== undefined) {
         this.transport.send(response);
       }
     } catch (error) {
+      // Only send error response for non-notifications
       if (request.id !== undefined) {
         const response: JSONRPCResponse<T> = {
           jsonrpc: '2.0',
@@ -548,61 +373,51 @@ export class JSONRPCNode<
     }
   }
 
-  private composeMiddleware(middlewareList: JSONRPCMiddleware<T, C>[]) {
-    return async (context: C, request: JSONRPCRequest<T, keyof T>): Promise<JSONRPCResponse<T>> => {
-      let index = -1;
-      const dispatch = async (i: number): Promise<JSONRPCResponse<T>> => {
-        if (i <= index) throw new JSONRPCError(-32000, 'next() called multiple times');
-        index = i;
-        if (i >= middlewareList.length) throw new JSONRPCError(-32000, 'No middleware to handle request');
-        const fn = middlewareList[i];
-        if (!fn) throw new JSONRPCError(-32000, `Middleware function at index ${i} is undefined`);
-        return await fn(context, request, () => dispatch(i + 1));
-      };
-      return dispatch(0);
-    };
-  }
-
   private handleResponse(response: JSONRPCResponse<T>): void {
-    const pendingRequest = this.pendingRequests.get(response.id);
-    if (!pendingRequest) {
-      console.warn('Received response for unknown request:', response.id);
-      return;
-    }
-
-    if (pendingRequest.timer) {
-      clearTimeout(pendingRequest.timer);
-    }
-
-    if (response.error) {
-      pendingRequest.reject(
-        new JSONRPCError(response.error.code, response.error.message, response.error.data),
-      );
-    } else {
-      // Deserialize result if needed
-      const result =
-        response.result !== undefined &&
-        pendingRequest.serializer?.result &&
-        isJSONRPCSerializedData(response.result)
-          ? pendingRequest.serializer.result.deserialize(response.result)
-          : response.result;
-
-      pendingRequest.resolve(result);
-    }
-
-    this.pendingRequests.delete(response.id);
+    this.methodManager.handleResponse(response.id, response.result, response.error);
   }
 
   private handleEvent(event: JSONRPCEvent<E, keyof E>): void {
-    const handlers = this.eventHandlers.get(event.event);
-    if (handlers) {
-      for (const handler of handlers) {
-        try {
-          handler(event.params);
-        } catch (error) {
-          console.error('Error in event handler:', error);
-        }
-      }
-    }
+    this.eventManager.handleEvent(event.event, event.params);
+  }
+
+  /**
+   * Sets a fallback handler for unregistered methods.
+   * The fallback handler will be called when a method is not found.
+   * Like registerMethod, the handler is wrapped to provide consistent error handling
+   * and response formatting.
+   *
+   * @param handler - Function that handles unknown method calls
+   *
+   * @example
+   * ```typescript
+   * node.setFallbackHandler(async (context, method, params) => {
+   *   console.log(`Unknown method called: ${method}`);
+   *   // Simply throw an error or return a value
+   *   throw new Error(`Method ${method} is not supported`);
+   *   // Or handle it by forwarding to another RPC server
+   *   return await otherServer.callMethod(method, params);
+   * });
+   * ```
+   */
+  public setFallbackHandler(
+    handler: (context: C, method: string, params: JSONRPCParams) => Promise<unknown>,
+  ): void {
+    // Convert the wrapped handler back to fallback handler signature
+    this.methodManager.setFallbackHandler(wrapHandler(handler));
+  }
+
+  /**
+   * Closes the node, cleaning up all event handlers, middleware, and pending requests.
+   *
+   * @example
+   * ```typescript
+   * await node.close();
+   * ```
+   */
+  public async close(): Promise<void> {
+    this.eventManager.removeAllHandlers();
+    this.middlewareManager.removeAllMiddleware();
+    this.methodManager.rejectAllRequests(new Error('Node closed'));
   }
 }
