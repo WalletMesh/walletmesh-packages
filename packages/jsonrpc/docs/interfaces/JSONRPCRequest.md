@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -7,10 +7,12 @@
 # Interface: JSONRPCRequest\<T, M, P\>
 
 Represents a JSON-RPC 2.0 request message.
+Requests can be either method calls (with an ID) or notifications (without an ID).
 
 ## Example
 
 ```typescript
+// Method call with named parameters
 const request: JSONRPCRequest<MethodMap, 'add'> = {
   jsonrpc: '2.0',
   method: 'add',
@@ -18,11 +20,20 @@ const request: JSONRPCRequest<MethodMap, 'add'> = {
   id: 'request-123'
 };
 
+// Method call with positional parameters
+const request: JSONRPCRequest<MethodMap, 'multiply'> = {
+  jsonrpc: '2.0',
+  method: 'multiply',
+  params: [3, 4],
+  id: 456
+};
+
 // Notification (no response expected)
 const notification: JSONRPCRequest<MethodMap, 'log'> = {
   jsonrpc: '2.0',
   method: 'log',
   params: { message: 'Hello' }
+  // No id field for notifications
 };
 ```
 
@@ -30,15 +41,15 @@ const notification: JSONRPCRequest<MethodMap, 'log'> = {
 
 • **T** *extends* [`JSONRPCMethodMap`](JSONRPCMethodMap.md)
 
-The RPC method map defining available methods
+The RPC method map defining available methods and their types
 
 • **M** *extends* keyof `T`
 
-The specific method being called
+The specific method name being called (must be a key of T)
 
 • **P** *extends* [`JSONRPCParams`](../type-aliases/JSONRPCParams.md) = [`JSONRPCParams`](../type-aliases/JSONRPCParams.md)
 
-The parameters type for the method
+The parameters type for the method (defaults to JSONRPCParams)
 
 ## Properties
 
@@ -50,7 +61,7 @@ The request ID.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:191](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L191)
+[packages/jsonrpc/src/types.ts:254](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L254)
 
 ***
 
@@ -62,7 +73,7 @@ The JSON-RPC version ('2.0').
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:185](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L185)
+[packages/jsonrpc/src/types.ts:248](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L248)
 
 ***
 
@@ -74,7 +85,7 @@ The method name.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:187](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L187)
+[packages/jsonrpc/src/types.ts:250](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L250)
 
 ***
 
@@ -86,4 +97,4 @@ The parameters of the method.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:189](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L189)
+[packages/jsonrpc/src/types.ts:252](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L252)

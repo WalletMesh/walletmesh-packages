@@ -1,8 +1,19 @@
-[**@walletmesh/jsonrpc v0.1.2**](README.md)
+[**@walletmesh/jsonrpc v0.2.0**](README.md)
 
 ***
 
-# @walletmesh/jsonrpc v0.1.2
+# @walletmesh/jsonrpc v0.2.0
+
+JSON-RPC 2.0 implementation with bi-directional communication support.
+This module provides a complete implementation of the JSON-RPC 2.0 specification
+with additional features for bi-directional communication, middleware support,
+and type safety.
+
+Key exports:
+- [JSONRPCNode](classes/JSONRPCNode.md) - Main class for JSON-RPC communication
+- [JSONRPCError](classes/JSONRPCError.md) - Error handling
+- Type definitions for method maps, events, and context
+- Utility functions for validation and type checking
 
 ## Classes
 
@@ -21,9 +32,11 @@
 - [JSONRPCResponse](interfaces/JSONRPCResponse.md)
 - [JSONRPCSerializer](interfaces/JSONRPCSerializer.md)
 - [Serializer](interfaces/Serializer.md)
+- [Transport](interfaces/Transport.md)
 
 ## Type Aliases
 
+- [FallbackMethodHandler](type-aliases/FallbackMethodHandler.md)
 - [JSONRPCContext](type-aliases/JSONRPCContext.md)
 - [JSONRPCEventHandler](type-aliases/JSONRPCEventHandler.md)
 - [JSONRPCID](type-aliases/JSONRPCID.md)
@@ -31,7 +44,7 @@
 - [JSONRPCParams](type-aliases/JSONRPCParams.md)
 - [JSONRPCSerializedData](type-aliases/JSONRPCSerializedData.md)
 - [MethodHandler](type-aliases/MethodHandler.md)
-- [Transport](type-aliases/Transport.md)
+- [MethodResponse](type-aliases/MethodResponse.md)
 
 ## Functions
 
@@ -39,3 +52,4 @@
 - [isJSONRPCID](functions/isJSONRPCID.md)
 - [isJSONRPCSerializedData](functions/isJSONRPCSerializedData.md)
 - [isJSONRPCVersion](functions/isJSONRPCVersion.md)
+- [wrapHandler](functions/wrapHandler.md)

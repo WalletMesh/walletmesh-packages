@@ -1,8 +1,8 @@
-[**@walletmesh/router v0.1.6**](README.md)
+[**@walletmesh/router v0.2.0**](README.md)
 
 ***
 
-# @walletmesh/router v0.1.6
+# @walletmesh/router v0.2.0
 
 ## Classes
 
@@ -17,8 +17,6 @@
 - [BulkCallParams](interfaces/BulkCallParams.md)
 - [CallParams](interfaces/CallParams.md)
 - [MethodCall](interfaces/MethodCall.md)
-- [PermissionApprovalContext](interfaces/PermissionApprovalContext.md)
-- [PermissionContext](interfaces/PermissionContext.md)
 - [RouterConfig](interfaces/RouterConfig.md)
 - [RouterContext](interfaces/RouterContext.md)
 - [RouterEventMap](interfaces/RouterEventMap.md)
@@ -34,7 +32,6 @@
 
 - [ChainId](type-aliases/ChainId.md)
 - [ChainPermissions](type-aliases/ChainPermissions.md)
-- [OperationType](type-aliases/OperationType.md)
 - [PermissionApprovalCallback](type-aliases/PermissionApprovalCallback.md)
 - [PermissionCallback](type-aliases/PermissionCallback.md)
 - [Wallets](type-aliases/Wallets.md)

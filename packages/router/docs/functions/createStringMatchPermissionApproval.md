@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.6**](../README.md)
+[**@walletmesh/router v0.2.0**](../README.md)
 
 ***
 
@@ -25,4 +25,4 @@ Array of patterns to match against
 
 ## Defined in
 
-[packages/router/src/permissions.ts:29](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/permissions.ts#L29)
+[packages/router/src/permissions.ts:29](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/permissions.ts#L29)

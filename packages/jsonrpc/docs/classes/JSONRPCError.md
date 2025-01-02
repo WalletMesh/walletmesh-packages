@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -7,14 +7,33 @@
 # Class: JSONRPCError
 
 JSON-RPC Error class that implements the JSON-RPC 2.0 error object specification.
+Provides structured error handling with standard error codes and optional additional data.
 
-Standard error codes:
-- Parse error (-32700): Invalid JSON was received
+Standard error codes (as per JSON-RPC 2.0 spec):
+- Parse error (-32700): Invalid JSON received by the server
+  - Used when the JSON string cannot be parsed
+  - Example: Malformed JSON syntax
+
 - Invalid Request (-32600): The JSON sent is not a valid Request object
-- Method not found (-32601): The method does not exist / is not available
-- Invalid params (-32602): Invalid method parameter(s)
+  - Used when the request structure is invalid
+  - Example: Missing required fields, wrong version
+
+- Method not found (-32601): The requested method does not exist or is unavailable
+  - Used when the method name is not registered
+  - Example: Calling an unregistered method
+
+- Invalid params (-32602): Method parameters are invalid
+  - Used when parameters don't match the method's expectations
+  - Example: Wrong types, missing required params
+
 - Internal error (-32603): Internal JSON-RPC error
-- Server error (-32000 to -32099): Implementation-defined server errors
+  - Used for unexpected server conditions
+  - Example: Database connection failure
+
+- Server error (-32000 to -32099): Reserved for implementation-defined server errors
+  - TimeoutError uses -32000 (see TimeoutError class)
+  - Other codes in this range can be used for custom server errors
+  - Example: Rate limiting, validation errors
 
 ## Example
 
@@ -28,6 +47,22 @@ throw new JSONRPCError(
   'Invalid parameters',
   { expected: ['username', 'password'], received: ['username'] }
 );
+
+// Error handling pattern
+try {
+  const result = await validateAndProcess(request);
+  return { success: true, data: result };
+} catch (error) {
+  if (error instanceof JSONRPCError) {
+    throw error; // Re-throw JSON-RPC errors
+  }
+  // Wrap other errors as Internal error
+  throw new JSONRPCError(
+    -32603,
+    'Internal error',
+    error instanceof Error ? error.message : 'Unknown error'
+  );
+}
 ```
 
 ## Extends
@@ -74,6 +109,10 @@ Optional additional error data for debugging or client handling
 
 [`JSONRPCError`](JSONRPCError.md)
 
+#### Throws
+
+If code is not a number or message is not a string
+
 #### Example
 
 ```typescript
@@ -96,7 +135,7 @@ peer.registerMethod('divide', (context, { a, b }) => {
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:52](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L52)
+[packages/jsonrpc/src/error.ts:88](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L88)
 
 ## Properties
 
@@ -126,7 +165,7 @@ The error code (should follow JSON-RPC 2.0 error codes)
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:53](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L53)
+[packages/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L89)
 
 ***
 
@@ -142,7 +181,7 @@ Optional additional error data for debugging or client handling
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:55](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L55)
+[packages/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L91)
 
 ***
 
@@ -176,7 +215,7 @@ node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:28](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L28)
+[packages/jsonrpc/src/error.ts:63](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L63)
 
 ***
 
@@ -254,7 +293,7 @@ Returns a string representation of an object.
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:60](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L60)
+[packages/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L96)
 
 ***
 

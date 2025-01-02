@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -8,18 +8,47 @@
 
 Specialized error class for JSON-RPC request timeouts.
 Extends JSONRPCError with a fixed error code (-32000) and includes the request ID.
+Uses the first server error code (-32000) to indicate timeout conditions while
+staying within the JSON-RPC 2.0 specification's error code ranges.
+
+Common timeout scenarios:
+- Network latency causing slow responses
+- Long-running operations that exceed timeout
+- Lost or dropped connections
+- Remote node unresponsive
 
 ## Example
 
 ```typescript
+// Setting timeouts on method calls
 try {
   // Call method with 5 second timeout
   const result = await peer.callMethod('slowMethod', params, 5);
 } catch (error) {
   if (error instanceof TimeoutError) {
     console.error(`Request ${error.id} timed out`);
+    // Handle timeout (retry, fallback, etc.)
   }
 }
+
+// Implementing timeouts in method handlers
+peer.registerMethod('longOperation', async (context, params) => {
+  const timeoutMs = 5000;
+  try {
+    const result = await Promise.race([
+      performOperation(params),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new TimeoutError('Operation timed out')), timeoutMs)
+      )
+    ]);
+    return { success: true, data: result };
+  } catch (error) {
+    if (error instanceof TimeoutError) {
+      throw error;
+    }
+    throw new JSONRPCError(-32603, 'Operation failed');
+  }
+});
 ```
 
 ## Extends
@@ -40,17 +69,21 @@ Creates a new TimeoutError instance.
 
 `string`
 
-A message describing the timeout
+A message describing the timeout (e.g., "Request timed out after 5 seconds")
 
 ##### id
 
 [`JSONRPCID`](../type-aliases/JSONRPCID.md)
 
-The ID of the request that timed out
+The ID of the request that timed out (used for correlation with the original request)
 
 #### Returns
 
 [`TimeoutError`](TimeoutError.md)
+
+#### Throws
+
+If message is not a string
 
 #### Example
 
@@ -70,7 +103,7 @@ if (timeoutInSeconds > 0) {
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:108](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L108)
+[packages/jsonrpc/src/error.ts:174](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L174)
 
 ## Properties
 
@@ -100,7 +133,7 @@ The error code (should follow JSON-RPC 2.0 error codes)
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:53](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L53)
+[packages/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L89)
 
 ***
 
@@ -116,7 +149,7 @@ Optional additional error data for debugging or client handling
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:55](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L55)
+[packages/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L91)
 
 ***
 
@@ -124,11 +157,11 @@ Optional additional error data for debugging or client handling
 
 > **id**: [`JSONRPCID`](../type-aliases/JSONRPCID.md)
 
-The ID of the request that timed out
+The ID of the request that timed out (used for correlation with the original request)
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:110](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L110)
+[packages/jsonrpc/src/error.ts:176](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L176)
 
 ***
 
@@ -158,7 +191,7 @@ node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L89)
+[packages/jsonrpc/src/error.ts:154](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L154)
 
 ***
 
@@ -240,7 +273,7 @@ Returns a string representation of an object.
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:60](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/error.ts#L60)
+[packages/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L96)
 
 ***
 

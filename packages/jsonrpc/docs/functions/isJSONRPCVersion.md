@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -8,8 +8,8 @@
 
 > **isJSONRPCVersion**(`value`): `value is "2.0"`
 
-Type guard for validating JSON-RPC protocol version.
-Checks if a value is the string '2.0' as required by the JSON-RPC 2.0 spec.
+Type guard to check if a value is a valid JSON-RPC version string.
+The only valid version string is '2.0' as per the JSON-RPC 2.0 specification.
 
 ## Parameters
 
@@ -23,16 +23,16 @@ The value to check
 
 `value is "2.0"`
 
-True if the value is '2.0'
+True if the value is '2.0', false otherwise
 
 ## Example
 
 ```typescript
-if (!isJSONRPCVersion(message.jsonrpc)) {
-  throw new JSONRPCError(-32600, 'Invalid JSON-RPC version');
-}
+isJSONRPCVersion("2.0");  // true
+isJSONRPCVersion("1.0");  // false
+isJSONRPCVersion(2);      // false
 ```
 
 ## Defined in
 
-[packages/jsonrpc/src/utils.ts:82](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/utils.ts#L82)
+[packages/jsonrpc/src/utils.ts:48](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/utils.ts#L48)

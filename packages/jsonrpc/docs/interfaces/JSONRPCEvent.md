@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -8,16 +8,30 @@
 
 Represents a JSON-RPC 2.0 event message.
 Events are similar to notifications but use 'event' instead of 'method'.
+While notifications are used for one-way method calls, events are used
+for broadcasting state changes or significant occurrences in the system.
 
 ## Example
 
 ```typescript
-const event: JSONRPCEvent<EventMap, 'userJoined'> = {
+// User joined event
+const joinEvent: JSONRPCEvent<EventMap, 'userJoined'> = {
   jsonrpc: '2.0',
   event: 'userJoined',
   params: {
     username: 'Alice',
     timestamp: Date.now()
+  }
+};
+
+// Status update event
+const statusEvent: JSONRPCEvent<EventMap, 'statusUpdate'> = {
+  jsonrpc: '2.0',
+  event: 'statusUpdate',
+  params: {
+    user: 'Bob',
+    status: 'away',
+    lastSeen: Date.now()
   }
 };
 ```
@@ -26,11 +40,11 @@ const event: JSONRPCEvent<EventMap, 'userJoined'> = {
 
 • **T** *extends* [`JSONRPCEventMap`](JSONRPCEventMap.md)
 
-The event map defining available events
+The event map defining available events and their payload types
 
 • **E** *extends* keyof `T`
 
-The specific event being emitted
+The specific event being emitted (must be a key of T)
 
 ## Properties
 
@@ -42,7 +56,7 @@ The event name.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:348](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L348)
+[packages/jsonrpc/src/types.ts:572](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L572)
 
 ***
 
@@ -54,7 +68,7 @@ The JSON-RPC version ('2.0').
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:346](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L346)
+[packages/jsonrpc/src/types.ts:570](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L570)
 
 ***
 
@@ -66,4 +80,4 @@ The event payload.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:350](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L350)
+[packages/jsonrpc/src/types.ts:574](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L574)

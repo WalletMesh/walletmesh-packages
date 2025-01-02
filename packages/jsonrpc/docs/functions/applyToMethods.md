@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -8,19 +8,15 @@
 
 > **applyToMethods**\<`T`, `C`\>(`methods`, `middleware`): [`JSONRPCMiddleware`](../type-aliases/JSONRPCMiddleware.md)\<`T`, `C`\>
 
-Creates a middleware that only applies to specific JSON-RPC methods.
-This is useful for applying middleware selectively, such as authentication
-for sensitive operations or logging for specific methods.
+Helper function to apply middleware only to specific methods.
+Creates a new middleware that only executes for the specified methods,
+passing through all other requests unchanged.
 
 ## Type Parameters
 
 • **T** *extends* [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md)
 
-The RPC method map defining available methods
-
 • **C** *extends* [`JSONRPCContext`](../type-aliases/JSONRPCContext.md)
-
-The context type shared between middleware and handlers
 
 ## Parameters
 
@@ -34,30 +30,28 @@ Array of method names to apply the middleware to
 
 [`JSONRPCMiddleware`](../type-aliases/JSONRPCMiddleware.md)\<`T`, `C`\>
 
-The middleware to apply to the specified methods
+The middleware function to apply
 
 ## Returns
 
 [`JSONRPCMiddleware`](../type-aliases/JSONRPCMiddleware.md)\<`T`, `C`\>
 
-A new middleware function that only executes for the specified methods
+A new middleware function that only applies to specified methods
 
 ## Example
 
 ```typescript
-// Apply authentication only to sensitive methods
-peer.addMiddleware(
-  applyToMethods(['transferFunds', 'updateProfile'],
-    async (context, request, next) => {
-      if (!context.isAuthenticated) {
-        throw new JSONRPCError(-32600, 'Authentication required');
-      }
-      return next();
-    }
-  )
+// Create logging middleware only for 'add' and 'subtract' methods
+const loggerMiddleware = applyToMethods(['add', 'subtract'],
+  async (context, request, next) => {
+    console.log(`Calling ${request.method}`);
+    const result = await next();
+    console.log(`${request.method} returned:`, result);
+    return result;
+  }
 );
 ```
 
 ## Defined in
 
-[packages/jsonrpc/src/utils.ts:36](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/utils.ts#L36)
+[packages/jsonrpc/src/utils.ts:99](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/utils.ts#L99)

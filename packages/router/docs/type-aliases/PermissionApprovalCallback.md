@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.6**](../README.md)
+[**@walletmesh/router v0.2.0**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Type Alias: PermissionApprovalCallback()
 
-> **PermissionApprovalCallback**: (`context`) => `Promise`\<[`ChainPermissions`](ChainPermissions.md)\>
+> **PermissionApprovalCallback**: (`context`, `permissions`) => `Promise`\<[`ChainPermissions`](ChainPermissions.md)\>
 
 Permission approval callback function type
 
@@ -14,9 +14,13 @@ Permission approval callback function type
 
 ### context
 
-[`PermissionApprovalContext`](../interfaces/PermissionApprovalContext.md)
+[`RouterContext`](../interfaces/RouterContext.md)
 
 Complete context for the permission approval decision
+
+### permissions
+
+[`ChainPermissions`](ChainPermissions.md)
 
 ## Returns
 
@@ -26,4 +30,4 @@ Promise<ChainPermissions> containing the approved permissions for each chain
 
 ## Defined in
 
-[packages/router/src/types.ts:114](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L114)
+[packages/router/src/types.ts:78](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L78)

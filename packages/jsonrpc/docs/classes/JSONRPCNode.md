@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -7,86 +7,34 @@
 # Class: JSONRPCNode\<T, E, C\>
 
 Core class implementing the JSON-RPC 2.0 protocol with bi-directional communication support.
-
-Features:
-- Full JSON-RPC 2.0 protocol implementation
-- Bi-directional communication (each node can both send and receive)
-- Type-safe method and event definitions
-- Middleware support for request/response modification
-- Custom serialization for complex data types
-- Request timeouts
-- Event system for broadcast-style communication
-- Comprehensive error handling
+Provides a high-level interface for JSON-RPC communication while managing all the underlying complexity.
 
 ## Example
 
 ```typescript
-// Define your types
-type MethodMap = {
+// Define method and event types
+type Methods = {
   add: {
     params: { a: number; b: number };
     result: number;
   };
-  getUser: {
-    params: { id: string };
-    result: User;
-  };
 };
 
-type EventMap = {
+type Events = {
   userJoined: { username: string };
-  statusUpdate: { user: string; status: 'online' | 'offline' };
 };
 
-type Context = {
-  userId?: string;
-  isAuthorized?: boolean;
-};
-
-// Create a node instance
-const node = new JSONRPCNode<MethodMap, EventMap, Context>({
-  send: message => websocket.send(JSON.stringify(message))
+// Create node instance
+const node = new JSONRPCNode<Methods, Events>({
+  send: message => ws.send(JSON.stringify(message))
 });
 
-// Register methods
+// Register method handler
 node.registerMethod('add', (context, { a, b }) => a + b);
 
-node.registerMethod('getUser', async (context, { id }) => {
-  if (!context.isAuthorized) {
-    throw new JSONRPCError(-32600, 'Unauthorized');
-  }
-  return await db.users.findById(id);
-});
-
-// Add middleware
-node.addMiddleware(async (context, request, next) => {
-  console.log('Request:', request);
-  const response = await next();
-  console.log('Response:', response);
-  return response;
-});
-
-// Handle events
+// Listen for events
 node.on('userJoined', ({ username }) => {
   console.log(`${username} joined`);
-});
-
-// Call remote methods
-try {
-  const sum = await node.callMethod('add', { a: 1, b: 2 });
-  const user = await node.callMethod('getUser', { id: '123' }, 5);
-} catch (error) {
-  if (error instanceof TimeoutError) {
-    console.error('Request timed out');
-  } else if (error instanceof JSONRPCError) {
-    console.error('RPC Error:', error.message);
-  }
-}
-
-// Emit events
-node.emit('statusUpdate', {
-  user: 'Alice',
-  status: 'online'
 });
 ```
 
@@ -94,15 +42,15 @@ node.emit('statusUpdate', {
 
 • **T** *extends* [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md) = [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md)
 
-The RPC method map defining available methods
+Method map defining available RPC methods and their types
 
 • **E** *extends* [`JSONRPCEventMap`](../interfaces/JSONRPCEventMap.md) = [`JSONRPCEventMap`](../interfaces/JSONRPCEventMap.md)
 
-The event map defining available events
+Event map defining available events and their payload types
 
 • **C** *extends* [`JSONRPCContext`](../type-aliases/JSONRPCContext.md) = [`JSONRPCContext`](../type-aliases/JSONRPCContext.md)
 
-The context type for method handlers
+Context type shared between middleware and method handlers
 
 ## Constructors
 
@@ -110,15 +58,23 @@ The context type for method handlers
 
 > **new JSONRPCNode**\<`T`, `E`, `C`\>(`transport`, `context`): [`JSONRPCNode`](JSONRPCNode.md)\<`T`, `E`, `C`\>
 
+Creates a new JSONRPCNode instance.
+
 #### Parameters
 
 ##### transport
 
-[`Transport`](../type-aliases/Transport.md)\<`T`, `E`\>
+Transport object that handles sending messages between nodes
+
+###### send
+
+(`message`) => `void`
 
 ##### context
 
 `C` = `...`
+
+Optional context object shared between middleware and method handlers
 
 #### Returns
 
@@ -126,7 +82,7 @@ The context type for method handlers
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:250](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L250)
+[packages/jsonrpc/src/node.ts:100](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L100)
 
 ## Properties
 
@@ -134,9 +90,11 @@ The context type for method handlers
 
 > `readonly` **context**: `C`
 
+Optional context object shared between middleware and method handlers
+
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:252](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L252)
+[packages/jsonrpc/src/node.ts:104](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L104)
 
 ## Methods
 
@@ -145,8 +103,6 @@ The context type for method handlers
 > **addMiddleware**(`middleware`): () => `void`
 
 Adds a middleware function to the middleware stack.
-Middleware functions are executed in the order they are added,
-and can modify both requests and responses.
 
 #### Parameters
 
@@ -154,13 +110,13 @@ and can modify both requests and responses.
 
 [`JSONRPCMiddleware`](../type-aliases/JSONRPCMiddleware.md)\<`T`, `C`\>
 
-The middleware function to add
+Middleware function that can intercept/modify requests
 
 #### Returns
 
 `Function`
 
-A cleanup function that removes the middleware when called
+Cleanup function that removes the middleware
 
 ##### Returns
 
@@ -176,13 +132,13 @@ const cleanup = node.addMiddleware(async (context, request, next) => {
   return response;
 });
 
-// Later...
-cleanup(); // Remove the middleware
+// Later: remove middleware
+cleanup();
 ```
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:510](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L510)
+[packages/jsonrpc/src/node.ts:299](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L299)
 
 ***
 
@@ -190,7 +146,7 @@ cleanup(); // Remove the middleware
 
 > **callMethod**\<`M`\>(`method`, `params`?, `timeoutInSeconds`?): `Promise`\<`T`\[`M`\]\[`"result"`\]\>
 
-Calls a method on the remote node.
+Calls a remote method and returns a promise for the result.
 
 #### Type Parameters
 
@@ -208,38 +164,69 @@ The name of the method to call
 
 `T`\[`M`\]\[`"params"`\]
 
-The parameters to pass to the method
+Parameters to pass to the method
 
 ##### timeoutInSeconds?
 
 `number` = `0`
 
-Optional timeout in seconds (0 means no timeout)
+Optional timeout in seconds (0 for no timeout)
 
 #### Returns
 
 `Promise`\<`T`\[`M`\]\[`"result"`\]\>
 
-A promise that resolves with the method result
+Promise that resolves with the method result
 
 #### Throws
 
-If the method call fails or times out
+If the remote method throws an error
+
+#### Throws
+
+If the call times out
 
 #### Example
 
 ```typescript
+// Simple call
+const sum = await node.callMethod('add', { a: 1, b: 2 });
+
+// Call with timeout
 try {
-  const result = await node.callMethod('add', { a: 1, b: 2 }, 5);
-  console.log('Result:', result);
+  const result = await node.callMethod('slowMethod', { data: 'test' }, 5);
 } catch (error) {
-  console.error('Error:', error);
+  if (error instanceof TimeoutError) {
+    console.error('Request timed out');
+  }
 }
 ```
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:323](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L323)
+[packages/jsonrpc/src/node.ts:191](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L191)
+
+***
+
+### close()
+
+> **close**(): `Promise`\<`void`\>
+
+Closes the node, cleaning up all event handlers, middleware, and pending requests.
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Example
+
+```typescript
+await node.close();
+```
+
+#### Defined in
+
+[packages/jsonrpc/src/node.ts:418](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L418)
 
 ***
 
@@ -265,7 +252,7 @@ The name of the event to emit
 
 `E`\[`K`\]
 
-The event parameters
+Event payload
 
 #### Returns
 
@@ -274,15 +261,12 @@ The event parameters
 #### Example
 
 ```typescript
-node.emit('statusUpdate', {
-  user: 'Alice',
-  status: 'online'
-});
+node.emit('statusUpdate', { status: 'online' });
 ```
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:432](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L432)
+[packages/jsonrpc/src/node.ts:271](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L271)
 
 ***
 
@@ -290,7 +274,7 @@ node.emit('statusUpdate', {
 
 > **notify**\<`M`\>(`method`, `params`): `void`
 
-Sends a notification to the remote node.
+Sends a notification (a request without expecting a response).
 
 #### Type Parameters
 
@@ -308,7 +292,7 @@ The name of the method to call
 
 `T`\[`M`\]\[`"params"`\]
 
-The parameters to pass to the method
+Parameters to pass to the method
 
 #### Returns
 
@@ -317,12 +301,12 @@ The parameters to pass to the method
 #### Example
 
 ```typescript
-node.notify('logMessage', { level: 'info', message: 'Hello' });
+node.notify('log', { message: 'User action performed' });
 ```
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:373](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L373)
+[packages/jsonrpc/src/node.ts:227](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L227)
 
 ***
 
@@ -330,7 +314,7 @@ node.notify('logMessage', { level: 'info', message: 'Hello' });
 
 > **on**\<`K`\>(`event`, `handler`): () => `void`
 
-Registers a handler for a specific event type.
+Registers an event handler for the specified event type.
 
 #### Type Parameters
 
@@ -342,19 +326,19 @@ Registers a handler for a specific event type.
 
 `K`
 
-The name of the event to handle
+The name of the event to listen for
 
 ##### handler
 
-[`JSONRPCEventHandler`](../type-aliases/JSONRPCEventHandler.md)\<`E`, `K`\>
+(`params`) => `void`
 
-The function to call when the event is received
+Function that handles the event
 
 #### Returns
 
 `Function`
 
-A cleanup function that removes the event handler when called
+Cleanup function that removes the event handler
 
 ##### Returns
 
@@ -367,13 +351,13 @@ const cleanup = node.on('userJoined', ({ username }) => {
   console.log(`${username} joined`);
 });
 
-// Later...
-cleanup(); // Remove the event handler
+// Later: remove handler
+cleanup();
 ```
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:402](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L402)
+[packages/jsonrpc/src/node.ts:256](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L256)
 
 ***
 
@@ -381,8 +365,8 @@ cleanup(); // Remove the event handler
 
 > **receiveMessage**(`message`): `Promise`\<`void`\>
 
-Handles an incoming message from the remote node.
-This should be called whenever a message is received through the transport.
+Processes an incoming JSON-RPC message.
+This method handles requests, responses, notifications, and events.
 
 #### Parameters
 
@@ -390,33 +374,27 @@ This should be called whenever a message is received through the transport.
 
 `unknown`
 
-The received message
+The received message to process
 
 #### Returns
 
 `Promise`\<`void`\>
 
-A promise that resolves when the message has been handled
+#### Throws
 
-#### Example
-
-```typescript
-websocket.on('message', async (data) => {
-  await node.receiveMessage(JSON.parse(data));
-});
-```
+If the message is invalid
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:455](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L455)
+[packages/jsonrpc/src/node.ts:310](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L310)
 
 ***
 
 ### registerMethod()
 
-> **registerMethod**\<`M`\>(`name`, `handler`, `serializer`?): `void`
+> **registerMethod**\<`M`\>(`name`, `handler`): `void`
 
-Registers a method that can be called by remote nodes.
+Registers a method handler for the specified method name.
 
 #### Type Parameters
 
@@ -426,21 +404,15 @@ Registers a method that can be called by remote nodes.
 
 ##### name
 
-`M`
+`Extract`\<`M`, `string`\>
 
 The name of the method to register
 
 ##### handler
 
-[`MethodHandler`](../type-aliases/MethodHandler.md)\<`T`, `M`, `C`\>
+(`context`, `params`) => `Promise`\<`T`\[`M`\]\[`"result"`\]\>
 
-The function that implements the method
-
-##### serializer?
-
-[`JSONRPCSerializer`](../interfaces/JSONRPCSerializer.md)\<`T`\[`M`\]\[`"params"`\], `T`\[`M`\]\[`"result"`\]\>
-
-Optional serializer for method parameters and results
+Function that handles method calls
 
 #### Returns
 
@@ -449,14 +421,13 @@ Optional serializer for method parameters and results
 #### Example
 
 ```typescript
-node.registerMethod('add', async (context, params) => {
-  return params.a + params.b;
-});
+// Register a method
+node.registerMethod('add', (context, { a, b }) => a + b);
 ```
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:272](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L272)
+[packages/jsonrpc/src/node.ts:130](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L130)
 
 ***
 
@@ -464,8 +435,7 @@ node.registerMethod('add', async (context, params) => {
 
 > **registerSerializer**\<`M`\>(`method`, `serializer`): `void`
 
-Registers a serializer for a remote method.
-Used when calling methods that require parameter or result serialization.
+Registers a serializer for parameters and results.
 
 #### Type Parameters
 
@@ -477,7 +447,7 @@ Used when calling methods that require parameter or result serialization.
 
 `M`
 
-The name of the method to register a serializer for
+The name to register the serializer under
 
 ##### serializer
 
@@ -492,14 +462,98 @@ The serializer implementation
 #### Example
 
 ```typescript
+// Register Date serializer
 node.registerSerializer('processDate', {
   params: {
-    serialize: (date) => ({ serialized: date.toISOString() }),
-    deserialize: (data) => new Date(data.serialized)
+    serialize: (date, method) => ({ serialized: date.toISOString(), method }),
+    deserialize: (data, method) => new Date(data.serialized)
+  },
+  result: {
+    serialize: (date, method) => ({ serialized: date.toISOString(), method }),
+    deserialize: (data, method) => new Date(data.serialized)
   }
 });
 ```
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:297](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L297)
+[packages/jsonrpc/src/node.ts:159](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L159)
+
+***
+
+### setFallbackHandler()
+
+> **setFallbackHandler**(`handler`): `void`
+
+Sets a fallback handler for unregistered methods.
+The fallback handler will be called when a method is not found.
+Like registerMethod, the handler is wrapped to provide consistent error handling
+and response formatting.
+
+#### Parameters
+
+##### handler
+
+(`context`, `method`, `params`) => `Promise`\<`unknown`\>
+
+Function that handles unknown method calls
+
+#### Returns
+
+`void`
+
+#### Example
+
+```typescript
+node.setFallbackHandler(async (context, method, params) => {
+  console.log(`Unknown method called: ${method}`);
+  // Simply throw an error or return a value
+  throw new Error(`Method ${method} is not supported`);
+  // Or handle it by forwarding to another RPC server
+  return await otherServer.callMethod(method, params);
+});
+```
+
+#### Defined in
+
+[packages/jsonrpc/src/node.ts:403](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L403)
+
+***
+
+### setFallbackSerializer()
+
+> **setFallbackSerializer**(`serializer`): `void`
+
+Sets a fallback serializer to be used when no method-specific serializer is provided.
+
+#### Parameters
+
+##### serializer
+
+[`JSONRPCSerializer`](../interfaces/JSONRPCSerializer.md)\<`unknown`, `unknown`\>
+
+The serializer to use as fallback
+
+#### Returns
+
+`void`
+
+#### Example
+
+```typescript
+// Set a fallback serializer for handling dates
+node.setFallbackSerializer({
+  params: {
+    serialize: (value, method) => ({ serialized: value instanceof Date ? value.toISOString() : String(value), method }),
+    deserialize: (data, method) => new Date(data.serialized)
+  },
+  result: {
+    serialize: (value, method) => ({ serialized: value instanceof Date ? value.toISOString() : String(value), method }),
+    deserialize: (data, method) => new Date(data.serialized)
+  }
+});
+```
+
+#### Defined in
+
+[packages/jsonrpc/src/node.ts:90](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/node.ts#L90)

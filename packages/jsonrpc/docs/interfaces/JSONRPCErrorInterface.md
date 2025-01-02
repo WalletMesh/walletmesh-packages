@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -9,12 +9,12 @@
 Represents a JSON-RPC 2.0 error object.
 
 Standard error codes:
-- Parse error (-32700)
-- Invalid Request (-32600)
-- Method not found (-32601)
-- Invalid params (-32602)
-- Internal error (-32603)
-- Server error (-32000 to -32099)
+- Parse error (-32700): Invalid JSON was received
+- Invalid Request (-32600): The JSON sent is not a valid Request object
+- Method not found (-32601): The method does not exist / is not available
+- Invalid params (-32602): Invalid method parameter(s)
+- Internal error (-32603): Internal JSON-RPC error
+- Server error (-32000 to -32099): Implementation-defined server errors
 
 ## Example
 
@@ -36,7 +36,7 @@ The error code.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:253](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L253)
+[packages/jsonrpc/src/types.ts:336](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L336)
 
 ***
 
@@ -48,7 +48,7 @@ Additional error data.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:257](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L257)
+[packages/jsonrpc/src/types.ts:340](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L340)
 
 ***
 
@@ -60,4 +60,4 @@ The error message.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:255](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L255)
+[packages/jsonrpc/src/types.ts:338](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L338)

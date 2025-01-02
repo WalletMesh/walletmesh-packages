@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -12,6 +12,10 @@ Represents serialized data in a JSON-RPC message.
 Used by serializers to convert complex types to/from JSON-compatible format.
 
 ## Type declaration
+
+### method
+
+> **method**: `string`
 
 ### serialized
 
@@ -27,4 +31,4 @@ const serialized: JSONRPCSerializedData = {
 
 ## Defined in
 
-[packages/jsonrpc/src/types.ts:46](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L46)
+[packages/jsonrpc/src/types.ts:48](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L48)
