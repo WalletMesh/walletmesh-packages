@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.6**](../README.md)
+[**@walletmesh/router v0.2.0**](../README.md)
 
 ***
 
@@ -44,7 +44,7 @@ Optional additional error data
 
 #### Defined in
 
-[packages/router/src/errors.ts:28](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/errors.ts#L28)
+[packages/router/src/errors.ts:28](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/errors.ts#L28)
 
 ## Properties
 
@@ -74,7 +74,7 @@ The error code.
 
 #### Defined in
 
-packages/jsonrpc/dist/error.d.ts:27
+packages/jsonrpc/dist/error.d.ts:62
 
 ***
 
@@ -90,7 +90,7 @@ Additional error data.
 
 #### Defined in
 
-packages/jsonrpc/dist/error.d.ts:28
+packages/jsonrpc/dist/error.d.ts:63
 
 ***
 
@@ -118,7 +118,7 @@ node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 #### Defined in
 
-[packages/router/src/errors.ts:21](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/errors.ts#L21)
+[packages/router/src/errors.ts:21](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/errors.ts#L21)
 
 ***
 
@@ -200,7 +200,7 @@ Returns a string representation of an object.
 
 #### Defined in
 
-packages/jsonrpc/dist/error.d.ts:53
+packages/jsonrpc/dist/error.d.ts:89
 
 ***
 

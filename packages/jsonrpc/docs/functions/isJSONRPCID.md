@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -8,8 +8,8 @@
 
 > **isJSONRPCID**(`value`): `value is JSONRPCID`
 
-Type guard for validating JSON-RPC message identifiers.
-Checks if a value is a valid JSONRPCID (string, number, or undefined).
+Type guard to check if a value is a valid JSON-RPC ID.
+Valid IDs can be strings, numbers, or undefined.
 
 ## Parameters
 
@@ -23,18 +23,18 @@ The value to check
 
 `value is JSONRPCID`
 
-True if the value is a valid JSON-RPC ID
+True if the value is a valid JSON-RPC ID, false otherwise
 
 ## Example
 
 ```typescript
-if (isJSONRPCID(message.id)) {
-  // Handle valid ID
-} else {
-  throw new JSONRPCError(-32600, 'Invalid Request ID');
-}
+isJSONRPCID("123");     // true
+isJSONRPCID(456);       // true
+isJSONRPCID(undefined); // true
+isJSONRPCID(null);      // false
+isJSONRPCID({});        // false
 ```
 
 ## Defined in
 
-[packages/jsonrpc/src/utils.ts:64](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/utils.ts#L64)
+[packages/jsonrpc/src/utils.ts:27](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/utils.ts#L27)

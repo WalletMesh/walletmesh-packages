@@ -1,5 +1,29 @@
 # @walletmesh/router
 
+## 0.2.0
+
+### Minor Changes
+
+- 24d804c: Major refactor and enhancement of the JSON-RPC implementation and router:
+
+  @walletmesh/jsonrpc:
+
+  - Add MessageValidator and ParameterSerializer components
+  - Rework middleware system
+  - Improved error handling with standardized codes & more context
+  - Separate method handlers from serializers
+  - Add support for fallback method handlers & serializers
+  - Improved type safety
+
+  @walletmesh/router:
+
+  - Update session management and permission system
+
+### Patch Changes
+
+- Updated dependencies [24d804c]
+  - @walletmesh/jsonrpc@0.2.0
+
 ## 0.1.6
 
 ### Patch Changes

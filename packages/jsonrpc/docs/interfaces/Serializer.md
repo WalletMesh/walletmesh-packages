@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -28,11 +28,17 @@ The type of value to serialize/deserialize
 
 ### deserialize()
 
-> **deserialize**(`value`): `T`
+> **deserialize**(`method`, `value`): `T`
 
 Deserializes JSONRPCSerializedData back to the original type
 
 #### Parameters
+
+##### method
+
+`string`
+
+The method name associated with this deserialization
 
 ##### value
 
@@ -48,17 +54,23 @@ The deserialized value
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:75](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L75)
+[packages/jsonrpc/src/types.ts:82](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L82)
 
 ***
 
 ### serialize()
 
-> **serialize**(`value`): [`JSONRPCSerializedData`](../type-aliases/JSONRPCSerializedData.md)
+> **serialize**(`method`, `value`): [`JSONRPCSerializedData`](../type-aliases/JSONRPCSerializedData.md)
 
 Serializes a value to JSONRPCSerializedData
 
 #### Parameters
+
+##### method
+
+`string`
+
+The method name associated with this serialization
 
 ##### value
 
@@ -74,4 +86,4 @@ The serialized data
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:68](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L68)
+[packages/jsonrpc/src/types.ts:74](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L74)

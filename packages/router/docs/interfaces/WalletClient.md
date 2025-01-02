@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.6**](../README.md)
+[**@walletmesh/router v0.2.0**](../README.md)
 
 ***
 
@@ -70,7 +70,7 @@ If the method call fails or is rejected by the wallet
 
 #### Defined in
 
-[packages/router/src/types.ts:36](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L36)
+[packages/router/src/types.ts:36](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L36)
 
 ***
 
@@ -92,7 +92,7 @@ If the capabilities request fails
 
 #### Defined in
 
-[packages/router/src/types.ts:43](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L43)
+[packages/router/src/types.ts:43](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L43)
 
 ***
 
@@ -122,7 +122,7 @@ Handler function to remove (must be the same reference as used in 'on')
 
 #### Defined in
 
-[packages/router/src/types.ts:62](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L62)
+[packages/router/src/types.ts:60](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L60)
 
 ***
 
@@ -131,9 +131,7 @@ Handler function to remove (must be the same reference as used in 'on')
 > `optional` **on**(`event`, `handler`): `void`
 
 Register an event handler for wallet events
-Common events include:
-- 'accountsChanged': Emitted when the user's accounts change
-- 'networkChanged': Emitted when the network/chain changes
+Events include:
 - 'disconnect': Emitted when the wallet disconnects
 
 #### Parameters
@@ -156,4 +154,4 @@ Function to call when the event occurs
 
 #### Defined in
 
-[packages/router/src/types.ts:55](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L55)
+[packages/router/src/types.ts:53](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L53)

@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -42,7 +42,7 @@ The parameters of the method.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:127](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L127)
+[packages/jsonrpc/src/types.ts:134](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L134)
 
 ***
 
@@ -54,7 +54,7 @@ The result of the method.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:129](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L129)
+[packages/jsonrpc/src/types.ts:136](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L136)
 
 ***
 
@@ -66,4 +66,4 @@ Optional serializer for parameters and result
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:131](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L131)
+[packages/jsonrpc/src/types.ts:138](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L138)

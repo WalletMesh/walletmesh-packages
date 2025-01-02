@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -28,4 +28,4 @@ const params: JSONRPCParams = { x: 1, y: 2, message: "hello" };
 
 ## Defined in
 
-[packages/jsonrpc/src/types.ts:33](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/types.ts#L33)
+[packages/jsonrpc/src/types.ts:35](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L35)

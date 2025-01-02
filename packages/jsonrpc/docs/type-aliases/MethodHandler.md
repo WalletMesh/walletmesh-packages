@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -6,25 +6,26 @@
 
 # Type Alias: MethodHandler()\<T, M, C\>
 
-> **MethodHandler**\<`T`, `M`, `C`\>: (`context`, `params`) => `Promise`\<`T`\[`M`\]\[`"result"`\]\> \| `T`\[`M`\]\[`"result"`\]
+> **MethodHandler**\<`T`, `M`, `C`\>: (`context`, `method`, `params`) => `Promise`\<[`MethodResponse`](MethodResponse.md)\<`T`\[`M`\]\[`"result"`\]\>\>
 
 Function type for handling JSON-RPC method calls.
 Method handlers receive a context object and typed parameters,
-and return a promise or direct value of the specified result type.
+and return a promise that resolves to a MethodResponse containing either
+a success result or an error.
 
 ## Type Parameters
 
 • **T** *extends* [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md)
 
-The RPC method map defining available methods
+The RPC method map defining available methods and their types
 
 • **M** *extends* keyof `T`
 
-The specific method being handled
+The specific method name being handled (must be a key of T)
 
-• **C** *extends* [`JSONRPCContext`](JSONRPCContext.md)
+• **C** *extends* [`JSONRPCContext`](JSONRPCContext.md) = [`JSONRPCContext`](JSONRPCContext.md)
 
-The context type for method handlers
+The context type for method handlers (defaults to JSONRPCContext)
 
 ## Parameters
 
@@ -32,31 +33,48 @@ The context type for method handlers
 
 `C`
 
+### method
+
+`M`
+
 ### params
 
 `T`\[`M`\]\[`"params"`\]
 
 ## Returns
 
-`Promise`\<`T`\[`M`\]\[`"result"`\]\> \| `T`\[`M`\]\[`"result"`\]
+`Promise`\<[`MethodResponse`](MethodResponse.md)\<`T`\[`M`\]\[`"result"`\]\>\>
 
 ## Example
 
 ```typescript
-// Simple handler
+// Simple handler returning success response
 const addHandler: MethodHandler<MethodMap, 'add', Context> =
-  (context, { a, b }) => a + b;
+  async (context, method, { a, b }) => ({
+    success: true,
+    data: a + b
+  });
 
-// Async handler with context
+// Handler with error response
 const getUserHandler: MethodHandler<MethodMap, 'getUser', Context> =
-  async (context, { id }) => {
+  async (context, method, { id }) => {
     if (!context.isAuthorized) {
-      throw new JSONRPCError(-32600, 'Unauthorized');
+      return {
+        success: false,
+        error: {
+          code: -32600,
+          message: 'Unauthorized'
+        }
+      };
     }
-    return await db.users.findById(id);
+    const user = await db.users.findById(id);
+    return {
+      success: true,
+      data: user
+    };
   };
 ```
 
 ## Defined in
 
-[packages/jsonrpc/src/node.ts:79](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/node.ts#L79)
+[packages/jsonrpc/src/types.ts:201](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L201)

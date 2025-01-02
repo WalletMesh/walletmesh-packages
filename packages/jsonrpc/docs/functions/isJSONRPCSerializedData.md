@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.1.2**](../README.md)
+[**@walletmesh/jsonrpc v0.2.0**](../README.md)
 
 ***
 
@@ -8,8 +8,8 @@
 
 > **isJSONRPCSerializedData**(`value`): `value is JSONRPCSerializedData`
 
-Type guard for validating JSON-RPC serialized data.
-Checks if a value matches the JSONRPCSerializedData structure.
+Type guard to check if a value matches the JSONRPCSerializedData format.
+Valid serialized data must be an object with a 'serialized' property containing a string.
 
 ## Parameters
 
@@ -23,20 +23,16 @@ The value to check
 
 `value is JSONRPCSerializedData`
 
-True if the value is valid serialized data
+True if the value matches the JSONRPCSerializedData format, false otherwise
 
 ## Example
 
 ```typescript
-if (isJSONRPCSerializedData(response.result)) {
-  // Handle serialized data
-  const result = deserializer.deserialize(response.result);
-} else {
-  // Handle raw data
-  const result = response.result;
-}
+isJSONRPCSerializedData({ serialized: "data" });  // true
+isJSONRPCSerializedData({ serialized: 123 });     // false
+isJSONRPCSerializedData({ data: "string" });      // false
 ```
 
 ## Defined in
 
-[packages/jsonrpc/src/utils.ts:104](https://github.com/WalletMesh/wm-core/blob/808be19fbf7e44796f646f1849d2f2ede9286bc8/packages/jsonrpc/src/utils.ts#L104)
+[packages/jsonrpc/src/utils.ts:66](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/utils.ts#L66)

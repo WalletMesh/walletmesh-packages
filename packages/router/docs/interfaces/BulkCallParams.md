@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.1.6**](../README.md)
+[**@walletmesh/router v0.2.0**](../README.md)
 
 ***
 
@@ -24,7 +24,7 @@ Calls
 
 #### Defined in
 
-[packages/router/src/types.ts:190](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L190)
+[packages/router/src/types.ts:157](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L157)
 
 ***
 
@@ -36,7 +36,7 @@ Target chain ID
 
 #### Defined in
 
-[packages/router/src/types.ts:186](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L186)
+[packages/router/src/types.ts:153](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L153)
 
 ***
 
@@ -48,4 +48,4 @@ Session ID for authorization
 
 #### Defined in
 
-[packages/router/src/types.ts:188](https://github.com/WalletMesh/wm-core/blob/55735390cf4c8a0d047a109e33e2c0437d867c8e/packages/router/src/types.ts#L188)
+[packages/router/src/types.ts:155](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L155)
