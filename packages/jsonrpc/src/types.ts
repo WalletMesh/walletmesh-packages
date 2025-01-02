@@ -241,7 +241,7 @@ export type MethodHandler<
  */
 export interface JSONRPCRequest<
   T extends JSONRPCMethodMap,
-  M extends keyof T,
+  M extends keyof T = keyof T,
   P extends JSONRPCParams = JSONRPCParams,
 > {
   /** The JSON-RPC version ('2.0'). */

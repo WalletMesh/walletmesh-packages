@@ -13,9 +13,7 @@ describe('WalletRouterProvider', () => {
     mockSendRequest.mockClear();
 
     // Create provider with mocked callMethod
-    provider = new WalletRouterProvider(
-      mockSendRequest as unknown as Transport,
-    );
+    provider = new WalletRouterProvider(mockSendRequest as unknown as Transport);
     // @ts-ignore - mock private method
     provider.callMethod = mockCallMethod;
   });
@@ -28,7 +26,7 @@ describe('WalletRouterProvider', () => {
       const result = await provider.connect({
         'aztec:testnet': ['aztec_getAccount'],
       });
-      expect(result).toBe(sessionId);
+      expect(result).toStrictEqual({ sessionId });
       expect(provider.sessionId).toBe(sessionId);
       expect(mockCallMethod).toHaveBeenCalledWith(
         'wm_connect',

@@ -7,8 +7,7 @@ import type {
   ChainId,
   ChainPermissions,
   MethodCall,
-  PermissionCallback,
-  PermissionApprovalCallback,
+  PermissionManager,
   RouterContext,
   RouterMethodMap,
   RouterEventMap,
@@ -21,37 +20,97 @@ import type {
  * Multi-chain router for managing wallet connections with bi-directional communication.
  * Routes JSON-RPC requests to appropriate wallet instances based on chain ID and
  * forwards wallet events back to connected clients.
+ *
+ * The router handles:
+ * - Session management and authentication
+ * - Permission management and validation
+ * - Method routing to appropriate wallet clients
+ * - Event forwarding from wallets to clients
+ * - Bulk operation support
+ *
+ * @example
+ * ```typescript
+ * // Initialize router with wallets and permission manager
+ * const router = new WalletRouter(
+ *   transport,
+ *   new Map([
+ *     ['eip155:1', ethereumWallet],
+ *     ['solana:mainnet', solanaWallet]
+ *   ]),
+ *   permissionManager,
+ *   sessionStore
+ * );
+ *
+ * // Router automatically handles:
+ * // - Session validation
+ * // - Permission checks
+ * // - Method routing
+ * // - Event forwarding
+ * ```
  */
 export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext> {
+  /**
+   * Store for managing session data persistence and lifecycle
+   * @protected
+   */
   protected sessionStore: SessionStore;
-  private wallets: Wallets;
-  private permissionApprovalCallback: PermissionApprovalCallback;
 
   /**
-   * Map of cleanup functions for wallet event handlers
-   * chainId -> cleanup function
+   * Map of chain IDs to their corresponding wallet clients
+   * @private
+   */
+  private wallets: Wallets;
+
+  /**
+   * Manager for handling permission requests, checks, and updates
+   * @private
+   */
+  private permissionManager: PermissionManager<RouterMethodMap, RouterContext>;
+
+  /**
+   * Map of cleanup functions for wallet event handlers.
+   * Keys are chain IDs, values are functions that clean up all event handlers for that chain.
+   * @private
    */
   private walletEventCleanups: Map<ChainId, () => void> = new Map();
 
   /**
    * Creates a new WalletRouter instance for managing multi-chain wallet connections.
+   *
+   * @param transport - Transport layer for sending messages
+   * @param wallets - Map of chain IDs to wallet clients
+   * @param permissionManager - Manager for handling permissions
+   * @param sessionStore - Optional store for session persistence (defaults to in-memory store)
+   *
+   * @throws {RouterError} If transport is invalid or required components are missing
+   *
+   * @example
+   * ```typescript
+   * const router = new WalletRouter(
+   *   { send: async (msg) => window.postMessage(msg, '*') },
+   *   new Map([['eip155:1', ethereumWallet]]),
+   *   new AllowAskDenyManager(askCallback, initialState),
+   *   new LocalStorageSessionStore()
+   * );
+   * ```
    */
   constructor(
     transport: { send: (message: unknown) => Promise<void> },
     wallets: Wallets,
-    permissionCallback: PermissionCallback,
-    permissionApprovalCallback: PermissionApprovalCallback,
+    permissionManager: PermissionManager<RouterMethodMap, RouterContext>,
     sessionStore: SessionStore = defaultStore,
   ) {
     super(transport);
     this.sessionStore = sessionStore;
     this.wallets = wallets;
-    this.permissionApprovalCallback = permissionApprovalCallback;
+    this.permissionManager = permissionManager;
 
     // Add middleware for session validation and permission checks
     this.addMiddleware(createSessionMiddleware(sessionStore));
     // Add middleware for permission approvals
-    this.addMiddleware(createPermissionsMiddleware(permissionCallback));
+    this.addMiddleware(
+      createPermissionsMiddleware(this.permissionManager.checkPermissions.bind(this.permissionManager)),
+    );
 
     // Register methods
     this.registerMethod('wm_connect', this.connect.bind(this));
@@ -68,7 +127,13 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
-   * Validates a chain ID and returns its corresponding JSON-RPC client
+   * Validates a chain ID and returns its corresponding JSON-RPC client.
+   *
+   * @param chainId - Chain ID to validate
+   * @returns The wallet client for the specified chain
+   * @throws {RouterError} With code 'unknownChain' if the chain ID is not configured
+   *
+   * @protected
    */
   protected validateChain(chainId: ChainId): WalletClient {
     const client = this.wallets.get(chainId);
@@ -80,6 +145,18 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
 
   /**
    * Adds a new wallet client for a specific chain ID.
+   * Sets up event listeners and emits availability notification.
+   *
+   * @param chainId - Chain ID to add wallet for
+   * @param wallet - Wallet client implementation
+   * @throws {RouterError} With code 'invalidRequest' if chain is already configured
+   *
+   * @example
+   * ```typescript
+   * router.addWallet('eip155:137', new JSONRPCWalletClient(
+   *   'https://polygon-rpc.com'
+   * ));
+   * ```
    */
   public addWallet(chainId: ChainId, wallet: WalletClient): void {
     if (this.wallets.has(chainId)) {
@@ -102,6 +179,15 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
 
   /**
    * Removes a wallet client for a specific chain ID.
+   * Cleans up event listeners and emits availability notification.
+   *
+   * @param chainId - Chain ID to remove wallet for
+   * @throws {RouterError} With code 'unknownChain' if chain is not configured
+   *
+   * @example
+   * ```typescript
+   * router.removeWallet('eip155:137'); // Remove Polygon wallet
+   * ```
    */
   public removeWallet(chainId: ChainId): void {
     if (!this.wallets.has(chainId)) {
@@ -126,7 +212,15 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
-   * Handles wm_connect method
+   * Handles wm_connect method to establish a new session.
+   * Creates a new session with requested permissions after approval.
+   *
+   * @param context - Router context with origin information
+   * @param params - Connection parameters including requested permissions
+   * @returns Object containing new session ID and approved permissions
+   * @throws {RouterError} If origin is unknown or no chains specified
+   *
+   * @protected
    */
   protected async connect(
     context: RouterContext,
@@ -153,8 +247,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
 
     context.session = session;
 
-    // Get permission approvals
-    context.session.permissions = await this.permissionApprovalCallback(context, params.permissions);
+    const approvedPermissions = await this.permissionManager.approvePermissions(context, permissions);
 
     // Store session data
     await this.sessionStore.set(`${origin}_${sessionId}`, session);
@@ -162,11 +255,15 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     // Setup event listeners for any new wallets
     this.setupWalletEventListeners(this.wallets);
 
-    return { sessionId, permissions };
+    return { sessionId, permissions: approvedPermissions };
   }
 
   /**
-   * Sets up event listeners for all wallet clients
+   * Sets up event listeners for all wallet clients.
+   * Handles wallet events like disconnects and forwards them to clients.
+   *
+   * @param wallets - Map of chain IDs to wallet clients to setup listeners for
+   * @protected
    */
   protected setupWalletEventListeners(wallets: Wallets): void {
     // Clean up any existing listeners
@@ -212,7 +309,15 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
-   * Handles wm_reconnect method
+   * Handles wm_reconnect method to restore an existing session.
+   * Validates the session and returns current permissions if valid.
+   *
+   * @param context - Router context with origin information
+   * @param params - Reconnection parameters including session ID
+   * @returns Object with reconnection status and current permissions
+   * @throws {RouterError} If origin is unknown
+   *
+   * @protected
    */
   protected async reconnect(
     context: RouterContext,
@@ -231,15 +336,21 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       return { status: false, permissions: {} };
     }
 
-    if (!session.permissions) {
-      throw new RouterError('invalidSession', 'No permissions found in session');
-    }
+    const permissions = await this.permissionManager.getPermissions(context);
 
-    return { status: true, permissions: session.permissions };
+    return { status: true, permissions: permissions };
   }
 
   /**
-   * Handles wm_disconnect method
+   * Handles wm_disconnect method to end an existing session.
+   * Cleans up session data and emits termination event.
+   *
+   * @param context - Router context with session information
+   * @param params - Disconnection parameters including session ID
+   * @returns true if session was successfully ended
+   * @throws {RouterError} With code 'invalidSession' if session is invalid
+   *
+   * @protected
    */
   protected async disconnect(
     context: RouterContext,
@@ -252,15 +363,8 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       throw new RouterError('invalidSession');
     }
 
-    if (session.permissions) {
-      // Clean up event listeners for this session's chains
-      for (const chainId of Object.keys(session.permissions)) {
-        const cleanup = this.walletEventCleanups.get(chainId);
-        if (cleanup) {
-          cleanup();
-          this.walletEventCleanups.delete(chainId);
-        }
-      }
+    if (this.permissionManager.cleanup) {
+      await this.permissionManager.cleanup(context, session.id);
     }
 
     await this.sessionStore.delete(`${origin}_${sessionId}`);
@@ -275,7 +379,15 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
-   * Handles wm_getPermissions method
+   * Handles wm_getPermissions method to retrieve current permissions.
+   * Returns permissions for specified chains or all chains if none specified.
+   *
+   * @param context - Router context with session information
+   * @param params - Parameters including optional chain IDs to filter by
+   * @returns Current permissions in human-readable format
+   * @throws {RouterError} With code 'invalidSession' if session is invalid
+   *
+   * @protected
    */
   protected async getPermissions(
     context: RouterContext,
@@ -288,20 +400,20 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       throw new RouterError('invalidSession');
     }
 
-    const result: ChainPermissions = {};
-    const chainsToInclude = chainIds || (session.permissions && Object.keys(session.permissions)) || [];
-
-    for (const chainId of chainsToInclude) {
-      if (!session.permissions || !session.permissions[chainId]) {
-        throw new RouterError('invalidSession', `Chain ${chainId} not found in session`);
-      }
-      result[chainId] = session.permissions[chainId];
-    }
-    return result;
+    const permissions = await this.permissionManager.getPermissions(context, chainIds);
+    return permissions;
   }
 
   /**
-   * Handles wm_updatePermissions method
+   * Handles wm_updatePermissions method to modify existing permissions.
+   * Updates session with newly approved permissions.
+   *
+   * @param context - Router context with session information
+   * @param params - Parameters including new permission requests
+   * @returns Newly approved permissions in human-readable format
+   * @throws {RouterError} With code 'invalidSession' if session is invalid
+   *
+   * @protected
    */
   protected async updatePermissions(
     context: RouterContext,
@@ -315,15 +427,23 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     }
 
     // Update session with new permissions
-    session.permissions = await this.permissionApprovalCallback(context, permissions);
+    const approvedPermissions = await this.permissionManager.approvePermissions(context, permissions);
 
     await this.sessionStore.set(`${origin}_${sessionId}`, session);
 
-    return session.permissions;
+    return approvedPermissions;
   }
 
   /**
-   * Internal helper to execute a method call on a wallet
+   * Internal helper to execute a method call on a wallet.
+   * Handles error translation from wallet-specific to router errors.
+   *
+   * @param client - Wallet client to execute method on
+   * @param methodCall - Method call details including name and parameters
+   * @returns Result of the method call
+   * @throws {RouterError} With appropriate error code based on failure type
+   *
+   * @protected
    */
   protected async _call(
     client: WalletClient,
@@ -342,7 +462,15 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
-   * Handles wm_call method
+   * Handles wm_call method to execute a single wallet method.
+   * Routes the call to appropriate wallet after validation.
+   *
+   * @param _context - Router context (unused but required by interface)
+   * @param params - Parameters including chain ID and method call details
+   * @returns Result of the method call
+   * @throws {RouterError} If chain validation fails or method execution fails
+   *
+   * @protected
    */
   protected async call(
     _context: RouterContext,
@@ -354,7 +482,15 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
-   * Handles wm_bulkCall method
+   * Handles wm_bulkCall method to execute multiple wallet methods.
+   * Executes calls in sequence and handles partial failures.
+   *
+   * @param _context - Router context (unused but required by interface)
+   * @param params - Parameters including chain ID and array of method calls
+   * @returns Array of results corresponding to each method call
+   * @throws {RouterError} With code 'partialFailure' if some calls succeed
+   *
+   * @protected
    */
   protected async bulkCall(
     _context: RouterContext,
@@ -382,7 +518,16 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
-   * Handles wm_getSupportedMethods method
+   * Handles wm_getSupportedMethods method to discover available methods.
+   * Returns router methods if no chains specified, otherwise returns
+   * methods supported by specified chains.
+   *
+   * @param _context - Router context (unused but required by interface)
+   * @param params - Parameters including optional chain IDs to query
+   * @returns Record mapping chain IDs to their supported method names
+   * @throws {RouterError} If chain validation fails or capability query fails
+   *
+   * @protected
    */
   protected async getSupportedMethods(
     _context: RouterContext,

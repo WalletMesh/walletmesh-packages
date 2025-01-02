@@ -98,7 +98,7 @@ export class JSONRPCWalletClient<M extends WalletMethodMap = WalletMethodMap> im
    *
    * @example
    * ```typescript
-   * const { methods } = await client.getSupportedMethods();
+   * const methods = await client.getSupportedMethods();
    * console.log('Supported methods:', methods);
    * ```
    */

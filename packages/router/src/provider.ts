@@ -1,14 +1,28 @@
 import { JSONRPCNode } from '@walletmesh/jsonrpc';
 
-import type { ChainId, MethodCall, RouterMethodMap, RouterEventMap, RouterContext } from './types.js';
-
-/**
+import type {
+  ChainId,
+  ChainPermissions,
+  HumanReadableChainPermissions,
+  MethodCall,
+  RouterMethodMap,
+  RouterEventMap,
+  RouterContext,
+} from './types.js'; /**
  * Client-side provider for interacting with the multi-chain router.
  * Provides a simplified interface for applications to connect to and interact with wallets.
  *
  * The provider handles session management and method invocation, abstracting away
  * the underlying JSON-RPC communication details. It uses a bi-directional peer connection
  * to support both sending requests and receiving events from the router.
+ *
+ * Events inherited from JSONRPCNode:
+ * - wm_walletStateChanged: Emitted when wallet state changes (accounts, network, etc.)
+ * - wm_permissionsChanged: Emitted when session permissions are updated
+ * - wm_sessionTerminated: Emitted when the session is terminated
+ * - wm_walletAvailabilityChanged: Emitted when wallet availability changes
+ *
+ * @see {@link RouterEventMap} for detailed event documentation
  *
  * @example
  * ```typescript
@@ -23,7 +37,7 @@ import type { ChainId, MethodCall, RouterMethodMap, RouterEventMap, RouterContex
  * });
  *
  * // Connect to a chain
- * const sessionId = await provider.connect({
+ * const { sessionId, permissions } = await provider.connect({
  *   'eip155:1': ['eth_accounts', 'eth_sendTransaction']
  * });
  *
@@ -42,44 +56,63 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
   private _sessionId: string | undefined;
 
   /**
-   * Gets the current session ID if connected, undefined otherwise
+   * Gets the current session ID if connected, undefined otherwise.
+   * The session ID is required for most operations and is set after
+   * a successful connection.
+   *
    * @returns The current session ID or undefined if not connected
+   * @see {@link connect} for establishing a session
+   * @see {@link disconnect} for ending a session
    */
   get sessionId(): string | undefined {
     return this._sessionId;
   }
 
   /**
-   * Connects to multiple chains with specified permissions
+   * Connects to multiple chains with specified permissions.
+   * Establishes a session and requests method permissions for each chain.
+   *
    * @param permissions - Map of chain IDs to their requested permissions
-   * @param timeout - Optional timeout in milliseconds for the request
+   * @param timeout - Optional timeout in milliseconds. If the request takes longer,
+   *                 it will be cancelled and throw a TimeoutError
    * @returns Session ID that can be used for future requests
-   * @throws {Error} If the connection fails or is rejected
+   * @throws {RouterError} With code 'invalidRequest' if permissions are invalid
+   * @throws {RouterError} With code 'unknownChain' if a chain is not supported
+   * @throws {TimeoutError} If the request times out
+   * @see {@link RouterMethodMap['wm_connect']} for detailed request/response types
    *
    * @example
    * ```typescript
    * // Connect to multiple chains with specific permissions
-   * const sessionId = await provider.connect({
+   * const { sessionId, permissions } = await provider.connect({
    *   'eip155:1': ['eth_accounts', 'eth_sendTransaction'],
    *   'eip155:137': ['eth_getBalance', 'eth_call']
    * });
    *
    * // Connect with a 5 second timeout
-   * const sessionId = await provider.connect({
+   * const { sessionId, permissions } = await provider.connect({
    *   'eip155:1': ['eth_accounts']
    * }, 5000);
    * ```
    */
-  async connect(permissions: Record<ChainId, string[]>, timeout?: number): Promise<string> {
+  async connect(
+    permissions: ChainPermissions,
+    timeout?: number,
+  ): Promise<{ sessionId: string; permissions: HumanReadableChainPermissions }> {
     const result = await this.callMethod('wm_connect', { permissions }, timeout);
     this._sessionId = result.sessionId;
-    return result.sessionId;
+    return result;
   }
 
   /**
-   * Disconnects the current session if one exists
-   * @param timeout - Optional timeout in milliseconds for the request
-   * @throws {Error} If not connected or if the disconnection fails
+   * Disconnects the current session if one exists.
+   * Cleans up session state and notifies the router to terminate the session.
+   *
+   * @param timeout - Optional timeout in milliseconds. If the request takes longer,
+   *                 it will be cancelled and throw a TimeoutError
+   * @throws {RouterError} With code 'invalidSession' if not connected
+   * @throws {TimeoutError} If the request times out
+   * @see {@link RouterMethodMap['wm_disconnect']} for detailed request/response types
    */
   async disconnect(timeout?: number): Promise<void> {
     if (!this._sessionId) {
@@ -90,13 +123,19 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
   }
 
   /**
-   * Gets current session permissions
+   * Gets current session permissions.
+   * Returns a human-readable format suitable for displaying to users.
+   *
    * @param chainIds - Optional array of chain IDs to get permissions for. If not provided, returns permissions for all chains
-   * @param timeout - Optional timeout in milliseconds for the request
-   * @returns Record of chain IDs to their permissions
-   * @throws {Error} If the request fails
+   * @param timeout - Optional timeout in milliseconds. If the request takes longer,
+   *                 it will be cancelled and throw a TimeoutError
+   * @returns Record of chain IDs to their permissions with human-readable descriptions
+   * @throws {RouterError} With code 'invalidSession' if not connected
+   * @throws {TimeoutError} If the request times out
+   * @see {@link HumanReadableChainPermissions} for return type details
+   * @see {@link RouterMethodMap['wm_getPermissions']} for detailed request/response types
    */
-  async getPermissions(chainIds?: ChainId[], timeout?: number): Promise<Record<ChainId, string[]>> {
+  async getPermissions(chainIds?: ChainId[], timeout?: number): Promise<HumanReadableChainPermissions> {
     if (!this._sessionId) {
       return {};
     }
@@ -110,10 +149,16 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
   }
 
   /**
-   * Updates session permissions
+   * Updates session permissions.
+   * Requests additional permissions or modifies existing ones.
+   *
    * @param permissions - Record of chain IDs to their new permissions
-   * @param timeout - Optional timeout in milliseconds for the request
-   * @throws {Error} If not connected or if the update fails
+   * @param timeout - Optional timeout in milliseconds. If the request takes longer,
+   *                 it will be cancelled and throw a TimeoutError
+   * @throws {RouterError} With code 'invalidSession' if not connected
+   * @throws {RouterError} With code 'invalidRequest' if permissions are invalid
+   * @throws {TimeoutError} If the request times out
+   * @see {@link RouterMethodMap['wm_updatePermissions']} for detailed request/response types
    *
    * @example
    * ```typescript
@@ -124,11 +169,14 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    * });
    * ```
    */
-  async updatePermissions(permissions: Record<ChainId, string[]>, timeout?: number): Promise<void> {
+  async updatePermissions(
+    permissions: Record<ChainId, string[]>,
+    timeout?: number,
+  ): Promise<HumanReadableChainPermissions> {
     if (!this._sessionId) {
       throw new Error('Not connected');
     }
-    await this.callMethod(
+    const approvedPermissions = await this.callMethod(
       'wm_updatePermissions',
       {
         sessionId: this._sessionId,
@@ -136,15 +184,25 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
       },
       timeout,
     );
+
+    return approvedPermissions;
   }
 
   /**
-   * Invokes a method on the connected wallet
+   * Invokes a method on the connected wallet.
+   * Routes the call to the appropriate wallet client based on chain ID.
+   *
    * @param chainId - Target chain identifier (must match the chain ID used to connect)
    * @param call - Method call details including name and parameters
-   * @param timeout - Optional timeout in milliseconds for the request
+   * @param timeout - Optional timeout in milliseconds. If the request takes longer,
+   *                 it will be cancelled and throw a TimeoutError
    * @returns Result from the wallet method call
-   * @throws {Error} If not connected, if the chain ID doesn't match, or if the call fails
+   * @throws {RouterError} With code 'invalidSession' if not connected
+   * @throws {RouterError} With code 'unknownChain' if chain ID is invalid
+   * @throws {RouterError} With code 'insufficientPermissions' if method not permitted
+   * @throws {RouterError} With code 'methodNotSupported' if method not supported
+   * @throws {TimeoutError} If the request times out
+   * @see {@link RouterMethodMap['wm_call']} for detailed request/response types
    *
    * @example
    * ```typescript
@@ -176,12 +234,20 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
   }
 
   /**
-   * Executes multiple method calls in sequence on the same chain
+   * Executes multiple method calls in sequence on the same chain.
+   * More efficient than multiple individual calls for related operations.
+   *
    * @param chainId - Target chain identifier (must match the chain ID used to connect)
    * @param calls - Array of method calls to execute
-   * @param timeout - Optional timeout in milliseconds for the request
+   * @param timeout - Optional timeout in milliseconds. If the request takes longer,
+   *                 it will be cancelled and throw a TimeoutError
    * @returns Array of results from the wallet method calls
-   * @throws {Error} If not connected, if the chain ID doesn't match, or if any call fails
+   * @throws {RouterError} With code 'invalidSession' if not connected
+   * @throws {RouterError} With code 'unknownChain' if chain ID is invalid
+   * @throws {RouterError} With code 'insufficientPermissions' if any method not permitted
+   * @throws {RouterError} With code 'partialFailure' if some calls succeed but others fail
+   * @throws {TimeoutError} If the request times out
+   * @see {@link RouterMethodMap['wm_bulkCall']} for detailed request/response types
    *
    * @example
    * ```typescript
@@ -208,11 +274,17 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
   }
 
   /**
-   * Gets supported methods for one or more chains
+   * Gets supported methods for one or more chains.
+   * Used for capability discovery and feature detection.
+   *
    * @param chainIds - Optional array of chain identifiers. If not provided, returns router's supported methods
-   * @param timeout - Optional timeout in milliseconds for the request
+   * @param timeout - Optional timeout in milliseconds. If the request takes longer,
+   *                 it will be cancelled and throw a TimeoutError
    * @returns Record mapping chain IDs to their supported methods
-   * @throws {Error} If the request fails
+   * @throws {RouterError} With code 'unknownChain' if any chain ID is invalid
+   * @throws {RouterError} With code 'walletNotAvailable' if wallet capability check fails
+   * @throws {TimeoutError} If the request times out
+   * @see {@link RouterMethodMap['wm_getSupportedMethods']} for detailed request/response types
    *
    * @example
    * ```typescript

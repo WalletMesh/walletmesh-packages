@@ -95,7 +95,7 @@ describe('createSessionMiddleware', () => {
   });
 
   it('should validate and refresh existing session', async () => {
-    const mockSession = { id: 'test_123', permissions: {} };
+    const mockSession = { id: 'test_123', permissions: {}, origin: 'test' };
     mockSessionStore.validateAndRefresh = vi.fn().mockResolvedValue(mockSession);
 
     const middleware = createSessionMiddleware(mockSessionStore);
