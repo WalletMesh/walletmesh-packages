@@ -5,9 +5,6 @@ import type { SessionData } from './types.js';
 const mockSession: SessionData = {
   id: 'test-session',
   origin: 'test-origin',
-  permissions: {
-    'test-chain': ['test_method'],
-  },
 };
 
 describe('MemorySessionStore', () => {

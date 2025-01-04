@@ -4,48 +4,55 @@ A flexible routing system for managing multi-chain wallet connections with bi-di
 
 ## Quick Start
 
+### Install the package
 ```bash
-# Install the package
 pnpm add @walletmesh/router
+```
 
-# Create a simple router setup
-import { WalletRouter, WalletRouterProvider } from '@walletmesh/router';
+### Create a simple router setup
+```typescript
+import { WalletRouter, WalletRouterProvider, PermissivePermissionsManager, type WalletClient } from '@walletmesh/router';
 
 // Initialize a basic Ethereum wallet client that wraps window.ethereum
 // This client implements the WalletClient interface for Ethereum mainnet
-const ethereumWallet = {
-  async call(method: string, params?: unknown[]) {
+const ethereumWallet: WalletClient = {
+  async call(method: string, params?: unknown) {
     // Forward requests to the injected Ethereum provider (e.g., MetaMask)
     return window.ethereum.request({ method, params });
   }
 };
 
-// Initialize the router with transport layer and wallet implementations
+// Initialize the router with transport layer, wallets, and permission manager
 // The router coordinates communication between the application and wallets
 const router = new WalletRouter(
-  transport,
+  { send: async (msg) => window.postMessage(msg, '*') },
   new Map([['eip155:1', ethereumWallet]]),
-  // Basic permission check that allows all methods (customize for production)
-  async (ctx, req) => true,
-  // Basic permission approval that accepts all requests (customize for production)
-  async (ctx, perms) => perms
+  // For development, use the permissive permission manager
+  new PermissivePermissionsManager()
 );
 
 // Initialize the provider that applications use to interact with wallets
 // The provider offers a high-level interface for wallet operations
-const provider = new WalletRouterProvider(transport);
+const provider = new WalletRouterProvider({
+  send: async (msg) => window.postMessage(msg, '*')
+});
 
 // Connect to Ethereum mainnet and request method permissions
 // This establishes a session and requests access to specific RPC methods
-const sessionId = await provider.connect({
+const { sessionId, permissions } = await provider.connect({
   'eip155:1': ['eth_accounts', 'eth_sendTransaction']
-});
+}, 5000); // Optional timeout in milliseconds
+
+// The permissions are in a human-readable format for display to users
+console.log('Approved permissions:', permissions);
+// The connect method returns the session ID for future requests
+console.log('Connected with session:', sessionId);
 
 // Call a wallet method using the established session
 // The router will validate permissions and route the call to the appropriate wallet
 const accounts = await provider.call('eip155:1', {
   method: 'eth_accounts'
-});
+}, 5000); // Optional timeout in milliseconds
 ```
 
 ## Features
@@ -182,7 +189,7 @@ sequenceDiagram
      get sessionId(): string | undefined;
 
      // Connect to chains with permissions
-     async connect(permissions: Record<ChainId, string[]>, timeout?: number): Promise<string>;
+     async connect(permissions: ChainPermissions, timeout?: number): Promise<{ sessionId: string, permissions: ChainPermissions }>;
 
      // Call wallet method
      async call(chainId: ChainId, call: MethodCall, timeout?: number): Promise<unknown>;
@@ -191,8 +198,8 @@ sequenceDiagram
      async bulkCall(chainId: ChainId, calls: MethodCall[], timeout?: number): Promise<unknown[]>;
 
      // Get/update permissions
-     async getPermissions(chainIds?: ChainId[], timeout?: number): Promise<Record<ChainId, string[]>>;
-     async updatePermissions(permissions: Record<ChainId, string[]>, timeout?: number): Promise<void>;
+     async getPermissions(chainIds?: ChainId[], timeout?: number): Promise<HumanReadableChainPermissions>;>;
+     async updatePermissions(permissions: ChainPermissions, timeout?: number): Promise<HumanReadableChainPermissions>;
 
      // Get supported methods
      async getSupportedMethods(chainIds?: ChainId[], timeout?: number): Promise<Record<ChainId, string[]>>;
@@ -204,23 +211,19 @@ sequenceDiagram
 
 2. **WalletRouter**
    ```typescript
-   class WalletRouter extends JSONRPCNode {
+   class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext> {
      constructor(
-       transport: Transport,
+       transport: { send: (message: unknown) => Promise<void> },
        wallets: Wallets,
-       permissionCallback: PermissionCallback,
-       permissionApprovalCallback: PermissionApprovalCallback,
+       permissionManager: PermissionManager<RouterMethodMap, RouterContext>,
        sessionStore?: SessionStore
      );
 
      // Add wallet client
-     addWallet(chainId: string, client: WalletClient): void;
+     addWallet(chainId: ChainId, client: WalletClient): void;
 
      // Remove wallet client
-     removeWallet(chainId: string): void;
-
-     // Handle wallet events
-     protected handleWalletEvent(chainId: string, event: string, data: unknown): void;
+     removeWallet(chainId: ChainId): void;
    }
    ```
 
@@ -254,7 +257,7 @@ sequenceDiagram
    ```typescript
    interface WalletClient {
      // Call wallet method
-     call<T = unknown>(method: string, params?: unknown[]): Promise<T>;
+     call<T = unknown>(method: string, params?: unknown): Promise<T>;
 
      // Optional event handling
      on?(event: string, handler: (data: unknown) => void): void;
@@ -268,17 +271,7 @@ sequenceDiagram
 ### Error Handling
 
 ```typescript
-// Router error codes and messages
-const RouterErrorMap = {
-  unknownChain: { code: -32000, message: 'Unknown chain ID' },
-  invalidSession: { code: -32001, message: 'Invalid or expired session' },
-  insufficientPermissions: { code: -32002, message: 'Insufficient permissions for method' },
-  methodNotSupported: { code: -32003, message: 'Method not supported by chain' },
-  walletNotAvailable: { code: -32004, message: 'Wallet service not available' },
-  partialFailure: { code: -32005, message: 'Partial failure' },
-  invalidRequest: { code: -32006, message: 'Invalid request parameters' },
-  unknownError: { code: -32603, message: 'Internal error' }
-};
+import { RouterError } from '@walletmesh/router';
 
 // Error handling example
 try {
@@ -289,11 +282,17 @@ try {
 } catch (error) {
   if (error instanceof RouterError) {
     switch (error.code) {
-      case -32002:
+      case 'insufficientPermissions':
         console.error('Permission denied:', error.message);
         break;
-      case -32004:
+      case 'walletNotAvailable':
         console.error('Wallet error:', error.data);
+        break;
+      case 'unknownChain':
+        console.error('Chain not supported:', error.message);
+        break;
+      case 'methodNotSupported':
+        console.error('Method not supported:', error.message);
         break;
       default:
         console.error('Router error:', error.message);
@@ -305,13 +304,7 @@ try {
 ### Session Configuration
 
 ```typescript
-// Session store configuration options
-interface SessionStoreConfig {
-  // Session lifetime in milliseconds (optional)
-  lifetime?: number;
-  // Whether to refresh session expiry on access (optional)
-  refreshOnAccess?: boolean;
-}
+import { type SessionStoreConfig, MemorySessionStore, LocalStorageSessionStore } from '@walletmesh/router';
 
 // In-memory session store with 24h lifetime
 const memoryStore = new MemorySessionStore({
@@ -324,38 +317,6 @@ const persistentStore = new LocalStorageSessionStore({
   lifetime: 7 * 24 * 60 * 60 * 1000, // 7 days
   refreshOnAccess: true
 });
-
-// Custom session store implementation
-class CustomStore implements SessionStore {
-  async set(sessionId: string, data: SessionData): Promise<void> {
-    // Store session
-  }
-
-  async get(sessionId: string): Promise<SessionData | undefined> {
-    // Get session if not expired
-  }
-
-  async getAll(): Promise<Map<string, SessionData>> {
-    // Get all non-expired sessions
-  }
-
-  async delete(sessionId: string): Promise<void> {
-    // Remove session
-  }
-
-  async clear(): Promise<void> {
-    // Clear all sessions
-  }
-
-  async validateAndRefresh(sessionId: string): Promise<SessionData | undefined> {
-    // Validate session and optionally refresh expiry
-  }
-
-  async cleanExpired(): Promise<number> {
-    // Remove expired sessions
-    // Returns number of sessions removed
-  }
-}
 ```
 
 ### Middleware
@@ -375,24 +336,38 @@ const sessionMiddleware = createSessionMiddleware(sessionStore);
 2. **Permissions Middleware**
 ```typescript
 // Creates middleware for permission checking
-const permissionsMiddleware = createPermissionsMiddleware(permissionCallback);
+const permissionsMiddleware = createPermissionsMiddleware(permissionManager.checkPermissions.bind(permissionManager));
 
-// Validates method permissions using callback
-// Supports both direct and pattern-based permission checks
-// Handles both single and bulk method calls
+// Validates method permissions using the permission manager
+// Supports both single and bulk method calls
+// Handles permission states (ALLOW/ASK/DENY)
 ```
 
-Permission callbacks can be created using provided helpers:
+Permission managers can be created using provided helpers:
 ```typescript
 // Fully permissive (development)
-const devPermissions = createPermissivePermissions();
+const devPermissions = new PermissivePermissionsManager();
 
-// Pattern matching (production)
-const prodPermissions = createStringMatchPermissions([
-  "*:eth_call",                // Allow eth_call on any chain
-  "eip155:1:eth_*",           // Allow all eth_ methods on Ethereum mainnet
-  "eip155:5:eth_getBalance"   // Allow specific method on specific chain
-]);
+// Allow/Ask/Deny permissions (production)
+const prodPermissions = new AllowAskDenyManager(
+  // Approval callback for new permission requests
+  async (context, request) => {
+    const approved = await showPermissionDialog(request);
+    return approved ? request : {};
+  },
+  // Ask callback for methods in ASK state
+  async (context, request) => {
+    return await showMethodPrompt(request.method);
+  },
+  // Initial permission states
+  new Map([
+    ['eip155:1', new Map([
+      ['eth_sendTransaction', AllowAskDenyState.ASK],
+      ['eth_accounts', AllowAskDenyState.ALLOW],
+      ['personal_sign', AllowAskDenyState.DENY]
+    ])]
+  ])
+);
 ```
 
 ## Installation
@@ -404,93 +379,86 @@ pnpm add @walletmesh/router
 ## Usage Example
 
 ```typescript
+import {
+  WalletRouter,
+  WalletRouterProvider,
+  AllowAskDenyManager,
+  AllowAskDenyState,
+  type WalletClient
+} from '@walletmesh/router';
+
 // Initialize wallet clients for multiple chains
-// Each client implements the WalletClient interface for its respective chain
-const wallets = new Map([
-  ['eip155:1', ethereumWallet],
-  ['eip155:137', polygonWallet]
-]);
+const ethereumWallet: WalletClient = {
+  async call(method: string, params?: unknown) {
+    return window.ethereum.request({ method, params });
+  }
+};
+
+const polygonWallet: WalletClient = {
+  async call(method: string, params?: unknown) {
+    return window.polygon.request({ method, params });
+  }
+};
 
 // Create router instance with production-ready permission handling
-// The router manages wallet connections, permissions, and method routing
 const router = new WalletRouter(
-  transport,
-  wallets,
-  // Permission callback validates method access based on session permissions
-  // Returns true if the method is allowed for the chain in the current session
-  async (context, request) => {
-    return context.session?.permissions?.[request.params.chainId]?.includes(request.params.call.method) ?? false;
-  },
-  // Permission approval callback handles user interaction for permission requests
-  // Shows a dialog and returns approved permissions or empty if denied
-  async (context, permissions) => {
-    const approved = await showPermissionDialog(permissions);
-    return approved ? permissions : {};
-  }
+  { send: async (msg) => window.postMessage(msg, '*') },
+  new Map([
+    ['eip155:1', ethereumWallet],
+    ['eip155:137', polygonWallet]
+  ]),
+  new AllowAskDenyManager(
+    // Approval callback for new permission requests
+    async (context, request) => {
+      const approved = await showPermissionDialog(request);
+      return approved ? request : {};
+    },
+    // Ask callback for methods in ASK state
+    async (context, request) => {
+      return await showMethodPrompt(request.method);
+    },
+    // Initial permission states
+    new Map([
+      ['eip155:1', new Map([
+        ['eth_sendTransaction', AllowAskDenyState.ASK],
+        ['eth_accounts', AllowAskDenyState.ALLOW],
+        ['personal_sign', AllowAskDenyState.DENY]
+      ])]
+    ])
+  )
 );
 
 // Initialize provider for application use
-// The provider abstracts router complexity and provides a clean API
-const provider = new WalletRouterProvider(transport);
+const provider = new WalletRouterProvider({
+  send: async (msg) => window.postMessage(msg, '*')
+});
 
 // Establish connections to multiple chains with specific method permissions
-// This creates a session that can interact with both Ethereum and Polygon
-const sessionId = await provider.connect({
+const { sessionId, permissions } = await provider.connect({
   'eip155:1': ['eth_accounts', 'eth_sendTransaction'],
   'eip155:137': ['eth_getBalance', 'eth_call']
-});
+}, 5000); // Optional timeout in milliseconds
 
 // Execute a single method call on Ethereum mainnet
-// The router handles permission checks and routing automatically
 const accounts = await provider.call('eip155:1', {
   method: 'eth_accounts'
-});
+}, 5000); // Optional timeout in milliseconds
 
 // Execute multiple method calls in sequence on Ethereum mainnet
-// This is more efficient than individual calls for related operations
 const [balance, allowance] = await provider.bulkCall('eip155:1', [
   { method: 'eth_getBalance', params: ['0x...'] },
   { method: 'eth_allowance', params: ['0x...', '0x...'] }
-]);
+], 5000); // Optional timeout in milliseconds
 
 // Subscribe to wallet state changes with automatic cleanup
-// The router emits events when wallet state changes (e.g., connection, chain)
 const cleanup = provider.on('wm_walletStateChanged', ({ chainId, changes }) => {
   console.log(`Wallet state changed for ${chainId}:`, changes);
 });
 
 // Clean up resources and close connections
-// This removes event listeners and terminates the session
 cleanup();
 await provider.disconnect();
 ```
-
-## Best Practices
-
-1. **Session Management**
-   - Use persistent session storage in production
-   - Implement session cleanup for inactive sessions
-   - Handle session recovery gracefully
-
-2. **Error Handling**
-   - Implement proper error handling for all operations
-   - Use appropriate error codes for different scenarios
-   - Provide helpful error messages and data
-
-3. **Permissions**
-   - Implement granular permission controls
-   - Use method-specific permissions
-   - Handle permission updates properly
-
-4. **Performance**
-   - Use request batching when possible
-   - Implement proper cleanup for event handlers
-   - Handle wallet connection state properly
-
-5. **Security**
-   - Validate all incoming messages
-   - Implement proper origin checking
-   - Use secure transport layers
 
 ### Session Management
 
@@ -504,29 +472,65 @@ The router uses a flexible session management system that:
 
 ### Permission System
 
-Permissions are managed through a sophisticated callback-based system:
+The router implements a flexible permission system with two built-in strategies:
 
-1. **Permission Approval**
-   - Initial permission requests are handled by a dedicated approval callback
-   - Supports modifying requested permissions before approval
-   - Enables custom permission UI flows
-   - Handles both initial connect and permission update scenarios
+1. **Allow/Ask/Deny Permission Manager** (`AllowAskDenyManager`)
+   - Manages permissions using three states:
+     - `ALLOW`: Method is always allowed without prompting
+     - `DENY`: Method is always denied without prompting
+     - `ASK`: User is prompted for permission each time
+   - Permissions are stored per chain and method:
+     ```typescript
+// Permission state structure
+type AllowAskDenyChainPermissions<T extends RouterMethodMap> = Map<ChainId, Map<keyof T, AllowAskDenyState>>;
 
-2. **Runtime Validation**
-   - Every operation is validated through a permission callback
-   - Supports granular control at method and chain level
-   - Enables context-aware permission decisions
-   - Allows dynamic permission updates based on wallet state
+// Example configuration
+const initialState = new Map([
+  ['eip155:1', new Map([
+    ['eth_sendTransaction', AllowAskDenyState.ASK],
+    ['eth_accounts', AllowAskDenyState.ALLOW],
+    ['personal_sign', AllowAskDenyState.DENY]
+  ])]
+]);
 
-3. **Permission Structure**
+const manager = new AllowAskDenyManager(approveCallback, askCallback, initialState);
+     ```
+   - Interactive permission handling through customizable prompt callback
+   - Supports both single and bulk method calls
+   - Bulk calls require all methods to be permitted
+
+2. **Permissive Manager** (`PermissivePermissionsManager`)
+   - Simple "allow all" strategy for development/testing
+   - Uses wildcard permissions: `"*": { "*": { allowed: true } }`
+   - No user interaction required
+   - Useful for rapid development and trusted environments
+
+3. **Human-Readable Permissions**
    ```typescript
-   type ChainPermissions = {
-     [chainId: string]: string[]; // Array of allowed methods
+   type HumanReadableChainPermissions = {
+     [chainId: string]: {
+       [methodName: string]: {
+         allowed: boolean;
+         shortDescription: string;
+         longDescription?: string;
+       };
+     };
    };
 
-   // Example:
+   // Example response
    {
-     'eip155:1': ['eth_accounts', 'eth_sendTransaction'],
-     'eip155:137': ['eth_getBalance', 'eth_call']
+     "eip155:1": {
+       "eth_sendTransaction": {
+         allowed: true,
+         shortDescription: "ask",
+         longDescription: "Prompt user before sending transactions"
+       }
+     }
    }
    ```
+
+4. **Permission Flow**
+   - Initial connect: Client requests permissions → Manager approves/modifies → Session created
+   - Method calls: Session validated → Permissions checked → Method routed
+   - Updates: Client requests changes → Manager approves → Session updated
+   - Events: Permission changes trigger `wm_permissionsChanged` event

@@ -3,6 +3,7 @@ import type { Mock } from 'vitest';
 import { WalletRouter } from './router.js';
 import { RouterError } from './errors.js';
 import type { WalletClient, SessionData } from './types.js';
+import { PermissivePermissionsManager } from './permissions/permissive.js';
 
 describe('WalletRouter', () => {
   const mockTransport = {
@@ -26,19 +27,16 @@ describe('WalletRouter', () => {
     cleanExpired: vi.fn(),
   };
 
-  const mockPermissionCallback = vi.fn();
-  const mockPermissionApprovalCallback = vi.fn();
-
   let router: WalletRouter;
   const initialWallets = new Map([['eip155:1', mockWalletClient]]);
 
   beforeEach(() => {
     vi.clearAllMocks();
+
     router = new WalletRouter(
       mockTransport,
       new Map(initialWallets),
-      mockPermissionCallback,
-      mockPermissionApprovalCallback,
+      new PermissivePermissionsManager(),
       mockSessionStore,
     );
   });
@@ -51,6 +49,34 @@ describe('WalletRouter', () => {
 
     it('should throw for non-existent chain', () => {
       expect(() => router['validateChain']('invalid:chain')).toThrow(new RouterError('unknownChain'));
+    });
+
+    it('should handle missing wallet client', () => {
+      const emptyWallets = new Map();
+      router = new WalletRouter(
+        mockTransport,
+        emptyWallets,
+        new PermissivePermissionsManager(),
+        mockSessionStore,
+      );
+      expect(() => router['validateChain']('eip155:2')).toThrow(new RouterError('unknownChain'));
+    });
+
+    it('should handle invalid wallet client in call', async () => {
+      const invalidWallet: WalletClient = {
+        call: null as unknown as WalletClient['call'],
+      };
+      const invalidWallets = new Map([['eip155:2', invalidWallet]]);
+      router = new WalletRouter(
+        mockTransport,
+        invalidWallets,
+        new PermissivePermissionsManager(),
+        mockSessionStore,
+      );
+
+      await expect(router['_call'](invalidWallet, { method: 'test_method' })).rejects.toThrow(
+        new RouterError('walletNotAvailable', 'TypeError: client.call is not a function'),
+      );
     });
   });
 
@@ -99,27 +125,10 @@ describe('WalletRouter', () => {
     const mockSession: SessionData = {
       id: 'test-session',
       origin: 'test-origin',
-      permissions: {
-        'eip155:1': ['eth_accounts'],
-      },
     };
 
     beforeEach(() => {
       mockSessionStore.validateAndRefresh.mockResolvedValue(mockSession);
-      mockPermissionApprovalCallback.mockResolvedValue(mockSession.permissions);
-    });
-
-    it('should connect new session', async () => {
-      const result = await router['connect'](
-        { origin: 'test-origin' },
-        { permissions: { 'eip155:1': ['eth_accounts'] } },
-      );
-
-      expect(result).toEqual({
-        sessionId: expect.any(String),
-        permissions: mockSession.permissions,
-      });
-      expect(mockSessionStore.set).toHaveBeenCalled();
     });
 
     it('should throw on connect with missing origin', async () => {
@@ -141,19 +150,40 @@ describe('WalletRouter', () => {
     });
 
     it('should throw on connect with invalid permissions', async () => {
-      mockPermissionApprovalCallback.mockRejectedValue(new Error('Invalid permissions'));
+      mockSessionStore.validateAndRefresh.mockRejectedValue(
+        new RouterError('invalidSession', 'Invalid permissions'),
+      );
+      mockSessionStore.set.mockRejectedValue(new RouterError('invalidSession', 'Invalid permissions'));
 
       await expect(
         router['connect']({ origin: 'test-origin' }, { permissions: { 'eip155:1': ['eth_accounts'] } }),
-      ).rejects.toThrow('Invalid permissions');
+      ).rejects.toThrow(new RouterError('invalidSession', 'Invalid permissions'));
     });
 
     it('should reconnect existing session', async () => {
-      const result = await router['reconnect']({ origin: 'test-origin' }, { sessionId: 'test-session' });
+      const mockSessionData = {
+        id: 'test-session',
+        origin: 'test-origin',
+      };
+
+      mockSessionStore.validateAndRefresh.mockResolvedValue(mockSessionData);
+      mockSessionStore.set.mockResolvedValue(undefined);
+
+      const result = await router['reconnect'](
+        { origin: 'test-origin', session: mockSessionData },
+        { sessionId: 'test-session' },
+      );
 
       expect(result).toEqual({
         status: true,
-        permissions: mockSession.permissions,
+        permissions: {
+          '*': {
+            '*': {
+              allowed: true,
+              shortDescription: 'Permissive',
+            },
+          },
+        },
       });
     });
 
@@ -172,14 +202,6 @@ describe('WalletRouter', () => {
         status: false,
         permissions: {},
       });
-    });
-
-    it('should throw on reconnect without permissions', async () => {
-      mockSessionStore.validateAndRefresh.mockResolvedValue({ id: 'test', origin: 'test' });
-
-      await expect(
-        router['reconnect']({ origin: 'test-origin' }, { sessionId: 'test-session' }),
-      ).rejects.toThrow(new RouterError('invalidSession', 'No permissions found in session'));
     });
 
     it('should disconnect session', async () => {
@@ -208,80 +230,123 @@ describe('WalletRouter', () => {
     });
   });
 
+  describe('Method Calls', () => {
+    const mockSession: SessionData = {
+      id: 'test-session',
+      origin: 'test-origin',
+    };
+
+    beforeEach(() => {
+      vi.clearAllMocks();
+      router = new WalletRouter(
+        mockTransport,
+        new Map(initialWallets),
+        new PermissivePermissionsManager(),
+        mockSessionStore,
+      );
+    });
+
+    it('should handle methodNotSupported error in _call', async () => {
+      const methodNotSupportedError = { code: -32601, message: 'Method not supported' };
+      (mockWalletClient.call as Mock).mockRejectedValue(methodNotSupportedError);
+
+      await expect(router['_call'](mockWalletClient, { method: 'unknown_method' })).rejects.toThrow(
+        new RouterError('methodNotSupported', 'unknown_method'),
+      );
+    });
+
+    it('should handle other errors in _call', async () => {
+      const error = new Error('Wallet error');
+      (mockWalletClient.call as Mock).mockRejectedValue(error);
+
+      await expect(router['_call'](mockWalletClient, { method: 'eth_accounts' })).rejects.toThrow(
+        new RouterError('walletNotAvailable', 'Error: Wallet error'),
+      );
+    });
+
+    it('should execute call method successfully', async () => {
+      const expectedResult = { success: true };
+      (mockWalletClient.call as Mock).mockResolvedValue(expectedResult);
+
+      const result = await router['call'](
+        { session: mockSession },
+        { chainId: 'eip155:1', sessionId: 'test-session', call: { method: 'test_method' } },
+      );
+
+      expect(result).toEqual(expectedResult);
+      expect(mockWalletClient.call).toHaveBeenCalledWith('test_method', undefined);
+    });
+
+    it('should handle partial failure in bulkCall', async () => {
+      const calls = [{ method: 'eth_accounts' }, { method: 'eth_chainId' }, { method: 'eth_unknown' }];
+
+      (mockWalletClient.call as Mock)
+        .mockResolvedValueOnce(['0x123'])
+        .mockResolvedValueOnce('0x1')
+        .mockRejectedValue(new Error('Method failed'));
+
+      await expect(
+        router['bulkCall']({}, { chainId: 'eip155:1', sessionId: 'test-session', calls }),
+      ).rejects.toThrow(
+        new RouterError(
+          'partialFailure',
+          expect.objectContaining({
+            partialResponses: [['0x123'], '0x1'],
+            error: 'Error: Method failed',
+          }),
+        ),
+      );
+    });
+
+    it('should handle complete failure in bulkCall', async () => {
+      const calls = [{ method: 'eth_accounts' }];
+      (mockWalletClient.call as Mock).mockRejectedValue(new Error('Complete failure'));
+
+      await expect(
+        router['bulkCall']({}, { chainId: 'eip155:1', sessionId: 'test-session', calls }),
+      ).rejects.toThrow(new RouterError('walletNotAvailable', 'Error: Complete failure'));
+    });
+  });
+
   describe('Permission Management', () => {
     const mockSession: SessionData = {
       id: 'test-session',
       origin: 'test-origin',
-      permissions: {
-        'eip155:1': ['eth_accounts'],
-      },
     };
 
-    it('should get permissions for specific chains', async () => {
+    beforeEach(() => {
+      vi.clearAllMocks();
+      router = new WalletRouter(
+        mockTransport,
+        new Map(initialWallets),
+        new PermissivePermissionsManager(),
+        mockSessionStore,
+      );
+    });
+
+    it('should throw on getPermissions without session', async () => {
+      await expect(
+        router['getPermissions']({}, { sessionId: 'test-session', chainIds: ['eip155:1'] }),
+      ).rejects.toThrow(new RouterError('invalidSession'));
+    });
+
+    it('should get permissions for specific chainIds', async () => {
       const result = await router['getPermissions'](
         { session: mockSession },
         { sessionId: 'test-session', chainIds: ['eip155:1'] },
       );
 
       expect(result).toEqual({
-        'eip155:1': ['eth_accounts'],
+        '*': {
+          '*': {
+            allowed: true,
+            shortDescription: 'Permissive',
+          },
+        },
       });
     });
 
-    it('should throw when getting permissions for invalid chain', async () => {
-      await expect(
-        router['getPermissions'](
-          { session: mockSession },
-          { sessionId: 'test-session', chainIds: ['invalid:chain'] },
-        ),
-      ).rejects.toThrow(new RouterError('invalidSession', 'Chain invalid:chain not found in session'));
-    });
-
-    it('should get all permissions when no chains specified', async () => {
-      const result = await router['getPermissions']({ session: mockSession }, { sessionId: 'test-session' });
-
-      expect(result).toEqual(mockSession.permissions);
-    });
-
-    it('should return empty object when no chains specified and no permissions', async () => {
-      const sessionWithoutPerms: SessionData = {
-        id: 'test-session',
-        origin: 'test-origin',
-      };
-
-      const result = await router['getPermissions'](
-        { session: sessionWithoutPerms },
-        { sessionId: 'test-session' },
-      );
-
-      expect(result).toEqual({});
-    });
-
-    it('should throw when getting permissions without session', async () => {
-      await expect(router['getPermissions']({}, { sessionId: 'test-session' })).rejects.toThrow(
-        new RouterError('invalidSession'),
-      );
-    });
-
-    it('should update permissions', async () => {
-      const newPermissions = {
-        'eip155:1': ['eth_accounts', 'eth_sign'],
-      };
-      mockPermissionApprovalCallback.mockResolvedValue(newPermissions);
-
-      const result = await router['updatePermissions'](
-        { origin: 'test-origin', session: mockSession },
-        { sessionId: 'test-session', permissions: newPermissions },
-      );
-
-      expect(result).toEqual(newPermissions);
-      expect(mockSessionStore.set).toHaveBeenCalledWith(
-        'test-origin_test-session',
-        expect.objectContaining({ permissions: newPermissions }),
-      );
-    });
-
-    it('should throw when updating permissions without session', async () => {
+    it('should throw on updatePermissions without session', async () => {
       await expect(
         router['updatePermissions'](
           { origin: 'test-origin' },
@@ -289,113 +354,34 @@ describe('WalletRouter', () => {
         ),
       ).rejects.toThrow(new RouterError('invalidSession'));
     });
-  });
 
-  describe('Method Calls', () => {
-    const mockSession: SessionData = {
-      id: 'test-session',
-      origin: 'test-origin',
-      permissions: {
-        'eip155:1': ['eth_accounts'],
-      },
-    };
-
-    beforeEach(() => {
-      vi.clearAllMocks();
-      (mockWalletClient.call as Mock).mockResolvedValue('0x123');
-      router = new WalletRouter(
-        mockTransport,
-        new Map(initialWallets),
-        mockPermissionCallback,
-        mockPermissionApprovalCallback,
-        mockSessionStore,
+    it('should update permissions successfully', async () => {
+      const permissions = { 'eip155:1': ['eth_accounts'] };
+      const result = await router['updatePermissions'](
+        { origin: 'test-origin', session: mockSession },
+        { sessionId: 'test-session', permissions },
       );
-    });
 
-    it('should execute single call', async () => {
-      const result = await router['call'](
-        { session: mockSession },
-        {
-          chainId: 'eip155:1',
-          sessionId: 'test-session',
-          call: { method: 'eth_accounts' },
+      expect(result).toEqual({
+        '*': {
+          '*': {
+            allowed: true,
+            shortDescription: 'Permissive',
+          },
         },
-      );
-
-      expect(result).toBe('0x123');
-      expect(mockWalletClient.call).toHaveBeenCalledWith('eth_accounts', undefined);
-    });
-
-    it('should handle method not supported error', async () => {
-      (mockWalletClient.call as Mock).mockRejectedValue({ code: -32601 });
-
-      await expect(
-        router['call'](
-          { session: mockSession },
-          {
-            chainId: 'eip155:1',
-            sessionId: 'test-session',
-            call: { method: 'eth_unsupported' },
-          },
-        ),
-      ).rejects.toThrow(new RouterError('methodNotSupported', 'eth_unsupported'));
-    });
-
-    it('should execute bulk calls', async () => {
-      const result = await router['bulkCall'](
-        { session: mockSession },
-        {
-          chainId: 'eip155:1',
-          sessionId: 'test-session',
-          calls: [{ method: 'eth_accounts' }, { method: 'eth_accounts' }],
-        },
-      );
-
-      expect(result).toEqual(['0x123', '0x123']);
-      expect(mockWalletClient.call).toHaveBeenCalledTimes(2);
-    });
-
-    it('should handle partial failures in bulk calls', async () => {
-      (mockWalletClient.call as Mock)
-        .mockResolvedValueOnce('0x123')
-        .mockRejectedValueOnce(new Error('Failed'));
-
-      await expect(
-        router['bulkCall'](
-          { session: mockSession },
-          {
-            chainId: 'eip155:1',
-            sessionId: 'test-session',
-            calls: [{ method: 'eth_accounts' }, { method: 'eth_accounts' }],
-          },
-        ),
-      ).rejects.toThrow(new RouterError('partialFailure'));
-    });
-
-    it('should handle complete failure in bulk calls', async () => {
-      (mockWalletClient.call as Mock).mockRejectedValue(new Error('Failed'));
-
-      await expect(
-        router['bulkCall'](
-          { session: mockSession },
-          {
-            chainId: 'eip155:1',
-            sessionId: 'test-session',
-            calls: [{ method: 'eth_accounts' }],
-          },
-        ),
-      ).rejects.toThrow(new RouterError('walletNotAvailable', 'Failed'));
+      });
+      expect(mockSessionStore.set).toHaveBeenCalledWith('test-origin_test-session', mockSession);
     });
   });
 
   describe('Method Discovery', () => {
     beforeEach(() => {
       vi.clearAllMocks();
+
       router = new WalletRouter(
         mockTransport,
         new Map(initialWallets),
-        mockPermissionCallback,
-        mockPermissionApprovalCallback,
+        new PermissivePermissionsManager(),
         mockSessionStore,
       );
     });
@@ -469,13 +455,33 @@ describe('WalletRouter', () => {
   describe('Event Handling', () => {
     beforeEach(() => {
       vi.clearAllMocks();
+
       router = new WalletRouter(
         mockTransport,
         new Map(initialWallets),
-        mockPermissionCallback,
-        mockPermissionApprovalCallback,
+        new PermissivePermissionsManager(),
         mockSessionStore,
       );
+    });
+
+    it('should cleanup existing listeners before setting up new ones', () => {
+      const mockCleanup = vi.fn();
+      const mockWallet2 = { ...mockWalletClient };
+
+      // Setup initial wallet
+      router.addWallet('eip155:137', mockWalletClient);
+
+      // Manually set a cleanup function
+      (router as unknown as { walletEventCleanups: Map<string, () => void> }).walletEventCleanups.set(
+        'eip155:137',
+        mockCleanup,
+      );
+
+      // Add another wallet to trigger setupWalletEventListeners
+      router.addWallet('eip155:2', mockWallet2);
+
+      // Verify cleanup was called
+      expect(mockCleanup).toHaveBeenCalled();
     });
 
     it('should setup and cleanup wallet event listeners', () => {
@@ -513,6 +519,41 @@ describe('WalletRouter', () => {
       router.addWallet('eip155:137', mockWalletWithoutEvents);
       router.removeWallet('eip155:137');
       // Should not throw errors
+    });
+
+    it('should handle wallets with on but without off', () => {
+      const mockWalletWithoutOff = {
+        call: vi.fn(),
+        on: vi.fn(),
+      };
+      router.addWallet('eip155:137', mockWalletWithoutOff);
+
+      // Trigger event setup
+      const calls = (mockWalletWithoutOff.on as Mock).mock.calls;
+      expect(calls.length).toBeGreaterThan(0);
+      expect(calls[0]?.[0]).toBe('disconnect');
+
+      // Trigger the handler to ensure it works
+      const handler = calls[0]?.[1];
+      if (handler) {
+        handler();
+      }
+
+      // Remove wallet - should not throw even though off is missing
+      router.removeWallet('eip155:137');
+    });
+
+    it('should handle wallets with null event handlers', () => {
+      const mockWalletWithNullHandlers: WalletClient = {
+        call: vi.fn(),
+      };
+      router.addWallet('eip155:137', mockWalletWithNullHandlers);
+
+      // Should not throw when setting up event listeners
+      router.addWallet('eip155:2', mockWalletClient);
+
+      // Should not throw when removing wallet
+      router.removeWallet('eip155:137');
     });
   });
 });
