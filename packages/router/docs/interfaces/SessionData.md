@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.0**](../README.md)
+[**@walletmesh/router v0.2.1**](../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Interface: SessionData
 
-Session data
-Represents an active wallet connection session with its associated permissions and metadata.
-A single session can manage permissions for multiple chains.
+Session data structure representing an active wallet connection.
+Contains metadata about the session including its unique identifier
+and the origin that initiated the connection.
 
 ## Properties
 
@@ -20,7 +20,7 @@ Unique session identifier
 
 #### Defined in
 
-[packages/router/src/types.ts:113](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L113)
+[packages/router/src/types.ts:242](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L242)
 
 ***
 
@@ -28,20 +28,8 @@ Unique session identifier
 
 > **origin**: `string`
 
-Origin of the session request
+Origin of the session request (e.g., "https://app.example.com")
 
 #### Defined in
 
-[packages/router/src/types.ts:115](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L115)
-
-***
-
-### permissions?
-
-> `optional` **permissions**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
-
-Permissions for each connected chain
-
-#### Defined in
-
-[packages/router/src/types.ts:117](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L117)
+[packages/router/src/types.ts:244](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L244)

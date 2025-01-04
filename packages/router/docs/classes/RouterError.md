@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.0**](../README.md)
+[**@walletmesh/router v0.2.1**](../README.md)
 
 ***
 
@@ -44,7 +44,7 @@ Optional additional error data
 
 #### Defined in
 
-[packages/router/src/errors.ts:28](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/errors.ts#L28)
+[packages/router/src/errors.ts:28](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/errors.ts#L28)
 
 ## Properties
 
@@ -118,7 +118,7 @@ node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 #### Defined in
 
-[packages/router/src/errors.ts:21](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/errors.ts#L21)
+[packages/router/src/errors.ts:21](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/errors.ts#L21)
 
 ***
 

@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.2.0**](../README.md)
+[**@walletmesh/jsonrpc v0.2.1**](../README.md)
 
 ***
 
@@ -37,4 +37,4 @@ isJSONRPCID({});        // false
 
 ## Defined in
 
-[packages/jsonrpc/src/utils.ts:27](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/utils.ts#L27)
+[packages/jsonrpc/src/utils.ts:27](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/utils.ts#L27)
