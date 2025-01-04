@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.2.0**](../README.md)
+[**@walletmesh/jsonrpc v0.2.1**](../README.md)
 
 ***
 
@@ -56,7 +56,7 @@ The event name.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:572](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L572)
+[packages/jsonrpc/src/types.ts:572](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L572)
 
 ***
 
@@ -68,7 +68,7 @@ The JSON-RPC version ('2.0').
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:570](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L570)
+[packages/jsonrpc/src/types.ts:570](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L570)
 
 ***
 
@@ -80,4 +80,4 @@ The event payload.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:574](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/types.ts#L574)
+[packages/jsonrpc/src/types.ts:574](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L574)

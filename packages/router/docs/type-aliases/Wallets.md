@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.0**](../README.md)
+[**@walletmesh/router v0.2.1**](../README.md)
 
 ***
 
@@ -8,7 +8,8 @@
 
 > **Wallets**: `Map`\<[`ChainId`](ChainId.md), [`WalletClient`](../interfaces/WalletClient.md)\>
 
-Maps chain IDs to their corresponding wallet client instances
+Maps chain IDs to their corresponding wallet client instances.
+Used by the router to maintain connections to multiple chains.
 
 ## Example
 
@@ -21,4 +22,4 @@ const wallets = new Map([
 
 ## Defined in
 
-[packages/router/src/types.ts:170](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L170)
+[packages/router/src/types.ts:297](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L297)

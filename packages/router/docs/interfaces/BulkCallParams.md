@@ -1,10 +1,14 @@
-[**@walletmesh/router v0.2.0**](../README.md)
+[**@walletmesh/router v0.2.1**](../README.md)
 
 ***
 
 [@walletmesh/router](../globals.md) / BulkCallParams
 
 # Interface: BulkCallParams
+
+Parameters for executing multiple method calls in sequence on a specific chain.
+Used with the wm_bulkCall method to batch multiple operations efficiently.
+All calls in the sequence must be permitted for the operation to succeed.
 
 ## Extends
 
@@ -20,11 +24,11 @@
 
 > **calls**: [`MethodCall`](MethodCall.md)[]
 
-Calls
+Array of method calls to execute in sequence
 
 #### Defined in
 
-[packages/router/src/types.ts:157](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L157)
+[packages/router/src/types.ts:282](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L282)
 
 ***
 
@@ -32,11 +36,11 @@ Calls
 
 > **chainId**: `string`
 
-Target chain ID
+Target chain ID where the methods will be executed
 
 #### Defined in
 
-[packages/router/src/types.ts:153](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L153)
+[packages/router/src/types.ts:278](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L278)
 
 ***
 
@@ -44,8 +48,8 @@ Target chain ID
 
 > **sessionId**: `string`
 
-Session ID for authorization
+Session ID for authorization and context
 
 #### Defined in
 
-[packages/router/src/types.ts:155](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L155)
+[packages/router/src/types.ts:280](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L280)

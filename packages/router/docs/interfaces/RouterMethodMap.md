@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.0**](../README.md)
+[**@walletmesh/router v0.2.1**](../README.md)
 
 ***
 
@@ -6,8 +6,9 @@
 
 # Interface: RouterMethodMap
 
-Router method map following JSON-RPC spec
-Defines all available methods that can be called on the router, their parameters and return types
+Router method map following JSON-RPC spec.
+Defines all available methods that can be called on the router,
+their parameters, and return types.
 
 ## Extends
 
@@ -23,6 +24,8 @@ Defines all available methods that can be called on the router, their parameters
 
 > **wm\_bulkCall**: `object`
 
+Execute multiple method calls in sequence
+
 #### params
 
 > **params**: [`BulkCallParams`](BulkCallParams.md)
@@ -31,9 +34,25 @@ Defines all available methods that can be called on the router, their parameters
 
 > **result**: `unknown`[]
 
+#### Param
+
+Chain to invoke the methods on
+
+#### Param
+
+Session ID for authorization
+
+#### Param
+
+Array of method calls to execute
+
+#### Returns
+
+Array of results corresponding to each method call
+
 #### Defined in
 
-[packages/router/src/types.ts:303](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L303)
+[packages/router/src/types.ts:449](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L449)
 
 ***
 
@@ -69,7 +88,7 @@ Result of the method call, type depends on the method called
 
 #### Defined in
 
-[packages/router/src/types.ts:298](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L298)
+[packages/router/src/types.ts:437](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L437)
 
 ***
 
@@ -77,7 +96,7 @@ Result of the method call, type depends on the method called
 
 > **wm\_connect**: `object`
 
-Create a new session
+Create a new session with specified permissions
 
 #### params
 
@@ -93,7 +112,7 @@ Create a new session
 
 ##### result.permissions
 
-> **permissions**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
+> **permissions**: [`HumanReadableChainPermissions`](../type-aliases/HumanReadableChainPermissions.md)
 
 ##### result.sessionId
 
@@ -101,19 +120,15 @@ Create a new session
 
 #### Param
 
-The chain to connect to
-
-#### Param
-
-Array of method names that the session requests permission to call
+Record of chain IDs to their requested method permissions
 
 #### Returns
 
-Object containing the new session ID
+Object containing the new session ID and approved permissions
 
 #### Defined in
 
-[packages/router/src/types.ts:241](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L241)
+[packages/router/src/types.ts:380](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L380)
 
 ***
 
@@ -145,7 +160,7 @@ true if session was successfully ended
 
 #### Defined in
 
-[packages/router/src/types.ts:256](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L256)
+[packages/router/src/types.ts:395](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L395)
 
 ***
 
@@ -169,7 +184,7 @@ Get current session permissions
 
 #### result
 
-> **result**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
+> **result**: [`HumanReadableChainPermissions`](../type-aliases/HumanReadableChainPermissions.md)
 
 #### Param
 
@@ -177,15 +192,15 @@ ID of the session to get permissions for
 
 #### Param
 
-Optional array of chain IDs to get permissions for. If not provided, returns permissions for all chains
+Optional array of chain IDs to filter permissions by
 
 #### Returns
 
-Record of chain IDs to their permissions
+Current permissions in human-readable format
 
 #### Defined in
 
-[packages/router/src/types.ts:269](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L269)
+[packages/router/src/types.ts:408](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L408)
 
 ***
 
@@ -193,7 +208,7 @@ Record of chain IDs to their permissions
 
 > **wm\_getSupportedMethods**: `object`
 
-Get supported methods
+Get supported methods for specified chains
 
 #### params
 
@@ -209,15 +224,15 @@ Get supported methods
 
 #### Param
 
-Optional chain to get methods for. If not provided, returns router's supported methods
+Optional array of chain IDs to get methods for
 
 #### Returns
 
-Object containing array of supported method names
+Record mapping chain IDs to their supported method names
 
 #### Defined in
 
-[packages/router/src/types.ts:313](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L313)
+[packages/router/src/types.ts:459](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L459)
 
 ***
 
@@ -241,7 +256,7 @@ Attempt to reconnect to an existing session
 
 ##### result.permissions
 
-> **permissions**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
+> **permissions**: [`HumanReadableChainPermissions`](../type-aliases/HumanReadableChainPermissions.md)
 
 ##### result.status
 
@@ -253,11 +268,11 @@ ID of the session to reconnect to
 
 #### Returns
 
-true if reconnection was successful, false otherwise
+Object containing reconnection status and current permissions
 
 #### Defined in
 
-[packages/router/src/types.ts:225](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L225)
+[packages/router/src/types.ts:365](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L365)
 
 ***
 
@@ -281,7 +296,7 @@ Update session permissions
 
 #### result
 
-> **result**: [`ChainPermissions`](../type-aliases/ChainPermissions.md)
+> **result**: [`HumanReadableChainPermissions`](../type-aliases/HumanReadableChainPermissions.md)
 
 #### Param
 
@@ -289,12 +304,12 @@ ID of the session to update
 
 #### Param
 
-Record of chain IDs to their new permissions
+Record of chain IDs to their new requested permissions
 
 #### Returns
 
-true if permissions were successfully updated
+Newly approved permissions in human-readable format
 
 #### Defined in
 
-[packages/router/src/types.ts:283](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L283)
+[packages/router/src/types.ts:422](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L422)

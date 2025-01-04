@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.0**](../README.md)
+[**@walletmesh/router v0.2.1**](../README.md)
 
 ***
 
@@ -6,8 +6,9 @@
 
 # Interface: RouterEventMap
 
-Router event map for bi-directional communication
-Defines events that can be emitted by the router
+Router event map for bi-directional communication.
+Defines events that can be emitted by the router for real-time state updates
+and session management.
 
 ## Extends
 
@@ -35,7 +36,7 @@ Emitted when a session's permissions are updated
 
 #### Defined in
 
-[packages/router/src/types.ts:192](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L192)
+[packages/router/src/types.ts:327](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L327)
 
 ***
 
@@ -55,7 +56,7 @@ Emitted when a session is terminated by the router
 
 #### Defined in
 
-[packages/router/src/types.ts:200](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L200)
+[packages/router/src/types.ts:337](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L337)
 
 ***
 
@@ -75,7 +76,7 @@ Emitted when a wallet's availability changes (added or removed)
 
 #### Defined in
 
-[packages/router/src/types.ts:208](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L208)
+[packages/router/src/types.ts:347](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L347)
 
 ***
 
@@ -107,4 +108,4 @@ Emitted when a wallet's state changes (e.g., account changes, network changes)
 
 #### Defined in
 
-[packages/router/src/types.ts:180](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L180)
+[packages/router/src/types.ts:313](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L313)

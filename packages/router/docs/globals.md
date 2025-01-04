@@ -1,8 +1,8 @@
-[**@walletmesh/router v0.2.0**](README.md)
+[**@walletmesh/router v0.2.1**](README.md)
 
 ***
 
-# @walletmesh/router v0.2.0
+# @walletmesh/router v0.2.1
 
 ## Classes
 
@@ -17,7 +17,7 @@
 - [BulkCallParams](interfaces/BulkCallParams.md)
 - [CallParams](interfaces/CallParams.md)
 - [MethodCall](interfaces/MethodCall.md)
-- [RouterConfig](interfaces/RouterConfig.md)
+- [PermissionManager](interfaces/PermissionManager.md)
 - [RouterContext](interfaces/RouterContext.md)
 - [RouterEventMap](interfaces/RouterEventMap.md)
 - [RouterMethodMap](interfaces/RouterMethodMap.md)
@@ -32,18 +32,14 @@
 
 - [ChainId](type-aliases/ChainId.md)
 - [ChainPermissions](type-aliases/ChainPermissions.md)
+- [HumanReadableChainPermissions](type-aliases/HumanReadableChainPermissions.md)
 - [PermissionApprovalCallback](type-aliases/PermissionApprovalCallback.md)
-- [PermissionCallback](type-aliases/PermissionCallback.md)
+- [PermissionCheckCallback](type-aliases/PermissionCheckCallback.md)
+- [PermissionCleanupCallback](type-aliases/PermissionCleanupCallback.md)
+- [PermissionGetCallback](type-aliases/PermissionGetCallback.md)
 - [Wallets](type-aliases/Wallets.md)
 
 ## Variables
 
 - [defaultStore](variables/defaultStore.md)
 - [RouterErrorMap](variables/RouterErrorMap.md)
-
-## Functions
-
-- [createPermissivePermissionApproval](functions/createPermissivePermissionApproval.md)
-- [createPermissivePermissions](functions/createPermissivePermissions.md)
-- [createStringMatchPermissionApproval](functions/createStringMatchPermissionApproval.md)
-- [createStringMatchPermissions](functions/createStringMatchPermissions.md)

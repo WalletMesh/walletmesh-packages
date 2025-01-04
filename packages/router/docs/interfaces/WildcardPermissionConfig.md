@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.0**](../README.md)
+[**@walletmesh/router v0.2.1**](../README.md)
 
 ***
 
@@ -18,4 +18,4 @@ Allowed patterns (e.g. ["eip155:1:eth_*", "eip155:*:eth_call"])
 
 #### Defined in
 
-[packages/router/src/types.ts:88](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L88)
+[packages/router/src/types.ts:216](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L216)

@@ -1,33 +1,49 @@
-[**@walletmesh/router v0.2.0**](../README.md)
+[**@walletmesh/router v0.2.1**](../README.md)
 
 ***
 
 [@walletmesh/router](../globals.md) / PermissionApprovalCallback
 
-# Type Alias: PermissionApprovalCallback()
+# Type Alias: PermissionApprovalCallback()\<C\>
 
-> **PermissionApprovalCallback**: (`context`, `permissions`) => `Promise`\<[`ChainPermissions`](ChainPermissions.md)\>
+> **PermissionApprovalCallback**\<`C`\>: (`context`, `permissionRequest`) => `Promise`\<[`HumanReadableChainPermissions`](HumanReadableChainPermissions.md)\>
 
-Permission approval callback function type
+Callback for handling permission approval requests.
+Called when a client requests new permissions or updates existing ones.
+
+## Type Parameters
+
+• **C** *extends* [`RouterContext`](../interfaces/RouterContext.md)
 
 ## Parameters
 
 ### context
 
-[`RouterContext`](../interfaces/RouterContext.md)
+`C`
 
-Complete context for the permission approval decision
+Router context containing session and origin information
 
-### permissions
+### permissionRequest
 
 [`ChainPermissions`](ChainPermissions.md)
 
+Requested permissions per chain
+
 ## Returns
 
-`Promise`\<[`ChainPermissions`](ChainPermissions.md)\>
+`Promise`\<[`HumanReadableChainPermissions`](HumanReadableChainPermissions.md)\>
 
-Promise<ChainPermissions> containing the approved permissions for each chain
+Promise resolving to approved permissions in human-readable format
+
+## Example
+
+```typescript
+const approvalCallback: PermissionApprovalCallback = async (context, request) => {
+  const approved = await showPermissionDialog(request);
+  return approved ? request : {};
+};
+```
 
 ## Defined in
 
-[packages/router/src/types.ts:78](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L78)
+[packages/router/src/types.ts:109](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L109)

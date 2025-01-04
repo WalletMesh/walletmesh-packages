@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.2.0**](../README.md)
+[**@walletmesh/jsonrpc v0.2.1**](../README.md)
 
 ***
 
@@ -103,7 +103,7 @@ if (timeoutInSeconds > 0) {
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:174](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L174)
+[packages/jsonrpc/src/error.ts:174](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L174)
 
 ## Properties
 
@@ -133,7 +133,7 @@ The error code (should follow JSON-RPC 2.0 error codes)
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L89)
+[packages/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L89)
 
 ***
 
@@ -149,7 +149,7 @@ Optional additional error data for debugging or client handling
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L91)
+[packages/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L91)
 
 ***
 
@@ -161,7 +161,7 @@ The ID of the request that timed out (used for correlation with the original req
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:176](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L176)
+[packages/jsonrpc/src/error.ts:176](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L176)
 
 ***
 
@@ -191,7 +191,7 @@ node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:154](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L154)
+[packages/jsonrpc/src/error.ts:154](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L154)
 
 ***
 
@@ -273,7 +273,7 @@ Returns a string representation of an object.
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/jsonrpc/src/error.ts#L96)
+[packages/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L96)
 
 ***
 

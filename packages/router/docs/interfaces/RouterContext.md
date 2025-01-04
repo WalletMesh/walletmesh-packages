@@ -1,10 +1,14 @@
-[**@walletmesh/router v0.2.0**](../README.md)
+[**@walletmesh/router v0.2.1**](../README.md)
 
 ***
 
 [@walletmesh/router](../globals.md) / RouterContext
 
 # Interface: RouterContext
+
+Context object passed to router operations.
+Contains information about the current request context
+including origin and session data.
 
 ## Indexable
 
@@ -16,9 +20,11 @@
 
 > `optional` **origin**: `string`
 
+Origin of the request (e.g., "https://app.example.com")
+
 #### Defined in
 
-[packages/router/src/types.ts:322](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L322)
+[packages/router/src/types.ts:474](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L474)
 
 ***
 
@@ -26,6 +32,8 @@
 
 > `optional` **session**: [`SessionData`](SessionData.md)
 
+Current session data if authenticated
+
 #### Defined in
 
-[packages/router/src/types.ts:323](https://github.com/WalletMesh/wm-core/blob/24d804c0c8aae98a58c266d296afc1e3185903b9/packages/router/src/types.ts#L323)
+[packages/router/src/types.ts:476](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L476)

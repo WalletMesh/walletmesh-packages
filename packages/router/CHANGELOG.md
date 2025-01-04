@@ -1,5 +1,13 @@
 # @walletmesh/router
 
+## 0.2.1
+
+### Patch Changes
+
+- a9df9bb: rework router permission system
+- Updated dependencies [a9df9bb]
+  - @walletmesh/jsonrpc@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
