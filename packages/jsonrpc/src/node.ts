@@ -9,6 +9,7 @@ import type {
   JSONRPCMiddleware,
   JSONRPCID,
   JSONRPCParams,
+  JSONRPCTransport,
 } from './types.js';
 import { EventManager } from './event-manager.js';
 import { MiddlewareManager } from './middleware-manager.js';
@@ -98,9 +99,7 @@ export class JSONRPCNode<
    * @param context - Optional context object shared between middleware and method handlers
    */
   constructor(
-    private transport: {
-      send: (message: JSONRPCRequest<T, keyof T> | JSONRPCResponse<T> | JSONRPCEvent<E, keyof E>) => void;
-    },
+    private transport: JSONRPCTransport,
     public readonly context: C = {} as C,
   ) {
     this.methodManager = new MethodManager<T, C>();
@@ -224,7 +223,7 @@ export class JSONRPCNode<
    * node.notify('log', { message: 'User action performed' });
    * ```
    */
-  public notify<M extends keyof T>(method: M, params: T[M]['params']): void {
+  public async notify<M extends keyof T>(method: M, params: T[M]['params']): Promise<void> {
     const serializer = this.methodManager.getSerializer(method);
     const serializedParams = this.parameterSerializer.serializeParams(String(method), params, serializer);
 
@@ -233,7 +232,7 @@ export class JSONRPCNode<
       method,
       params: serializedParams,
     };
-    this.transport.send(request);
+    await this.transport.send(request);
   }
 
   /**
@@ -268,13 +267,13 @@ export class JSONRPCNode<
    * node.emit('statusUpdate', { status: 'online' });
    * ```
    */
-  public emit<K extends keyof E>(event: K, params: E[K]): void {
+  public async emit<K extends keyof E>(event: K, params: E[K]): Promise<void> {
     const eventMessage: JSONRPCEvent<E, K> = {
       jsonrpc: '2.0',
       event,
       params,
     };
-    this.transport.send(eventMessage);
+    await this.transport.send(eventMessage);
   }
 
   /**
@@ -311,7 +310,7 @@ export class JSONRPCNode<
     // Handle parse error for string messages first
     if (typeof message === 'string') {
       console.error('Invalid message received:', message);
-      this.transport.send({
+      await this.transport.send({
         jsonrpc: '2.0',
         error: {
           code: -32700,
@@ -324,7 +323,7 @@ export class JSONRPCNode<
 
     if (!this.messageValidator.isValidMessage(message)) {
       console.error('Invalid message received:', message);
-      this.transport.send({
+      await this.transport.send({
         jsonrpc: '2.0',
         error: {
           code: -32600,
@@ -355,7 +354,7 @@ export class JSONRPCNode<
 
       // Only send response for non-notifications (requests with an id)
       if (request.id !== undefined) {
-        this.transport.send(response);
+        await this.transport.send(response);
       }
     } catch (error) {
       // Only send error response for non-notifications
@@ -368,7 +367,7 @@ export class JSONRPCNode<
               : { code: -32000, message: error instanceof Error ? error.message : 'Unknown error' },
           id: request.id,
         };
-        this.transport.send(response);
+        await this.transport.send(response);
       }
     }
   }

@@ -25,7 +25,7 @@ const ethereumWallet: WalletClient = {
 // Initialize the router with transport layer, wallets, and permission manager
 // The router coordinates communication between the application and wallets
 const router = new WalletRouter(
-  { send: async (msg) => window.postMessage(msg, '*') },
+  { send: (msg) => Promise.resolve(window.postMessage(msg, '*')) },
   new Map([['eip155:1', ethereumWallet]]),
   // For development, use the permissive permission manager
   new PermissivePermissionsManager()
