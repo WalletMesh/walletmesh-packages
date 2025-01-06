@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.2.1**](../README.md)
+[**@walletmesh/jsonrpc v0.2.2**](../README.md)
 
 ***
 
@@ -135,7 +135,7 @@ peer.registerMethod('divide', (context, { a, b }) => {
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:88](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L88)
+[packages/jsonrpc/src/error.ts:88](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/error.ts#L88)
 
 ## Properties
 
@@ -165,7 +165,7 @@ The error code (should follow JSON-RPC 2.0 error codes)
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L89)
+[packages/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/error.ts#L89)
 
 ***
 
@@ -181,7 +181,7 @@ Optional additional error data for debugging or client handling
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L91)
+[packages/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/error.ts#L91)
 
 ***
 
@@ -215,7 +215,7 @@ node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:63](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L63)
+[packages/jsonrpc/src/error.ts:63](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/error.ts#L63)
 
 ***
 
@@ -293,7 +293,7 @@ Returns a string representation of an object.
 
 #### Defined in
 
-[packages/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/error.ts#L96)
+[packages/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/error.ts#L96)
 
 ***
 

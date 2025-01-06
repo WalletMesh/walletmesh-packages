@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.2.1**](../README.md)
+[**@walletmesh/jsonrpc v0.2.2**](../README.md)
 
 ***
 
@@ -69,7 +69,7 @@ The error object, if an error occurred.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:309](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L309)
+[packages/jsonrpc/src/types.ts:309](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L309)
 
 ***
 
@@ -81,7 +81,7 @@ The request ID.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:311](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L311)
+[packages/jsonrpc/src/types.ts:311](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L311)
 
 ***
 
@@ -93,7 +93,7 @@ The JSON-RPC version ('2.0').
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:305](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L305)
+[packages/jsonrpc/src/types.ts:305](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L305)
 
 ***
 
@@ -105,4 +105,4 @@ The result of the method call, if successful. Can be modified by middleware.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:307](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L307)
+[packages/jsonrpc/src/types.ts:307](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L307)

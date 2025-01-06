@@ -1,10 +1,10 @@
-[**@walletmesh/jsonrpc v0.2.1**](../README.md)
+[**@walletmesh/jsonrpc v0.2.2**](../README.md)
 
 ***
 
-[@walletmesh/jsonrpc](../globals.md) / Transport
+[@walletmesh/jsonrpc](../globals.md) / JSONRPCTransport
 
-# Interface: Transport
+# Interface: JSONRPCTransport
 
 Function type for sending JSON-RPC messages between nodes.
 Implement this to provide the actual transport mechanism for message delivery.
@@ -14,7 +14,7 @@ The transport layer handles message serialization and delivery between nodes.
 
 ```typescript
 // WebSocket transport with reconnection and error handling
-const wsTransport: Transport = {
+const wsTransport: JSONRPCTransport = {
   send: message => {
     if (ws.readyState !== WebSocket.OPEN) {
       throw new Error('WebSocket not connected');
@@ -24,7 +24,7 @@ const wsTransport: Transport = {
 };
 
 // postMessage transport with origin validation
-const windowTransport: Transport = {
+const windowTransport: JSONRPCTransport = {
   send: message => {
     if (!targetWindow) {
       throw new Error('Target window not available');
@@ -34,7 +34,7 @@ const windowTransport: Transport = {
 };
 
 // HTTP transport with fetch
-const httpTransport: Transport = {
+const httpTransport: JSONRPCTransport = {
   send: async message => {
     try {
       const response = await fetch('https://api.example.com/jsonrpc', {
@@ -60,7 +60,7 @@ const httpTransport: Transport = {
 
 ### send()
 
-> **send**(`message`): `void`
+> **send**(`message`): `Promise`\<`void`\>
 
 Sends a JSON-RPC message to the remote node.
 The implementation should handle message serialization and delivery.
@@ -77,7 +77,9 @@ The message to send. This will be a JSON-RPC request,
 
 #### Returns
 
-`void`
+`Promise`\<`void`\>
+
+A promise that resolves when the message has been sent
 
 #### Throws
 
@@ -85,4 +87,4 @@ If message delivery fails (e.g., connection lost)
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:494](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L494)
+[packages/jsonrpc/src/types.ts:495](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L495)

@@ -1,4 +1,4 @@
-**@walletmesh/jsonrpc v0.2.1**
+**@walletmesh/jsonrpc v0.2.2**
 
 ***
 
@@ -34,9 +34,9 @@ type Events = {
 
 // Create server node
 const server = new JSONRPCNode<Methods, Events>({
-  send: message => {
+  send: async message => {
     // In a real app, send to client (e.g., via WebSocket)
-    client.receiveMessage(message);
+    await client.receiveMessage(message);
   }
 });
 
@@ -63,9 +63,9 @@ server.registerMethod('greet', async (context, { name }) => {
 
 // Create client node
 const client = new JSONRPCNode<Methods, Events>({
-  send: message => {
+  send: async message => {
     // In a real app, send to server (e.g., via WebSocket)
-    server.receiveMessage(message);
+    await server.receiveMessage(message);
   }
 });
 
@@ -85,7 +85,7 @@ async function main() {
     });
 
     // Server can emit events
-    server.emit('notification', { message: 'Server update!' });
+    await server.emit('notification', { message: 'Server update!' });
 
     // Clean up event handlers
     cleanup();
@@ -237,9 +237,9 @@ type Context = JSONRPCContext & {
 
 // Create a node instance
 const node = new JSONRPCNode<MethodMap, EventMap, Context>({
-  send: message => {
+  send: async message => {
     // Transport implementation (e.g., WebSocket, postMessage)
-    ws.send(JSON.stringify(message));
+    await ws.send(JSON.stringify(message));
   }
 });
 ```
@@ -444,7 +444,7 @@ const dateSerializer: JSONRPCSerializer<Date, string> = {
       }
       return { serialized: date.toISOString(), method };
     },
-    deserialize: (method, data) => {
+    deserialize: (data, method) => {
       try {
         return new Date(data.serialized);
       } catch (error) {
@@ -465,7 +465,7 @@ const dateSerializer: JSONRPCSerializer<Date, string> = {
       }
       return { serialized: date.toISOString(), method };
     },
-    deserialize: (method, data) => {
+    deserialize: (data, method) => {
       try {
         return new Date(data.serialized);
       } catch (error) {
@@ -516,7 +516,7 @@ type Methods = {
 
 // Create node for Website A
 const nodeA = new JSONRPCNode<Methods>({
-  send: message => {
+  send: async message => {
     // Send to Website B's iframe
     const iframe = document.querySelector<HTMLIFrameElement>('#website-b-frame');
     if (iframe?.contentWindow) {
@@ -557,7 +557,7 @@ type Methods = {
 
 // Create node for Website B
 const nodeB = new JSONRPCNode<Methods>({
-  send: message => {
+  send: async message => {
     // Send to parent window (Website A)
     window.parent.postMessage(message, 'https://website-a.com');
   }
@@ -645,9 +645,9 @@ class WSClient {
     }, 5000);
   }
 
-  send(message: unknown) {
+  async send(message: unknown): Promise<void> {
     if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
+      await this.ws.send(JSON.stringify(message));
     } else {
       this.messageQueue.push(message);
     }
@@ -670,7 +670,7 @@ const wsClient = new WSClient('wss://api.example.com', message => {
 
 // Create JSON-RPC node
 const client = new JSONRPCNode<Methods, Events>({
-  send: message => wsClient.send(message)
+  send: async message => await wsClient.send(message)
 });
 
 // Use the client with proper error handling
@@ -707,9 +707,9 @@ const wss = new WebSocketServer({ port: 8080 });
 wss.on('connection', ws => {
   // Create JSON-RPC node for this connection
   const server = new JSONRPCNode<Methods, Events>({
-    send: message => {
+    send: async message => {
       if (ws.readyState === ws.OPEN) {
-        ws.send(JSON.stringify(message));
+        await ws.send(JSON.stringify(message));
       }
     }
   });
@@ -836,7 +836,7 @@ app.use(express.json());
 app.post('/jsonrpc', async (req, res) => {
   // Create new node for each request
   const server = new JSONRPCNode<Methods>({
-    send: message => res.json(message)
+    send: async message => await res.json(message)
   });
 
   // Register methods with validation

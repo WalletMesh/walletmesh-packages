@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.1**](../README.md)
+[**@walletmesh/router v0.2.2**](../README.md)
 
 ***
 
@@ -54,11 +54,9 @@ Creates a new WalletRouter instance for managing multi-chain wallet connections.
 
 ##### transport
 
+`JSONRPCTransport`
+
 Transport layer for sending messages
-
-###### send
-
-(`message`) => `Promise`\<`void`\>
 
 ##### wallets
 
@@ -103,7 +101,7 @@ const router = new WalletRouter(
 
 #### Defined in
 
-[packages/router/src/router.ts:97](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L97)
+[packages/router/src/router.ts:97](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L97)
 
 ## Properties
 
@@ -129,7 +127,7 @@ Store for managing session data persistence and lifecycle
 
 #### Defined in
 
-[packages/router/src/router.ts:56](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L56)
+[packages/router/src/router.ts:56](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L56)
 
 ## Methods
 
@@ -166,7 +164,7 @@ With appropriate error code based on failure type
 
 #### Defined in
 
-[packages/router/src/router.ts:448](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L448)
+[packages/router/src/router.ts:448](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L448)
 
 ***
 
@@ -214,7 +212,7 @@ cleanup();
 
 #### Defined in
 
-packages/jsonrpc/dist/node.d.ts:199
+packages/jsonrpc/dist/node.d.ts:197
 
 ***
 
@@ -257,7 +255,7 @@ router.addWallet('eip155:137', new JSONRPCWalletClient(
 
 #### Defined in
 
-[packages/router/src/router.ts:161](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L161)
+[packages/router/src/router.ts:161](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L161)
 
 ***
 
@@ -294,7 +292,7 @@ With code 'partialFailure' if some calls succeed
 
 #### Defined in
 
-[packages/router/src/router.ts:495](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L495)
+[packages/router/src/router.ts:495](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L495)
 
 ***
 
@@ -331,7 +329,7 @@ If chain validation fails or method execution fails
 
 #### Defined in
 
-[packages/router/src/router.ts:475](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L475)
+[packages/router/src/router.ts:475](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L475)
 
 ***
 
@@ -401,7 +399,7 @@ try {
 
 #### Defined in
 
-packages/jsonrpc/dist/node.d.ts:137
+packages/jsonrpc/dist/node.d.ts:135
 
 ***
 
@@ -427,7 +425,7 @@ await node.close();
 
 #### Defined in
 
-packages/jsonrpc/dist/node.d.ts:239
+packages/jsonrpc/dist/node.d.ts:237
 
 ***
 
@@ -466,7 +464,7 @@ If origin is unknown or no chains specified
 
 #### Defined in
 
-[packages/router/src/router.ts:225](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L225)
+[packages/router/src/router.ts:225](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L225)
 
 ***
 
@@ -505,13 +503,13 @@ With code 'invalidSession' if session is invalid
 
 #### Defined in
 
-[packages/router/src/router.ts:355](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L355)
+[packages/router/src/router.ts:355](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L355)
 
 ***
 
 ### emit()
 
-> **emit**\<`K`\>(`event`, `params`): `void`
+> **emit**\<`K`\>(`event`, `params`): `Promise`\<`void`\>
 
 Emits an event to the remote node.
 
@@ -535,7 +533,7 @@ Event payload
 
 #### Returns
 
-`void`
+`Promise`\<`void`\>
 
 #### Example
 
@@ -549,7 +547,7 @@ node.emit('statusUpdate', { status: 'online' });
 
 #### Defined in
 
-packages/jsonrpc/dist/node.d.ts:179
+packages/jsonrpc/dist/node.d.ts:177
 
 ***
 
@@ -592,7 +590,7 @@ With code 'invalidSession' if session is invalid
 
 #### Defined in
 
-[packages/router/src/router.ts:392](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L392)
+[packages/router/src/router.ts:392](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L392)
 
 ***
 
@@ -632,13 +630,13 @@ If chain validation fails or capability query fails
 
 #### Defined in
 
-[packages/router/src/router.ts:532](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L532)
+[packages/router/src/router.ts:532](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L532)
 
 ***
 
 ### notify()
 
-> **notify**\<`M`\>(`method`, `params`): `void`
+> **notify**\<`M`\>(`method`, `params`): `Promise`\<`void`\>
 
 Sends a notification (a request without expecting a response).
 
@@ -662,7 +660,7 @@ Parameters to pass to the method
 
 #### Returns
 
-`void`
+`Promise`\<`void`\>
 
 #### Example
 
@@ -676,7 +674,7 @@ node.notify('log', { message: 'User action performed' });
 
 #### Defined in
 
-packages/jsonrpc/dist/node.d.ts:149
+packages/jsonrpc/dist/node.d.ts:147
 
 ***
 
@@ -731,7 +729,7 @@ cleanup();
 
 #### Defined in
 
-packages/jsonrpc/dist/node.d.ts:167
+packages/jsonrpc/dist/node.d.ts:165
 
 ***
 
@@ -764,7 +762,7 @@ If the message is invalid
 
 #### Defined in
 
-packages/jsonrpc/dist/node.d.ts:207
+packages/jsonrpc/dist/node.d.ts:205
 
 ***
 
@@ -803,7 +801,7 @@ If origin is unknown
 
 #### Defined in
 
-[packages/router/src/router.ts:322](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L322)
+[packages/router/src/router.ts:322](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L322)
 
 ***
 
@@ -848,7 +846,7 @@ node.registerMethod('add', (context, { a, b }) => a + b);
 
 #### Defined in
 
-packages/jsonrpc/dist/node.d.ts:89
+packages/jsonrpc/dist/node.d.ts:87
 
 ***
 
@@ -902,7 +900,7 @@ node.registerSerializer('processDate', {
 
 #### Defined in
 
-packages/jsonrpc/dist/node.d.ts:111
+packages/jsonrpc/dist/node.d.ts:109
 
 ***
 
@@ -937,7 +935,7 @@ router.removeWallet('eip155:137'); // Remove Polygon wallet
 
 #### Defined in
 
-[packages/router/src/router.ts:192](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L192)
+[packages/router/src/router.ts:192](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L192)
 
 ***
 
@@ -980,7 +978,7 @@ node.setFallbackHandler(async (context, method, params) => {
 
 #### Defined in
 
-packages/jsonrpc/dist/node.d.ts:230
+packages/jsonrpc/dist/node.d.ts:228
 
 ***
 
@@ -1049,7 +1047,7 @@ Map of chain IDs to wallet clients to setup listeners for
 
 #### Defined in
 
-[packages/router/src/router.ts:268](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L268)
+[packages/router/src/router.ts:268](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L268)
 
 ***
 
@@ -1092,7 +1090,7 @@ With code 'invalidSession' if session is invalid
 
 #### Defined in
 
-[packages/router/src/router.ts:418](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L418)
+[packages/router/src/router.ts:418](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L418)
 
 ***
 
@@ -1122,4 +1120,4 @@ With code 'unknownChain' if the chain ID is not configured
 
 #### Defined in
 
-[packages/router/src/router.ts:138](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/router.ts#L138)
+[packages/router/src/router.ts:138](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/router.ts#L138)
