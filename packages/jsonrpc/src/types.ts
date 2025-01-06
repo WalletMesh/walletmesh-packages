@@ -439,7 +439,7 @@ export type JSONRPCContext = Record<string, unknown>;
  * @example
  * ```typescript
  * // WebSocket transport with reconnection and error handling
- * const wsTransport: Transport = {
+ * const wsTransport: JSONRPCTransport = {
  *   send: message => {
  *     if (ws.readyState !== WebSocket.OPEN) {
  *       throw new Error('WebSocket not connected');
@@ -449,7 +449,7 @@ export type JSONRPCContext = Record<string, unknown>;
  * };
  *
  * // postMessage transport with origin validation
- * const windowTransport: Transport = {
+ * const windowTransport: JSONRPCTransport = {
  *   send: message => {
  *     if (!targetWindow) {
  *       throw new Error('Target window not available');
@@ -459,7 +459,7 @@ export type JSONRPCContext = Record<string, unknown>;
  * };
  *
  * // HTTP transport with fetch
- * const httpTransport: Transport = {
+ * const httpTransport: JSONRPCTransport = {
  *   send: async message => {
  *     try {
  *       const response = await fetch('https://api.example.com/jsonrpc', {
@@ -481,7 +481,7 @@ export type JSONRPCContext = Record<string, unknown>;
  * };
  * ```
  */
-export interface Transport {
+export interface JSONRPCTransport {
   /**
    * Sends a JSON-RPC message to the remote node.
    * The implementation should handle message serialization and delivery.
@@ -489,9 +489,10 @@ export interface Transport {
    * @param message - The message to send. This will be a JSON-RPC request,
    *                 response, or event object that needs to be delivered to
    *                 the remote node.
+   * @returns A promise that resolves when the message has been sent
    * @throws {Error} If message delivery fails (e.g., connection lost)
    */
-  send(message: unknown): void;
+  send(message: unknown): Promise<void>;
 }
 
 /**

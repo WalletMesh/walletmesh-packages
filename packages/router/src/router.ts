@@ -1,4 +1,4 @@
-import { JSONRPCNode } from '@walletmesh/jsonrpc';
+import { JSONRPCNode, type JSONRPCTransport } from '@walletmesh/jsonrpc';
 
 import { RouterError } from './errors.js';
 import { defaultStore, type SessionStore } from './session-store.js';
@@ -95,7 +95,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * ```
    */
   constructor(
-    transport: { send: (message: unknown) => Promise<void> },
+    transport: JSONRPCTransport,
     wallets: Wallets,
     permissionManager: PermissionManager<RouterMethodMap, RouterContext>,
     sessionStore: SessionStore = defaultStore,

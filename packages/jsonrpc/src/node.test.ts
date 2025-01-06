@@ -19,11 +19,11 @@ describe('JSONRPCNode', () => {
     messageReceived: { text: string; from: string };
   };
 
-  let transport: { send: ReturnType<typeof vi.fn> };
+  let transport: { send: ReturnType<typeof vi.fn<(message: unknown) => Promise<void>>> };
   let node: JSONRPCNode<TestMethodMap, TestEventMap, TestContext>;
 
   beforeEach(() => {
-    transport = { send: vi.fn() };
+    transport = { send: vi.fn().mockResolvedValue(undefined) };
     node = new JSONRPCNode<TestMethodMap, TestEventMap, TestContext>(transport);
     vi.useFakeTimers();
   });
@@ -416,8 +416,8 @@ describe('JSONRPCNode', () => {
       });
     });
 
-    it('should handle notifications', () => {
-      node.notify('add', { a: 1, b: 2 });
+    it('should handle notifications', async () => {
+      await node.notify('add', { a: 1, b: 2 });
 
       expect(transport.send).toHaveBeenCalledWith({
         jsonrpc: '2.0',
@@ -428,11 +428,11 @@ describe('JSONRPCNode', () => {
   });
 
   describe('Event Handling', () => {
-    it('should register event handlers and emit events', () => {
+    it('should register event handlers and emit events', async () => {
       const handler = vi.fn();
       node.on('userJoined', handler);
 
-      node.emit('userJoined', { name: 'Alice', id: 1 });
+      await node.emit('userJoined', { name: 'Alice', id: 1 });
 
       expect(transport.send).toHaveBeenCalledWith({
         jsonrpc: '2.0',

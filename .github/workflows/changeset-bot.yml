@@ -1,0 +1,34 @@
+name: Changeset Bot
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  changeset-bot:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Dependencies
+        run: npm install @changesets/cli -g
+
+      - name: Check for Changeset
+        run: |
+          # Check if any changesets exist
+          if ! changeset status --since=origin/main; then
+            # No changesets found, check if changes affect package files
+            git diff --name-only origin/main HEAD | grep -q "^packages/" && {
+              echo "Changes detected in packages directory but no changeset found"
+              echo "Please run 'pnpm changeset' to create a changeset"
+              exit 1
+            } || {
+              echo "No package changes detected, skipping changeset check"
+            }
+          fi

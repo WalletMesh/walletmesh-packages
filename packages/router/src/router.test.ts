@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { Mock } from 'vitest';
 import { WalletRouter } from './router.js';
+import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import { RouterError } from './errors.js';
 import type { WalletClient, SessionData } from './types.js';
 import { PermissivePermissionsManager } from './permissions/permissive.js';
 
 describe('WalletRouter', () => {
-  const mockTransport = {
-    send: vi.fn(),
+  const mockTransport: JSONRPCTransport = {
+    send: vi.fn().mockImplementation(() => Promise.resolve()),
   };
 
   const mockWalletClient: WalletClient = {
