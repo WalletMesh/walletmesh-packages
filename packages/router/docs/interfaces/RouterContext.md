@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.1**](../README.md)
+[**@walletmesh/router v0.2.2**](../README.md)
 
 ***
 
@@ -24,7 +24,7 @@ Origin of the request (e.g., "https://app.example.com")
 
 #### Defined in
 
-[packages/router/src/types.ts:474](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L474)
+[packages/router/src/types.ts:474](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/types.ts#L474)
 
 ***
 
@@ -36,4 +36,4 @@ Current session data if authenticated
 
 #### Defined in
 
-[packages/router/src/types.ts:476](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/router/src/types.ts#L476)
+[packages/router/src/types.ts:476](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/types.ts#L476)

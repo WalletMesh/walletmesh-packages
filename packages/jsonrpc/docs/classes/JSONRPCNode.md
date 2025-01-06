@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.2.1**](../README.md)
+[**@walletmesh/jsonrpc v0.2.2**](../README.md)
 
 ***
 
@@ -64,11 +64,9 @@ Creates a new JSONRPCNode instance.
 
 ##### transport
 
+[`JSONRPCTransport`](../interfaces/JSONRPCTransport.md)
+
 Transport object that handles sending messages between nodes
-
-###### send
-
-(`message`) => `void`
 
 ##### context
 
@@ -82,7 +80,7 @@ Optional context object shared between middleware and method handlers
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:100](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L100)
+[packages/jsonrpc/src/node.ts:101](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L101)
 
 ## Properties
 
@@ -94,7 +92,7 @@ Optional context object shared between middleware and method handlers
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:104](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L104)
+[packages/jsonrpc/src/node.ts:103](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L103)
 
 ## Methods
 
@@ -138,7 +136,7 @@ cleanup();
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:299](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L299)
+[packages/jsonrpc/src/node.ts:298](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L298)
 
 ***
 
@@ -204,7 +202,7 @@ try {
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:191](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L191)
+[packages/jsonrpc/src/node.ts:190](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L190)
 
 ***
 
@@ -226,13 +224,13 @@ await node.close();
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:418](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L418)
+[packages/jsonrpc/src/node.ts:417](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L417)
 
 ***
 
 ### emit()
 
-> **emit**\<`K`\>(`event`, `params`): `void`
+> **emit**\<`K`\>(`event`, `params`): `Promise`\<`void`\>
 
 Emits an event to the remote node.
 
@@ -256,7 +254,7 @@ Event payload
 
 #### Returns
 
-`void`
+`Promise`\<`void`\>
 
 #### Example
 
@@ -266,13 +264,13 @@ node.emit('statusUpdate', { status: 'online' });
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:271](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L271)
+[packages/jsonrpc/src/node.ts:270](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L270)
 
 ***
 
 ### notify()
 
-> **notify**\<`M`\>(`method`, `params`): `void`
+> **notify**\<`M`\>(`method`, `params`): `Promise`\<`void`\>
 
 Sends a notification (a request without expecting a response).
 
@@ -296,7 +294,7 @@ Parameters to pass to the method
 
 #### Returns
 
-`void`
+`Promise`\<`void`\>
 
 #### Example
 
@@ -306,7 +304,7 @@ node.notify('log', { message: 'User action performed' });
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:227](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L227)
+[packages/jsonrpc/src/node.ts:226](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L226)
 
 ***
 
@@ -357,7 +355,7 @@ cleanup();
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:256](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L256)
+[packages/jsonrpc/src/node.ts:255](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L255)
 
 ***
 
@@ -386,7 +384,7 @@ If the message is invalid
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:310](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L310)
+[packages/jsonrpc/src/node.ts:309](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L309)
 
 ***
 
@@ -427,7 +425,7 @@ node.registerMethod('add', (context, { a, b }) => a + b);
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:130](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L130)
+[packages/jsonrpc/src/node.ts:129](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L129)
 
 ***
 
@@ -477,7 +475,7 @@ node.registerSerializer('processDate', {
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:159](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L159)
+[packages/jsonrpc/src/node.ts:158](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L158)
 
 ***
 
@@ -516,7 +514,7 @@ node.setFallbackHandler(async (context, method, params) => {
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:403](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L403)
+[packages/jsonrpc/src/node.ts:402](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L402)
 
 ***
 
@@ -556,4 +554,4 @@ node.setFallbackSerializer({
 
 #### Defined in
 
-[packages/jsonrpc/src/node.ts:90](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/node.ts#L90)
+[packages/jsonrpc/src/node.ts:91](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/node.ts#L91)

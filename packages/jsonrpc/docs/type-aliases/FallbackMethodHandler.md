@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.2.1**](../README.md)
+[**@walletmesh/jsonrpc v0.2.2**](../README.md)
 
 ***
 
@@ -55,4 +55,4 @@ const fallbackHandler: FallbackMethodHandler<Context> =
 
 ## Defined in
 
-[packages/jsonrpc/src/types.ts:710](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L710)
+[packages/jsonrpc/src/types.ts:711](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L711)

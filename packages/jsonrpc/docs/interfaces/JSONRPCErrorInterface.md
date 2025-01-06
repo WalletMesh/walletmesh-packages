@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.2.1**](../README.md)
+[**@walletmesh/jsonrpc v0.2.2**](../README.md)
 
 ***
 
@@ -36,7 +36,7 @@ The error code.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:336](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L336)
+[packages/jsonrpc/src/types.ts:336](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L336)
 
 ***
 
@@ -48,7 +48,7 @@ Additional error data.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:340](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L340)
+[packages/jsonrpc/src/types.ts:340](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L340)
 
 ***
 
@@ -60,4 +60,4 @@ The error message.
 
 #### Defined in
 
-[packages/jsonrpc/src/types.ts:338](https://github.com/WalletMesh/wm-core/blob/a9df9bbf5472f2e76d37a4177ff0bdcc90012260/packages/jsonrpc/src/types.ts#L338)
+[packages/jsonrpc/src/types.ts:338](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L338)

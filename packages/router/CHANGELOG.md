@@ -1,5 +1,13 @@
 # @walletmesh/router
 
+## 0.2.2
+
+### Patch Changes
+
+- e2f8350: rename Transport -> JSONRPCTransport & make `JSONRPCTransport.send()` async
+- Updated dependencies [e2f8350]
+  - @walletmesh/jsonrpc@0.2.2
+
 ## 0.2.1
 
 ### Patch Changes
