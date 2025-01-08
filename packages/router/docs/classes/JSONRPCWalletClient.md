@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.2**](../README.md)
+[**@walletmesh/router v0.2.3**](../README.md)
 
 ***
 
@@ -61,7 +61,7 @@ const balance = await walletClient.call('eth_getBalance', [accounts[0]]);
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:64](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/jsonrpc-adapter.ts#L64)
+[packages/router/src/jsonrpc-adapter.ts:64](https://github.com/WalletMesh/wm-core/blob/620c3136154d532bc396983d09d14c899368e16f/packages/router/src/jsonrpc-adapter.ts#L64)
 
 ## Methods
 
@@ -115,7 +115,7 @@ const balance = await client.call('eth_getBalance', ['0x...', 'latest']);
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:84](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/jsonrpc-adapter.ts#L84)
+[packages/router/src/jsonrpc-adapter.ts:84](https://github.com/WalletMesh/wm-core/blob/620c3136154d532bc396983d09d14c899368e16f/packages/router/src/jsonrpc-adapter.ts#L84)
 
 ***
 
@@ -148,7 +148,7 @@ console.log('Supported methods:', methods);
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:105](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/jsonrpc-adapter.ts#L105)
+[packages/router/src/jsonrpc-adapter.ts:105](https://github.com/WalletMesh/wm-core/blob/620c3136154d532bc396983d09d14c899368e16f/packages/router/src/jsonrpc-adapter.ts#L105)
 
 ***
 
@@ -196,7 +196,7 @@ client.off('accountsChanged', handler);
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:152](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/jsonrpc-adapter.ts#L152)
+[packages/router/src/jsonrpc-adapter.ts:152](https://github.com/WalletMesh/wm-core/blob/620c3136154d532bc396983d09d14c899368e16f/packages/router/src/jsonrpc-adapter.ts#L152)
 
 ***
 
@@ -242,4 +242,4 @@ client.on('networkChanged', (networkId: string) => {
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:125](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/jsonrpc-adapter.ts#L125)
+[packages/router/src/jsonrpc-adapter.ts:125](https://github.com/WalletMesh/wm-core/blob/620c3136154d532bc396983d09d14c899368e16f/packages/router/src/jsonrpc-adapter.ts#L125)

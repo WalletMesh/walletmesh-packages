@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.2**](../README.md)
+[**@walletmesh/router v0.2.3**](../README.md)
 
 ***
 
@@ -27,7 +27,7 @@ Method call details including name and parameters
 
 #### Defined in
 
-[packages/router/src/types.ts:268](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/types.ts#L268)
+[packages/router/src/types.ts:268](https://github.com/WalletMesh/wm-core/blob/620c3136154d532bc396983d09d14c899368e16f/packages/router/src/types.ts#L268)
 
 ***
 
@@ -39,7 +39,7 @@ Target chain ID where the method will be executed
 
 #### Defined in
 
-[packages/router/src/types.ts:264](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/types.ts#L264)
+[packages/router/src/types.ts:264](https://github.com/WalletMesh/wm-core/blob/620c3136154d532bc396983d09d14c899368e16f/packages/router/src/types.ts#L264)
 
 ***
 
@@ -51,4 +51,4 @@ Session ID for authorization and context
 
 #### Defined in
 
-[packages/router/src/types.ts:266](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/router/src/types.ts#L266)
+[packages/router/src/types.ts:266](https://github.com/WalletMesh/wm-core/blob/620c3136154d532bc396983d09d14c899368e16f/packages/router/src/types.ts#L266)
