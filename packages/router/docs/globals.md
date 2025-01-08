@@ -1,8 +1,8 @@
-[**@walletmesh/router v0.2.2**](README.md)
+[**@walletmesh/router v0.2.3**](README.md)
 
 ***
 
-# @walletmesh/router v0.2.2
+# @walletmesh/router v0.2.3
 
 ## Classes
 
@@ -11,6 +11,7 @@
 - [MemorySessionStore](classes/MemorySessionStore.md)
 - [RouterError](classes/RouterError.md)
 - [WalletRouter](classes/WalletRouter.md)
+- [WalletRouterProvider](classes/WalletRouterProvider.md)
 
 ## Interfaces
 

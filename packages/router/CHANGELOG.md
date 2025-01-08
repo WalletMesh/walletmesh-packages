@@ -1,5 +1,11 @@
 # @walletmesh/router
 
+## 0.2.3
+
+### Patch Changes
+
+- 620c313: fix missing export WalletRouterProvider
+
 ## 0.2.2
 
 ### Patch Changes
