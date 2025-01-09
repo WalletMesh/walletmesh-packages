@@ -197,7 +197,12 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     // Clean up event listeners
     const cleanup = this.walletEventCleanups.get(chainId);
     if (cleanup) {
-      cleanup();
+      try {
+        cleanup();
+      } catch (error) {
+        // Ignore cleanup errors
+        console.error('Error during wallet event cleanup:', error);
+      }
       this.walletEventCleanups.delete(chainId);
     }
 
@@ -268,7 +273,12 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   protected setupWalletEventListeners(wallets: Wallets): void {
     // Clean up any existing listeners
     for (const cleanup of this.walletEventCleanups.values()) {
-      cleanup();
+      try {
+        cleanup();
+      } catch (error) {
+        // Ignore cleanup errors - we still want to clear and setup new listeners
+        console.error('Error during wallet event cleanup:', error);
+      }
     }
     this.walletEventCleanups.clear();
 
@@ -292,17 +302,22 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       // Register handlers and collect cleanup functions
       const cleanups: Array<() => void> = [];
       for (const { event, handler } of handlers) {
-        wallet.on(event, handler);
+        wallet.on(event as string, handler);
         if (wallet.off) {
           const off = wallet.off; // Capture off method to avoid undefined check
-          cleanups.push(() => off(event, handler));
+          cleanups.push(() => off(event as string, handler));
         }
       }
 
       // Store single cleanup function that handles all events
       this.walletEventCleanups.set(chainId, () => {
         for (const cleanup of cleanups) {
-          cleanup();
+          try {
+            cleanup();
+          } catch (error) {
+            // Ignore individual cleanup errors
+            console.error('Error during wallet event cleanup:', error);
+          }
         }
       });
     }
@@ -451,11 +466,11 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   ): Promise<RouterMethodMap['wm_call']['result']> {
     try {
       // Forward request to wallet
-      return await client.call(methodCall.method, methodCall.params);
+      return await client.call(String(methodCall.method), methodCall.params);
     } catch (error) {
       // Handle any errors from the wallet client
       if (error && typeof error === 'object' && 'code' in error && error.code === -32601) {
-        throw new RouterError('methodNotSupported', methodCall.method);
+        throw new RouterError('methodNotSupported', String(methodCall.method));
       }
       throw new RouterError('walletNotAvailable', String(error));
     }

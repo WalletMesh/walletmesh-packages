@@ -248,12 +248,18 @@ export interface SessionData {
  * Represents a method call to be executed on a wallet.
  * Encapsulates both the method name and its parameters.
  */
-export interface MethodCall {
+export interface MethodCall<M extends keyof RouterMethodMap = keyof RouterMethodMap> {
   /** Method name to invoke on the wallet (e.g., "eth_sendTransaction") */
-  method: string;
+  method: M;
   /** Method parameters to pass to the wallet method. Type depends on the specific method being called. */
-  params?: unknown;
+  params?: MethodParams<M>;
 }
+
+export type MethodParams<M extends keyof RouterMethodMap> = RouterMethodMap[M]['params'];
+export type MethodResult<M extends keyof RouterMethodMap> = RouterMethodMap[M]['result'];
+export type MethodResults<T extends readonly MethodCall[]> = {
+  readonly [K in keyof T]: T[K] extends MethodCall<infer M> ? MethodResult<M> : never;
+};
 
 /**
  * Parameters required to invoke a single method on a specific chain.

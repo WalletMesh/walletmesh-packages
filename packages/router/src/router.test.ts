@@ -451,6 +451,15 @@ describe('WalletRouter', () => {
         'eip155:1': [],
       });
     });
+
+    it('should convert non-RouterError to walletNotAvailable error', async () => {
+      const nonRouterError = new TypeError('Some type error');
+      (mockWalletClient.getSupportedMethods as Mock).mockRejectedValue(nonRouterError);
+
+      await expect(router['getSupportedMethods']({}, { chainIds: ['eip155:1'] })).rejects.toThrow(
+        new RouterError('walletNotAvailable', 'TypeError: Some type error')
+      );
+    });
   });
 
   describe('Event Handling', () => {
@@ -555,6 +564,25 @@ describe('WalletRouter', () => {
 
       // Should not throw when removing wallet
       router.removeWallet('eip155:137');
+    });
+
+    it('should handle cleanup function failure', () => {
+      const mockWalletWithFailingOff = {
+        call: vi.fn(),
+        on: vi.fn(),
+        off: vi.fn().mockImplementation(() => {
+          throw new Error('Cleanup failed');
+        }),
+      };
+
+      // Add wallet with failing off method
+      router.addWallet('eip155:137', mockWalletWithFailingOff);
+
+      // Should not throw when cleaning up
+      router.removeWallet('eip155:137');
+
+      // Verify off was called despite throwing
+      expect(mockWalletWithFailingOff.off).toHaveBeenCalled();
     });
   });
 });

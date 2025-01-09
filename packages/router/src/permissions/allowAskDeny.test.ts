@@ -124,7 +124,7 @@ describe('AllowAskDenyManager', () => {
             params: [],
           },
         },
-      } as JSONRPCRequest<RouterMethodMap, 'wm_call', CallParams>);
+      } as unknown as JSONRPCRequest<RouterMethodMap, 'wm_call', CallParams>);
       expect(result).toBe(false);
     });
   });
@@ -177,6 +177,7 @@ describe('AllowAskDenyManager', () => {
         id: 1,
         method: 'wm_bulkCall',
         params: {
+          chainId: undefined as unknown as string,
           sessionId: mockSession.id,
           calls: [
             {
