@@ -8,7 +8,13 @@ import type {
   RouterMethodMap,
   RouterEventMap,
   RouterContext,
-} from './types.js'; /**
+} from './types.js';
+
+import { RouterError } from './errors.js';
+import { OperationBuilder } from './operation.js';
+
+
+/**
  * Client-side provider for interacting with the multi-chain router.
  * Provides a simplified interface for applications to connect to and interact with wallets.
  *
@@ -174,7 +180,7 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     timeout?: number,
   ): Promise<HumanReadableChainPermissions> {
     if (!this._sessionId) {
-      throw new Error('Not connected');
+      throw new RouterError("invalidSession");
     }
     const approvedPermissions = await this.callMethod(
       'wm_updatePermissions',
@@ -223,7 +229,7 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    */
   async call(chainId: ChainId, call: MethodCall, timeout?: number): Promise<unknown> {
     if (!this._sessionId) {
-      throw new Error('Not connected');
+      throw new RouterError("invalidSession");
     }
     return this.callMethod('wm_call', {
       chainId,
@@ -263,7 +269,7 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    */
   async bulkCall(chainId: ChainId, calls: MethodCall[], timeout?: number): Promise<unknown[]> {
     if (!this._sessionId) {
-      throw new Error('Not connected');
+      throw new RouterError("invalidSession");
     }
     return this.callMethod('wm_bulkCall', {
       chainId,
@@ -304,5 +310,15 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
       params.chainIds = chainIds;
     }
     return this.callMethod('wm_getSupportedMethods', params, timeout);
+  }
+
+
+  /**
+ * Creates a new operation builder for chaining method calls
+ * @param chainId - The chain to execute operations on
+ * @returns A new operation builder instance
+ */
+  public chain(chainId: ChainId): OperationBuilder {
+    return new OperationBuilder(chainId, this);
   }
 }

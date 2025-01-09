@@ -188,13 +188,16 @@ sequenceDiagram
      // Get current session ID
      get sessionId(): string | undefined;
 
+     // Create an operation builder for chaining multiple calls
+     chain(chainId: ChainId): OperationBuilder;
+
      // Connect to chains with permissions
      async connect(permissions: ChainPermissions, timeout?: number): Promise<{ sessionId: string, permissions: ChainPermissions }>;
 
-     // Call wallet method
+     // Call a single wallet method
      async call(chainId: ChainId, call: MethodCall, timeout?: number): Promise<unknown>;
 
-     // Call multiple methods in sequence
+     // Call multiple methods in sequence (consider using chain() for better type safety)
      async bulkCall(chainId: ChainId, calls: MethodCall[], timeout?: number): Promise<unknown[]>;
 
      // Get/update permissions
@@ -459,6 +462,39 @@ const cleanup = provider.on('wm_walletStateChanged', ({ chainId, changes }) => {
 cleanup();
 await provider.disconnect();
 ```
+
+### Operation Builder
+
+The router provides a fluent interface for chaining multiple RPC method calls into a single operation using the `OperationBuilder` class. This is particularly useful when you need to make multiple related calls in sequence:
+
+```typescript
+// Create and execute a chain of method calls
+const [balance, code] = await provider
+  .chain('eip155:1')
+  .call('eth_getBalance', ['0x123...'])
+  .call('eth_getCode', ['0x456...'])
+  .execute();
+
+// Single call returns direct result
+const balance = await provider
+  .chain('eip155:1')
+  .call('eth_getBalance', ['0x123...'])
+  .execute();
+
+// Type-safe parameters and results
+const [balance, allowance] = await provider
+  .chain('eip155:1')
+  .call('eth_getBalance', ['0x123...']) // params and result types from RouterMethodMap
+  .call('eth_allowance', ['0x123...', '0x456...'])
+  .execute();
+```
+
+Key features of the Operation Builder:
+- **Method Chaining**: Build sequences of related method calls using a fluent interface
+- **Type Safety**: Full TypeScript support with proper typing for parameters and results
+- **Execution Modes**: 
+  - Single call returns direct result
+  - Multiple calls return array of results in call order
 
 ### Session Management
 

@@ -1,6 +1,8 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { WalletRouterProvider } from './provider.js';
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
+import { RouterError } from './errors.js';
+import { OperationBuilder } from './operation.js';
 
 describe('WalletRouterProvider', () => {
   const mockCallMethod = vi.fn();
@@ -144,7 +146,7 @@ describe('WalletRouterProvider', () => {
         provider.updatePermissions({
           'aztec:testnet': ['aztec_getAccount'],
         }),
-      ).rejects.toThrow('Not connected');
+      ).rejects.toThrow(new RouterError('invalidSession'));
     });
   });
 
@@ -196,7 +198,7 @@ describe('WalletRouterProvider', () => {
     it('throws when executing bulk calls without connection', async () => {
       await provider.disconnect();
       await expect(provider.bulkCall('aztec:testnet', [{ method: 'aztec_getAccount' }])).rejects.toThrow(
-        'Not connected',
+        new RouterError('invalidSession')
       );
     });
 
@@ -220,7 +222,7 @@ describe('WalletRouterProvider', () => {
     it('throws when invoking methods without connection', async () => {
       await provider.disconnect();
       await expect(provider.call('aztec:testnet', { method: 'aztec_getAccount' })).rejects.toThrow(
-        'Not connected',
+        new RouterError('invalidSession')
       );
     });
   });
@@ -331,7 +333,43 @@ describe('WalletRouterProvider', () => {
     });
   });
 
+  describe('Operation Builder', () => {
+    it('creates operation builder with correct chain ID', async () => {
+      // Connect first to establish a session
+      const sessionId = 'test-session';
+      mockCallMethod.mockResolvedValueOnce({ sessionId });
+      await provider.connect({
+        'eip155:1': ['eth_getBalance'],
+      });
+
+      const builder = provider.chain('eip155:1');
+      expect(builder).toBeInstanceOf(OperationBuilder);
+
+      // Verify the builder works by executing a call
+      mockCallMethod.mockResolvedValueOnce('0x123');
+      const result = await builder
+        .call('eth_getBalance', ['0xabc'])
+        .execute();
+
+      expect(result).toBe('0x123');
+      expect(mockCallMethod).toHaveBeenLastCalledWith('wm_call', {
+        chainId: 'eip155:1',
+        sessionId: 'test-session',
+        call: {
+          method: 'eth_getBalance',
+          params: ['0xabc'],
+        },
+        timeout: undefined,
+      });
+    });
+  });
+
   describe('Capabilities', () => {
+    beforeEach(async () => {
+      // Clear any previous mock calls
+      mockCallMethod.mockClear();
+    });
+
     it('gets router methods when no chains specified', async () => {
       const expectedMethods = {
         router: [
