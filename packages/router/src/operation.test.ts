@@ -67,7 +67,11 @@ class TestProvider extends WalletRouterProvider {
 
     // Handle single calls
     if (method === 'wm_call') {
-      const { chainId, call, sessionId: _ } = params as {
+      const {
+        chainId,
+        call,
+        sessionId: _,
+      } = params as {
         chainId: string;
         call: MethodCall<keyof TestExtendedMethodMap>;
         sessionId: string;

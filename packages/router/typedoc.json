@@ -4,7 +4,8 @@
     "typedoc-plugin-markdown"
   ],
   "entryPoints": [
-    "src/index.ts"
+    "src/index.ts",
+    "src/permissions/index.ts"
   ],
   "out": "docs",
   "exclude": [

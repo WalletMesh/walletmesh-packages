@@ -167,14 +167,17 @@ describe('WalletRouterProvider', () => {
       const result = await provider.call('aztec:testnet', { method: 'aztec_getAccount' }, 5000);
 
       expect(result).toEqual(expectedResult);
-      expect(mockCallMethod).toHaveBeenLastCalledWith('wm_call', {
-        chainId: 'aztec:testnet',
-        sessionId: 'test-session',
-        call: {
-          method: 'aztec_getAccount',
+      expect(mockCallMethod).toHaveBeenLastCalledWith(
+        'wm_call',
+        {
+          chainId: 'aztec:testnet',
+          sessionId: 'test-session',
+          call: {
+            method: 'aztec_getAccount',
+          },
         },
-        timeout: 5000,
-      });
+        5000,
+      );
     });
 
     it('executes bulk method calls', async () => {
@@ -187,12 +190,15 @@ describe('WalletRouterProvider', () => {
       ]);
 
       expect(result).toEqual(expectedResults);
-      expect(mockCallMethod).toHaveBeenLastCalledWith('wm_bulkCall', {
-        chainId: 'aztec:testnet',
-        sessionId: 'test-session',
-        calls: [{ method: 'aztec_getAccount' }, { method: 'aztec_getBalance' }],
-        timeout: undefined,
-      });
+      expect(mockCallMethod).toHaveBeenLastCalledWith(
+        'wm_bulkCall',
+        {
+          chainId: 'aztec:testnet',
+          sessionId: 'test-session',
+          calls: [{ method: 'aztec_getAccount' }, { method: 'aztec_getBalance' }],
+        },
+        undefined,
+      );
     });
 
     it('throws when executing bulk calls without connection', async () => {
@@ -209,14 +215,17 @@ describe('WalletRouterProvider', () => {
       const result = await provider.call('aztec:testnet', { method: 'aztec_getAccount' });
 
       expect(result).toEqual(expectedResult);
-      expect(mockCallMethod).toHaveBeenLastCalledWith('wm_call', {
-        chainId: 'aztec:testnet',
-        sessionId: 'test-session',
-        call: {
-          method: 'aztec_getAccount',
+      expect(mockCallMethod).toHaveBeenLastCalledWith(
+        'wm_call',
+        {
+          chainId: 'aztec:testnet',
+          sessionId: 'test-session',
+          call: {
+            method: 'aztec_getAccount',
+          },
         },
-        timeout: undefined,
-      });
+        undefined,
+      );
     });
 
     it('throws when invoking methods without connection', async () => {
@@ -350,15 +359,18 @@ describe('WalletRouterProvider', () => {
       const result = await builder.call('eth_getBalance', ['0xabc']).execute();
 
       expect(result).toBe('0x123');
-      expect(mockCallMethod).toHaveBeenLastCalledWith('wm_call', {
-        chainId: 'eip155:1',
-        sessionId: 'test-session',
-        call: {
-          method: 'eth_getBalance',
-          params: ['0xabc'],
+      expect(mockCallMethod).toHaveBeenLastCalledWith(
+        'wm_call',
+        {
+          chainId: 'eip155:1',
+          sessionId: 'test-session',
+          call: {
+            method: 'eth_getBalance',
+            params: ['0xabc'],
+          },
         },
-        timeout: undefined,
-      });
+        undefined,
+      );
     });
   });
 

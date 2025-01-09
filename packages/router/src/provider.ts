@@ -235,12 +235,15 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     if (!this._sessionId) {
       throw new RouterError('invalidSession');
     }
-    const result = await this.callMethod('wm_call', {
-      chainId,
-      call,
-      sessionId: this._sessionId,
+    const result = await this.callMethod(
+      'wm_call',
+      {
+        chainId,
+        call,
+        sessionId: this._sessionId,
+      },
       timeout,
-    });
+    );
     return result as RouterMethodMap[M]['result'];
   }
 
@@ -280,12 +283,15 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     if (!this._sessionId) {
       throw new RouterError('invalidSession');
     }
-    const result = await this.callMethod('wm_bulkCall', {
-      chainId,
-      calls: [...calls],
-      sessionId: this._sessionId,
+    const result = await this.callMethod(
+      'wm_bulkCall',
+      {
+        chainId,
+        calls: [...calls],
+        sessionId: this._sessionId,
+      },
       timeout,
-    });
+    );
     return result as MethodResults<T>;
   }
 

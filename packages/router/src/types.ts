@@ -369,6 +369,71 @@ export interface RouterEventMap extends JSONRPCEventMap {
 }
 
 /**
+ * Type definition for the wm_call method parameters and result.
+ * This type enables type-safe method calls to wallets through the router.
+ *
+ * @template M - The specific method being called from RouterMethodMap
+ *
+ * @example
+ * ```typescript
+ * // Making a typed call to get an account balance
+ * const result = await router.request<WmCallType<'eth_getBalance'>>('wm_call', {
+ *   chainId: 'eip155:1',
+ *   sessionId: 'session123',
+ *   call: {
+ *     method: 'eth_getBalance',
+ *     params: ['0x742d35Cc6634C0532925a3b844Bc454e4438f44e']
+ *   }
+ * });
+ * // result is typed as string (hex value)
+ * ```
+ */
+export interface WmCallType<M extends keyof RouterMethodMap> {
+  params: {
+    chainId: ChainId;
+    sessionId: string;
+    call: MethodCall<M>;
+  };
+  result: MethodResult<M>;
+}
+
+/**
+ * Type definition for the wm_bulkCall method parameters and result.
+ * Enables type-safe execution of multiple method calls in sequence.
+ * All calls must be permitted for the operation to succeed.
+ *
+ * @template M - The specific method being called from RouterMethodMap
+ *
+ * @example
+ * ```typescript
+ * // Making multiple typed calls in sequence
+ * const results = await router.request<WmBulkCallType<'eth_getBalance'>>('wm_bulkCall', {
+ *   chainId: 'eip155:1',
+ *   sessionId: 'session123',
+ *   calls: [
+ *     {
+ *       method: 'eth_getBalance',
+ *       params: ['0x742d35Cc6634C0532925a3b844Bc454e4438f44e']
+ *     },
+ *     {
+ *       method: 'eth_getBalance',
+ *       params: ['0x742d35Cc6634C0532925a3b844Bc454e4438f44f']
+ *     }
+ *   ]
+ * });
+ * // results is typed as string[] (array of hex values)
+ * ```
+ */
+export interface WmBulkCallType<M extends keyof RouterMethodMap> {
+  params: {
+    chainId: ChainId;
+    sessionId: string;
+    calls: MethodCall<M>[];
+  };
+  result: MethodResult<M>[];
+}
+
+/**
  * Router method map following JSON-RPC spec.
  * Defines all available methods that can be called on the router,
  * their parameters, and return types.
@@ -459,10 +524,7 @@ export interface RouterMethodMap extends JSONRPCMethodMap {
    * });
    * ```
    */
-  wm_call: {
-    params: CallParams;
-    result: CallParams['call'] extends MethodCall<infer M> ? MethodResult<M> : never;
-  };
+  wm_call: WmCallType<keyof RouterMethodMap>;
 
   /**
    * Execute multiple method calls in sequence
@@ -479,10 +541,7 @@ export interface RouterMethodMap extends JSONRPCMethodMap {
    * ]);
    * ```
    */
-  wm_bulkCall: {
-    params: BulkCallParams;
-    result: BulkCallParams['calls'] extends readonly MethodCall[] ? MethodResults<BulkCallParams['calls']> : never[];
-  };
+  wm_bulkCall: WmBulkCallType<keyof RouterMethodMap>;
 
   /**
    * Get supported methods for specified chains

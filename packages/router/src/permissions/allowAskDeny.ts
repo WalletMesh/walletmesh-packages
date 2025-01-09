@@ -83,8 +83,6 @@ type AllowAskDenyChainPermissions<T extends RouterMethodMap> = Map<ChainId, Map<
  * @template T - Router method map type for type-safe method handling
  * @template C - Router context type for session and origin information
  *
- * @implements {PermissionManager<T, C>}
- *
  * @example
  * ```typescript
  * // Initialize with custom prompt handling
