@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.6**](../../README.md)
+[**@walletmesh/router v0.2.7**](../../README.md)
 
 ***
 
@@ -129,7 +129,7 @@ The current session ID or undefined if not connected
 
 #### Defined in
 
-[packages/router/src/provider.ts:73](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/provider.ts#L73)
+[packages/router/src/provider.ts:73](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L73)
 
 ## Methods
 
@@ -258,7 +258,7 @@ const [accounts, balance] = await provider.bulkCall('eip155:1', [
 
 #### Defined in
 
-[packages/router/src/provider.ts:278](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/provider.ts#L278)
+[packages/router/src/provider.ts:278](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L278)
 
 ***
 
@@ -344,7 +344,7 @@ const txHash = await provider.call('eip155:1', {
 
 #### Defined in
 
-[packages/router/src/provider.ts:230](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/provider.ts#L230)
+[packages/router/src/provider.ts:230](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L230)
 
 ***
 
@@ -451,7 +451,7 @@ const [balance, code] = await provider
 
 #### Defined in
 
-[packages/router/src/provider.ts:347](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/provider.ts#L347)
+[packages/router/src/provider.ts:347](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L347)
 
 ***
 
@@ -542,7 +542,7 @@ const { sessionId, permissions } = await provider.connect({
 
 #### Defined in
 
-[packages/router/src/provider.ts:104](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/provider.ts#L104)
+[packages/router/src/provider.ts:104](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L104)
 
 ***
 
@@ -580,7 +580,7 @@ If the request times out
 
 #### Defined in
 
-[packages/router/src/provider.ts:123](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/provider.ts#L123)
+[packages/router/src/provider.ts:123](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L123)
 
 ***
 
@@ -671,7 +671,7 @@ If the request times out
 
 #### Defined in
 
-[packages/router/src/provider.ts:144](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/provider.ts#L144)
+[packages/router/src/provider.ts:144](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L144)
 
 ***
 
@@ -734,7 +734,7 @@ const routerMethods = await provider.getSupportedMethods();
 
 #### Defined in
 
-[packages/router/src/provider.ts:323](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/provider.ts#L323)
+[packages/router/src/provider.ts:323](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L323)
 
 ***
 
@@ -1110,4 +1110,4 @@ await provider.updatePermissions({
 
 #### Defined in
 
-[packages/router/src/provider.ts:178](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/provider.ts#L178)
+[packages/router/src/provider.ts:178](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L178)

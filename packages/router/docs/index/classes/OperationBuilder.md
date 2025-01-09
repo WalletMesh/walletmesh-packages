@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.6**](../../README.md)
+[**@walletmesh/router v0.2.7**](../../README.md)
 
 ***
 
@@ -54,7 +54,7 @@ Tuple type tracking the sequence of method calls
 
 #### Defined in
 
-[packages/router/src/operation.ts:51](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/operation.ts#L51)
+[packages/router/src/operation.ts:51](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/operation.ts#L51)
 
 ## Methods
 
@@ -101,7 +101,7 @@ const operation = provider.chain('eip155:1')
 
 #### Defined in
 
-[packages/router/src/operation.ts:73](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/operation.ts#L73)
+[packages/router/src/operation.ts:73](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/operation.ts#L73)
 
 ***
 
@@ -148,4 +148,4 @@ If no operations are queued or if result validation fails
 
 #### Defined in
 
-[packages/router/src/operation.ts:108](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/operation.ts#L108)
+[packages/router/src/operation.ts:108](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/operation.ts#L108)

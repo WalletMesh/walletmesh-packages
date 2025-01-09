@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.6**](../../README.md)
+[**@walletmesh/router v0.2.7**](../../README.md)
 
 ***
 
@@ -43,4 +43,4 @@ type EthereumMethods = {
 
 #### Defined in
 
-[packages/router/src/jsonrpc-adapter.ts:22](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/jsonrpc-adapter.ts#L22)
+[packages/router/src/jsonrpc-adapter.ts:28](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/jsonrpc-adapter.ts#L28)

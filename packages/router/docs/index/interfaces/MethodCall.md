@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.6**](../../README.md)
+[**@walletmesh/router v0.2.7**](../../README.md)
 
 ***
 
@@ -23,7 +23,7 @@ Method name to invoke on the wallet (e.g., "eth_sendTransaction")
 
 #### Defined in
 
-[packages/router/src/types.ts:253](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L253)
+[packages/router/src/types.ts:253](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L253)
 
 ***
 
@@ -35,4 +35,4 @@ Method parameters to pass to the wallet method. Type depends on the specific met
 
 #### Defined in
 
-[packages/router/src/types.ts:255](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L255)
+[packages/router/src/types.ts:255](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L255)

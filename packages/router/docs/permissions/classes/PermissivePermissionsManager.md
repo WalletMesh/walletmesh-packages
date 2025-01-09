@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.6**](../../README.md)
+[**@walletmesh/router v0.2.7**](../../README.md)
 
 ***
 
@@ -108,7 +108,7 @@ Promise resolving to the permissive permissions configuration
 
 #### Defined in
 
-[packages/router/src/permissions/permissive.ts:116](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/permissions/permissive.ts#L116)
+[packages/router/src/permissions/permissive.ts:116](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/permissions/permissive.ts#L116)
 
 ***
 
@@ -149,7 +149,7 @@ Promise resolving to true for all requests
 
 #### Defined in
 
-[packages/router/src/permissions/permissive.ts:101](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/permissions/permissive.ts#L101)
+[packages/router/src/permissions/permissive.ts:101](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/permissions/permissive.ts#L101)
 
 ***
 
@@ -176,4 +176,4 @@ Promise resolving to the permissive permissions configuration
 
 #### Defined in
 
-[packages/router/src/permissions/permissive.ts:87](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/permissions/permissive.ts#L87)
+[packages/router/src/permissions/permissive.ts:87](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/permissions/permissive.ts#L87)
