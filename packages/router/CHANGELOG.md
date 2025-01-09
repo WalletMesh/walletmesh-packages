@@ -1,5 +1,11 @@
 # @walletmesh/router
 
+## 0.2.4
+
+### Patch Changes
+
+- ff7e359: add operation builder
+
 ## 0.2.3
 
 ### Patch Changes

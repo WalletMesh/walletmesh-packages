@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.3**](../README.md)
+[**@walletmesh/router v0.2.4**](../README.md)
 
 ***
 
@@ -14,4 +14,4 @@
 
 ## Defined in
 
-[packages/router/src/types.ts:258](https://github.com/WalletMesh/wm-core/blob/e72722b1a4b35e9157ba50814c4113f8e285d423/packages/router/src/types.ts#L258)
+[packages/router/src/types.ts:258](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/types.ts#L258)

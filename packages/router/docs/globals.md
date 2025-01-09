@@ -1,8 +1,8 @@
-[**@walletmesh/router v0.2.3**](README.md)
+[**@walletmesh/router v0.2.4**](README.md)
 
 ***
 
-# @walletmesh/router v0.2.3
+# @walletmesh/router v0.2.4
 
 ## Classes
 
@@ -34,6 +34,9 @@
 - [ChainId](type-aliases/ChainId.md)
 - [ChainPermissions](type-aliases/ChainPermissions.md)
 - [HumanReadableChainPermissions](type-aliases/HumanReadableChainPermissions.md)
+- [MethodParams](type-aliases/MethodParams.md)
+- [MethodResult](type-aliases/MethodResult.md)
+- [MethodResults](type-aliases/MethodResults.md)
 - [PermissionApprovalCallback](type-aliases/PermissionApprovalCallback.md)
 - [PermissionCheckCallback](type-aliases/PermissionCheckCallback.md)
 - [PermissionCleanupCallback](type-aliases/PermissionCleanupCallback.md)
