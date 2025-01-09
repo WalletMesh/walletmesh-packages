@@ -255,8 +255,19 @@ export interface MethodCall<M extends keyof RouterMethodMap = keyof RouterMethod
   params?: MethodParams<M>;
 }
 
+/**
+ * @internal Helper type to extract parameter types from method definitions
+ */
 export type MethodParams<M extends keyof RouterMethodMap> = RouterMethodMap[M]['params'];
+
+/**
+ * @internal Helper type to extract result types from method definitions
+ */
 export type MethodResult<M extends keyof RouterMethodMap> = RouterMethodMap[M]['result'];
+
+/**
+ * @internal Helper type to map an array of method calls to their corresponding result types
+ */
 export type MethodResults<T extends readonly MethodCall[]> = {
   readonly [K in keyof T]: T[K] extends MethodCall<infer M> ? MethodResult<M> : never;
 };
@@ -439,14 +450,18 @@ export interface RouterMethodMap extends JSONRPCMethodMap {
    * @param sessionId - Session ID for authorization
    * @param call - Method call details including name and parameters
    * @returns Result of the method call, type depends on the method called
-   */
-  /**
-   * Helper type for wm_call result
-   * @internal
+   * @example
+   * ```typescript
+   * // Returns string (hex)
+   * const balance = await provider.call('eip155:1', {
+   *   method: 'eth_getBalance',
+   *   params: ['0x...']
+   * });
+   * ```
    */
   wm_call: {
     params: CallParams;
-    result: unknown;
+    result: CallParams['call'] extends MethodCall<infer M> ? MethodResult<M> : never;
   };
 
   /**
@@ -455,10 +470,18 @@ export interface RouterMethodMap extends JSONRPCMethodMap {
    * @param sessionId - Session ID for authorization
    * @param calls - Array of method calls to execute
    * @returns Array of results corresponding to each method call
+   * @example
+   * ```typescript
+   * // Returns [string, string] (hex values)
+   * const [balance, code] = await provider.bulkCall('eip155:1', [
+   *   { method: 'eth_getBalance', params: ['0x...'] },
+   *   { method: 'eth_getCode', params: ['0x...'] }
+   * ]);
+   * ```
    */
   wm_bulkCall: {
     params: BulkCallParams;
-    result: unknown[];
+    result: BulkCallParams['calls'] extends readonly MethodCall[] ? MethodResults<BulkCallParams['calls']> : never[];
   };
 
   /**

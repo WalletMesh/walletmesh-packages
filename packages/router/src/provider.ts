@@ -323,11 +323,6 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
   }
 
   /**
-   * Creates a new operation builder for chaining method calls
-   * @param chainId - The chain to execute operations on
-   * @returns A new operation builder instance
-   */
-  /**
    * Creates a new operation builder for chaining method calls.
    * Enables fluent method call chaining with proper type inference.
    *
