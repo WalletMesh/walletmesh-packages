@@ -1,0 +1,70 @@
+[**@walletmesh/router v0.2.6**](../../README.md)
+
+***
+
+[@walletmesh/router](../../modules.md) / [index](../README.md) / WmBulkCallType
+
+# Interface: WmBulkCallType\<M\>
+
+Type definition for the wm_bulkCall method parameters and result.
+Enables type-safe execution of multiple method calls in sequence.
+All calls must be permitted for the operation to succeed.
+
+## Example
+
+```typescript
+// Making multiple typed calls in sequence
+const results = await router.request<WmBulkCallType<'eth_getBalance'>>('wm_bulkCall', {
+  chainId: 'eip155:1',
+  sessionId: 'session123',
+  calls: [
+    {
+      method: 'eth_getBalance',
+      params: ['0x742d35Cc6634C0532925a3b844Bc454e4438f44e']
+    },
+    {
+      method: 'eth_getBalance',
+      params: ['0x742d35Cc6634C0532925a3b844Bc454e4438f44f']
+    }
+  ]
+});
+// results is typed as string[] (array of hex values)
+```
+
+## Type Parameters
+
+• **M** *extends* keyof [`RouterMethodMap`](RouterMethodMap.md)
+
+The specific method being called from RouterMethodMap
+
+## Properties
+
+### params
+
+> **params**: `object`
+
+#### calls
+
+> **calls**: [`MethodCall`](MethodCall.md)\<`M`\>[]
+
+#### chainId
+
+> **chainId**: `string`
+
+#### sessionId
+
+> **sessionId**: `string`
+
+#### Defined in
+
+[packages/router/src/types.ts:428](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L428)
+
+***
+
+### result
+
+> **result**: [`MethodResult`](../type-aliases/MethodResult.md)\<`M`\>[]
+
+#### Defined in
+
+[packages/router/src/types.ts:433](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L433)

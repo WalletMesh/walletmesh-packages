@@ -1,5 +1,11 @@
 # @walletmesh/router
 
+## 0.2.6
+
+### Patch Changes
+
+- 519bfb4: fix wm_call and wm_bulkCall result types
+
 ## 0.2.5
 
 ### Patch Changes
