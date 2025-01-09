@@ -1,5 +1,11 @@
 # @walletmesh/router
 
+## 0.2.5
+
+### Patch Changes
+
+- 029833d: fix: type safety for method calls
+
 ## 0.2.4
 
 ### Patch Changes

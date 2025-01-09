@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.4**](../README.md)
+[**@walletmesh/router v0.2.5**](../README.md)
 
 ***
 
@@ -49,7 +49,7 @@ Called when new permissions are requested or existing ones are updated.
 
 #### Defined in
 
-[packages/router/src/types.ts:190](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/types.ts#L190)
+[packages/router/src/types.ts:190](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/types.ts#L190)
 
 ***
 
@@ -62,7 +62,7 @@ Called before each method invocation to enforce permissions.
 
 #### Defined in
 
-[packages/router/src/types.ts:196](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/types.ts#L196)
+[packages/router/src/types.ts:196](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/types.ts#L196)
 
 ***
 
@@ -75,7 +75,7 @@ Used to clean up any permission state when sessions are terminated.
 
 #### Defined in
 
-[packages/router/src/types.ts:208](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/types.ts#L208)
+[packages/router/src/types.ts:208](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/types.ts#L208)
 
 ***
 
@@ -88,4 +88,4 @@ Used for displaying current permission state to users.
 
 #### Defined in
 
-[packages/router/src/types.ts:202](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/types.ts#L202)
+[packages/router/src/types.ts:202](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/types.ts#L202)

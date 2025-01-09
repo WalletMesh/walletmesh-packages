@@ -1,4 +1,4 @@
-**@walletmesh/router v0.2.4**
+**@walletmesh/router v0.2.5**
 
 ***
 
