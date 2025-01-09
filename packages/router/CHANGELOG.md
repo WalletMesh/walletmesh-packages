@@ -1,5 +1,11 @@
 # @walletmesh/router
 
+## 0.2.7
+
+### Patch Changes
+
+- a301044: fix: type for JSONRPCNode in JSONRPCWalletClient
+
 ## 0.2.6
 
 ### Patch Changes

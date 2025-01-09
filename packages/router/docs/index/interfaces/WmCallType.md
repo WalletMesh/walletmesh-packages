@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.6**](../../README.md)
+[**@walletmesh/router v0.2.7**](../../README.md)
 
 ***
 
@@ -50,7 +50,7 @@ The specific method being called from RouterMethodMap
 
 #### Defined in
 
-[packages/router/src/types.ts:392](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L392)
+[packages/router/src/types.ts:392](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L392)
 
 ***
 
@@ -60,4 +60,4 @@ The specific method being called from RouterMethodMap
 
 #### Defined in
 
-[packages/router/src/types.ts:397](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L397)
+[packages/router/src/types.ts:397](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L397)

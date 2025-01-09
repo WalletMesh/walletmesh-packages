@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.6**](../../README.md)
+[**@walletmesh/router v0.2.7**](../../README.md)
 
 ***
 
@@ -104,7 +104,7 @@ If required callbacks are not provided
 
 #### Defined in
 
-[packages/router/src/permissions/allowAskDeny.ts:131](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/permissions/allowAskDeny.ts#L131)
+[packages/router/src/permissions/allowAskDeny.ts:131](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/permissions/allowAskDeny.ts#L131)
 
 ## Properties
 
@@ -121,7 +121,7 @@ Called when new permissions are requested or existing ones are updated.
 
 #### Defined in
 
-[packages/router/src/permissions/allowAskDeny.ts:119](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/permissions/allowAskDeny.ts#L119)
+[packages/router/src/permissions/allowAskDeny.ts:119](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/permissions/allowAskDeny.ts#L119)
 
 ***
 
@@ -131,7 +131,7 @@ Called when new permissions are requested or existing ones are updated.
 
 #### Defined in
 
-[packages/router/src/permissions/allowAskDeny.ts:120](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/permissions/allowAskDeny.ts#L120)
+[packages/router/src/permissions/allowAskDeny.ts:120](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/permissions/allowAskDeny.ts#L120)
 
 ## Methods
 
@@ -189,7 +189,7 @@ If chainId is invalid or not provided
 
 #### Defined in
 
-[packages/router/src/permissions/allowAskDeny.ts:255](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/permissions/allowAskDeny.ts#L255)
+[packages/router/src/permissions/allowAskDeny.ts:255](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/permissions/allowAskDeny.ts#L255)
 
 ***
 
@@ -247,7 +247,7 @@ If askCallback is not provided for ASK state
 
 #### Defined in
 
-[packages/router/src/permissions/allowAskDeny.ts:312](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/permissions/allowAskDeny.ts#L312)
+[packages/router/src/permissions/allowAskDeny.ts:312](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/permissions/allowAskDeny.ts#L312)
 
 ***
 
@@ -303,7 +303,7 @@ If context is missing required session or origin information
 
 #### Defined in
 
-[packages/router/src/permissions/allowAskDeny.ts:211](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/permissions/allowAskDeny.ts#L211)
+[packages/router/src/permissions/allowAskDeny.ts:211](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/permissions/allowAskDeny.ts#L211)
 
 ***
 
@@ -350,4 +350,4 @@ If context is missing required session or origin information
 
 #### Defined in
 
-[packages/router/src/permissions/allowAskDeny.ts:154](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/permissions/allowAskDeny.ts#L154)
+[packages/router/src/permissions/allowAskDeny.ts:154](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/permissions/allowAskDeny.ts#L154)

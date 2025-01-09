@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.6**](../../README.md)
+[**@walletmesh/router v0.2.7**](../../README.md)
 
 ***
 
@@ -14,4 +14,4 @@ Used for both requesting and storing permissions.
 
 ## Defined in
 
-[packages/router/src/types.ts:233](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L233)
+[packages/router/src/types.ts:233](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L233)

@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.6**](../../README.md)
+[**@walletmesh/router v0.2.7**](../../README.md)
 
 ***
 
@@ -36,7 +36,7 @@ Emitted when a session's permissions are updated
 
 #### Defined in
 
-[packages/router/src/types.ts:344](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L344)
+[packages/router/src/types.ts:344](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L344)
 
 ***
 
@@ -56,7 +56,7 @@ Emitted when a session is terminated by the router
 
 #### Defined in
 
-[packages/router/src/types.ts:354](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L354)
+[packages/router/src/types.ts:354](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L354)
 
 ***
 
@@ -76,7 +76,7 @@ Emitted when a wallet's availability changes (added or removed)
 
 #### Defined in
 
-[packages/router/src/types.ts:364](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L364)
+[packages/router/src/types.ts:364](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L364)
 
 ***
 
@@ -108,4 +108,4 @@ Emitted when a wallet's state changes (e.g., account changes, network changes)
 
 #### Defined in
 
-[packages/router/src/types.ts:330](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L330)
+[packages/router/src/types.ts:330](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L330)

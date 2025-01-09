@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.6**](../../README.md)
+[**@walletmesh/router v0.2.7**](../../README.md)
 
 ***
 
@@ -54,7 +54,7 @@ const [balance, code] = await provider.bulkCall('eip155:1', [
 
 #### Defined in
 
-[packages/router/src/types.ts:544](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L544)
+[packages/router/src/types.ts:544](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L544)
 
 ***
 
@@ -92,7 +92,7 @@ const balance = await provider.call('eip155:1', {
 
 #### Defined in
 
-[packages/router/src/types.ts:527](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L527)
+[packages/router/src/types.ts:527](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L527)
 
 ***
 
@@ -132,7 +132,7 @@ Object containing the new session ID and approved permissions
 
 #### Defined in
 
-[packages/router/src/types.ts:462](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L462)
+[packages/router/src/types.ts:462](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L462)
 
 ***
 
@@ -164,7 +164,7 @@ true if session was successfully ended
 
 #### Defined in
 
-[packages/router/src/types.ts:477](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L477)
+[packages/router/src/types.ts:477](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L477)
 
 ***
 
@@ -204,7 +204,7 @@ Current permissions in human-readable format
 
 #### Defined in
 
-[packages/router/src/types.ts:490](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L490)
+[packages/router/src/types.ts:490](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L490)
 
 ***
 
@@ -236,7 +236,7 @@ Record mapping chain IDs to their supported method names
 
 #### Defined in
 
-[packages/router/src/types.ts:551](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L551)
+[packages/router/src/types.ts:551](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L551)
 
 ***
 
@@ -276,7 +276,7 @@ Object containing reconnection status and current permissions
 
 #### Defined in
 
-[packages/router/src/types.ts:447](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L447)
+[packages/router/src/types.ts:447](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L447)
 
 ***
 
@@ -316,4 +316,4 @@ Newly approved permissions in human-readable format
 
 #### Defined in
 
-[packages/router/src/types.ts:504](https://github.com/WalletMesh/wm-core/blob/519bfb4dcad8563598529a3bcc463d74c3222676/packages/router/src/types.ts#L504)
+[packages/router/src/types.ts:504](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L504)
