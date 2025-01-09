@@ -457,7 +457,7 @@ describe('WalletRouter', () => {
       (mockWalletClient.getSupportedMethods as Mock).mockRejectedValue(nonRouterError);
 
       await expect(router['getSupportedMethods']({}, { chainIds: ['eip155:1'] })).rejects.toThrow(
-        new RouterError('walletNotAvailable', 'TypeError: Some type error')
+        new RouterError('walletNotAvailable', 'TypeError: Some type error'),
       );
     });
   });

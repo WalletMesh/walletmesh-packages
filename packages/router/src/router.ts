@@ -519,7 +519,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       for (const call of calls) {
         responses.push(await this._call(client, call));
       }
-      return responses;
+      return responses as RouterMethodMap['wm_bulkCall']['result'];
     } catch (error) {
       // Always throw partialFailure if we have partial responses
       if (responses.length > 0) {

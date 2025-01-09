@@ -5,6 +5,7 @@ import type {
   ChainPermissions,
   HumanReadableChainPermissions,
   MethodCall,
+  MethodResults,
   RouterMethodMap,
   RouterEventMap,
   RouterContext,
@@ -12,7 +13,6 @@ import type {
 
 import { RouterError } from './errors.js';
 import { OperationBuilder } from './operation.js';
-
 
 /**
  * Client-side provider for interacting with the multi-chain router.
@@ -180,7 +180,7 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     timeout?: number,
   ): Promise<HumanReadableChainPermissions> {
     if (!this._sessionId) {
-      throw new RouterError("invalidSession");
+      throw new RouterError('invalidSession');
     }
     const approvedPermissions = await this.callMethod(
       'wm_updatePermissions',
@@ -202,7 +202,7 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    * @param call - Method call details including name and parameters
    * @param timeout - Optional timeout in milliseconds. If the request takes longer,
    *                 it will be cancelled and throw a TimeoutError
-   * @returns Result from the wallet method call
+   * @returns Result from the wallet method call with proper type inference
    * @throws {RouterError} With code 'invalidSession' if not connected
    * @throws {RouterError} With code 'unknownChain' if chain ID is invalid
    * @throws {RouterError} With code 'insufficientPermissions' if method not permitted
@@ -212,31 +212,36 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    *
    * @example
    * ```typescript
-   * // Get accounts
+   * // Get accounts with proper type inference
    * const accounts = await provider.call('eip155:1', {
    *   method: 'eth_accounts'
-   * });
+   * } as const);
    *
-   * // Send transaction
+   * // Send transaction with proper type inference
    * const txHash = await provider.call('eip155:1', {
    *   method: 'eth_sendTransaction',
    *   params: [{
    *     to: '0x...',
    *     value: '0x...'
    *   }]
-   * });
+   * } as const);
    * ```
    */
-  async call(chainId: ChainId, call: MethodCall, timeout?: number): Promise<unknown> {
+  async call<M extends keyof RouterMethodMap>(
+    chainId: ChainId,
+    call: MethodCall<M>,
+    timeout?: number,
+  ): Promise<RouterMethodMap[M]['result']> {
     if (!this._sessionId) {
-      throw new RouterError("invalidSession");
+      throw new RouterError('invalidSession');
     }
-    return this.callMethod('wm_call', {
+    const result = await this.callMethod('wm_call', {
       chainId,
       call,
       sessionId: this._sessionId,
       timeout,
     });
+    return result as RouterMethodMap[M]['result'];
   }
 
   /**
@@ -267,16 +272,21 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    * ]);
    * ```
    */
-  async bulkCall(chainId: ChainId, calls: MethodCall[], timeout?: number): Promise<unknown[]> {
+  async bulkCall<T extends readonly MethodCall<keyof RouterMethodMap>[]>(
+    chainId: ChainId,
+    calls: T,
+    timeout?: number,
+  ): Promise<MethodResults<T>> {
     if (!this._sessionId) {
-      throw new RouterError("invalidSession");
+      throw new RouterError('invalidSession');
     }
-    return this.callMethod('wm_bulkCall', {
+    const result = await this.callMethod('wm_bulkCall', {
       chainId,
-      calls,
+      calls: [...calls],
       sessionId: this._sessionId,
       timeout,
     });
+    return result as MethodResults<T>;
   }
 
   /**
@@ -312,13 +322,28 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     return this.callMethod('wm_getSupportedMethods', params, timeout);
   }
 
-
   /**
- * Creates a new operation builder for chaining method calls
- * @param chainId - The chain to execute operations on
- * @returns A new operation builder instance
- */
-  public chain(chainId: ChainId): OperationBuilder {
-    return new OperationBuilder(chainId, this);
+   * Creates a new operation builder for chaining method calls
+   * @param chainId - The chain to execute operations on
+   * @returns A new operation builder instance
+   */
+  /**
+   * Creates a new operation builder for chaining method calls.
+   * Enables fluent method call chaining with proper type inference.
+   *
+   * @param chainId - The chain to execute operations on
+   * @returns A new operation builder instance
+   *
+   * @example
+   * ```typescript
+   * const [balance, code] = await provider
+   *   .chain('eip155:1')
+   *   .call('eth_getBalance', ['0x123...'])
+   *   .call('eth_getCode', ['0x456...'])
+   *   .execute();
+   * ```
+   */
+  public chain(chainId: ChainId): OperationBuilder<readonly []> {
+    return new OperationBuilder(chainId, this, [] as const);
   }
 }

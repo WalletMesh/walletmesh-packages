@@ -1,4 +1,11 @@
-import type { ChainId, MethodCall, MethodParams, MethodResult, MethodResults, RouterMethodMap } from './types.js';
+import type {
+  ChainId,
+  MethodCall,
+  MethodParams,
+  MethodResult,
+  MethodResults,
+  RouterMethodMap,
+} from './types.js';
 import type { WalletRouterProvider } from './provider.js';
 import { RouterError } from './errors.js';
 
@@ -19,8 +26,8 @@ type Concat<T extends readonly unknown[], U extends readonly unknown[]> = readon
 type ExecuteResult<T extends readonly MethodCall[]> = T extends readonly []
   ? never
   : T extends readonly [MethodCall<infer M>]
-  ? MethodResult<M>
-  : MethodResults<T>;
+    ? MethodResult<M>
+    : MethodResults<T>;
 
 /**
  * A builder class that enables chaining multiple RPC method calls into a single operation.
@@ -45,7 +52,7 @@ export class OperationBuilder<T extends readonly MethodCall[] = readonly []> {
     private readonly chainId: ChainId,
     private readonly provider: WalletRouterProvider,
     private readonly calls: T = [] as unknown as T,
-  ) { }
+  ) {}
 
   /**
    * Adds a new method call to the operation chain.

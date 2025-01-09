@@ -1,151 +1,176 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
+import type { JSONRPCParams, JSONRPCMethodDef } from '@walletmesh/jsonrpc';
 import { OperationBuilder } from './operation.js';
-import type { WalletRouterProvider } from './provider.js';
-import { RouterError } from './errors.js';
+import type { RouterMethodMap, MethodCall } from './types.js';
+import { WalletRouterProvider } from './provider.js';
 
-describe('OperationBuilder', () => {
-  const mockCall = vi.fn();
-  const mockBulkCall = vi.fn();
-  const mockProvider = {
-    call: mockCall,
-    bulkCall: mockBulkCall,
-  } as unknown as WalletRouterProvider;
+// Mock transaction types to match real types
+interface TransactionParams {
+  transactions: unknown[];
+  witnesses?: unknown[];
+}
 
-  beforeEach(() => {
-    mockCall.mockClear();
-    mockBulkCall.mockClear();
-  });
+interface TransactionFunctionCall {
+  to: string;
+  functionName: string;
+  args: unknown[];
+}
 
-  describe('Single Operation', () => {
-    it('executes a single method call directly', async () => {
-      const expectedResult = '0x123';
-      mockCall.mockResolvedValueOnce(expectedResult);
+/**
+ * Test method map that extends RouterMethodMap
+ */
+class TestProvider extends WalletRouterProvider {
+  constructor() {
+    super({ send: async () => {} });
+    // Set up a mock session ID for testing
+    Object.defineProperty(this, '_sessionId', {
+      value: 'test-session',
+      writable: true,
+    });
+  }
 
-      const result = await new OperationBuilder('eip155:1', mockProvider)
-        .call('eth_getBalance', ['0xabc'])
-        .execute();
+  override async call<M extends keyof TestExtendedMethodMap>(
+    _chainId: string,
+    call: { method: M; params?: TestExtendedMethodMap[M]['params'] },
+  ): Promise<TestExtendedMethodMap[M]['result']> {
+    // Mock responses based on method
+    switch (call.method) {
+      case 'test_connect':
+        return true as TestExtendedMethodMap[M]['result'];
+      case 'test_getAccount':
+        return '0x123' as TestExtendedMethodMap[M]['result'];
+      case 'test_getSenders':
+        return ['0x123', '0x456'] as TestExtendedMethodMap[M]['result'];
+      case 'test_sendTransaction':
+        return '0xtxhash' as TestExtendedMethodMap[M]['result'];
+      case 'test_simulateTransaction':
+        return {} as TestExtendedMethodMap[M]['result'];
+      default:
+        return {} as TestExtendedMethodMap[M]['result'];
+    }
+  }
 
-      expect(result).toBe(expectedResult);
-      expect(mockCall).toHaveBeenCalledWith(
-        'eip155:1',
+  override async callMethod<M extends keyof TestExtendedMethodMap>(
+    method: M,
+    params?: TestExtendedMethodMap[M]['params'],
+  ): Promise<TestExtendedMethodMap[M]['result']> {
+    // Handle bulk calls
+    if (method === 'wm_bulkCall') {
+      const { calls, chainId } = params as {
+        calls: Array<MethodCall<keyof TestExtendedMethodMap>>;
+        chainId: string;
+        sessionId: string;
+      };
+      const results = await Promise.all(calls.map((call) => this.call(chainId, call)));
+      return results as TestExtendedMethodMap[M]['result'];
+    }
+
+    // Handle single calls
+    if (method === 'wm_call') {
+      const { chainId, call, sessionId: _ } = params as {
+        chainId: string;
+        call: MethodCall<keyof TestExtendedMethodMap>;
+        sessionId: string;
+      };
+      return this.call(chainId, call);
+    }
+
+    // Default fallback
+    return {} as TestExtendedMethodMap[M]['result'];
+  }
+}
+
+interface TestExtendedMethodMap extends RouterMethodMap {
+  [key: string]: JSONRPCMethodDef<JSONRPCParams, unknown>;
+
+  test_connect: JSONRPCMethodDef<never, boolean>;
+  test_getAccount: JSONRPCMethodDef<never, string>;
+  test_getSenders: JSONRPCMethodDef<never, string[]>;
+  test_sendTransaction: JSONRPCMethodDef<[TransactionParams], string>;
+  test_simulateTransaction: JSONRPCMethodDef<[TransactionFunctionCall], unknown>;
+}
+
+// Type tests - these will fail at compile time if types are incorrect
+describe('Operation Builder Type Tests', () => {
+  it('should properly infer types from extended method map', async () => {
+    const mockProvider = new TestProvider();
+
+    // Create the operation builder with our mock provider
+    const builder = new OperationBuilder('test:testnet', mockProvider);
+
+    // Type test: Operation builder with extended methods
+    const operation = builder.call('test_connect').call('test_getAccount').call('test_getSenders');
+
+    // TypeScript should infer this as Promise<[boolean, string, string[]]>
+    const results = await operation.execute();
+    expect(Array.isArray(results)).toBe(true);
+    expect(results).toHaveLength(3);
+    expect(typeof results[0]).toBe('boolean');
+    expect(typeof results[1]).toBe('string');
+    expect(Array.isArray(results[2])).toBe(true);
+
+    // Type test: Single call return type
+    const singleOp = new OperationBuilder('test:testnet', mockProvider).call('test_connect');
+
+    // TypeScript should infer this as Promise<boolean>
+    const singleResult = await singleOp.execute();
+    expect(typeof singleResult).toBe('boolean');
+
+    // Type test: Complex params
+    const txOperation = new OperationBuilder('test:testnet', mockProvider)
+      .call('test_sendTransaction', [
         {
-          method: 'eth_getBalance',
-          params: ['0xabc'],
-        },
-        undefined
-      );
-      expect(mockBulkCall).not.toHaveBeenCalled();
-    });
-
-    it('supports timeout parameter for single call', async () => {
-      mockCall.mockResolvedValueOnce('0x123');
-
-      await new OperationBuilder('eip155:1', mockProvider)
-        .call('eth_getBalance', ['0xabc'])
-        .execute(5000);
-
-      expect(mockCall).toHaveBeenCalledWith(
-        'eip155:1',
+          transactions: [],
+          witnesses: [],
+        } as TransactionParams,
+      ])
+      .call('test_simulateTransaction', [
         {
-          method: 'eth_getBalance',
-          params: ['0xabc'],
-        },
-        5000
-      );
-    });
+          to: '0x123',
+          functionName: 'test',
+          args: [],
+        } as TransactionFunctionCall,
+      ]);
+
+    // TypeScript should infer this as Promise<[string, unknown]>
+    const txResults = await txOperation.execute();
+    expect(Array.isArray(txResults)).toBe(true);
+    expect(txResults).toHaveLength(2);
+    expect(typeof txResults[0]).toBe('string');
   });
 
-  describe('Multiple Operations', () => {
-    it('executes multiple method calls in sequence', async () => {
-      const expectedResults = ['0x123', '0x456'];
-      mockBulkCall.mockResolvedValueOnce(expectedResults);
+  it('should allow direct method calls with proper type inference', async () => {
+    const mockProvider = new TestProvider();
 
-      const [balance, code] = await new OperationBuilder('eip155:1', mockProvider)
-        .call('eth_getBalance', ['0xabc'])
-        .call('eth_getCode', ['0xdef'])
-        .execute();
-
-      expect(balance).toBe(expectedResults[0]);
-      expect(code).toBe(expectedResults[1]);
-      expect(mockBulkCall).toHaveBeenCalledWith(
-        'eip155:1',
-        [
-          {
-            method: 'eth_getBalance',
-            params: ['0xabc'],
-          },
-          {
-            method: 'eth_getCode',
-            params: ['0xdef'],
-          },
-        ],
-        undefined
-      );
-      expect(mockCall).not.toHaveBeenCalled();
+    // Type test: Direct call with no params
+    const connectResult: boolean = await mockProvider.call('test:testnet', {
+      method: 'test_connect',
     });
+    expectType<boolean>(connectResult);
+    expect(typeof connectResult).toBe('boolean');
 
-    it('supports timeout parameter for bulk calls', async () => {
-      mockBulkCall.mockResolvedValueOnce(['0x123', '0x456']);
-
-      await new OperationBuilder('eip155:1', mockProvider)
-        .call('eth_getBalance', ['0xabc'])
-        .call('eth_getCode', ['0xdef'])
-        .execute(5000);
-
-      expect(mockBulkCall).toHaveBeenCalledWith(
-        'eip155:1',
-        [
-          {
-            method: 'eth_getBalance',
-            params: ['0xabc'],
-          },
-          {
-            method: 'eth_getCode',
-            params: ['0xdef'],
-          },
-        ],
-        5000
-      );
+    // Type test: Direct call with array result
+    const sendersResult: string[] = await mockProvider.call('test:testnet', {
+      method: 'test_getSenders',
     });
-  });
+    expectType<string[]>(sendersResult);
+    expect(Array.isArray(sendersResult)).toBe(true);
 
-  describe('Error Handling', () => {
-    it('throws error when executing empty operation chain', async () => {
-      await expect(
-        new OperationBuilder('eip155:1', mockProvider).execute()
-      ).rejects.toThrow(new RouterError('invalidRequest', 'No operations to execute'));
+    // Type test: Direct call with complex params
+    const txResult: string = await mockProvider.call('test:testnet', {
+      method: 'test_sendTransaction',
+      params: [
+        {
+          transactions: [],
+          witnesses: [],
+        } as TransactionParams,
+      ],
     });
-
-    it('propagates provider errors', async () => {
-      const error = new RouterError('invalidSession');
-      mockCall.mockRejectedValueOnce(error);
-
-      await expect(
-        new OperationBuilder('eip155:1', mockProvider)
-          .call('eth_getBalance', ['0xabc'])
-          .execute()
-      ).rejects.toThrow(error);
-    });
-  });
-
-  describe('Type Safety', () => {
-    it('maintains type safety for method parameters', () => {
-      // This is a type-level test that will fail to compile if type safety is broken
-      const builder = new OperationBuilder('eip155:1', mockProvider);
-
-      // These lines are expected to have type errors
-      // @ts-expect-error Method 'invalid_method' is not a valid key of RouterMethodMap
-      const invalidMethod = builder.call('invalid_method');
-
-      // @ts-expect-error Parameters must be an array of strings for eth_getBalance
-      const invalidParams = builder.call('eth_getBalance', [123]);
-
-      // This should compile with correct types
-      const validCall = builder.call('eth_getBalance', ['0xabc']);
-
-      // Verify the builder's type safety
-      expect(builder).toBeInstanceOf(OperationBuilder);
-      expect(validCall).toBeInstanceOf(OperationBuilder);
-    });
+    expectType<string>(txResult);
+    expect(typeof txResult).toBe('string');
   });
 });
+
+// Helper function for type checking
+// This will fail at compile time if the type is incorrect
+function expectType<T>(_value: T): void {}

@@ -440,6 +440,10 @@ export interface RouterMethodMap extends JSONRPCMethodMap {
    * @param call - Method call details including name and parameters
    * @returns Result of the method call, type depends on the method called
    */
+  /**
+   * Helper type for wm_call result
+   * @internal
+   */
   wm_call: {
     params: CallParams;
     result: unknown;

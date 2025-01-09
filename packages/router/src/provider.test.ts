@@ -198,7 +198,7 @@ describe('WalletRouterProvider', () => {
     it('throws when executing bulk calls without connection', async () => {
       await provider.disconnect();
       await expect(provider.bulkCall('aztec:testnet', [{ method: 'aztec_getAccount' }])).rejects.toThrow(
-        new RouterError('invalidSession')
+        new RouterError('invalidSession'),
       );
     });
 
@@ -222,7 +222,7 @@ describe('WalletRouterProvider', () => {
     it('throws when invoking methods without connection', async () => {
       await provider.disconnect();
       await expect(provider.call('aztec:testnet', { method: 'aztec_getAccount' })).rejects.toThrow(
-        new RouterError('invalidSession')
+        new RouterError('invalidSession'),
       );
     });
   });
@@ -347,9 +347,7 @@ describe('WalletRouterProvider', () => {
 
       // Verify the builder works by executing a call
       mockCallMethod.mockResolvedValueOnce('0x123');
-      const result = await builder
-        .call('eth_getBalance', ['0xabc'])
-        .execute();
+      const result = await builder.call('eth_getBalance', ['0xabc']).execute();
 
       expect(result).toBe('0x123');
       expect(mockCallMethod).toHaveBeenLastCalledWith('wm_call', {
