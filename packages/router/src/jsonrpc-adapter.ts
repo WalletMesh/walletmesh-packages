@@ -1,4 +1,10 @@
-import type { JSONRPCNode, JSONRPCMethodMap, JSONRPCParams } from '@walletmesh/jsonrpc';
+import type {
+  JSONRPCContext,
+  JSONRPCEventMap,
+  JSONRPCNode,
+  JSONRPCMethodMap,
+  JSONRPCParams,
+} from '@walletmesh/jsonrpc';
 import type { WalletClient } from './types.js';
 
 /**
@@ -57,11 +63,16 @@ export interface WalletMethodMap extends JSONRPCMethodMap {
  * const balance = await walletClient.call('eth_getBalance', [accounts[0]]);
  * ```
  */
-export class JSONRPCWalletClient<M extends WalletMethodMap = WalletMethodMap> implements WalletClient {
-  private node: JSONRPCNode<M>;
+export class JSONRPCWalletClient<
+  M extends WalletMethodMap = WalletMethodMap,
+  E extends JSONRPCEventMap = JSONRPCEventMap,
+  C extends JSONRPCContext = JSONRPCContext,
+> implements WalletClient
+{
+  private node: JSONRPCNode<M, E, C>;
   private eventCleanupFns: Map<string, Map<(data: unknown) => void, () => void>> = new Map();
 
-  constructor(node: JSONRPCNode<M>) {
+  constructor(node: JSONRPCNode<M, E, C>) {
     this.node = node;
   }
 
