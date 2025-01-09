@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.4**](../README.md)
+[**@walletmesh/router v0.2.5**](../README.md)
 
 ***
 
@@ -70,7 +70,7 @@ If the method call fails or is rejected by the wallet
 
 #### Defined in
 
-[packages/router/src/types.ts:36](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/types.ts#L36)
+[packages/router/src/types.ts:36](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/types.ts#L36)
 
 ***
 
@@ -92,7 +92,7 @@ If the capabilities request fails
 
 #### Defined in
 
-[packages/router/src/types.ts:43](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/types.ts#L43)
+[packages/router/src/types.ts:43](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/types.ts#L43)
 
 ***
 
@@ -122,7 +122,7 @@ Handler function to remove (must be the same reference as used in 'on')
 
 #### Defined in
 
-[packages/router/src/types.ts:60](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/types.ts#L60)
+[packages/router/src/types.ts:60](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/types.ts#L60)
 
 ***
 
@@ -154,4 +154,4 @@ Function to call when the event occurs
 
 #### Defined in
 
-[packages/router/src/types.ts:53](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/types.ts#L53)
+[packages/router/src/types.ts:53](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/types.ts#L53)

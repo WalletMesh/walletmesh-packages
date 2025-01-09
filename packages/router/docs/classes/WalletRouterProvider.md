@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.4**](../README.md)
+[**@walletmesh/router v0.2.5**](../README.md)
 
 ***
 
@@ -129,7 +129,7 @@ The current session ID or undefined if not connected
 
 #### Defined in
 
-[packages/router/src/provider.ts:73](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/provider.ts#L73)
+[packages/router/src/provider.ts:73](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/provider.ts#L73)
 
 ## Methods
 
@@ -183,10 +183,14 @@ packages/jsonrpc/dist/node.d.ts:197
 
 ### bulkCall()
 
-> **bulkCall**(`chainId`, `calls`, `timeout`?): `Promise`\<`unknown`[]\>
+> **bulkCall**\<`T`\>(`chainId`, `calls`, `timeout`?): `Promise`\<[`MethodResults`](../type-aliases/MethodResults.md)\<`T`\>\>
 
 Executes multiple method calls in sequence on the same chain.
 More efficient than multiple individual calls for related operations.
+
+#### Type Parameters
+
+• **T** *extends* readonly [`MethodCall`](../interfaces/MethodCall.md)[]
 
 #### Parameters
 
@@ -198,7 +202,7 @@ Target chain identifier (must match the chain ID used to connect)
 
 ##### calls
 
-[`MethodCall`](../interfaces/MethodCall.md)[]
+`T`
 
 Array of method calls to execute
 
@@ -211,7 +215,7 @@ Optional timeout in milliseconds. If the request takes longer,
 
 #### Returns
 
-`Promise`\<`unknown`[]\>
+`Promise`\<[`MethodResults`](../type-aliases/MethodResults.md)\<`T`\>\>
 
 Array of results from the wallet method calls
 
@@ -254,16 +258,20 @@ const [accounts, balance] = await provider.bulkCall('eip155:1', [
 
 #### Defined in
 
-[packages/router/src/provider.ts:270](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/provider.ts#L270)
+[packages/router/src/provider.ts:275](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/provider.ts#L275)
 
 ***
 
 ### call()
 
-> **call**(`chainId`, `call`, `timeout`?): `Promise`\<`unknown`\>
+> **call**\<`M`\>(`chainId`, `call`, `timeout`?): `Promise`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
 
 Invokes a method on the connected wallet.
 Routes the call to the appropriate wallet client based on chain ID.
+
+#### Type Parameters
+
+• **M** *extends* keyof [`RouterMethodMap`](../interfaces/RouterMethodMap.md)
 
 #### Parameters
 
@@ -275,7 +283,7 @@ Target chain identifier (must match the chain ID used to connect)
 
 ##### call
 
-[`MethodCall`](../interfaces/MethodCall.md)
+[`MethodCall`](../interfaces/MethodCall.md)\<`M`\>
 
 Method call details including name and parameters
 
@@ -288,9 +296,9 @@ Optional timeout in milliseconds. If the request takes longer,
 
 #### Returns
 
-`Promise`\<`unknown`\>
+`Promise`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
 
-Result from the wallet method call
+Result from the wallet method call with proper type inference
 
 #### Throws
 
@@ -319,24 +327,24 @@ If the request times out
 #### Example
 
 ```typescript
-// Get accounts
+// Get accounts with proper type inference
 const accounts = await provider.call('eip155:1', {
   method: 'eth_accounts'
-});
+} as const);
 
-// Send transaction
+// Send transaction with proper type inference
 const txHash = await provider.call('eip155:1', {
   method: 'eth_sendTransaction',
   params: [{
     to: '0x...',
     value: '0x...'
   }]
-});
+} as const);
 ```
 
 #### Defined in
 
-[packages/router/src/provider.ts:230](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/provider.ts#L230)
+[packages/router/src/provider.ts:230](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/provider.ts#L230)
 
 ***
 
@@ -414,7 +422,8 @@ packages/jsonrpc/dist/node.d.ts:135
 
 > **chain**(`chainId`): `OperationBuilder`
 
-Creates a new operation builder for chaining method calls
+Creates a new operation builder for chaining method calls.
+Enables fluent method call chaining with proper type inference.
 
 #### Parameters
 
@@ -430,9 +439,19 @@ The chain to execute operations on
 
 A new operation builder instance
 
+#### Example
+
+```typescript
+const [balance, code] = await provider
+  .chain('eip155:1')
+  .call('eth_getBalance', ['0x123...'])
+  .call('eth_getCode', ['0x456...'])
+  .execute();
+```
+
 #### Defined in
 
-[packages/router/src/provider.ts:321](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/provider.ts#L321)
+[packages/router/src/provider.ts:346](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/provider.ts#L346)
 
 ***
 
@@ -523,7 +542,7 @@ const { sessionId, permissions } = await provider.connect({
 
 #### Defined in
 
-[packages/router/src/provider.ts:104](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/provider.ts#L104)
+[packages/router/src/provider.ts:104](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/provider.ts#L104)
 
 ***
 
@@ -561,7 +580,7 @@ If the request times out
 
 #### Defined in
 
-[packages/router/src/provider.ts:123](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/provider.ts#L123)
+[packages/router/src/provider.ts:123](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/provider.ts#L123)
 
 ***
 
@@ -652,7 +671,7 @@ If the request times out
 
 #### Defined in
 
-[packages/router/src/provider.ts:144](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/provider.ts#L144)
+[packages/router/src/provider.ts:144](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/provider.ts#L144)
 
 ***
 
@@ -715,7 +734,7 @@ const routerMethods = await provider.getSupportedMethods();
 
 #### Defined in
 
-[packages/router/src/provider.ts:307](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/provider.ts#L307)
+[packages/router/src/provider.ts:317](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/provider.ts#L317)
 
 ***
 
@@ -1091,4 +1110,4 @@ await provider.updatePermissions({
 
 #### Defined in
 
-[packages/router/src/provider.ts:178](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/provider.ts#L178)
+[packages/router/src/provider.ts:178](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/provider.ts#L178)

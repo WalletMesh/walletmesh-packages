@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.4**](../README.md)
+[**@walletmesh/router v0.2.5**](../README.md)
 
 ***
 
@@ -30,7 +30,7 @@ LocalStorage-based session storage implementation
 
 #### Defined in
 
-[packages/router/src/session-store.ts:150](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/session-store.ts#L150)
+[packages/router/src/session-store.ts:150](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/session-store.ts#L150)
 
 ## Methods
 
@@ -52,7 +52,7 @@ Promise resolving to number of sessions removed
 
 #### Defined in
 
-[packages/router/src/session-store.ts:244](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/session-store.ts#L244)
+[packages/router/src/session-store.ts:244](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/session-store.ts#L244)
 
 ***
 
@@ -72,7 +72,7 @@ Clear all sessions
 
 #### Defined in
 
-[packages/router/src/session-store.ts:230](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/session-store.ts#L230)
+[packages/router/src/session-store.ts:230](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/session-store.ts#L230)
 
 ***
 
@@ -100,7 +100,7 @@ Unique session identifier
 
 #### Defined in
 
-[packages/router/src/session-store.ts:225](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/session-store.ts#L225)
+[packages/router/src/session-store.ts:225](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/session-store.ts#L225)
 
 ***
 
@@ -130,7 +130,7 @@ Promise resolving to session data if found and valid, undefined otherwise
 
 #### Defined in
 
-[packages/router/src/session-store.ts:192](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/session-store.ts#L192)
+[packages/router/src/session-store.ts:192](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/session-store.ts#L192)
 
 ***
 
@@ -152,7 +152,7 @@ Promise resolving to Map of session IDs to session data
 
 #### Defined in
 
-[packages/router/src/session-store.ts:196](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/session-store.ts#L196)
+[packages/router/src/session-store.ts:196](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/session-store.ts#L196)
 
 ***
 
@@ -186,7 +186,7 @@ Session data to store
 
 #### Defined in
 
-[packages/router/src/session-store.ts:160](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/session-store.ts#L160)
+[packages/router/src/session-store.ts:160](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/session-store.ts#L160)
 
 ***
 
@@ -216,4 +216,4 @@ Promise resolving to session data if valid, undefined if expired or not found
 
 #### Defined in
 
-[packages/router/src/session-store.ts:169](https://github.com/WalletMesh/wm-core/blob/ff7e359ad9b1a95b8c720283541b40d92610b6a1/packages/router/src/session-store.ts#L169)
+[packages/router/src/session-store.ts:169](https://github.com/WalletMesh/wm-core/blob/029833dae03ab213226c249f4b4c3cb073ca5efd/packages/router/src/session-store.ts#L169)
