@@ -1,10 +1,12 @@
-[**@walletmesh/jsonrpc v0.2.2**](../README.md)
+[**@walletmesh/jsonrpc v0.3.0**](../README.md)
 
 ***
 
 [@walletmesh/jsonrpc](../globals.md) / JSONRPCError
 
 # Class: JSONRPCError
+
+Defined in: [core/jsonrpc/src/error.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L62)
 
 JSON-RPC Error class that implements the JSON-RPC 2.0 error object specification.
 Provides structured error handling with standard error codes and optional additional data.
@@ -83,6 +85,8 @@ try {
 
 > **new JSONRPCError**(`code`, `message`, `data`?): [`JSONRPCError`](JSONRPCError.md)
 
+Defined in: [core/jsonrpc/src/error.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L88)
+
 Creates a new JSONRPCError instance.
 
 #### Parameters
@@ -133,23 +137,17 @@ peer.registerMethod('divide', (context, { a, b }) => {
 
 `Error.constructor`
 
-#### Defined in
-
-[packages/jsonrpc/src/error.ts:88](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/error.ts#L88)
-
 ## Properties
 
 ### cause?
 
 > `optional` **cause**: `unknown`
 
+Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
+
 #### Inherited from
 
 `Error.cause`
-
-#### Defined in
-
-node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 ***
 
@@ -157,15 +155,13 @@ node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 > **code**: `number`
 
+Defined in: [core/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L89)
+
 The error code (should follow JSON-RPC 2.0 error codes)
 
 #### Implementation of
 
 [`JSONRPCErrorInterface`](../interfaces/JSONRPCErrorInterface.md).[`code`](../interfaces/JSONRPCErrorInterface.md#code)
-
-#### Defined in
-
-[packages/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/error.ts#L89)
 
 ***
 
@@ -173,21 +169,21 @@ The error code (should follow JSON-RPC 2.0 error codes)
 
 > `optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
 
+Defined in: [core/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L91)
+
 Optional additional error data for debugging or client handling
 
 #### Implementation of
 
 [`JSONRPCErrorInterface`](../interfaces/JSONRPCErrorInterface.md).[`data`](../interfaces/JSONRPCErrorInterface.md#data)
 
-#### Defined in
-
-[packages/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/error.ts#L91)
-
 ***
 
 ### message
 
 > **message**: `string`
+
+Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 The error message.
 
@@ -199,23 +195,17 @@ The error message.
 
 `Error.message`
 
-#### Defined in
-
-node\_modules/typescript/lib/lib.es5.d.ts:1077
-
 ***
 
 ### name
 
 > **name**: `string` = `'JSONRPCError'`
 
+Defined in: [core/jsonrpc/src/error.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L63)
+
 #### Overrides
 
 `Error.name`
-
-#### Defined in
-
-[packages/jsonrpc/src/error.ts:63](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/error.ts#L63)
 
 ***
 
@@ -223,19 +213,19 @@ node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 > `optional` **stack**: `string`
 
+Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
+
 #### Inherited from
 
 `Error.stack`
-
-#### Defined in
-
-node\_modules/typescript/lib/lib.es5.d.ts:1078
 
 ***
 
 ### prepareStackTrace()?
 
 > `static` `optional` **prepareStackTrace**: (`err`, `stackTraces`) => `any`
+
+Defined in: node\_modules/@types/node/globals.d.ts:143
 
 Optional override for formatting stack traces
 
@@ -261,23 +251,17 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 `Error.prepareStackTrace`
 
-#### Defined in
-
-node\_modules/@types/node/globals.d.ts:143
-
 ***
 
 ### stackTraceLimit
 
 > `static` **stackTraceLimit**: `number`
 
+Defined in: node\_modules/@types/node/globals.d.ts:145
+
 #### Inherited from
 
 `Error.stackTraceLimit`
-
-#### Defined in
-
-node\_modules/@types/node/globals.d.ts:145
 
 ## Methods
 
@@ -285,21 +269,21 @@ node\_modules/@types/node/globals.d.ts:145
 
 > **toString**(): `string`
 
+Defined in: [core/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L96)
+
 Returns a string representation of an object.
 
 #### Returns
 
 `string`
 
-#### Defined in
-
-[packages/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/error.ts#L96)
-
 ***
 
 ### captureStackTrace()
 
 > `static` **captureStackTrace**(`targetObject`, `constructorOpt`?): `void`
+
+Defined in: node\_modules/@types/node/globals.d.ts:136
 
 Create .stack property on a target object
 
@@ -320,7 +304,3 @@ Create .stack property on a target object
 #### Inherited from
 
 `Error.captureStackTrace`
-
-#### Defined in
-
-node\_modules/@types/node/globals.d.ts:136

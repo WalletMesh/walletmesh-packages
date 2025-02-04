@@ -1,10 +1,12 @@
-[**@walletmesh/jsonrpc v0.2.2**](../README.md)
+[**@walletmesh/jsonrpc v0.3.0**](../README.md)
 
 ***
 
 [@walletmesh/jsonrpc](../globals.md) / JSONRPCTransport
 
 # Interface: JSONRPCTransport
+
+Defined in: [core/jsonrpc/src/types.ts:484](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L484)
 
 Function type for sending JSON-RPC messages between nodes.
 Implement this to provide the actual transport mechanism for message delivery.
@@ -62,6 +64,8 @@ const httpTransport: JSONRPCTransport = {
 
 > **send**(`message`): `Promise`\<`void`\>
 
+Defined in: [core/jsonrpc/src/types.ts:495](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L495)
+
 Sends a JSON-RPC message to the remote node.
 The implementation should handle message serialization and delivery.
 
@@ -84,7 +88,3 @@ A promise that resolves when the message has been sent
 #### Throws
 
 If message delivery fails (e.g., connection lost)
-
-#### Defined in
-
-[packages/jsonrpc/src/types.ts:495](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L495)

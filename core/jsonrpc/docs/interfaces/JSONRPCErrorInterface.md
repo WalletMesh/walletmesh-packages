@@ -1,10 +1,12 @@
-[**@walletmesh/jsonrpc v0.2.2**](../README.md)
+[**@walletmesh/jsonrpc v0.3.0**](../README.md)
 
 ***
 
 [@walletmesh/jsonrpc](../globals.md) / JSONRPCErrorInterface
 
 # Interface: JSONRPCErrorInterface
+
+Defined in: [core/jsonrpc/src/types.ts:334](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L334)
 
 Represents a JSON-RPC 2.0 error object.
 
@@ -32,11 +34,9 @@ const error: JSONRPCErrorInterface = {
 
 > **code**: `number`
 
+Defined in: [core/jsonrpc/src/types.ts:336](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L336)
+
 The error code.
-
-#### Defined in
-
-[packages/jsonrpc/src/types.ts:336](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L336)
 
 ***
 
@@ -44,11 +44,9 @@ The error code.
 
 > `optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
 
+Defined in: [core/jsonrpc/src/types.ts:340](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L340)
+
 Additional error data.
-
-#### Defined in
-
-[packages/jsonrpc/src/types.ts:340](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L340)
 
 ***
 
@@ -56,8 +54,6 @@ Additional error data.
 
 > **message**: `string`
 
+Defined in: [core/jsonrpc/src/types.ts:338](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L338)
+
 The error message.
-
-#### Defined in
-
-[packages/jsonrpc/src/types.ts:338](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L338)

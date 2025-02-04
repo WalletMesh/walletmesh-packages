@@ -1,10 +1,12 @@
-[**@walletmesh/router v0.2.7**](../../README.md)
+[**@walletmesh/router v0.3.0**](../../README.md)
 
 ***
 
 [@walletmesh/router](../../modules.md) / [index](../README.md) / CallParams
 
 # Interface: CallParams
+
+Defined in: [core/router/src/types.ts:279](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L279)
 
 Parameters required to invoke a single method on a specific chain.
 Used with the wm_call method to execute wallet operations.
@@ -15,7 +17,7 @@ Used with the wm_call method to execute wallet operations.
 
 ## Indexable
 
- \[`key`: `string`\]: `unknown`
+\[`key`: `string`\]: `unknown`
 
 ## Properties
 
@@ -23,11 +25,9 @@ Used with the wm_call method to execute wallet operations.
 
 > **call**: [`MethodCall`](MethodCall.md)
 
+Defined in: [core/router/src/types.ts:285](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L285)
+
 Method call details including name and parameters
-
-#### Defined in
-
-[packages/router/src/types.ts:285](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L285)
 
 ***
 
@@ -35,11 +35,9 @@ Method call details including name and parameters
 
 > **chainId**: `string`
 
+Defined in: [core/router/src/types.ts:281](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L281)
+
 Target chain ID where the method will be executed
-
-#### Defined in
-
-[packages/router/src/types.ts:281](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L281)
 
 ***
 
@@ -47,8 +45,6 @@ Target chain ID where the method will be executed
 
 > **sessionId**: `string`
 
+Defined in: [core/router/src/types.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L283)
+
 Session ID for authorization and context
-
-#### Defined in
-
-[packages/router/src/types.ts:283](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L283)

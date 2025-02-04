@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.2.2**](../README.md)
+[**@walletmesh/jsonrpc v0.3.0**](../README.md)
 
 ***
 
@@ -7,6 +7,8 @@
 # Function: wrapHandler()
 
 > **wrapHandler**\<`T`, `M`, `C`\>(`handler`): [`MethodHandler`](../type-aliases/MethodHandler.md)\<`T`, `M`, `C`\>
+
+Defined in: [core/jsonrpc/src/utils.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/utils.ts#L125)
 
 Wraps a handler function with standard error handling and response formatting.
 Used by both JSONRPCNode and tests to ensure consistent error handling.
@@ -39,7 +41,3 @@ A wrapped handler that returns MethodResponse
 const handler = (context, params) => params.a + params.b;
 const wrapped = wrapHandler(handler, 'add');
 ```
-
-## Defined in
-
-[packages/jsonrpc/src/utils.ts:125](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/utils.ts#L125)

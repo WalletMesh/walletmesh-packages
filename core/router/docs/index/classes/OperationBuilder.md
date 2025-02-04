@@ -1,10 +1,12 @@
-[**@walletmesh/router v0.2.7**](../../README.md)
+[**@walletmesh/router v0.3.0**](../../README.md)
 
 ***
 
 [@walletmesh/router](../../modules.md) / [index](../README.md) / OperationBuilder
 
 # Class: OperationBuilder\<T\>
+
+Defined in: [core/router/src/operation.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/operation.ts#L50)
 
 A builder class that enables chaining multiple RPC method calls into a single operation.
 This provides a fluent interface for constructing sequences of wallet method calls
@@ -24,7 +26,7 @@ const [balance, code] = await operation.execute();
 
 ## Type Parameters
 
-• **T** *extends* readonly [`MethodCall`](../interfaces/MethodCall.md)[] = readonly []
+• **T** *extends* readonly [`MethodCall`](../interfaces/MethodCall.md)[] = readonly \[\]
 
 Tuple type tracking the sequence of method calls
 
@@ -33,6 +35,8 @@ Tuple type tracking the sequence of method calls
 ### new OperationBuilder()
 
 > **new OperationBuilder**\<`T`\>(`chainId`, `provider`, `calls`): [`OperationBuilder`](OperationBuilder.md)\<`T`\>
+
+Defined in: [core/router/src/operation.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/operation.ts#L51)
 
 #### Parameters
 
@@ -52,15 +56,13 @@ Tuple type tracking the sequence of method calls
 
 [`OperationBuilder`](OperationBuilder.md)\<`T`\>
 
-#### Defined in
-
-[packages/router/src/operation.ts:51](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/operation.ts#L51)
-
 ## Methods
 
 ### call()
 
-> **call**\<`M`\>(`method`, `params`?): [`OperationBuilder`](OperationBuilder.md)\<readonly [`T`, [`MethodCall`](../interfaces/MethodCall.md)\<`M`\>]\>
+> **call**\<`M`\>(`method`, `params`?): [`OperationBuilder`](OperationBuilder.md)\<readonly \[`T`, [`MethodCall`](../interfaces/MethodCall.md)\<`M`\>\]\>
+
+Defined in: [core/router/src/operation.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/operation.ts#L73)
 
 Adds a new method call to the operation chain.
 Returns a new builder instance with the updated call sequence.
@@ -87,7 +89,7 @@ Optional parameters for the method
 
 #### Returns
 
-[`OperationBuilder`](OperationBuilder.md)\<readonly [`T`, [`MethodCall`](../interfaces/MethodCall.md)\<`M`\>]\>
+[`OperationBuilder`](OperationBuilder.md)\<readonly \[`T`, [`MethodCall`](../interfaces/MethodCall.md)\<`M`\>\]\>
 
 A new OperationBuilder instance with the added method call
 
@@ -99,15 +101,13 @@ const operation = provider.chain('eip155:1')
   .call('eth_getCode', ['0x456...']);
 ```
 
-#### Defined in
-
-[packages/router/src/operation.ts:73](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/operation.ts#L73)
-
 ***
 
 ### execute()
 
 > **execute**(`timeout`?): `Promise`\<`ExecuteResult`\<`T`\>\>
+
+Defined in: [core/router/src/operation.ts:108](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/operation.ts#L108)
 
 Executes all method calls in the operation chain in sequence.
 For a single call, returns the direct result.
@@ -145,7 +145,3 @@ const [balance, code] = await provider
 #### Throws
 
 If no operations are queued or if result validation fails
-
-#### Defined in
-
-[packages/router/src/operation.ts:108](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/operation.ts#L108)
