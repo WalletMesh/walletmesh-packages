@@ -1,0 +1,44 @@
+{
+  "name": "@walletmesh/aztec",
+  "version": "0.1.1",
+  "description": "WalletMesh Aztec package",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    "./rpc-wallet": {
+      "import": "./dist/aztec-rpc-wallet.js",
+      "require": "./dist/aztec-rpc-wallet.js",
+      "types": "./dist/aztec-rpc-wallet.d.ts"
+    },
+    "./helpers": {
+      "import": "./dist/helpers.js",
+      "require": "./dist/helpers.js",
+      "types": "./dist/helpers.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WalletMesh/walletmesh-packages.git"
+  },
+  "homepage": "https://github.com/WalletMesh/walletmesh-packages/tree/main/aztec/aztec",
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "clean": "rimraf dist node_modules",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --fix",
+    "format": "biome format",
+    "format:fix": "biome format --fix",
+    "version": "pnpm build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@aztec/aztec.js": "0.72.1",
+    "@walletmesh/aztec-rpc-wallet": "workspace:^"
+  }
+}

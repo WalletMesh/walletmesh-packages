@@ -1,6 +1,6 @@
 {
-  "name": "template",
-  "version": "0.0.1",
+  "name": "@walletmesh/discovery",
+  "version": "0.0.6",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,6 +24,6 @@
     "format:fix": "biome format --write",
     "docs": "typedoc",
     "preversion": "pnpm test",
-    "version": "pnpm clean && pnpm build && pnpm run docs && git add docs/"
+    "version": "pnpm clean && pnpm build && pnpm run docs"
   }
 }

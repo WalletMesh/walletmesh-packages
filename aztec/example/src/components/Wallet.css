@@ -1,0 +1,45 @@
+.wallet-server {
+  width: 100%;
+  overflow-x: auto;
+  /* Allow horizontal scroll if needed */
+}
+
+.connection-status {
+  font-weight: bold;
+}
+
+.connected {
+  color: #4caf50;
+}
+
+.disconnected {
+  color: #f44336;
+}
+
+.request-history {
+  list-style-type: none;
+  padding: 0;
+  width: 100%;
+}
+
+.request-history li {
+  margin-bottom: 16px;
+  width: 100%;
+  text-align: left;
+  /* Ensure left alignment */
+}
+
+.request-details {
+  text-align: left;
+  margin: 4px 0;
+}
+
+.function-call {
+  text-align: left;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.denied-status {
+  color: #f44336;
+}

@@ -1,0 +1,44 @@
+{
+  "name": "@walletmesh/aztec-rpc-wallet",
+  "version": "0.1.1",
+  "description": "",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WalletMesh/walletmesh-packages.git"
+  },
+  "homepage": "https://github.com/WalletMesh/walletmesh-packages/tree/main/aztec/aztec-rpc-wallet#readme",
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "clean": "rimraf dist node_modules",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --fix",
+    "format": "biome format",
+    "format:fix": "biome format --fix",
+    "doc": "typedoc",
+    "version": "pnpm clean && pnpm build && pnpm doc && git add docs/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "typedoc": "^0.27.2",
+    "typedoc-plugin-markdown": "^4.3.1"
+  },
+  "dependencies": {
+    "@aztec/aztec.js": "0.72.1",
+    "@aztec/circuit-types": "0.72.1",
+    "@aztec/circuits.js": "0.72.1",
+    "@aztec/foundation": "0.72.1",
+    "@walletmesh/jsonrpc": "0.2.2",
+    "@walletmesh/router": "0.2.7"
+  }
+}
