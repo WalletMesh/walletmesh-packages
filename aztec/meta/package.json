@@ -24,7 +24,7 @@
     "type": "git",
     "url": "git+https://github.com/WalletMesh/walletmesh-packages.git"
   },
-  "homepage": "https://github.com/WalletMesh/walletmesh-packages/tree/main/aztec/aztec",
+  "homepage": "https://github.com/WalletMesh/walletmesh-packages/tree/main/aztec/meta",
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "clean": "rimraf dist node_modules",
@@ -39,6 +39,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@aztec/aztec.js": "0.72.1",
+    "@walletmesh/aztec-helpers": "workspace:^",
     "@walletmesh/aztec-rpc-wallet": "workspace:^"
   }
 }

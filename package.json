@@ -2,6 +2,7 @@
   "name": "walletmesh-packages",
   "description": "WalletMesh Core Monorepo",
   "private": true,
+  "type": "module",
   "publishConfig": {
     "access": "restricted"
   },

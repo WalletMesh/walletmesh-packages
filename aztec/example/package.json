@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist node_modules",
     "lint": "biome lint",
     "format": "biome format"
   },

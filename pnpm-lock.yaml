@@ -39,43 +39,6 @@ importers:
         specifier: ^3.0.5
         version: 3.0.5(@types/node@22.13.1)(jsdom@25.0.1)(tsx@4.19.2)(yaml@2.7.0)
 
-  aztec/aztec:
-    dependencies:
-      '@aztec/aztec.js':
-        specifier: 0.72.1
-        version: 0.72.1(typescript@5.7.3)(zod@3.24.1)
-      '@walletmesh/aztec-rpc-wallet':
-        specifier: workspace:^
-        version: link:../aztec-rpc-wallet
-
-  aztec/aztec-rpc-wallet:
-    dependencies:
-      '@aztec/aztec.js':
-        specifier: 0.72.1
-        version: 0.72.1(typescript@5.7.3)(zod@3.24.1)
-      '@aztec/circuit-types':
-        specifier: 0.72.1
-        version: 0.72.1(typescript@5.7.3)
-      '@aztec/circuits.js':
-        specifier: 0.72.1
-        version: 0.72.1(typescript@5.7.3)
-      '@aztec/foundation':
-        specifier: 0.72.1
-        version: 0.72.1
-      '@walletmesh/jsonrpc':
-        specifier: 0.2.2
-        version: link:../../core/jsonrpc
-      '@walletmesh/router':
-        specifier: 0.2.7
-        version: link:../../core/router
-    devDependencies:
-      typedoc:
-        specifier: ^0.27.2
-        version: 0.27.6(typescript@5.7.3)
-      typedoc-plugin-markdown:
-        specifier: ^4.3.1
-        version: 4.4.1(typedoc@0.27.6(typescript@5.7.3))
-
   aztec/example:
     dependencies:
       '@aztec/accounts':
@@ -95,10 +58,10 @@ importers:
         version: 0.72.1(typescript@5.7.3)(zod@3.24.1)
       '@walletmesh/aztec':
         specifier: workspace:^
-        version: link:../aztec
+        version: link:../meta
       '@walletmesh/aztec-rpc-wallet':
         specifier: workspace:^
-        version: link:../aztec-rpc-wallet
+        version: link:../rpc-wallet
       '@walletmesh/jsonrpc':
         specifier: workspace:^
         version: link:../../core/jsonrpc
@@ -133,6 +96,52 @@ importers:
       vite-plugin-top-level-await:
         specifier: ^1.4.4
         version: 1.4.4(rollup@4.30.1)(vite@6.0.11(@types/node@22.13.1)(tsx@4.19.2)(yaml@2.7.0))
+
+  aztec/helpers:
+    dependencies:
+      '@aztec/aztec.js':
+        specifier: 0.72.1
+        version: 0.72.1(typescript@5.7.3)(zod@3.24.1)
+
+  aztec/meta:
+    dependencies:
+      '@aztec/aztec.js':
+        specifier: 0.72.1
+        version: 0.72.1(typescript@5.7.3)(zod@3.24.1)
+      '@walletmesh/aztec-helpers':
+        specifier: workspace:^
+        version: link:../helpers
+      '@walletmesh/aztec-rpc-wallet':
+        specifier: workspace:^
+        version: link:../rpc-wallet
+
+  aztec/rpc-wallet:
+    dependencies:
+      '@aztec/aztec.js':
+        specifier: 0.72.1
+        version: 0.72.1(typescript@5.7.3)(zod@3.24.1)
+      '@aztec/circuit-types':
+        specifier: 0.72.1
+        version: 0.72.1(typescript@5.7.3)
+      '@aztec/circuits.js':
+        specifier: 0.72.1
+        version: 0.72.1(typescript@5.7.3)
+      '@aztec/foundation':
+        specifier: 0.72.1
+        version: 0.72.1
+      '@walletmesh/jsonrpc':
+        specifier: 0.2.2
+        version: link:../../core/jsonrpc
+      '@walletmesh/router':
+        specifier: 0.2.7
+        version: link:../../core/router
+    devDependencies:
+      typedoc:
+        specifier: ^0.27.2
+        version: 0.27.6(typescript@5.7.3)
+      typedoc-plugin-markdown:
+        specifier: ^4.3.1
+        version: 4.4.1(typedoc@0.27.6(typescript@5.7.3))
 
   core/discovery: {}
 

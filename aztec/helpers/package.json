@@ -1,6 +1,6 @@
 {
-  "name": "@walletmesh/jsonrpc",
-  "version": "0.2.2",
+  "name": "@walletmesh/aztec-helpers",
+  "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "clean": "rimraf dist node_modules",
+    "clean": "rimraf dist",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -24,6 +24,9 @@
     "format:fix": "biome format --write",
     "docs": "typedoc",
     "preversion": "pnpm test",
-    "version": "pnpm clean && pnpm build && pnpm run docs"
+    "version": "pnpm clean && pnpm build && pnpm run docs && git add docs/"
+  },
+  "dependencies": {
+    "@aztec/aztec.js": "0.72.1"
   }
 }
