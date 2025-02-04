@@ -1,10 +1,12 @@
-[**@walletmesh/router v0.2.7**](../../README.md)
+[**@walletmesh/router v0.3.0**](../../README.md)
 
 ***
 
 [@walletmesh/router](../../modules.md) / [index](../README.md) / WalletRouterProvider
 
 # Class: WalletRouterProvider
+
+Defined in: [core/router/src/provider.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/provider.ts#L61)
 
 Client-side provider for interacting with the multi-chain router.
 Provides a simplified interface for applications to connect to and interact with wallets.
@@ -62,6 +64,8 @@ const accounts = await provider.call('eip155:1', {
 
 > **new WalletRouterProvider**(`transport`, `context`?): [`WalletRouterProvider`](WalletRouterProvider.md)
 
+Defined in: core/jsonrpc/dist/node.d.ts:74
+
 Creates a new JSONRPCNode instance.
 
 #### Parameters
@@ -86,23 +90,17 @@ Optional context object shared between middleware and method handlers
 
 `JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext>.constructor`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:74
-
 ## Properties
 
 ### context
 
 > `readonly` **context**: [`RouterContext`](../interfaces/RouterContext.md)
 
+Defined in: core/jsonrpc/dist/node.d.ts:40
+
 #### Inherited from
 
 `JSONRPCNode.context`
-
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:40
 
 ## Accessors
 
@@ -111,6 +109,8 @@ packages/jsonrpc/dist/node.d.ts:40
 #### Get Signature
 
 > **get** **sessionId**(): `undefined` \| `string`
+
+Defined in: [core/router/src/provider.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/provider.ts#L73)
 
 Gets the current session ID if connected, undefined otherwise.
 The session ID is required for most operations and is set after
@@ -127,15 +127,13 @@ a successful connection.
 
 The current session ID or undefined if not connected
 
-#### Defined in
-
-[packages/router/src/provider.ts:73](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L73)
-
 ## Methods
 
 ### addMiddleware()
 
 > **addMiddleware**(`middleware`): () => `void`
+
+Defined in: core/jsonrpc/dist/node.d.ts:197
 
 Adds a middleware function to the middleware stack.
 
@@ -175,15 +173,13 @@ cleanup();
 
 `JSONRPCNode.addMiddleware`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:197
-
 ***
 
 ### bulkCall()
 
 > **bulkCall**\<`T`\>(`chainId`, `calls`, `timeout`?): `Promise`\<[`MethodResults`](../type-aliases/MethodResults.md)\<`T`\>\>
+
+Defined in: [core/router/src/provider.ts:278](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/provider.ts#L278)
 
 Executes multiple method calls in sequence on the same chain.
 More efficient than multiple individual calls for related operations.
@@ -256,15 +252,13 @@ const [accounts, balance] = await provider.bulkCall('eip155:1', [
 ]);
 ```
 
-#### Defined in
-
-[packages/router/src/provider.ts:278](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L278)
-
 ***
 
 ### call()
 
 > **call**\<`M`\>(`chainId`, `call`, `timeout`?): `Promise`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
+
+Defined in: [core/router/src/provider.ts:230](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/provider.ts#L230)
 
 Invokes a method on the connected wallet.
 Routes the call to the appropriate wallet client based on chain ID.
@@ -342,15 +336,13 @@ const txHash = await provider.call('eip155:1', {
 } as const);
 ```
 
-#### Defined in
-
-[packages/router/src/provider.ts:230](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L230)
-
 ***
 
 ### callMethod()
 
 > **callMethod**\<`M`\>(`method`, `params`?, `timeoutInSeconds`?): `Promise`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
+
+Defined in: core/jsonrpc/dist/node.d.ts:135
 
 Calls a remote method and returns a promise for the result.
 
@@ -412,15 +404,13 @@ try {
 
 `JSONRPCNode.callMethod`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:135
-
 ***
 
 ### chain()
 
 > **chain**(`chainId`): [`OperationBuilder`](OperationBuilder.md)
+
+Defined in: [core/router/src/provider.ts:347](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/provider.ts#L347)
 
 Creates a new operation builder for chaining method calls.
 Enables fluent method call chaining with proper type inference.
@@ -449,15 +439,13 @@ const [balance, code] = await provider
   .execute();
 ```
 
-#### Defined in
-
-[packages/router/src/provider.ts:347](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L347)
-
 ***
 
 ### close()
 
 > **close**(): `Promise`\<`void`\>
+
+Defined in: core/jsonrpc/dist/node.d.ts:237
 
 Closes the node, cleaning up all event handlers, middleware, and pending requests.
 
@@ -475,15 +463,13 @@ await node.close();
 
 `JSONRPCNode.close`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:237
-
 ***
 
 ### connect()
 
 > **connect**(`permissions`, `timeout`?): `Promise`\<\{ `permissions`: [`HumanReadableChainPermissions`](../type-aliases/HumanReadableChainPermissions.md); `sessionId`: `string`; \}\>
+
+Defined in: [core/router/src/provider.ts:104](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/provider.ts#L104)
 
 Connects to multiple chains with specified permissions.
 Establishes a session and requests method permissions for each chain.
@@ -540,15 +526,13 @@ const { sessionId, permissions } = await provider.connect({
 }, 5000);
 ```
 
-#### Defined in
-
-[packages/router/src/provider.ts:104](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L104)
-
 ***
 
 ### disconnect()
 
 > **disconnect**(`timeout`?): `Promise`\<`void`\>
+
+Defined in: [core/router/src/provider.ts:123](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/provider.ts#L123)
 
 Disconnects the current session if one exists.
 Cleans up session state and notifies the router to terminate the session.
@@ -578,15 +562,13 @@ If the request times out
 
 [\['wm\_disconnect'\]](../interfaces/RouterMethodMap.md) for detailed request/response types
 
-#### Defined in
-
-[packages/router/src/provider.ts:123](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L123)
-
 ***
 
 ### emit()
 
 > **emit**\<`K`\>(`event`, `params`): `Promise`\<`void`\>
+
+Defined in: core/jsonrpc/dist/node.d.ts:177
 
 Emits an event to the remote node.
 
@@ -622,15 +604,13 @@ node.emit('statusUpdate', { status: 'online' });
 
 `JSONRPCNode.emit`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:177
-
 ***
 
 ### getPermissions()
 
 > **getPermissions**(`chainIds`?, `timeout`?): `Promise`\<[`HumanReadableChainPermissions`](../type-aliases/HumanReadableChainPermissions.md)\>
+
+Defined in: [core/router/src/provider.ts:144](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/provider.ts#L144)
 
 Gets current session permissions.
 Returns a human-readable format suitable for displaying to users.
@@ -669,15 +649,13 @@ If the request times out
  - [HumanReadableChainPermissions](../type-aliases/HumanReadableChainPermissions.md) for return type details
  - [\['wm\_getPermissions'\]](../interfaces/RouterMethodMap.md) for detailed request/response types
 
-#### Defined in
-
-[packages/router/src/provider.ts:144](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L144)
-
 ***
 
 ### getSupportedMethods()
 
 > **getSupportedMethods**(`chainIds`?, `timeout`?): `Promise`\<`Record`\<`string`, `string`[]\>\>
+
+Defined in: [core/router/src/provider.ts:323](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/provider.ts#L323)
 
 Gets supported methods for one or more chains.
 Used for capability discovery and feature detection.
@@ -732,15 +710,13 @@ if (methods['eip155:1'].includes('eth_signMessage')) {
 const routerMethods = await provider.getSupportedMethods();
 ```
 
-#### Defined in
-
-[packages/router/src/provider.ts:323](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L323)
-
 ***
 
 ### notify()
 
 > **notify**\<`M`\>(`method`, `params`): `Promise`\<`void`\>
+
+Defined in: core/jsonrpc/dist/node.d.ts:147
 
 Sends a notification (a request without expecting a response).
 
@@ -776,15 +752,13 @@ node.notify('log', { message: 'User action performed' });
 
 `JSONRPCNode.notify`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:147
-
 ***
 
 ### on()
 
 > **on**\<`K`\>(`event`, `handler`): () => `void`
+
+Defined in: core/jsonrpc/dist/node.d.ts:165
 
 Registers an event handler for the specified event type.
 
@@ -831,15 +805,13 @@ cleanup();
 
 `JSONRPCNode.on`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:165
-
 ***
 
 ### receiveMessage()
 
 > **receiveMessage**(`message`): `Promise`\<`void`\>
+
+Defined in: core/jsonrpc/dist/node.d.ts:205
 
 Processes an incoming JSON-RPC message.
 This method handles requests, responses, notifications, and events.
@@ -864,15 +836,13 @@ If the message is invalid
 
 `JSONRPCNode.receiveMessage`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:205
-
 ***
 
 ### registerMethod()
 
 > **registerMethod**\<`M`\>(`name`, `handler`): `void`
+
+Defined in: core/jsonrpc/dist/node.d.ts:87
 
 Registers a method handler for the specified method name.
 
@@ -909,15 +879,13 @@ node.registerMethod('add', (context, { a, b }) => a + b);
 
 `JSONRPCNode.registerMethod`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:87
-
 ***
 
 ### registerSerializer()
 
 > **registerSerializer**\<`M`\>(`method`, `serializer`): `void`
+
+Defined in: core/jsonrpc/dist/node.d.ts:109
 
 Registers a serializer for parameters and results.
 
@@ -963,15 +931,13 @@ node.registerSerializer('processDate', {
 
 `JSONRPCNode.registerSerializer`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:109
-
 ***
 
 ### setFallbackHandler()
 
 > **setFallbackHandler**(`handler`): `void`
+
+Defined in: core/jsonrpc/dist/node.d.ts:228
 
 Sets a fallback handler for unregistered methods.
 The fallback handler will be called when a method is not found.
@@ -1006,15 +972,13 @@ node.setFallbackHandler(async (context, method, params) => {
 
 `JSONRPCNode.setFallbackHandler`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:228
-
 ***
 
 ### setFallbackSerializer()
 
 > **setFallbackSerializer**(`serializer`): `void`
+
+Defined in: core/jsonrpc/dist/node.d.ts:67
 
 Sets a fallback serializer to be used when no method-specific serializer is provided.
 
@@ -1050,15 +1014,13 @@ node.setFallbackSerializer({
 
 `JSONRPCNode.setFallbackSerializer`
 
-#### Defined in
-
-packages/jsonrpc/dist/node.d.ts:67
-
 ***
 
 ### updatePermissions()
 
 > **updatePermissions**(`permissions`, `timeout`?): `Promise`\<[`HumanReadableChainPermissions`](../type-aliases/HumanReadableChainPermissions.md)\>
+
+Defined in: [core/router/src/provider.ts:178](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/provider.ts#L178)
 
 Updates session permissions.
 Requests additional permissions or modifies existing ones.
@@ -1107,7 +1069,3 @@ await provider.updatePermissions({
   'eip155:137': ['eth_getBalance', 'eth_call']
 });
 ```
-
-#### Defined in
-
-[packages/router/src/provider.ts:178](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/provider.ts#L178)

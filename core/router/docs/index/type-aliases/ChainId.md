@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.7**](../../README.md)
+[**@walletmesh/router v0.3.0**](../../README.md)
 
 ***
 
@@ -7,6 +7,8 @@
 # Type Alias: ChainId
 
 > **ChainId**: `string`
+
+Defined in: [core/router/src/types.ts:226](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L226)
 
 Chain ID format: namespace:reference
 Represents a unique identifier for a blockchain network.
@@ -24,7 +26,3 @@ Represents a unique identifier for a blockchain network.
 ```ts
 "solana:mainnet-beta"
 ```
-
-## Defined in
-
-[packages/router/src/types.ts:226](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/types.ts#L226)

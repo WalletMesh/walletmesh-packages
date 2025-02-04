@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.7**](../../README.md)
+[**@walletmesh/router v0.3.0**](../../README.md)
 
 ***
 
@@ -7,6 +7,8 @@
 # Variable: RouterErrorMap
 
 > `const` **RouterErrorMap**: `object`
+
+Defined in: [core/router/src/errors.ts:6](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/errors.ts#L6)
 
 Error codes and messages for the multi-chain router
 
@@ -107,7 +109,3 @@ Error codes and messages for the multi-chain router
 #### walletNotAvailable.message
 
 > `readonly` **message**: `"Wallet service not available"` = `'Wallet service not available'`
-
-## Defined in
-
-[packages/router/src/errors.ts:6](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/errors.ts#L6)

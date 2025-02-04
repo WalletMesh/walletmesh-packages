@@ -1,10 +1,10 @@
-**@walletmesh/router v0.2.7**
+**@walletmesh/router v0.3.0**
 
 ***
 
 # @walletmesh/router
 
-A flexible routing system for managing multi-chain wallet connections with bi-directional communication support, built on top of [@walletmesh/jsonrpc](https://github.com/WalletMesh/wm-core/tree/main/packages/jsonrpc).
+A flexible routing system for managing multi-chain wallet connections with bi-directional communication support, built on top of [@walletmesh/jsonrpc](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc).
 
 ## Quick Start
 

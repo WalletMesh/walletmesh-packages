@@ -1,6 +1,6 @@
 {
   "name": "@walletmesh/aztec-rpc-wallet",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "",
   "type": "module",
   "main": "dist/index.js",
@@ -38,7 +38,7 @@
     "@aztec/circuit-types": "0.72.1",
     "@aztec/circuits.js": "0.72.1",
     "@aztec/foundation": "0.72.1",
-    "@walletmesh/jsonrpc": "0.2.2",
-    "@walletmesh/router": "0.2.7"
+    "@walletmesh/jsonrpc": "0.3.0",
+    "@walletmesh/router": "0.3.0"
   }
 }

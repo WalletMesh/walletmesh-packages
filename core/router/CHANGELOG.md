@@ -1,5 +1,16 @@
 # @walletmesh/router
 
+## 0.3.0
+
+### Minor Changes
+
+- 8bd3463: chore: Add aztec-specific packages to the monorepo & rename the git repository
+
+### Patch Changes
+
+- Updated dependencies [8bd3463]
+  - @walletmesh/jsonrpc@0.3.0
+
 ## 0.2.7
 
 ### Patch Changes

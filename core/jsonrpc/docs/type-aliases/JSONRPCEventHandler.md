@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.2.2**](../README.md)
+[**@walletmesh/jsonrpc v0.3.0**](../README.md)
 
 ***
 
@@ -7,6 +7,8 @@
 # Type Alias: JSONRPCEventHandler()\<T, E\>
 
 > **JSONRPCEventHandler**\<`T`, `E`\>: (`params`) => `void`
+
+Defined in: [core/jsonrpc/src/types.ts:623](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L623)
 
 Represents a function that handles JSON-RPC events.
 Event handlers receive typed event payloads and are used to react to
@@ -69,7 +71,3 @@ peer.on('userJoined', logHandler);
 peer.on('statusUpdate', statusHandler);
 peer.on('messageReceived', messageHandler);
 ```
-
-## Defined in
-
-[packages/jsonrpc/src/types.ts:623](https://github.com/WalletMesh/wm-core/blob/e2f83503fa9ae7df056049cc70c5ae8c9a3bae87/packages/jsonrpc/src/types.ts#L623)

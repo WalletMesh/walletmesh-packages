@@ -1,10 +1,12 @@
-[**@walletmesh/router v0.2.7**](../../README.md)
+[**@walletmesh/router v0.3.0**](../../README.md)
 
 ***
 
 [@walletmesh/router](../../modules.md) / [index](../README.md) / WalletMethodMap
 
 # Interface: WalletMethodMap
+
+Defined in: [core/router/src/jsonrpc-adapter.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/jsonrpc-adapter.ts#L27)
 
 Method map for wallet JSON-RPC communication.
 Extends the base JSONRPCMethodMap to include wallet-specific methods and
@@ -29,7 +31,7 @@ type EthereumMethods = {
 
 ## Indexable
 
- \[`method`: `string`\]: `object`
+\[`method`: `string`\]: `object`
 
 ## Properties
 
@@ -37,10 +39,8 @@ type EthereumMethods = {
 
 > **wm\_getSupportedMethods**: `object`
 
+Defined in: [core/router/src/jsonrpc-adapter.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/jsonrpc-adapter.ts#L28)
+
 #### result
 
 > **result**: `string`[]
-
-#### Defined in
-
-[packages/router/src/jsonrpc-adapter.ts:28](https://github.com/WalletMesh/wm-core/blob/a301044367e6b9b3eb697a31c54886b183ad9507/packages/router/src/jsonrpc-adapter.ts#L28)

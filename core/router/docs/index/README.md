@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.2.7**](../README.md)
+[**@walletmesh/router v0.3.0**](../README.md)
 
 ***
 
@@ -6,9 +6,7 @@
 
 # index
 
-## Index
-
-### Classes
+## Classes
 
 - [JSONRPCWalletClient](classes/JSONRPCWalletClient.md)
 - [LocalStorageSessionStore](classes/LocalStorageSessionStore.md)
@@ -18,7 +16,7 @@
 - [WalletRouter](classes/WalletRouter.md)
 - [WalletRouterProvider](classes/WalletRouterProvider.md)
 
-### Interfaces
+## Interfaces
 
 - [BulkCallParams](interfaces/BulkCallParams.md)
 - [CallParams](interfaces/CallParams.md)
@@ -36,7 +34,7 @@
 - [WmBulkCallType](interfaces/WmBulkCallType.md)
 - [WmCallType](interfaces/WmCallType.md)
 
-### Type Aliases
+## Type Aliases
 
 - [ChainId](type-aliases/ChainId.md)
 - [ChainPermissions](type-aliases/ChainPermissions.md)
@@ -50,7 +48,7 @@
 - [PermissionGetCallback](type-aliases/PermissionGetCallback.md)
 - [Wallets](type-aliases/Wallets.md)
 
-### Variables
+## Variables
 
 - [defaultStore](variables/defaultStore.md)
 - [RouterErrorMap](variables/RouterErrorMap.md)

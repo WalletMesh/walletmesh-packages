@@ -1,50 +1,47 @@
-[@walletmesh/discovery - v0.0.6](../README.md) / [Exports](../modules.md) / DiscoveryAnnouncer
+[**@walletmesh/discovery v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/discovery](../globals.md) / DiscoveryAnnouncer
 
 # Class: DiscoveryAnnouncer
+
+Defined in: [client.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/discovery/src/client.ts#L89)
 
 Class representing a DiscoveryAnnouncer.
 
 The DiscoveryAnnouncer announces wallet information, listens for discovery requests,
 and acknowledges discovery events.
 
-## Table of contents
-
-### Constructors
-
-- [constructor](DiscoveryAnnouncer.md#constructor)
-
-### Methods
-
-- [start](DiscoveryAnnouncer.md#start)
-- [stop](DiscoveryAnnouncer.md#stop)
-
 ## Constructors
 
-### constructor
+### new DiscoveryAnnouncer()
 
-• **new DiscoveryAnnouncer**(`options`): [`DiscoveryAnnouncer`](DiscoveryAnnouncer.md)
+> **new DiscoveryAnnouncer**(`options`): [`DiscoveryAnnouncer`](DiscoveryAnnouncer.md)
+
+Defined in: [client.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/discovery/src/client.ts#L103)
 
 Creates an instance of the announcer.
 
 #### Parameters
 
-| Name | Type | Description |
-| :------ | :------ | :------ |
-| `options` | `DiscoveryAnnouncerOptions` | The options to initialize the DiscoveryAnnouncer. |
+##### options
+
+`DiscoveryAnnouncerOptions`
+
+The options to initialize the DiscoveryAnnouncer.
 
 #### Returns
 
 [`DiscoveryAnnouncer`](DiscoveryAnnouncer.md)
 
-#### Defined in
-
-[client.ts:103](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/discovery/src/client.ts#L103)
-
 ## Methods
 
-### start
+### start()
 
-▸ **start**(): `void`
+> **start**(): `void`
+
+Defined in: [client.ts:129](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/discovery/src/client.ts#L129)
 
 Starts the DiscoveryAnnouncer by initializing event listeners and dispatching the initial "Ready" event.
 
@@ -56,15 +53,13 @@ This method performs the following actions:
 
 `void`
 
-#### Defined in
+***
 
-[client.ts:129](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/discovery/src/client.ts#L129)
+### stop()
 
-___
+> **stop**(): `void`
 
-### stop
-
-▸ **stop**(): `void`
+Defined in: [client.ts:144](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/discovery/src/client.ts#L144)
 
 Stops the DiscoveryAnnouncer by removing event listeners and clearing internal state.
 
@@ -76,7 +71,3 @@ This method performs the following actions:
 #### Returns
 
 `void`
-
-#### Defined in
-
-[client.ts:144](https://github.com/WalletMesh/wm-core/blob/6bd9984604bb55e33c5298221a47e0360fac08ee/packages/discovery/src/client.ts#L144)

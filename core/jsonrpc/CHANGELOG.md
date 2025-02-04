@@ -1,5 +1,11 @@
 # @walletmesh/jsonrpc
 
+## 0.3.0
+
+### Minor Changes
+
+- 8bd3463: chore: Add aztec-specific packages to the monorepo & rename the git repository
+
 ## 0.2.2
 
 ### Patch Changes
