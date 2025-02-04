@@ -1,8 +1,8 @@
 {
-  "name": "WalletMesh Core",
+  "name": "WalletMesh Packages",
   "image": "mcr.microsoft.com/devcontainers/base:bookworm",
-  "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/wm-core,type=bind,consistency=cached",
-  "workspaceFolder": "/home/vscode/wm-core",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/walletmesh-packages,type=bind,consistency=cached",
+  "workspaceFolder": "/home/vscode/walletmesh-packages",
   "mounts": [
     {
       "target": "/home/vscode/.pnpm-store",
@@ -21,7 +21,7 @@
   },
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "22"
+      "version": "20"
     }
   },
   "forwardPorts": [],

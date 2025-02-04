@@ -9,11 +9,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/WalletMesh/wm-core.git"
+    "url": "git+https://github.com/WalletMesh/walletmesh-packages.git"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist node_modules",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

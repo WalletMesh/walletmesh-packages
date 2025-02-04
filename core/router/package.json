@@ -1,0 +1,42 @@
+{
+  "name": "@walletmesh/router",
+  "version": "0.2.7",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./permissions": {
+      "import": "./dist/permissions/index.js",
+      "require": "./dist/permissions/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WalletMesh/walletmesh-packages.git"
+  },
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "clean": "rimraf dist node_modules",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
+    "format": "biome format",
+    "format:fix": "biome format --write",
+    "docs": "typedoc",
+    "preversion": "pnpm test",
+    "version": "pnpm clean && pnpm build && pnpm run docs"
+  },
+  "dependencies": {
+    "@walletmesh/jsonrpc": "workspace:*"
+  }
+}
