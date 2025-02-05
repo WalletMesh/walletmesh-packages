@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.3.0**](../README.md)
+[**@walletmesh/jsonrpc v0.4.0**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: JSONRPCError
 
-Defined in: [core/jsonrpc/src/error.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L62)
+Defined in: [core/jsonrpc/src/error.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/error.ts#L62)
 
 JSON-RPC Error class that implements the JSON-RPC 2.0 error object specification.
 Provides structured error handling with standard error codes and optional additional data.
@@ -85,7 +85,7 @@ try {
 
 > **new JSONRPCError**(`code`, `message`, `data`?): [`JSONRPCError`](JSONRPCError.md)
 
-Defined in: [core/jsonrpc/src/error.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L88)
+Defined in: [core/jsonrpc/src/error.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/error.ts#L88)
 
 Creates a new JSONRPCError instance.
 
@@ -155,7 +155,7 @@ Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 > **code**: `number`
 
-Defined in: [core/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L89)
+Defined in: [core/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/error.ts#L89)
 
 The error code (should follow JSON-RPC 2.0 error codes)
 
@@ -169,7 +169,7 @@ The error code (should follow JSON-RPC 2.0 error codes)
 
 > `optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
 
-Defined in: [core/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L91)
+Defined in: [core/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/error.ts#L91)
 
 Optional additional error data for debugging or client handling
 
@@ -201,7 +201,7 @@ The error message.
 
 > **name**: `string` = `'JSONRPCError'`
 
-Defined in: [core/jsonrpc/src/error.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L63)
+Defined in: [core/jsonrpc/src/error.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/error.ts#L63)
 
 #### Overrides
 
@@ -269,7 +269,7 @@ Defined in: node\_modules/@types/node/globals.d.ts:145
 
 > **toString**(): `string`
 
-Defined in: [core/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/error.ts#L96)
+Defined in: [core/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/error.ts#L96)
 
 Returns a string representation of an object.
 

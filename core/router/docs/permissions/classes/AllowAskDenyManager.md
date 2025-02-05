@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.3.0**](../../README.md)
+[**@walletmesh/router v0.4.0**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: AllowAskDenyManager\<T, C\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:113](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/permissions/allowAskDeny.ts#L113)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:113](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/allowAskDeny.ts#L113)
 
 Implementation of the PermissionManager interface using a three-state model.
 Manages permissions using ALLOW/DENY/ASK states with interactive prompts
@@ -74,7 +74,7 @@ Router context type for session and origin information
 
 > **new AllowAskDenyManager**\<`T`, `C`\>(`approvePermissionsCallback`, `askCallback`, `initialState`): [`AllowAskDenyManager`](AllowAskDenyManager.md)\<`T`, `C`\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:131](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/permissions/allowAskDeny.ts#L131)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:131](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/allowAskDeny.ts#L131)
 
 Creates a new AllowAskDenyManager instance.
 
@@ -112,7 +112,7 @@ If required callbacks are not provided
 
 > **approvePermissions**: [`PermissionApprovalCallback`](../../index/type-aliases/PermissionApprovalCallback.md)\<`C`\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/permissions/allowAskDeny.ts#L119)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/allowAskDeny.ts#L119)
 
 Handle permission approval requests.
 Called when new permissions are requested or existing ones are updated.
@@ -127,7 +127,7 @@ Called when new permissions are requested or existing ones are updated.
 
 > **askPermissions**: [`AskCallback`](../type-aliases/AskCallback.md)\<`T`, `C`\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:120](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/permissions/allowAskDeny.ts#L120)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:120](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/allowAskDeny.ts#L120)
 
 ## Methods
 
@@ -135,7 +135,7 @@ Defined in: [core/router/src/permissions/allowAskDeny.ts:120](https://github.com
 
 > **checkBulkCallPermissions**(`context`, `request`): `Promise`\<`boolean`\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:255](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/permissions/allowAskDeny.ts#L255)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:255](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/allowAskDeny.ts#L255)
 
 Check permissions for a bulk method call request.
 All methods in the bulk call must be permitted for the call to be allowed.
@@ -191,7 +191,7 @@ If chainId is invalid or not provided
 
 > **checkCallPermissions**(`context`, `request`): `Promise`\<`boolean`\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:312](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/permissions/allowAskDeny.ts#L312)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:312](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/allowAskDeny.ts#L312)
 
 Check permissions for a single method call request.
 The method's permission state determines the outcome:
@@ -247,7 +247,7 @@ If askCallback is not provided for ASK state
 
 > **checkPermissions**\<`M`\>(`context`, `request`): `Promise`\<`boolean`\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:211](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/permissions/allowAskDeny.ts#L211)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:211](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/allowAskDeny.ts#L211)
 
 Verify if a method call is permitted.
 Called before each method invocation to enforce permissions.
@@ -301,7 +301,7 @@ If context is missing required session or origin information
 
 > **getPermissions**(`context`, `chainIds`?): `Promise`\<[`HumanReadableChainPermissions`](../../index/type-aliases/HumanReadableChainPermissions.md)\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:154](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/permissions/allowAskDeny.ts#L154)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:154](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/allowAskDeny.ts#L154)
 
 Get current permissions in human-readable format.
 Used for displaying current permission state to users.

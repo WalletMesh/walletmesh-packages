@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.3.0**](../../README.md)
+[**@walletmesh/router v0.4.0**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletClient
 
-Defined in: [core/router/src/types.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L27)
+Defined in: [core/router/src/types.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L27)
 
 Interface for wallet clients that can be used with the router.
 Wallet clients provide a standardized way to interact with different blockchain wallets,
@@ -38,7 +38,7 @@ class EthereumWalletClient implements WalletClient {
 
 > **call**\<`T`\>(`method`, `params`?): `Promise`\<`T`\>
 
-Defined in: [core/router/src/types.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L36)
+Defined in: [core/router/src/types.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L36)
 
 Call a method on the wallet
 
@@ -78,7 +78,7 @@ If the method call fails or is rejected by the wallet
 
 > `optional` **getSupportedMethods**(): `Promise`\<`string`[]\>
 
-Defined in: [core/router/src/types.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L43)
+Defined in: [core/router/src/types.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L43)
 
 Get supported capabilities of the wallet
 
@@ -98,7 +98,7 @@ If the capabilities request fails
 
 > `optional` **off**(`event`, `handler`): `void`
 
-Defined in: [core/router/src/types.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L60)
+Defined in: [core/router/src/types.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L60)
 
 Remove a previously registered event handler
 
@@ -126,7 +126,7 @@ Handler function to remove (must be the same reference as used in 'on')
 
 > `optional` **on**(`event`, `handler`): `void`
 
-Defined in: [core/router/src/types.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L53)
+Defined in: [core/router/src/types.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L53)
 
 Register an event handler for wallet events
 Events include:

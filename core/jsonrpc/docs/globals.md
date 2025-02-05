@@ -1,8 +1,8 @@
-[**@walletmesh/jsonrpc v0.3.0**](README.md)
+[**@walletmesh/jsonrpc v0.4.0**](README.md)
 
 ***
 
-# @walletmesh/jsonrpc v0.3.0
+# @walletmesh/jsonrpc v0.4.0
 
 JSON-RPC 2.0 implementation with bi-directional communication support.
 This module provides a complete implementation of the JSON-RPC 2.0 specification

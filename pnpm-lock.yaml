@@ -130,10 +130,10 @@ importers:
         specifier: 0.73.0
         version: 0.73.0
       '@walletmesh/jsonrpc':
-        specifier: 0.3.0
+        specifier: 0.4.0
         version: link:../../core/jsonrpc
       '@walletmesh/router':
-        specifier: 0.3.0
+        specifier: 0.4.0
         version: link:../../core/router
     devDependencies:
       typedoc:

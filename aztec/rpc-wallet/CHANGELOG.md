@@ -1,5 +1,17 @@
 # @walletmesh/aztec-rpc-wallet
 
+## 0.3.0
+
+### Minor Changes
+
+- 937a416: Update to aztec-packages 0.73.0 & serializers turning async
+
+### Patch Changes
+
+- Updated dependencies [937a416]
+  - @walletmesh/jsonrpc@0.4.0
+  - @walletmesh/router@0.4.0
+
 ## 0.2.0
 
 ### Minor Changes

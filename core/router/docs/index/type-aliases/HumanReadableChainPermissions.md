@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.3.0**](../../README.md)
+[**@walletmesh/router v0.4.0**](../../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **HumanReadableChainPermissions**: `object`
 
-Defined in: [core/router/src/types.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L80)
+Defined in: [core/router/src/types.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L80)
 
 A structured representation of permissions in a human-readable format.
 Used for displaying and communicating permission states to users and applications.

@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.3.0**](../../README.md)
+[**@walletmesh/router v0.4.0**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: BulkCallParams
 
-Defined in: [core/router/src/types.ts:293](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L293)
+Defined in: [core/router/src/types.ts:293](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L293)
 
 Parameters for executing multiple method calls in sequence on a specific chain.
 Used with the wm_bulkCall method to batch multiple operations efficiently.
@@ -26,7 +26,7 @@ All calls in the sequence must be permitted for the operation to succeed.
 
 > **calls**: [`MethodCall`](MethodCall.md)[]
 
-Defined in: [core/router/src/types.ts:299](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L299)
+Defined in: [core/router/src/types.ts:299](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L299)
 
 Array of method calls to execute in sequence
 
@@ -36,7 +36,7 @@ Array of method calls to execute in sequence
 
 > **chainId**: `string`
 
-Defined in: [core/router/src/types.ts:295](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L295)
+Defined in: [core/router/src/types.ts:295](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L295)
 
 Target chain ID where the methods will be executed
 
@@ -46,6 +46,6 @@ Target chain ID where the methods will be executed
 
 > **sessionId**: `string`
 
-Defined in: [core/router/src/types.ts:297](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L297)
+Defined in: [core/router/src/types.ts:297](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L297)
 
 Session ID for authorization and context

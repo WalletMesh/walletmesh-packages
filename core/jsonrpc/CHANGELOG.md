@@ -1,5 +1,11 @@
 # @walletmesh/jsonrpc
 
+## 0.4.0
+
+### Minor Changes
+
+- 937a416: BREAKING CHANGE: JSONRPCSerializer methods are now async
+
 ## 0.3.0
 
 ### Minor Changes
