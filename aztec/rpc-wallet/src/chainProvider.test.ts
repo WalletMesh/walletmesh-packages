@@ -8,10 +8,12 @@ import type { AztecWalletMethodMap } from './types.js';
 const createMockTransport = () => ({
   send: vi
     .fn()
-    .mockImplementation(async (request: JSONRPCRequest<AztecWalletMethodMap, keyof AztecWalletMethodMap>) => {
-      // Default mock implementation that records the call but returns undefined
-      return undefined;
-    }),
+    .mockImplementation(
+      async (_request: JSONRPCRequest<AztecWalletMethodMap, keyof AztecWalletMethodMap>) => {
+        // Default mock implementation that records the call but returns undefined
+        return undefined;
+      },
+    ),
 });
 
 describe('AztecChainProvider', () => {
