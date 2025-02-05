@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import type { AccountWallet, PXE, TxHash } from '@aztec/aztec.js';
+import type { AccountWallet, PXE } from '@aztec/aztec.js';
 import { JSONRPCWalletClient } from '@walletmesh/router';
 import { AztecChainWallet } from './wallet.js';
 import { ContractArtifactCache } from './contractArtifactCache.js';
@@ -36,7 +36,7 @@ describe('AztecChainWallet', () => {
     aztecWallet = new AztecChainWallet(pxe, wallet, transport);
 
     // Setup fallback handler and serializer
-    const mockHandler = vi.fn().mockImplementation(async (context, method, params) => {
+    const mockHandler = vi.fn().mockImplementation(async (context, method, _params) => {
       if (!isAztecWalletContext(context)) {
         throw new AztecWalletError('unknownInternalError', 'Invalid context');
       }
@@ -249,7 +249,7 @@ describe('AztecChainWallet', () => {
       };
 
       // Setup request handler to throw error for invalid method
-      const handleRequest = async (msg: unknown) => {
+      const handleRequest = async (_msg: unknown) => {
         throw new AztecWalletError('invalidRequest', 'Invalid method');
       };
 

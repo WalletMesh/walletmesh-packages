@@ -21,17 +21,17 @@ export class AztecSetScopesSerializer
      * @param value - The parameters containing an array of Aztec addresses representing scopes
      * @returns Serialized scope data
      */
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_setScopes']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { scopes } = value;
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify({
           scopes: scopes.map((s) => s.toString()),
         }),
-      };
+      });
     },
     /**
      * Deserializes scope setting parameters from RPC transport.
@@ -39,14 +39,14 @@ export class AztecSetScopesSerializer
      * @param data - The serialized scope data
      * @returns Deserialized scope parameters
      */
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_setScopes']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_setScopes']['params']> => {
       const { scopes } = JSON.parse(data.serialized);
-      return {
+      return Promise.resolve({
         scopes: scopes.map((s: string) => AztecAddress.fromString(s)),
-      };
+      });
     },
   };
 
@@ -57,11 +57,11 @@ export class AztecSetScopesSerializer
      * @param value - Boolean indicating success of the scope setting operation
      * @returns Serialized result
      */
-    serialize: (method: string, value: boolean): JSONRPCSerializedData => {
-      return {
+    serialize: async (method: string, value: boolean): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(value),
-      };
+      });
     },
     /**
      * Deserializes the scope setting result.
@@ -69,8 +69,8 @@ export class AztecSetScopesSerializer
      * @param data - The serialized result data
      * @returns Boolean indicating success
      */
-    deserialize: (_method: string, data: JSONRPCSerializedData): boolean => {
-      return JSON.parse(data.serialized);
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<boolean> => {
+      return Promise.resolve(JSON.parse(data.serialized));
     },
   };
 }
@@ -93,18 +93,18 @@ export class AztecRegisterAccountSerializer
      * @param value - The parameters containing secret key and partial address
      * @returns Serialized registration data
      */
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_registerAccount']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { secretKey, partialAddress } = value;
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify({
           secretKey: secretKey.toString(),
           partialAddress: partialAddress.toString(),
         }),
-      };
+      });
     },
     /**
      * Deserializes account registration parameters from RPC transport.
@@ -112,15 +112,15 @@ export class AztecRegisterAccountSerializer
      * @param data - The serialized registration data
      * @returns Deserialized registration parameters
      */
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_registerAccount']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_registerAccount']['params']> => {
       const { secretKey, partialAddress } = JSON.parse(data.serialized);
-      return {
+      return Promise.resolve({
         secretKey: Fr.fromString(secretKey),
         partialAddress: Fr.fromString(partialAddress) as PartialAddress,
-      };
+      });
     },
   };
 
@@ -131,11 +131,11 @@ export class AztecRegisterAccountSerializer
      * @param value - The complete address of the registered account
      * @returns Serialized complete address
      */
-    serialize: (method: string, value: CompleteAddress): JSONRPCSerializedData => {
-      return {
+    serialize: async (method: string, value: CompleteAddress): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(value.toString()),
-      };
+      });
     },
     /**
      * Deserializes the account registration result.
@@ -143,8 +143,8 @@ export class AztecRegisterAccountSerializer
      * @param data - The serialized complete address
      * @returns Deserialized complete address
      */
-    deserialize: (_method: string, data: JSONRPCSerializedData): CompleteAddress => {
-      return CompleteAddress.fromString(JSON.parse(data.serialized));
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<CompleteAddress> => {
+      return Promise.resolve(CompleteAddress.fromString(JSON.parse(data.serialized)));
     },
   };
 }
@@ -167,15 +167,15 @@ export class AztecAddAuthWitnessSerializer
      * @param value - The parameters containing the auth witness to add
      * @returns Serialized auth witness data
      */
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_addAuthWitness']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { authWitness } = value;
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(authWitness.toString()),
-      };
+      });
     },
     /**
      * Deserializes auth witness addition parameters from RPC transport.
@@ -183,12 +183,12 @@ export class AztecAddAuthWitnessSerializer
      * @param data - The serialized auth witness data
      * @returns Deserialized auth witness parameters
      */
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_addAuthWitness']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_addAuthWitness']['params']> => {
       const authWitness = AuthWitness.fromString(JSON.parse(data.serialized));
-      return { authWitness };
+      return Promise.resolve({ authWitness });
     },
   };
 
@@ -199,11 +199,11 @@ export class AztecAddAuthWitnessSerializer
      * @param value - Boolean indicating success of the witness addition
      * @returns Serialized result
      */
-    serialize: (method: string, value: boolean): JSONRPCSerializedData => {
-      return {
+    serialize: async (method: string, value: boolean): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(value),
-      };
+      });
     },
     /**
      * Deserializes the auth witness addition result.
@@ -211,8 +211,8 @@ export class AztecAddAuthWitnessSerializer
      * @param data - The serialized result data
      * @returns Boolean indicating success
      */
-    deserialize: (_method: string, data: JSONRPCSerializedData): boolean => {
-      return JSON.parse(data.serialized);
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<boolean> => {
+      return Promise.resolve(JSON.parse(data.serialized));
     },
   };
 }
@@ -235,15 +235,15 @@ export class AztecGetAuthWitnessSerializer
      * @param value - The parameters containing the message hash to look up
      * @returns Serialized message hash data
      */
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getAuthWitness']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { messageHash } = value;
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(messageHash.toString()),
-      };
+      });
     },
     /**
      * Deserializes auth witness retrieval parameters from RPC transport.
@@ -251,12 +251,12 @@ export class AztecGetAuthWitnessSerializer
      * @param data - The serialized message hash data
      * @returns Deserialized message hash parameters
      */
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getAuthWitness']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_getAuthWitness']['params']> => {
       const messageHash = Fr.fromString(JSON.parse(data.serialized));
-      return { messageHash };
+      return Promise.resolve({ messageHash });
     },
   };
 
@@ -267,14 +267,14 @@ export class AztecGetAuthWitnessSerializer
      * @param value - Array of field elements representing auth witnesses
      * @returns Serialized witness array
      */
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getAuthWitness']['result'],
-    ): JSONRPCSerializedData => {
-      return {
+    ): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(value.map((w) => w.toString())),
-      };
+      });
     },
     /**
      * Deserializes the auth witness retrieval result.
@@ -282,11 +282,11 @@ export class AztecGetAuthWitnessSerializer
      * @param data - The serialized witness array data
      * @returns Array of deserialized field elements
      */
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getAuthWitness']['result'] => {
-      return JSON.parse(data.serialized).map((w: string) => Fr.fromString(w));
+    ): Promise<AztecWalletMethodMap['aztec_getAuthWitness']['result']> => {
+      return Promise.resolve(JSON.parse(data.serialized).map((w: string) => Fr.fromString(w)));
     },
   };
 }

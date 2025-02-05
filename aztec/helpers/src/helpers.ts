@@ -1,4 +1,5 @@
 import type { ContractArtifact, FunctionArtifact, FunctionSelector, PXE } from '@aztec/aztec.js';
+import { getFunctionArtifact } from '@aztec/foundation/abi';
 import { AztecAddress } from '@aztec/aztec.js';
 
 const contractArtifactCache = new Map<string, ContractArtifact>();
@@ -13,13 +14,15 @@ export async function getContractArtifactFromContractAddress(
     return cached;
   }
 
-  const instance = await pxe.getContractInstance(AztecAddress.fromString(contractAddress));
+  const contractMetadata = await pxe.getContractMetadata(AztecAddress.fromString(contractAddress));
+  const instance = contractMetadata.contractInstance;
   if (!instance) {
     throw new Error(`Contract ${contractAddress} is not registered in the PXE`);
   }
 
-  const artifact = await pxe.getContractArtifact(instance.contractClassId);
+  const contractClassMetadata = await pxe.getContractClassMetadata(instance.contractClassId);
 
+  const artifact = contractClassMetadata.artifact;
   if (!artifact) {
     throw new Error(
       `Artifact for contract class ID ${instance.contractClassId.toString()} is not registered in the PXE`,
@@ -37,16 +40,7 @@ export async function getFunctionArtifactFromContractAddress(
 ): Promise<FunctionArtifact> {
   const artifact = await getContractArtifactFromContractAddress(pxe, contractAddress);
 
-  const functionArtifact = artifact.functions.find((f) =>
-    typeof functionNameOrSelector === 'string'
-      ? f.name === functionNameOrSelector
-      : functionNameOrSelector.equals(f.name, f.parameters),
-  );
-  if (!functionArtifact) {
-    throw new Error(`Unknown function ${functionNameOrSelector}`);
-  }
-
-  return functionArtifact;
+  return await getFunctionArtifact(artifact, functionNameOrSelector);
 }
 
 export type FunctionParameterInfo = { name: string; type: string };

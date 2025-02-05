@@ -1,7 +1,20 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { AztecAddress, Fr, type FunctionSelector, type PXE, type ContractArtifact, type FunctionArtifact, type ContractInstanceWithAddress, PublicKeys } from '@aztec/aztec.js';
-import { FunctionType, type ABIParameter } from '@aztec/foundation/abi';
-import { getContractArtifactFromContractAddress, getFunctionArtifactFromContractAddress, getFunctionParameterInfoFromContractAddress } from './helpers.js';
+import {
+  AztecAddress,
+  Fr,
+  FunctionSelector,
+  type PXE,
+  type ContractArtifact,
+  type FunctionArtifact,
+  type ContractInstanceWithAddress,
+  PublicKeys,
+} from '@aztec/aztec.js';
+import { FunctionType } from '@aztec/foundation/abi';
+import {
+  getContractArtifactFromContractAddress,
+  getFunctionArtifactFromContractAddress,
+  getFunctionParameterInfoFromContractAddress,
+} from './helpers.js';
 import { Buffer } from 'node:buffer';
 
 describe('aztec helpers', () => {
@@ -15,8 +28,8 @@ describe('aztec helpers', () => {
 
     // Create mock PXE
     mockPXE = {
-      getContractInstance: vi.fn(),
-      getContractArtifact: vi.fn(),
+      getContractMetadata: vi.fn(),
+      getContractClassMetadata: vi.fn(),
     } as unknown as PXE;
   });
 
@@ -41,33 +54,39 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractInstance).mockResolvedValue(mockInstance);
-      vi.mocked(mockPXE.getContractArtifact).mockResolvedValue(mockArtifact);
+
+      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+        contractInstance: mockInstance,
+        isContractInitialized: true,
+        isContractPubliclyDeployed: true,
+      });
+      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+        artifact: mockArtifact,
+        isContractClassPubliclyRegistered: true,
+      });
 
       // First call - should fetch from PXE
-      const result1 = await getContractArtifactFromContractAddress(
-        mockPXE,
-        mockContractAddress.toString()
-      );
+      const result1 = await getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString());
       expect(result1).toEqual(mockArtifact);
-      expect(mockPXE.getContractInstance).toHaveBeenCalledTimes(1);
-      expect(mockPXE.getContractArtifact).toHaveBeenCalledTimes(1);
+      expect(mockPXE.getContractMetadata).toHaveBeenCalledTimes(1);
+      expect(mockPXE.getContractClassMetadata).toHaveBeenCalledTimes(1);
 
       // Second call - should use cache
-      const result2 = await getContractArtifactFromContractAddress(
-        mockPXE,
-        mockContractAddress.toString()
-      );
+      const result2 = await getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString());
       expect(result2).toEqual(mockArtifact);
-      expect(mockPXE.getContractInstance).toHaveBeenCalledTimes(1); // No additional calls
-      expect(mockPXE.getContractArtifact).toHaveBeenCalledTimes(1); // No additional calls
+      expect(mockPXE.getContractMetadata).toHaveBeenCalledTimes(1); // No additional calls
+      expect(mockPXE.getContractClassMetadata).toHaveBeenCalledTimes(1); // No additional calls
     });
 
     it('should throw if contract is not registered', async () => {
-      vi.mocked(mockPXE.getContractInstance).mockResolvedValue(undefined);
+      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+        contractInstance: undefined,
+        isContractInitialized: false,
+        isContractPubliclyDeployed: false,
+      });
 
       await expect(
-        getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString())
+        getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString()),
       ).rejects.toThrow('not registered in the PXE');
     });
 
@@ -81,11 +100,18 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractInstance).mockResolvedValue(mockInstance);
-      vi.mocked(mockPXE.getContractArtifact).mockResolvedValue(undefined);
+      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+        contractInstance: mockInstance,
+        isContractInitialized: true,
+        isContractPubliclyDeployed: true,
+      });
+      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+        artifact: undefined,
+        isContractClassPubliclyRegistered: false,
+      });
 
       await expect(
-        getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString())
+        getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString()),
       ).rejects.toThrow('not registered in the PXE');
     });
   });
@@ -114,33 +140,46 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractInstance).mockResolvedValue(mockInstance);
-      vi.mocked(mockPXE.getContractArtifact).mockResolvedValue({
+      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+        contractInstance: mockInstance,
+        isContractInitialized: true,
+        isContractPubliclyDeployed: true,
+      });
+      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+        artifact: {
+          name: 'TestContract',
+          functions: [mockFunctionArtifact],
+          outputs: { structs: {}, globals: {} },
+          storageLayout: {},
+          notes: {},
+          fileMap: {},
+        } as ContractArtifact,
+        isContractClassPubliclyRegistered: true,
+      });
+
+      const result = await getFunctionArtifactFromContractAddress(
+        mockPXE,
+        mockContractAddress.toString(),
+        'testFunction',
+      );
+      expect(result).toEqual(mockFunctionArtifact);
+    });
+
+    it('should find function by selector', async () => {
+      // Create the selector first since it's async
+      const mockSelector = await FunctionSelector.fromNameAndParameters(
+        mockFunctionArtifact.name,
+        mockFunctionArtifact.parameters,
+      );
+
+      const mockArtifact = {
         name: 'TestContract',
         functions: [mockFunctionArtifact],
         outputs: { structs: {}, globals: {} },
         storageLayout: {},
         notes: {},
         fileMap: {},
-      } as ContractArtifact);
-
-      const result = await getFunctionArtifactFromContractAddress(
-        mockPXE,
-        mockContractAddress.toString(),
-        'testFunction'
-      );
-      expect(result).toEqual(mockFunctionArtifact);
-    });
-
-    it('should find function by selector', async () => {
-      // Create a mock selector that will match our function
-      const selector = {
-        equals: (name: string, parameters: ABIParameter[]) =>
-          name === 'testFunction' &&
-          parameters.length === 1 &&
-          parameters[0]?.type?.kind === 'field',
-        toString: () => 'MockSelector',
-      } as unknown as FunctionSelector;
+      } as ContractArtifact;
 
       const mockInstance = {
         contractClassId: mockContractClassId,
@@ -151,21 +190,22 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractInstance).mockResolvedValue(mockInstance);
-      vi.mocked(mockPXE.getContractArtifact).mockResolvedValue({
-        name: 'TestContract',
-        functions: [mockFunctionArtifact],
-        outputs: { structs: {}, globals: {} },
-        storageLayout: {},
-        notes: {},
-        fileMap: {},
-      } as ContractArtifact);
+      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+        contractInstance: mockInstance,
+        isContractInitialized: true,
+        isContractPubliclyDeployed: true,
+      });
+      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+        artifact: mockArtifact,
+        isContractClassPubliclyRegistered: true,
+      });
 
       const result = await getFunctionArtifactFromContractAddress(
         mockPXE,
         mockContractAddress.toString(),
-        selector
+        mockSelector,
       );
+      // The function should be found since it exists in the mock artifact
       expect(result).toEqual(mockFunctionArtifact);
     });
 
@@ -179,18 +219,25 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractInstance).mockResolvedValue(mockInstance);
-      vi.mocked(mockPXE.getContractArtifact).mockResolvedValue({
-        name: 'TestContract',
-        functions: [],
-        outputs: { structs: {}, globals: {} },
-        storageLayout: {},
-        notes: {},
-        fileMap: {},
-      } as ContractArtifact);
+      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+        contractInstance: mockInstance,
+        isContractInitialized: true,
+        isContractPubliclyDeployed: true,
+      });
+      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+        artifact: {
+          name: 'TestContract',
+          functions: [],
+          outputs: { structs: {}, globals: {} },
+          storageLayout: {},
+          notes: {},
+          fileMap: {},
+        } as ContractArtifact,
+        isContractClassPubliclyRegistered: true,
+      });
 
       await expect(
-        getFunctionArtifactFromContractAddress(mockPXE, mockContractAddress.toString(), 'nonexistent')
+        getFunctionArtifactFromContractAddress(mockPXE, mockContractAddress.toString(), 'nonexistent'),
       ).rejects.toThrow('Unknown function');
     });
   });
@@ -222,20 +269,27 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractInstance).mockResolvedValue(mockInstance);
-      vi.mocked(mockPXE.getContractArtifact).mockResolvedValue({
-        name: 'TestContract',
-        functions: [mockFunctionArtifact],
-        outputs: { structs: {}, globals: {} },
-        storageLayout: {},
-        notes: {},
-        fileMap: {},
-      } as ContractArtifact);
+      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+        contractInstance: mockInstance,
+        isContractInitialized: true,
+        isContractPubliclyDeployed: true,
+      });
+      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+        artifact: {
+          name: 'TestContract',
+          functions: [mockFunctionArtifact],
+          outputs: { structs: {}, globals: {} },
+          storageLayout: {},
+          notes: {},
+          fileMap: {},
+        } as ContractArtifact,
+        isContractClassPubliclyRegistered: true,
+      });
 
       const result = await getFunctionParameterInfoFromContractAddress(
         mockPXE,
         mockContractAddress.toString(),
-        'testFunction'
+        'testFunction',
       );
 
       expect(result).toEqual([
@@ -253,9 +307,9 @@ describe('aztec helpers', () => {
             type: {
               kind: 'struct',
               path: 'MyStruct',
-              fields: []
+              fields: [],
             },
-            visibility: 'public'
+            visibility: 'public',
           },
         ],
         bytecode: Buffer.from([]),
@@ -277,25 +331,30 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractInstance).mockResolvedValue(mockInstance);
-      vi.mocked(mockPXE.getContractArtifact).mockResolvedValue({
-        name: 'TestContract',
-        functions: [mockFunctionArtifact],
-        outputs: { structs: {}, globals: {} },
-        storageLayout: {},
-        notes: {},
-        fileMap: {},
-      } as ContractArtifact);
+      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+        contractInstance: mockInstance,
+        isContractInitialized: true,
+        isContractPubliclyDeployed: true,
+      });
+      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+        artifact: {
+          name: 'TestContract',
+          functions: [mockFunctionArtifact],
+          outputs: { structs: {}, globals: {} },
+          storageLayout: {},
+          notes: {},
+          fileMap: {},
+        } as ContractArtifact,
+        isContractClassPubliclyRegistered: true,
+      });
 
       const result = await getFunctionParameterInfoFromContractAddress(
         mockPXE,
         mockContractAddress.toString(),
-        'testFunction'
+        'testFunction',
       );
 
-      expect(result).toEqual([
-        { name: 'structParam', type: 'MyStruct' },
-      ]);
+      expect(result).toEqual([{ name: 'structParam', type: 'MyStruct' }]);
     });
   });
 });

@@ -24,9 +24,9 @@
     "format:fix": "biome format --write",
     "docs": "typedoc",
     "preversion": "pnpm test",
-    "version": "pnpm clean && pnpm build && pnpm run docs && git add docs/"
+    "version": "pnpm clean && pnpm build && pnpm run docs"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.72.1"
+    "@aztec/aztec.js": "0.73.0"
   }
 }

@@ -6,7 +6,6 @@ import {
   aztecAddAuthWitnessSerializer,
   aztecGetAuthWitnessSerializer,
 } from './account.js';
-import { decodeBase64 } from './types.js';
 import { schemas } from '@aztec/foundation/schemas';
 
 describe('Account Serializers', () => {
@@ -17,20 +16,20 @@ describe('Account Serializers', () => {
       const scopes = [await AztecAddress.random(), await AztecAddress.random()];
       const params = { scopes };
 
-      const serialized = aztecSetScopesSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecSetScopesSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecSetScopesSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecSetScopesSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.scopes.map((s) => s.toString())).toEqual(scopes.map((s) => s.toString()));
     });
 
-    it('should serialize and deserialize result', () => {
+    it('should serialize and deserialize result', async () => {
       const result = true;
 
-      const serialized = aztecSetScopesSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecSetScopesSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecSetScopesSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecSetScopesSerializer.result.deserialize(METHOD, serialized);
       expect(deserialized).toBe(result);
     });
   });
@@ -43,10 +42,10 @@ describe('Account Serializers', () => {
       const partialAddress = await Fr.random();
       const params = { secretKey, partialAddress };
 
-      const serialized = aztecRegisterAccountSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecRegisterAccountSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecRegisterAccountSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecRegisterAccountSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.secretKey.toString()).toBe(secretKey.toString());
       expect(deserialized.partialAddress.toString()).toBe(partialAddress.toString());
     });
@@ -54,10 +53,10 @@ describe('Account Serializers', () => {
     it('should serialize and deserialize result', async () => {
       const result = await CompleteAddress.random();
 
-      const serialized = aztecRegisterAccountSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecRegisterAccountSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecRegisterAccountSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecRegisterAccountSerializer.result.deserialize(METHOD, serialized);
       expect(deserialized.toString()).toBe(result.toString());
     });
   });
@@ -69,20 +68,20 @@ describe('Account Serializers', () => {
       const authWitness = await AuthWitness.random();
       const params = { authWitness };
 
-      const serialized = aztecAddAuthWitnessSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecAddAuthWitnessSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecAddAuthWitnessSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecAddAuthWitnessSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.authWitness.toString()).toBe(authWitness.toString());
     });
 
-    it('should serialize and deserialize result', () => {
+    it('should serialize and deserialize result', async () => {
       const result = true;
 
-      const serialized = aztecAddAuthWitnessSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecAddAuthWitnessSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecAddAuthWitnessSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecAddAuthWitnessSerializer.result.deserialize(METHOD, serialized);
       expect(deserialized).toBe(result);
     });
   });
@@ -94,20 +93,20 @@ describe('Account Serializers', () => {
       const messageHash = await Fr.random();
       const params = { messageHash };
 
-      const serialized = aztecGetAuthWitnessSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecGetAuthWitnessSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetAuthWitnessSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetAuthWitnessSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.messageHash.toString()).toBe(messageHash.toString());
     });
 
     it('should serialize and deserialize result', async () => {
       const result = [await Fr.random(), await Fr.random()];
 
-      const serialized = aztecGetAuthWitnessSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecGetAuthWitnessSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetAuthWitnessSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetAuthWitnessSerializer.result.deserialize(METHOD, serialized);
       expect(deserialized.map((w) => w.toString())).toEqual(result.map((w) => w.toString()));
     });
   });
@@ -116,7 +115,7 @@ describe('Account Serializers', () => {
     it('should properly encode and decode data', async () => {
       const messageHash = await Fr.random();
 
-      const serialized = aztecGetAuthWitnessSerializer.params.serialize('aztec_getAuthWitness', {
+      const serialized = await aztecGetAuthWitnessSerializer.params.serialize('aztec_getAuthWitness', {
         messageHash,
       });
       const decoded = schemas.Fr.parse(JSON.parse(serialized.serialized));

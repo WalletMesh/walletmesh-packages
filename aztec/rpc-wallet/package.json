@@ -23,8 +23,8 @@
     "lint:fix": "biome lint --fix",
     "format": "biome format",
     "format:fix": "biome format --fix",
-    "doc": "typedoc",
-    "version": "pnpm clean && pnpm build && pnpm doc && git add docs/"
+    "docs": "typedoc",
+    "version": "pnpm clean && pnpm build && pnpm run docs"
   },
   "keywords": [],
   "author": "",
@@ -34,10 +34,10 @@
     "typedoc-plugin-markdown": "^4.3.1"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.72.1",
-    "@aztec/circuit-types": "0.72.1",
-    "@aztec/circuits.js": "0.72.1",
-    "@aztec/foundation": "0.72.1",
+    "@aztec/aztec.js": "0.73.0",
+    "@aztec/circuit-types": "0.73.0",
+    "@aztec/circuits.js": "0.73.0",
+    "@aztec/foundation": "0.73.0",
     "@walletmesh/jsonrpc": "0.3.0",
     "@walletmesh/router": "0.3.0"
   }

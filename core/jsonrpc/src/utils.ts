@@ -113,7 +113,6 @@ export function applyToMethods<T extends JSONRPCMethodMap, C extends JSONRPCCont
  * Used by both JSONRPCNode and tests to ensure consistent error handling.
  *
  * @param handler - The original handler function
- * @param methodName - Optional method name for error context
  * @returns A wrapped handler that returns MethodResponse
  *
  * @example

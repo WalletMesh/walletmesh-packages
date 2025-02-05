@@ -77,11 +77,11 @@ export class ParameterSerializer {
    * });
    * ```
    */
-  public deserializeParams<P, R>(
+  public async deserializeParams<P, R>(
     method: string,
     params: unknown,
     serializer?: JSONRPCSerializer<P, R>,
-  ): P | undefined {
+  ): Promise<P | undefined> {
     if (!params) {
       return undefined;
     }
@@ -92,7 +92,7 @@ export class ParameterSerializer {
         const serializedData = this.validateSerializedData(params, 'params');
 
         try {
-          const deserializedParams = this.fallbackSerializer.params.deserialize(method, serializedData);
+          const deserializedParams = await this.fallbackSerializer.params.deserialize(method, serializedData);
           if (!this.validator.isValidParams(deserializedParams)) {
             throw new JSONRPCError(-32602, 'Invalid deserialized params format from fallback serializer');
           }
@@ -112,7 +112,7 @@ export class ParameterSerializer {
     const serializedData = this.validateSerializedData(params, 'params');
 
     try {
-      const deserializedParams = serializer.params.deserialize(method, serializedData);
+      const deserializedParams = await serializer.params.deserialize(method, serializedData);
       return deserializedParams as P;
     } catch (error) {
       throw new JSONRPCError(-32000, error instanceof Error ? error.message : 'Unknown error');
@@ -136,18 +136,18 @@ export class ParameterSerializer {
    * });
    * ```
    */
-  public serializeParams<P, R>(
+  public async serializeParams<P, R>(
     method: string,
     params: P | undefined,
     serializer?: JSONRPCSerializer<P, R>,
-  ): P | JSONRPCSerializedData | undefined {
+  ): Promise<P | JSONRPCSerializedData | undefined> {
     if (params === undefined || params === null) {
       return undefined;
     }
     if (!serializer?.params) {
       // Use fallback serializer if available
       if (this.fallbackSerializer?.params) {
-        const serializedData = this.fallbackSerializer.params.serialize(method, params);
+        const serializedData = await this.fallbackSerializer.params.serialize(method, params);
         if (!isJSONRPCSerializedData(serializedData)) {
           throw new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer');
         }
@@ -155,7 +155,7 @@ export class ParameterSerializer {
       }
       return params;
     }
-    const serializedData = serializer.params.serialize(method, params);
+    const serializedData = await serializer.params.serialize(method, params);
     if (!isJSONRPCSerializedData(serializedData)) {
       throw new JSONRPCError(-32602, 'Invalid serialized data format');
     }
@@ -180,11 +180,11 @@ export class ParameterSerializer {
    * });
    * ```
    */
-  public deserializeResult<P, R>(
+  public async deserializeResult<P, R>(
     method: string,
     result: unknown,
     serializer?: JSONRPCSerializer<P, R>,
-  ): R | undefined {
+  ): Promise<R | undefined> {
     if (!result) {
       return undefined;
     }
@@ -194,7 +194,7 @@ export class ParameterSerializer {
       if (this.fallbackSerializer?.result) {
         const serializedData = this.validateSerializedData(result, 'result');
         try {
-          const deserializedResult = this.fallbackSerializer.result.deserialize(method, serializedData);
+          const deserializedResult = await this.fallbackSerializer.result.deserialize(method, serializedData);
           if (!this.validator.isValidValue(deserializedResult)) {
             throw new JSONRPCError(-32602, 'Invalid deserialized result format from fallback serializer');
           }
@@ -211,7 +211,7 @@ export class ParameterSerializer {
 
     const serializedData = this.validateSerializedData(result, 'result');
     try {
-      const deserializedResult = serializer.result.deserialize(method, serializedData);
+      const deserializedResult = await serializer.result.deserialize(method, serializedData);
       if (!this.validator.isValidValue(deserializedResult)) {
         throw new JSONRPCError(-32602, 'Invalid serialized data format');
       }
@@ -239,18 +239,18 @@ export class ParameterSerializer {
    * const serialized = serializer.serializeResult('processDate', new Date());
    * ```
    */
-  public serializeResult<P, R>(
+  public async serializeResult<P, R>(
     method: string,
     result: R | undefined,
     serializer?: JSONRPCSerializer<P, R>,
-  ): R | JSONRPCSerializedData | undefined {
+  ): Promise<R | JSONRPCSerializedData | undefined> {
     if (result === undefined || result === null) {
       return undefined;
     }
     if (!serializer?.result) {
       // Use fallback serializer if available
       if (this.fallbackSerializer?.result) {
-        const serializedData = this.fallbackSerializer.result.serialize(method, result);
+        const serializedData = await this.fallbackSerializer.result.serialize(method, result);
         if (!isJSONRPCSerializedData(serializedData)) {
           throw new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer');
         }
@@ -258,7 +258,7 @@ export class ParameterSerializer {
       }
       return result;
     }
-    const serializedData = serializer.result.serialize(method, result);
+    const serializedData = await serializer.result.serialize(method, result);
     if (!isJSONRPCSerializedData(serializedData)) {
       throw new JSONRPCError(-32602, 'Invalid serialized data format');
     }

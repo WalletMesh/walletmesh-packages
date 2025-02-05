@@ -1,17 +1,40 @@
 import type { AztecWalletMethodMap } from '../types.js';
 import type { JSONRPCSerializedData, JSONRPCSerializer } from '@walletmesh/jsonrpc';
-import { TxProvingResult } from '@aztec/circuit-types';
 import {
+  FunctionCall,
   PrivateExecutionResult,
   TxEffect,
   TxSimulationResult,
   inBlockSchemaFor,
   TxHash,
+  TxProvingResult,
 } from '@aztec/circuit-types';
-import { TxExecutionRequest, TxReceipt, Tx, AztecAddress } from '@aztec/aztec.js';
-import { serializeExecutionRequestInit, deserializeExecutionRequestInit } from './transaction-utils.js';
+import { GasSettings } from '@aztec/circuits.js';
+import {
+  AuthWitness,
+  AztecAddress,
+  Fr,
+  FunctionSelector,
+  HashedValues,
+  NoFeePaymentMethod,
+  TxExecutionRequest,
+  TxReceipt,
+  Tx,
+} from '@aztec/aztec.js';
+import { AbiTypeSchema, type FunctionType } from '@aztec/foundation/abi';
 
 import { jsonParseWithSchema, jsonStringify } from '@aztec/foundation/json-rpc';
+import type { ExecutionRequestInit, FeeOptions } from '@aztec/aztec.js/entrypoint';
+
+interface SerializedFunctionCall {
+  name: string;
+  to: string;
+  selector: string;
+  type: string;
+  isStatic: boolean;
+  args: string[];
+  returnTypes: string[];
+}
 
 /**
  * Serializer for the aztec_createTxExecutionRequest RPC method.
@@ -25,34 +48,96 @@ export class AztecCreateTxExecutionRequestSerializer
     >
 {
   params = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_createTxExecutionRequest']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { exec } = value;
+
+      const calls = exec.calls.map((call: FunctionCall) => {
+        return {
+          name: call.name,
+          to: jsonStringify(call.to),
+          selector: jsonStringify(call.selector),
+          type: call.type,
+          isStatic: call.isStatic,
+          args: call.args.map((arg) => jsonStringify(arg)),
+          returnTypes: call.returnTypes.map((r) => jsonStringify(r)),
+        };
+      });
+      const authWitnesses = exec.authWitnesses ? exec.authWitnesses.map((w) => jsonStringify(w)) : undefined;
+      const hashedArguments = exec.hashedArguments
+        ? exec.hashedArguments.map((h) => jsonStringify(h))
+        : undefined;
+      const fee = { gasSettings: jsonStringify(exec.fee.gasSettings) };
+      const nonce = exec.nonce ? jsonStringify(exec.nonce) : undefined;
+
       return {
         method,
-        serialized: serializeExecutionRequestInit(exec),
+        serialized: JSON.stringify({
+          calls,
+          fee,
+          authWitnesses,
+          hashedArguments,
+          nonce,
+          cancellable: exec.cancellable,
+        }),
       };
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_createTxExecutionRequest']['params'] => {
-      const exec = deserializeExecutionRequestInit(data.serialized);
+    ): Promise<AztecWalletMethodMap['aztec_createTxExecutionRequest']['params']> => {
+      const parsed = JSON.parse(data.serialized);
+
+      const calls: FunctionCall[] = await Promise.all(
+        parsed.calls.map(async (call: SerializedFunctionCall) => {
+          return new FunctionCall(
+            call.name,
+            await jsonParseWithSchema(call.to, AztecAddress.schema),
+            await jsonParseWithSchema(call.selector, FunctionSelector.schema),
+            call.type as FunctionType,
+            call.isStatic,
+            await Promise.all(call.args.map(async (arg: string) => jsonParseWithSchema(arg, Fr.schema))),
+            await Promise.all(
+              call.returnTypes.map(async (t: string) => jsonParseWithSchema(t, AbiTypeSchema)),
+            ),
+          );
+        }),
+      );
+      const authWitnesses = parsed.authWitnesses
+        ? parsed.authWitnesses.map(async (w: string) => await jsonParseWithSchema(w, AuthWitness.schema))
+        : undefined;
+      const hashedArguments = parsed.hashedArguments
+        ? parsed.hashedArguments.map(async (h: string) => await jsonParseWithSchema(h, HashedValues.schema))
+        : undefined;
+      const cancellable = parsed.cancellable;
+      const nonce = parsed.nonce ? await jsonParseWithSchema(parsed.nonce, Fr.schema) : undefined;
+
+      const fee: FeeOptions = {
+        paymentMethod: new NoFeePaymentMethod(), // Default, caller should override
+        gasSettings: await jsonParseWithSchema(parsed.fee.gasSettings, GasSettings.schema),
+      };
+
+      const exec: ExecutionRequestInit = { calls, fee };
+      if (authWitnesses) exec.authWitnesses = authWitnesses;
+      if (hashedArguments) exec.hashedArguments = hashedArguments;
+      if (nonce) exec.nonce = nonce;
+      if (cancellable) exec.cancellable = cancellable;
+
       return { exec };
     },
   };
 
   result = {
-    serialize: (method: string, value: TxExecutionRequest): JSONRPCSerializedData => {
+    serialize: async (method: string, value: TxExecutionRequest): Promise<JSONRPCSerializedData> => {
       return {
         method,
         serialized: jsonStringify(value),
       };
     },
-    deserialize: (_method: string, data: JSONRPCSerializedData): TxExecutionRequest => {
-      return jsonParseWithSchema(data.serialized, TxExecutionRequest.schema);
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<TxExecutionRequest> => {
+      return await jsonParseWithSchema(data.serialized, TxExecutionRequest.schema);
     },
   };
 }
@@ -69,10 +154,10 @@ export class AztecProveTxSerializer
     >
 {
   params = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_proveTx']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { txRequest, privateExecutionResult } = value;
       return {
         method,
@@ -82,27 +167,30 @@ export class AztecProveTxSerializer
         }),
       };
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_proveTx']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_proveTx']['params']> => {
       const { txRequest, privateExecutionResult } = JSON.parse(data.serialized);
       return {
-        txRequest: jsonParseWithSchema(txRequest, TxExecutionRequest.schema),
-        privateExecutionResult: jsonParseWithSchema(privateExecutionResult, PrivateExecutionResult.schema),
+        txRequest: await jsonParseWithSchema(txRequest, TxExecutionRequest.schema),
+        privateExecutionResult: await jsonParseWithSchema(
+          privateExecutionResult,
+          PrivateExecutionResult.schema,
+        ),
       };
     },
   };
 
   result = {
-    serialize: (method: string, value: TxProvingResult): JSONRPCSerializedData => {
+    serialize: async (method: string, value: TxProvingResult): Promise<JSONRPCSerializedData> => {
       return {
         method,
         serialized: jsonStringify(value),
       };
     },
-    deserialize: (_method: string, data: JSONRPCSerializedData): TxProvingResult => {
-      return jsonParseWithSchema(data.serialized, TxProvingResult.schema);
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<TxProvingResult> => {
+      return await jsonParseWithSchema(data.serialized, TxProvingResult.schema);
     },
   };
 }
@@ -119,39 +207,39 @@ export class AztecSendTxSerializer
     >
 {
   params = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_sendTx']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { tx } = value;
       return {
         method,
         serialized: jsonStringify(tx),
       };
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_sendTx']['params'] => {
-      return { tx: jsonParseWithSchema(data.serialized, Tx.schema) };
+    ): Promise<AztecWalletMethodMap['aztec_sendTx']['params']> => {
+      return { tx: await jsonParseWithSchema(data.serialized, Tx.schema) };
     },
   };
 
   result = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_sendTx']['result'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       return {
         method,
         serialized: jsonStringify(value),
       };
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_sendTx']['result'] => {
-      return jsonParseWithSchema(data.serialized, TxHash.schema);
+    ): Promise<AztecWalletMethodMap['aztec_sendTx']['result']> => {
+      return await jsonParseWithSchema(data.serialized, TxHash.schema);
     },
   };
 }
@@ -168,40 +256,40 @@ export class AztecGetTxEffectSerializer
     >
 {
   params = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getTxEffect']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { txHash } = value;
       return {
         method,
         serialized: jsonStringify(txHash),
       };
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getTxEffect']['params'] => {
-      const txHash = jsonParseWithSchema(data.serialized, TxHash.schema);
+    ): Promise<AztecWalletMethodMap['aztec_getTxEffect']['params']> => {
+      const txHash = await jsonParseWithSchema(data.serialized, TxHash.schema);
       return { txHash };
     },
   };
 
   result = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getTxEffect']['result'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       return {
         method,
         serialized: jsonStringify(value),
       };
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getTxEffect']['result'] => {
-      return jsonParseWithSchema(data.serialized, inBlockSchemaFor(TxEffect.schema));
+    ): Promise<AztecWalletMethodMap['aztec_getTxEffect']['result']> => {
+      return await jsonParseWithSchema(data.serialized, inBlockSchemaFor(TxEffect.schema));
     },
   };
 }
@@ -218,34 +306,34 @@ export class AztecGetTxReceiptSerializer
     >
 {
   params = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getTxReceipt']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { txHash } = value;
       return {
         method,
         serialized: jsonStringify(txHash),
       };
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getTxReceipt']['params'] => {
-      const txHash = jsonParseWithSchema(data.serialized, TxHash.schema);
+    ): Promise<AztecWalletMethodMap['aztec_getTxReceipt']['params']> => {
+      const txHash = await jsonParseWithSchema(data.serialized, TxHash.schema);
       return { txHash };
     },
   };
 
   result = {
-    serialize: (method: string, value: TxReceipt): JSONRPCSerializedData => {
+    serialize: async (method: string, value: TxReceipt): Promise<JSONRPCSerializedData> => {
       return {
         method,
         serialized: jsonStringify(value),
       };
     },
-    deserialize: (_method: string, data: JSONRPCSerializedData): TxReceipt => {
-      return jsonParseWithSchema(data.serialized, TxReceipt.schema);
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<TxReceipt> => {
+      return await jsonParseWithSchema(data.serialized, TxReceipt.schema);
     },
   };
 }
@@ -262,10 +350,10 @@ export class AztecSimulateTxSerializer
     >
 {
   params = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_simulateTx']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { txRequest, simulatePublic, msgSender, skipTxValidation, enforceFeePayment, profile } = value;
       return {
         method,
@@ -279,16 +367,16 @@ export class AztecSimulateTxSerializer
         }),
       };
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_simulateTx']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_simulateTx']['params']> => {
       const { txRequest, simulatePublic, msgSender, skipTxValidation, enforceFeePayment, profile } =
         JSON.parse(data.serialized);
       return {
-        txRequest: jsonParseWithSchema(txRequest, TxExecutionRequest.schema),
+        txRequest: await jsonParseWithSchema(txRequest, TxExecutionRequest.schema),
         simulatePublic,
-        msgSender: jsonParseWithSchema(msgSender, AztecAddress.schema),
+        msgSender: await jsonParseWithSchema(msgSender, AztecAddress.schema),
         skipTxValidation,
         enforceFeePayment,
         profile,
@@ -297,14 +385,14 @@ export class AztecSimulateTxSerializer
   };
 
   result = {
-    serialize: (method: string, value: TxSimulationResult): JSONRPCSerializedData => {
+    serialize: async (method: string, value: TxSimulationResult): Promise<JSONRPCSerializedData> => {
       return {
         method,
         serialized: jsonStringify(value),
       };
     },
-    deserialize: (_method: string, data: JSONRPCSerializedData): TxSimulationResult => {
-      return jsonParseWithSchema(data.serialized, TxSimulationResult.schema);
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<TxSimulationResult> => {
+      return await jsonParseWithSchema(data.serialized, TxSimulationResult.schema);
     },
   };
 }

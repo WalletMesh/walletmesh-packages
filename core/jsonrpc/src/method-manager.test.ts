@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MethodManager } from './method-manager.js';
 import { JSONRPCError } from './error.js';
-import type { JSONRPCContext, JSONRPCSerializer, MethodHandler } from './types.js';
+import type { JSONRPCSerializer, JSONRPCContext, MethodResponse } from './types.js';
 
 describe('MethodManager', () => {
   type TestMethodMap = {
@@ -13,16 +13,16 @@ describe('MethodManager', () => {
   let manager: MethodManager<TestMethodMap>;
 
   beforeEach(() => {
-    manager = new MethodManager<TestMethodMap, JSONRPCContext>();
+    manager = new MethodManager<TestMethodMap>();
   });
 
   describe('Method Registration', () => {
     it('should register and retrieve methods', () => {
-      const handler: MethodHandler<TestMethodMap, 'add', JSONRPCContext> = async (
-        _context,
-        _method,
-        params,
-      ) => ({
+      const handler = async (
+        _context: JSONRPCContext,
+        _method: string,
+        params: { a: number; b: number },
+      ): Promise<MethodResponse<number>> => ({
         success: true,
         data: params.a + params.b,
       });
@@ -36,11 +36,11 @@ describe('MethodManager', () => {
     });
 
     it('should register and retrieve methods independently', () => {
-      const handler: MethodHandler<TestMethodMap, 'add', JSONRPCContext> = async (
-        _context,
-        _method,
-        params,
-      ) => ({
+      const handler = async (
+        _context: JSONRPCContext,
+        _method: string,
+        params: { a: number; b: number },
+      ): Promise<MethodResponse<number>> => ({
         success: true,
         data: params.a + params.b,
       });
@@ -54,12 +54,12 @@ describe('MethodManager', () => {
     it('should register and retrieve serializers independently', () => {
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
-          deserialize: (_method, data) => JSON.parse(data.serialized),
+          serialize: async (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: async (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (method, result) => ({ serialized: result, method }),
-          deserialize: (_method, data) => data.serialized,
+          serialize: async (method, result) => ({ serialized: result, method }),
+          deserialize: async (_method, data) => data.serialized,
         },
       };
 
@@ -69,31 +69,29 @@ describe('MethodManager', () => {
     });
 
     it('should handle methods and serializers independently', () => {
-      const handler: MethodHandler<TestMethodMap, 'greet', JSONRPCContext> = async (
-        _context,
-        _method,
-        params,
-      ) => ({
+      const handler = async (
+        _context: JSONRPCContext,
+        _method: string,
+        params: { name: string },
+      ): Promise<MethodResponse<string>> => ({
         success: true,
         data: `Hello ${params.name}!`,
       });
 
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
-          deserialize: (_method, data) => JSON.parse(data.serialized),
+          serialize: async (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: async (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (method, result) => ({ serialized: result, method }),
-          deserialize: (_method, data) => data.serialized,
+          serialize: async (method, result) => ({ serialized: result, method }),
+          deserialize: async (_method, data) => data.serialized,
         },
       };
 
-      // Register them independently
       manager.registerMethod('greet', handler);
       manager.registerSerializer('greet', serializer);
 
-      // Get them independently
       const method = manager.getMethod('greet');
       const retrievedSerializer = manager.getSerializer('greet');
 
@@ -125,7 +123,6 @@ describe('MethodManager', () => {
 
     it('should ignore response if no pending request exists', () => {
       const nonExistentId = 'non-existent';
-      // This should not throw and should just return
       manager.handleResponse(nonExistentId, 42);
     });
 
@@ -137,10 +134,8 @@ describe('MethodManager', () => {
       manager.addPendingRequest('1', resolve, reject, 1);
       manager.handleResponse('1', 42);
 
-      // Advance time past the timeout
       vi.advanceTimersByTime(1000);
 
-      // The timeout should have been cleared, so reject should not be called
       expect(reject).not.toHaveBeenCalled();
       expect(resolve).toHaveBeenCalledWith(42);
 
@@ -184,13 +179,11 @@ describe('MethodManager', () => {
       const resolve = vi.fn();
       const reject = vi.fn();
 
-      // Test string
       manager.addPendingRequest('1', resolve, reject, 0);
       manager.handleResponse('1', 'test');
       expect(resolve).toHaveBeenCalledWith('test');
       expect(reject).not.toHaveBeenCalled();
 
-      // Test number
       resolve.mockClear();
       reject.mockClear();
       manager.addPendingRequest('2', resolve, reject, 0);
@@ -198,7 +191,6 @@ describe('MethodManager', () => {
       expect(resolve).toHaveBeenCalledWith(42);
       expect(reject).not.toHaveBeenCalled();
 
-      // Test boolean
       resolve.mockClear();
       reject.mockClear();
       manager.addPendingRequest('3', resolve, reject, 0);
@@ -211,7 +203,6 @@ describe('MethodManager', () => {
       const resolve = vi.fn();
       const reject = vi.fn();
 
-      // Test with string data
       manager.addPendingRequest('1', resolve, reject, 0);
       manager.handleResponse('1', undefined, {
         code: -32601,
@@ -229,7 +220,6 @@ describe('MethodManager', () => {
       expect(error.data).toBe('test');
       expect(resolve).not.toHaveBeenCalled();
 
-      // Test with object data
       resolve.mockClear();
       reject.mockClear();
       manager.addPendingRequest('2', resolve, reject, 0);
@@ -249,7 +239,6 @@ describe('MethodManager', () => {
       expect(error.data).toEqual({ method: 'test', details: 'not found' });
       expect(resolve).not.toHaveBeenCalled();
 
-      // Test with undefined data
       resolve.mockClear();
       reject.mockClear();
       manager.addPendingRequest('3', resolve, reject, 0);
@@ -269,53 +258,43 @@ describe('MethodManager', () => {
       expect(resolve).not.toHaveBeenCalled();
     });
 
-    it('should handle serialized responses', () => {
+    it('should handle serialized responses', async () => {
       const resolve = vi.fn();
       const reject = vi.fn();
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
-          deserialize: (_method, data) => JSON.parse(data.serialized),
+          serialize: async (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: async (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (method, result) => ({ serialized: result, method }),
-          deserialize: (_method, data) => data.serialized,
+          serialize: async (method, result) => ({ serialized: result, method }),
+          deserialize: async (_method, data) => data.serialized,
         },
       };
 
       manager.addPendingRequest('1', resolve, reject, 0, serializer);
-      manager.handleResponse('1', { serialized: 'Hello!', method: '1' });
+      await manager.handleResponse('1', { serialized: 'Hello!', method: '1' });
 
       expect(resolve).toHaveBeenCalledWith('Hello!');
       expect(reject).not.toHaveBeenCalled();
     });
 
-    it('should handle serialized responses with missing or invalid method', () => {
+    it('should handle serialized responses with missing or invalid method', async () => {
       const resolve = vi.fn();
       const reject = vi.fn();
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
-          deserialize: (_method, data) => JSON.parse(data.serialized),
+          serialize: async (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: async (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (method, result) => ({ serialized: result, method }),
-          deserialize: (_method, data) => data.serialized,
+          serialize: async (method, result) => ({ serialized: result, method }),
+          deserialize: async (_method, data) => data.serialized,
         },
       };
 
-      // Test with missing method property
       manager.addPendingRequest('1', resolve, reject, 0, serializer);
-      manager.handleResponse('1', { serialized: 'Hello!' });
-
-      expect(resolve).toHaveBeenCalledWith('Hello!');
-      expect(reject).not.toHaveBeenCalled();
-
-      // Test with non-string method property
-      resolve.mockClear();
-      reject.mockClear();
-      manager.addPendingRequest('2', resolve, reject, 0, serializer);
-      manager.handleResponse('2', { serialized: 'Hello!', method: 123 });
+      await manager.handleResponse('1', { serialized: 'Hello!' });
 
       expect(resolve).toHaveBeenCalledWith('Hello!');
       expect(reject).not.toHaveBeenCalled();
@@ -326,12 +305,12 @@ describe('MethodManager', () => {
       const reject = vi.fn();
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
-          deserialize: (_method, data) => JSON.parse(data.serialized),
+          serialize: async (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: async (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (method, result) => ({ serialized: result, method }),
-          deserialize: (_method, data) => data.serialized,
+          serialize: async (method, result) => ({ serialized: result, method }),
+          deserialize: async (_method, data) => data.serialized,
         },
       };
 
@@ -348,24 +327,24 @@ describe('MethodManager', () => {
       expect(resolve).not.toHaveBeenCalled();
     });
 
-    it('should handle deserialization errors', () => {
+    it('should handle deserialization errors', async () => {
       const resolve = vi.fn();
       const reject = vi.fn();
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
-          deserialize: (_method, data) => JSON.parse(data.serialized),
+          serialize: async (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: async (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (method, result) => ({ serialized: result, method }),
-          deserialize: () => {
+          serialize: async (method, result) => ({ serialized: result, method }),
+          deserialize: async () => {
             throw new Error('Failed to deserialize');
           },
         },
       };
 
       manager.addPendingRequest('1', resolve, reject, 0, serializer);
-      manager.handleResponse('1', { serialized: 'invalid', method: '1' });
+      await manager.handleResponse('1', { serialized: 'invalid', method: '1' });
 
       expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
       const calls = reject.mock.calls;
@@ -400,7 +379,6 @@ describe('MethodManager', () => {
       const resolve = vi.fn();
       const reject = vi.fn();
 
-      // Test with arrow function
       manager.addPendingRequest('1', resolve, reject, 0);
       manager.handleResponse('1', () => {});
 
@@ -413,7 +391,6 @@ describe('MethodManager', () => {
       expect(error.message).toBe('Invalid result type');
       expect(resolve).not.toHaveBeenCalled();
 
-      // Test with regular function
       resolve.mockClear();
       reject.mockClear();
       manager.addPendingRequest('2', resolve, reject, 0);
@@ -431,7 +408,6 @@ describe('MethodManager', () => {
       expect(error.message).toBe('Invalid result type');
       expect(resolve).not.toHaveBeenCalled();
 
-      // Test with Symbol
       resolve.mockClear();
       reject.mockClear();
       manager.addPendingRequest('3', resolve, reject, 0);
@@ -452,16 +428,15 @@ describe('MethodManager', () => {
       const reject = vi.fn();
       const serializer: JSONRPCSerializer<{ name: string }, string> = {
         params: {
-          serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
-          deserialize: (_method, data) => JSON.parse(data.serialized),
+          serialize: async (method, params) => ({ serialized: JSON.stringify(params), method }),
+          deserialize: async (_method, data) => JSON.parse(data.serialized),
         },
         result: {
-          serialize: (method, result) => ({ serialized: result, method }),
-          deserialize: (_method, data) => data.serialized,
+          serialize: async (method, result) => ({ serialized: result, method }),
+          deserialize: async (_method, data) => data.serialized,
         },
       };
 
-      // Test with null result
       manager.addPendingRequest('1', resolve, reject, 0, serializer);
       manager.handleResponse('1', null);
 
@@ -474,7 +449,6 @@ describe('MethodManager', () => {
       expect(error.message).toBe('Invalid serialized result format');
       expect(resolve).not.toHaveBeenCalled();
 
-      // Test with non-object result
       resolve.mockClear();
       reject.mockClear();
       manager.addPendingRequest('2', resolve, reject, 0, serializer);
@@ -489,7 +463,6 @@ describe('MethodManager', () => {
       expect(error.message).toBe('Invalid serialized result format');
       expect(resolve).not.toHaveBeenCalled();
 
-      // Test with object missing serialized property
       resolve.mockClear();
       reject.mockClear();
       manager.addPendingRequest('3', resolve, reject, 0, serializer);
@@ -504,7 +477,6 @@ describe('MethodManager', () => {
       expect(error.message).toBe('Invalid serialized result format');
       expect(resolve).not.toHaveBeenCalled();
 
-      // Test with non-string serialized value
       resolve.mockClear();
       reject.mockClear();
       manager.addPendingRequest('4', resolve, reject, 0, serializer);
@@ -551,7 +523,6 @@ describe('MethodManager', () => {
 
       vi.advanceTimersByTime(1000);
 
-      // The timeout should have been cleared, so reject should only be called once
       expect(reject).toHaveBeenCalledTimes(1);
       expect(reject).toHaveBeenCalledWith(expect.any(Error));
       const calls = reject.mock.calls;

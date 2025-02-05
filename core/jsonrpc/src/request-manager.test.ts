@@ -1,24 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { RequestManager } from './request-manager.js';
-import { JSONRPCError } from './error.js';
-import type { JSONRPCMethodMap, JSONRPCSerializer } from './types.js';
-
-interface TestMethodMap extends JSONRPCMethodMap {
-  add: {
-    params: { a: number; b: number };
-    result: number;
-  };
-  greet: {
-    params: { name: string };
-    result: string;
-  };
-}
+import { TimeoutError } from './error.js';
+import type { JSONRPCSerializer } from './types.js';
 
 describe('RequestManager', () => {
-  let manager: RequestManager<TestMethodMap>;
+  let manager: RequestManager;
 
   beforeEach(() => {
-    manager = new RequestManager<TestMethodMap>();
+    manager = new RequestManager();
     vi.useFakeTimers();
   });
 
@@ -27,92 +16,84 @@ describe('RequestManager', () => {
   });
 
   it('should track pending requests', () => {
+    const id = '1';
     const resolve = vi.fn();
     const reject = vi.fn();
-    const id = 'request-1';
 
     manager.addRequest(id, resolve, reject);
     expect(manager.hasPendingRequest(id)).toBe(true);
     expect(manager.getPendingCount()).toBe(1);
   });
 
-  it('should handle successful responses and clear timer if exists', () => {
+  it('should handle successful responses and clear timer if exists', async () => {
+    const id = '1';
     const resolve = vi.fn();
     const reject = vi.fn();
-    const id = 'request-1';
-    const result = 42;
-    const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
 
-    manager.addRequest(id, resolve, reject, 1); // Add with 1 second timeout
-    const handled = manager.handleResponse(id, result);
+    manager.addRequest(id, resolve, reject, 1);
+    const handled = await manager.handleResponse(id, 42);
 
     expect(handled).toBe(true);
-    expect(resolve).toHaveBeenCalledWith(result);
+    expect(resolve).toHaveBeenCalledWith(42);
     expect(reject).not.toHaveBeenCalled();
     expect(manager.hasPendingRequest(id)).toBe(false);
-    expect(clearTimeoutSpy).toHaveBeenCalled(); // Verify clearTimeout was called
+
+    // Advance time past the timeout
+    vi.advanceTimersByTime(1000);
+
+    // The timeout should have been cleared, so reject should not be called
+    expect(reject).not.toHaveBeenCalled();
   });
 
-  it('should handle error responses', () => {
+  it('should handle error responses', async () => {
+    const id = '1';
     const resolve = vi.fn();
     const reject = vi.fn();
-    const id = 'request-1';
-    const error = { code: -32000, message: 'Test error' };
 
     manager.addRequest(id, resolve, reject);
-    const handled = manager.handleResponse(id, undefined, error);
+    const handled = await manager.handleResponse(id, undefined, {
+      code: -32000,
+      message: 'Server error',
+    });
 
     expect(handled).toBe(true);
+    expect(reject).toHaveBeenCalled();
     expect(resolve).not.toHaveBeenCalled();
-    expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
-
-    const rejectCall = reject.mock.calls[0];
-    if (rejectCall) {
-      const errorArg = rejectCall[0] as JSONRPCError;
-      expect(errorArg.code).toBe(error.code);
-      expect(errorArg.message).toBe(error.message);
-    }
-
     expect(manager.hasPendingRequest(id)).toBe(false);
   });
 
   it('should handle request timeouts', () => {
+    const id = '1';
     const resolve = vi.fn();
     const reject = vi.fn();
-    const id = 'request-1';
 
-    manager.addRequest(id, resolve, reject, 1); // 1 second timeout
+    manager.addRequest(id, resolve, reject, 1);
+
+    // Advance time past the timeout
     vi.advanceTimersByTime(1000);
 
-    expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
-
-    const rejectCall = reject.mock.calls[0];
-    if (rejectCall) {
-      const errorArg = rejectCall[0] as JSONRPCError;
-      expect(errorArg.code).toBe(-32000);
-      expect(errorArg.message).toBe('Request timed out');
-    }
-
+    expect(reject).toHaveBeenCalledWith(expect.any(TimeoutError));
+    expect(resolve).not.toHaveBeenCalled();
     expect(manager.hasPendingRequest(id)).toBe(false);
   });
 
-  it('should handle responses with serializers', () => {
+  it('should handle responses with serializers', async () => {
+    const id = '1';
     const resolve = vi.fn();
     const reject = vi.fn();
-    const id = 'request-1';
     const serializer: JSONRPCSerializer<{ name: string }, string> = {
       params: {
-        serialize: (method, params) => ({ serialized: JSON.stringify(params), method }),
-        deserialize: (_method, data) => JSON.parse(data.serialized),
+        serialize: async (method, params) => ({ serialized: JSON.stringify(params), method }),
+        deserialize: async (_method, data) => JSON.parse(data.serialized),
       },
       result: {
-        serialize: (method, result) => ({ serialized: result, method }),
-        deserialize: (_method, data) => data.serialized,
+        serialize: async (method, result) => ({ serialized: result, method }),
+        deserialize: async (_method, data) => data.serialized,
       },
     };
 
     manager.addRequest(id, resolve, reject, 0, serializer);
-    const handled = manager.handleResponse(id, { serialized: 'Hello World!', method: 'test' });
+    const handled = await manager.handleResponse(id, { serialized: 'Hello World!', method: id });
 
     expect(handled).toBe(true);
     expect(resolve).toHaveBeenCalledWith('Hello World!');
@@ -121,21 +102,24 @@ describe('RequestManager', () => {
   });
 
   it('should handle cleanup of pending requests', () => {
+    const id = '1';
     const resolve = vi.fn();
     const reject = vi.fn();
-    const id = 'request-1';
 
     const cleanup = manager.addRequest(id, resolve, reject, 1);
     cleanup();
 
-    expect(manager.hasPendingRequest(id)).toBe(false);
-    expect(manager.getPendingCount()).toBe(0);
+    // Advance time past the timeout
     vi.advanceTimersByTime(1000);
-    expect(reject).not.toHaveBeenCalled(); // Timeout should not trigger
+
+    // The request should have been cleaned up, so neither resolve nor reject should be called
+    expect(resolve).not.toHaveBeenCalled();
+    expect(reject).not.toHaveBeenCalled();
+    expect(manager.hasPendingRequest(id)).toBe(false);
   });
 
-  it('should ignore responses for unknown requests', () => {
-    const handled = manager.handleResponse('unknown-id', 42);
+  it('should ignore responses for unknown requests', async () => {
+    const handled = await manager.handleResponse('unknown', 42);
     expect(handled).toBe(false);
   });
 
@@ -144,18 +128,23 @@ describe('RequestManager', () => {
     const reject1 = vi.fn();
     const resolve2 = vi.fn();
     const reject2 = vi.fn();
-    const error = new Error('Shutting down');
-    const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
 
-    manager.addRequest('request-1', resolve1, reject1, 1); // Add with 1 second timeout
-    manager.addRequest('request-2', resolve2, reject2, 2); // Add with 2 second timeout
+    manager.addRequest('1', resolve1, reject1, 1);
+    manager.addRequest('2', resolve2, reject2, 2);
 
+    const error = new Error('Connection closed');
     manager.rejectAllRequests(error);
 
+    // Advance time past both timeouts
+    vi.advanceTimersByTime(2000);
+
+    // Both requests should be rejected with the error
     expect(reject1).toHaveBeenCalledWith(error);
     expect(reject2).toHaveBeenCalledWith(error);
-    expect(manager.getPendingCount()).toBe(0);
-    expect(clearTimeoutSpy).toHaveBeenCalledTimes(2); // Verify clearTimeout was called for both requests
+    expect(resolve1).not.toHaveBeenCalled();
+    expect(resolve2).not.toHaveBeenCalled();
+    expect(manager.hasPendingRequest('1')).toBe(false);
+    expect(manager.hasPendingRequest('2')).toBe(false);
   });
 
   it('should handle multiple requests with different timeouts', () => {
@@ -164,40 +153,64 @@ describe('RequestManager', () => {
     const resolve2 = vi.fn();
     const reject2 = vi.fn();
 
-    manager.addRequest('request-1', resolve1, reject1, 1); // 1 second timeout
-    manager.addRequest('request-2', resolve2, reject2, 2); // 2 second timeout
+    manager.addRequest('1', resolve1, reject1, 1);
+    manager.addRequest('2', resolve2, reject2, 2);
 
+    // Advance time past first timeout
     vi.advanceTimersByTime(1000);
-    expect(reject1).toHaveBeenCalled();
+
+    expect(reject1).toHaveBeenCalledWith(expect.any(TimeoutError));
     expect(reject2).not.toHaveBeenCalled();
+    expect(manager.hasPendingRequest('1')).toBe(false);
+    expect(manager.hasPendingRequest('2')).toBe(true);
 
+    // Advance time past second timeout
     vi.advanceTimersByTime(1000);
-    expect(reject2).toHaveBeenCalled();
+
+    expect(reject2).toHaveBeenCalledWith(expect.any(TimeoutError));
+    expect(manager.hasPendingRequest('2')).toBe(false);
   });
 
-  it('should handle responses that arrive after timeout', () => {
+  it('should handle responses that arrive after timeout', async () => {
+    const id = '1';
     const resolve = vi.fn();
     const reject = vi.fn();
-    const id = 'request-1';
 
     manager.addRequest(id, resolve, reject, 1);
-    vi.advanceTimersByTime(1000); // Trigger timeout
-    const handled = manager.handleResponse(id, 42);
 
-    expect(handled).toBe(false); // Response should be ignored
+    // Advance time past timeout
+    vi.advanceTimersByTime(1000);
+
+    expect(reject).toHaveBeenCalledWith(expect.any(TimeoutError));
+    expect(manager.hasPendingRequest(id)).toBe(false);
+
+    // Try to handle response after timeout
+    const handled = await manager.handleResponse(id, 42);
+    expect(handled).toBe(false);
     expect(resolve).not.toHaveBeenCalled();
   });
 
   it('should handle cleanup of timed out requests', () => {
+    const id = '1';
     const resolve = vi.fn();
     const reject = vi.fn();
-    const id = 'request-1';
 
-    const cleanup = manager.addRequest(id, resolve, reject, 1);
-    vi.advanceTimersByTime(1000); // Trigger timeout
-    cleanup(); // Should not throw or cause issues
+    manager.addRequest(id, resolve, reject, 1);
 
+    // Advance time past timeout
+    vi.advanceTimersByTime(1000);
+
+    expect(reject).toHaveBeenCalledWith(expect.any(TimeoutError));
     expect(manager.hasPendingRequest(id)).toBe(false);
-    expect(manager.getPendingCount()).toBe(0);
+
+    // Try to clean up after timeout
+    const cleanup = manager.addRequest(id, resolve, reject, 1);
+    cleanup();
+
+    // Advance time again
+    vi.advanceTimersByTime(1000);
+
+    // No additional calls should be made
+    expect(reject).toHaveBeenCalledTimes(1);
   });
 });

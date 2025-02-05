@@ -1,7 +1,6 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { AztecProvider } from './provider.js';
 import { AztecWalletError, AztecWalletErrorType } from './errors.js';
-import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import type { ContractInstanceWithAddress, AztecAddress, ContractArtifact } from '@aztec/aztec.js';
 import { WalletRouterProvider } from '@walletmesh/router';
 import type { OperationBuilder } from '@walletmesh/router';
@@ -65,7 +64,6 @@ describe('AztecProvider', () => {
     test('registers event handlers', () => {
       // Create a spy on the on method before creating provider
       const onSpy = vi.spyOn(WalletRouterProvider.prototype, 'on');
-      const provider = new AztecProvider(mockTransport);
 
       expect(onSpy).toHaveBeenCalledWith('wm_walletStateChanged', expect.any(Function));
       expect(onSpy).toHaveBeenCalledWith('wm_sessionTerminated', expect.any(Function));

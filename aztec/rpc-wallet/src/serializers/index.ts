@@ -19,9 +19,8 @@ import {
   aztecGetAuthWitnessSerializer,
 } from './account.js';
 import {
-  aztecGetContractInstanceSerializer,
-  aztecGetContractClassSerializer,
-  aztecGetContractArtifactSerializer,
+  aztecGetContractMetadataSerializer,
+  aztecGetContractClassMetadataSerializer,
   aztecRegisterContractSerializer,
 } from './contract.js';
 import {
@@ -60,9 +59,8 @@ const methodSerializers: Record<AztecMethodName, JSONRPCSerializer<unknown, unkn
   aztec_getAuthWitness: aztecGetAuthWitnessSerializer,
 
   // Contract methods
-  aztec_getContractInstance: aztecGetContractInstanceSerializer,
-  aztec_getContractClass: aztecGetContractClassSerializer,
-  aztec_getContractArtifact: aztecGetContractArtifactSerializer,
+  aztec_getContractMetadata: aztecGetContractMetadataSerializer,
+  aztec_getContractClassMetadata: aztecGetContractClassMetadataSerializer,
   aztec_registerContract: aztecRegisterContractSerializer,
 
   // Transaction methods
@@ -93,11 +91,11 @@ const methodSerializers: Record<AztecMethodName, JSONRPCSerializer<unknown, unkn
  * @param value - The value to wrap
  * @returns Standardized JSON-RPC data structure
  */
-function wrapUnknownValue(method: string, value: unknown): JSONRPCSerializedData {
-  return {
+async function wrapUnknownValue(method: string, value: unknown): Promise<JSONRPCSerializedData> {
+  return Promise.resolve({
     method,
     serialized: JSON.stringify(value),
-  };
+  });
 }
 
 /**
@@ -108,10 +106,6 @@ function wrapUnknownValue(method: string, value: unknown): JSONRPCSerializedData
  * 1. Routes each method call to its specialized serializer from methodSerializers
  * 2. Provides fallback handling for unknown methods
  * 3. Wraps all serialization operations in proper error handling
- *
- * The serializer handles both:
- * - Parameters: Incoming RPC call parameters
- * - Results: Outgoing RPC call results
  */
 export const AztecWalletSerializer: JSONRPCSerializer<unknown, unknown> = {
   params: {
@@ -122,14 +116,14 @@ export const AztecWalletSerializer: JSONRPCSerializer<unknown, unknown> = {
      * @returns Serialized parameter data
      * @throws If serialization fails or encounters an error
      */
-    serialize: (method: string, value: unknown): JSONRPCSerializedData => {
+    serialize: async (method: string, value: unknown): Promise<JSONRPCSerializedData> => {
       const serializer = methodSerializers[method as AztecMethodName];
       if (!serializer?.params) {
         return wrapUnknownValue(method, value);
       }
 
       try {
-        return serializer.params.serialize(method, value);
+        return await serializer.params.serialize(method, value);
       } catch (error) {
         throw new Error(`Failed to serialize params for method ${method}: ${error}`);
       }
@@ -141,14 +135,14 @@ export const AztecWalletSerializer: JSONRPCSerializer<unknown, unknown> = {
      * @returns Deserialized parameters
      * @throws If deserialization fails or encounters an error
      */
-    deserialize: (method: string, data: JSONRPCSerializedData): unknown => {
+    deserialize: async (method: string, data: JSONRPCSerializedData): Promise<unknown> => {
       const serializer = methodSerializers[method as AztecMethodName];
       if (!serializer?.params) {
         return data;
       }
 
       try {
-        return serializer.params.deserialize(method, data);
+        return await serializer.params.deserialize(method, data);
       } catch (error) {
         throw new Error(`Failed to deserialize params for method ${method}: ${error}`);
       }
@@ -162,14 +156,14 @@ export const AztecWalletSerializer: JSONRPCSerializer<unknown, unknown> = {
      * @returns Serialized result data
      * @throws If serialization fails or encounters an error
      */
-    serialize: (method: string, value: unknown): JSONRPCSerializedData => {
+    serialize: async (method: string, value: unknown): Promise<JSONRPCSerializedData> => {
       const serializer = methodSerializers[method as AztecMethodName];
       if (!serializer?.result) {
         return wrapUnknownValue(method, value);
       }
 
       try {
-        return serializer.result.serialize(method, value);
+        return await serializer.result.serialize(method, value);
       } catch (error) {
         throw new Error(`Failed to serialize result for method ${method}: ${error}`);
       }
@@ -181,14 +175,14 @@ export const AztecWalletSerializer: JSONRPCSerializer<unknown, unknown> = {
      * @returns Deserialized result
      * @throws If deserialization fails or encounters an error
      */
-    deserialize: (method: string, data: JSONRPCSerializedData): unknown => {
+    deserialize: async (method: string, data: JSONRPCSerializedData): Promise<unknown> => {
       const serializer = methodSerializers[method as AztecMethodName];
       if (!serializer?.result) {
         return data;
       }
 
       try {
-        return serializer.result.deserialize(method, data);
+        return await serializer.result.deserialize(method, data);
       } catch (error) {
         throw new Error(`Failed to deserialize result for method ${method}: ${error}`);
       }

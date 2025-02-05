@@ -1,4 +1,4 @@
-import type { AccountWallet } from '@aztec/aztec.js';
+import type { AccountWallet, PXE } from '@aztec/aztec.js';
 import { AztecWalletError } from '../errors.js';
 import type { AztecWalletContext, AztecWalletMethodMap } from '../types.js';
 
@@ -25,14 +25,10 @@ export const AZTEC_WALLET_METHODS: (keyof AztecWalletMethodMap)[] = [
   'aztec_getSenders',
   'aztec_removeSender',
   'aztec_getContracts',
-  'aztec_getContractInstance',
-  'aztec_getContractClass',
-  'aztec_getContractArtifact',
-  'aztec_isContractClassPubliclyRegistered',
-  'aztec_isContractPubliclyDeployed',
-  'aztec_isContractInitialized',
   'aztec_registerContract',
   'aztec_registerContractClass',
+  'aztec_getContractMetadata',
+  'aztec_getContractClassMetadata',
   'aztec_getPublicStorageAt',
   'aztec_createTxExecutionRequest',
   'aztec_proveTx',
@@ -196,52 +192,18 @@ async function handleGetContracts(
   return await wallet.getContracts();
 }
 
-async function handleGetContractInstance(
-  wallet: AccountWallet,
-  params: AztecWalletMethodMap['aztec_getContractInstance']['params'],
-): Promise<AztecWalletMethodMap['aztec_getContractInstance']['result']> {
-  const instance = await wallet.getContractInstance(params.address);
-  if (!instance) throw new AztecWalletError('contractInstanceNotRegistered', 'aztec_getContractInstance');
-  return instance;
+async function handleGetContractMetadata(
+  pxe: PXE,
+  params: AztecWalletMethodMap['aztec_getContractMetadata']['params'],
+): Promise<AztecWalletMethodMap['aztec_getContractMetadata']['result']> {
+  return await pxe.getContractMetadata(params.address);
 }
 
-async function handleGetContractClass(
-  wallet: AccountWallet,
-  params: AztecWalletMethodMap['aztec_getContractClass']['params'],
-): Promise<AztecWalletMethodMap['aztec_getContractClass']['result']> {
-  const contractClass = await wallet.getContractClass(params.id);
-  if (!contractClass) throw new AztecWalletError('contractClassNotRegistered', 'aztec_getContractClass');
-  return contractClass;
-}
-
-async function handleGetContractArtifact(
-  wallet: AccountWallet,
-  params: AztecWalletMethodMap['aztec_getContractArtifact']['params'],
-): Promise<AztecWalletMethodMap['aztec_getContractArtifact']['result']> {
-  const artifact = await wallet.getContractArtifact(params.id);
-  if (!artifact) throw new AztecWalletError('contractClassNotRegistered', 'aztec_getContractArtifact');
-  return artifact;
-}
-
-async function handleIsContractClassPubliclyRegistered(
-  wallet: AccountWallet,
-  params: AztecWalletMethodMap['aztec_isContractClassPubliclyRegistered']['params'],
-): Promise<AztecWalletMethodMap['aztec_isContractClassPubliclyRegistered']['result']> {
-  return await wallet.isContractClassPubliclyRegistered(params.id);
-}
-
-async function handleIsContractPubliclyDeployed(
-  wallet: AccountWallet,
-  params: AztecWalletMethodMap['aztec_isContractPubliclyDeployed']['params'],
-): Promise<AztecWalletMethodMap['aztec_isContractPubliclyDeployed']['result']> {
-  return await wallet.isContractPubliclyDeployed(params.address);
-}
-
-async function handleIsContractInitialized(
-  wallet: AccountWallet,
-  params: AztecWalletMethodMap['aztec_isContractInitialized']['params'],
-): Promise<AztecWalletMethodMap['aztec_isContractInitialized']['result']> {
-  return await wallet.isContractInitialized(params.address);
+async function handleGetContractClassMetadata(
+  pxe: PXE,
+  params: AztecWalletMethodMap['aztec_getContractClassMetadata']['params'],
+): Promise<AztecWalletMethodMap['aztec_getContractClassMetadata']['result']> {
+  return await pxe.getContractClassMetadata(params.id, params.includeArtifact);
 }
 
 async function handleRegisterContract(
@@ -481,35 +443,15 @@ export async function aztecWalletHandler<M extends keyof AztecWalletMethodMap>(
     // Contracts methods
     case 'aztec_getContracts':
       return handleGetContracts(context.wallet);
-    case 'aztec_getContractInstance':
-      return handleGetContractInstance(
+    case 'aztec_getContractMetadata':
+      return handleGetContractMetadata(
         context.wallet,
-        params as AztecWalletMethodMap['aztec_getContractInstance']['params'],
+        params as AztecWalletMethodMap['aztec_getContractMetadata']['params'],
       );
-    case 'aztec_getContractClass':
-      return handleGetContractClass(
+    case 'aztec_getContractClassMetadata':
+      return handleGetContractClassMetadata(
         context.wallet,
-        params as AztecWalletMethodMap['aztec_getContractClass']['params'],
-      );
-    case 'aztec_getContractArtifact':
-      return handleGetContractArtifact(
-        context.wallet,
-        params as AztecWalletMethodMap['aztec_getContractArtifact']['params'],
-      );
-    case 'aztec_isContractClassPubliclyRegistered':
-      return handleIsContractClassPubliclyRegistered(
-        context.wallet,
-        params as AztecWalletMethodMap['aztec_isContractClassPubliclyRegistered']['params'],
-      );
-    case 'aztec_isContractPubliclyDeployed':
-      return handleIsContractPubliclyDeployed(
-        context.wallet,
-        params as AztecWalletMethodMap['aztec_isContractPubliclyDeployed']['params'],
-      );
-    case 'aztec_isContractInitialized':
-      return handleIsContractInitialized(
-        context.wallet,
-        params as AztecWalletMethodMap['aztec_isContractInitialized']['params'],
+        params as AztecWalletMethodMap['aztec_getContractClassMetadata']['params'],
       );
     case 'aztec_registerContract':
       return handleRegisterContract(

@@ -71,7 +71,7 @@ export interface Serializer<T> {
    * @param method - The method name associated with this serialization
    * @returns The serialized data
    */
-  serialize(method: string, value: T): JSONRPCSerializedData;
+  serialize(method: string, value: T): Promise<JSONRPCSerializedData>;
 
   /**
    * Deserializes JSONRPCSerializedData back to the original type
@@ -79,7 +79,7 @@ export interface Serializer<T> {
    * @param value - The serialized data to deserialize
    * @returns The deserialized value
    */
-  deserialize(method: string, value: JSONRPCSerializedData): T;
+  deserialize(method: string, value: JSONRPCSerializedData): Promise<T>;
 }
 
 /**
