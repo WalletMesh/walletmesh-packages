@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.3.0**](../README.md)
+[**@walletmesh/jsonrpc v0.4.0**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **applyToMethods**\<`T`, `C`\>(`methods`, `middleware`): [`JSONRPCMiddleware`](../type-aliases/JSONRPCMiddleware.md)\<`T`, `C`\>
 
-Defined in: [core/jsonrpc/src/utils.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/utils.ts#L99)
+Defined in: [core/jsonrpc/src/utils.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/utils.ts#L99)
 
 Helper function to apply middleware only to specific methods.
 Creates a new middleware that only executes for the specified methods,

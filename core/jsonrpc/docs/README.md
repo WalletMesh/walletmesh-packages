@@ -1,4 +1,4 @@
-**@walletmesh/jsonrpc v0.3.0**
+**@walletmesh/jsonrpc v0.4.0**
 
 ***
 

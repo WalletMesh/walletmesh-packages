@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.3.0**](../README.md)
+[**@walletmesh/jsonrpc v0.4.0**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: JSONRPCEvent\<T, E\>
 
-Defined in: [core/jsonrpc/src/types.ts:569](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L569)
+Defined in: [core/jsonrpc/src/types.ts:569](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L569)
 
 Represents a JSON-RPC 2.0 event message.
 Events are similar to notifications but use 'event' instead of 'method'.
@@ -54,7 +54,7 @@ The specific event being emitted (must be a key of T)
 
 > **event**: `E`
 
-Defined in: [core/jsonrpc/src/types.ts:573](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L573)
+Defined in: [core/jsonrpc/src/types.ts:573](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L573)
 
 The event name.
 
@@ -64,7 +64,7 @@ The event name.
 
 > **jsonrpc**: `"2.0"`
 
-Defined in: [core/jsonrpc/src/types.ts:571](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L571)
+Defined in: [core/jsonrpc/src/types.ts:571](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L571)
 
 The JSON-RPC version ('2.0').
 
@@ -74,6 +74,6 @@ The JSON-RPC version ('2.0').
 
 > **params**: `T`\[`E`\]
 
-Defined in: [core/jsonrpc/src/types.ts:575](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/jsonrpc/src/types.ts#L575)
+Defined in: [core/jsonrpc/src/types.ts:575](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L575)
 
 The event payload.

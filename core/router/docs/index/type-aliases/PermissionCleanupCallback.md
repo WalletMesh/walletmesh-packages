@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.3.0**](../../README.md)
+[**@walletmesh/router v0.4.0**](../../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **PermissionCleanupCallback**\<`C`\>: (`context`, `sessionId`) => `Promise`\<`void`\>
 
-Defined in: [core/router/src/types.ts:155](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/types.ts#L155)
+Defined in: [core/router/src/types.ts:155](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L155)
 
 Callback for cleaning up permissions when a session ends.
 Called during session termination to ensure proper permission cleanup.

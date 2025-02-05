@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.3.0**](../../README.md)
+[**@walletmesh/router v0.4.0**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: JSONRPCWalletClient\<M, E, C\>
 
-Defined in: [core/router/src/jsonrpc-adapter.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/jsonrpc-adapter.ts#L66)
+Defined in: [core/router/src/jsonrpc-adapter.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/jsonrpc-adapter.ts#L66)
 
 Adapter class that wraps a JSONRPCNode to implement the WalletClient interface.
 This adapter allows any JSON-RPC peer to be used as a wallet client by
@@ -55,7 +55,7 @@ const balance = await walletClient.call('eth_getBalance', [accounts[0]]);
 
 > **new JSONRPCWalletClient**\<`M`, `E`, `C`\>(`node`): [`JSONRPCWalletClient`](JSONRPCWalletClient.md)\<`M`, `E`, `C`\>
 
-Defined in: [core/router/src/jsonrpc-adapter.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/jsonrpc-adapter.ts#L75)
+Defined in: [core/router/src/jsonrpc-adapter.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/jsonrpc-adapter.ts#L75)
 
 #### Parameters
 
@@ -73,7 +73,7 @@ Defined in: [core/router/src/jsonrpc-adapter.ts:75](https://github.com/WalletMes
 
 > **call**\<`T`\>(`method`, `params`?): `Promise`\<`T`\>
 
-Defined in: [core/router/src/jsonrpc-adapter.ts:95](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/jsonrpc-adapter.ts#L95)
+Defined in: [core/router/src/jsonrpc-adapter.ts:95](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/jsonrpc-adapter.ts#L95)
 
 Calls a method on the underlying JSON-RPC client
 
@@ -125,7 +125,7 @@ const balance = await client.call('eth_getBalance', ['0x...', 'latest']);
 
 > **getSupportedMethods**(): `Promise`\<`string`[]\>
 
-Defined in: [core/router/src/jsonrpc-adapter.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/jsonrpc-adapter.ts#L116)
+Defined in: [core/router/src/jsonrpc-adapter.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/jsonrpc-adapter.ts#L116)
 
 Gets the capabilities (supported methods) of the wallet
 
@@ -156,7 +156,7 @@ console.log('Supported methods:', methods);
 
 > **off**(`event`, `handler`): `void`
 
-Defined in: [core/router/src/jsonrpc-adapter.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/jsonrpc-adapter.ts#L163)
+Defined in: [core/router/src/jsonrpc-adapter.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/jsonrpc-adapter.ts#L163)
 
 Remove a previously registered event handler
 
@@ -202,7 +202,7 @@ client.off('accountsChanged', handler);
 
 > **on**(`event`, `handler`): `void`
 
-Defined in: [core/router/src/jsonrpc-adapter.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/8bd3463e6f13efdfce2c89f2c9b61ad3469e2d6a/core/router/src/jsonrpc-adapter.ts#L136)
+Defined in: [core/router/src/jsonrpc-adapter.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/jsonrpc-adapter.ts#L136)
 
 Register an event handler for wallet events
 

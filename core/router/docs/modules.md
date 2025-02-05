@@ -1,8 +1,8 @@
-[**@walletmesh/router v0.3.0**](README.md)
+[**@walletmesh/router v0.4.0**](README.md)
 
 ***
 
-# @walletmesh/router v0.3.0
+# @walletmesh/router v0.4.0
 
 ## Modules
 
