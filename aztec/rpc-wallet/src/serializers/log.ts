@@ -22,10 +22,10 @@ export class AztecGetPublicLogsSerializer
     >
 {
   params = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getPublicLogs']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { filter } = value;
       // Convert all fields that need string conversion
       const serializedFilter = {
@@ -36,15 +36,15 @@ export class AztecGetPublicLogsSerializer
         fromBlock: filter.fromBlock,
         toBlock: filter.toBlock,
       };
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify({ filter: serializedFilter }),
-      };
+      });
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getPublicLogs']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_getPublicLogs']['params']> => {
       const { filter } = JSON.parse(data.serialized);
       const deserializedFilter: Partial<{
         txHash: TxHash;
@@ -61,25 +61,25 @@ export class AztecGetPublicLogsSerializer
       if (filter.fromBlock !== undefined) deserializedFilter.fromBlock = filter.fromBlock;
       if (filter.toBlock !== undefined) deserializedFilter.toBlock = filter.toBlock;
 
-      return { filter: deserializedFilter };
+      return Promise.resolve({ filter: deserializedFilter });
     },
   };
 
   result = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getPublicLogs']['result'],
-    ): JSONRPCSerializedData => {
-      return {
+    ): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(value),
-      };
+      });
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getPublicLogs']['result'] => {
-      return GetPublicLogsResponseSchema.parse(JSON.parse(data.serialized));
+    ): Promise<AztecWalletMethodMap['aztec_getPublicLogs']['result']> => {
+      return Promise.resolve(GetPublicLogsResponseSchema.parse(JSON.parse(data.serialized)));
     },
   };
 }
@@ -96,10 +96,10 @@ export class AztecGetContractClassLogsSerializer
     >
 {
   params = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getContractClassLogs']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { filter } = value;
       // Convert fields to strings for schema validation
       const serializedFilter = {
@@ -109,15 +109,15 @@ export class AztecGetContractClassLogsSerializer
         fromBlock: filter.fromBlock,
         toBlock: filter.toBlock,
       };
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify({ filter: serializedFilter }),
-      };
+      });
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getContractClassLogs']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_getContractClassLogs']['params']> => {
       const { filter } = JSON.parse(data.serialized);
       const deserializedFilter: LogFilter = {};
 
@@ -128,25 +128,25 @@ export class AztecGetContractClassLogsSerializer
       if (filter.fromBlock !== undefined) deserializedFilter.fromBlock = filter.fromBlock;
       if (filter.toBlock !== undefined) deserializedFilter.toBlock = filter.toBlock;
 
-      return { filter: deserializedFilter };
+      return Promise.resolve({ filter: deserializedFilter });
     },
   };
 
   result = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getContractClassLogs']['result'],
-    ): JSONRPCSerializedData => {
-      return {
+    ): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(GetContractClassLogsResponseSchema.parse(value)),
-      };
+      });
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getContractClassLogs']['result'] => {
-      return GetContractClassLogsResponseSchema.parse(JSON.parse(data.serialized));
+    ): Promise<AztecWalletMethodMap['aztec_getContractClassLogs']['result']> => {
+      return Promise.resolve(GetContractClassLogsResponseSchema.parse(JSON.parse(data.serialized)));
     },
   };
 }
@@ -163,12 +163,12 @@ export class AztecGetPrivateEventsSerializer
     >
 {
   params = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getPrivateEvents']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { event, from, limit, vpks } = value;
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify({
           event: {
@@ -182,12 +182,12 @@ export class AztecGetPrivateEventsSerializer
           limit,
           vpks: vpks?.map((p) => p.toString()),
         }),
-      };
+      });
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getPrivateEvents']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_getPrivateEvents']['params']> => {
       const { event: serializedEvent, from, limit, vpks } = JSON.parse(data.serialized);
       const event: EventMetadataDefinition = {
         eventSelector: EventSelector.fromString(serializedEvent.eventSelector),
@@ -196,24 +196,24 @@ export class AztecGetPrivateEventsSerializer
         },
         fieldNames: serializedEvent.fieldNames,
       };
-      return {
+      return Promise.resolve({
         event,
         from,
         limit,
         vpks: vpks?.map((p: string) => Point.fromString(p)),
-      };
+      });
     },
   };
 
   result = {
-    serialize: (method: string, value: unknown[]): JSONRPCSerializedData => {
-      return {
+    serialize: async (method: string, value: unknown[]): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(value),
-      };
+      });
     },
-    deserialize: (_method: string, data: JSONRPCSerializedData): unknown[] => {
-      return JSON.parse(data.serialized);
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<unknown[]> => {
+      return Promise.resolve(JSON.parse(data.serialized));
     },
   };
 }
@@ -230,12 +230,12 @@ export class AztecGetPublicEventsSerializer
     >
 {
   params = {
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getPublicEvents']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { event, from, limit } = value;
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify({
           event: {
@@ -248,12 +248,12 @@ export class AztecGetPublicEventsSerializer
           from,
           limit,
         }),
-      };
+      });
     },
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getPublicEvents']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_getPublicEvents']['params']> => {
       const { event: serializedEvent, from, limit } = JSON.parse(data.serialized);
       const event: EventMetadataDefinition = {
         eventSelector: EventSelector.fromString(serializedEvent.eventSelector),
@@ -262,23 +262,23 @@ export class AztecGetPublicEventsSerializer
         },
         fieldNames: serializedEvent.fieldNames,
       };
-      return {
+      return Promise.resolve({
         event,
         from,
         limit,
-      };
+      });
     },
   };
 
   result = {
-    serialize: (method: string, value: unknown[]): JSONRPCSerializedData => {
-      return {
+    serialize: async (method: string, value: unknown[]): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(value),
-      };
+      });
     },
-    deserialize: (_method: string, data: JSONRPCSerializedData): unknown[] => {
-      return JSON.parse(data.serialized);
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<unknown[]> => {
+      return Promise.resolve(JSON.parse(data.serialized));
     },
   };
 }

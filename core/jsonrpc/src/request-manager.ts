@@ -161,7 +161,11 @@ export class RequestManager<T extends JSONRPCMethodMap = JSONRPCMethodMap> {
    * });
    * ```
    */
-  public handleResponse(id: JSONRPCID, result: unknown, error?: JSONRPCErrorInterface): boolean {
+  public async handleResponse(
+    id: JSONRPCID,
+    result: unknown,
+    error?: JSONRPCErrorInterface,
+  ): Promise<boolean> {
     const pendingRequest = this.pendingRequests.get(id);
     if (!pendingRequest) {
       return false;
@@ -173,17 +177,25 @@ export class RequestManager<T extends JSONRPCMethodMap = JSONRPCMethodMap> {
 
     if (error) {
       pendingRequest.reject(new JSONRPCError(error.code, error.message, error.data));
+      this.pendingRequests.delete(id);
     } else {
-      // Deserialize result if needed
-      const finalResult =
-        result !== undefined && pendingRequest.serializer?.result && isJSONRPCSerializedData(result)
-          ? pendingRequest.serializer.result.deserialize(String(id), result as JSONRPCSerializedData)
-          : result;
-
-      pendingRequest.resolve(finalResult as T[keyof T]['result']);
+      try {
+        if (result !== undefined && pendingRequest.serializer?.result && isJSONRPCSerializedData(result)) {
+          const finalResult = await pendingRequest.serializer.result.deserialize(
+            String(id),
+            result as JSONRPCSerializedData,
+          );
+          pendingRequest.resolve(finalResult as T[keyof T]['result']);
+        } else {
+          pendingRequest.resolve(result as T[keyof T]['result']);
+        }
+      } catch (error) {
+        pendingRequest.reject(error);
+      } finally {
+        this.pendingRequests.delete(id);
+      }
     }
 
-    this.pendingRequests.delete(id);
     return true;
   }
 

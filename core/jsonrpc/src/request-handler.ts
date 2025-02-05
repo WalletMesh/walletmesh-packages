@@ -94,11 +94,10 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
     if (method) {
       // Process and validate params for registered method
       const serializer = this.methodManager.getSerializer(request.method);
-      const methodParams = this.serializer.deserializeParams<T[keyof T]['params'], T[keyof T]['result']>(
-        String(request.method),
-        request.params,
-        serializer,
-      );
+      const methodParams = await this.serializer.deserializeParams<
+        T[keyof T]['params'],
+        T[keyof T]['result']
+      >(String(request.method), request.params, serializer);
       methodResponse = await method(context, request.method, methodParams as T[keyof T]['params']);
     } else {
       // Try fallback handler
@@ -120,11 +119,10 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
 
     // Serialize result if needed
     const serializer = this.methodManager.getSerializer(request.method);
-    const serializedResult = this.serializer.serializeResult<T[keyof T]['params'], T[keyof T]['result']>(
-      String(request.method),
-      methodResponse.data,
-      serializer,
-    );
+    const serializedResult = await this.serializer.serializeResult<
+      T[keyof T]['params'],
+      T[keyof T]['result']
+    >(String(request.method), methodResponse.data, serializer);
 
     // Return JSON-RPC response
     return {

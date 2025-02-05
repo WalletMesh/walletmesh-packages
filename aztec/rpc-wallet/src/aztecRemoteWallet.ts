@@ -2,7 +2,6 @@ import type {
   AuthWitness,
   AztecAddress,
   ContractArtifact,
-  ContractClassWithId,
   ContractInstanceWithAddress,
   ExtendedNote,
   TxExecutionRequest,
@@ -34,6 +33,8 @@ import type {
   TxEffect,
   GetPublicLogsResponse,
   GetContractClassLogsResponse,
+  ContractMetadata,
+  ContractClassMetadata,
 } from '@aztec/circuit-types';
 import type { GasFees, L1_TO_L2_MSG_TREE_HEIGHT } from '@aztec/circuits.js';
 
@@ -171,25 +172,18 @@ export class AztecRemoteWallet implements Wallet {
     return scopes;
   }
 
-  async getContractInstance(address: AztecAddress): Promise<ContractInstanceWithAddress | undefined> {
+  async getContractMetadata(address: AztecAddress): Promise<ContractMetadata> {
     return this._provider
       .chain(this._providerChainId)
-      .call('aztec_getContractInstance', { address })
-      .execute() as Promise<AztecWalletMethodMap['aztec_getContractInstance']['result']>;
+      .call('aztec_getContractMetadata', { address })
+      .execute() as Promise<AztecWalletMethodMap['aztec_getContractMetadata']['result']>;
   }
 
-  async getContractClass(id: Fr): Promise<ContractClassWithId | undefined> {
+  async getContractClassMetadata(id: Fr, includeArtifact?: boolean): Promise<ContractClassMetadata> {
     return this._provider
       .chain(this._providerChainId)
-      .call('aztec_getContractClass', { id })
-      .execute() as Promise<AztecWalletMethodMap['aztec_getContractClass']['result']>;
-  }
-
-  async getContractArtifact(id: Fr): Promise<ContractArtifact | undefined> {
-    return this._provider
-      .chain(this._providerChainId)
-      .call('aztec_getContractArtifact', { id })
-      .execute() as Promise<AztecWalletMethodMap['aztec_getContractArtifact']['result']>;
+      .call('aztec_getContractClassMetadata', { id, includeArtifact })
+      .execute() as Promise<AztecWalletMethodMap['aztec_getContractClassMetadata']['result']>;
   }
 
   async addCapsule(capsule: Fr[]): Promise<void> {
@@ -412,27 +406,6 @@ export class AztecRemoteWallet implements Wallet {
       .chain(this._providerChainId)
       .call('aztec_getAuthWitness', { messageHash })
       .execute()) as Promise<AztecWalletMethodMap['aztec_getAuthWitness']['result']>;
-  }
-
-  async isContractClassPubliclyRegistered(id: Fr): Promise<boolean> {
-    return this._provider
-      .chain(this._providerChainId)
-      .call('aztec_isContractClassPubliclyRegistered', { id })
-      .execute() as Promise<AztecWalletMethodMap['aztec_isContractClassPubliclyRegistered']['result']>;
-  }
-
-  async isContractPubliclyDeployed(address: AztecAddress): Promise<boolean> {
-    return this._provider
-      .chain(this._providerChainId)
-      .call('aztec_isContractPubliclyDeployed', { address })
-      .execute() as Promise<AztecWalletMethodMap['aztec_isContractPubliclyDeployed']['result']>;
-  }
-
-  async isContractInitialized(address: AztecAddress): Promise<boolean> {
-    return this._provider
-      .chain(this._providerChainId)
-      .call('aztec_isContractInitialized', { address })
-      .execute() as Promise<AztecWalletMethodMap['aztec_isContractInitialized']['result']>;
   }
 
   async getPXEInfo(): Promise<PXEInfo> {

@@ -202,34 +202,6 @@ describe('AztecRemoteWallet', () => {
       contractClass = await getContractClassFromArtifact(mockContract.artifact);
     });
 
-    it('gets contract instance', async () => {
-      mockChainBuilder.execute.mockResolvedValueOnce(mockContract.instance);
-
-      const result = await wallet.getContractInstance(mockContract.instance.address);
-      expect(result).toBe(mockContract.instance);
-      expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_getContractInstance', {
-        address: mockContract.instance.address,
-      });
-    });
-
-    it('gets contract class', async () => {
-      mockChainBuilder.execute.mockResolvedValueOnce(contractClass);
-
-      const result = await wallet.getContractClass(contractClass.id);
-      expect(result).toBe(contractClass);
-      expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_getContractClass', { id: contractClass.id });
-    });
-
-    it('gets contract artifact', async () => {
-      mockChainBuilder.execute.mockResolvedValueOnce(mockContract.artifact);
-
-      const result = await wallet.getContractArtifact(contractClass.id);
-      expect(result).toBe(mockContract.artifact);
-      expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_getContractArtifact', {
-        id: contractClass.id,
-      });
-    });
-
     it('registers contract', async () => {
       mockChainBuilder.execute.mockResolvedValueOnce(true);
       await wallet.registerContract({ instance: mockContract.instance, artifact: mockContract.artifact });
@@ -254,6 +226,28 @@ describe('AztecRemoteWallet', () => {
       const result = await wallet.getContracts();
       expect(result).toBe(mockContracts);
       expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_getContracts');
+    });
+
+    it('gets contract metadata', async () => {
+      const mockMetadata = { contractInstance: mockContract.instance };
+      mockChainBuilder.execute.mockResolvedValueOnce(mockMetadata);
+
+      const result = await wallet.getContractMetadata(mockContract.instance.address);
+      expect(result).toBe(mockMetadata);
+      expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_getContractMetadata', {
+        address: mockContract.instance.address,
+      });
+    });
+
+    it('gets contract class metadata', async () => {
+      const mockMetadata = { artifact: mockContract.artifact };
+      mockChainBuilder.execute.mockResolvedValueOnce(mockMetadata);
+
+      const result = await wallet.getContractClassMetadata(contractClass.id);
+      expect(result).toBe(mockMetadata);
+      expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_getContractClassMetadata', {
+        id: contractClass.id,
+      });
     });
   });
 
@@ -389,39 +383,6 @@ describe('AztecRemoteWallet', () => {
       const result = await wallet.getProvenBlockNumber();
       expect(result).toBe(mockBlockNumber);
       expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_getProvenBlockNumber');
-    });
-  });
-
-  describe('contract verification operations', () => {
-    it('checks if contract class is publicly registered', async () => {
-      const mockId = Fr.fromString('1');
-      mockChainBuilder.execute.mockResolvedValueOnce(true);
-
-      const result = await wallet.isContractClassPubliclyRegistered(mockId);
-      expect(result).toBe(true);
-      expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_isContractClassPubliclyRegistered', {
-        id: mockId,
-      });
-    });
-
-    it('checks if contract is publicly deployed', async () => {
-      mockChainBuilder.execute.mockResolvedValueOnce(true);
-
-      const result = await wallet.isContractPubliclyDeployed(mockAddress);
-      expect(result).toBe(true);
-      expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_isContractPubliclyDeployed', {
-        address: mockAddress,
-      });
-    });
-
-    it('checks if contract is initialized', async () => {
-      mockChainBuilder.execute.mockResolvedValueOnce(true);
-
-      const result = await wallet.isContractInitialized(mockAddress);
-      expect(result).toBe(true);
-      expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_isContractInitialized', {
-        address: mockAddress,
-      });
     });
   });
 

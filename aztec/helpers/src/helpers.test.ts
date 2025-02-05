@@ -1,7 +1,20 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { AztecAddress, Fr, type FunctionSelector, type PXE, type ContractArtifact, type FunctionArtifact, type ContractInstanceWithAddress, PublicKeys } from '@aztec/aztec.js';
+import {
+  AztecAddress,
+  Fr,
+  type FunctionSelector,
+  type PXE,
+  type ContractArtifact,
+  type FunctionArtifact,
+  type ContractInstanceWithAddress,
+  PublicKeys,
+} from '@aztec/aztec.js';
 import { FunctionType, type ABIParameter } from '@aztec/foundation/abi';
-import { getContractArtifactFromContractAddress, getFunctionArtifactFromContractAddress, getFunctionParameterInfoFromContractAddress } from './helpers.js';
+import {
+  getContractArtifactFromContractAddress,
+  getFunctionArtifactFromContractAddress,
+  getFunctionParameterInfoFromContractAddress,
+} from './helpers.js';
 import { Buffer } from 'node:buffer';
 
 describe('aztec helpers', () => {
@@ -45,19 +58,13 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractArtifact).mockResolvedValue(mockArtifact);
 
       // First call - should fetch from PXE
-      const result1 = await getContractArtifactFromContractAddress(
-        mockPXE,
-        mockContractAddress.toString()
-      );
+      const result1 = await getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString());
       expect(result1).toEqual(mockArtifact);
       expect(mockPXE.getContractInstance).toHaveBeenCalledTimes(1);
       expect(mockPXE.getContractArtifact).toHaveBeenCalledTimes(1);
 
       // Second call - should use cache
-      const result2 = await getContractArtifactFromContractAddress(
-        mockPXE,
-        mockContractAddress.toString()
-      );
+      const result2 = await getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString());
       expect(result2).toEqual(mockArtifact);
       expect(mockPXE.getContractInstance).toHaveBeenCalledTimes(1); // No additional calls
       expect(mockPXE.getContractArtifact).toHaveBeenCalledTimes(1); // No additional calls
@@ -67,7 +74,7 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractInstance).mockResolvedValue(undefined);
 
       await expect(
-        getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString())
+        getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString()),
       ).rejects.toThrow('not registered in the PXE');
     });
 
@@ -85,7 +92,7 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractArtifact).mockResolvedValue(undefined);
 
       await expect(
-        getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString())
+        getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString()),
       ).rejects.toThrow('not registered in the PXE');
     });
   });
@@ -127,7 +134,7 @@ describe('aztec helpers', () => {
       const result = await getFunctionArtifactFromContractAddress(
         mockPXE,
         mockContractAddress.toString(),
-        'testFunction'
+        'testFunction',
       );
       expect(result).toEqual(mockFunctionArtifact);
     });
@@ -136,9 +143,7 @@ describe('aztec helpers', () => {
       // Create a mock selector that will match our function
       const selector = {
         equals: (name: string, parameters: ABIParameter[]) =>
-          name === 'testFunction' &&
-          parameters.length === 1 &&
-          parameters[0]?.type?.kind === 'field',
+          name === 'testFunction' && parameters.length === 1 && parameters[0]?.type?.kind === 'field',
         toString: () => 'MockSelector',
       } as unknown as FunctionSelector;
 
@@ -164,7 +169,7 @@ describe('aztec helpers', () => {
       const result = await getFunctionArtifactFromContractAddress(
         mockPXE,
         mockContractAddress.toString(),
-        selector
+        selector,
       );
       expect(result).toEqual(mockFunctionArtifact);
     });
@@ -190,7 +195,7 @@ describe('aztec helpers', () => {
       } as ContractArtifact);
 
       await expect(
-        getFunctionArtifactFromContractAddress(mockPXE, mockContractAddress.toString(), 'nonexistent')
+        getFunctionArtifactFromContractAddress(mockPXE, mockContractAddress.toString(), 'nonexistent'),
       ).rejects.toThrow('Unknown function');
     });
   });
@@ -235,7 +240,7 @@ describe('aztec helpers', () => {
       const result = await getFunctionParameterInfoFromContractAddress(
         mockPXE,
         mockContractAddress.toString(),
-        'testFunction'
+        'testFunction',
       );
 
       expect(result).toEqual([
@@ -253,9 +258,9 @@ describe('aztec helpers', () => {
             type: {
               kind: 'struct',
               path: 'MyStruct',
-              fields: []
+              fields: [],
             },
-            visibility: 'public'
+            visibility: 'public',
           },
         ],
         bytecode: Buffer.from([]),
@@ -290,12 +295,10 @@ describe('aztec helpers', () => {
       const result = await getFunctionParameterInfoFromContractAddress(
         mockPXE,
         mockContractAddress.toString(),
-        'testFunction'
+        'testFunction',
       );
 
-      expect(result).toEqual([
-        { name: 'structParam', type: 'MyStruct' },
-      ]);
+      expect(result).toEqual([{ name: 'structParam', type: 'MyStruct' }]);
     });
   });
 });

@@ -1,12 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import type { JSONRPCTransport, JSONRPCRequest } from '@walletmesh/jsonrpc';
+import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 import { AztecChainProvider } from './chainProvider.js';
 import { AztecWalletError } from './errors.js';
 import type { ContractInstanceWithAddress, ContractArtifact, AztecAddress } from '@aztec/aztec.js';
 import type { AztecWalletMethodMap } from './types.js';
 
 const createMockTransport = () => ({
-  send: vi.fn().mockImplementation(() => Promise.resolve()),
+  send: vi
+    .fn()
+    .mockImplementation(async (request: JSONRPCRequest<AztecWalletMethodMap, keyof AztecWalletMethodMap>) => {
+      // Default mock implementation that records the call but returns undefined
+      return undefined;
+    }),
 });
 
 describe('AztecChainProvider', () => {
@@ -27,10 +32,17 @@ describe('AztecChainProvider', () => {
       const expectedAddress = '0x1234567890abcdef';
       const promise = provider.getAccount();
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID from the sent message
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_getAccount'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_getAccount'>;
       expect(sentRequest).toEqual({
         jsonrpc: '2.0',
         id: expect.any(String),
@@ -51,10 +63,17 @@ describe('AztecChainProvider', () => {
     it('throws on invalid response', async () => {
       const promise = provider.getAccount();
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_getAccount'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_getAccount'>;
 
       // Simulate error response
       await provider.receiveMessage({
@@ -82,10 +101,17 @@ describe('AztecChainProvider', () => {
       const expectedHash = '0xabcd';
       const promise = provider.sendTransaction(txParams);
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_sendTransaction'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_sendTransaction'>;
       expect(sentRequest).toEqual({
         jsonrpc: '2.0',
         id: expect.any(String),
@@ -107,10 +133,17 @@ describe('AztecChainProvider', () => {
     it('throws on invalid response', async () => {
       const promise = provider.sendTransaction(txParams);
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_sendTransaction'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_sendTransaction'>;
 
       // Simulate error response
       await provider.receiveMessage({
@@ -134,10 +167,17 @@ describe('AztecChainProvider', () => {
       const expectedResult = { success: true, data: 'test' };
       const promise = provider.simulateTransaction(txParams);
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_simulateTransaction'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_simulateTransaction'>;
       expect(sentRequest).toEqual({
         jsonrpc: '2.0',
         id: expect.any(String),
@@ -159,10 +199,17 @@ describe('AztecChainProvider', () => {
     it('throws on invalid response', async () => {
       const promise = provider.simulateTransaction(txParams);
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_simulateTransaction'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_simulateTransaction'>;
 
       // Simulate error response
       await provider.receiveMessage({
@@ -184,10 +231,17 @@ describe('AztecChainProvider', () => {
     it('succeeds on valid response', async () => {
       const promise = provider.registerContract(contractParams);
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerContract'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerContract'>;
       expect(sentRequest).toEqual({
         jsonrpc: '2.0',
         id: expect.any(String),
@@ -208,10 +262,17 @@ describe('AztecChainProvider', () => {
     it('throws on invalid response', async () => {
       const promise = provider.registerContract(contractParams);
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerContract'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerContract'>;
 
       // Simulate error response
       await provider.receiveMessage({
@@ -232,10 +293,17 @@ describe('AztecChainProvider', () => {
     it('succeeds on valid response', async () => {
       const promise = provider.registerContractClass(classParams);
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerContractClass'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerContractClass'>;
       expect(sentRequest).toEqual({
         jsonrpc: '2.0',
         id: expect.any(String),
@@ -256,10 +324,17 @@ describe('AztecChainProvider', () => {
     it('throws on invalid response', async () => {
       const promise = provider.registerContractClass(classParams);
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerContractClass'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerContractClass'>;
 
       // Simulate error response
       await provider.receiveMessage({
@@ -280,10 +355,17 @@ describe('AztecChainProvider', () => {
     it('succeeds on valid response', async () => {
       const promise = provider.registerSender(senderParams);
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerSender'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerSender'>;
       expect(sentRequest).toEqual({
         jsonrpc: '2.0',
         id: expect.any(String),
@@ -304,10 +386,17 @@ describe('AztecChainProvider', () => {
     it('throws on invalid response', async () => {
       const promise = provider.registerSender(senderParams);
 
+      // Wait for the async operation to complete
+      await Promise.resolve();
+
       // Get the request ID
-      const [[sentRequest]] = mockTransport.send.mock.calls as [
-        [JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerSender'>],
-      ];
+      const calls = mockTransport.send.mock.calls;
+      expect(mockTransport.send).toHaveBeenCalledTimes(1);
+      const firstCall = mockTransport.send.mock.calls[0];
+      if (!firstCall) throw new Error('Expected mock to be called');
+      const request = firstCall[0];
+      if (!request) throw new Error('Expected request to be defined');
+      const sentRequest = request as JSONRPCRequest<AztecWalletMethodMap, 'aztec_registerSender'>;
 
       // Simulate error response
       await provider.receiveMessage({

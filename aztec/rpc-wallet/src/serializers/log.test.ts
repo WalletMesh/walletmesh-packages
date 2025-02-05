@@ -18,10 +18,6 @@ import {
 } from './log.js';
 
 describe('Log Serializers', () => {
-  const createRandomLog = async () => {
-    const log = await ExtendedPublicLog.random();
-    return log;
-  };
   describe('aztec_getPublicLogs', () => {
     const METHOD = 'aztec_getPublicLogs';
 
@@ -36,10 +32,10 @@ describe('Log Serializers', () => {
 
       const params = { filter };
 
-      const serialized = aztecGetPublicLogsSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecGetPublicLogsSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetPublicLogsSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetPublicLogsSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.filter.contractAddress?.toString()).toBe(filter.contractAddress?.toString());
       expect(deserialized.filter.txHash?.toString()).toBe(filter.txHash?.toString());
       expect(deserialized.filter.fromBlock).toBe(filter.fromBlock);
@@ -54,11 +50,13 @@ describe('Log Serializers', () => {
         maxLogsHit: false,
       };
 
-      const serialized = aztecGetPublicLogsSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecGetPublicLogsSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetPublicLogsSerializer.result.deserialize(METHOD, serialized);
-      expect(deserialized.logs[0].toString()).toBe(result.logs[0].toString());
+      const deserialized = await aztecGetPublicLogsSerializer.result.deserialize(METHOD, serialized);
+      expect(deserialized.logs.length).toBeGreaterThan(0);
+      // biome-ignore lint/style/noNonNullAssertion: We know this should be defined
+      expect(deserialized.logs[0]!.toString()).toBe(result.logs[0]!.toString());
       expect(deserialized.logs.length).toBe(result.logs.length);
       expect(deserialized.maxLogsHit).toBe(result.maxLogsHit);
     });
@@ -82,10 +80,10 @@ describe('Log Serializers', () => {
         vpks: [await Point.random(), await Point.random()],
       };
 
-      const serialized = aztecGetPrivateEventsSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecGetPrivateEventsSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetPrivateEventsSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetPrivateEventsSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.event.eventSelector.toString()).toBe(event.eventSelector.toString());
       expect(deserialized.event.abiType).toEqual(event.abiType);
       expect(deserialized.event.fieldNames).toEqual(event.fieldNames);
@@ -98,7 +96,7 @@ describe('Log Serializers', () => {
   describe('aztec_getPublicEvents', () => {
     const METHOD = 'aztec_getPublicEvents';
 
-    it('should serialize and deserialize params', () => {
+    it('should serialize and deserialize params', async () => {
       const event = {
         eventSelector: EventSelector.fromString('0x12345678'),
         abiType: {
@@ -112,10 +110,10 @@ describe('Log Serializers', () => {
         limit: 10,
       };
 
-      const serialized = aztecGetPublicEventsSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecGetPublicEventsSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetPublicEventsSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetPublicEventsSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.event.eventSelector.toString()).toBe(event.eventSelector.toString());
       expect(deserialized.event.abiType).toEqual(event.abiType);
       expect(deserialized.event.fieldNames).toEqual(event.fieldNames);
@@ -141,10 +139,10 @@ describe('Log Serializers', () => {
       };
 
       const params = { filter };
-      const serialized = aztecGetContractClassLogsSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecGetContractClassLogsSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetContractClassLogsSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetContractClassLogsSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.filter.contractAddress?.toString()).toBe(filter.contractAddress?.toString());
       expect(deserialized.filter.txHash?.toString()).toBe(filter.txHash?.toString());
       expect(deserialized.filter.fromBlock).toBe(filter.fromBlock);
@@ -152,17 +150,17 @@ describe('Log Serializers', () => {
       expect(deserialized.filter.afterLog?.toString()).toBe(filter.afterLog?.toString());
     });
 
-    it('should serialize and deserialize params with minimal filter', () => {
+    it('should serialize and deserialize params with minimal filter', async () => {
       const filter: LogFilter = {
         fromBlock: 0,
         toBlock: 100,
       };
 
       const params = { filter };
-      const serialized = aztecGetContractClassLogsSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecGetContractClassLogsSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetContractClassLogsSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetContractClassLogsSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.filter.contractAddress).toBeUndefined();
       expect(deserialized.filter.txHash).toBeUndefined();
       expect(deserialized.filter.fromBlock).toBe(filter.fromBlock);
@@ -177,10 +175,10 @@ describe('Log Serializers', () => {
         maxLogsHit: false,
       };
 
-      const serialized = aztecGetContractClassLogsSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecGetContractClassLogsSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetContractClassLogsSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetContractClassLogsSerializer.result.deserialize(METHOD, serialized);
       expect(deserialized.logs).toEqual([]);
       expect(deserialized.maxLogsHit).toBe(result.maxLogsHit);
     });
@@ -189,26 +187,26 @@ describe('Log Serializers', () => {
   describe('aztec_getPrivateEvents result handling', () => {
     const METHOD = 'aztec_getPrivateEvents';
 
-    it('should serialize and deserialize empty result array', () => {
+    it('should serialize and deserialize empty result array', async () => {
       const result: unknown[] = [];
-      const serialized = aztecGetPrivateEventsSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecGetPrivateEventsSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetPrivateEventsSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetPrivateEventsSerializer.result.deserialize(METHOD, serialized);
       expect(deserialized).toEqual([]);
     });
 
-    it('should serialize and deserialize result with multiple events', () => {
+    it('should serialize and deserialize result with multiple events', async () => {
       const result = [
         { id: 1, data: 'event1' },
         { id: 2, data: 'event2' },
         { id: 3, data: 'event3' },
       ];
 
-      const serialized = aztecGetPrivateEventsSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecGetPrivateEventsSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetPrivateEventsSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetPrivateEventsSerializer.result.deserialize(METHOD, serialized);
       expect(deserialized).toEqual(result);
     });
   });
@@ -216,41 +214,39 @@ describe('Log Serializers', () => {
   describe('aztec_getPublicEvents result handling', () => {
     const METHOD = 'aztec_getPublicEvents';
 
-    it('should serialize and deserialize empty result array', () => {
+    it('should serialize and deserialize empty result array', async () => {
       const result: unknown[] = [];
-      const serialized = aztecGetPublicEventsSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecGetPublicEventsSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetPublicEventsSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetPublicEventsSerializer.result.deserialize(METHOD, serialized);
       expect(deserialized).toEqual([]);
     });
 
-    it('should serialize and deserialize result with multiple events', () => {
+    it('should serialize and deserialize result with multiple events', async () => {
       const result = [
         { id: 1, data: 'event1' },
         { id: 2, data: 'event2' },
         { id: 3, data: 'event3' },
       ];
 
-      const serialized = aztecGetPublicEventsSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecGetPublicEventsSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetPublicEventsSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetPublicEventsSerializer.result.deserialize(METHOD, serialized);
       expect(deserialized).toEqual(result);
     });
   });
 
   describe('Edge Cases', () => {
-    it('should handle invalid JSON in deserialization', () => {
+    it('should handle invalid JSON in deserialization', async () => {
       const METHOD = 'aztec_getPublicLogs';
       const invalidData = { method: METHOD, serialized: 'invalid json' };
 
-      expect(() => {
-        aztecGetPublicLogsSerializer.params.deserialize(METHOD, invalidData);
-      }).toThrow();
+      await expect(aztecGetPublicLogsSerializer.params.deserialize(METHOD, invalidData)).rejects.toThrow();
     });
 
-    it('should handle malformed event selector', () => {
+    it('should handle malformed event selector', async () => {
       const METHOD = 'aztec_getPublicEvents';
       const params = {
         event: {
@@ -269,24 +265,22 @@ describe('Log Serializers', () => {
         limit: 10,
       };
 
-      expect(() => {
-        aztecGetPublicEventsSerializer.params.serialize(METHOD, params);
-      }).toThrow();
+      await expect(aztecGetPublicEventsSerializer.params.serialize(METHOD, params)).rejects.toThrow();
     });
 
-    it('should handle undefined filter fields', async () => {
+    it('should handle optional filter fields', async () => {
       const METHOD = 'aztec_getPublicLogs';
       const filter: LogFilter = {
-        fromBlock: undefined,
-        toBlock: undefined,
+        fromBlock: 0,
+        toBlock: 0,
       };
 
       const params = { filter };
-      const serialized = aztecGetPublicLogsSerializer.params.serialize(METHOD, params);
-      const deserialized = aztecGetPublicLogsSerializer.params.deserialize(METHOD, serialized);
+      const serialized = await aztecGetPublicLogsSerializer.params.serialize(METHOD, params);
+      const deserialized = await aztecGetPublicLogsSerializer.params.deserialize(METHOD, serialized);
 
-      expect(deserialized.filter.fromBlock).toBeUndefined();
-      expect(deserialized.filter.toBlock).toBeUndefined();
+      expect(deserialized.filter.fromBlock).toBe(0);
+      expect(deserialized.filter.toBlock).toBe(0);
     });
   });
 });

@@ -6,7 +6,6 @@ import type {
   ContractInstanceWithAddress,
   ContractArtifact,
   PublicKeys,
-  Note,
   AuthWitness,
   Tx,
 } from '@aztec/aztec.js';
@@ -46,12 +45,8 @@ describe('Aztec Account Wallet Handler', () => {
       createAuthWit: vi.fn(),
       isL1ToL2MessageSynced: vi.fn(),
       getContracts: vi.fn(),
-      getContractInstance: vi.fn(),
-      getContractClass: vi.fn(),
-      getContractArtifact: vi.fn(),
-      isContractClassPubliclyRegistered: vi.fn(),
-      isContractPubliclyDeployed: vi.fn(),
-      isContractInitialized: vi.fn(),
+      getContractMetadata: vi.fn(),
+      getContractClassMetadata: vi.fn(),
       registerContract: vi.fn(),
       registerContractClass: vi.fn(),
       getPublicStorageAt: vi.fn(),
@@ -255,91 +250,22 @@ describe('Aztec Account Wallet Handler', () => {
   });
 
   describe('Contract Methods', () => {
-    it('handles aztec_getContractInstance', async () => {
+    it('handles aztec_getContractMetadata', async () => {
       const mockAddress = await AztecAddress.random();
-      const mockInstance = {
-        address: mockAddress,
-        toString: () => mockAddress.toString(),
-      } as unknown as ContractInstanceWithAddress;
-      wallet.getContractInstance = vi.fn().mockResolvedValue(mockInstance);
+      const mockMetadata = { address: mockAddress };
+      wallet.getContractMetadata = vi.fn().mockResolvedValue(mockMetadata);
 
-      const result = await aztecWalletHandler(context, 'aztec_getContractInstance', { address: mockAddress });
-      expect(result).toBe(mockInstance);
+      const result = await aztecWalletHandler(context, 'aztec_getContractMetadata', { address: mockAddress });
+      expect(result).toBe(mockMetadata);
     });
 
-    it('throws error when contract instance not found', async () => {
-      wallet.getContractInstance = vi.fn().mockResolvedValue(null);
-
-      const testAddress = await AztecAddress.random();
-      await expect(
-        aztecWalletHandler(context, 'aztec_getContractInstance', { address: testAddress }),
-      ).rejects.toThrow(AztecWalletError);
-    });
-
-    it('handles aztec_getContractClass', async () => {
+    it('handles aztec_getContractClassMetadata', async () => {
       const mockId = await Fr.random();
-      const mockContractClass = { id: mockId };
-      wallet.getContractClass = vi.fn().mockResolvedValue(mockContractClass);
+      const mockMetadata = { id: mockId };
+      wallet.getContractClassMetadata = vi.fn().mockResolvedValue(mockMetadata);
 
-      const result = await aztecWalletHandler(context, 'aztec_getContractClass', { id: mockId });
-      expect(result).toBe(mockContractClass);
-    });
-
-    it('throws error when contract class not found', async () => {
-      wallet.getContractClass = vi.fn().mockResolvedValue(null);
-      const mockId = await Fr.random();
-
-      await expect(aztecWalletHandler(context, 'aztec_getContractClass', { id: mockId })).rejects.toThrow(
-        AztecWalletError,
-      );
-    });
-
-    it('handles aztec_getContractArtifact', async () => {
-      const mockId = await Fr.random();
-      const mockArtifact = { id: mockId, name: 'TestContract' };
-      wallet.getContractArtifact = vi.fn().mockResolvedValue(mockArtifact);
-
-      const result = await aztecWalletHandler(context, 'aztec_getContractArtifact', { id: mockId });
-      expect(result).toBe(mockArtifact);
-    });
-
-    it('throws error when contract artifact not found', async () => {
-      wallet.getContractArtifact = vi.fn().mockResolvedValue(null);
-      const mockId = await Fr.random();
-
-      await expect(aztecWalletHandler(context, 'aztec_getContractArtifact', { id: mockId })).rejects.toThrow(
-        AztecWalletError,
-      );
-    });
-
-    it('handles aztec_isContractClassPubliclyRegistered', async () => {
-      const mockId = await Fr.random();
-      wallet.isContractClassPubliclyRegistered = vi.fn().mockResolvedValue(true);
-
-      const result = await aztecWalletHandler(context, 'aztec_isContractClassPubliclyRegistered', {
-        id: mockId,
-      });
-      expect(result).toBe(true);
-    });
-
-    it('handles aztec_isContractPubliclyDeployed', async () => {
-      const mockAddress = await AztecAddress.random();
-      wallet.isContractPubliclyDeployed = vi.fn().mockResolvedValue(true);
-
-      const result = await aztecWalletHandler(context, 'aztec_isContractPubliclyDeployed', {
-        address: mockAddress,
-      });
-      expect(result).toBe(true);
-    });
-
-    it('handles aztec_isContractInitialized', async () => {
-      const mockAddress = await AztecAddress.random();
-      wallet.isContractInitialized = vi.fn().mockResolvedValue(true);
-
-      const result = await aztecWalletHandler(context, 'aztec_isContractInitialized', {
-        address: mockAddress,
-      });
-      expect(result).toBe(true);
+      const result = await aztecWalletHandler(context, 'aztec_getContractClassMetadata', { id: mockId });
+      expect(result).toBe(mockMetadata);
     });
 
     it('handles aztec_registerContract', async () => {

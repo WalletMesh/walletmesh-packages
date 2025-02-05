@@ -2,7 +2,6 @@ import type {
   AuthWitness,
   AztecAddress,
   ContractArtifact,
-  ContractClassWithId,
   ContractInstanceWithAddress,
   ExtendedNote,
   Fr,
@@ -35,6 +34,8 @@ import type {
   TxSimulationResult,
   GetPublicLogsResponse,
   GetContractClassLogsResponse,
+  ContractMetadata,
+  ContractClassMetadata,
 } from '@aztec/circuit-types';
 import type { GasFees, L1_TO_L2_MSG_TREE_HEIGHT } from '@aztec/circuits.js';
 import type { JSONRPCEventMap, JSONRPCMiddleware } from '@walletmesh/jsonrpc';
@@ -213,12 +214,11 @@ export interface AztecWalletMethodMap extends AztecWalletBaseMethodMap {
   /* Contracts */
 
   aztec_getContracts: { result: AztecAddress[] };
-  aztec_getContractInstance: { params: { address: AztecAddress }; result: ContractInstanceWithAddress };
-  aztec_getContractClass: { params: { id: Fr }; result: ContractClassWithId };
-  aztec_getContractArtifact: { params: { id: Fr }; result: ContractArtifact };
-  aztec_isContractClassPubliclyRegistered: { params: { id: Fr }; result: boolean };
-  aztec_isContractPubliclyDeployed: { params: { address: AztecAddress }; result: boolean };
-  aztec_isContractInitialized: { params: { address: AztecAddress }; result: boolean };
+  aztec_getContractMetadata: { params: { address: AztecAddress }; result: ContractMetadata };
+  aztec_getContractClassMetadata: {
+    params: { id: Fr; includeArtifact?: boolean };
+    result: ContractClassMetadata;
+  };
 
   /**
    * Registers a contract instance in the user's PXE.

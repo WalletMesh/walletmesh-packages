@@ -21,10 +21,10 @@ export class AztecGetNotesSerializer
      * @param value - The parameters containing filter criteria for notes
      * @returns Serialized filter data
      */
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getNotes']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { filter } = value;
       // Convert instances to their string representations for transport
       const serializedFilter = {
@@ -37,10 +37,10 @@ export class AztecGetNotesSerializer
         scopes: filter.scopes?.map((scope) => scope.toString()),
       };
 
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify({ filter: serializedFilter }),
-      };
+      });
     },
     /**
      * Deserializes notes filter parameters from RPC transport.
@@ -48,10 +48,10 @@ export class AztecGetNotesSerializer
      * @param data - The serialized filter data
      * @returns Deserialized filter parameters
      */
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getNotes']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_getNotes']['params']> => {
       const { filter } = JSON.parse(data.serialized);
 
       // Convert string representations back to instances
@@ -66,9 +66,9 @@ export class AztecGetNotesSerializer
       if (filter.scopes)
         notesFilter.scopes = filter.scopes.map((scope: string) => AztecAddress.fromString(scope));
 
-      return {
+      return Promise.resolve({
         filter: notesFilter,
-      };
+      });
     },
   };
 
@@ -79,14 +79,14 @@ export class AztecGetNotesSerializer
      * @param value - Array of unique notes matching the filter criteria
      * @returns Serialized note array
      */
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_getNotes']['result'],
-    ): JSONRPCSerializedData => {
-      return {
+    ): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(value.map((n) => n.toString())),
-      };
+      });
     },
     /**
      * Deserializes the notes query result.
@@ -94,11 +94,11 @@ export class AztecGetNotesSerializer
      * @param data - The serialized note array data
      * @returns Array of deserialized unique notes
      */
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getNotes']['result'] => {
-      return JSON.parse(data.serialized).map((n: string) => UniqueNote.fromString(n));
+    ): Promise<AztecWalletMethodMap['aztec_getNotes']['result']> => {
+      return Promise.resolve(JSON.parse(data.serialized).map((n: string) => UniqueNote.fromString(n)));
     },
   };
 }
@@ -121,15 +121,15 @@ export class AztecAddNoteSerializer
      * @param value - The parameters containing the note to add
      * @returns Serialized note data
      */
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_addNote']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { note } = value;
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify({ note: note.toBuffer().toString('base64') }),
-      };
+      });
     },
     /**
      * Deserializes note addition parameters from RPC transport.
@@ -137,13 +137,13 @@ export class AztecAddNoteSerializer
      * @param data - The serialized note data
      * @returns Deserialized note parameters
      */
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_addNote']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_addNote']['params']> => {
       const { note: noteBase64 } = JSON.parse(data.serialized);
       const note = ExtendedNote.fromBuffer(Buffer.from(noteBase64, 'base64'));
-      return { note };
+      return Promise.resolve({ note });
     },
   };
 
@@ -154,11 +154,11 @@ export class AztecAddNoteSerializer
      * @param value - Boolean indicating success of the note addition
      * @returns Serialized result
      */
-    serialize: (method: string, value: boolean): JSONRPCSerializedData => {
-      return {
+    serialize: async (method: string, value: boolean): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(value),
-      };
+      });
     },
     /**
      * Deserializes the note addition result.
@@ -166,8 +166,8 @@ export class AztecAddNoteSerializer
      * @param data - The serialized result data
      * @returns Boolean indicating success
      */
-    deserialize: (_method: string, data: JSONRPCSerializedData): boolean => {
-      return JSON.parse(data.serialized);
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<boolean> => {
+      return Promise.resolve(JSON.parse(data.serialized));
     },
   };
 }
@@ -190,15 +190,15 @@ export class AztecAddNullifiedNoteSerializer
      * @param value - The parameters containing the nullified note to add
      * @returns Serialized note data
      */
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_addNullifiedNote']['params'],
-    ): JSONRPCSerializedData => {
+    ): Promise<JSONRPCSerializedData> => {
       const { note } = value;
-      return {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify({ note: note.toBuffer().toString('base64') }),
-      };
+      });
     },
     /**
      * Deserializes nullified note addition parameters from RPC transport.
@@ -206,13 +206,13 @@ export class AztecAddNullifiedNoteSerializer
      * @param data - The serialized note data
      * @returns Deserialized note parameters
      */
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_addNullifiedNote']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_addNullifiedNote']['params']> => {
       const { note: noteBase64 } = JSON.parse(data.serialized);
       const note = ExtendedNote.fromBuffer(Buffer.from(noteBase64, 'base64'));
-      return { note };
+      return Promise.resolve({ note });
     },
   };
 
@@ -223,11 +223,11 @@ export class AztecAddNullifiedNoteSerializer
      * @param value - Boolean indicating success of the nullified note addition
      * @returns Serialized result
      */
-    serialize: (method: string, value: boolean): JSONRPCSerializedData => {
-      return {
+    serialize: async (method: string, value: boolean): Promise<JSONRPCSerializedData> => {
+      return Promise.resolve({
         method,
         serialized: JSON.stringify(value),
-      };
+      });
     },
     /**
      * Deserializes the nullified note addition result.
@@ -235,8 +235,8 @@ export class AztecAddNullifiedNoteSerializer
      * @param data - The serialized result data
      * @returns Boolean indicating success
      */
-    deserialize: (_method: string, data: JSONRPCSerializedData): boolean => {
-      return JSON.parse(data.serialized);
+    deserialize: async (_method: string, data: JSONRPCSerializedData): Promise<boolean> => {
+      return Promise.resolve(JSON.parse(data.serialized));
     },
   };
 }

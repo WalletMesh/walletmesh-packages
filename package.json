@@ -22,7 +22,8 @@
     "lint:fix": "biome lint --write",
     "format": "biome format",
     "format:fix": "biome format --write",
-    "create-package": "bash create-package.sh"
+    "create-package": "bash create-package.sh",
+    "update-aztec-deps": "tsx scripts/update-aztec-deps.ts"
   },
   "license": "Apache-2.0",
   "devDependencies": {

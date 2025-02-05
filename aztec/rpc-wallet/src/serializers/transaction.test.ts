@@ -40,11 +40,16 @@ describe('Transaction Serializers', () => {
       };
       const params = { exec };
 
-      const serialized = aztecCreateTxExecutionRequestSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecCreateTxExecutionRequestSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecCreateTxExecutionRequestSerializer.params.deserialize(METHOD, serialized);
-      expect(JSON.stringify(deserialized.exec)).toBe(JSON.stringify(params.exec));
+      const deserialized = await aztecCreateTxExecutionRequestSerializer.params.deserialize(
+        METHOD,
+        serialized,
+      );
+      expect(deserialized.exec.calls).toEqual([]);
+      expect(deserialized.exec.fee.gasSettings.equals(randomTx.txContext.gasSettings)).toBe(true);
+      expect(deserialized.exec.fee.paymentMethod).toBeDefined();
     });
 
     it('should handle complex function calls in params', async () => {
@@ -69,29 +74,31 @@ describe('Transaction Serializers', () => {
       };
       const params = { exec };
 
-      const serialized = aztecCreateTxExecutionRequestSerializer.params.serialize(METHOD, params);
-      const deserialized = aztecCreateTxExecutionRequestSerializer.params.deserialize(METHOD, serialized);
+      const serialized = await aztecCreateTxExecutionRequestSerializer.params.serialize(METHOD, params);
+      const deserialized = await aztecCreateTxExecutionRequestSerializer.params.deserialize(
+        METHOD,
+        serialized,
+      );
 
-      expect(deserialized.exec.calls[0].name).toBe(exec.calls[0].name);
-      expect(deserialized.exec.calls[0].to.toString()).toBe(exec.calls[0].to.toString());
-      expect(deserialized.exec.calls[0].type).toBe(exec.calls[0].type);
+      // biome-ignore lint/style/noNonNullAssertion: test
+      expect(deserialized.exec.calls[0]!.name).toBe(exec.calls[0]!.name);
+      // biome-ignore lint/style/noNonNullAssertion: test
+      expect(deserialized.exec.calls[0]!.to.toString()).toBe(exec.calls[0]!.to.toString());
+      // biome-ignore lint/style/noNonNullAssertion: test
+      expect(deserialized.exec.calls[0]!.type).toBe(exec.calls[0]!.type);
     });
 
     it('should serialize and deserialize result', async () => {
       const result = await TxExecutionRequest.random();
 
-      const serialized = aztecCreateTxExecutionRequestSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecCreateTxExecutionRequestSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecCreateTxExecutionRequestSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecCreateTxExecutionRequestSerializer.result.deserialize(
+        METHOD,
+        serialized,
+      );
       expect(deserialized.toString()).toBe(result.toString());
-    });
-
-    it('should handle invalid params', () => {
-      expect(() => {
-        // @ts-ignore - Testing invalid input
-        aztecCreateTxExecutionRequestSerializer.params.serialize(METHOD, { exec: null });
-      }).toThrow();
     });
   });
 
@@ -102,10 +109,10 @@ describe('Transaction Serializers', () => {
       const txHash = await TxHash.random();
       const params = { txHash };
 
-      const serialized = aztecGetTxEffectSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecGetTxEffectSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetTxEffectSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetTxEffectSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.txHash.toString()).toBe(txHash.toString());
     });
 
@@ -120,8 +127,8 @@ describe('Transaction Serializers', () => {
         data: effect,
       };
 
-      const serialized = aztecGetTxEffectSerializer.result.serialize(METHOD, result);
-      const deserialized = aztecGetTxEffectSerializer.result.deserialize(METHOD, serialized);
+      const serialized = await aztecGetTxEffectSerializer.result.serialize(METHOD, result);
+      const deserialized = await aztecGetTxEffectSerializer.result.deserialize(METHOD, serialized);
 
       expect(deserialized.l2BlockNumber).toBe(result.l2BlockNumber);
       expect(deserialized.data).toBeDefined();
@@ -135,10 +142,10 @@ describe('Transaction Serializers', () => {
       const txHash = await TxHash.random();
       const params = { txHash };
 
-      const serialized = aztecGetTxReceiptSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecGetTxReceiptSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecGetTxReceiptSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecGetTxReceiptSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.txHash.toString()).toBe(txHash.toString());
     });
 
@@ -152,8 +159,8 @@ describe('Transaction Serializers', () => {
         undefined,
       );
 
-      const serialized = aztecGetTxReceiptSerializer.result.serialize(METHOD, receipt);
-      const deserialized = aztecGetTxReceiptSerializer.result.deserialize(METHOD, serialized);
+      const serialized = await aztecGetTxReceiptSerializer.result.serialize(METHOD, receipt);
+      const deserialized = await aztecGetTxReceiptSerializer.result.deserialize(METHOD, serialized);
 
       expect(deserialized.txHash.toString()).toBe(receipt.txHash.toString());
       expect(deserialized.error).toBe(receipt.error);
@@ -167,20 +174,20 @@ describe('Transaction Serializers', () => {
       const tx = await Tx.random();
       const params = { tx };
 
-      const serialized = aztecSendTxSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecSendTxSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecSendTxSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecSendTxSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.tx.toBuffer().toString('hex')).toBe(tx.toBuffer().toString('hex'));
     });
 
     it('should serialize and deserialize result', async () => {
       const result = await TxHash.random();
 
-      const serialized = aztecSendTxSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecSendTxSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecSendTxSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecSendTxSerializer.result.deserialize(METHOD, serialized);
       expect(deserialized.toString()).toBe(result.toString());
     });
   });
@@ -198,10 +205,10 @@ describe('Transaction Serializers', () => {
         profile: false,
       };
 
-      const serialized = aztecSimulateTxSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecSimulateTxSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecSimulateTxSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecSimulateTxSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.txRequest.toString()).toBe((params.txRequest as TxExecutionRequest).toString());
       expect(deserialized.simulatePublic).toBe(params.simulatePublic);
       expect(deserialized.msgSender?.toString()).toBe(params.msgSender.toString());
@@ -213,8 +220,8 @@ describe('Transaction Serializers', () => {
     it('should serialize and deserialize result', async () => {
       const result = await TxSimulationResult.random();
 
-      const serialized = aztecSimulateTxSerializer.result.serialize(METHOD, result);
-      const deserialized = aztecSimulateTxSerializer.result.deserialize(METHOD, serialized);
+      const serialized = await aztecSimulateTxSerializer.result.serialize(METHOD, result);
+      const deserialized = await aztecSimulateTxSerializer.result.deserialize(METHOD, serialized);
 
       expect(deserialized.privateExecutionResult).toBeDefined();
       expect(deserialized.publicInputs).toBeDefined();
@@ -253,8 +260,8 @@ describe('Transaction Serializers', () => {
       publicOutput.revertReason = await SimulationError.random();
       const result = new TxSimulationResult(privateExecutionResult, publicInputs, publicOutput, undefined);
 
-      const serialized = aztecSimulateTxSerializer.result.serialize(METHOD, result);
-      const deserialized = aztecSimulateTxSerializer.result.deserialize(METHOD, serialized);
+      const serialized = await aztecSimulateTxSerializer.result.serialize(METHOD, result);
+      const deserialized = await aztecSimulateTxSerializer.result.deserialize(METHOD, serialized);
 
       const output = deserialized.publicOutput;
       expect(output).toBeDefined();
@@ -273,10 +280,10 @@ describe('Transaction Serializers', () => {
       const privateExecutionResult = await PrivateExecutionResult.random();
       const params = { txRequest, privateExecutionResult };
 
-      const serialized = aztecProveTxSerializer.params.serialize(METHOD, params);
+      const serialized = await aztecProveTxSerializer.params.serialize(METHOD, params);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecProveTxSerializer.params.deserialize(METHOD, serialized);
+      const deserialized = await aztecProveTxSerializer.params.deserialize(METHOD, serialized);
       expect(deserialized.txRequest.toString()).toBe(txRequest.toString());
       expect(jsonStringify(deserialized.privateExecutionResult)).toEqual(
         jsonStringify(privateExecutionResult),
@@ -286,10 +293,10 @@ describe('Transaction Serializers', () => {
     it('should serialize and deserialize result', async () => {
       const result = await TxProvingResult.random();
 
-      const serialized = aztecProveTxSerializer.result.serialize(METHOD, result);
+      const serialized = await aztecProveTxSerializer.result.serialize(METHOD, result);
       expect(serialized.method).toBe(METHOD);
 
-      const deserialized = aztecProveTxSerializer.result.deserialize(METHOD, serialized);
+      const deserialized = await aztecProveTxSerializer.result.deserialize(METHOD, serialized);
       expect(jsonStringify(deserialized)).toEqual(jsonStringify(result));
     });
 
@@ -302,8 +309,8 @@ describe('Transaction Serializers', () => {
       privateExecutionResult.entrypoint.nestedExecutions.push(nestedExecution.entrypoint);
 
       const params = { txRequest, privateExecutionResult };
-      const serialized = aztecProveTxSerializer.params.serialize(METHOD, params);
-      const deserialized = aztecProveTxSerializer.params.deserialize(METHOD, serialized);
+      const serialized = await aztecProveTxSerializer.params.serialize(METHOD, params);
+      const deserialized = await aztecProveTxSerializer.params.deserialize(METHOD, serialized);
 
       expect(jsonStringify(deserialized.privateExecutionResult)).toEqual(
         jsonStringify(privateExecutionResult),

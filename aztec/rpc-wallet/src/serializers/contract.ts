@@ -1,184 +1,135 @@
 import type { AztecWalletMethodMap } from '../types.js';
 import type { JSONRPCSerializedData, JSONRPCSerializer } from '@walletmesh/jsonrpc';
-import { SerializableContractInstance, ContractClassWithIdSchema } from '@aztec/circuits.js';
+import { ContractClassWithIdSchema, ContractInstanceWithAddressSchema } from '@aztec/circuits.js';
 import { ContractArtifactSchema } from '@aztec/foundation/abi';
 import { AztecAddress, Fr } from '@aztec/aztec.js';
-import type { ContractInstanceWithAddress } from '@aztec/aztec.js';
 import { jsonStringify, jsonParseWithSchema } from '@aztec/foundation/json-rpc';
+import type { ZodFor } from '@aztec/foundation/schemas';
+import type { ContractMetadata, ContractClassMetadata } from '@aztec/circuit-types';
+import { z } from 'zod';
+
+// Zod schemas for contract metadata serialization.
+// These are copied from @aztec/circuit-types because they are not exported.
+const ContractMetadataSchema = z.object({
+  contractInstance: z.union([ContractInstanceWithAddressSchema, z.undefined()]),
+  isContractInitialized: z.boolean(),
+  isContractPubliclyDeployed: z.boolean(),
+}) satisfies ZodFor<ContractMetadata>;
+
+const ContractClassMetadataSchema = z.object({
+  contractClass: z.union([ContractClassWithIdSchema, z.undefined()]),
+  isContractClassPubliclyRegistered: z.boolean(),
+  artifact: z.union([ContractArtifactSchema, z.undefined()]),
+}) satisfies ZodFor<ContractClassMetadata>;
 
 /**
- * Serializer for the aztec_getContractInstance RPC method.
- * Handles serialization of contract instance queries and results between JSON-RPC format and native Aztec types.
+ * Serializer for the aztec_getContractClassMetadata RPC method.
+ * Handles serialization of contract class metadata queries and results between JSON-RPC format and native Aztec types.
  */
-export class AztecGetContractInstanceSerializer
+export class AztecGetContractClassMetadataSerializer
   implements
     JSONRPCSerializer<
-      AztecWalletMethodMap['aztec_getContractInstance']['params'],
-      AztecWalletMethodMap['aztec_getContractInstance']['result']
+      AztecWalletMethodMap['aztec_getContractClassMetadata']['params'],
+      AztecWalletMethodMap['aztec_getContractClassMetadata']['result']
     >
 {
   params = {
     /**
-     * Serializes contract instance query parameters for RPC transport.
+     * Serializes contract class metadata query parameters for RPC transport.
      * @param method - The RPC method name
-     * @param value - The parameters containing the contract address to look up
-     * @returns Serialized address data
+     * @param value - The parameters containing the class ID and artifact inclusion flag
+     * @returns Serialized query parameters
      */
-    serialize: (
+    serialize: async (
       method: string,
-      value: AztecWalletMethodMap['aztec_getContractInstance']['params'],
-    ): JSONRPCSerializedData => ({
-      method,
-      serialized: jsonStringify(value.address),
-    }),
-    deserialize: (
+      value: AztecWalletMethodMap['aztec_getContractClassMetadata']['params'],
+    ): Promise<JSONRPCSerializedData> =>
+      Promise.resolve({
+        method,
+        serialized: JSON.stringify({
+          id: value.id.toString(),
+          includeArtifact: value.includeArtifact,
+        }),
+      }),
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getContractInstance']['params'] => {
+    ): Promise<AztecWalletMethodMap['aztec_getContractClassMetadata']['params']> => {
+      const { id, includeArtifact } = JSON.parse(data.serialized);
       return {
-        address: jsonParseWithSchema(data.serialized, AztecAddress.schema),
+        id: Fr.fromString(id),
+        includeArtifact,
+      };
+    },
+  };
+  result = {
+    /**
+     * Serializes the contract class metadata query result.
+     * @param method - The RPC method name
+     * @param value - The contract class metadata including class definition and registration status
+     * @returns Serialized contract class metadata
+     */
+    serialize: async (
+      method: string,
+      value: AztecWalletMethodMap['aztec_getContractClassMetadata']['result'],
+    ): Promise<JSONRPCSerializedData> => {
+      return {
+        method,
+        serialized: jsonStringify(value),
+      };
+    },
+    deserialize: async (
+      _method: string,
+      data: JSONRPCSerializedData,
+    ): Promise<AztecWalletMethodMap['aztec_getContractClassMetadata']['result']> => {
+      return await jsonParseWithSchema(data.serialized, ContractClassMetadataSchema);
+    },
+  };
+}
+
+export class AztecGetContractMetadataSerializer
+  implements
+    JSONRPCSerializer<
+      AztecWalletMethodMap['aztec_getContractMetadata']['params'],
+      AztecWalletMethodMap['aztec_getContractMetadata']['result']
+    >
+{
+  params = {
+    serialize: async (
+      method: string,
+      value: AztecWalletMethodMap['aztec_getContractMetadata']['params'],
+    ): Promise<JSONRPCSerializedData> => {
+      return {
+        method,
+        serialized: jsonStringify(value.address),
+      };
+    },
+    deserialize: async (
+      _method: string,
+      data: JSONRPCSerializedData,
+    ): Promise<AztecWalletMethodMap['aztec_getContractMetadata']['params']> => {
+      return {
+        address: await jsonParseWithSchema(data.serialized, AztecAddress.schema),
       };
     },
   };
 
   result = {
-    /**
-     * Serializes the contract instance query result.
-     * @param method - The RPC method name
-     * @param value - The contract instance data including address and state
-     * @returns Serialized contract instance data
-     */
-    serialize: (method: string, value: ContractInstanceWithAddress): JSONRPCSerializedData => ({
-      method,
-      serialized: JSON.stringify({
-        serializableContractInstance: new SerializableContractInstance(value).toBuffer(),
-        address: jsonStringify(value.address),
-      }),
-    }),
-    deserialize: (_method: string, data: JSONRPCSerializedData): ContractInstanceWithAddress => {
-      const parsed = JSON.parse(data.serialized);
-      return SerializableContractInstance.fromBuffer(
-        Buffer.from(parsed.serializableContractInstance),
-      ).withAddress(jsonParseWithSchema(parsed.address, AztecAddress.schema));
-    },
-  };
-}
-
-/**
- * Serializer for the aztec_getContractClass RPC method.
- * Handles serialization of contract class queries and results between JSON-RPC format and native Aztec types.
- */
-export class AztecGetContractClassSerializer
-  implements
-    JSONRPCSerializer<
-      AztecWalletMethodMap['aztec_getContractClass']['params'],
-      AztecWalletMethodMap['aztec_getContractClass']['result']
-    >
-{
-  params = {
-    /**
-     * Serializes contract class query parameters for RPC transport.
-     * @param method - The RPC method name
-     * @param value - The parameters containing the class ID to look up
-     * @returns Serialized class ID data
-     */
-    serialize: (
+    serialize: async (
       method: string,
-      value: AztecWalletMethodMap['aztec_getContractClass']['params'],
-    ): JSONRPCSerializedData => ({
-      method,
-      serialized: JSON.stringify({
-        id: value.id.toString(),
-      }),
-    }),
-    deserialize: (
+      contractMetadata: AztecWalletMethodMap['aztec_getContractMetadata']['result'],
+    ): Promise<JSONRPCSerializedData> => {
+      return {
+        method,
+        serialized: jsonStringify(contractMetadata),
+      };
+    },
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getContractClass']['params'] => {
-      const { id } = JSON.parse(data.serialized);
-      return { id: Fr.fromString(id) };
+    ): Promise<AztecWalletMethodMap['aztec_getContractMetadata']['result']> => {
+      return await jsonParseWithSchema(data.serialized, ContractMetadataSchema);
     },
-  };
-
-  result = {
-    /**
-     * Serializes the contract class query result.
-     * @param method - The RPC method name
-     * @param value - The contract class definition with its ID
-     * @returns Serialized contract class data
-     */
-    serialize: (
-      method: string,
-      value: AztecWalletMethodMap['aztec_getContractClass']['result'],
-    ): JSONRPCSerializedData => ({
-      method,
-      serialized: JSON.stringify(value),
-    }),
-    deserialize: (
-      _method: string,
-      data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getContractClass']['result'] => {
-      const parsed = JSON.parse(data.serialized);
-      return ContractClassWithIdSchema.parse(parsed);
-    },
-  };
-}
-
-/**
- * Serializer for the aztec_getContractArtifact RPC method.
- * Handles serialization of contract artifact queries and results between JSON-RPC format and native Aztec types.
- */
-export class AztecGetContractArtifactSerializer
-  implements
-    JSONRPCSerializer<
-      AztecWalletMethodMap['aztec_getContractArtifact']['params'],
-      AztecWalletMethodMap['aztec_getContractArtifact']['result']
-    >
-{
-  params = {
-    /**
-     * Serializes contract artifact query parameters for RPC transport.
-     * @param method - The RPC method name
-     * @param value - The parameters containing the artifact ID to look up
-     * @returns Serialized artifact ID data
-     */
-    serialize: (
-      method: string,
-      value: AztecWalletMethodMap['aztec_getContractArtifact']['params'],
-    ): JSONRPCSerializedData => ({
-      method,
-      serialized: JSON.stringify({
-        id: value.id.toString(),
-      }),
-    }),
-    deserialize: (
-      _method: string,
-      data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getContractArtifact']['params'] => {
-      const { id } = JSON.parse(data.serialized);
-      return { id: Fr.fromString(id) };
-    },
-  };
-
-  result = {
-    /**
-     * Serializes the contract artifact query result.
-     * @param method - The RPC method name
-     * @param value - The contract artifact data
-     * @returns Serialized contract artifact
-     */
-    serialize: (
-      method: string,
-      value: AztecWalletMethodMap['aztec_getContractArtifact']['result'],
-    ): JSONRPCSerializedData => ({
-      method,
-      serialized: JSON.stringify(ContractArtifactSchema.parse(value)),
-    }),
-    deserialize: (
-      _method: string,
-      data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_getContractArtifact']['result'] =>
-      ContractArtifactSchema.parse(JSON.parse(data.serialized)),
   };
 }
 
@@ -200,49 +151,26 @@ export class AztecRegisterContractSerializer
      * @param value - The parameters containing contract instance and optional artifact
      * @returns Serialized registration data
      */
-    serialize: (
+    serialize: async (
       method: string,
       value: AztecWalletMethodMap['aztec_registerContract']['params'],
-    ): JSONRPCSerializedData => ({
+    ): Promise<JSONRPCSerializedData> => ({
       method,
       serialized: JSON.stringify({
-        serializableContractInstance: new SerializableContractInstance(value.instance).toBuffer(),
-        address: value.instance.address.toString(),
-        artifact: value.artifact ? ContractArtifactSchema.parse(value.artifact) : undefined,
+        instance: jsonStringify(value.instance),
+        artifact: value.artifact ? jsonStringify(value.artifact) : undefined,
       }),
     }),
-    deserialize: (
+    deserialize: async (
       _method: string,
       data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_registerContract']['params'] => {
-      const { serializableContractInstance, address, artifact } = JSON.parse(data.serialized);
+    ): Promise<AztecWalletMethodMap['aztec_registerContract']['params']> => {
+      const { instance, artifact } = JSON.parse(data.serialized);
       return {
-        instance: SerializableContractInstance.fromBuffer(
-          Buffer.from(serializableContractInstance),
-        ).withAddress(AztecAddress.fromString(address)),
-        artifact: artifact ? ContractArtifactSchema.parse(artifact) : undefined,
+        instance: await jsonParseWithSchema(instance, ContractInstanceWithAddressSchema),
+        artifact: artifact ? await jsonParseWithSchema(artifact, ContractArtifactSchema) : undefined,
       };
     },
-  };
-
-  result = {
-    /**
-     * Serializes the contract registration result.
-     * @param method - The RPC method name
-     * @param value - Boolean indicating success of registration
-     * @returns Serialized result
-     */
-    serialize: (
-      method: string,
-      value: AztecWalletMethodMap['aztec_registerContract']['result'],
-    ): JSONRPCSerializedData => ({
-      method,
-      serialized: JSON.stringify(value),
-    }),
-    deserialize: (
-      _method: string,
-      data: JSONRPCSerializedData,
-    ): AztecWalletMethodMap['aztec_registerContract']['result'] => JSON.parse(data.serialized),
   };
 }
 
@@ -250,7 +178,6 @@ export class AztecRegisterContractSerializer
  * Pre-instantiated serializer instances for Aztec contract-related RPC methods.
  * These instances can be used directly by the RPC handler implementation.
  */
-export const aztecGetContractInstanceSerializer = new AztecGetContractInstanceSerializer();
-export const aztecGetContractClassSerializer = new AztecGetContractClassSerializer();
-export const aztecGetContractArtifactSerializer = new AztecGetContractArtifactSerializer();
 export const aztecRegisterContractSerializer = new AztecRegisterContractSerializer();
+export const aztecGetContractClassMetadataSerializer = new AztecGetContractClassMetadataSerializer();
+export const aztecGetContractMetadataSerializer = new AztecGetContractMetadataSerializer();

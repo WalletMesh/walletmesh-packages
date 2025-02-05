@@ -60,16 +60,26 @@ export class ContractArtifactCache {
       return cached;
     }
 
-    const contract = await this.wallet.getContractInstance(contractAddress);
-    if (!contract) {
-      throw new AztecWalletError('contractInstanceNotRegistered', addressStr);
-    }
-    const artifact = await this.wallet.getContractArtifact(contract.contractClassId);
-    if (!artifact) {
-      throw new AztecWalletError('contractClassNotRegistered', contract.contractClassId.toString());
-    }
+    try {
+      const contractMetadata = await this.wallet.getContractMetadata(contractAddress);
+      const contract = contractMetadata.contractInstance;
+      if (!contract) {
+        throw new AztecWalletError('contractInstanceNotRegistered', addressStr);
+      }
 
-    this.cache.set(addressStr, artifact);
-    return artifact;
+      const contractClassMetadata = await this.wallet.getContractClassMetadata(contract.contractClassId);
+      const artifact = contractClassMetadata.artifact;
+      if (!artifact) {
+        throw new AztecWalletError('contractClassNotRegistered', contract.contractClassId.toString());
+      }
+      this.cache.set(addressStr, artifact);
+      return artifact;
+    } catch (error) {
+      if (error instanceof AztecWalletError) {
+        throw error;
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new AztecWalletError('contractInstanceNotRegistered', `${addressStr}: ${errorMessage}`);
+    }
   }
 }
