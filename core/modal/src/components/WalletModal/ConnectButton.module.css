@@ -1,0 +1,57 @@
+.connectedButton,
+.connectButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  padding: 0 15px;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 500;
+  height: 35px;
+  background-color: white;
+  color: #6e3ff3;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.connectedButton:hover,
+.connectButton:hover {
+  background-color: #f9f9f9;
+}
+
+.connectedButton:focus,
+.connectButton:focus {
+  box-shadow: 0 0 0 2px #6e3ff3;
+}
+
+.connectedButton:disabled,
+.connectButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loadingIcon {
+  margin-right: 5px;
+  animation: spin 1s linear infinite;
+}
+
+.walletIcon {
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+}
+
+.spinner {
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
