@@ -1,67 +1,193 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { ConnectionStatus, type WalletInfo, type ConnectedWallet } from '../../types.js';
 import { WalletMeshClient } from '../../lib/client/WalletMeshClient.js';
 import { createTransport } from '../../lib/transports/index.js';
 import { createAdapter } from '../../lib/adapters/createAdapter.js';
+import { handleWalletError } from '../../lib/errors.js';
 import { toast } from 'react-hot-toast';
+
+type WalletState = {
+  status: ConnectionStatus;
+  wallet: ConnectedWallet | null;
+  error: Error | null;
+};
+
+type WalletAction =
+  | { type: 'START_CONNECTING' }
+  | { type: 'CONNECTION_SUCCESSFUL'; wallet: ConnectedWallet }
+  | { type: 'CONNECTION_FAILED'; error: Error }
+  | { type: 'START_DISCONNECTING' }
+  | { type: 'DISCONNECTION_SUCCESSFUL' }
+  | { type: 'DISCONNECTION_FAILED'; error: Error }
+  | { type: 'START_RESUMING' }
+  | { type: 'RESUME_SUCCESSFUL'; wallet: ConnectedWallet }
+  | { type: 'RESUME_FAILED'; error: Error };
+
+const initialWalletState: WalletState = {
+  status: ConnectionStatus.Idle,
+  wallet: null,
+  error: null,
+};
+
+const walletReducer = (state: WalletState, action: WalletAction): WalletState => {
+  switch (action.type) {
+    case 'START_CONNECTING':
+      return {
+        ...state,
+        status: ConnectionStatus.Connecting,
+        error: null,
+      };
+    case 'CONNECTION_SUCCESSFUL':
+      return {
+        status: ConnectionStatus.Connected,
+        wallet: action.wallet,
+        error: null,
+      };
+    case 'CONNECTION_FAILED':
+      return {
+        ...state,
+        status: ConnectionStatus.Idle,
+        error: action.error,
+      };
+    case 'START_DISCONNECTING':
+      return {
+        ...state,
+        status: ConnectionStatus.Disconnecting,
+        error: null,
+      };
+    case 'DISCONNECTION_SUCCESSFUL':
+      return {
+        status: ConnectionStatus.Idle,
+        wallet: null,
+        error: null,
+      };
+    case 'DISCONNECTION_FAILED':
+      return {
+        ...state,
+        status: ConnectionStatus.Idle,
+        error: action.error,
+      };
+    case 'START_RESUMING':
+      return {
+        ...state,
+        status: ConnectionStatus.Resuming,
+        error: null,
+      };
+    case 'RESUME_SUCCESSFUL':
+      return {
+        status: ConnectionStatus.Connected,
+        wallet: action.wallet,
+        error: null,
+      };
+    case 'RESUME_FAILED':
+      return {
+        status: ConnectionStatus.Idle,
+        wallet: null,
+        error: action.error,
+      };
+    default:
+      return state;
+  }
+};
 
 const LOCAL_STORAGE_KEY = 'walletmesh_wallet_session';
 
 export const useWalletLogic = () => {
   const [client] = useState(() => new WalletMeshClient());
-  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(ConnectionStatus.Idle);
-  const [connectedWallet, setConnectedWallet] = useState<ConnectedWallet | null>(null);
+  const [walletState, dispatch] = useReducer(walletReducer, initialWalletState);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const connectionLock = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const storedSession = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedSession) {
       const sessionData = JSON.parse(storedSession) as ConnectedWallet;
-      setConnectionStatus(ConnectionStatus.Resuming);
+      dispatch({ type: 'START_RESUMING' });
+
+      if (connectionLock.current) {
+        connectionLock.current.abort();
+      }
+      connectionLock.current = new AbortController();
+      const signal = connectionLock.current.signal;
 
       const transport = createTransport(sessionData.transport);
       const adapter = createAdapter(sessionData.adapter);
-      client.connectWallet(sessionData, transport, adapter)
+      const connectPromise = client.connectWallet(sessionData, transport, adapter);
+      Promise.race([
+        connectPromise,
+        new Promise((_, reject) => {
+          signal.addEventListener('abort', () => reject(new Error('Connection aborted')));
+        })
+      ])
         .then((resumed) => {
-          setConnectedWallet(resumed);
-          setConnectionStatus(ConnectionStatus.Connected);
+          if (!signal.aborted) {
+            dispatch({ type: 'RESUME_SUCCESSFUL', wallet: resumed as ConnectedWallet });
+          }
         })
         .catch((err) => {
-          console.error('Failed to resume session:', err);
-          localStorage.removeItem(LOCAL_STORAGE_KEY);
-          setConnectedWallet(null);
-          setConnectionStatus(ConnectionStatus.Idle);
-          setIsModalOpen(true);
-          toast.error('Failed to resume wallet connection. Please reconnect.');
+          if (!signal.aborted) {
+              const error = handleWalletError(err, 'resume session');
+            toast.error(error.message);
+            dispatch({ type: 'RESUME_FAILED', error });
+            localStorage.removeItem(LOCAL_STORAGE_KEY);
+            setIsModalOpen(true);
+          }
+        })
+        .finally(() => {
+          if (connectionLock.current?.signal === signal) {
+            connectionLock.current = null;
+          }
         });
     }
+
+    return () => {
+      if (connectionLock.current) {
+        connectionLock.current.abort();
+        connectionLock.current = null;
+      }
+    };
   }, [client]);
 
   useEffect(() => {
-    if (connectedWallet) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(connectedWallet));
+    if (walletState.wallet) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(walletState.wallet));
     } else {
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     }
-  }, [connectedWallet]);
+  }, [walletState.wallet]);
 
   const connectWallet = useCallback(
     async (wallet: WalletInfo) => {
-      setConnectionStatus(ConnectionStatus.Connecting);
+      if (connectionLock.current) {
+        connectionLock.current.abort();
+      }
+      connectionLock.current = new AbortController();
+      const signal = connectionLock.current.signal;
+
+      dispatch({ type: 'START_CONNECTING' });
       try {
         const transport = createTransport(wallet.transport);
         const adapter = createAdapter(wallet.adapter);
-        const connected = await client.connectWallet(wallet, transport, adapter);
-        setConnectedWallet(connected);
-        setConnectionStatus(ConnectionStatus.Connected);
-        setIsModalOpen(false);
+        const connectPromise = client.connectWallet(wallet, transport, adapter);
+        const connected = await Promise.race([
+          connectPromise,
+          new Promise<never>((_, reject) => {
+            signal.addEventListener('abort', () => reject(new Error('Connection aborted')));
+          })
+        ]);
+        if (!signal.aborted) {
+          dispatch({ type: 'CONNECTION_SUCCESSFUL', wallet: connected });
+          setIsModalOpen(false);
+        }
       } catch (err) {
-        console.error('Connection error:', err);
-        setConnectionStatus(ConnectionStatus.Idle);
-        if (err instanceof Error) {
-          toast.error(err.message);
-        } else {
-          toast.error('Failed to connect wallet');
+        if (!signal.aborted) {
+          const error = handleWalletError(err, 'connect wallet');
+          toast.error(error.message);
+          dispatch({ type: 'CONNECTION_FAILED', error });
+        }
+      } finally {
+        if (connectionLock.current?.signal === signal) {
+          connectionLock.current = null;
         }
       }
     },
@@ -69,31 +195,30 @@ export const useWalletLogic = () => {
   );
 
   const disconnectWallet = useCallback(async () => {
-    if (!connectedWallet) return;
+    if (connectionLock.current) {
+      connectionLock.current.abort();
+      connectionLock.current = null;
+    }
+    if (!walletState.wallet) return;
 
-    setConnectionStatus(ConnectionStatus.Disconnecting);
+    dispatch({ type: 'START_DISCONNECTING' });
     try {
-      await client.disconnectWallet(connectedWallet.id);
-      setConnectedWallet(null);
-      setConnectionStatus(ConnectionStatus.Idle);
+      await client.disconnectWallet(walletState.wallet.id);
+      dispatch({ type: 'DISCONNECTION_SUCCESSFUL' });
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     } catch (err) {
-      console.error('Disconnection error:', err);
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error('Failed to disconnect wallet');
-      }
-      setConnectionStatus(ConnectionStatus.Idle);
+      const error = handleWalletError(err, 'disconnect wallet');
+      toast.error(error.message);
+      dispatch({ type: 'DISCONNECTION_FAILED', error });
     }
-  }, [client, connectedWallet]);
+  }, [client, walletState.wallet]);
 
   const openModal = useCallback(() => setIsModalOpen(true), []);
   const closeModal = useCallback(() => setIsModalOpen(false), []);
 
   return {
-    connectionStatus,
-    connectedWallet,
+    connectionStatus: walletState.status,
+    connectedWallet: walletState.wallet,
     connectWallet,
     disconnectWallet,
     isModalOpen,
