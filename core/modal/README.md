@@ -1,7 +1,7 @@
 # WalletMesh Architecture
 
 ## Overview
-WalletMesh provides a flexible architecture for wallet connectivity with clean separation between transport and business logic layers. The architecture is designed to be modular and extensible, allowing for easy addition of new transport methods and wallet adapters.
+WalletMesh provides a flexible architecture for wallet connectivity with clean separation between transport and business logic layers. The architecture supports multiple simultaneous wallet connections, each with its own transport and adapter configuration.
 
 ## Core Components
 
@@ -35,11 +35,32 @@ interface Adapter {
 ```
 
 ### WalletMeshClient
-The client orchestrates the interaction between transports and adapters:
-- Manages transport lifecycle
+The client orchestrates multiple wallet connections:
+- Manages transport and adapter lifecycles
 - Routes messages between components
-- Handles connection state
-- Provides a clean API for applications
+- Handles connection state per wallet
+- Provides a clean API for multi-wallet applications
+
+## Wallet Configuration
+
+Wallets are defined with their required transport and adapter configurations:
+
+```typescript
+interface WalletInfo {
+  id: string;          // Unique identifier
+  name: string;
+  icon: string;
+  url?: string;
+  transport: {
+    type: TransportType;
+    options?: TransportOptions;
+  };
+  adapter: {
+    type: AdapterType;
+    options?: AdapterOptions;
+  };
+}
+```
 
 ## Sequence Diagrams
 
@@ -52,10 +73,10 @@ sequenceDiagram
     participant Adapter
     participant Wallet
 
-    App->>WalletMeshClient: connect(walletInfo)
-    WalletMeshClient->>Transport: new Transport(type)
+    App->>WalletMeshClient: connectWallet(walletInfo)
+    WalletMeshClient->>Transport: new Transport(walletInfo.transport)
     WalletMeshClient->>Transport: connect()
-    WalletMeshClient->>Adapter: new Adapter()
+    WalletMeshClient->>Adapter: new Adapter(walletInfo.adapter)
     WalletMeshClient->>Transport: onMessage(handler)
     Transport-->>WalletMeshClient: connected
     WalletMeshClient->>Adapter: connect(walletInfo)
@@ -80,58 +101,71 @@ sequenceDiagram
     Transport->>Backend: transmit
 ```
 
-### Disconnection Flow
+### Multi-Wallet Management
 ```mermaid
 sequenceDiagram
     participant App
     participant WalletMeshClient
-    participant Transport
-    participant Adapter
+    participant Transport1
+    participant Adapter1
+    participant Transport2
+    participant Adapter2
 
-    App->>WalletMeshClient: disconnect()
-    WalletMeshClient->>Adapter: disconnect()
-    WalletMeshClient->>Transport: disconnect()
-    WalletMeshClient-->>App: disconnected
+    App->>WalletMeshClient: connectWallet(wallet1)
+    WalletMeshClient->>Transport1: connect()
+    WalletMeshClient->>Adapter1: connect()
+    WalletMeshClient-->>App: connectedWallet1
+    
+    App->>WalletMeshClient: connectWallet(wallet2)
+    WalletMeshClient->>Transport2: connect()
+    WalletMeshClient->>Adapter2: connect()
+    WalletMeshClient-->>App: connectedWallet2
 ```
-
-## Message Routing
-
-The WalletMeshClient acts as the central message router:
-
-1. Incoming Messages:
-   - Transport receives raw messages
-   - WalletMeshClient routes to appropriate adapter
-   - Adapter processes protocol-specific messages
-
-2. Outgoing Messages:
-   - Adapter prepares protocol messages
-   - WalletMeshClient sends via transport
-   - Transport handles delivery
 
 ## Usage Example
 
 ```typescript
 const client = new WalletMeshClient();
 
-// Connect to a wallet
-const walletInfo = {
-  name: "Example Wallet",
-  transportType: TransportType.PostMessage,
-  adapterType: AdapterType.WalletMeshAztec
+// Define wallets
+const webWallet = {
+  id: 'aztec_web_1',
+  name: 'Aztec Web Wallet',
+  icon: 'icon-url',
+  transport: {
+    type: TransportType.PostMessage,
+    options: { origin: 'https://wallet.aztec.network' }
+  },
+  adapter: {
+    type: AdapterType.WalletMeshAztec
+  }
 };
 
-try {
-  const connected = await client.connect(walletInfo);
-  console.log("Connected to wallet:", connected.address);
-  
-  // Get the chain-specific provider
-  const provider = await client.getProvider();
-  
-  // Later, disconnect
-  await client.disconnect();
-} catch (error) {
-  console.error("Connection failed:", error);
-}
+const extensionWallet = {
+  id: 'aztec_extension_1',
+  name: 'Aztec Extension',
+  transport: {
+    type: TransportType.Extension,
+    options: { extensionId: 'extension-id' }
+  },
+  adapter: {
+    type: AdapterType.WalletMeshAztec
+  }
+};
+
+// Connect multiple wallets
+const web = await client.connectWallet(webWallet);
+const extension = await client.connectWallet(extensionWallet);
+
+// Work with specific wallets
+const webProvider = await client.getProvider(web.id);
+const extensionProvider = await client.getProvider(extension.id);
+
+// List connected wallets
+const connectedWallets = client.getConnectedWallets();
+
+// Disconnect specific wallet
+await client.disconnectWallet(web.id);
 ```
 
 ## Adding New Components

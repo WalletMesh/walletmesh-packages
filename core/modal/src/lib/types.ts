@@ -45,14 +45,23 @@ export interface DappInfo {
 /**
  * Information about a wallet that can be connected
  */
+export interface TransportDefinition {
+  type: TransportType;
+  options?: TransportOptions;
+}
+
+export interface AdapterDefinition {
+  type: AdapterType;
+  options?: AdapterOptions;
+}
+
 export interface WalletInfo {
+  id: string;
   name: string;
   icon: string;
   url?: string;
-  adapterType: AdapterType;
-  adapterOptions?: AdapterOptions;
-  transportType: TransportType;
-  transportOptions?: TransportOptions;
+  transport: TransportDefinition;
+  adapter: AdapterDefinition;
 }
 
 /**
