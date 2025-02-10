@@ -1,5 +1,6 @@
-import type { Adapter, WalletInfo } from '../../types.js';
-import { AdapterType } from '../../types.js';
+import type { WalletInfo } from '../../types.js';
+import type { Adapter } from './types.js';
+import { AdapterType } from './types.js';
 import { WalletMeshAztecAdapter } from './WalletMeshAztecAdapter.js';
 
 /**
@@ -9,10 +10,10 @@ import { WalletMeshAztecAdapter } from './WalletMeshAztecAdapter.js';
  * @throws Will throw an error if the adapter type is unsupported.
  */
 export function createAdapter(wallet: WalletInfo): Adapter {
-  switch (wallet.adapterType) {
-    case AdapterType.WalletMeshAztecAdapter:
-      return new WalletMeshAztecAdapter(wallet.adapterOptions);
+  switch (wallet.adapter.type) {
+    case AdapterType.WalletMeshAztec:
+      return new WalletMeshAztecAdapter(wallet.adapter.options);
     default:
-      throw new Error(`Unsupported adapter type: ${wallet.adapterType}`);
+      throw new Error(`Unsupported adapter type: ${wallet.adapter.type}`);
   }
 }

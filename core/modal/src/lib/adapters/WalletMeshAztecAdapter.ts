@@ -10,7 +10,7 @@ interface AztecProvider {
   sendMessage(data: unknown): Promise<void>;
 }
 
-export class WalletMeshAztecAdapter implements Adapter<AztecAdapterOptions> {
+export class WalletMeshAztecAdapter implements Adapter {
   private provider: AztecProvider | null = null;
   private connected = false;
   private readonly options: AztecAdapterOptions;

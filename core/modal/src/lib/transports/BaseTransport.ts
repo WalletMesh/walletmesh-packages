@@ -1,9 +1,9 @@
-import type { Transport, TransportOptions } from '../types.js';
+import type { Transport, TransportOptions } from './types.js';
 
 export abstract class BaseTransport implements Transport {
   protected messageHandler: ((data: unknown) => void) | null = null;
   protected options: TransportOptions;
-  protected isConnected: boolean = false;
+  protected isConnected = false;
 
   constructor(options: TransportOptions = {}) {
     this.options = options;

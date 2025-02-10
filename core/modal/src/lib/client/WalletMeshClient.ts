@@ -1,7 +1,5 @@
 import { ConnectionStatus, type WalletInfo, type ConnectedWallet } from '../../types.js';
-import type { Transport } from '../transports/types.js';
-import type { Adapter } from '../adapters/types.js';
-import type { WalletSession, SessionOptions } from './types.js';
+import type { SessionOptions } from './types.js';
 import { SessionManager } from './SessionManager.js';
 import { WalletError } from './types.js';
 import { createTransport, createAdapter } from '../factories.js';

@@ -3,7 +3,7 @@ import type { WalletInfo, ConnectedWallet } from '../../types.js';
 /**
  * Interface for chain-specific adapters
  */
-export interface Adapter<TOptions extends BaseAdapterOptions = BaseAdapterOptions> {
+export interface Adapter {
   /** Connects to the wallet and returns connected wallet information */
   connect(walletInfo: WalletInfo): Promise<ConnectedWallet>;
   
