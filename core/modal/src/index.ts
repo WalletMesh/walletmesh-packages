@@ -1,9 +1,26 @@
-export { WalletList } from './config/wallets.js';
+// Export public types
+export type {
+  Adapter,
+  Transport,
+  WalletInfo,
+  ConnectedWallet,
+  TransportOptions,
+  AdapterOptions,
+  DappInfo
+} from './lib/types.js';
+
+// Export enums
 export {
-  WalletMeshProvider,
-  useWallet,
-  ConnectButton,
-  WalletModal,
-} from './components/WalletModal/WalletMeshProvider.js';
-export type { WalletInfo, ConnectedWallet, DappInfo, ConnectorOptions } from './types.js';
-export { ConnectionStatus } from './types.js';
+  TransportType,
+  AdapterType,
+  ConnectionStatus
+} from './lib/types.js';
+
+// Export client
+export { WalletMeshClient } from './lib/client/index.js';
+
+// Export transports
+export {
+  BaseTransport,
+  PostMessageTransport
+} from './lib/transports/index.js';

@@ -1,11 +1,16 @@
+import { AztecChainProvider } from '@walletmesh/aztec-rpc-wallet';
 import type { Adapter, AdapterOptions, ConnectedWallet, WalletInfo } from '../../types.js';
+import { PostMessageConnector } from '../connectors/PostMessageConnector.js';
 
 export class WalletMeshAztecAdapter implements Adapter {
+  protected provider: AztecChainProvider | null = null;
   protected connectedWallet: ConnectedWallet | null = null;
+  protected connector: PostMessageConnector;
   protected options: AdapterOptions;
 
   constructor(options: AdapterOptions = {}) {
     this.options = options;
+    this.connector = new PostMessageConnector();
   }
 
   /**
@@ -15,23 +20,57 @@ export class WalletMeshAztecAdapter implements Adapter {
    * @throws Will throw an error if the connection fails.
    */
   async connect(wallet: WalletInfo): Promise<ConnectedWallet> {
-    return this.mockConnect(wallet);
+    const provider = new AztecChainProvider({
+      send: async (request) => {
+        await this.connector.send(request);
+      }
+    });
+
+    // Set up provider to receive messages from connector
+    this.connector.onMessage((data) => {
+      provider.receiveMessage(data);
+    });
+
+    // Connect both connector and provider
+    await this.connector.connect(wallet);
+
+    const connected = await provider.connect();
+    if (!connected) {
+      throw new Error('Failed to connect to wallet');
+    }
+
+    const account = await provider.getAccount();
+    this.provider = provider;
+    
+    const connectedWallet: ConnectedWallet = {
+      ...wallet,
+      chain: 'aztec',
+      address: account,
+    };
+
+    this.connectedWallet = connectedWallet;
+    return connectedWallet;
   }
 
   /**
    * Disconnects the wallet.
    */
   async disconnect(): Promise<void> {
+    await this.connector.disconnect();
+    this.provider = null;
     this.connectedWallet = null;
   }
 
   /**
    * Gets the provider for the wallet.
-   * @returns The provider.
-   * @throws Will throw an error if not implemented.
+   * @returns The provider instance.
+   * @throws Will throw an error if not connected.
    */
-  async getProvider(): Promise<undefined> {
-    throw new Error('Not implemented');
+  async getProvider(): Promise<AztecChainProvider> {
+    if (!this.provider) {
+      throw new Error('Not connected to wallet');
+    }
+    return this.provider;
   }
 
   /**
@@ -40,32 +79,9 @@ export class WalletMeshAztecAdapter implements Adapter {
    * @returns The connected wallet information.
    */
   async resumeSession(sessionData: ConnectedWallet): Promise<ConnectedWallet> {
+    await this.connector.resumeSession(sessionData);
     this.connectedWallet = sessionData;
     return sessionData;
   }
 
-  /**
-   * Mock method to simulate wallet connection.
-   * @param wallet - The wallet information.
-   * @returns The connected wallet information.
-   * @throws Will throw an error if the connection fails.
-   */
-  protected async mockConnect(wallet: WalletInfo): Promise<ConnectedWallet> {
-    // Simulating wallet connection
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Simulate a random connection error (30% chance)
-    if (Math.random() < 0.3) {
-      throw new Error(`Failed to connect to ${wallet.name}. Please try again.`);
-    }
-
-    const connectedWallet: ConnectedWallet = {
-      ...wallet,
-      chain: 'Ethereum Mainnet',
-      address: '0x742d35Cc6634C0532925a3b844Bc454e4438f44e',
-    };
-
-    this.connectedWallet = connectedWallet;
-    return connectedWallet;
-  }
 }
