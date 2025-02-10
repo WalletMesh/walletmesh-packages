@@ -5,17 +5,18 @@ import { WalletInfoModal } from "./WalletInfoModal.js"
 import { Loader2 } from "lucide-react"
 import * as Dialog from "@radix-ui/react-dialog"
 import styles from "./ConnectButton.module.css"
-import { ConnectionStatus, ConnectorType } from "../../types.js"
+import { ConnectionStatus } from "../../types.js"
+import { TransportType } from "../../lib/transports/types.js"
 
 export const ConnectButton: React.FC = React.memo(() => {
-  const { connectionStatus, connectedWallet, openModal, disconnectWallet, resumeSession } = useWallet()
+  const { connectionStatus, connectedWallet, openModal, disconnectWallet, connectWallet } = useWallet()
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
 
   useEffect(() => {
     if (connectedWallet && connectionStatus === ConnectionStatus.Idle) {
-      resumeSession(connectedWallet)
+      connectWallet(connectedWallet)
     }
-  }, [connectedWallet, connectionStatus, resumeSession])
+  }, [connectedWallet, connectionStatus, connectWallet])
 
   const handleConnectedWalletClick = useCallback(() => {
     setIsInfoModalOpen(true)
@@ -41,7 +42,7 @@ export const ConnectButton: React.FC = React.memo(() => {
               className={styles['walletIcon']}
             />
           )}
-          {connectedWallet.connectorType === ConnectorType.WebWallet && connectedWallet.url
+          {connectedWallet.transport.type === TransportType.PostMessage && connectedWallet.url
             ? `Custom (${new URL(connectedWallet.url).hostname})`
             : connectedWallet.name}
         </button>
@@ -72,4 +73,3 @@ export const ConnectButton: React.FC = React.memo(() => {
 })
 
 ConnectButton.displayName = "ConnectButton"
-

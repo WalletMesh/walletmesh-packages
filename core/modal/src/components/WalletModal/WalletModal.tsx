@@ -6,7 +6,9 @@ import * as Separator from "@radix-ui/react-separator"
 import { useWallet } from "./WalletContext.js"
 import { Loader2, ExternalLink, CheckCircle2, ArrowRight, X } from "lucide-react"
 import styles from "./WalletModal.module.css"
-import { ConnectorType, AdapterType, type WalletInfo, ConnectionStatus } from "../../types.js"
+import { type WalletInfo, ConnectionStatus } from "../../types.js"
+import { TransportType } from "../../lib/transports/types.js"
+import { AdapterType } from "../../lib/adapters/types.js"
 import { toast } from "react-hot-toast"
 
 const CUSTOM_WALLET_URL_KEY = "walletmesh_custom_wallet_url"
@@ -16,7 +18,6 @@ export const WalletModal: React.FC = () => {
     isModalOpen,
     closeModal,
     connectWallet,
-    resumeSession,
     connectionStatus,
     wallets,
     connectedWallet,
@@ -56,7 +57,7 @@ export const WalletModal: React.FC = () => {
   const handleResumeSession = async () => {
     if (connectedWallet) {
       try {
-        await resumeSession(connectedWallet)
+        await connectWallet(connectedWallet)
       } catch (error) {
         console.error(error)
         toast.error(error instanceof Error ? error.message : "Failed to resume session")
@@ -69,11 +70,16 @@ export const WalletModal: React.FC = () => {
       setSelectedWallet("Custom Web Wallet")
       const url = validateUrl(customWalletUrl)
       const customWallet: WalletInfo = {
+        id: "custom-web-wallet",
         name: "Custom Web Wallet",
         icon: "",
         url: url,
-        adapterType: AdapterType.WalletMeshAztecAdapter,
-        connectorType: ConnectorType.WebWallet,
+        transport: {
+          type: TransportType.PostMessage
+        },
+        adapter: {
+          type: AdapterType.WalletMeshAztec
+        }
       }
       try {
         await connectWallet(customWallet)
