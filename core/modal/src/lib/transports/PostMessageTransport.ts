@@ -1,5 +1,5 @@
-import { BaseTransport } from './BaseTransport.js';
-import type { TransportOptions } from '../types.js';
+import type { Transport, TransportOptions } from '../types.js';
+import { messageValidation, errorMessages } from '../utils/validation.js';
 
 interface PostMessageData {
   type: string;
@@ -7,11 +7,14 @@ interface PostMessageData {
   origin?: string;
 }
 
-export class PostMessageTransport extends BaseTransport {
+export class PostMessageTransport implements Transport {
+  private messageHandler: ((data: unknown) => void) | null = null;
   private cleanup: (() => void) | null = null;
+  private isConnected = false;
+  private readonly options: TransportOptions;
 
   constructor(options: TransportOptions = {}) {
-    super(options);
+    this.options = options;
   }
 
   async connect(): Promise<void> {
@@ -20,8 +23,8 @@ export class PostMessageTransport extends BaseTransport {
     }
 
     const receiveResponse = (event: MessageEvent) => {
-      // Only handle messages from the expected origin if specified
-      if (this.options.origin && event.origin !== this.options.origin) {
+      // Validate origin if specified
+      if (!messageValidation.isValidOrigin(event.origin, this.options.origin)) {
         return;
       }
 
@@ -37,7 +40,15 @@ export class PostMessageTransport extends BaseTransport {
         return;
       }
 
-      this.handleIncomingMessage(message.data);
+      // Validate message format
+      if (!messageValidation.isValidMessage(message.data)) {
+        return;
+      }
+
+      // Pass message to handler
+      if (this.messageHandler) {
+        this.messageHandler(message.data);
+      }
     };
 
     window.addEventListener('message', receiveResponse);
@@ -51,11 +62,16 @@ export class PostMessageTransport extends BaseTransport {
       this.cleanup = null;
     }
     this.isConnected = false;
+    this.messageHandler = null;
   }
 
   async send(data: unknown): Promise<void> {
     if (!this.isConnected) {
-      throw new Error('Transport not connected');
+      throw new Error(errorMessages.notConnected);
+    }
+
+    if (!messageValidation.isValidMessage(data)) {
+      throw new Error(errorMessages.invalidMessage);
     }
 
     const message: PostMessageData = {
@@ -67,12 +83,7 @@ export class PostMessageTransport extends BaseTransport {
     window.postMessage(message, this.options.origin || '*');
   }
 
-  protected override isValidMessage(message: unknown): boolean {
-    if (!super.isValidMessage(message)) {
-      return false;
-    }
-
-    // Add PostMessage-specific validation if needed
-    return true;
+  onMessage(handler: (data: unknown) => void): void {
+    this.messageHandler = handler;
   }
 }

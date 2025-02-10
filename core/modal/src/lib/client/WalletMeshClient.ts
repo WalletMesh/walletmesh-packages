@@ -12,6 +12,7 @@ import type {
   AdapterDefinition
 } from '../types.js';
 import { PostMessageTransport } from '../transports/index.js';
+import { WalletMeshAztecAdapter } from '../adapters/index.js';
 
 export class WalletMeshClient {
   private connections: Map<string, {
@@ -39,8 +40,7 @@ export class WalletMeshClient {
   private createAdapter(definition: AdapterDefinition): Adapter {
     switch (definition.type) {
       case AdapterType.WalletMeshAztec:
-        // This will be implemented when we create the adapter
-        throw new Error('WalletMeshAztec adapter not implemented');
+        return new WalletMeshAztecAdapter(definition.options);
       default:
         throw new Error(`Unsupported adapter type: ${definition.type}`);
     }

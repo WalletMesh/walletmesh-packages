@@ -1,71 +1,58 @@
 import { AztecChainProvider } from '@walletmesh/aztec-rpc-wallet';
-import type { Adapter, AdapterOptions, ConnectedWallet, WalletInfo } from '../../types.js';
-import { PostMessageConnector } from '../connectors/PostMessageConnector.js';
+import type { Adapter, WalletInfo, ConnectedWallet, AdapterOptions } from '../types.js';
+import { messageValidation, errorMessages } from '../utils/validation.js';
 
 export class WalletMeshAztecAdapter implements Adapter {
-  protected provider: AztecChainProvider | null = null;
-  protected connectedWallet: ConnectedWallet | null = null;
-  protected connector: PostMessageConnector;
-  protected options: AdapterOptions;
+  private provider: AztecChainProvider | null = null;
+  private connectedWallet: ConnectedWallet | null = null;
+  private readonly options: AdapterOptions;
 
   constructor(options: AdapterOptions = {}) {
     this.options = options;
-    this.connector = new PostMessageConnector();
   }
 
-  /**
-   * Connects to the wallet.
-   * @param wallet - The wallet information.
-   * @returns The connected wallet information.
-   * @throws Will throw an error if the connection fails.
-   */
-  async connect(wallet: WalletInfo): Promise<ConnectedWallet> {
-    const provider = new AztecChainProvider({
+  async connect(walletInfo: WalletInfo): Promise<ConnectedWallet> {
+    if (this.provider) {
+      throw new Error('Already connected');
+    }
+
+    // Create provider with message sending capability
+    this.provider = new AztecChainProvider({
       send: async (request) => {
-        await this.connector.send(request);
+        throw new Error('Transport not set. Messages should be sent through WalletMeshClient.');
       }
     });
 
-    // Set up provider to receive messages from connector
-    this.connector.onMessage((data) => {
-      provider.receiveMessage(data);
-    });
+    try {
+      // Attempt connection
+      const connected = await this.provider.connect();
+      if (!connected) {
+        throw new Error('Failed to connect to wallet');
+      }
 
-    // Connect both connector and provider
-    await this.connector.connect(wallet);
+      // Get account info
+      const account = await this.provider.getAccount();
+      
+      // Create connected wallet info
+      this.connectedWallet = {
+        ...walletInfo,
+        chain: 'aztec',
+        address: account
+      };
 
-    const connected = await provider.connect();
-    if (!connected) {
-      throw new Error('Failed to connect to wallet');
+      return this.connectedWallet;
+    } catch (error) {
+      this.provider = null;
+      throw error;
     }
-
-    const account = await provider.getAccount();
-    this.provider = provider;
-    
-    const connectedWallet: ConnectedWallet = {
-      ...wallet,
-      chain: 'aztec',
-      address: account,
-    };
-
-    this.connectedWallet = connectedWallet;
-    return connectedWallet;
   }
 
-  /**
-   * Disconnects the wallet.
-   */
   async disconnect(): Promise<void> {
-    await this.connector.disconnect();
+    // Reset state
     this.provider = null;
     this.connectedWallet = null;
   }
 
-  /**
-   * Gets the provider for the wallet.
-   * @returns The provider instance.
-   * @throws Will throw an error if not connected.
-   */
   async getProvider(): Promise<AztecChainProvider> {
     if (!this.provider) {
       throw new Error('Not connected to wallet');
@@ -73,15 +60,16 @@ export class WalletMeshAztecAdapter implements Adapter {
     return this.provider;
   }
 
-  /**
-   * Resumes the wallet session.
-   * @param sessionData - The session data.
-   * @returns The connected wallet information.
-   */
-  async resumeSession(sessionData: ConnectedWallet): Promise<ConnectedWallet> {
-    await this.connector.resumeSession(sessionData);
-    this.connectedWallet = sessionData;
-    return sessionData;
-  }
+  handleMessage(data: unknown): void {
+    // Validate incoming messages
+    if (!messageValidation.isValidMessage(data)) {
+      console.warn(errorMessages.invalidMessage);
+      return;
+    }
 
+    // Pass message to provider if connected
+    if (this.provider) {
+      this.provider.receiveMessage(data);
+    }
+  }
 }
