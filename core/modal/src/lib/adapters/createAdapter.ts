@@ -1,19 +1,19 @@
-import type { WalletInfo } from '../../types.js';
-import type { Adapter } from './types.js';
+import type { AdapterConfig, Adapter, AztecAdapterOptions } from './types.js';
 import { AdapterType } from './types.js';
 import { WalletMeshAztecAdapter } from './WalletMeshAztecAdapter.js';
+import { WalletError } from '../client/types.js';
 
 /**
- * Creates an adapter based on the wallet's adapter type.
- * @param wallet - The wallet information.
- * @returns The created adapter.
- * @throws Will throw an error if the adapter type is unsupported.
+ * Creates an adapter instance based on configuration
+ * @param config - The adapter configuration
+ * @returns The created adapter
+ * @throws Will throw an error if the adapter type is unsupported
  */
-export function createAdapter(wallet: WalletInfo): Adapter {
-  switch (wallet.adapter.type) {
+export function createAdapter(config: AdapterConfig): Adapter {
+  switch (config.type) {
     case AdapterType.WalletMeshAztec:
-      return new WalletMeshAztecAdapter(wallet.adapter.options);
+      return new WalletMeshAztecAdapter(config.options as AztecAdapterOptions);
     default:
-      throw new Error(`Unsupported adapter type: ${wallet.adapter.type}`);
+      throw new WalletError(`Unsupported adapter type: ${config.type}`, 'adapter');
   }
 }

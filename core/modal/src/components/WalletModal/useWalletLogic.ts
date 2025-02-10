@@ -1,6 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ConnectionStatus, type WalletInfo, type ConnectedWallet } from '../../types.js';
 import { WalletMeshClient } from '../../lib/client/WalletMeshClient.js';
+import { createTransport } from '../../lib/transports/index.js';
+import { createAdapter } from '../../lib/adapters/createAdapter.js';
 import { toast } from 'react-hot-toast';
 
 const LOCAL_STORAGE_KEY = 'walletmesh_wallet_session';
@@ -17,7 +19,9 @@ export const useWalletLogic = () => {
       const sessionData = JSON.parse(storedSession) as ConnectedWallet;
       setConnectionStatus(ConnectionStatus.Resuming);
 
-      client.connectWallet(sessionData)
+      const transport = createTransport(sessionData.transport);
+      const adapter = createAdapter(sessionData.adapter);
+      client.connectWallet(sessionData, transport, adapter)
         .then((resumed) => {
           setConnectedWallet(resumed);
           setConnectionStatus(ConnectionStatus.Connected);
@@ -45,7 +49,9 @@ export const useWalletLogic = () => {
     async (wallet: WalletInfo) => {
       setConnectionStatus(ConnectionStatus.Connecting);
       try {
-        const connected = await client.connectWallet(wallet);
+        const transport = createTransport(wallet.transport);
+        const adapter = createAdapter(wallet.adapter);
+        const connected = await client.connectWallet(wallet, transport, adapter);
         setConnectedWallet(connected);
         setConnectionStatus(ConnectionStatus.Connected);
         setIsModalOpen(false);

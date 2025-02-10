@@ -2,7 +2,8 @@ import { ConnectionStatus, type WalletInfo, type ConnectedWallet } from '../../t
 import type { SessionOptions } from './types.js';
 import { SessionManager } from './SessionManager.js';
 import { WalletError } from './types.js';
-import { createTransport, createAdapter } from '../factories.js';
+import type { Transport } from '../transports/types.js';
+import type { Adapter } from '../adapters/types.js';
 
 /**
  * Main client for managing wallet connections
@@ -17,7 +18,11 @@ export class WalletMeshClient {
   /**
    * Connects to a wallet
    */
-  async connectWallet(walletInfo: WalletInfo): Promise<ConnectedWallet> {
+  async connectWallet(
+    walletInfo: WalletInfo,
+    transport: Transport,
+    adapter: Adapter
+  ): Promise<ConnectedWallet> {
     if (!walletInfo.id) {
       throw new WalletError('Wallet ID is required', 'client');
     }
@@ -32,12 +37,7 @@ export class WalletMeshClient {
     }
 
     try {
-      // Create and connect transport
-      const transport = createTransport(walletInfo.transport);
       await transport.connect();
-
-      // Create adapter
-      const adapter = createAdapter(walletInfo.adapter);
 
       // Set up message routing
       transport.onMessage((data) => {
