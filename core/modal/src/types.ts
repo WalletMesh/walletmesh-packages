@@ -1,39 +1,9 @@
-export interface DappInfo {
-  name: string;
-  description: string;
-  icon: string; // Data URI for the Dapp icon.
-  origin: string;
-}
+import type { TransportConfig } from './lib/transports/types.js';
+import type { AdapterConfig, BaseAdapterOptions } from './lib/adapters/types.js';
 
-export interface WalletInfo {
-  name: string;
-  icon: string;
-  url?: string;
-  adapterType: AdapterType;
-  adapterOptions?: AdapterOptions;
-  connectorType: ConnectorType;
-  connectorOptions?: ConnectorOptions;
-}
-
-export interface ConnectedWallet extends WalletInfo {
-  chain?: string;
-  address?: string;
-  sessionId?: string;
-}
-
-export interface Connector {
-  connect(wallet: WalletInfo): Promise<ConnectedWallet>;
-  disconnect(): Promise<void>;
-  getProvider(): Promise<unknown>;
-  resumeSession(sessionData: ConnectedWallet): Promise<ConnectedWallet>;
-}
-
-export interface ConnectorOptions {
-  url?: string;
-  origin?: string;
-  extensionId?: string;
-}
-
+/**
+ * Connection status states
+ */
 export enum ConnectionStatus {
   Idle = 'idle',
   Connecting = 'connecting',
@@ -42,22 +12,58 @@ export enum ConnectionStatus {
   Resuming = 'resuming',
 }
 
-export enum ConnectorType {
-  WebWallet = 'webwallet',
-  Extension = 'extension',
+/**
+ * Information about a DApp using the wallet
+ */
+export interface DappInfo {
+  name: string;
+  description: string;
+  icon: string; // Data URI for the Dapp icon
+  origin: string;
 }
 
-export enum AdapterType {
-  WalletMeshAztecAdapter = 'wm_aztec',
+/**
+ * Base wallet configuration
+ */
+export interface BaseWalletConfig {
+  /** Unique identifier for the wallet */
+  id: string;
+  /** Display name */
+  name: string;
+  /** Icon URL or data URI */
+  icon: string;
+  /** Optional wallet URL */
+  url?: string;
+  /** Transport configuration */
+  transport: TransportConfig;
 }
 
-export interface Adapter {
-  connect(wallet: WalletInfo): Promise<ConnectedWallet>;
-  disconnect(): Promise<void>;
-  getProvider(): Promise<unknown>;
-  resumeSession(sessionData: ConnectedWallet): Promise<ConnectedWallet>;
+/**
+ * Information about a wallet that can be connected
+ */
+export interface WalletInfo extends BaseWalletConfig {
+  /** Adapter configuration */
+  adapter: AdapterConfig;
 }
 
-export interface AdapterOptions {
-  chainId?: string;
+/**
+ * Connected wallet state
+ */
+export interface WalletState {
+  /** Chain identifier */
+  chain?: string;
+  /** Wallet address */
+  address?: string;
+  /** Session identifier */
+  sessionId?: string;
+  /** Adapter options */
+  adapterOptions?: BaseAdapterOptions;
+}
+
+/**
+ * Information about a connected wallet
+ */
+export interface ConnectedWallet extends BaseWalletConfig, WalletState {
+  /** Adapter configuration, merged with state */
+  adapter: AdapterConfig & { options?: BaseAdapterOptions };
 }

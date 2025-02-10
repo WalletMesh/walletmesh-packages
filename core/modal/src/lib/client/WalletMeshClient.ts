@@ -1,66 +1,45 @@
-import {
-  TransportType,
-  AdapterType,
-  ConnectionStatus
-} from '../types.js';
-import type {
-  Adapter,
-  Transport,
-  WalletInfo,
-  ConnectedWallet,
-  TransportDefinition,
-  AdapterDefinition
-} from '../types.js';
-import { PostMessageTransport } from '../transports/index.js';
-import { WalletMeshAztecAdapter } from '../adapters/index.js';
+import { ConnectionStatus, type WalletInfo, type ConnectedWallet } from '../../types.js';
+import type { Transport } from '../transports/types.js';
+import type { Adapter } from '../adapters/types.js';
+import type { WalletSession, SessionOptions } from './types.js';
+import { SessionManager } from './SessionManager.js';
+import { WalletError } from './types.js';
+import { createTransport, createAdapter } from '../factories.js';
 
+/**
+ * Main client for managing wallet connections
+ */
 export class WalletMeshClient {
-  private connections: Map<string, {
-    transport: Transport;
-    adapter: Adapter;
-    wallet: ConnectedWallet;
-  }> = new Map();
+  private sessionManager: SessionManager;
 
-  private createTransport(definition: TransportDefinition): Transport {
-    switch (definition.type) {
-      case TransportType.PostMessage:
-        return new PostMessageTransport(definition.options);
-      case TransportType.WebSocket:
-        throw new Error('WebSocket transport not implemented');
-      case TransportType.Extension:
-        throw new Error('Extension transport not implemented');
-      default:
-        throw new Error(`Unsupported transport type: ${definition.type}`);
-    }
+  constructor(options: SessionOptions = {}) {
+    this.sessionManager = new SessionManager(options);
   }
 
   /**
-   * Creates an adapter based on the specified type
-   */
-  private createAdapter(definition: AdapterDefinition): Adapter {
-    switch (definition.type) {
-      case AdapterType.WalletMeshAztec:
-        return new WalletMeshAztecAdapter(definition.options);
-      default:
-        throw new Error(`Unsupported adapter type: ${definition.type}`);
-    }
-  }
-
-  /**
-   * Connects to a wallet using the specified transport and adapter
+   * Connects to a wallet
    */
   async connectWallet(walletInfo: WalletInfo): Promise<ConnectedWallet> {
-    if (this.connections.has(walletInfo.id)) {
-      throw new Error(`Wallet ${walletInfo.id} is already connected`);
+    if (!walletInfo.id) {
+      throw new WalletError('Wallet ID is required', 'client');
+    }
+
+    // Check if already connected
+    const existingSession = this.sessionManager.getSession(walletInfo.id);
+    if (existingSession?.status === ConnectionStatus.Connected) {
+      throw new WalletError(
+        `Wallet ${walletInfo.id} is already connected`,
+        'client'
+      );
     }
 
     try {
       // Create and connect transport
-      const transport = this.createTransport(walletInfo.transport);
+      const transport = createTransport(walletInfo.transport);
       await transport.connect();
 
       // Create adapter
-      const adapter = this.createAdapter(walletInfo.adapter);
+      const adapter = createAdapter(walletInfo.adapter);
 
       // Set up message routing
       transport.onMessage((data) => {
@@ -70,18 +49,25 @@ export class WalletMeshClient {
       // Connect adapter
       const connectedWallet = await adapter.connect(walletInfo);
 
-      // Store connection
-      this.connections.set(walletInfo.id, {
+      // Store session
+      this.sessionManager.setSession(walletInfo.id, {
         transport,
         adapter,
-        wallet: connectedWallet
+        wallet: connectedWallet,
+        status: ConnectionStatus.Connected,
+        timestamp: Date.now()
       });
 
       return connectedWallet;
-    } catch (error) {
-      // Clean up any partial connections on error
+    } catch (err) {
+      // Ensure cleanup on failure
       await this.disconnectWallet(walletInfo.id);
-      throw error;
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      throw new WalletError(
+        `Failed to connect wallet: ${error.message}`,
+        'client',
+        error
+      );
     }
   }
 
@@ -89,32 +75,58 @@ export class WalletMeshClient {
    * Disconnects a specific wallet
    */
   async disconnectWallet(walletId: string): Promise<void> {
-    const connection = this.connections.get(walletId);
-    if (connection) {
-      try {
-        await connection.adapter.disconnect();
-        await connection.transport.disconnect();
-      } finally {
-        this.connections.delete(walletId);
-      }
+    const session = this.sessionManager.getSession(walletId);
+    if (!session) return;
+
+    try {
+      await session.adapter.disconnect();
+      await session.transport.disconnect();
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      throw new WalletError(
+        `Failed to disconnect wallet: ${error.message}`,
+        'client',
+        error
+      );
+    } finally {
+      this.sessionManager.removeSession(walletId);
     }
+  }
+
+  /**
+   * Gets provider for a specific wallet
+   */
+  async getProvider(walletId: string): Promise<unknown> {
+    const session = this.sessionManager.getSession(walletId);
+    if (!session) {
+      throw new WalletError(`No session found for wallet ${walletId}`, 'client');
+    }
+    return session.adapter.getProvider();
   }
 
   /**
    * Lists all connected wallets
    */
   getConnectedWallets(): ConnectedWallet[] {
-    return Array.from(this.connections.values()).map(c => c.wallet);
+    return this.sessionManager
+      .getSessions()
+      .filter(s => s.status === ConnectionStatus.Connected)
+      .map(s => s.wallet);
   }
 
   /**
-   * Gets a specific wallet's provider
+   * Disconnects all wallets
    */
-  async getProvider(walletId: string): Promise<unknown> {
-    const connection = this.connections.get(walletId);
-    if (!connection) {
-      throw new Error(`Wallet ${walletId} not connected`);
-    }
-    return connection.adapter.getProvider();
+  async disconnectAll(): Promise<void> {
+    const sessions = this.sessionManager.getSessions();
+    await Promise.all(
+      sessions.map(async session => {
+        try {
+          await this.disconnectWallet(session.wallet.id);
+        } catch (err) {
+          console.warn(`Failed to disconnect wallet ${session.wallet.id}:`, err);
+        }
+      })
+    );
   }
 }
