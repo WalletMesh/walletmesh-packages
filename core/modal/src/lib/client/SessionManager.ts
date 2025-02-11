@@ -29,7 +29,6 @@ export class SessionManager {
   setSession(walletId: string, session: WalletSession, persist = true): void {
     this.sessions.set(walletId, {
       ...session,
-      timestamp: Date.now(),
     });
 
     if (persist) {
@@ -94,7 +93,6 @@ export class SessionManager {
         id,
         wallet: session.wallet,
         status: session.status,
-        timestamp: session.timestamp,
       }));
       localStorage.setItem(this.storageKey, JSON.stringify(serializedSessions));
     } catch (error) {
@@ -118,7 +116,6 @@ export class SessionManager {
           const partialSession: Partial<WalletSession> = {
             wallet: session.wallet,
             status: ConnectionStatus.Idle,
-            timestamp: session.timestamp || Date.now(),
           };
           this.sessions.set(session.id, partialSession as WalletSession);
         }

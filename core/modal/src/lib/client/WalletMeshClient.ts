@@ -1,14 +1,14 @@
 import { ConnectionStatus, type WalletInfo, type ConnectedWallet } from '../../types.js';
 import type { SessionOptions } from './types.js';
 import { SessionManager } from './SessionManager.js';
-import { WalletError } from './types.js';
+import { type WalletClient, WalletError } from './types.js';
 import type { Transport } from '../transports/types.js';
 import type { Adapter } from '../adapters/types.js';
 
 /**
  * Main client for managing wallet connections
  */
-export class WalletMeshClient {
+export class WalletMeshClient implements WalletClient {
   private sessionManager: SessionManager;
 
   constructor(options: SessionOptions = {}) {
@@ -50,7 +50,6 @@ export class WalletMeshClient {
         adapter,
         wallet: connectedWallet,
         status: ConnectionStatus.Connected,
-        timestamp: Date.now(),
       });
 
       return connectedWallet;

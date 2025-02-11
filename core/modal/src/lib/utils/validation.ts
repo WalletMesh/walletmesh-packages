@@ -29,3 +29,18 @@ export const errorMessages = {
   invalidMessage: 'Invalid message format',
   invalidOrigin: 'Invalid message origin',
 };
+
+/**
+ * Validates and formats a URL
+ */
+export const validateUrl = (url: string): string => {
+  try {
+    const urlObj = new URL(url);
+    if (urlObj.protocol !== 'https:') {
+      urlObj.protocol = 'https:';
+    }
+    return urlObj.toString();
+  } catch (e) {
+    return '';
+  }
+};

@@ -7,6 +7,7 @@ import { useWalletContext, WalletInfo, ConnectionStatus, TransportType, AdapterT
 import { Loader2, ExternalLink, CheckCircle2, ArrowRight, X } from "lucide-react"
 import styles from "./WalletModal.module.css"
 import { toast } from "react-hot-toast"
+import { validateUrl } from "../../lib/utils/validation.js"
 
 const CUSTOM_WALLET_URL_KEY = "walletmesh_custom_wallet_url"
 
@@ -31,13 +32,6 @@ export const WalletModal: React.FC = () => {
       setCustomWalletUrl(savedUrl)
     }
   }, [])
-
-  const validateUrl = (url: string): string => {
-    if (!url.match(/^https?:\/\//)) {
-      return `https://${url}`
-    }
-    return url
-  }
 
   const handleConnectWallet = async (wallet: WalletInfo) => {
     setSelectedWallet(wallet)
