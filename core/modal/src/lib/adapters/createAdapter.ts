@@ -10,10 +10,17 @@ import { WalletError } from '../client/types.js';
  * @throws Will throw an error if the adapter type is unsupported
  */
 export function createAdapter(config: AdapterConfig): Adapter {
+  console.log('[createAdapter] Creating adapter with config:', config);
+
   switch (config.type) {
-    case AdapterType.WalletMeshAztec:
-      return new WalletMeshAztecAdapter(config.options as AztecAdapterOptions);
+    case AdapterType.WalletMeshAztec: {
+      console.log('[createAdapter] Creating WalletMeshAztecAdapter with options:', config.options);
+      const adapter = new WalletMeshAztecAdapter(config.options as AztecAdapterOptions);
+      console.log('[createAdapter] Created adapter:', adapter);
+      return adapter;
+    }
     default:
+      console.error('[createAdapter] Unsupported adapter type:', config.type);
       throw new WalletError(`Unsupported adapter type: ${config.type}`, 'adapter');
   }
 }

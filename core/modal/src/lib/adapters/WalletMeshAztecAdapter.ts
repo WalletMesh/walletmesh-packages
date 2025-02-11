@@ -1,6 +1,5 @@
 import type { WalletInfo, ConnectedWallet } from '../../types.js';
 import type { Adapter, AztecAdapterOptions } from './types.js';
-import { AdapterType } from './types.js';
 import { WalletError } from '../client/types.js';
 
 interface AztecProvider {
@@ -19,7 +18,7 @@ export class WalletMeshAztecAdapter implements Adapter {
     this.options = {
       chainId: '1',
       rpcUrl: 'https://aztec.network/rpc',
-      ...options
+      ...options,
     };
   }
 
@@ -34,7 +33,7 @@ export class WalletMeshAztecAdapter implements Adapter {
         connect: async () => {},
         disconnect: async () => {},
         getAccount: async () => '0x1234567890abcdef',
-        sendMessage: async () => {}
+        sendMessage: async () => {},
       };
 
       await this.provider.connect();
@@ -42,15 +41,12 @@ export class WalletMeshAztecAdapter implements Adapter {
       this.connected = true;
 
       return {
-        ...walletInfo,
-        chain: this.options.chainId ?? 'aztec-testnet',
-        address,
-        sessionId: Date.now().toString(),
-        adapterOptions: this.options,
-        adapter: {
-          type: AdapterType.WalletMeshAztec,
-          options: this.options
-        }
+        walletInfo,
+        walletState: {
+          chain: this.options.chainId ?? 'aztec-testnet',
+          address,
+          sessionId: Date.now().toString(),
+        },
       } as ConnectedWallet;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to connect');

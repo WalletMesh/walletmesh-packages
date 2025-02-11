@@ -3,12 +3,9 @@ import { useState, useEffect } from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import * as Label from "@radix-ui/react-label"
 import * as Separator from "@radix-ui/react-separator"
-import { useWallet } from "./WalletContext.js"
+import { useWalletContext, WalletInfo, ConnectionStatus, TransportType, AdapterType } from "../../index.js"
 import { Loader2, ExternalLink, CheckCircle2, ArrowRight, X } from "lucide-react"
 import styles from "./WalletModal.module.css"
-import { type WalletInfo, ConnectionStatus } from "../../types.js"
-import { TransportType } from "../../lib/transports/types.js"
-import { AdapterType } from "../../lib/adapters/types.js"
 import { toast } from "react-hot-toast"
 
 const CUSTOM_WALLET_URL_KEY = "walletmesh_custom_wallet_url"
@@ -21,9 +18,9 @@ export const WalletModal: React.FC = () => {
     connectionStatus,
     wallets,
     connectedWallet,
-  } = useWallet()
+  } = useWalletContext()
   const [customWalletUrl, setCustomWalletUrl] = useState<string>("")
-  const [selectedWallet, setSelectedWallet] = useState<string | null>(null)
+  const [selectedWallet, setSelectedWallet] = useState<WalletInfo | null>(null)
 
   const isConnecting = connectionStatus === ConnectionStatus.Connecting
   const isResumingSession = connectionStatus === ConnectionStatus.Resuming
@@ -43,9 +40,13 @@ export const WalletModal: React.FC = () => {
   }
 
   const handleConnectWallet = async (wallet: WalletInfo) => {
-    setSelectedWallet(wallet.name)
+    setSelectedWallet(wallet)
     try {
       await connectWallet(wallet)
+      // Add a small delay to show the success state before closing
+      setTimeout(() => {
+        closeModal()
+      }, 500)
     } catch (error) {
       console.error(error)
       toast.error(error instanceof Error ? error.message : "Failed to connect wallet")
@@ -54,25 +55,14 @@ export const WalletModal: React.FC = () => {
     }
   }
 
-  const handleResumeSession = async () => {
-    if (connectedWallet) {
-      try {
-        await connectWallet(connectedWallet)
-      } catch (error) {
-        console.error(error)
-        toast.error(error instanceof Error ? error.message : "Failed to resume session")
-      }
-    }
-  }
-
   const handleConnectCustomWallet = async () => {
     if (customWalletUrl && !isConnecting && !isResumingSession) {
-      setSelectedWallet("Custom Web Wallet")
       const url = validateUrl(customWalletUrl)
+      localStorage.setItem(CUSTOM_WALLET_URL_KEY, url)
       const customWallet: WalletInfo = {
         id: "custom-web-wallet",
         name: "Custom Web Wallet",
-        icon: "",
+        icon: undefined,
         url: url,
         transport: {
           type: TransportType.PostMessage
@@ -81,9 +71,10 @@ export const WalletModal: React.FC = () => {
           type: AdapterType.WalletMeshAztec
         }
       }
+      setSelectedWallet(customWallet)
       try {
         await connectWallet(customWallet)
-        localStorage.setItem(CUSTOM_WALLET_URL_KEY, url)
+        closeModal()
       } catch (error) {
         console.error(error)
         toast.error(error instanceof Error ? error.message : "Failed to connect custom wallet")
@@ -115,25 +106,6 @@ export const WalletModal: React.FC = () => {
           </Dialog.Description>
 
           <div className={styles['walletList']}>
-            {connectedWallet && (
-              <div className={styles['connectedWallet']}>
-                <div className={styles['connectedWalletInfo']}>
-                  <CheckCircle2 className={styles['checkIcon']} />
-                  <span>Connected to {connectedWallet.name}</span>
-                </div>
-                <button
-                  onClick={handleResumeSession}
-                  disabled={connectionStatus !== ConnectionStatus.Idle && connectionStatus !== ConnectionStatus.Connected}
-                  className={styles['resumeButton']}
-                  aria-label="Resume Session"
-                >
-                  {connectionStatus === ConnectionStatus.Resuming ? (
-                    <Loader2 className={`${styles['loadingIcon']} ${styles['icon']}`} />
-                  ) : null}
-                  Resume Session
-                </button>
-              </div>
-            )}
             {wallets.map((wallet) => (
               <button
                 key={wallet.name}
@@ -152,8 +124,10 @@ export const WalletModal: React.FC = () => {
                     <div className={styles['walletName']}>{wallet.name}</div>
                   </div>
                 </div>
-                {connectionStatus === ConnectionStatus.Connecting && selectedWallet === wallet.name ? (
+                {connectionStatus === ConnectionStatus.Connecting && selectedWallet === wallet ? (
                   <Loader2 className={`${styles['loadingIcon']} ${styles['icon']}`} />
+                ) : connectedWallet?.walletInfo.name === wallet.name ? (
+                  <CheckCircle2 className={styles['checkIcon']} />
                 ) : (
                   <ArrowRight className={styles['arrowIcon']} />
                 )}
@@ -184,7 +158,7 @@ export const WalletModal: React.FC = () => {
                 className={styles['connectButton']}
                 aria-label="Connect Custom Wallet"
               >
-                {connectionStatus === ConnectionStatus.Connecting && selectedWallet === "Custom Web Wallet" ? (
+                {connectionStatus === ConnectionStatus.Connecting && selectedWallet?.name === "Custom Web Wallet" ? (
                   <Loader2 className={`${styles['loadingIcon']} ${styles['icon']}`} />
                 ) : (
                   <ExternalLink className={styles['externalLinkIcon']} />

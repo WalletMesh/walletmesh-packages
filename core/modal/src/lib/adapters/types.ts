@@ -6,13 +6,13 @@ import type { WalletInfo, ConnectedWallet } from '../../types.js';
 export interface Adapter {
   /** Connects to the wallet and returns connected wallet information */
   connect(walletInfo: WalletInfo): Promise<ConnectedWallet>;
-  
+
   /** Disconnects from the wallet and cleans up */
   disconnect(): Promise<void>;
-  
+
   /** Retrieves the chain-specific provider instance */
   getProvider(): Promise<unknown>;
-  
+
   /** Handles incoming messages from the transport */
   handleMessage(data: unknown): void;
 }
@@ -53,12 +53,11 @@ export interface BaseAdapterConfig<T extends BaseAdapterOptions = BaseAdapterOpt
 /**
  * Type alias for all possible adapter configurations
  */
-export type AdapterConfig =
-  | BaseAdapterConfig
-  | BaseAdapterConfig<AztecAdapterOptions>;
+export type AdapterConfig = BaseAdapterConfig | BaseAdapterConfig<AztecAdapterOptions>;
 
 /**
  * Type helper to get options type for a given adapter type
  */
-export type AdapterOptionsForType<T extends AdapterType> = 
-  T extends AdapterType.WalletMeshAztec ? AztecAdapterOptions : BaseAdapterOptions;
+export type AdapterOptionsForType<T extends AdapterType> = T extends AdapterType.WalletMeshAztec
+  ? AztecAdapterOptions
+  : BaseAdapterOptions;

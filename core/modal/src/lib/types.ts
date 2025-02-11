@@ -4,13 +4,13 @@
 export interface Transport {
   /** Establishes the transport connection */
   connect(): Promise<void>;
-  
+
   /** Closes the transport connection and cleans up resources */
   disconnect(): Promise<void>;
-  
+
   /** Sends data through the transport */
   send(data: unknown): Promise<void>;
-  
+
   /** Registers a handler for incoming messages */
   onMessage(handler: (data: unknown) => void): void;
 }
@@ -21,13 +21,13 @@ export interface Transport {
 export interface Adapter {
   /** Connects to the wallet and returns connected wallet information */
   connect(walletInfo: WalletInfo): Promise<ConnectedWallet>;
-  
+
   /** Disconnects from the wallet and cleans up */
   disconnect(): Promise<void>;
-  
+
   /** Retrieves the chain-specific provider instance */
   getProvider(): Promise<unknown>;
-  
+
   /** Handles incoming messages from the transport */
   handleMessage(data: unknown): void;
 }

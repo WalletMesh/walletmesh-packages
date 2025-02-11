@@ -21,7 +21,7 @@ export class WalletMeshClient {
   async connectWallet(
     walletInfo: WalletInfo,
     transport: Transport,
-    adapter: Adapter
+    adapter: Adapter,
   ): Promise<ConnectedWallet> {
     if (!walletInfo.id) {
       throw new WalletError('Wallet ID is required', 'client');
@@ -30,10 +30,7 @@ export class WalletMeshClient {
     // Check if already connected
     const existingSession = this.sessionManager.getSession(walletInfo.id);
     if (existingSession?.status === ConnectionStatus.Connected) {
-      throw new WalletError(
-        `Wallet ${walletInfo.id} is already connected`,
-        'client'
-      );
+      throw new WalletError(`Wallet ${walletInfo.id} is already connected`, 'client');
     }
 
     try {
@@ -53,7 +50,7 @@ export class WalletMeshClient {
         adapter,
         wallet: connectedWallet,
         status: ConnectionStatus.Connected,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       return connectedWallet;
@@ -61,11 +58,7 @@ export class WalletMeshClient {
       // Ensure cleanup on failure
       await this.disconnectWallet(walletInfo.id);
       const error = err instanceof Error ? err : new Error('Unknown error');
-      throw new WalletError(
-        `Failed to connect wallet: ${error.message}`,
-        'client',
-        error
-      );
+      throw new WalletError(`Failed to connect wallet: ${error.message}`, 'client', error);
     }
   }
 
@@ -81,11 +74,7 @@ export class WalletMeshClient {
       await session.transport.disconnect();
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error');
-      throw new WalletError(
-        `Failed to disconnect wallet: ${error.message}`,
-        'client',
-        error
-      );
+      throw new WalletError(`Failed to disconnect wallet: ${error.message}`, 'client', error);
     } finally {
       this.sessionManager.removeSession(walletId);
     }
@@ -108,8 +97,8 @@ export class WalletMeshClient {
   getConnectedWallets(): ConnectedWallet[] {
     return this.sessionManager
       .getSessions()
-      .filter(s => s.status === ConnectionStatus.Connected)
-      .map(s => s.wallet);
+      .filter((s) => s.status === ConnectionStatus.Connected)
+      .map((s) => s.wallet);
   }
 
   /**
@@ -118,13 +107,13 @@ export class WalletMeshClient {
   async disconnectAll(): Promise<void> {
     const sessions = this.sessionManager.getSessions();
     await Promise.all(
-      sessions.map(async session => {
+      sessions.map(async (session) => {
         try {
-          await this.disconnectWallet(session.wallet.id);
+          await this.disconnectWallet(session.wallet.walletInfo.id);
         } catch (err) {
-          console.warn(`Failed to disconnect wallet ${session.wallet.id}:`, err);
+          console.warn(`Failed to disconnect wallet ${session.wallet.walletInfo.id}:`, err);
         }
-      })
+      }),
     );
   }
 }

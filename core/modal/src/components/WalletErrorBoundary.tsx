@@ -1,6 +1,7 @@
 import React from "react";
 import { WalletError } from "../lib/client/types.js";
 import { toast } from "react-hot-toast";
+import styles from "./WalletErrorBoundary.module.css";
 
 interface Props {
   children: React.ReactNode;
@@ -46,7 +47,7 @@ export class WalletErrorBoundary extends React.Component<Props, State> {
 
     if (hasError) {
       return fallback || (
-        <div role="alert" className="wallet-error">
+        <div role="alert" className={styles['walletError']}>
           <h3>Something went wrong</h3>
           <p>Please try again or contact support if the issue persists.</p>
         </div>

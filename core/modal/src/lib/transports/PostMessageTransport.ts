@@ -1,4 +1,4 @@
-import type { Transport, TransportOptions } from '../types.js';
+import type { Transport, TransportOptions } from './types.js';
 import { messageValidation, errorMessages } from '../utils/validation.js';
 
 interface PostMessageData {
@@ -23,31 +23,46 @@ export class PostMessageTransport implements Transport {
     }
 
     const receiveResponse = (event: MessageEvent) => {
+      console.log('[PostMessageTransport] Received message:', event);
+
       // Validate origin if specified
       if (!messageValidation.isValidOrigin(event.origin, this.options.origin)) {
+        console.warn(
+          '[PostMessageTransport] Invalid origin:',
+          event.origin,
+          'expected:',
+          this.options.origin,
+        );
         return;
       }
 
       // Only handle messages from the same window
       if (event.source !== window) {
+        console.warn('[PostMessageTransport] Invalid source:', event.source);
         return;
       }
 
       const message = event.data as PostMessageData;
-      
+      console.log('[PostMessageTransport] Message:', message);
+
       // Only handle wallet response messages
       if (message?.type !== 'wallet_response') {
+        console.warn('[PostMessageTransport] Invalid message type:', message?.type);
         return;
       }
 
       // Validate message format
       if (!messageValidation.isValidMessage(message.data)) {
+        console.warn('[PostMessageTransport] Invalid message format:', message.data);
         return;
       }
 
       // Pass message to handler
       if (this.messageHandler) {
+        console.log('[PostMessageTransport] Handling message:', message.data);
         this.messageHandler(message.data);
+      } else {
+        console.warn('[PostMessageTransport] No message handler registered');
       }
     };
 
@@ -77,9 +92,10 @@ export class PostMessageTransport implements Transport {
     const message: PostMessageData = {
       type: 'wallet_request',
       data,
-      origin: window.location.origin
+      origin: window.location.origin,
     };
 
+    console.log('[PostMessageTransport] Sending message:', message, 'to:', this.options.origin || '*');
     window.postMessage(message, this.options.origin || '*');
   }
 

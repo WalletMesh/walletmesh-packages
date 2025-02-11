@@ -1,7 +1,4 @@
-import type {
-  ConnectedWallet,
-  ConnectionStatus
-} from '../../types.js';
+import type { ConnectedWallet, ConnectionStatus } from '../../types.js';
 import type { Transport } from '../transports/types.js';
 import type { Adapter } from '../adapters/types.js';
 
@@ -58,7 +55,7 @@ export class WalletError extends Error {
   constructor(
     message: string,
     public readonly context: 'transport' | 'adapter' | 'client',
-    public readonly originalError?: Error
+    public readonly originalError?: Error,
   ) {
     super(message);
     this.name = 'WalletError';

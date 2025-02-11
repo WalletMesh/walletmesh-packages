@@ -4,13 +4,13 @@
 export interface Transport {
   /** Establishes the transport connection */
   connect(): Promise<void>;
-  
+
   /** Closes the transport connection and cleans up resources */
   disconnect(): Promise<void>;
-  
+
   /** Sends data through the transport */
   send(data: unknown): Promise<void>;
-  
+
   /** Registers a handler for incoming messages */
   onMessage(handler: (data: unknown) => void): void;
 }

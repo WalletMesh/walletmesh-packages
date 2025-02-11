@@ -26,14 +26,10 @@ export class SessionManager {
   /**
    * Creates or updates a session
    */
-  setSession(
-    walletId: string,
-    session: WalletSession,
-    persist: boolean = true
-  ): void {
+  setSession(walletId: string, session: WalletSession, persist = true): void {
     this.sessions.set(walletId, {
       ...session,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
     if (persist) {
@@ -51,24 +47,17 @@ export class SessionManager {
   /**
    * Updates a session's status
    */
-  updateSessionStatus(
-    walletId: string,
-    status: ConnectionStatus,
-    error?: Error
-  ): void {
+  updateSessionStatus(walletId: string, status: ConnectionStatus, error?: Error): void {
     const session = this.sessions.get(walletId);
     if (!session) {
-      throw new WalletError(
-        `No session found for wallet ${walletId}`,
-        'client'
-      );
+      throw new WalletError(`No session found for wallet ${walletId}`, 'client');
     }
 
     session.status = status;
     if (error) {
       session.lastError = error;
     }
-    
+
     this.sessions.set(walletId, session);
     this.persistSessions();
   }
@@ -101,14 +90,12 @@ export class SessionManager {
    */
   private persistSessions(): void {
     try {
-      const serializedSessions = Array.from(this.sessions.entries()).map(
-        ([id, session]) => ({
-          id,
-          wallet: session.wallet,
-          status: session.status,
-          timestamp: session.timestamp
-        })
-      );
+      const serializedSessions = Array.from(this.sessions.entries()).map(([id, session]) => ({
+        id,
+        wallet: session.wallet,
+        status: session.status,
+        timestamp: session.timestamp,
+      }));
       localStorage.setItem(this.storageKey, JSON.stringify(serializedSessions));
     } catch (error) {
       console.warn('Failed to persist sessions:', error);
@@ -124,14 +111,14 @@ export class SessionManager {
       if (!stored) return;
 
       const sessions = JSON.parse(stored) as StoredSession[];
-      
+
       for (const session of sessions) {
         if (session.id && session.wallet) {
           // Store partial session data - transport and adapter will be recreated on resume
           const partialSession: Partial<WalletSession> = {
             wallet: session.wallet,
             status: ConnectionStatus.Idle,
-            timestamp: session.timestamp || Date.now()
+            timestamp: session.timestamp || Date.now(),
           };
           this.sessions.set(session.id, partialSession as WalletSession);
         }

@@ -1,5 +1,5 @@
 import type { TransportConfig } from './lib/transports/types.js';
-import type { AdapterConfig, BaseAdapterOptions } from './lib/adapters/types.js';
+import type { AdapterConfig } from './lib/adapters/types.js';
 
 /**
  * Connection status states
@@ -25,25 +25,19 @@ export interface DappInfo {
 /**
  * Base wallet configuration
  */
-export interface BaseWalletConfig {
+export interface WalletInfo {
   /** Unique identifier for the wallet */
   id: string;
   /** Display name */
   name: string;
   /** Icon URL or data URI */
-  icon: string;
+  icon: string | undefined;
   /** Optional wallet URL */
   url?: string;
-  /** Transport configuration */
-  transport: TransportConfig;
-}
-
-/**
- * Information about a wallet that can be connected
- */
-export interface WalletInfo extends BaseWalletConfig {
   /** Adapter configuration */
   adapter: AdapterConfig;
+  /** Transport configuration */
+  transport: TransportConfig;
 }
 
 /**
@@ -56,14 +50,12 @@ export interface WalletState {
   address?: string;
   /** Session identifier */
   sessionId?: string;
-  /** Adapter options */
-  adapterOptions?: BaseAdapterOptions;
 }
 
 /**
- * Information about a connected wallet
+ * Connected wallet
  */
-export interface ConnectedWallet extends BaseWalletConfig, WalletState {
-  /** Adapter configuration, merged with state */
-  adapter: AdapterConfig & { options?: BaseAdapterOptions };
+export interface ConnectedWallet {
+  walletInfo: WalletInfo;
+  walletState: WalletState;
 }

@@ -110,14 +110,14 @@ export const useWalletLogic = () => {
       connectionLock.current = new AbortController();
       const signal = connectionLock.current.signal;
 
-      const transport = createTransport(sessionData.transport);
-      const adapter = createAdapter(sessionData.adapter);
-      const connectPromise = client.connectWallet(sessionData, transport, adapter);
+      const transport = createTransport(sessionData.walletInfo.transport);
+      const adapter = createAdapter(sessionData.walletInfo.adapter);
+      const connectPromise = client.connectWallet(sessionData.walletInfo, transport, adapter);
       Promise.race([
         connectPromise,
         new Promise((_, reject) => {
           signal.addEventListener('abort', () => reject(new Error('Connection aborted')));
-        })
+        }),
       ])
         .then((resumed) => {
           if (!signal.aborted) {
@@ -126,7 +126,7 @@ export const useWalletLogic = () => {
         })
         .catch((err) => {
           if (!signal.aborted) {
-              const error = handleWalletError(err, 'resume session');
+            const error = handleWalletError(err, 'resume session');
             toast.error(error.message);
             dispatch({ type: 'RESUME_FAILED', error });
             localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -173,7 +173,7 @@ export const useWalletLogic = () => {
           connectPromise,
           new Promise<never>((_, reject) => {
             signal.addEventListener('abort', () => reject(new Error('Connection aborted')));
-          })
+          }),
         ]);
         if (!signal.aborted) {
           dispatch({ type: 'CONNECTION_SUCCESSFUL', wallet: connected });
@@ -203,7 +203,7 @@ export const useWalletLogic = () => {
 
     dispatch({ type: 'START_DISCONNECTING' });
     try {
-      await client.disconnectWallet(walletState.wallet.id);
+      await client.disconnectWallet(walletState.wallet.walletInfo.id);
       dispatch({ type: 'DISCONNECTION_SUCCESSFUL' });
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     } catch (err) {

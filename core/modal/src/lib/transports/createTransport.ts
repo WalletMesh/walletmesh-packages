@@ -10,19 +10,10 @@ export function createTransport(config: TransportConfig): Transport {
     case TransportType.PostMessage:
       return new PostMessageTransport(config.options);
     case TransportType.WebSocket:
-      throw new WalletError(
-        'WebSocket transport not implemented',
-        'transport'
-      );
+      throw new WalletError('WebSocket transport not implemented', 'transport');
     case TransportType.Extension:
-      throw new WalletError(
-        'Extension transport not implemented',
-        'transport'
-      );
+      throw new WalletError('Extension transport not implemented', 'transport');
     default:
-      throw new WalletError(
-        `Unsupported transport type: ${config.type}`,
-        'transport'
-      );
+      throw new WalletError(`Unsupported transport type: ${config.type}`, 'transport');
   }
 }

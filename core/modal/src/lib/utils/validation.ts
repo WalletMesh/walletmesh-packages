@@ -18,7 +18,7 @@ export const messageValidation = {
   isValidOrigin(messageOrigin: string, allowedOrigin?: string): boolean {
     if (!allowedOrigin) return true;
     return messageOrigin === allowedOrigin;
-  }
+  },
 };
 
 /**
@@ -27,5 +27,5 @@ export const messageValidation = {
 export const errorMessages = {
   notConnected: 'Transport not connected',
   invalidMessage: 'Invalid message format',
-  invalidOrigin: 'Invalid message origin'
+  invalidOrigin: 'Invalid message origin',
 };

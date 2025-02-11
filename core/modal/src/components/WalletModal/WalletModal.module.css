@@ -186,6 +186,12 @@
   height: 16px;
 }
 
+.checkIcon {
+  width: 20px;
+  height: 20px;
+  color: #22c55e; /* green-500 */
+}
+
 .spinner {
   margin-left: 8px;
 }

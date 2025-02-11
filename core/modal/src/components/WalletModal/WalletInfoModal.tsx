@@ -1,6 +1,6 @@
 import type React from "react"
 import * as Dialog from "@radix-ui/react-dialog"
-import { useWallet } from "./WalletContext.js"
+import { useWalletContext } from "../../index.js"
 import { X } from "lucide-react"
 import styles from "./WalletInfoModal.module.css"
 
@@ -9,7 +9,7 @@ interface WalletInfoModalProps {
 }
 
 export const WalletInfoModal: React.FC<WalletInfoModalProps> = ({ onDisconnect }) => {
-  const { connectedWallet } = useWallet()
+  const { connectedWallet } = useWalletContext()
 
   if (!connectedWallet) return null
 
@@ -20,31 +20,31 @@ export const WalletInfoModal: React.FC<WalletInfoModalProps> = ({ onDisconnect }
         <Dialog.Title className={styles['title']}>Wallet Information</Dialog.Title>
         <div className={styles['infoContainer']}>
           <p className={styles['label']}>Connected Wallet:</p>
-          <p className={styles['value']}>{connectedWallet.name}</p>
-          {connectedWallet.icon && (
+          <p className={styles['value']}>{connectedWallet.walletInfo.name}</p>
+          {connectedWallet.walletInfo.icon && (
             <img
-              src={connectedWallet.icon}
-              alt={`${connectedWallet.name} icon`}
+              src={connectedWallet.walletInfo.icon}
+              alt={`${connectedWallet.walletInfo.name} icon`}
               className={styles['walletIcon']}
             />
           )}
-          {connectedWallet.url && (
+          {connectedWallet.walletInfo.url && (
             <div>
               <p className={styles['label']}>URL:</p>
-              <p className={styles['value']}>{connectedWallet.url}</p>
+              <p className={styles['value']}>{connectedWallet.walletInfo.url}</p>
             </div>
           )}
           <div>
             <p className={styles['label']}>Chain:</p>
-            <p className={styles['value']}>{connectedWallet.chain || "Unknown"}</p>
+            <p className={styles['value']}>{connectedWallet.walletState.chain || "Unknown"}</p>
           </div>
           <div>
             <p className={styles['label']}>Address:</p>
-            <p className={styles['value']}>{connectedWallet.address || "Not available"}</p>
+            <p className={styles['value']}>{connectedWallet.walletState.address || "Not available"}</p>
           </div>
           <div>
             <p className={styles['label']}>Session ID:</p>
-            <p className={styles['value']}>{connectedWallet.sessionId || "Not available"}</p>
+            <p className={styles['value']}>{connectedWallet.walletState.sessionId || "Not available"}</p>
           </div>
         </div>
         <div className={styles['buttonContainer']}>
@@ -61,4 +61,3 @@ export const WalletInfoModal: React.FC<WalletInfoModalProps> = ({ onDisconnect }
     </Dialog.Portal>
   )
 }
-
