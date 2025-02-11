@@ -20,31 +20,31 @@ export const WalletInfoModal: React.FC<WalletInfoModalProps> = ({ onDisconnect }
         <Dialog.Title className={styles['title']}>Wallet Information</Dialog.Title>
         <div className={styles['infoContainer']}>
           <p className={styles['label']}>Connected Wallet:</p>
-          <p className={styles['value']}>{connectedWallet.walletInfo.name}</p>
-          {connectedWallet.walletInfo.icon && (
+          <p className={styles['value']}>{connectedWallet.info.name}</p>
+          {connectedWallet.info.icon && (
             <img
-              src={connectedWallet.walletInfo.icon}
-              alt={`${connectedWallet.walletInfo.name} icon`}
+              src={connectedWallet.info.icon}
+              alt={`${connectedWallet.info.name} icon`}
               className={styles['walletIcon']}
             />
           )}
-          {connectedWallet.walletInfo.url && (
+          {connectedWallet.info.url && (
             <div>
               <p className={styles['label']}>URL:</p>
-              <p className={styles['value']}>{connectedWallet.walletInfo.url}</p>
+              <p className={styles['value']}>{connectedWallet.info.url}</p>
             </div>
           )}
           <div>
             <p className={styles['label']}>Chain:</p>
-            <p className={styles['value']}>{connectedWallet.walletState.chain || "Unknown"}</p>
+            <p className={styles['value']}>{connectedWallet.state.chain || "Unknown"}</p>
           </div>
           <div>
             <p className={styles['label']}>Address:</p>
-            <p className={styles['value']}>{connectedWallet.walletState.address || "Not available"}</p>
+            <p className={styles['value']}>{connectedWallet.state.address || "Not available"}</p>
           </div>
           <div>
             <p className={styles['label']}>Session ID:</p>
-            <p className={styles['value']}>{connectedWallet.walletState.sessionId || "Not available"}</p>
+            <p className={styles['value']}>{connectedWallet.state.sessionId || "Not available"}</p>
           </div>
         </div>
         <div className={styles['buttonContainer']}>

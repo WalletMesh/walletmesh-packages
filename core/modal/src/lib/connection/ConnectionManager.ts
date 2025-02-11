@@ -105,12 +105,12 @@ export class ConnectionManager {
 
     try {
       console.log('[ConnectionManager] Creating transport for resume');
-      const transport = createTransport(sessionData.walletInfo.transport);
+      const transport = createTransport(sessionData.info.transport);
       console.log('[ConnectionManager] Creating adapter for resume');
-      const adapter = createAdapter(sessionData.walletInfo.adapter);
+      const adapter = createAdapter(sessionData.info.adapter);
 
       console.log('[ConnectionManager] Initiating connection resume');
-      const connectPromise = this.client.connectWallet(sessionData.walletInfo, transport, adapter);
+      const connectPromise = this.client.connectWallet(sessionData.info, transport, adapter);
       const connected = await Promise.race([
         connectPromise,
         new Promise<never>((_, reject) => {

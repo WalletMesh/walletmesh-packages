@@ -16,15 +16,11 @@ export interface Transport {
 }
 
 /**
- * Configuration options for transports
+ * Transport configuration
  */
-export interface TransportOptions {
-  /** Optional URL for connection */
-  url?: string;
-  /** Allowed origin for messages */
-  origin?: string;
-  /** Extension ID for extension-based transport */
-  extensionId?: string;
+export interface TransportConfig {
+  type: TransportType;
+  options?: TransportOptions;
 }
 
 /**
@@ -37,9 +33,13 @@ export enum TransportType {
 }
 
 /**
- * Transport configuration
+ * Configuration options for transports
  */
-export interface TransportConfig {
-  type: TransportType;
-  options?: TransportOptions;
+export interface TransportOptions {
+  /** Optional URL for connection */
+  url?: string;
+  /** Allowed origin for messages */
+  origin?: string;
+  /** Extension ID for extension-based transport */
+  extensionId?: string;
 }

@@ -56,6 +56,6 @@ export interface WalletState {
  * Connected wallet
  */
 export interface ConnectedWallet {
-  walletInfo: WalletInfo;
-  walletState: WalletState;
+  info: WalletInfo;
+  state: WalletState;
 }

@@ -79,7 +79,7 @@ export interface SessionOptions {
 export class WalletError extends Error {
   constructor(
     message: string,
-    public readonly context: 'transport' | 'adapter' | 'client',
+    public readonly context: 'transport' | 'adapter' | 'client' | 'storage',
     public readonly originalError?: Error,
   ) {
     super(message);

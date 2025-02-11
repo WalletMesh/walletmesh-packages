@@ -110,9 +110,9 @@ export const useWalletLogic = () => {
       connectionLock.current = new AbortController();
       const signal = connectionLock.current.signal;
 
-      const transport = createTransport(sessionData.walletInfo.transport);
-      const adapter = createAdapter(sessionData.walletInfo.adapter);
-      const connectPromise = client.connectWallet(sessionData.walletInfo, transport, adapter);
+      const transport = createTransport(sessionData.info.transport);
+      const adapter = createAdapter(sessionData.info.adapter);
+      const connectPromise = client.connectWallet(sessionData.info, transport, adapter);
       Promise.race([
         connectPromise,
         new Promise((_, reject) => {
@@ -203,7 +203,7 @@ export const useWalletLogic = () => {
 
     dispatch({ type: 'START_DISCONNECTING' });
     try {
-      await client.disconnectWallet(walletState.wallet.walletInfo.id);
+      await client.disconnectWallet(walletState.wallet.info.id);
       dispatch({ type: 'DISCONNECTION_SUCCESSFUL' });
       localStorage.removeItem(LOCAL_STORAGE_KEY);
     } catch (err) {

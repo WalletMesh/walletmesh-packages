@@ -120,7 +120,7 @@ export const WalletModal: React.FC = () => {
                 </div>
                 {connectionStatus === ConnectionStatus.Connecting && selectedWallet === wallet ? (
                   <Loader2 className={`${styles['loadingIcon']} ${styles['icon']}`} />
-                ) : connectedWallet?.walletInfo.name === wallet.name ? (
+                ) : connectedWallet?.info.name === wallet.name ? (
                   <CheckCircle2 className={styles['checkIcon']} />
                 ) : (
                   <ArrowRight className={styles['arrowIcon']} />

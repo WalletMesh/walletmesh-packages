@@ -41,8 +41,8 @@ export class WalletMeshAztecAdapter implements Adapter {
       this.connected = true;
 
       return {
-        walletInfo,
-        walletState: {
+        info: walletInfo,
+        state: {
           chain: this.options.chainId ?? 'aztec-testnet',
           address,
           sessionId: Date.now().toString(),

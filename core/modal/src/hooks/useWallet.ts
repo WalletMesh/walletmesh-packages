@@ -96,7 +96,7 @@ export const useWallet = ({ onError }: UseWalletOptions = {}) => {
     setState((prev) => ({ ...prev, status: ConnectionStatus.Disconnecting }));
 
     try {
-      await connectionManager.current.disconnectWallet(state.wallet.walletInfo.id);
+      await connectionManager.current.disconnectWallet(state.wallet.info.id);
       setState({
         status: ConnectionStatus.Idle,
         wallet: null,

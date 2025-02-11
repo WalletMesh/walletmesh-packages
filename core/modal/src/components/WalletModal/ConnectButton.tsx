@@ -13,7 +13,7 @@ export const ConnectButton: React.FC = React.memo(() => {
 
   useEffect(() => {
     if (connectedWallet && connectionStatus === ConnectionStatus.Idle) {
-      connectWallet(connectedWallet.walletInfo)
+      connectWallet(connectedWallet.info)
     }
   }, [connectedWallet, connectionStatus, connectWallet])
 
@@ -32,18 +32,18 @@ export const ConnectButton: React.FC = React.memo(() => {
         <button
           onClick={handleConnectedWalletClick}
           className={styles['connectedButton']}
-          aria-label={`Connected to ${connectedWallet.walletInfo.name}. Click to view details.`}
+          aria-label={`Connected to ${connectedWallet.info.name}. Click to view details.`}
         >
-          {connectedWallet.walletInfo.icon && (
+          {connectedWallet.info.icon && (
             <img
-              src={connectedWallet.walletInfo.icon}
-              alt={`${connectedWallet.walletInfo.name} icon`}
+              src={connectedWallet.info.icon}
+              alt={`${connectedWallet.info.name} icon`}
               className={styles['walletIcon']}
             />
           )}
           <div className={styles['walletDetails']}>
             <span className={styles['walletName']}>
-              { connectedWallet.walletInfo.name === "Custom Web Wallet" ? `Custom (${connectedWallet.walletInfo.url})` : connectedWallet.walletInfo.name }
+              { connectedWallet.info.name === "Custom Web Wallet" ? `Custom (${connectedWallet.info.url})` : connectedWallet.info.name }
             </span>
           </div>
         </button>
@@ -55,16 +55,16 @@ export const ConnectButton: React.FC = React.memo(() => {
           <div className={styles['detailsBox']}>
             <h3 className={styles['detailsTitle']}>DApp Access Example:</h3>
             <p className={styles['detailsItem']}>
-              <strong>Wallet:</strong> {connectedWallet.walletInfo.name}
+              <strong>Wallet:</strong> {connectedWallet.info.name}
             </p>
             <p className={styles['detailsItem']}>
-              <strong>Chain:</strong> {connectedWallet.walletState.chain}
+              <strong>Chain:</strong> {connectedWallet.state.chain}
             </p>
             <p className={styles['detailsItem']}>
-              <strong>Address:</strong> {connectedWallet.walletState.address}
+              <strong>Address:</strong> {connectedWallet.state.address}
             </p>
             <p className={styles['detailsItem']}>
-              <strong>Session ID:</strong> {connectedWallet.walletState.sessionId || "Not available"}
+              <strong>Session ID:</strong> {connectedWallet.state.sessionId || "Not available"}
             </p>
           </div>
         </div>

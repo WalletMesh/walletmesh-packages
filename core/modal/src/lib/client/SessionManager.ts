@@ -9,7 +9,7 @@ interface StoredSession {
   timestamp: number;
 }
 
-const DEFAULT_STORAGE_KEY = 'walletmesh_sessions';
+const DEFAULT_STORAGE_KEY = 'walletmesh_wallet_session';
 
 /**
  * Manages wallet sessions and their persistence
@@ -94,9 +94,11 @@ export class SessionManager {
         wallet: session.wallet,
         status: session.status,
       }));
+      
       localStorage.setItem(this.storageKey, JSON.stringify(serializedSessions));
     } catch (error) {
-      console.warn('Failed to persist sessions:', error);
+      console.error('Failed to persist sessions:', error);
+      throw new WalletError('Failed to persist sessions', 'storage', error as Error);
     }
   }
 
@@ -112,17 +114,16 @@ export class SessionManager {
 
       for (const session of sessions) {
         if (session.id && session.wallet) {
-          // Store partial session data - transport and adapter will be recreated on resume
+          // Store minimal session data, transport/adapter will be created during resume
           const partialSession: Partial<WalletSession> = {
             wallet: session.wallet,
-            status: ConnectionStatus.Idle,
+            status: ConnectionStatus.Resuming
           };
           this.sessions.set(session.id, partialSession as WalletSession);
         }
       }
     } catch (error) {
-      console.warn('Failed to restore sessions:', error);
-      localStorage.removeItem(this.storageKey);
+      console.error('Failed to restore sessions:', error);
     }
   }
 }
