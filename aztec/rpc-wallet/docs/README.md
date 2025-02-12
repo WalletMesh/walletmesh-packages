@@ -1,4 +1,4 @@
-**@walletmesh/aztec-rpc-wallet v0.3.0**
+**@walletmesh/aztec-rpc-wallet v0.3.1**
 
 ***
 

@@ -1,6 +1,6 @@
 {
   "name": "@walletmesh/aztec-rpc-wallet",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "",
   "type": "module",
   "main": "dist/index.js",

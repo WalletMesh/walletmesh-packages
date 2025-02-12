@@ -1,5 +1,11 @@
 # @walletmesh/aztec-rpc-wallet
 
+## 0.3.1
+
+### Patch Changes
+
+- 65bc501: aztec-packages -> 0.76.2
+
 ## 0.3.0
 
 ### Minor Changes

@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.3.0**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.3.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: AztecChainWallet
 
-Defined in: [aztec/rpc-wallet/src/wallet.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/wallet.ts#L54)
+Defined in: [aztec/rpc-wallet/src/wallet.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/wallet.ts#L54)
 
 JSON-RPC interface implementation for an Aztec Wallet.
 
@@ -46,7 +46,7 @@ transport.on('message', async (request) => {
 
 > **new AztecChainWallet**(`pxe`, `wallet`, `transport`): [`AztecChainWallet`](AztecChainWallet.md)
 
-Defined in: [aztec/rpc-wallet/src/wallet.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/wallet.ts#L71)
+Defined in: [aztec/rpc-wallet/src/wallet.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/wallet.ts#L71)
 
 Creates a new AztecWallet instance.
 
@@ -127,7 +127,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:19
 
 > **asWalletRouterClient**(): [`AztecWalletRouterClient`](../type-aliases/AztecWalletRouterClient.md)
 
-Defined in: [aztec/rpc-wallet/src/wallet.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/wallet.ts#L91)
+Defined in: [aztec/rpc-wallet/src/wallet.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/wallet.ts#L91)
 
 Creates a client wrapper for use with WalletMesh router.
 This enables the wallet to be used as a client in a routing setup.
