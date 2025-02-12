@@ -1,0 +1,15 @@
+{
+  "$schema": "https://typedoc-plugin-markdown.org/schema.json",
+  "plugin": [
+    "typedoc-plugin-markdown"
+  ],
+  "entryPoints": [
+    "src/index.ts"
+  ],
+  "out": "docs",
+  "exclude": [
+    "**/*.test.ts"
+  ],
+  "includeVersion": true,
+  "excludePrivate": true
+}

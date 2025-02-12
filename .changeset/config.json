@@ -11,6 +11,7 @@
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@walletmesh/aztec-example"
+    "@walletmesh/aztec-example",
+    "@walletmesh/modal-example"
   ]
 }

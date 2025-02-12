@@ -1,0 +1,227 @@
+.overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  inset: 0;
+  animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.content {
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  max-width: 450px;
+  max-height: 85vh;
+  padding: 25px;
+  animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.title {
+  margin: 0;
+  font-weight: 500;
+  color: #6e3ff3;
+  font-size: 17px;
+}
+
+.description {
+  margin: 10px 0 20px;
+  color: #777;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.walletList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.walletButton {
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 4px;
+  padding: 16px;
+  font-size: 15px;
+  line-height: 1;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  min-height: 70px;
+  transition: background-color 0.2s ease;
+}
+
+.walletButton:hover {
+  background-color: #f9f9f9;
+}
+
+.walletButton:focus-visible {
+  box-shadow: 0 0 0 2px #6e3ff3;
+}
+
+.walletInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.walletIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.walletName {
+  font-weight: 500;
+  color: #333;
+}
+
+.walletType {
+  font-size: 13px;
+  color: #777;
+}
+
+.separator {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 15px 0;
+}
+
+.customWallet {
+  margin-top: 15px;
+}
+
+.customWalletTitle {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.customWalletInput {
+  display: flex;
+  gap: 10px;
+}
+
+.input {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  padding: 0 10px;
+  font-size: 15px;
+  line-height: 1;
+  height: 35px;
+  border: 1px solid #e0e0e0;
+  color: #333;
+  background-color: white;
+}
+
+.input:focus {
+  box-shadow: 0 0 0 2px #6e3ff3;
+}
+
+.connectButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  padding: 0 15px;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 500;
+  height: 35px;
+  background-color: #6e3ff3;
+  color: white;
+  cursor: pointer;
+}
+
+.connectButton:hover {
+  background-color: #5a32c7;
+}
+
+.connectButton:focus {
+  box-shadow: 0 0 0 2px #6e3ff3;
+}
+
+.closeButton {
+  all: unset;
+  font-family: inherit;
+  border-radius: 100%;
+  height: 25px;
+  width: 25px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.closeButton:hover {
+  background-color: #f1f1f1;
+}
+
+.closeButton:focus {
+  box-shadow: 0 0 0 2px #6e3ff3;
+}
+
+.loadingIcon {
+  animation: spin 1s linear infinite;
+  color: #a28aff;
+}
+
+.arrowIcon,
+.externalLinkIcon,
+.checkIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.checkIcon {
+  width: 20px;
+  height: 20px;
+  color: #22c55e; /* green-500 */
+}
+
+.spinner {
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes overlayShow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes contentShow {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
