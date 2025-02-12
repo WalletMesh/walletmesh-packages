@@ -1,5 +1,5 @@
 import React from "react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useCallback } from "react"
 import { useWalletContext } from "../../components/WalletContext.js"
 import { WalletInfoModal } from "./WalletInfoModal.js"
 import { Loader2 } from "lucide-react"
@@ -8,25 +8,26 @@ import styles from "./ConnectButton.module.css"
 import { ConnectionStatus } from "../../types.js"
 
 export const ConnectButton: React.FC = React.memo(() => {
-  const { connectionStatus, connectedWallet, openModal, disconnectWallet, connectWallet } = useWalletContext()
+  const { connectionStatus, connectedWallet, openModal, disconnectWallet } = useWalletContext()
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
 
-  useEffect(() => {
-    if (connectedWallet && connectionStatus === ConnectionStatus.Idle) {
-      connectWallet(connectedWallet.info)
-    }
-  }, [connectedWallet, connectionStatus, connectWallet])
-
   const handleConnectedWalletClick = useCallback(() => {
-    setIsInfoModalOpen(true)
-  }, [])
+    if (connectionStatus === ConnectionStatus.Connected) {
+      setIsInfoModalOpen(true)
+    }
+  }, [connectionStatus])
 
   const handleDisconnect = useCallback(() => {
     disconnectWallet()
     setIsInfoModalOpen(false)
   }, [disconnectWallet])
 
-  if (connectionStatus === ConnectionStatus.Connected && connectedWallet) {
+  const isConnected = connectionStatus === ConnectionStatus.Connected && connectedWallet;
+  const isConnecting = connectionStatus === ConnectionStatus.Connecting;
+  const isResuming = connectionStatus === ConnectionStatus.Resuming;
+  const buttonDisabled = isConnecting || isResuming;
+
+  if (isConnected) {
     return (
       <div className={styles['connectedContainer']}>
         <button
@@ -80,10 +81,10 @@ export const ConnectButton: React.FC = React.memo(() => {
     <button
       onClick={openModal}
       className={styles['connectButton']}
-      disabled={connectionStatus !== ConnectionStatus.Idle}
+      disabled={buttonDisabled}
       aria-label="Connect Wallet"
     >
-      {connectionStatus === ConnectionStatus.Connecting || connectionStatus === ConnectionStatus.Resuming ? (
+      {(isConnecting || isResuming) ? (
         <>
           <Loader2 className={`${styles['loadingIcon']} ${styles['icon']}`} />
           {connectionStatus === ConnectionStatus.Connecting ? "Connecting..." : "Resuming..."}

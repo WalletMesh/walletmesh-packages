@@ -15,12 +15,8 @@ interface WalletState {
 }
 
 export const useWallet = ({ onError }: UseWalletOptions = {}) => {
-  const [state, setState] = useState<WalletState>({
-    status: ConnectionStatus.Idle,
-    wallet: null,
-  });
-
   const connectionManager = useRef(new ConnectionManager());
+  const [state, setState] = useState<WalletState>(() => connectionManager.current.getState());
 
   useEffect(() => {
     // Try to restore session on mount
@@ -30,10 +26,7 @@ export const useWallet = ({ onError }: UseWalletOptions = {}) => {
       connectionManager.current
         .resumeConnection(storedSession)
         .then((wallet) => {
-          setState({
-            status: ConnectionStatus.Connected,
-            wallet,
-          });
+          setState(connectionManager.current.getState());
         })
         .catch((error) => {
           const walletError =
@@ -64,10 +57,7 @@ export const useWallet = ({ onError }: UseWalletOptions = {}) => {
 
       try {
         const connected = await connectionManager.current.connectWallet(wallet);
-        setState({
-          status: ConnectionStatus.Connected,
-          wallet: connected,
-        });
+        setState(connectionManager.current.getState());
         return connected;
       } catch (error) {
         const walletError =
@@ -97,10 +87,7 @@ export const useWallet = ({ onError }: UseWalletOptions = {}) => {
 
     try {
       await connectionManager.current.disconnectWallet(state.wallet.info.id);
-      setState({
-        status: ConnectionStatus.Idle,
-        wallet: null,
-      });
+      setState(connectionManager.current.getState());
     } catch (error) {
       const walletError =
         error instanceof WalletError
