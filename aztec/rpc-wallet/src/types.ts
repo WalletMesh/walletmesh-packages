@@ -181,7 +181,7 @@ export interface AztecWalletMethodMap extends AztecWalletBaseMethodMap {
   };
 
   /* Capsules */
-  aztec_addCapsule: { params: { capsule: Fr[] }; result: boolean };
+  aztec_addCapsule: { params: { contract: AztecAddress; storageSlot: Fr; capsule: Fr[] }; result: undefined };
 
   /* Accounts */
   aztec_getAddress: { result: AztecAddress };

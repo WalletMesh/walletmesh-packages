@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import { glob } from 'glob';
 
 interface PackageJson {
@@ -26,7 +25,7 @@ async function updateAztecDeps(newVersion: string) {
 
       // Update dependencies
       if (pkg.dependencies) {
-        for (const [dep, version] of Object.entries(pkg.dependencies)) {
+        for (const [dep] of Object.entries(pkg.dependencies)) {
           if (dep.startsWith('@aztec/')) {
             pkg.dependencies[dep] = newVersion;
             hasChanges = true;
@@ -36,7 +35,7 @@ async function updateAztecDeps(newVersion: string) {
 
       // Update devDependencies
       if (pkg.devDependencies) {
-        for (const [dep, version] of Object.entries(pkg.devDependencies)) {
+        for (const [dep] of Object.entries(pkg.devDependencies)) {
           if (dep.startsWith('@aztec/')) {
             pkg.devDependencies[dep] = newVersion;
             hasChanges = true;
@@ -46,7 +45,7 @@ async function updateAztecDeps(newVersion: string) {
 
       // Update pnpm overrides in root package.json
       if (pkg.pnpm?.overrides) {
-        for (const [dep, version] of Object.entries(pkg.pnpm.overrides)) {
+        for (const [dep] of Object.entries(pkg.pnpm.overrides)) {
           if (dep.startsWith('@aztec/')) {
             pkg.pnpm.overrides[dep] = newVersion;
             hasChanges = true;

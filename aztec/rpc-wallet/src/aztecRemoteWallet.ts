@@ -186,10 +186,10 @@ export class AztecRemoteWallet implements Wallet {
       .execute() as Promise<AztecWalletMethodMap['aztec_getContractClassMetadata']['result']>;
   }
 
-  async addCapsule(capsule: Fr[]): Promise<void> {
+  async addCapsule(contract: AztecAddress, storageSlot: Fr, capsule: Fr[]): Promise<void> {
     const result = (await this._provider
       .chain(this._providerChainId)
-      .call('aztec_addCapsule', { capsule })
+      .call('aztec_addCapsule', { contract, storageSlot, capsule })
       .execute()) as AztecWalletMethodMap['aztec_addCapsule']['result'];
     if (!result) throw new Error('Failed to add capsule');
   }

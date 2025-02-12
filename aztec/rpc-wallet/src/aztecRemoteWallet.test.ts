@@ -1,7 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { Fr, getContractClassFromArtifact } from '@aztec/aztec.js';
+import { AztecAddress, Fr, getContractClassFromArtifact } from '@aztec/aztec.js';
 import type {
-  AztecAddress,
   TxExecutionRequest,
   ContractInstanceWithAddress,
   ContractClassWithId,
@@ -163,10 +162,12 @@ describe('AztecRemoteWallet', () => {
     });
 
     it('adds capsule', async () => {
-      const mockCapsule = [Fr.fromString('1')];
+      const mockCapsule = [await Fr.random()]
+      const contract = await AztecAddress.random();
+      const storageSlot = await Fr.random();
       mockChainBuilder.execute.mockResolvedValueOnce(true);
-      await wallet.addCapsule(mockCapsule);
-      expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_addCapsule', { capsule: mockCapsule });
+      await wallet.addCapsule(contract, storageSlot, mockCapsule);
+      expect(mockChainBuilder.call).toHaveBeenCalledWith('aztec_addCapsule', { contract, storageSlot, capsule: mockCapsule });
     });
 
     it('registers account', async () => {
