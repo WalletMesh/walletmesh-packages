@@ -65,6 +65,9 @@ describe('AztecProvider', () => {
       // Create a spy on the on method before creating provider
       const onSpy = vi.spyOn(WalletRouterProvider.prototype, 'on');
 
+      // Create a new provider
+      new AztecProvider(mockTransport);
+
       expect(onSpy).toHaveBeenCalledWith('wm_walletStateChanged', expect.any(Function));
       expect(onSpy).toHaveBeenCalledWith('wm_sessionTerminated', expect.any(Function));
 

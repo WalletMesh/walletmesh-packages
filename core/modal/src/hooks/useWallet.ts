@@ -25,7 +25,7 @@ export const useWallet = ({ onError }: UseWalletOptions = {}) => {
       setState((prev) => ({ ...prev, status: ConnectionStatus.Resuming }));
       connectionManager.current
         .resumeConnection(storedSession)
-        .then((wallet) => {
+        .then((_wallet) => {
           setState(connectionManager.current.getState());
         })
         .catch((error) => {

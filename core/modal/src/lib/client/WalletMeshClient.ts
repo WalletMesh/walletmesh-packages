@@ -2,8 +2,8 @@ import { ConnectionStatus, type WalletInfo, type ConnectedWallet, type WalletSta
 import type { SessionOptions } from './types.js';
 import { SessionManager } from './SessionManager.js';
 import { type WalletClient, WalletError } from './types.js';
-import type { Transport, TransportConfig } from '../transports/types.js';
-import type { Adapter, AdapterConfig } from '../adapters/types.js';
+import type { Transport } from '../transports/types.js';
+import type { Adapter } from '../adapters/types.js';
 
 /**
  * Main client for managing wallet connections
@@ -20,7 +20,7 @@ export class WalletMeshClient implements WalletClient {
    */
   async resumeWallet(
     walletInfo: WalletInfo,
-    walletState: WalletState,
+    _walletState: WalletState,
     transport: Transport,
     adapter: Adapter
   ): Promise<ConnectedWallet> {

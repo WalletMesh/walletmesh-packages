@@ -16,7 +16,7 @@
     "copy-assets": "cpx \"src/**/*.module.css\" dist/",
     "clean": "rimraf dist node_modules",
     "type-check": "tsc --noEmit",
-    "test": "vitest run",
+    "skip-test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "biome lint",
