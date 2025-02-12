@@ -105,8 +105,7 @@ async function handleAddCapsule(
   wallet: AccountWallet,
   params: AztecWalletMethodMap['aztec_addCapsule']['params'],
 ): Promise<AztecWalletMethodMap['aztec_addCapsule']['result']> {
-  await wallet.addCapsule(params.capsule);
-  return true;
+  await wallet.addCapsule(params.contract, params.storageSlot, params.capsule);
 }
 
 async function handleGetAddress(

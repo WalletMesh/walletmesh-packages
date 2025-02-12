@@ -473,9 +473,10 @@ describe('Aztec Account Wallet Handler', () => {
       const mockCapsule = [await Fr.random(), await Fr.random(), await Fr.random()];
       wallet.addCapsule = vi.fn().mockResolvedValue(undefined);
 
-      const result = await aztecWalletHandler(context, 'aztec_addCapsule', { capsule: mockCapsule });
-      expect(result).toBe(true);
-      expect(wallet.addCapsule).toHaveBeenCalledWith(mockCapsule);
+      const contract = await AztecAddress.random();
+      const storageSlot = await Fr.random();
+      await aztecWalletHandler(context, 'aztec_addCapsule', { contract, storageSlot, capsule: mockCapsule });
+      expect(wallet.addCapsule).toHaveBeenCalledWith(contract, storageSlot, mockCapsule);
     });
   });
 
