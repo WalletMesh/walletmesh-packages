@@ -1,5 +1,6 @@
 import { TransportType, type TransportConfig, type Transport } from './types.js';
 import { PostMessageTransport } from './PostMessageTransport.js';
+import { NullTransport } from './NullTransport.js';
 import { WalletError } from '../client/types.js';
 
 /**
@@ -13,6 +14,8 @@ export function createTransport(config: TransportConfig): Transport {
       throw new WalletError('WebSocket transport not implemented', 'transport');
     case TransportType.Extension:
       throw new WalletError('Extension transport not implemented', 'transport');
+    case TransportType.Null:
+      return new NullTransport();
     default:
       throw new WalletError(`Unsupported transport type: ${config.type}`, 'transport');
   }

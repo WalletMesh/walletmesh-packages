@@ -32,6 +32,7 @@ export interface BaseAdapterOptions {
  */
 export enum AdapterType {
   WalletMeshAztec = 'wm_aztec',
+  ObsidionAztec = 'obsidion_aztec',
 }
 
 /**

@@ -94,7 +94,7 @@ export class SessionManager {
         wallet: session.wallet,
         status: session.status,
       }));
-      
+
       localStorage.setItem(this.storageKey, JSON.stringify(serializedSessions));
     } catch (error) {
       console.error('Failed to persist sessions:', error);
@@ -111,19 +111,26 @@ export class SessionManager {
       if (!stored) return;
 
       const sessions = JSON.parse(stored) as StoredSession[];
+      if (!Array.isArray(sessions)) {
+        console.warn('Invalid sessions format in storage');
+        return;
+      }
 
       for (const session of sessions) {
-        if (session.id && session.wallet) {
-          // Store minimal session data, transport/adapter will be created during resume
-          const partialSession: Partial<WalletSession> = {
+        if (session?.id && session?.wallet) {
+          // Create a partial session - transport and adapter will be created during resume
+          const partialSession: Omit<WalletSession, 'transport' | 'adapter'> & Partial<Pick<WalletSession, 'transport' | 'adapter'>> = {
             wallet: session.wallet,
             status: ConnectionStatus.Resuming
           };
+          // Cast is safe here as transport/adapter will be set during resume
           this.sessions.set(session.id, partialSession as WalletSession);
         }
       }
     } catch (error) {
       console.error('Failed to restore sessions:', error);
+      // Clear potentially corrupted data
+      this.clearSessions();
     }
   }
 }

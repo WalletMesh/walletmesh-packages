@@ -13,6 +13,9 @@ export interface Transport {
 
   /** Registers a handler for incoming messages */
   onMessage(handler: (data: unknown) => void): void;
+
+  /** Returns whether the transport is currently connected */
+  isConnected(): boolean;
 }
 
 /**
@@ -30,6 +33,7 @@ export enum TransportType {
   PostMessage = 'postMessage',
   WebSocket = 'websocket',
   Extension = 'extension',
+  Null = 'null',
 }
 
 /**
