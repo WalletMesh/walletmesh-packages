@@ -1,8 +1,8 @@
-[**@walletmesh/aztec-helpers v0.3.0**](README.md)
+[**@walletmesh/aztec-helpers v0.3.1**](README.md)
 
 ***
 
-# @walletmesh/aztec-helpers v0.3.0
+# @walletmesh/aztec-helpers v0.3.1
 
 ## Type Aliases
 

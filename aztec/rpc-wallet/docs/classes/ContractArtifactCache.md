@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.3.0**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.3.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ContractArtifactCache
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/contractArtifactCache.ts#L27)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/contractArtifactCache.ts#L27)
 
 Caches contract artifacts to optimize contract interactions.
 
@@ -28,7 +28,7 @@ This caching mechanism helps reduce:
 
 > **new ContractArtifactCache**(`wallet`): [`ContractArtifactCache`](ContractArtifactCache.md)
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/contractArtifactCache.ts#L37)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/contractArtifactCache.ts#L37)
 
 Creates a new ContractArtifactCache instance.
 
@@ -50,7 +50,7 @@ Wallet instance used to fetch contract data when cache misses occur
 
 > **getContractArtifact**(`contractAddress`): `Promise`\<`ContractArtifact`\>
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/contractArtifactCache.ts#L56)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/contractArtifactCache.ts#L56)
 
 Retrieves the contract artifact for a given contract address.
 First checks the cache, then falls back to fetching from the wallet if needed.

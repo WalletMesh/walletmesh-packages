@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.3.0**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.3.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: AztecProvider
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/provider.ts#L48)
+Defined in: [aztec/rpc-wallet/src/provider.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L48)
 
 Provider for interacting with multiple Aztec chains through WalletMesh router.
 
@@ -59,7 +59,7 @@ const [account, contracts, blockNumber] = await provider
 
 > **new AztecProvider**(`transport`): [`AztecProvider`](AztecProvider.md)
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/provider.ts#L52)
+Defined in: [aztec/rpc-wallet/src/provider.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L52)
 
 #### Parameters
 
@@ -545,7 +545,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:18
 
 > **getAccount**(`chainId`): `Promise`\<`string`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/provider.ts#L110)
+Defined in: [aztec/rpc-wallet/src/provider.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L110)
 
 #### Parameters
 
@@ -612,7 +612,7 @@ If the request times out
 
 > **getSupportedChains**(): `` `aztec:${string}` ``[]
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/provider.ts#L106)
+Defined in: [aztec/rpc-wallet/src/provider.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L106)
 
 Gets the list of currently connected chain IDs.
 
@@ -779,7 +779,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:20
 
 > **registerContract**(`chainId`, `params`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:157](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/provider.ts#L157)
+Defined in: [aztec/rpc-wallet/src/provider.ts:157](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L157)
 
 Registers a contract instance with the wallet.
 
@@ -817,7 +817,7 @@ If registration fails
 
 > **registerContractClass**(`chainId`, `params`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:170](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/provider.ts#L170)
+Defined in: [aztec/rpc-wallet/src/provider.ts:170](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L170)
 
 Registers a contract class with the wallet.
 
@@ -881,7 +881,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:13
 
 > **registerSender**(`chainId`, `params`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/provider.ts#L183)
+Defined in: [aztec/rpc-wallet/src/provider.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L183)
 
 Registers a transaction sender with the wallet.
 
@@ -945,7 +945,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:14
 
 > **sendTransaction**(`chainId`, `params`): `Promise`\<`string`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/provider.ts#L125)
+Defined in: [aztec/rpc-wallet/src/provider.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L125)
 
 Sends a transaction to the specified chain.
 
@@ -1023,7 +1023,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:11
 
 > **simulateTransaction**(`chainId`, `params`): `Promise`\<`unknown`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/provider.ts#L140)
+Defined in: [aztec/rpc-wallet/src/provider.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L140)
 
 Simulates a transaction without submitting it.
 

@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.3.0**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.3.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **AztecWalletMethodHandler**\<`T`, `M`, `C`\>: (`context`, `params`, `accountWallet`) => `Promise`\<`T`\[`M`\]\[`"result"`\]\> \| `T`\[`M`\]\[`"result"`\]
 
-Defined in: [aztec/rpc-wallet/src/types.ts:286](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/aztec/rpc-wallet/src/types.ts#L286)
+Defined in: [aztec/rpc-wallet/src/types.ts:286](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L286)
 
 ## Type Parameters
 
