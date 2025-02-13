@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.3**](../README.md)
+[**@walletmesh/modal v0.0.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: WalletMeshConfig
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/config/WalletMeshConfig.ts#L11)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/config/WalletMeshConfig.ts#L11)
 
 ## Methods
 
@@ -14,7 +14,7 @@ Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:11](https://github.co
 
 > **addWallet**(`wallet`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/config/WalletMeshConfig.ts#L30)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/config/WalletMeshConfig.ts#L30)
 
 #### Parameters
 
@@ -32,7 +32,7 @@ Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:30](https://github.co
 
 > **addWallets**(`wallets`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/config/WalletMeshConfig.ts#L36)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/config/WalletMeshConfig.ts#L36)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:36](https://github.co
 
 > **build**(): `WalletMeshProviderConfig`
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/config/WalletMeshConfig.ts#L87)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/config/WalletMeshConfig.ts#L87)
 
 #### Returns
 
@@ -62,7 +62,7 @@ Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:87](https://github.co
 
 > **clearWallets**(): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/config/WalletMeshConfig.ts#L25)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/config/WalletMeshConfig.ts#L25)
 
 #### Returns
 
@@ -74,7 +74,7 @@ Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:25](https://github.co
 
 > **removeWallet**(`walletId`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/config/WalletMeshConfig.ts#L44)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/config/WalletMeshConfig.ts#L44)
 
 #### Parameters
 
@@ -92,7 +92,7 @@ Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:44](https://github.co
 
 > **setDappInfo**(`info`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/config/WalletMeshConfig.ts#L54)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/config/WalletMeshConfig.ts#L54)
 
 #### Parameters
 
@@ -110,7 +110,7 @@ Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:54](https://github.co
 
 > **setSupportedChains**(`chains`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/config/WalletMeshConfig.ts#L49)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/config/WalletMeshConfig.ts#L49)
 
 #### Parameters
 
@@ -128,7 +128,7 @@ Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:49](https://github.co
 
 > `static` **create**(): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/config/WalletMeshConfig.ts#L21)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/config/WalletMeshConfig.ts#L21)
 
 #### Returns
 

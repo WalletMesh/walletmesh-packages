@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.3**](../README.md)
+[**@walletmesh/modal v0.0.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Enumeration: TransportType
 
-Defined in: [core/modal/src/lib/transports/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/transports/types.ts#L32)
+Defined in: [core/modal/src/lib/transports/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/transports/types.ts#L32)
 
 Available transport types
 
@@ -16,7 +16,7 @@ Available transport types
 
 > **Extension**: `"extension"`
 
-Defined in: [core/modal/src/lib/transports/types.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/transports/types.ts#L35)
+Defined in: [core/modal/src/lib/transports/types.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/transports/types.ts#L35)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal/src/lib/transports/types.ts:35](https://github.com/Walle
 
 > **Null**: `"null"`
 
-Defined in: [core/modal/src/lib/transports/types.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/transports/types.ts#L36)
+Defined in: [core/modal/src/lib/transports/types.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/transports/types.ts#L36)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/modal/src/lib/transports/types.ts:36](https://github.com/Walle
 
 > **PostMessage**: `"postMessage"`
 
-Defined in: [core/modal/src/lib/transports/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/transports/types.ts#L33)
+Defined in: [core/modal/src/lib/transports/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/transports/types.ts#L33)
 
 ***
 
@@ -40,4 +40,4 @@ Defined in: [core/modal/src/lib/transports/types.ts:33](https://github.com/Walle
 
 > **WebSocket**: `"websocket"`
 
-Defined in: [core/modal/src/lib/transports/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/transports/types.ts#L34)
+Defined in: [core/modal/src/lib/transports/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/lib/transports/types.ts#L34)

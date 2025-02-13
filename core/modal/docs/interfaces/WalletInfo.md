@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.3**](../README.md)
+[**@walletmesh/modal v0.0.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletInfo
 
-Defined in: [core/modal/src/types.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L18)
+Defined in: [core/modal/src/types.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/types.ts#L18)
 
 Base wallet configuration
 
@@ -16,7 +16,7 @@ Base wallet configuration
 
 > **adapter**: `AdapterConfig`
 
-Defined in: [core/modal/src/types.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L24)
+Defined in: [core/modal/src/types.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/types.ts#L24)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal/src/types.ts:24](https://github.com/WalletMesh/walletmes
 
 > `optional` **icon**: `string`
 
-Defined in: [core/modal/src/types.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L21)
+Defined in: [core/modal/src/types.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/types.ts#L21)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/modal/src/types.ts:21](https://github.com/WalletMesh/walletmes
 
 > **id**: `string`
 
-Defined in: [core/modal/src/types.ts:19](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L19)
+Defined in: [core/modal/src/types.ts:19](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/types.ts#L19)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/modal/src/types.ts:19](https://github.com/WalletMesh/walletmes
 
 > **name**: `string`
 
-Defined in: [core/modal/src/types.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L20)
+Defined in: [core/modal/src/types.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/types.ts#L20)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [core/modal/src/types.ts:20](https://github.com/WalletMesh/walletmes
 
 > `optional` **supportedChains**: `string`[]
 
-Defined in: [core/modal/src/types.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L23)
+Defined in: [core/modal/src/types.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/types.ts#L23)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [core/modal/src/types.ts:23](https://github.com/WalletMesh/walletmes
 
 > **transport**: `TransportConfig`
 
-Defined in: [core/modal/src/types.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L25)
+Defined in: [core/modal/src/types.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/types.ts#L25)
 
 ***
 
@@ -64,4 +64,4 @@ Defined in: [core/modal/src/types.ts:25](https://github.com/WalletMesh/walletmes
 
 > `optional` **url**: `string`
 
-Defined in: [core/modal/src/types.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L22)
+Defined in: [core/modal/src/types.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/a9bfa87e2829899b652cd49c4226ad0eb6f68ff0/core/modal/src/types.ts#L22)
