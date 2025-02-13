@@ -9,6 +9,7 @@ import { ConnectionStatus } from "../../types.js"
 import { TransportType } from "../../lib/transports/types.js"
 import { AdapterType } from "../../lib/adapters/types.js"
 import { Loader2, ExternalLink, CheckCircle2, ArrowRight, X } from "lucide-react"
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import styles from "./WalletModal.module.css"
 import { toast } from "react-hot-toast"
 import { validateUrl } from "../../lib/utils/validation.js"
@@ -148,7 +149,7 @@ export const WalletModal: React.FC = () => {
     <Dialog.Root open={isModalOpen} onOpenChange={closeModal}>
       <Dialog.Portal>
         <Dialog.Overlay className={styles['overlay']} />
-        <Dialog.Content 
+        <Dialog.Content
           className={styles['content']}
           onOpenAutoFocus={(e) => {
             // Prevent default focus behavior
@@ -174,13 +175,15 @@ export const WalletModal: React.FC = () => {
           aria-labelledby="wallet-modal-title"
           aria-describedby="wallet-modal-description"
         >
-          <Dialog.Title className={styles['title']} id="wallet-modal-title">Connect Wallet</Dialog.Title>
-          <Dialog.Description className={styles['description']} id="wallet-modal-description">
-            Choose a wallet to connect with
-          </Dialog.Description>
+          <VisuallyHidden>
+            <Dialog.Title className={styles['title']} id="wallet-modal-title">Connect Wallet</Dialog.Title>
+            <Dialog.Description className={styles['description']} id="wallet-modal-description">
+              Choose a wallet to connect with
+            </Dialog.Description>
+          </VisuallyHidden>
 
-          <div 
-            className={styles['walletList']} 
+          <div
+            className={styles['walletList']}
             role="listbox"
             aria-label="Available wallets"
             onKeyDown={handleWalletListNavigation}

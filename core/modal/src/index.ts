@@ -2,6 +2,7 @@ export type { DappInfo, WalletInfo, ConnectedWallet, WalletState } from './types
 export { ConnectionStatus } from './types.js'
 export { TransportType } from './lib/transports/types.js'
 export { AdapterType, type Adapter } from './lib/adapters/types.js'
+export { WalletMeshClient } from './lib/client/WalletMeshClient.js'
 
 export { WalletMeshConfig } from './lib/config/WalletMeshConfig.js'
 export { WalletProvider } from './components/WalletProvider.js'
