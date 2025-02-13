@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useReducer, useState } from 'react';
 import { ConnectionStatus, type WalletInfo, type ConnectedWallet } from '../types.js';
+import type { TimeoutConfig } from '../lib/utils/timeout.js';
 import { ConnectionManager } from '../lib/connection/ConnectionManager.js';
 import { handleWalletError } from '../lib/errors.js';
 import { toast } from 'react-hot-toast';
@@ -109,33 +110,53 @@ const walletReducer = (state: WalletState, action: WalletAction): WalletState =>
 };
 
 /**
+ * Options for configuring wallet logic behavior
+ * @interface UseWalletLogicOptions
+ * @property {TimeoutConfig} [timeoutConfig] - Optional timeout configuration for wallet operations
+ * @property {number} [timeoutConfig.connectionTimeout=30000] - Timeout in milliseconds for initial wallet connection
+ * @property {number} [timeoutConfig.operationTimeout=10000] - Timeout in milliseconds for other wallet operations
+ */
+interface UseWalletLogicOptions {
+  timeoutConfig?: TimeoutConfig;
+}
+
+/**
  * Hook for managing wallet connection state and operations
  * @hook useWalletLogic
  * @description This hook provides the core wallet integration functionality,
  * including connection management, state tracking, and modal controls.
- * It handles connection persistence, error management, and cleanup.
+ * It handles connection persistence, error management, timeout handling, and cleanup.
+ *
+ * All asynchronous operations (connect, disconnect, resume) support configurable
+ * timeouts to ensure responsive user experience and proper error handling.
+ *
+ * @param {UseWalletLogicOptions} [options] - Optional configuration options
  *
  * @example
- * ```tsx
- * function WalletButton() {
- *   const {
- *     connectionStatus,
- *     connectedWallet,
- *     connectWallet,
- *     disconnectWallet,
- *     openModal
- *   } = useWalletLogic();
- *
- *   if (connectionStatus === ConnectionStatus.Connected) {
- *     return (
- *       <button onClick={disconnectWallet}>
- *         Connected: {connectedWallet?.state.address}
- *       </button>
- *     );
+ * ```typescript
+ * // Basic usage with timeouts
+ * const {
+ *   connectionStatus,
+ *   connectedWallet,
+ *   connectWallet,
+ *   disconnectWallet,
+ *   openModal
+ * } = useWalletLogic({
+ *   timeoutConfig: {
+ *     connectionTimeout: 30000, // 30s for initial connections
+ *     operationTimeout: 10000   // 10s for other operations
  *   }
+ * });
  *
- *   return <button onClick={openModal}>Connect Wallet</button>;
+ * if (connectionStatus === ConnectionStatus.Connected) {
+ *   return (
+ *     <button onClick={disconnectWallet}>
+ *       Connected: {connectedWallet?.state.address}
+ *     </button>
+ *   );
  * }
+ *
+ * return <button onClick={openModal}>Connect Wallet</button>;
  * ```
  *
  * @returns {Object} Wallet management methods and state
@@ -147,9 +168,9 @@ const walletReducer = (state: WalletState, action: WalletAction): WalletState =>
  * @property {() => void} openModal - Open wallet selection modal
  * @property {() => void} closeModal - Close wallet selection modal
  */
-export const useWalletLogic = () => {
+export const useWalletLogic = (options: UseWalletLogicOptions = {}) => {
   // Initialize connection manager (persisted across re-renders)
-  const [manager] = useState(() => new ConnectionManager());
+  const [manager] = useState(() => new ConnectionManager(options.timeoutConfig));
 
   // Setup wallet state management
   const [walletState, dispatch] = useReducer(walletReducer, initialWalletState);
@@ -187,6 +208,7 @@ export const useWalletLogic = () => {
    * Connect to a specified wallet
    * @param {WalletInfo} wallet - Configuration for the wallet to connect
    * @throws {WalletConnectionError} If connection fails or is rejected
+   * @throws {WalletTimeoutError} If connection exceeds configured timeout
    */
   const connectWallet = useCallback(
     async (wallet: WalletInfo) => {
@@ -207,6 +229,7 @@ export const useWalletLogic = () => {
   /**
    * Disconnect the current wallet
    * @throws {WalletDisconnectionError} If disconnection fails
+   * @throws {WalletTimeoutError} If disconnection exceeds configured timeout
    */
   const disconnectWallet = useCallback(async () => {
     if (!walletState.wallet) return;

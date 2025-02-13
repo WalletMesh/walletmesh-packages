@@ -24,17 +24,22 @@ interface WalletProviderProps {
  * @component WalletProvider
  * @description This component wraps your application and provides wallet
  * connectivity features through React Context. It handles wallet connections,
- * state management, and renders the wallet selection modal.
+ * state management, and renders the wallet selection modal. Supports configurable
+ * timeouts for wallet operations.
  * 
  * @example
  * ```tsx
- * // Basic usage
+ * // Basic usage with timeouts
  * const config = WalletMeshConfig.create()
  *   .addWallet({
  *     id: "my_wallet",
  *     name: "My Wallet",
  *     adapter: { type: AdapterType.WalletMeshAztec },
  *     transport: { type: TransportType.PostMessage }
+ *   })
+ *   .setTimeout({
+ *     connectionTimeout: 30000, // 30s for initial connections
+ *     operationTimeout: 10000   // 10s for other operations
  *   })
  *   .setDappInfo({
  *     name: "My DApp",
@@ -61,10 +66,12 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
   onError,
 }) => {
   // Extract configuration
-  const { wallets, dappInfo } = config;
+  const { wallets, dappInfo, timeoutConfig } = config;
   
   // Initialize wallet connection logic
-  const walletLogic = useWalletLogic();
+  const walletLogic = useWalletLogic(
+    timeoutConfig ? { timeoutConfig } : {}
+  );
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = React.useMemo(() => ({

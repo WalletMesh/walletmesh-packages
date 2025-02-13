@@ -1,14 +1,34 @@
 import type { WalletInfo, ConnectedWallet } from '../../types.js';
+import type { TimeoutConfig } from '../utils/timeout.js';
 import { WalletMeshClient } from '../client/WalletMeshClient.js';
 import { createTransport } from '../transports/index.js';
 import { createAdapter } from '../adapters/createAdapter.js';
 import { WalletError } from '../client/types.js';
+import { withTimeout } from '../utils/timeout.js';
 
+/**
+ * Manages wallet connections with timeout support
+ * @class ConnectionManager
+ * @description Handles wallet connections, session management, and provider access
+ * with configurable timeouts for all async operations.
+ */
 export class ConnectionManager {
   private client: WalletMeshClient;
+  private timeoutConfig: Required<TimeoutConfig>;
 
-  constructor() {
+  /**
+   * Creates a new ConnectionManager instance
+   * @param {TimeoutConfig} [config] - Optional timeout configuration
+   * @param {number} [config.connectionTimeout] - Timeout for initial connection (default: 30000ms)
+   * @param {number} [config.operationTimeout] - Timeout for other operations (default: 10000ms)
+   */
+  constructor(config?: TimeoutConfig) {
     this.client = new WalletMeshClient();
+    this.timeoutConfig = {
+      connectionTimeout: 30000, // 30s default
+      operationTimeout: 10000, // 10s default
+      ...config,
+    };
   }
 
   /**
@@ -42,7 +62,11 @@ export class ConnectionManager {
       const adapter = createAdapter(wallet.adapter);
 
       console.log('[ConnectionManager] Initiating wallet connection');
-      const connected = await this.client.connectWallet(wallet, transport, adapter, { persist: true });
+      const connected = await withTimeout(
+        this.client.connectWallet(wallet, transport, adapter, { persist: true }),
+        this.timeoutConfig.connectionTimeout,
+        'wallet connection',
+      );
 
       console.log('[ConnectionManager] Connection successful:', connected);
       return connected;
@@ -65,11 +89,10 @@ export class ConnectionManager {
       const adapter = createAdapter(sessionData.info.adapter);
 
       console.log('[ConnectionManager] Initiating connection resume');
-      const connected = await this.client.resumeWallet(
-        sessionData.info,
-        sessionData.state,
-        transport,
-        adapter,
+      const connected = await withTimeout(
+        this.client.resumeWallet(sessionData.info, sessionData.state, transport, adapter),
+        this.timeoutConfig.operationTimeout,
+        'session resume',
       );
 
       console.log('[ConnectionManager] Resume successful:', connected);
@@ -89,7 +112,11 @@ export class ConnectionManager {
 
     try {
       console.log('[ConnectionManager] Disconnecting via client');
-      await this.client.disconnectWallet(walletId);
+      await withTimeout(
+        this.client.disconnectWallet(walletId),
+        this.timeoutConfig.operationTimeout,
+        'wallet disconnection',
+      );
       console.log('[ConnectionManager] Disconnection successful');
     } catch (err) {
       console.error('[ConnectionManager] Disconnection failed:', err);
@@ -105,7 +132,11 @@ export class ConnectionManager {
     console.log('[ConnectionManager] Getting provider for wallet:', walletId);
 
     try {
-      const provider = await this.client.getProvider(walletId);
+      const provider = await withTimeout(
+        this.client.getProvider(walletId),
+        this.timeoutConfig.operationTimeout,
+        'get provider',
+      );
       console.log('[ConnectionManager] Provider retrieved successfully');
       return provider;
     } catch (err) {

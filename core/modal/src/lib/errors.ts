@@ -25,6 +25,8 @@
  * }
  * ```
  */
+import { TimeoutError } from './utils/timeout.js';
+
 export class WalletError extends Error {
   override name = 'WalletError';
 
@@ -110,6 +112,37 @@ export class WalletDisconnectionError extends WalletError {
 }
 
 /**
+ * Error thrown when a wallet operation times out
+ * @class WalletTimeoutError
+ * @extends WalletError
+ * @description Indicates that a wallet operation exceeded its configured timeout duration.
+ * This could be during connection, transaction signing, or other async operations.
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await wallet.connect();
+ * } catch (error) {
+ *   if (error instanceof WalletTimeoutError) {
+ *     console.error(`Operation timed out after ${error.timeout}ms`);
+ *     // Handle timeout-specific error
+ *   }
+ * }
+ * ```
+ */
+export class WalletTimeoutError extends WalletError {
+  override name = 'WalletTimeoutError';
+
+  constructor(
+    operation: string,
+    public readonly timeout: number,
+    cause?: unknown,
+  ) {
+    super(`${operation} timed out after ${timeout}ms`, -30003, cause);
+  }
+}
+
+/**
  * Error thrown when wallet session operations fail
  * @class WalletSessionError
  * @extends WalletError
@@ -140,6 +173,27 @@ export class WalletSessionError extends WalletError {
 }
 
 /**
+ * Type guard to check if an error is a WalletTimeoutError
+ * @param error - The error to check
+ * @returns True if the error is a WalletTimeoutError
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await wallet.connect();
+ * } catch (error) {
+ *   if (isWalletTimeoutError(error)) {
+ *     // Handle timeout-specific error
+ *     console.error(`Operation timed out after ${error.timeout}ms`);
+ *   }
+ * }
+ * ```
+ */
+export const isWalletTimeoutError = (error: unknown): error is WalletTimeoutError => {
+  return error instanceof WalletTimeoutError;
+};
+
+/**
  * Utility function to handle wallet-related errors with consistent error types and messages
  * @function handleWalletError
  * @param {unknown} err - The original error or error-like object
@@ -159,6 +213,13 @@ export class WalletSessionError extends WalletError {
  */
 export const handleWalletError = (err: unknown, action: string): WalletError => {
   console.error(`${action} error:`, err);
+
+  // Handle timeout errors
+  if (err instanceof TimeoutError) {
+    const timeoutError = err as TimeoutError;
+    return new WalletTimeoutError(action, 30000, timeoutError);
+  }
+
   const message = err instanceof Error ? err.message : `Failed to ${action.toLowerCase()}`;
 
   // Map to specific error types based on action

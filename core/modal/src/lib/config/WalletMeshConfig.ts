@@ -1,4 +1,5 @@
 import type { WalletInfo, DappInfo } from '../../types.js';
+import type { TimeoutConfig } from '../utils/timeout.js';
 import { WalletList } from '../../config/wallets.js';
 import { DefaultIcon } from '../constants/defaultIcons.js';
 
@@ -8,18 +9,20 @@ import { DefaultIcon } from '../constants/defaultIcons.js';
  * @property {WalletInfo[]} wallets - List of supported wallets
  * @property {DappInfo} dappInfo - Information about the DApp
  * @property {string[] | undefined} supportedChains - Optional list of supported chain IDs
+ * @property {TimeoutConfig | undefined} timeoutConfig - Optional timeout configuration
  */
 export interface WalletMeshProviderConfig {
   wallets: WalletInfo[];
   dappInfo: DappInfo;
   supportedChains: string[] | undefined;
+  timeoutConfig?: TimeoutConfig;
 }
 
 /**
  * Builder class for creating WalletMesh configurations
  * @class WalletMeshConfig
  * @description Provides a fluent API for configuring WalletMesh, including wallet list
- * management, DApp information, and chain support settings.
+ * management, DApp information, chain support settings, and operation timeouts.
  *
  * @example
  * ```typescript
@@ -44,6 +47,10 @@ export interface WalletMeshProviderConfig {
  *     description: "A decentralized application",
  *     origin: "https://mydapp.com"
  *   })
+ *   .setTimeout({
+ *     connectionTimeout: 30000, // 30s for initial connection
+ *     operationTimeout: 10000   // 10s for other operations
+ *   })
  *   .build();
  * ```
  */
@@ -51,10 +58,15 @@ export class WalletMeshConfig {
   private wallets: WalletInfo[];
   private dappInfo?: DappInfo;
   private supportedChains?: string[];
+  private timeoutConfig: TimeoutConfig;
 
   private constructor() {
     // Initialize with default WalletList
     this.wallets = [...WalletList];
+    this.timeoutConfig = {
+      connectionTimeout: 30000, // 30s default
+      operationTimeout: 10000, // 10s default
+    };
   }
 
   /**
@@ -142,6 +154,29 @@ export class WalletMeshConfig {
    */
   setSupportedChains(chains: string[]): WalletMeshConfig {
     this.supportedChains = chains;
+    return this;
+  }
+
+  /**
+   * Set timeouts for wallet operations
+   * @param {TimeoutConfig} config - Timeout configuration
+   * @param {number} [config.connectionTimeout] - Timeout for initial connection (default: 30000ms)
+   * @param {number} [config.operationTimeout] - Timeout for other operations (default: 10000ms)
+   * @returns {WalletMeshConfig} Builder instance for chaining
+   *
+   * @example
+   * ```typescript
+   * config.setTimeout({
+   *   connectionTimeout: 30000, // 30s for initial connection
+   *   operationTimeout: 10000   // 10s for other operations
+   * });
+   * ```
+   */
+  setTimeout(config: TimeoutConfig): WalletMeshConfig {
+    this.timeoutConfig = {
+      ...this.timeoutConfig,
+      ...config,
+    };
     return this;
   }
 
@@ -244,6 +279,7 @@ export class WalletMeshConfig {
         icon: this.dappInfo.icon ?? DefaultIcon.Dapp,
       },
       supportedChains: this.supportedChains,
+      timeoutConfig: this.timeoutConfig,
     };
   }
 }

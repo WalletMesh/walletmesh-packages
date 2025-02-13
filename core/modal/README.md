@@ -176,6 +176,12 @@ const config = WalletMeshConfig.create()
     icon: 'data:image/svg+xml,...', // Optional
     rpcUrl: 'https://rpc.example.com' // Optional
   })
+
+  // Timeout Configuration
+  .setTimeout({
+    connectionTimeout: 30000,     // 30s for initial connections (default)
+    operationTimeout: 10000       // 10s for other operations (default)
+  })
   .build();
 ```
 
@@ -286,15 +292,19 @@ WalletMesh provides structured error handling with specific error types and code
 
 ```typescript
 // Error codes by category
--30000 to -30099: Connection errors
--30100 to -30199: Session errors
--30200 to -30299: Transaction errors
+-30000: Connection errors
+-30001: Disconnection errors
+-30002: Session errors
+-30003: Timeout errors
+-30099: Generic wallet errors
 
 // Error examples
 try {
   await wallet.connect();
 } catch (error) {
-  if (error instanceof WalletConnectionError) {
+  if (error instanceof WalletTimeoutError) {
+    console.error(`Operation timed out after ${error.timeout}ms`);
+  } else if (error instanceof WalletConnectionError) {
     console.error(`Connection failed: ${error.message}`);
     console.error(`Error code: ${error.code}`);
     if (error.cause) {
@@ -306,6 +316,12 @@ try {
 // Error utility
 const error = handleWalletError(err, 'connect wallet');
 // WalletConnectionError(-30000): Failed to connect wallet
+
+// Type Guards
+if (isWalletTimeoutError(error)) {
+  // Handle timeout-specific error
+  console.error(`Operation timed out after ${error.timeout}ms`);
+}
 ```
 
 ## TypeScript Support
