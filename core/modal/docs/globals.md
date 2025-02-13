@@ -1,8 +1,8 @@
-[**@walletmesh/modal v0.0.3**](README.md)
+[**@walletmesh/modal v0.0.4**](README.md)
 
 ***
 
-# @walletmesh/modal v0.0.3
+# @walletmesh/modal v0.0.4
 
 ## Enumerations
 
@@ -13,6 +13,7 @@
 ## Classes
 
 - [WalletErrorBoundary](classes/WalletErrorBoundary.md)
+- [WalletMeshClient](classes/WalletMeshClient.md)
 - [WalletMeshConfig](classes/WalletMeshConfig.md)
 
 ## Interfaces
