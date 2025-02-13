@@ -1,6 +1,6 @@
 import React from "react"
 import { useState, useCallback } from "react"
-import { useWallet } from "./WalletContext.js"
+import { useWalletContext } from "../WalletContext.js"
 import { WalletInfoModal } from "./WalletInfoModal.js"
 import { Loader2 } from "lucide-react"
 import { DefaultIcon } from "../../lib/constants/defaultIcons.js"
@@ -9,7 +9,7 @@ import styles from "./ConnectButton.module.css"
 import { ConnectionStatus } from "../../types.js"
 
 export const ConnectButton: React.FC = React.memo(() => {
-  const { connectionStatus, connectedWallet, openModal, disconnectWallet } = useWallet()
+  const { connectionStatus, connectedWallet, openModal, disconnectWallet } = useWalletContext()
   const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
 
   const handleConnectedWalletClick = useCallback(() => {

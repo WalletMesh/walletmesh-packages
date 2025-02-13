@@ -2,10 +2,9 @@ import React from "react";
 import { Toaster } from "react-hot-toast";
 import type { WalletMeshProviderConfig } from "../lib/config/WalletMeshConfig.js";
 import { WalletErrorBoundary } from "./WalletErrorBoundary.js";
-import { useWallet } from "../hooks/useWallet.js";
-import { useWalletModal } from "../hooks/useWalletModal.js";
 import { WalletContext } from "./WalletContext.js";
 import { WalletModal } from "./WalletModal/WalletModal.js";
+import { useWalletLogic } from "../hooks/useWalletLogic.js";
 
 interface WalletProviderProps {
   children: React.ReactNode;
@@ -19,34 +18,13 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
   onError,
 }) => {
   const { wallets, dappInfo } = config;
-  const { isOpen, openModal, closeModal } = useWalletModal();
-  const { connectionStatus, connectedWallet, connectWallet, disconnectWallet, getProvider } = useWallet({ 
-    onError 
-  });
+  const walletLogic = useWalletLogic();
 
   const contextValue = React.useMemo(() => ({
-    connectionStatus,
-    connectedWallet,
-    connectWallet,
-    disconnectWallet,
-    getProvider,
+    ...walletLogic,
     wallets,
     dappInfo,
-    isModalOpen: isOpen,
-    openModal,
-    closeModal,
-  }), [
-    connectionStatus,
-    connectedWallet,
-    connectWallet,
-    disconnectWallet,
-    getProvider,
-    wallets,
-    dappInfo,
-    isOpen,
-    openModal,
-    closeModal,
-  ]);
+  }), [walletLogic, wallets, dappInfo]);
 
   return (
     <WalletErrorBoundary onError={onError}>

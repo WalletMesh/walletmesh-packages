@@ -2,7 +2,7 @@ import type React from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import * as Tabs from "@radix-ui/react-tabs"
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden'
-import { useWallet } from "./WalletContext.js"
+import { useWalletContext } from "../WalletContext.js"
 import { useState, useCallback } from "react"
 import { X, Copy, CheckCircle2, ExternalLink, RefreshCw, Globe, Terminal, Info } from "lucide-react"
 import styles from "./WalletInfoModal.module.css"
@@ -13,7 +13,7 @@ interface WalletInfoModalProps {
 }
 
 export const WalletInfoModal: React.FC<WalletInfoModalProps> = ({ onDisconnect }) => {
-  const { connectedWallet, dappInfo } = useWallet()
+  const { connectedWallet, dappInfo } = useWalletContext()
   const [copiedAddress, setCopiedAddress] = useState(false)
   const [copiedSession, setCopiedSession] = useState(false)
   const [connectionDate] = useState(new Date())

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import * as Label from "@radix-ui/react-label"
 import * as Separator from "@radix-ui/react-separator"
-import { useWallet } from "./WalletContext.js"
+import { useWalletContext } from "../WalletContext.js"
 import type { WalletInfo } from "../../types.js"
 import { ConnectionStatus } from "../../types.js"
 import { TransportType } from "../../lib/transports/types.js"
@@ -24,7 +24,7 @@ export const WalletModal: React.FC = () => {
     connectionStatus,
     wallets,
     connectedWallet,
-  } = useWallet()
+  } = useWalletContext()
   const [customWalletUrl, setCustomWalletUrl] = useState<string>("")
   const [selectedWallet, setSelectedWallet] = useState<WalletInfo | null>(null)
   const [focusedIndex, setFocusedIndex] = useState<number>(-1)

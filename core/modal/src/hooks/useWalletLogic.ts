@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useState } from 'react';
-import { ConnectionStatus, type WalletInfo, type ConnectedWallet } from '../../types.js';
-import { ConnectionManager } from '../../lib/connection/ConnectionManager.js';
-import { handleWalletError } from '../../lib/errors.js';
+import { ConnectionStatus, type WalletInfo, type ConnectedWallet } from '../types.js';
+import { ConnectionManager } from '../lib/connection/ConnectionManager.js';
+import { handleWalletError } from '../lib/errors.js';
 import { toast } from 'react-hot-toast';
 
 type WalletState = {
