@@ -1,26 +1,26 @@
 import React from "react";
 import { Toaster } from "react-hot-toast";
-import type { WalletInfo, DappInfo } from "../types.js";
+import type { WalletMeshProviderConfig } from "../lib/config/WalletMeshConfig.js";
 import { WalletErrorBoundary } from "./WalletErrorBoundary.js";
 import { useWallet } from "../hooks/useWallet.js";
 import { useWalletModal } from "../hooks/useWalletModal.js";
 import { WalletContext } from "./WalletContext.js";
 import { WalletModal } from "./WalletModal/WalletModal.js";
+
 interface WalletProviderProps {
   children: React.ReactNode;
-  wallets: WalletInfo[];
-  dappInfo: DappInfo;
+  config: WalletMeshProviderConfig;
   onError?: (error: Error) => void;
 }
 
 export const WalletProvider: React.FC<WalletProviderProps> = ({
   children,
-  wallets,
-  dappInfo,
+  config,
   onError,
 }) => {
+  const { wallets, dappInfo } = config;
   const { isOpen, openModal, closeModal } = useWalletModal();
-  const { connectionStatus, connectedWallet, connectWallet, disconnectWallet } = useWallet({ 
+  const { connectionStatus, connectedWallet, connectWallet, disconnectWallet, getProvider } = useWallet({ 
     onError 
   });
 
@@ -29,6 +29,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
     connectedWallet,
     connectWallet,
     disconnectWallet,
+    getProvider,
     wallets,
     dappInfo,
     isModalOpen: isOpen,
@@ -39,6 +40,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
     connectedWallet,
     connectWallet,
     disconnectWallet,
+    getProvider,
     wallets,
     dappInfo,
     isOpen,

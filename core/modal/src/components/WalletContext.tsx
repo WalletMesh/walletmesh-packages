@@ -6,6 +6,7 @@ interface WalletContextType {
   connectedWallet: ConnectedWallet | null;
   connectWallet: (wallet: WalletInfo) => Promise<ConnectedWallet>;
   disconnectWallet: () => Promise<void>;
+  getProvider: (walletId: string) => Promise<unknown>;
   wallets: WalletInfo[];
   dappInfo: DappInfo;
   isModalOpen: boolean;

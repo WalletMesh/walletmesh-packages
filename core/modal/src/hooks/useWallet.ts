@@ -104,10 +104,28 @@ export const useWallet = ({ onError }: UseWalletOptions = {}) => {
     }
   }, [state.wallet, onError]);
 
+  const getProvider = useCallback(async (walletId: string) => {
+    try {
+      return await connectionManager.current.getProvider(walletId);
+    } catch (error) {
+      const walletError =
+        error instanceof WalletError
+          ? error
+          : new WalletError(
+              'Failed to get provider',
+              'client',
+              error instanceof Error ? error : undefined,
+            );
+      onError?.(walletError);
+      throw walletError;
+    }
+  }, [onError]);
+
   return {
     connectionStatus: state.status,
     connectedWallet: state.wallet,
     connectWallet,
     disconnectWallet,
+    getProvider,
   };
 };
