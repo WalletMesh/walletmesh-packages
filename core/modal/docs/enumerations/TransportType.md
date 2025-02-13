@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.2**](../README.md)
+[**@walletmesh/modal v0.0.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Enumeration: TransportType
 
-Defined in: [core/modal/src/lib/transports/types.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/lib/transports/types.ts#L29)
+Defined in: [core/modal/src/lib/transports/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/transports/types.ts#L32)
 
 Available transport types
 
@@ -16,7 +16,15 @@ Available transport types
 
 > **Extension**: `"extension"`
 
-Defined in: [core/modal/src/lib/transports/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/lib/transports/types.ts#L32)
+Defined in: [core/modal/src/lib/transports/types.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/transports/types.ts#L35)
+
+***
+
+### Null
+
+> **Null**: `"null"`
+
+Defined in: [core/modal/src/lib/transports/types.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/transports/types.ts#L36)
 
 ***
 
@@ -24,7 +32,7 @@ Defined in: [core/modal/src/lib/transports/types.ts:32](https://github.com/Walle
 
 > **PostMessage**: `"postMessage"`
 
-Defined in: [core/modal/src/lib/transports/types.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/lib/transports/types.ts#L30)
+Defined in: [core/modal/src/lib/transports/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/transports/types.ts#L33)
 
 ***
 
@@ -32,4 +40,4 @@ Defined in: [core/modal/src/lib/transports/types.ts:30](https://github.com/Walle
 
 > **WebSocket**: `"websocket"`
 
-Defined in: [core/modal/src/lib/transports/types.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/lib/transports/types.ts#L31)
+Defined in: [core/modal/src/lib/transports/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/lib/transports/types.ts#L34)

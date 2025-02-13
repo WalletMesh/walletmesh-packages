@@ -1,8 +1,8 @@
-[**@walletmesh/modal v0.0.2**](README.md)
+[**@walletmesh/modal v0.0.3**](README.md)
 
 ***
 
-# @walletmesh/modal v0.0.2
+# @walletmesh/modal v0.0.3
 
 ## Enumerations
 
@@ -12,18 +12,19 @@
 
 ## Classes
 
-- [WalletError](classes/WalletError.md)
 - [WalletErrorBoundary](classes/WalletErrorBoundary.md)
+- [WalletMeshConfig](classes/WalletMeshConfig.md)
 
 ## Interfaces
 
+- [Adapter](interfaces/Adapter.md)
 - [ConnectedWallet](interfaces/ConnectedWallet.md)
 - [DappInfo](interfaces/DappInfo.md)
 - [WalletInfo](interfaces/WalletInfo.md)
+- [WalletState](interfaces/WalletState.md)
 
 ## Functions
 
 - [ConnectButton](functions/ConnectButton.md)
-- [useWalletContext](functions/useWalletContext.md)
-- [useWalletModal](functions/useWalletModal.md)
+- [useWallet](functions/useWallet.md)
 - [WalletProvider](functions/WalletProvider.md)

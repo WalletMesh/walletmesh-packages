@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.2**](../README.md)
+[**@walletmesh/modal v0.0.3**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **ConnectButton**(`props`, `deprecatedLegacyContext`?): `ReactNode`
 
-Defined in: [core/modal/src/components/WalletModal/ConnectButton.tsx:10](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/components/WalletModal/ConnectButton.tsx#L10)
+Defined in: [core/modal/src/components/WalletModal/ConnectButton.tsx:11](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/components/WalletModal/ConnectButton.tsx#L11)
 
 ## Parameters
 

@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.2**](../README.md)
+[**@walletmesh/modal v0.0.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ConnectedWallet
 
-Defined in: [core/modal/src/types.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/types.ts#L58)
+Defined in: [core/modal/src/types.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L40)
 
 Connected wallet
 
@@ -16,12 +16,12 @@ Connected wallet
 
 > **info**: [`WalletInfo`](WalletInfo.md)
 
-Defined in: [core/modal/src/types.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/types.ts#L59)
+Defined in: [core/modal/src/types.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L41)
 
 ***
 
 ### state
 
-> **state**: `WalletState`
+> **state**: [`WalletState`](WalletState.md)
 
-Defined in: [core/modal/src/types.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/types.ts#L60)
+Defined in: [core/modal/src/types.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L42)
