@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.2**](../README.md)
+[**@walletmesh/modal v0.0.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Enumeration: ConnectionStatus
 
-Defined in: [core/modal/src/types.ts:7](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/types.ts#L7)
+Defined in: [core/modal/src/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L48)
 
 Connection status states
 
@@ -16,7 +16,7 @@ Connection status states
 
 > **Connected**: `"connected"`
 
-Defined in: [core/modal/src/types.ts:10](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/types.ts#L10)
+Defined in: [core/modal/src/types.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L51)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal/src/types.ts:10](https://github.com/WalletMesh/walletmes
 
 > **Connecting**: `"connecting"`
 
-Defined in: [core/modal/src/types.ts:9](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/types.ts#L9)
+Defined in: [core/modal/src/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L50)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/modal/src/types.ts:9](https://github.com/WalletMesh/walletmesh
 
 > **Disconnecting**: `"disconnecting"`
 
-Defined in: [core/modal/src/types.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/types.ts#L11)
+Defined in: [core/modal/src/types.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L52)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/modal/src/types.ts:11](https://github.com/WalletMesh/walletmes
 
 > **Idle**: `"idle"`
 
-Defined in: [core/modal/src/types.ts:8](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/types.ts#L8)
+Defined in: [core/modal/src/types.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L49)
 
 ***
 
@@ -48,4 +48,4 @@ Defined in: [core/modal/src/types.ts:8](https://github.com/WalletMesh/walletmesh
 
 > **Resuming**: `"resuming"`
 
-Defined in: [core/modal/src/types.ts:12](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/types.ts#L12)
+Defined in: [core/modal/src/types.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/types.ts#L53)

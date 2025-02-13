@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.2**](../README.md)
+[**@walletmesh/modal v0.0.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: WalletErrorBoundary
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:17](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/components/WalletErrorBoundary.tsx#L17)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:17](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/components/WalletErrorBoundary.tsx#L17)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:17](https://githu
 
 > **new WalletErrorBoundary**(`props`): [`WalletErrorBoundary`](WalletErrorBoundary.md)
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:18](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/components/WalletErrorBoundary.tsx#L18)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:18](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/components/WalletErrorBoundary.tsx#L18)
 
 #### Parameters
 
@@ -149,7 +149,7 @@ class Foo extends React.Component {
 
 > **componentDidCatch**(`error`): `void`
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:27](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/components/WalletErrorBoundary.tsx#L27)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:27](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/components/WalletErrorBoundary.tsx#L27)
 
 Catches exceptions generated in descendant components. Unhandled exceptions will cause
 the entire component tree to unmount.
@@ -424,7 +424,7 @@ lifecycle events from running.
 
 > **render**(): `ReactNode`
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:44](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/components/WalletErrorBoundary.tsx#L44)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:44](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/components/WalletErrorBoundary.tsx#L44)
 
 #### Returns
 
@@ -639,7 +639,7 @@ this from being invoked.
 
 > `static` **getDerivedStateFromError**(`error`): `State`
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:23](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/core/modal/src/components/WalletErrorBoundary.tsx#L23)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:23](https://github.com/WalletMesh/walletmesh-packages/blob/8dd082aca38bf7e9456a440d28fb36f29cf0f5a1/core/modal/src/components/WalletErrorBoundary.tsx#L23)
 
 #### Parameters
 

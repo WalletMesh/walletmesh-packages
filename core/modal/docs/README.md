@@ -1,10 +1,80 @@
-**@walletmesh/modal v0.0.2**
+**@walletmesh/modal v0.0.3**
 
 ***
 
-# WalletMesh Architecture
+# WalletMesh Modal
 
-## Overview
+WalletMesh provides a flexible and powerful solution for integrating multiple wallet connections into your decentralized application (DApp). It offers clean separation between transport and business logic layers, supporting multiple simultaneous wallet connections with robust error handling and user-friendly interfaces.
+
+## Table of Contents
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Architecture Overview](#architecture-overview)
+- [Core Components](#core-components)
+  - [Transport Layer](#transport-layer)
+  - [Adapter Layer](#adapter-layer)
+  - [WalletMeshClient](#walletmeshclient)
+- [Advanced Usage](#advanced-usage)
+  - [Multi-Wallet Management](#multi-wallet-management)
+  - [Error Handling](#error-handling)
+- [Extending WalletMesh](#extending-walletmesh)
+  - [Adding New Transport](#adding-new-transport)
+  - [Adding New Adapter](#adding-new-adapter)
+
+## Installation
+
+```bash
+# Using npm
+npm install @walletmesh/modal
+
+# Using yarn
+yarn add @walletmesh/modal
+
+# Using pnpm
+pnpm add @walletmesh/modal
+```
+
+## Quick Start
+
+```typescript
+import { WalletProvider, ConnectButton, TransportType, AdapterType } from '@walletmesh/modal';
+
+// Configure DApp information
+const dappInfo = {
+  name: "My DApp",
+  description: "Description",
+  icon: "icon-url",
+  origin: "https://mydapp.com"
+};
+
+// Configure available wallets
+const wallets = [
+  {
+    id: "aztec_web",
+    name: "Aztec Web Wallet",
+    icon: "icon-url",
+    transport: {
+      type: TransportType.PostMessage,
+      options: { origin: "https://wallet.aztec.network" }
+    },
+    adapter: {
+      type: AdapterType.WalletMeshAztec
+    }
+  }
+];
+
+// Wrap your app with WalletProvider
+function App() {
+  return (
+    <WalletProvider wallets={wallets} dappInfo={dappInfo}>
+      <ConnectButton />
+      {/* Your app content */}
+    </WalletProvider>
+  );
+}
+```
+
+## Architecture Overview
 WalletMesh provides a flexible architecture for wallet connectivity with clean separation between transport and business logic layers. The architecture supports multiple simultaneous wallet connections, each with its own transport and adapter configuration.
 
 ## DApp Integration
