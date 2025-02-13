@@ -11,7 +11,12 @@ export interface WalletClient {
   connectWallet(walletInfo: WalletInfo, transport: Transport, adapter: Adapter): Promise<ConnectedWallet>;
 
   /** Connects to a wallet using the provided transport and adapter */
-  resumeWallet(walletInfo: WalletInfo, walletState: WalletState, transport: Transport, adapter: Adapter): Promise<ConnectedWallet>;
+  resumeWallet(
+    walletInfo: WalletInfo,
+    walletState: WalletState,
+    transport: Transport,
+    adapter: Adapter,
+  ): Promise<ConnectedWallet>;
 
   /** Disconnects from the currently connected wallet */
   disconnectWallet(walletId: string): Promise<void>;

@@ -119,9 +119,10 @@ export class SessionManager {
       for (const session of sessions) {
         if (session?.id && session?.wallet) {
           // Create a partial session - transport and adapter will be created during resume
-          const partialSession: Omit<WalletSession, 'transport' | 'adapter'> & Partial<Pick<WalletSession, 'transport' | 'adapter'>> = {
+          const partialSession: Omit<WalletSession, 'transport' | 'adapter'> &
+            Partial<Pick<WalletSession, 'transport' | 'adapter'>> = {
             wallet: session.wallet,
-            status: ConnectionStatus.Resuming
+            status: ConnectionStatus.Resuming,
           };
           // Cast is safe here as transport/adapter will be set during resume
           this.sessions.set(session.id, partialSession as WalletSession);

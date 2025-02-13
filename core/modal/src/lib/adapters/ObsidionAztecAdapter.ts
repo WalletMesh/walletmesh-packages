@@ -40,10 +40,7 @@ interface JsonRpcResponse {
 class Communicator {
   private readonly url: URL;
   private popup: Window | null = null;
-  private listeners = new Map<
-    (_: MessageEvent) => void,
-    { reject: (_: Error) => void }
-  >();
+  private listeners = new Map<(_: MessageEvent) => void, { reject: (_: Error) => void }>();
   private popupCloseInterval: ReturnType<typeof setInterval> | undefined;
 
   constructor(params: { url: string | URL }) {
@@ -56,16 +53,12 @@ class Communicator {
   }
 
   async postRequestAndWaitForResponse<M extends Message>(request: Message): Promise<M> {
-    const responsePromise = this.onMessage<M>(
-      ({ requestId }) => requestId === request.requestId,
-    );
+    const responsePromise = this.onMessage<M>(({ requestId }) => requestId === request.requestId);
     await this.postMessage(request);
     return await responsePromise;
   }
 
-  async onMessage<M extends Message>(
-    predicate: (_: Partial<M>) => boolean,
-  ): Promise<M> {
+  async onMessage<M extends Message>(predicate: (_: Partial<M>) => boolean): Promise<M> {
     return new Promise((resolve, reject) => {
       const listener = (event: MessageEvent<M>) => {
         if (event.origin !== this.url.origin) return;
@@ -73,12 +66,12 @@ class Communicator {
         const message = event.data;
         if (predicate(message)) {
           resolve(message);
-          window.removeEventListener("message", listener);
+          window.removeEventListener('message', listener);
           this.listeners.delete(listener);
         }
       };
 
-      window.addEventListener("message", listener);
+      window.addEventListener('message', listener);
       this.listeners.set(listener, { reject });
     });
   }
@@ -93,8 +86,8 @@ class Communicator {
     }
 
     this.listeners.forEach(({ reject }, listener) => {
-      reject(new Error("Request rejected"));
-      window.removeEventListener("message", listener);
+      reject(new Error('Request rejected'));
+      window.removeEventListener('message', listener);
     });
     this.listeners.clear();
   }
@@ -113,10 +106,10 @@ class Communicator {
 
     this.popup = this.openPopup(this.url);
     if (!this.popup) {
-      throw new Error("Failed to open popup: failed to load");
+      throw new Error('Failed to open popup: failed to load');
     }
 
-    void this.onMessage<ConfigMessage>(({ event }) => event === "PopupUnload")
+    void this.onMessage<ConfigMessage>(({ event }) => event === 'PopupUnload')
       .then(() => this.disconnect())
       .catch(() => {});
 
@@ -133,11 +126,11 @@ class Communicator {
         clearInterval(pingInterval);
         return;
       }
-      this.popup.postMessage({ event: "PopupLoadedRequest" }, this.url.origin);
+      this.popup.postMessage({ event: 'PopupLoadedRequest' }, this.url.origin);
     }, 100);
 
     try {
-      await this.onMessage<ConfigMessage>(({ event }) => event === "PopupLoaded");
+      await this.onMessage<ConfigMessage>(({ event }) => event === 'PopupLoaded');
     } finally {
       clearInterval(pingInterval);
     }
@@ -153,7 +146,7 @@ class Communicator {
 
     const popup = window.open(
       url,
-      "Obsidion Wallet",
+      'Obsidion Wallet',
       `width=${POPUP_WIDTH}, height=${POPUP_HEIGHT}, left=${left}, top=${top}`,
     );
 
@@ -168,11 +161,11 @@ interface Message {
 }
 
 interface ConfigMessage extends Message {
-  event: "PopupLoaded" | "PopupUnload";
+  event: 'PopupLoaded' | 'PopupUnload';
 }
 
 interface ObsidionProvider {
-  request<M extends keyof RpcMethods>(request: RpcRequest<M>): Promise<RpcMethods[M]["result"]>;
+  request<M extends keyof RpcMethods>(request: RpcRequest<M>): Promise<RpcMethods[M]['result']>;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   getAccount(): Promise<string>;
@@ -180,7 +173,7 @@ interface ObsidionProvider {
 
 interface RpcRequest<M extends keyof RpcMethods> {
   method: M;
-  params: RpcMethods[M]["params"];
+  params: RpcMethods[M]['params'];
 }
 
 function generateId(): string {
@@ -208,7 +201,7 @@ export class ObsidionAztecAdapter implements Adapter {
     try {
       // Initialize communicator with wallet URL
       this.communicator = new Communicator({
-        url: walletInfo.url || 'https://wallet.aztec.network'
+        url: walletInfo.url || 'https://wallet.aztec.network',
       });
 
       // Create provider that uses communicator
@@ -224,15 +217,15 @@ export class ObsidionAztecAdapter implements Adapter {
               jsonrpc: '2.0',
               id: generateId(),
               method: request.method,
-              params: request.params
-            }
+              params: request.params,
+            },
           });
 
           const jsonRpcResponse = response.data as JsonRpcResponse;
           if (jsonRpcResponse.error) {
             throw new WalletError(jsonRpcResponse.error.message, 'adapter');
           }
-          return jsonRpcResponse.result as RpcMethods[M]["result"];
+          return jsonRpcResponse.result as RpcMethods[M]['result'];
         },
         connect: async () => {
           if (!this.communicator) {
@@ -251,14 +244,14 @@ export class ObsidionAztecAdapter implements Adapter {
           }
           const accounts = await this.provider.request<'aztec_requestAccounts'>({
             method: 'aztec_requestAccounts',
-            params: []
+            params: [],
           });
           const [firstAccount] = accounts;
           if (typeof firstAccount !== 'string') {
             throw new WalletError('No accounts found', 'adapter');
           }
           return firstAccount;
-        }
+        },
       };
 
       // Connect and get account
@@ -269,12 +262,12 @@ export class ObsidionAztecAdapter implements Adapter {
       const state: WalletState = {
         chain: this.options.chainId || '1',
         address,
-        sessionId: Date.now().toString()
+        sessionId: Date.now().toString(),
       };
 
       return {
         info: walletInfo,
-        state
+        state,
       };
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to connect');
@@ -313,11 +306,13 @@ export class ObsidionAztecAdapter implements Adapter {
     }
 
     // Forward message to communicator
-    void communicator.postMessage({
-      requestId: generateId(),
-      data: data as JsonRpcRequest | JsonRpcResponse
-    }).catch((err) => {
-      console.error('Failed to send message to provider:', err);
-    });
+    void communicator
+      .postMessage({
+        requestId: generateId(),
+        data: data as JsonRpcRequest | JsonRpcResponse,
+      })
+      .catch((err) => {
+        console.error('Failed to send message to provider:', err);
+      });
   }
 }

@@ -2,12 +2,51 @@ import type { WalletInfo, DappInfo } from '../../types.js';
 import { WalletList } from '../../config/wallets.js';
 import { DefaultIcon } from '../constants/defaultIcons.js';
 
+/**
+ * Configuration required by the WalletProvider
+ * @interface WalletMeshProviderConfig
+ * @property {WalletInfo[]} wallets - List of supported wallets
+ * @property {DappInfo} dappInfo - Information about the DApp
+ * @property {string[] | undefined} supportedChains - Optional list of supported chain IDs
+ */
 export interface WalletMeshProviderConfig {
   wallets: WalletInfo[];
   dappInfo: DappInfo;
   supportedChains: string[] | undefined;
 }
 
+/**
+ * Builder class for creating WalletMesh configurations
+ * @class WalletMeshConfig
+ * @description Provides a fluent API for configuring WalletMesh, including wallet list
+ * management, DApp information, and chain support settings.
+ *
+ * @example
+ * ```typescript
+ * const config = WalletMeshConfig.create()
+ *   .clearWallets() // Clear default wallets
+ *   .addWallet({
+ *     id: "my_wallet",
+ *     name: "My Wallet",
+ *     icon: "data:image/svg+xml,...", // Must be data URI
+ *     adapter: {
+ *       type: AdapterType.WalletMeshAztec,
+ *       options: { chainId: "aztec:testnet" }
+ *     },
+ *     transport: {
+ *       type: TransportType.PostMessage,
+ *       options: { origin: "https://wallet.example.com" }
+ *     }
+ *   })
+ *   .setSupportedChains(["aztec:testnet", "aztec:mainnet"])
+ *   .setDappInfo({
+ *     name: "My DApp",
+ *     description: "A decentralized application",
+ *     origin: "https://mydapp.com"
+ *   })
+ *   .build();
+ * ```
+ */
 export class WalletMeshConfig {
   private wallets: WalletInfo[];
   private dappInfo?: DappInfo;
@@ -18,21 +57,58 @@ export class WalletMeshConfig {
     this.wallets = [...WalletList];
   }
 
+  /**
+   * Create a new WalletMeshConfig builder instance
+   * @returns {WalletMeshConfig} Builder instance initialized with default wallets
+   */
   static create(): WalletMeshConfig {
     return new WalletMeshConfig();
   }
 
+  /**
+   * Remove all wallets from the configuration
+   * @returns {WalletMeshConfig} Builder instance for chaining
+   */
   clearWallets(): WalletMeshConfig {
     this.wallets = [];
     return this;
   }
 
+  /**
+   * Add a wallet to the configuration
+   * @param {WalletInfo} wallet - Wallet configuration to add
+   * @returns {WalletMeshConfig} Builder instance for chaining
+   * @throws {Error} If the wallet icon is not a valid data URI
+   *
+   * @example
+   * ```typescript
+   * config.addWallet({
+   *   id: "aztec_web",
+   *   name: "Aztec Web Wallet",
+   *   url: "https://wallet.aztec.network",
+   *   transport: {
+   *     type: TransportType.PostMessage,
+   *     options: { origin: "https://wallet.aztec.network" }
+   *   },
+   *   adapter: {
+   *     type: AdapterType.WalletMeshAztec,
+   *     options: { chainId: "aztec:mainnet" }
+   *   }
+   * });
+   * ```
+   */
   addWallet(wallet: WalletInfo): WalletMeshConfig {
     this.validateIcon(wallet.icon, `Wallet "${wallet.name}"`);
     this.wallets.push(wallet);
     return this;
   }
 
+  /**
+   * Add multiple wallets to the configuration
+   * @param {WalletInfo[]} wallets - Array of wallet configurations
+   * @returns {WalletMeshConfig} Builder instance for chaining
+   * @throws {Error} If any wallet icon is not a valid data URI
+   */
   addWallets(wallets: WalletInfo[]): WalletMeshConfig {
     for (const wallet of wallets) {
       this.validateIcon(wallet.icon, `Wallet "${wallet.name}"`);
@@ -41,16 +117,51 @@ export class WalletMeshConfig {
     return this;
   }
 
+  /**
+   * Remove a wallet from the configuration
+   * @param {string} walletId - ID of the wallet to remove
+   * @returns {WalletMeshConfig} Builder instance for chaining
+   */
   removeWallet(walletId: string): WalletMeshConfig {
     this.wallets = this.wallets.filter((w) => w.id !== walletId);
     return this;
   }
 
+  /**
+   * Set the list of supported blockchain networks
+   * @param {string[]} chains - Array of chain identifiers
+   * @returns {WalletMeshConfig} Builder instance for chaining
+   *
+   * @example
+   * ```typescript
+   * config.setSupportedChains([
+   *   "aztec:testnet",
+   *   "aztec:mainnet"
+   * ]);
+   * ```
+   */
   setSupportedChains(chains: string[]): WalletMeshConfig {
     this.supportedChains = chains;
     return this;
   }
 
+  /**
+   * Set information about the DApp
+   * @param {DappInfo} info - DApp configuration
+   * @returns {WalletMeshConfig} Builder instance for chaining
+   * @throws {Error} If the DApp icon is not a valid data URI
+   *
+   * @example
+   * ```typescript
+   * config.setDappInfo({
+   *   name: "My DApp",
+   *   description: "A decentralized application",
+   *   origin: "https://mydapp.com",
+   *   icon: "data:image/svg+xml,...", // Optional, must be data URI
+   *   rpcUrl: "https://rpc.example.com" // Optional
+   * });
+   * ```
+   */
   setDappInfo(info: DappInfo): WalletMeshConfig {
     // Validate dapp icon if provided
     this.validateIcon(info.icon, 'DApp');
@@ -58,16 +169,34 @@ export class WalletMeshConfig {
     return this;
   }
 
+  /**
+   * Validate that an icon is a proper data URI
+   * @private
+   * @param {string | undefined} icon - Icon URL or data URI
+   * @param {string} context - Context for error messages
+   * @throws {Error} If the icon is provided but not a data URI
+   */
   private validateIcon(icon: string | undefined, context: string): void {
     if (icon && !this.isDataUri(icon)) {
       throw new Error(`${context} icon must be a data URI when provided. Received: ${icon}`);
     }
   }
 
+  /**
+   * Check if a string is a data URI
+   * @private
+   * @param {string} uri - URI to check
+   * @returns {boolean} True if the URI is a data URI
+   */
   private isDataUri(uri: string): boolean {
     return uri.startsWith('data:');
   }
 
+  /**
+   * Filter wallets based on supported chains
+   * @private
+   * @returns {WalletInfo[]} List of wallets supporting configured chains
+   */
   private filterWalletsByChain(): WalletInfo[] {
     if (!this.supportedChains || this.supportedChains.length === 0) {
       return this.wallets;
@@ -84,6 +213,25 @@ export class WalletMeshConfig {
     });
   }
 
+  /**
+   * Build the final configuration
+   * @returns {WalletMeshProviderConfig} Configuration for WalletProvider
+   * @throws {Error} If DApp information has not been set
+   *
+   * @example
+   * ```typescript
+   * const config = WalletMeshConfig.create()
+   *   .addWallet(...)
+   *   .setDappInfo(...)
+   *   .build();
+   *
+   * return (
+   *   <WalletProvider config={config}>
+   *     <App />
+   *   </WalletProvider>
+   * );
+   * ```
+   */
   build(): WalletMeshProviderConfig {
     if (!this.dappInfo) {
       throw new Error('DappInfo must be set before building config');

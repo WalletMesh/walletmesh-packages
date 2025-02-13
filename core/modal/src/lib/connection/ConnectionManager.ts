@@ -18,7 +18,7 @@ export class ConnectionManager {
     const connectedWallet = this.client.getConnectedWallet();
     return {
       wallet: connectedWallet,
-      status: this.client.getConnectionStatus()
+      status: this.client.getConnectionStatus(),
     };
   }
 
@@ -69,7 +69,7 @@ export class ConnectionManager {
         sessionData.info,
         sessionData.state,
         transport,
-        adapter
+        adapter,
       );
 
       console.log('[ConnectionManager] Resume successful:', connected);

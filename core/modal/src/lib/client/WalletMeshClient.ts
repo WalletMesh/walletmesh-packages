@@ -22,7 +22,7 @@ export class WalletMeshClient implements WalletClient {
     walletInfo: WalletInfo,
     _walletState: WalletState,
     transport: Transport,
-    adapter: Adapter
+    adapter: Adapter,
   ): Promise<ConnectedWallet> {
     const session = this.sessionManager.getSession(walletInfo.id);
     if (!session?.wallet) {
@@ -45,7 +45,7 @@ export class WalletMeshClient implements WalletClient {
         transport,
         adapter,
         wallet: connectedWallet,
-        status: ConnectionStatus.Connected
+        status: ConnectionStatus.Connected,
       });
 
       return connectedWallet;
@@ -64,7 +64,7 @@ export class WalletMeshClient implements WalletClient {
     walletInfo: WalletInfo,
     transport: Transport,
     adapter: Adapter,
-    options: { persist?: boolean } = {}
+    options: { persist?: boolean } = {},
   ): Promise<ConnectedWallet> {
     if (!walletInfo.id) {
       throw new WalletError('Wallet ID is required', 'client');
@@ -88,12 +88,16 @@ export class WalletMeshClient implements WalletClient {
       const connectedWallet = await adapter.connect(walletInfo);
 
       // Store session
-      this.sessionManager.setSession(walletInfo.id, {
-        transport,
-        adapter,
-        wallet: connectedWallet,
-        status: ConnectionStatus.Connected
-      }, options.persist);
+      this.sessionManager.setSession(
+        walletInfo.id,
+        {
+          transport,
+          adapter,
+          wallet: connectedWallet,
+          status: ConnectionStatus.Connected,
+        },
+        options.persist,
+      );
 
       return connectedWallet;
     } catch (err) {
@@ -165,9 +169,10 @@ export class WalletMeshClient implements WalletClient {
   getConnectionStatus(): ConnectionStatus {
     const sessions = this.sessionManager.getSessions();
     if (sessions.length === 0) return ConnectionStatus.Idle;
-    if (sessions.some(s => s.status === ConnectionStatus.Connecting)) return ConnectionStatus.Connecting;
-    if (sessions.some(s => s.status === ConnectionStatus.Connected)) return ConnectionStatus.Connected;
-    if (sessions.some(s => s.status === ConnectionStatus.Disconnecting)) return ConnectionStatus.Disconnecting;
+    if (sessions.some((s) => s.status === ConnectionStatus.Connecting)) return ConnectionStatus.Connecting;
+    if (sessions.some((s) => s.status === ConnectionStatus.Connected)) return ConnectionStatus.Connected;
+    if (sessions.some((s) => s.status === ConnectionStatus.Disconnecting))
+      return ConnectionStatus.Disconnecting;
     return ConnectionStatus.Idle;
   }
 
@@ -176,7 +181,7 @@ export class WalletMeshClient implements WalletClient {
    */
   getConnectedWallet(): ConnectedWallet | null {
     const sessions = this.sessionManager.getSessions();
-    const connectedSession = sessions.find(s => s.status === ConnectionStatus.Connected);
+    const connectedSession = sessions.find((s) => s.status === ConnectionStatus.Connected);
     return connectedSession?.wallet || null;
   }
 
