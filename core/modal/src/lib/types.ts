@@ -104,14 +104,3 @@ export enum TransportType {
 export enum AdapterType {
   WalletMeshAztec = 'wm_aztec',
 }
-
-/**
- * Connection status states
- */
-export enum ConnectionStatus {
-  Idle = 'idle',
-  Connecting = 'connecting',
-  Connected = 'connected',
-  Disconnecting = 'disconnecting',
-  Resuming = 'resuming',
-}

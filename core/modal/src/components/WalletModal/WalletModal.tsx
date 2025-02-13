@@ -3,11 +3,16 @@ import { useState, useEffect } from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import * as Label from "@radix-ui/react-label"
 import * as Separator from "@radix-ui/react-separator"
-import { useWalletContext, WalletInfo, ConnectionStatus, TransportType, AdapterType } from "../../index.js"
+import { useWalletContext } from "../WalletContext.js"
+import type { WalletInfo } from "../../types.js"
+import { ConnectionStatus } from "../../types.js"
+import { TransportType } from "../../lib/transports/types.js"
+import { AdapterType } from "../../lib/adapters/types.js"
 import { Loader2, ExternalLink, CheckCircle2, ArrowRight, X } from "lucide-react"
 import styles from "./WalletModal.module.css"
 import { toast } from "react-hot-toast"
 import { validateUrl } from "../../lib/utils/validation.js"
+import { DefaultIcon } from "../../lib/constants/defaultIcons.js"
 
 const CUSTOM_WALLET_URL_KEY = "walletmesh_custom_wallet_url"
 
@@ -22,6 +27,7 @@ export const WalletModal: React.FC = () => {
   } = useWalletContext()
   const [customWalletUrl, setCustomWalletUrl] = useState<string>("")
   const [selectedWallet, setSelectedWallet] = useState<WalletInfo | null>(null)
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1)
 
   const isConnecting = connectionStatus === ConnectionStatus.Connecting
   const isResumingSession = connectionStatus === ConnectionStatus.Resuming
@@ -56,13 +62,15 @@ export const WalletModal: React.FC = () => {
       const customWallet: WalletInfo = {
         id: "custom-web-wallet",
         name: "Custom Web Wallet",
-        icon: undefined,
         url: url,
         transport: {
           type: TransportType.PostMessage
         },
         adapter: {
-          type: AdapterType.WalletMeshAztec
+          type: AdapterType.WalletMeshAztec,
+          options: {
+            chainId: "aztec:devnet"
+          }
         }
       }
       setSelectedWallet(customWallet)
@@ -82,37 +90,120 @@ export const WalletModal: React.FC = () => {
     setCustomWalletUrl(e.target.value.trim())
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleCustomWalletUrlEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault()
       handleConnectCustomWallet()
     }
   }
 
+  const handleWalletListNavigation = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!wallets.length) return
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault()
+        setFocusedIndex((prev) => {
+          const next = prev + 1
+          return next >= wallets.length ? 0 : next
+        })
+        break
+      case 'ArrowUp':
+        e.preventDefault()
+        setFocusedIndex((prev) => {
+          const next = prev - 1
+          return next < 0 ? wallets.length - 1 : next
+        })
+        break
+      case 'Enter':
+      case ' ':
+        e.preventDefault()
+        const wallet = focusedIndex >= 0 && focusedIndex < wallets.length ? wallets[focusedIndex] : null
+        if (wallet) {
+          handleConnectWallet(wallet)
+        }
+        break
+    }
+  }
+
+  // Reset focus index when modal opens/closes
+  useEffect(() => {
+    if (!isModalOpen) {
+      setFocusedIndex(-1)
+    }
+  }, [isModalOpen])
+
+  // Update focus when index changes
+  useEffect(() => {
+    if (focusedIndex >= 0) {
+      const buttons = document.querySelectorAll(`.${styles['walletButton']}`)
+      const button = buttons[focusedIndex] as HTMLButtonElement
+      if (button) {
+        button.focus()
+      }
+    }
+  }, [focusedIndex])
+
   return (
     <Dialog.Root open={isModalOpen} onOpenChange={closeModal}>
       <Dialog.Portal>
         <Dialog.Overlay className={styles['overlay']} />
-        <Dialog.Content className={styles['content']}>
-          <Dialog.Title className={styles['title']}>Connect Wallet</Dialog.Title>
-          <Dialog.Description className={styles['description']}>
+        <Dialog.Content 
+          className={styles['content']}
+          onOpenAutoFocus={(e) => {
+            // Prevent default focus behavior
+            e.preventDefault()
+            // Focus the first wallet button or custom URL input if no wallets
+            const firstButton = document.querySelector(`.${styles['walletButton']}`) as HTMLButtonElement
+            const urlInput = document.getElementById('custom-wallet-url') as HTMLInputElement
+            if (firstButton) {
+              firstButton.focus()
+            } else if (urlInput) {
+              urlInput.focus()
+            }
+          }}
+          onEscapeKeyDown={closeModal}
+          onInteractOutside={(e) => {
+            // Prevent closing when clicking overlay if connecting
+            if (isConnecting || isResumingSession) {
+              e.preventDefault()
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="wallet-modal-title"
+          aria-describedby="wallet-modal-description"
+        >
+          <Dialog.Title className={styles['title']} id="wallet-modal-title">Connect Wallet</Dialog.Title>
+          <Dialog.Description className={styles['description']} id="wallet-modal-description">
             Choose a wallet to connect with
           </Dialog.Description>
 
-          <div className={styles['walletList']}>
+          <div 
+            className={styles['walletList']} 
+            role="listbox"
+            aria-label="Available wallets"
+            onKeyDown={handleWalletListNavigation}
+            tabIndex={wallets.length ? 0 : -1}
+          >
             {wallets.map((wallet) => (
               <button
                 key={wallet.name}
                 className={styles['walletButton']}
                 onClick={() => handleConnectWallet(wallet)}
                 disabled={connectionStatus !== ConnectionStatus.Idle}
-                aria-label={`Connect to ${wallet.name}`}
+                role="option"
+                aria-selected={selectedWallet === wallet}
+                aria-label={`Connect to ${wallet.name}${connectedWallet?.info.name === wallet.name ? ' (Connected)' : ''}`}
               >
                 <div className={styles['walletInfo']}>
                   <img
-                    src={wallet.icon}
+                    src={wallet.icon ?? DefaultIcon.Wallet}
                     alt={`${wallet.name} icon`}
                     className={styles['walletIcon']}
+                    onError={(e) => {
+                      e.currentTarget.src = DefaultIcon.Wallet;
+                    }}
                   />
                   <div>
                     <div className={styles['walletName']}>{wallet.name}</div>
@@ -142,7 +233,7 @@ export const WalletModal: React.FC = () => {
                 placeholder="https://"
                 value={customWalletUrl}
                 onChange={handleCustomWalletUrlChange}
-                onKeyUp={handleKeyPress}
+                onKeyUp={handleCustomWalletUrlEnter}
                 className={styles['input']}
                 aria-label="Custom Wallet URL"
               />

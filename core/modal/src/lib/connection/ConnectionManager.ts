@@ -99,6 +99,23 @@ export class ConnectionManager {
   }
 
   /**
+   * Gets a wallet's provider
+   */
+  async getProvider(walletId: string): Promise<unknown> {
+    console.log('[ConnectionManager] Getting provider for wallet:', walletId);
+
+    try {
+      const provider = await this.client.getProvider(walletId);
+      console.log('[ConnectionManager] Provider retrieved successfully');
+      return provider;
+    } catch (err) {
+      console.error('[ConnectionManager] Failed to get provider:', err);
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      throw new WalletError(`Failed to get wallet provider: ${error.message}`, 'client', error);
+    }
+  }
+
+  /**
    * Cleans up connection manager
    */
   cleanup(): void {

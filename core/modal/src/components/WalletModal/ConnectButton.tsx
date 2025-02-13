@@ -1,8 +1,9 @@
 import React from "react"
 import { useState, useCallback } from "react"
-import { useWalletContext } from "../../components/WalletContext.js"
+import { useWalletContext } from "../WalletContext.js"
 import { WalletInfoModal } from "./WalletInfoModal.js"
 import { Loader2 } from "lucide-react"
+import { DefaultIcon } from "../../lib/constants/defaultIcons.js"
 import * as Dialog from "@radix-ui/react-dialog"
 import styles from "./ConnectButton.module.css"
 import { ConnectionStatus } from "../../types.js"
@@ -35,13 +36,11 @@ export const ConnectButton: React.FC = React.memo(() => {
           className={styles['connectedButton']}
           aria-label={`Connected to ${connectedWallet.info.name}. Click to view details.`}
         >
-          {connectedWallet.info.icon && (
-            <img
-              src={connectedWallet.info.icon}
-              alt={`${connectedWallet.info.name} icon`}
-              className={styles['walletIcon']}
-            />
-          )}
+          <img
+            src={connectedWallet.info.icon ?? DefaultIcon.Wallet}
+            alt={`${connectedWallet.info.name} icon`}
+            className={styles['walletIcon']}
+          />
           <div className={styles['walletDetails']}>
             <span className={styles['walletName']}>
               { connectedWallet.info.name === "Custom Web Wallet" ? `Custom (${connectedWallet.info.url})` : connectedWallet.info.name }

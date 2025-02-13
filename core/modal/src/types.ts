@@ -2,41 +2,26 @@ import type { TransportConfig } from './lib/transports/types.js';
 import type { AdapterConfig } from './lib/adapters/types.js';
 
 /**
- * Connection status states
- */
-export enum ConnectionStatus {
-  Idle = 'idle',
-  Connecting = 'connecting',
-  Connected = 'connected',
-  Disconnecting = 'disconnecting',
-  Resuming = 'resuming',
-}
-
-/**
  * Information about a DApp using the wallet
  */
 export interface DappInfo {
   name: string;
   description: string;
-  icon: string; // Data URI for the Dapp icon
   origin: string;
+  icon?: string;
+  rpcUrl?: string;
 }
 
 /**
  * Base wallet configuration
  */
 export interface WalletInfo {
-  /** Unique identifier for the wallet */
   id: string;
-  /** Display name */
   name: string;
-  /** Icon URL or data URI */
-  icon: string | undefined;
-  /** Optional wallet URL */
+  icon?: string;
   url?: string;
-  /** Adapter configuration */
+  supportedChains?: string[];
   adapter: AdapterConfig;
-  /** Transport configuration */
   transport: TransportConfig;
 }
 
@@ -44,11 +29,8 @@ export interface WalletInfo {
  * Connected wallet state
  */
 export interface WalletState {
-  /** Chain identifier */
   chain?: string;
-  /** Wallet address */
   address?: string;
-  /** Session identifier */
   sessionId?: string;
 }
 
@@ -58,4 +40,15 @@ export interface WalletState {
 export interface ConnectedWallet {
   info: WalletInfo;
   state: WalletState;
+}
+
+/**
+ * Connection status states
+ */
+export enum ConnectionStatus {
+  Idle = 'idle',
+  Connecting = 'connecting',
+  Connected = 'connected',
+  Disconnecting = 'disconnecting',
+  Resuming = 'resuming',
 }

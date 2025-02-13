@@ -1,17 +1,11 @@
 import { createContext, useContext } from "react";
-import type { WalletInfo, DappInfo, ConnectedWallet, ConnectionStatus } from "../types.js";
+import { useWalletLogic } from "../hooks/useWalletLogic.js";
+import type { WalletInfo, DappInfo } from "../types.js";
 
-interface WalletContextType {
-  connectionStatus: ConnectionStatus;
-  connectedWallet: ConnectedWallet | null;
-  connectWallet: (wallet: WalletInfo) => Promise<ConnectedWallet>;
-  disconnectWallet: () => Promise<void>;
+type WalletContextType = ReturnType<typeof useWalletLogic> & {
   wallets: WalletInfo[];
   dappInfo: DappInfo;
-  isModalOpen: boolean;
-  openModal: () => void;
-  closeModal: () => void;
-}
+};
 
 export const WalletContext = createContext<WalletContextType | undefined>(undefined);
 

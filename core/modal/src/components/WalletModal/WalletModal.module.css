@@ -5,19 +5,59 @@
   animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+:root {
+  /* Spacing system */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.5rem;   /* 24px */
+  --space-6: 2rem;     /* 32px */
+
+  /* Colors */
+  --primary: #6e3ff3;
+  --primary-hover: #5a32c7;
+  --success: #22c55e;
+  --text-primary: #333;
+  --text-secondary: #777;
+  --border: #e0e0e0;
+  --background: white;
+  --background-hover: #f9f9f9;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --shadow-lg: hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px;
+
+  /* Transitions */
+  --transition-default: all 0.2s ease;
+}
+
 .content {
-  background-color: white;
-  border-radius: 6px;
-  box-shadow: hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px;
+  background-color: var(--background);
+  border-radius: var(--space-2);
+  box-shadow: var(--shadow-lg);
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 90vw;
+  width: calc(100vw - var(--space-4));
   max-width: 450px;
   max-height: 85vh;
-  padding: 25px;
-  animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  padding: var(--space-5);
+  animation: contentShow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+}
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .content {
+    width: calc(100vw - var(--space-2));
+    padding: var(--space-4);
+  }
+  
+  .walletList {
+    gap: var(--space-2);
+  }
 }
 
 .title {
@@ -45,23 +85,34 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-radius: 4px;
-  padding: 16px;
+  border-radius: var(--space-1);
+  padding: var(--space-4);
   font-size: 15px;
   line-height: 1;
-  background-color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: var(--background);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
   min-height: 70px;
-  transition: background-color 0.2s ease;
+  transition: var(--transition-default);
+  border: 1px solid transparent;
 }
 
-.walletButton:hover {
-  background-color: #f9f9f9;
+.walletButton:hover:not(:disabled) {
+  background-color: var(--background-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
 }
 
 .walletButton:focus-visible {
-  box-shadow: 0 0 0 2px #6e3ff3;
+  box-shadow: 0 0 0 2px var(--primary);
+  border-color: var(--primary);
+  outline: none;
+}
+
+.walletButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .walletInfo {
@@ -131,23 +182,34 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  padding: 0 15px;
+  gap: var(--space-2);
+  border-radius: var(--space-1);
+  padding: 0 var(--space-4);
   font-size: 15px;
   line-height: 1;
   font-weight: 500;
   height: 35px;
-  background-color: #6e3ff3;
+  background-color: var(--primary);
   color: white;
   cursor: pointer;
+  transition: var(--transition-default);
+  border: none;
 }
 
-.connectButton:hover {
-  background-color: #5a32c7;
+.connectButton:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
-.connectButton:focus {
-  box-shadow: 0 0 0 2px #6e3ff3;
+.connectButton:focus-visible {
+  box-shadow: 0 0 0 2px var(--primary);
+  outline: none;
+}
+
+.connectButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .closeButton {
@@ -214,6 +276,7 @@
   }
 }
 
+/* Animation keyframes with smoother timing */
 @keyframes contentShow {
   from {
     opacity: 0;
@@ -225,3 +288,22 @@
   }
 }
 
+/* Loading icon animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingIcon {
+  animation: spin 1s linear infinite;
+}
+
+/* Transition for status changes */
+.connectButton .loadingIcon,
+.connectButton .externalLinkIcon {
+  transition: opacity 0.2s ease;
+}

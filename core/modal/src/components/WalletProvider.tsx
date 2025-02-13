@@ -1,50 +1,30 @@
 import React from "react";
 import { Toaster } from "react-hot-toast";
-import type { WalletInfo, DappInfo } from "../types.js";
+import type { WalletMeshProviderConfig } from "../lib/config/WalletMeshConfig.js";
 import { WalletErrorBoundary } from "./WalletErrorBoundary.js";
-import { useWallet } from "../hooks/useWallet.js";
-import { useWalletModal } from "../hooks/useWalletModal.js";
 import { WalletContext } from "./WalletContext.js";
 import { WalletModal } from "./WalletModal/WalletModal.js";
+import { useWalletLogic } from "../hooks/useWalletLogic.js";
+
 interface WalletProviderProps {
   children: React.ReactNode;
-  wallets: WalletInfo[];
-  dappInfo: DappInfo;
+  config: WalletMeshProviderConfig;
   onError?: (error: Error) => void;
 }
 
 export const WalletProvider: React.FC<WalletProviderProps> = ({
   children,
-  wallets,
-  dappInfo,
+  config,
   onError,
 }) => {
-  const { isOpen, openModal, closeModal } = useWalletModal();
-  const { connectionStatus, connectedWallet, connectWallet, disconnectWallet } = useWallet({ 
-    onError 
-  });
+  const { wallets, dappInfo } = config;
+  const walletLogic = useWalletLogic();
 
   const contextValue = React.useMemo(() => ({
-    connectionStatus,
-    connectedWallet,
-    connectWallet,
-    disconnectWallet,
+    ...walletLogic,
     wallets,
     dappInfo,
-    isModalOpen: isOpen,
-    openModal,
-    closeModal,
-  }), [
-    connectionStatus,
-    connectedWallet,
-    connectWallet,
-    disconnectWallet,
-    wallets,
-    dappInfo,
-    isOpen,
-    openModal,
-    closeModal,
-  ]);
+  }), [walletLogic, wallets, dappInfo]);
 
   return (
     <WalletErrorBoundary onError={onError}>
