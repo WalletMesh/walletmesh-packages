@@ -10,7 +10,7 @@ interface PostMessageData {
 export class PostMessageTransport implements Transport {
   private messageHandler: ((data: unknown) => void) | null = null;
   private cleanup: (() => void) | null = null;
-  private isConnected = false;
+  private connected = false;
   private readonly options: TransportOptions;
 
   constructor(options: TransportOptions = {}) {
@@ -18,7 +18,7 @@ export class PostMessageTransport implements Transport {
   }
 
   async connect(): Promise<void> {
-    if (this.isConnected) {
+    if (this.connected) {
       return;
     }
 
@@ -68,7 +68,7 @@ export class PostMessageTransport implements Transport {
 
     window.addEventListener('message', receiveResponse);
     this.cleanup = () => window.removeEventListener('message', receiveResponse);
-    this.isConnected = true;
+    this.connected = true;
   }
 
   async disconnect(): Promise<void> {
@@ -76,12 +76,12 @@ export class PostMessageTransport implements Transport {
       this.cleanup();
       this.cleanup = null;
     }
-    this.isConnected = false;
+    this.connected = false;
     this.messageHandler = null;
   }
 
   async send(data: unknown): Promise<void> {
-    if (!this.isConnected) {
+    if (!this.connected) {
       throw new Error(errorMessages.notConnected);
     }
 
@@ -101,5 +101,9 @@ export class PostMessageTransport implements Transport {
 
   onMessage(handler: (data: unknown) => void): void {
     this.messageHandler = handler;
+  }
+
+  isConnected(): boolean {
+    return this.connected;
   }
 }
