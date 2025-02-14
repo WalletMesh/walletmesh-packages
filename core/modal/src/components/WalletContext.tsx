@@ -1,8 +1,8 @@
 import { createContext, useContext } from "react";
-import { useWalletLogic } from "../hooks/useWalletLogic.js";
+import { useWallet } from "../hooks/useWallet.js";
 import type { WalletInfo, DappInfo } from "../types.js";
 
-export type WalletContextType = ReturnType<typeof useWalletLogic> & {
+export type WalletContextType = ReturnType<typeof useWallet> & {
   wallets: WalletInfo[];
   dappInfo: DappInfo;
 };

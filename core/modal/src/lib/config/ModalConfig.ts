@@ -30,7 +30,7 @@ import { DefaultIcon } from '../constants/defaultIcons.js';
  *       name: 'My Wallet',
  *       icon: 'data:image/svg+xml,...',
  *       transport: { type: 'postMessage' },
- *       adapter: { type: 'wm_aztec' }
+ *       connector: { type: 'wm_aztec' }
  *     }
  *   ],
  *   dappInfo: {
@@ -78,8 +78,8 @@ export interface WalletMeshProviderConfig {
  *     id: "my_wallet",
  *     name: "My Wallet",
  *     icon: "data:image/svg+xml,...", // Must be data URI
- *     adapter: {
- *       type: AdapterType.WalletMeshAztec,
+ *     connector: {
+ *       type: ConnectorType.WalletMeshAztec,
  *       options: { chainId: "aztec:testnet" }
  *     },
  *     transport: {
@@ -170,8 +170,8 @@ export class WalletMeshConfig {
    *     type: TransportType.PostMessage,
    *     options: { origin: "https://wallet.aztec.network" }
    *   },
-   *   adapter: {
-   *     type: AdapterType.WalletMeshAztec,
+   *   connector: {
+   *     type: ConnectorType.WalletMeshAztec,
    *     options: { chainId: "aztec:mainnet" }
    *   }
    * });
@@ -273,13 +273,6 @@ export class WalletMeshConfig {
   }
 
   /**
-   * Validate that an icon is a proper data URI
-   * @private
-   * @param {string | undefined} icon - Icon URL or data URI
-   * @param {string} context - Context for error messages
-   * @throws {Error} If the icon is provided but not a data URI
-   */
-  /**
    * Validates icon format for security.
    *
    * @param icon - Icon URL or data URI to validate
@@ -301,12 +294,6 @@ export class WalletMeshConfig {
   }
 
   /**
-   * Check if a string is a data URI
-   * @private
-   * @param {string} uri - URI to check
-   * @returns {boolean} True if the URI is a data URI
-   */
-  /**
    * Checks if a string is a valid data URI.
    *
    * @param uri - URI to validate
@@ -322,11 +309,6 @@ export class WalletMeshConfig {
     return uri.startsWith('data:');
   }
 
-  /**
-   * Filter wallets based on supported chains
-   * @private
-   * @returns {WalletInfo[]} List of wallets supporting configured chains
-   */
   /**
    * Filters wallet list based on chain support.
    *

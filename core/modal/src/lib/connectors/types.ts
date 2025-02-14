@@ -1,21 +1,21 @@
 import type { WalletInfo, ConnectedWallet, WalletState } from '../../types.js';
 
 /**
- * Interface for blockchain-specific wallet adapters.
+ * Interface for blockchain-specific wallet connectors.
  *
- * Adapters serve as intermediaries between the dApp and blockchain wallets,
+ * Connectors serve as intermediaries between the dApp and blockchain wallets,
  * providing a standardized interface for:
  * - Establishing wallet connections
  * - Managing wallet state
  * - Handling protocol-specific messaging
  * - Providing chain-specific providers
  *
- * Each adapter implementation handles the complexities of a specific
+ * Each connector implementation handles the complexities of a specific
  * blockchain protocol or wallet type, abstracting them behind this
  * common interface.
  *
  * @remarks
- * Adapters are responsible for:
+ * Connectors are responsible for:
  * - Protocol-specific message handling
  * - State synchronization
  * - Connection lifecycle management
@@ -23,7 +23,7 @@ import type { WalletInfo, ConnectedWallet, WalletState } from '../../types.js';
  *
  * @example
  * ```typescript
- * class MyWalletAdapter implements Adapter {
+ * class MyWalletConnector implements Connector {
  *   async connect(walletInfo: WalletInfo, existingState?: WalletState): Promise<ConnectedWallet> {
  *     // Implementation
  *   }
@@ -42,7 +42,7 @@ import type { WalletInfo, ConnectedWallet, WalletState } from '../../types.js';
  * }
  * ```
  */
-export interface Adapter {
+export interface Connector {
   /**
    * Establishes a new connection with the wallet.
    *
@@ -59,12 +59,12 @@ export interface Adapter {
    *
    * @example
    * ```typescript
-   * const wallet = await adapter.connect({
+   * const wallet = await connector.connect({
    *   id: 'my-wallet',
    *   name: 'My Wallet',
    *   icon: 'wallet-icon.png',
    *   transport: { type: 'postMessage' },
-   *   adapter: { type: AdapterType.WalletMeshAztec }
+   *   connector: { type: ConnectorType.WalletMeshAztec }
    * });
    * ```
    */
@@ -87,7 +87,7 @@ export interface Adapter {
    *
    * @example
    * ```typescript
-   * const wallet = await adapter.resume(
+   * const wallet = await connector.resume(
    *   walletInfo,
    *   {
    *     chain: 'aztec:testnet',
@@ -135,7 +135,7 @@ export interface Adapter {
    *
    * @example
    * ```typescript
-   * adapter.handleMessage({
+   * connector.handleMessage({
    *   type: 'STATE_UPDATE',
    *   payload: {
    *     chainId: 'aztec:testnet',
@@ -148,9 +148,9 @@ export interface Adapter {
 }
 
 /**
- * Base configuration options for wallet adapters.
+ * Base configuration options for wallet connectors.
  *
- * Provides common configuration options that all adapters support,
+ * Provides common configuration options that all connectors support,
  * while allowing for extension with protocol-specific options.
  *
  * @property {string} [chainId] - Target blockchain network identifier
@@ -158,33 +158,33 @@ export interface Adapter {
  *
  * @example
  * ```typescript
- * const baseOptions: BaseAdapterOptions = {
+ * const baseOptions: BaseConnectorOptions = {
  *   chainId: 'ethereum:1',
  *   customOption: 'value'
  * };
  * ```
  */
-export interface BaseAdapterOptions {
-  /** Chain ID for the adapter */
+export interface BaseConnectorOptions {
+  /** Chain ID for the connector */
   chainId?: string;
   /** Additional chain-specific options */
   [key: string]: unknown | undefined;
 }
 
 /**
- * Enumeration of supported wallet adapter implementations.
+ * Enumeration of supported wallet connector implementations.
  *
- * Each value represents a specific adapter implementation that
+ * Each value represents a specific connector implementation that
  * handles different wallet protocols or implementations.
  *
  * @enum {string}
- * @property {string} WalletMeshAztec - WalletMesh adapter for Aztec protocol
- * @property {string} ObsidionAztec - Obsidion wallet adapter for Aztec protocol
+ * @property {string} WalletMeshAztec - WalletMesh connector for Aztec protocol
+ * @property {string} ObsidionAztec - Obsidion wallet connector for Aztec protocol
  *
  * @example
  * ```typescript
- * const adapterConfig = {
- *   type: AdapterType.WalletMeshAztec,
+ * const connectorConfig = {
+ *   type: ConnectorType.WalletMeshAztec,
  *   options: {
  *     chainId: 'aztec:testnet',
  *     rpcUrl: 'https://testnet.aztec.network'
@@ -192,67 +192,67 @@ export interface BaseAdapterOptions {
  * };
  * ```
  */
-export enum AdapterType {
+export enum ConnectorType {
   WalletMeshAztec = 'wm_aztec',
   ObsidionAztec = 'obsidion_aztec',
 }
 
 /**
- * Configuration options specific to Aztec protocol adapters
- * @interface AztecAdapterOptions
- * @extends {BaseAdapterOptions}
+ * Configuration options specific to Aztec protocol connectors
+ * @interface AztecConnectorOptions
+ * @extends {BaseConnectorOptions}
  * @property {string} [rpcUrl] - Aztec network RPC endpoint URL
  * @property {string} [networkId] - Aztec network identifier
  * @example
  * ```typescript
- * const options: AztecAdapterOptions = {
+ * const options: AztecConnectorOptions = {
  *   chainId: "aztec:testnet",
  *   rpcUrl: "https://api.aztec.network/testnet",
  *   networkId: "11155111"
  * };
  * ```
  */
-export interface AztecAdapterOptions extends BaseAdapterOptions {
+export interface AztecConnectorOptions extends BaseConnectorOptions {
   rpcUrl?: string;
   networkId?: string;
 }
 
 /**
- * Base configuration for wallet adapters
- * @interface BaseAdapterConfig
- * @template T - Type of adapter options extending BaseAdapterOptions
- * @property {AdapterType} type - Type of wallet adapter to use
- * @property {T} [options] - Configuration options for the adapter
+ * Base configuration for wallet connectors
+ * @interface BaseConnectorConfig
+ * @template T - Type of connector options extending BaseConnectorOptions
+ * @property {ConnectorType} type - Type of wallet connector to use
+ * @property {T} [options] - Configuration options for the connector
  */
-export interface BaseAdapterConfig<T extends BaseAdapterOptions = BaseAdapterOptions> {
-  type: AdapterType;
+export interface BaseConnectorConfig<T extends BaseConnectorOptions = BaseConnectorOptions> {
+  type: ConnectorType;
   options?: T;
 }
 
 /**
- * Union type of all possible adapter configurations
- * @typedef {BaseAdapterConfig | BaseAdapterConfig<AztecAdapterOptions>} AdapterConfig
+ * Union type of all possible connector configurations
+ * @typedef {BaseConnectorConfig | BaseConnectorConfig<AztecConnectorOptions>} ConnectorConfig
  */
-export type AdapterConfig = BaseAdapterConfig | BaseAdapterConfig<AztecAdapterOptions>;
+export type ConnectorConfig = BaseConnectorConfig | BaseConnectorConfig<AztecConnectorOptions>;
 
 /**
- * Type helper to extract the correct options type for a given adapter type.
+ * Type helper to extract the correct options type for a given connector type.
  *
- * Uses TypeScript's conditional types to map adapter types to their
+ * Uses TypeScript's conditional types to map connector types to their
  * corresponding options interfaces.
  *
- * @template T - Type extending AdapterType
- * @typedef {T extends AdapterType.WalletMeshAztec ? AztecAdapterOptions : BaseAdapterOptions} AdapterOptionsForType
+ * @template T - Type extending ConnectorType
+ * @typedef {T extends ConnectorType.WalletMeshAztec ? AztecConnectorOptions : BaseConnectorOptions} ConnectorOptionsForType
  *
  * @example
  * ```typescript
- * // Type will be AztecAdapterOptions
- * type Options = AdapterOptionsForType<AdapterType.WalletMeshAztec>;
+ * // Type will be AztecConnectorOptions
+ * type Options = ConnectorOptionsForType<ConnectorType.WalletMeshAztec>;
  *
- * // Type will be BaseAdapterOptions
- * type BaseOptions = AdapterOptionsForType<AdapterType.ObsidionAztec>;
+ * // Type will be BaseConnectorOptions
+ * type BaseOptions = ConnectorOptionsForType<ConnectorType.ObsidionAztec>;
  * ```
  */
-export type AdapterOptionsForType<T extends AdapterType> = T extends AdapterType.WalletMeshAztec
-  ? AztecAdapterOptions
-  : BaseAdapterOptions;
+export type ConnectorOptionsForType<T extends ConnectorType> = T extends ConnectorType.WalletMeshAztec
+  ? AztecConnectorOptions
+  : BaseConnectorOptions;

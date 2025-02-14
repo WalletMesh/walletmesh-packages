@@ -1,10 +1,10 @@
 import React from "react";
 import { Toaster } from "react-hot-toast";
-import type { WalletMeshProviderConfig } from "../lib/config/WalletMeshConfig.js";
+import type { WalletMeshProviderConfig } from "../lib/config/ModalConfig.js";
 import { WalletErrorBoundary } from "./WalletErrorBoundary.js";
 import { WalletContext } from "./WalletContext.js";
 import { WalletModal } from "./WalletModal/WalletModal.js";
-import { useWalletLogic } from "../hooks/useWalletLogic.js";
+import { useWallet } from "../hooks/useWallet.js";
 
 /**
  * Props for the WalletProvider component
@@ -64,7 +64,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
   const { wallets, dappInfo, timeoutConfig } = config;
   
   // Initialize wallet connection logic with dappInfo
-  const walletLogic = useWalletLogic({
+  const walletLogic = useWallet({
     dappInfo,
     ...(timeoutConfig && { timeoutConfig })
   });

@@ -1,5 +1,5 @@
 import type { WalletInfo, ConnectedWallet, WalletState } from '../../types.js';
-import type { Adapter, AztecAdapterOptions } from './types.js';
+import type { Connector, AztecConnectorOptions } from './types.js';
 import { WalletError } from '../client/types.js';
 
 /**
@@ -250,21 +250,21 @@ function generateId(): string {
 }
 
 /**
- * Adapter implementation for the Obsidion wallet with Aztec protocol support.
+ * Connector implementation for the Obsidion wallet with Aztec protocol support.
  *
  * Provides wallet connection and interaction capabilities through a popup
- * window interface. Implements the standard Adapter interface while handling
+ * window interface. Implements the standard Connector interface while handling
  * Obsidion-specific communication patterns.
  *
- * @implements {Adapter}
+ * @implements {Connector}
  *
  * @example
  * ```typescript
- * const adapter = new ObsidionAztecAdapter({
+ * const connector = new ObsidionAztecConnector({
  *   chainId: 'aztec:testnet'
  * });
  *
- * const wallet = await adapter.connect({
+ * const wallet = await connector.connect({
  *   id: 'obsidion',
  *   name: 'Obsidion Wallet',
  *   url: 'https://wallet.obsidion.xyz'
@@ -277,22 +277,22 @@ function generateId(): string {
  * - Handles connection state and session management
  * - Provides automatic reconnection capabilities
  */
-export class ObsidionAztecAdapter implements Adapter {
+export class ObsidionAztecConnector implements Connector {
   private provider: ObsidionProvider | null = null;
   private communicator: Communicator | null = null;
   private connected = false;
-  private readonly options: AztecAdapterOptions;
+  private readonly options: AztecConnectorOptions;
 
   /**
-   * Creates a new ObsidionAztecAdapter instance.
+   * Creates a new ObsidionAztecConnector instance.
    *
-   * @param options - Configuration options for the adapter
+   * @param options - Configuration options for the connector
    *
    * @remarks
    * Default chainId is set to '1' if not specified in options.
-   * Additional configuration can be provided through AztecAdapterOptions.
+   * Additional configuration can be provided through AztecConnectorOptions.
    */
-  constructor(options: AztecAdapterOptions = {}) {
+  constructor(options: AztecConnectorOptions = {}) {
     this.options = {
       chainId: '1',
       ...options,
@@ -315,7 +315,7 @@ export class ObsidionAztecAdapter implements Adapter {
    */
   async connect(walletInfo: WalletInfo): Promise<ConnectedWallet> {
     if (this.connected) {
-      throw new WalletError('Already connected', 'adapter');
+      throw new WalletError('Already connected', 'connector');
     }
 
     try {
@@ -328,7 +328,7 @@ export class ObsidionAztecAdapter implements Adapter {
       this.provider = {
         request: async <M extends keyof RpcMethods>(request: RpcRequest<M>) => {
           if (!this.communicator) {
-            throw new WalletError('Not connected', 'adapter');
+            throw new WalletError('Not connected', 'connector');
           }
 
           const response = await this.communicator.postRequestAndWaitForResponse<Message>({
@@ -343,13 +343,13 @@ export class ObsidionAztecAdapter implements Adapter {
 
           const jsonRpcResponse = response.data as JsonRpcResponse;
           if (jsonRpcResponse.error) {
-            throw new WalletError(jsonRpcResponse.error.message, 'adapter');
+            throw new WalletError(jsonRpcResponse.error.message, 'connector');
           }
           return jsonRpcResponse.result as RpcMethods[M]['result'];
         },
         connect: async () => {
           if (!this.communicator) {
-            throw new WalletError('Not connected', 'adapter');
+            throw new WalletError('Not connected', 'connector');
           }
           await this.communicator.waitForPopupLoaded();
         },
@@ -360,7 +360,7 @@ export class ObsidionAztecAdapter implements Adapter {
         },
         getAccount: async () => {
           if (!this.provider) {
-            throw new WalletError('Not connected', 'adapter');
+            throw new WalletError('Not connected', 'connector');
           }
           const accounts = await this.provider.request<'aztec_requestAccounts'>({
             method: 'aztec_requestAccounts',
@@ -368,7 +368,7 @@ export class ObsidionAztecAdapter implements Adapter {
           });
           const [firstAccount] = accounts;
           if (typeof firstAccount !== 'string') {
-            throw new WalletError('No accounts found', 'adapter');
+            throw new WalletError('No accounts found', 'connector');
           }
           return firstAccount;
         },
@@ -391,7 +391,7 @@ export class ObsidionAztecAdapter implements Adapter {
       };
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to connect');
-      throw new WalletError(error.message, 'adapter', error);
+      throw new WalletError(error.message, 'connector', error);
     }
   }
 
@@ -436,7 +436,7 @@ export class ObsidionAztecAdapter implements Adapter {
       this.connected = false;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to disconnect');
-      throw new WalletError(error.message, 'adapter', error);
+      throw new WalletError(error.message, 'connector', error);
     }
   }
 
@@ -452,7 +452,7 @@ export class ObsidionAztecAdapter implements Adapter {
    */
   async getProvider(): Promise<ObsidionProvider> {
     if (!this.connected || !this.provider) {
-      throw new WalletError('Not connected', 'adapter');
+      throw new WalletError('Not connected', 'connector');
     }
     return this.provider;
   }

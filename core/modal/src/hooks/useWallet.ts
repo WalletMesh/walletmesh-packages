@@ -240,7 +240,7 @@ interface UseWalletLogicOptions {
  * - Modal state management
  * - Cleanup on unmount
  */
-export const useWalletLogic = ({ dappInfo, timeoutConfig }: UseWalletLogicOptions) => {
+export const useWallet = ({ dappInfo, timeoutConfig }: UseWalletLogicOptions) => {
   const [manager] = useState(() => new ConnectionManager(dappInfo, timeoutConfig));
   const [isModalOpen, setIsModalOpen] = useState(false);
 

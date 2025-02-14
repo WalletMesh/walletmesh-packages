@@ -1,4 +1,4 @@
-import { WalletMeshConfig, TransportType, AdapterType } from '@walletmesh/modal';
+import { WalletMeshConfig, TransportType, ConnectorType } from '@walletmesh/modal';
 
 export const sandboxConfig = WalletMeshConfig.create()
   .clearWallets()
@@ -10,8 +10,8 @@ export const sandboxConfig = WalletMeshConfig.create()
     transport: {
       type: TransportType.Null,
     },
-    adapter: {
-      type: AdapterType.ObsidionAztec,
+    connector: {
+      type: ConnectorType.ObsidionAztec,
       options: {
         chainId: 'aztec',
         networkId: '31337',
@@ -25,8 +25,8 @@ export const sandboxConfig = WalletMeshConfig.create()
     transport: {
       type: TransportType.Null,
     },
-    adapter: {
-      type: AdapterType.WalletMeshAztec,
+    connector: {
+      type: ConnectorType.WalletMeshAztec,
       options: {
         chainId: 'aztec:sandbox',
         networkId: '31337',

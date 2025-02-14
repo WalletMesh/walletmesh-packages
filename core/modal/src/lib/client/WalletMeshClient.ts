@@ -8,9 +8,9 @@ import {
 import type { WalletClient, WalletError, WalletSession } from './types.js';
 import { SessionManager } from './SessionManager.js';
 import type { Transport } from '../transports/types.js';
-import type { Adapter } from '../adapters/types.js';
+import type { Connector } from '../connectors/types.js';
 import { createTransport } from '../transports/index.js';
-import { createAdapter } from '../adapters/createAdapter.js';
+import { createConnector } from '../connectors/createConnector.js';
 
 /**
  * Main client class for managing wallet connections and sessions
@@ -110,17 +110,17 @@ export class WalletMeshClient implements WalletClient {
    * This is an internal method used by {@link initialize}
    */
   private async restoreSession(session: WalletSession): Promise<void> {
-    if (!session.transportConfig || !session.adapterConfig) {
-      throw new Error('Missing transport or adapter configuration');
+    if (!session.transportConfig || !session.connectorConfig) {
+      throw new Error('Missing transport or connector configuration');
     }
 
     if (!session.wallet.state?.chain || !session.wallet.state?.address || !session.wallet.state?.sessionId) {
       throw new Error('Invalid session state');
     }
 
-    // Create new transport and adapter instances
+    // Create new transport and connector instances
     const transport = createTransport(session.transportConfig);
-    const adapter = createAdapter(session.adapterConfig);
+    const connector = createConnector(session.connectorConfig);
 
     // Configure retry parameters
     const maxRetries = 3;
@@ -129,7 +129,7 @@ export class WalletMeshClient implements WalletClient {
 
     // Setup message handling first to catch early messages
     transport.onMessage((data) => {
-      adapter.handleMessage(data);
+      connector.handleMessage(data);
     });
 
     while (attempt < maxRetries) {
@@ -140,16 +140,16 @@ export class WalletMeshClient implements WalletClient {
         await transport.connect();
 
         // Try to resume the session
-        const restored = await adapter.resume(session.wallet.info, session.wallet.state);
+        const restored = await connector.resume(session.wallet.info, session.wallet.state);
 
-        // On success, update session with new transport and adapter
+        // On success, update session with new transport and connector
         const restoredSession: WalletSession = {
           transport,
-          adapter,
+          connector,
           wallet: restored,
           status: ConnectionStatus.Connected,
           transportConfig: session.transportConfig,
-          adapterConfig: session.adapterConfig,
+          connectorConfig: session.connectorConfig,
         };
 
         this.sessionManager.setSession(session.wallet.info.id, restoredSession, true);
@@ -233,7 +233,7 @@ export class WalletMeshClient implements WalletClient {
         (session) =>
           session.status === ConnectionStatus.Resuming &&
           session.transportConfig &&
-          session.adapterConfig &&
+          session.connectorConfig &&
           session.wallet.state?.sessionId,
       );
 
@@ -289,7 +289,7 @@ export class WalletMeshClient implements WalletClient {
    *
    * @param walletInfo - Information about the wallet to connect to
    * @param transport - Transport instance for wallet communication
-   * @param adapter - Adapter instance for wallet protocol handling
+   * @param connector - Connector instance for wallet protocol handling
    * @param options - Connection options
    * @param options.persist - Whether to persist the session (default: false)
    * @returns Promise resolving to the connected wallet
@@ -301,11 +301,11 @@ export class WalletMeshClient implements WalletClient {
    * @example
    * ```typescript
    * const transport = createTransport(config);
-   * const adapter = createAdapter(config);
+   * const connector = createConnector(config);
    * const wallet = await client.connectWallet(
    *   walletInfo,
    *   transport,
-   *   adapter,
+   *   connector,
    *   { persist: true }
    * );
    * ```
@@ -313,7 +313,7 @@ export class WalletMeshClient implements WalletClient {
   async connectWallet(
     walletInfo: WalletInfo,
     transport: Transport,
-    adapter: Adapter,
+    connector: Connector,
     options: { persist?: boolean } = {},
   ): Promise<ConnectedWallet> {
     if (!this.initialized) {
@@ -335,7 +335,7 @@ export class WalletMeshClient implements WalletClient {
 
       // Set up message routing and state change monitoring
       transport.onMessage((data) => {
-        adapter.handleMessage(data);
+        connector.handleMessage(data);
 
         // Monitor for state changes in wallet messages
         if (typeof data === 'object' && data !== null) {
@@ -357,17 +357,17 @@ export class WalletMeshClient implements WalletClient {
         }
       });
 
-      // Connect adapter
-      const connectedWallet = await adapter.connect(walletInfo);
+      // Connect connector
+      const connectedWallet = await connector.connect(walletInfo);
 
       // Store session
       const session: WalletSession = {
         transport,
-        adapter,
+        connector,
         wallet: connectedWallet,
         status: ConnectionStatus.Connected,
         transportConfig: walletInfo.transport,
-        adapterConfig: walletInfo.adapter,
+        connectorConfig: walletInfo.connector,
       };
       this.sessionManager.setSession(walletInfo.id, session, options.persist);
 
@@ -432,9 +432,9 @@ export class WalletMeshClient implements WalletClient {
     // First clean up connections
     const cleanup = async () => {
       try {
-        if (session.adapter) {
-          await session.adapter.disconnect().catch((error) => {
-            console.warn('[WalletMeshClient] Adapter disconnect failed:', error);
+        if (session.connector) {
+          await session.connector.disconnect().catch((error) => {
+            console.warn('[WalletMeshClient] Connector disconnect failed:', error);
           });
         }
         if (session.transport) {
@@ -476,17 +476,17 @@ export class WalletMeshClient implements WalletClient {
    * @param walletId - ID of the wallet to get provider for
    * @returns Promise resolving to the wallet provider
    * @throws {Error} If no session is found for the wallet
-   * @throws {Error} If no adapter is available for the wallet
+   * @throws {Error} If no connector is available for the wallet
    */
   async getProvider(walletId: string): Promise<unknown> {
     const session = this.sessionManager.getSession(walletId);
     if (!session) {
       throw new Error(`No session found for wallet ${walletId}`);
     }
-    if (!session.adapter) {
-      throw new Error(`No adapter available for wallet ${walletId}`);
+    if (!session.connector) {
+      throw new Error(`No connector available for wallet ${walletId}`);
     }
-    return session.adapter.getProvider();
+    return session.connector.getProvider();
   }
 
   /**

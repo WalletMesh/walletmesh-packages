@@ -2,7 +2,7 @@ import type { WalletSession } from './types.js';
 import { ConnectionStatus, type ConnectedWallet } from '../../types.js';
 import { WalletError } from './types.js';
 import type { TransportConfig } from '../transports/types.js';
-import type { AdapterConfig } from '../adapters/types.js';
+import type { ConnectorConfig } from '../connectors/types.js';
 
 const STORAGE_KEY = 'walletmesh_wallet_session';
 
@@ -55,7 +55,7 @@ export class SessionManager {
    *   wallet: connectedWallet,
    *   status: ConnectionStatus.Connected,
    *   transportConfig: config,
-   *   adapterConfig: config
+   *   connectorConfig: config
    * }, true);
    * ```
    */
@@ -203,7 +203,7 @@ export class SessionManager {
    * This method checks for required fields including:
    * - Wallet ID and info
    * - State fields (address, sessionId, chain)
-   * - Transport and adapter configurations
+   * - Transport and connector configurations
    */
   private validateSessionData(session: Partial<StoredSession>): boolean {
     // Required session fields
@@ -214,7 +214,7 @@ export class SessionManager {
       session?.wallet?.state?.sessionId &&
       session?.wallet?.state?.chain &&
       session?.transportConfig &&
-      session?.adapterConfig
+      session?.connectorConfig
     );
 
     if (!hasValidStructure) {
@@ -225,7 +225,7 @@ export class SessionManager {
         hasSessionId: !!session?.wallet?.state?.sessionId,
         hasChain: !!session?.wallet?.state?.chain,
         hasTransport: !!session?.transportConfig,
-        hasAdapter: !!session?.adapterConfig,
+        hasConnector: !!session?.connectorConfig,
       });
       return false;
     }
@@ -292,7 +292,7 @@ export class SessionManager {
             status: session.status,
             timestamp: Date.now(),
             transportConfig: session.transportConfig || session.wallet.info.transport,
-            adapterConfig: session.adapterConfig || session.wallet.info.adapter,
+            connectorConfig: session.connectorConfig || session.wallet.info.connector,
           }),
         )
         .filter((session) => this.validateSessionData(session));
@@ -357,7 +357,7 @@ export class SessionManager {
             wallet: session.wallet,
             status: ConnectionStatus.Resuming,
             transportConfig: session.transportConfig,
-            adapterConfig: session.adapterConfig,
+            connectorConfig: session.connectorConfig,
           };
 
           this.sessions.set(session.id, restoredSession);
@@ -397,5 +397,5 @@ interface StoredSession {
   status: ConnectionStatus;
   timestamp: number;
   transportConfig: TransportConfig;
-  adapterConfig: AdapterConfig;
+  connectorConfig: ConnectorConfig;
 }

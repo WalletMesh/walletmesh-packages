@@ -1,5 +1,5 @@
 import { TransportType } from '../lib/transports/types.js';
-import { AdapterType } from '../lib/adapters/types.js';
+import { ConnectorType } from '../lib/connectors/types.js';
 import type { WalletInfo } from '../types.js';
 
 export const WalletList: WalletInfo[] = [
@@ -10,8 +10,8 @@ export const WalletList: WalletInfo[] = [
     transport: {
       type: TransportType.PostMessage,
     },
-    adapter: {
-      type: AdapterType.WalletMeshAztec,
+    connector: {
+      type: ConnectorType.WalletMeshAztec,
     },
   },
   {
@@ -22,8 +22,8 @@ export const WalletList: WalletInfo[] = [
     transport: {
       type: TransportType.Null,
     },
-    adapter: {
-      type: AdapterType.ObsidionAztec,
+    connector: {
+      type: ConnectorType.ObsidionAztec,
       options: {
         chainId: 'aztec',
         networkId: '31337',
@@ -37,8 +37,8 @@ export const WalletList: WalletInfo[] = [
     transport: {
       type: TransportType.PostMessage,
     },
-    adapter: {
-      type: AdapterType.WalletMeshAztec,
+    connector: {
+      type: ConnectorType.WalletMeshAztec,
     },
   },
 ];

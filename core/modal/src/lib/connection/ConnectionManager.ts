@@ -2,7 +2,7 @@ import type { WalletInfo, ConnectedWallet, DappInfo } from '../../types.js';
 import type { TimeoutConfig } from '../utils/timeout.js';
 import { WalletMeshClient } from '../client/WalletMeshClient.js';
 import { createTransport } from '../transports/index.js';
-import { createAdapter } from '../adapters/createAdapter.js';
+import { createConnector } from '../connectors/createConnector.js';
 import { WalletError } from '../client/types.js';
 import { withTimeout } from '../utils/timeout.js';
 
@@ -132,7 +132,7 @@ export class ConnectionManager {
    *
    * @remarks
    * Connection process:
-   * 1. Creates transport and adapter instances
+   * 1. Creates transport and connector instances
    * 2. Initiates connection with timeout
    * 3. Persists successful connection
    * 4. Validates connection state
@@ -144,7 +144,7 @@ export class ConnectionManager {
    *     id: 'wallet-id',
    *     name: 'Wallet Name',
    *     transport: { type: 'postMessage' },
-   *     adapter: { type: 'wm_aztec' }
+   *     connector: { type: 'wm_aztec' }
    *   });
    *
    *   console.log('Connected:', wallet.state.address);
@@ -157,13 +157,13 @@ export class ConnectionManager {
     console.log('[ConnectionManager] Connecting wallet:', wallet);
 
     try {
-      console.log('[ConnectionManager] Creating transport and adapter');
+      console.log('[ConnectionManager] Creating transport and connector');
       const transport = createTransport(wallet.transport);
-      const adapter = createAdapter(wallet.adapter);
+      const connector = createConnector(wallet.connector);
 
       console.log('[ConnectionManager] Initiating wallet connection');
       const connected = await withTimeout(
-        this.client.connectWallet(wallet, transport, adapter, { persist: true }),
+        this.client.connectWallet(wallet, transport, connector, { persist: true }),
         this.timeoutConfig.connectionTimeout,
         'wallet connection',
       );

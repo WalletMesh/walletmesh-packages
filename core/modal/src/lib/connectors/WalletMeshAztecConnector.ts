@@ -1,5 +1,5 @@
 import type { WalletInfo, ConnectedWallet, WalletState } from '../../types.js';
-import type { Adapter, AztecAdapterOptions } from './types.js';
+import type { Connector, AztecConnectorOptions } from './types.js';
 import { WalletError } from '../client/types.js';
 
 /**
@@ -22,7 +22,7 @@ interface AztecProvider {
 }
 
 /**
- * Adapter implementation for WalletMesh integration with Aztec protocol.
+ * Connector implementation for WalletMesh integration with Aztec protocol.
  *
  * Handles communication between the dApp and Aztec-compatible wallets,
  * managing connection state, session persistence, and message routing.
@@ -33,34 +33,34 @@ interface AztecProvider {
  *
  * @example
  * ```typescript
- * const adapter = new WalletMeshAztecAdapter({
+ * const connector = new WalletMeshAztecConnector({
  *   chainId: 'aztec:testnet',
  *   rpcUrl: 'https://testnet.aztec.network/rpc'
  * });
  *
- * const wallet = await adapter.connect({
+ * const wallet = await connector.connect({
  *   id: 'aztec-wallet',
  *   name: 'Aztec Wallet',
  *   // ... other wallet info
  * });
  * ```
  */
-export class WalletMeshAztecAdapter implements Adapter {
+export class WalletMeshAztecConnector implements Connector {
   private provider: AztecProvider | null = null;
   private connected = false;
-  private readonly options: AztecAdapterOptions;
+  private readonly options: AztecConnectorOptions;
 
   /**
-   * Creates a new WalletMeshAztecAdapter instance.
+   * Creates a new WalletMeshAztecConnector instance.
    *
-   * @param options - Configuration options for the adapter
+   * @param options - Configuration options for the connector
    *
    * @remarks
    * Default options are provided for development convenience:
    * - chainId: '1'
    * - rpcUrl: 'https://aztec.network/rpc'
    */
-  constructor(options: AztecAdapterOptions = {}) {
+  constructor(options: AztecConnectorOptions = {}) {
     this.options = {
       chainId: '1',
       rpcUrl: 'https://aztec.network/rpc',
@@ -83,7 +83,7 @@ export class WalletMeshAztecAdapter implements Adapter {
    *
    * @example
    * ```typescript
-   * const wallet = await adapter.connect({
+   * const wallet = await connector.connect({
    *   id: 'aztec-wallet',
    *   name: 'Aztec Wallet',
    *   icon: 'wallet-icon.png'
@@ -93,7 +93,7 @@ export class WalletMeshAztecAdapter implements Adapter {
    */
   async connect(walletInfo: WalletInfo): Promise<ConnectedWallet> {
     if (this.connected) {
-      throw new WalletError('Already connected', 'adapter');
+      throw new WalletError('Already connected', 'connector');
     }
 
     try {
@@ -114,7 +114,7 @@ export class WalletMeshAztecAdapter implements Adapter {
       };
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to connect');
-      throw new WalletError(error.message, 'adapter', error);
+      throw new WalletError(error.message, 'connector', error);
     }
   }
 
@@ -134,7 +134,7 @@ export class WalletMeshAztecAdapter implements Adapter {
    *
    * @example
    * ```typescript
-   * const wallet = await adapter.resume(
+   * const wallet = await connector.resume(
    *   walletInfo,
    *   {
    *     chain: 'aztec:testnet',
@@ -146,12 +146,12 @@ export class WalletMeshAztecAdapter implements Adapter {
    */
   async resume(walletInfo: WalletInfo, savedState: WalletState): Promise<ConnectedWallet> {
     if (this.connected) {
-      throw new WalletError('Already connected', 'adapter');
+      throw new WalletError('Already connected', 'connector');
     }
 
     // Validate saved state
     if (!savedState.address || !savedState.sessionId || !savedState.chain) {
-      throw new WalletError('Incomplete session state', 'adapter');
+      throw new WalletError('Incomplete session state', 'connector');
     }
 
     try {
@@ -159,7 +159,7 @@ export class WalletMeshAztecAdapter implements Adapter {
       this.provider = this.createProvider();
 
       // Attempt to restore the session
-      console.log('[WalletMeshAztecAdapter] Attempting to restore session:', {
+      console.log('[WalletMeshAztecConnector] Attempting to restore session:', {
         sessionId: savedState.sessionId,
         address: savedState.address,
         chain: savedState.chain,
@@ -179,7 +179,7 @@ export class WalletMeshAztecAdapter implements Adapter {
           }
 
           this.connected = true;
-          console.log('[WalletMeshAztecAdapter] Session restored successfully');
+          console.log('[WalletMeshAztecConnector] Session restored successfully');
 
           return {
             info: walletInfo,
@@ -192,7 +192,7 @@ export class WalletMeshAztecAdapter implements Adapter {
         } catch (err) {
           lastError = err;
           if (attempt < maxRetries) {
-            console.log(`[WalletMeshAztecAdapter] Restore attempt ${attempt} failed, retrying...`);
+            console.log(`[WalletMeshAztecConnector] Restore attempt ${attempt} failed, retrying...`);
             await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
           }
         }
@@ -202,7 +202,7 @@ export class WalletMeshAztecAdapter implements Adapter {
       throw lastError;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to resume connection');
-      throw new WalletError(error.message, 'adapter', error);
+      throw new WalletError(error.message, 'connector', error);
     }
   }
 
@@ -228,7 +228,7 @@ export class WalletMeshAztecAdapter implements Adapter {
       this.connected = false;
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Failed to disconnect');
-      throw new WalletError(error.message, 'adapter', error);
+      throw new WalletError(error.message, 'connector', error);
     }
   }
 
@@ -244,7 +244,7 @@ export class WalletMeshAztecAdapter implements Adapter {
    */
   async getProvider(): Promise<AztecProvider> {
     if (!this.connected || !this.provider) {
-      throw new WalletError('Not connected', 'adapter');
+      throw new WalletError('Not connected', 'connector');
     }
     return this.provider;
   }
@@ -297,7 +297,7 @@ export class WalletMeshAztecAdapter implements Adapter {
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         if (sessionId) {
-          console.log('[WalletMeshAztecAdapter] Reconnecting with session:', sessionId);
+          console.log('[WalletMeshAztecConnector] Reconnecting with session:', sessionId);
           // Use sessionId to determine address (in real impl this would verify with wallet)
           const address = sessionId.includes('0x') ? sessionId.split('_')[0] : '0x1234567890abcdef';
 
@@ -318,24 +318,24 @@ export class WalletMeshAztecAdapter implements Adapter {
           address: randomAddress as string, // Assert as string to satisfy TS
           sessionId: `${randomAddress}_${Date.now()}`,
         };
-        console.log('[WalletMeshAztecAdapter] Created new session:', newSession);
+        console.log('[WalletMeshAztecConnector] Created new session:', newSession);
         return newSession;
       },
 
       disconnect: async () => {
-        console.log('[WalletMeshAztecAdapter] Disconnecting wallet');
+        console.log('[WalletMeshAztecConnector] Disconnecting wallet');
         this.connected = false;
       },
 
       getAccount: async () => {
         if (!this.connected) {
-          throw new WalletError('Wallet not connected', 'adapter');
+          throw new WalletError('Wallet not connected', 'connector');
         }
         return '0x1234567890abcdef';
       },
 
       sendMessage: async (data) => {
-        console.log('[WalletMeshAztecAdapter] Sending message to wallet:', data);
+        console.log('[WalletMeshAztecConnector] Sending message to wallet:', data);
       },
     };
   }

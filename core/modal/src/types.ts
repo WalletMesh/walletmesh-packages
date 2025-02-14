@@ -1,4 +1,4 @@
-import type { AdapterConfig } from './lib/adapters/types.js';
+import type { ConnectorConfig } from './lib/connectors/types.js';
 import type { TransportConfig } from './lib/transports/types.js';
 
 /**
@@ -42,14 +42,14 @@ export interface DappInfo {
  * Configuration for a supported wallet integration.
  *
  * Defines how to connect to and interact with a specific wallet,
- * including its communication method and protocol adapter.
+ * including its communication method and protocol connector.
  *
  * @property id - Unique identifier for the wallet
  * @property name - User-friendly display name
  * @property icon - Optional data URI of wallet icon
  * @property url - Optional wallet website/install URL
  * @property supportedChains - Optional list of supported chain IDs
- * @property adapter - Chain-specific adapter configuration
+ * @property connector - Chain-specific connector configuration
  * @property transport - Communication transport configuration
  *
  * @remarks
@@ -66,7 +66,7 @@ export interface DappInfo {
  *   icon: "data:image/svg+xml,...",  // Must be data URI
  *   url: "https://wallet.example.com",
  *   supportedChains: ["aztec:testnet", "aztec:mainnet"],
- *   adapter: {
+ *   connector: {
  *     type: "walletmesh_aztec",
  *     options: { chainId: "aztec:testnet" }
  *   },
@@ -83,7 +83,7 @@ export interface WalletInfo {
   icon?: string;
   url?: string;
   supportedChains?: string[];
-  adapter: AdapterConfig;
+  connector: ConnectorConfig;
   transport: TransportConfig;
 }
 
@@ -99,7 +99,7 @@ export interface WalletInfo {
  *
  * @remarks
  * - All fields are optional for type flexibility
- * - chain format depends on adapter type
+ * - chain format depends on connector type
  * - address format depends on chain
  * - sessionId is used for reconnection
  *

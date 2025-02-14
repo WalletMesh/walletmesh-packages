@@ -1,6 +1,6 @@
 import type { DappInfo, WalletInfo, ConnectedWallet } from '../../types.js';
 import type { Transport } from '../transports/types.js';
-import type { Adapter } from '../adapters/types.js';
+import type { Connector } from '../connectors/types.js';
 import type { ConnectionStatus } from '../../types.js';
 
 /**
@@ -15,7 +15,7 @@ import type { ConnectionStatus } from '../../types.js';
  * @property {Error} [cause] - Optional underlying error that caused this error
  * @property {string} type - Categorizes the error source:
  *   - 'client': Errors from the WalletMeshClient
- *   - 'adapter': Errors from wallet protocol adapters
+ *   - 'connector': Errors from wallet protocol connectors
  *   - 'transport': Communication/messaging errors
  *   - 'storage': Session storage/persistence errors
  *   - 'timeout': Operation timeout errors
@@ -32,7 +32,7 @@ import type { ConnectionStatus } from '../../types.js';
 export class WalletError extends Error {
   public override name = 'WalletError';
   public override cause?: Error;
-  public readonly type: 'client' | 'adapter' | 'transport' | 'storage' | 'timeout';
+  public readonly type: 'client' | 'connector' | 'transport' | 'storage' | 'timeout';
 
   constructor(message: string, type: WalletError['type'], cause?: Error) {
     super(message);
@@ -44,38 +44,38 @@ export class WalletError extends Error {
 /**
  * Represents an active wallet session with its associated state and configurations.
  *
- * Maintains the connection state, transport layer, protocol adapter, and wallet information
+ * Maintains the connection state, transport layer, protocol connector, and wallet information
  * required to manage an active wallet connection.
  *
  * @property {Transport} [transport] - Optional transport instance for communication
- * @property {Adapter} [adapter] - Optional adapter instance for protocol handling
+ * @property {Connector} [connector] - Optional connector instance for protocol handling
  * @property {ConnectedWallet} wallet - The connected wallet instance
  * @property {ConnectionStatus} status - Current connection status
  * @property {Error} [lastError] - Last error encountered, if any
  * @property {TransportConfig} transportConfig - Configuration for transport reconnection
- * @property {AdapterConfig} adapterConfig - Configuration for adapter reconnection
+ * @property {ConnectorConfig} connectorConfig - Configuration for connector reconnection
  *
  * @example
  * ```typescript
  * const session: WalletSession = {
  *   transport: new PostMessageTransport(),
- *   adapter: new WalletAdapter(),
+ *   connector: new WalletConnector(),
  *   wallet: connectedWallet,
  *   status: ConnectionStatus.Connected,
  *   transportConfig: { type: 'postMessage' },
- *   adapterConfig: { type: 'standard' }
+ *   connectorConfig: { type: 'standard' }
  * };
  * ```
  */
 export interface WalletSession {
   transport?: Transport;
-  adapter?: Adapter;
+  connector?: Connector;
   wallet: ConnectedWallet;
   status: ConnectionStatus;
   lastError?: Error;
   // Store configurations for reconnection
   transportConfig: import('../transports/types.js').TransportConfig;
-  adapterConfig: import('../adapters/types.js').AdapterConfig;
+  connectorConfig: import('../connectors/types.js').ConnectorConfig;
 }
 
 /**
@@ -95,7 +95,7 @@ export interface WalletSession {
  *     return this.attemptRestore();
  *   }
  *
- *   async connectWallet(walletInfo, transport, adapter) {
+ *   async connectWallet(walletInfo, transport, connector) {
  *     // Establish new wallet connection
  *     return this.connect(walletInfo);
  *   }
@@ -110,7 +110,7 @@ export interface WalletClient {
   connectWallet(
     walletInfo: WalletInfo,
     transport: Transport,
-    adapter: Adapter,
+    connector: Connector,
     options?: { persist?: boolean },
   ): Promise<ConnectedWallet>;
   disconnectWallet(walletId: string): Promise<void>;
