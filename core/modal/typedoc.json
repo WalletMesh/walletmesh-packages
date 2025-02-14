@@ -4,12 +4,30 @@
     "typedoc-plugin-markdown"
   ],
   "entryPoints": [
-    "src/index.ts"
+    "src/index.ts",
+    "src/components/WalletProvider.tsx",
+    "src/components/WalletErrorBoundary.tsx",
+    "src/components/WalletContext.tsx",
+    "src/lib/client/types.ts",
+    "src/lib/adapters/types.ts",
+    "src/lib/transports/types.ts",
+    "src/lib/config/WalletMeshConfig.ts",
+    "src/lib/utils/timeout.ts"
   ],
   "out": "docs",
   "exclude": [
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "**/*.test.tsx"
   ],
   "includeVersion": true,
-  "excludePrivate": true
+  "excludePrivate": true,
+  "excludeExternals": false,
+  "validation": {
+    "invalidLink": false,
+    "notExported": true
+  },
+  "tsconfig": "./tsconfig.json",
+  "skipErrorChecking": true,
+  "treatWarningsAsErrors": false,
+  "sort": ["source-order"]
 }
