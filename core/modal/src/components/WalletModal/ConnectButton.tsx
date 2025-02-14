@@ -1,27 +1,19 @@
 import React from "react"
-import { useState, useCallback } from "react"
+import { useCallback } from "react"
 import { useWalletContext } from "../WalletContext.js"
-import { WalletInfoModal } from "./WalletInfoModal.js"
 import { Loader2 } from "lucide-react"
 import { DefaultIcon } from "../../lib/constants/defaultIcons.js"
-import * as Dialog from "@radix-ui/react-dialog"
 import styles from "./ConnectButton.module.css"
 import { ConnectionStatus } from "../../types.js"
 
 export const ConnectButton: React.FC = React.memo(() => {
-  const { connectionStatus, connectedWallet, openModal, disconnectWallet } = useWalletContext()
-  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false)
+  const { connectionStatus, connectedWallet, openModal } = useWalletContext()
 
   const handleConnectedWalletClick = useCallback(() => {
     if (connectionStatus === ConnectionStatus.Connected) {
-      setIsInfoModalOpen(true)
+      openModal();
     }
-  }, [connectionStatus])
-
-  const handleDisconnect = useCallback(() => {
-    disconnectWallet()
-    setIsInfoModalOpen(false)
-  }, [disconnectWallet])
+  }, [connectionStatus, openModal]);
 
   const isConnected = connectionStatus === ConnectionStatus.Connected && connectedWallet;
   const isConnecting = connectionStatus === ConnectionStatus.Connecting;
@@ -68,10 +60,6 @@ export const ConnectButton: React.FC = React.memo(() => {
             </p>
           </div>
         </div>
-
-        <Dialog.Root open={isInfoModalOpen} onOpenChange={setIsInfoModalOpen}>
-          <WalletInfoModal onDisconnect={handleDisconnect} />
-        </Dialog.Root>
       </div>
     )
   }
