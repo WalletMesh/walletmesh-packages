@@ -4,18 +4,27 @@ WalletMesh provides a flexible and powerful solution for integrating multiple wa
 
 ## Table of Contents
 - [Installation](#installation)
+- [Architecture](#architecture)
+  - [Connection Flow](#connection-flow)
+  - [Message Flow](#message-flow)
+  - [Disconnection Flow](#disconnection-flow)
+  - [Session Restoration Flow](#session-restoration-flow)
 - [Quick Start](#quick-start)
-- [Architecture Overview](#architecture-overview)
+- [Configuration](#configuration)
 - [Core Components](#core-components)
+  - [Provider](#provider)
+  - [Hooks](#hooks)
   - [Transport Layer](#transport-layer)
   - [Adapter Layer](#adapter-layer)
-  - [WalletMeshClient](#walletmeshclient)
+- [Security Considerations](#security-considerations)
+- [Error Handling](#error-handling)
+- [TypeScript Support](#typescript-support)
 - [Advanced Usage](#advanced-usage)
-  - [Multi-Wallet Management](#multi-wallet-management)
-  - [Error Handling](#error-handling)
-- [Extending WalletMesh](#extending-walletmesh)
-  - [Adding New Transport](#adding-new-transport)
-  - [Adding New Adapter](#adding-new-adapter)
+  - [Custom Adapters](#custom-adapters)
+  - [Custom Transports](#custom-transports)
+
+## Architecture
+The following sequence diagrams illustrate the key flows in the wallet connection process:
 
 ## Installation
 
@@ -30,39 +39,195 @@ yarn add @walletmesh/modal
 pnpm add @walletmesh/modal
 ```
 
+## Connection Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant DApp
+    participant ConnMgr as ConnectionManager
+    participant Client as WalletMeshClient
+    participant Session as SessionManager
+    participant Transport
+    participant Adapter
+    participant Wallet
+
+    User->>DApp: Click Connect Button
+    DApp->>ConnMgr: connectWallet(config)
+    ConnMgr->>ConnMgr: Create Transport & Adapter
+    
+    rect rgb(200, 200, 255)
+        note right of ConnMgr: Timeout Wrapper
+        ConnMgr->>Client: connectWallet()
+        Client->>Transport: connect()
+        Transport->>Wallet: Establish Connection
+        Wallet-->>Transport: Connection Established
+        Client->>Adapter: connect(walletInfo)
+        Adapter->>Wallet: Request Account
+        Wallet-->>User: Prompt for Approval
+        User->>Wallet: Approve Connection
+        Wallet-->>Adapter: Account Details
+        Adapter-->>Client: Connected Wallet State
+    end
+
+    Client->>Session: setSession(persist=true)
+    Client-->>ConnMgr: Connection Success
+    ConnMgr-->>DApp: Update UI
+```
+
+## Message Flow
+
+```mermaid
+sequenceDiagram
+    participant DApp
+    participant ConnMgr as ConnectionManager
+    participant Client as WalletMeshClient
+    participant Adapter
+    participant Transport
+    participant Wallet
+    participant Session as SessionManager
+
+    DApp->>ConnMgr: send(message)
+    
+    rect rgb(200, 200, 255)
+        note right of ConnMgr: Timeout Wrapper
+        ConnMgr->>Client: getProvider()
+        Client->>Adapter: Format Request
+        Adapter->>Transport: Send Formatted Data
+        Transport->>Wallet: Transmit Message
+        Wallet-->>Transport: Response
+        Transport->>Adapter: Raw Response
+        Adapter->>Client: Parse Response
+    end
+    
+    Client->>Session: Update State
+    Client-->>ConnMgr: Response
+    ConnMgr-->>DApp: Final Result
+
+    rect rgb(255, 200, 200)
+        note right of ConnMgr: Error Handling
+        Transport-->>Client: Connection Error
+        Client->>Session: Update Status
+        Client-->>ConnMgr: Error Response
+        ConnMgr-->>DApp: Error Handler
+    end
+```
+
+## Disconnection Flow
+
+```mermaid
+sequenceDiagram
+    participant DApp
+    participant ConnMgr as ConnectionManager
+    participant Client as WalletMeshClient
+    participant Session as SessionManager
+    participant Transport
+    participant Adapter
+    participant Wallet
+
+    DApp->>ConnMgr: disconnectWallet(id)
+    
+    rect rgb(200, 200, 255)
+        note right of ConnMgr: Timeout Wrapper
+        ConnMgr->>Client: disconnectWallet(id)
+        Client->>Adapter: disconnect()
+        Client->>Transport: disconnect()
+    end
+
+    opt Keep Session
+        Client->>Session: updateStatus(Resuming)
+    end
+
+    opt Remove Session
+        Client->>Session: removeSession()
+    end
+
+    par Cleanup
+        Transport->>Wallet: Close Connection
+        Adapter->>Wallet: Clear State
+    end
+
+    Client-->>ConnMgr: Disconnected
+    ConnMgr-->>DApp: Update UI
+```
+
+## Session Restoration Flow
+
+```mermaid
+sequenceDiagram
+    participant DApp
+    participant ConnMgr as ConnectionManager
+    participant Client as WalletMeshClient
+    participant Session as SessionManager
+    participant Transport
+    participant Adapter
+    participant Wallet
+
+    DApp->>ConnMgr: initialize()
+    ConnMgr->>Client: initialize()
+    Client->>Session: getSessions()
+    Session-->>Client: Stored Sessions
+
+    loop Retry Logic
+        rect rgb(200, 200, 255)
+            note right of Client: With Timeout
+            Client->>Transport: connect()
+            Transport->>Wallet: Restore Connection
+            Client->>Adapter: resume(session)
+            alt Success
+                Wallet-->>Transport: Connection Restored
+                Adapter-->>Client: Session Restored
+                Client->>Session: updateStatus(Connected)
+            else Failure
+                Client->>Transport: disconnect()
+                Client->>Client: Wait Backoff
+            end
+        end
+    end
+
+    Client-->>ConnMgr: Restoration Result
+    ConnMgr-->>DApp: Update UI
+```
+
 ## Quick Start
 
 ```typescript
-import { WalletProvider, ConnectButton, TransportType, AdapterType } from '@walletmesh/modal';
+import { 
+  WalletProvider, 
+  ConnectButton, 
+  WalletMeshConfig,
+  TransportType, 
+  AdapterType 
+} from '@walletmesh/modal';
 
-// Configure DApp information
-const dappInfo = {
-  name: "My DApp",
-  description: "Description",
-  icon: "icon-url",
-  origin: "https://mydapp.com"
-};
-
-// Configure available wallets
-const wallets = [
-  {
+// Create configuration using the builder pattern
+const config = WalletMeshConfig.create()
+  .clearWallets() // Clear default wallets if needed
+  .addWallet({
     id: "aztec_web",
     name: "Aztec Web Wallet",
-    icon: "icon-url",
+    icon: "data:image/svg+xml,...", // Must be data URI
     transport: {
       type: TransportType.PostMessage,
       options: { origin: "https://wallet.aztec.network" }
     },
     adapter: {
-      type: AdapterType.WalletMeshAztec
+      type: AdapterType.WalletMeshAztec,
+      options: { chainId: "aztec:testnet" }
     }
-  }
-];
+  })
+  .setDappInfo({
+    name: "My DApp",
+    description: "A decentralized application",
+    origin: "https://mydapp.com",
+    icon: "data:image/svg+xml,..." // Optional, must be data URI
+  })
+  .build();
 
 // Wrap your app with WalletProvider
 function App() {
   return (
-    <WalletProvider wallets={wallets} dappInfo={dappInfo}>
+    <WalletProvider config={config} onError={console.error}>
       <ConnectButton />
       {/* Your app content */}
     </WalletProvider>
@@ -70,155 +235,155 @@ function App() {
 }
 ```
 
-## Architecture Overview
-WalletMesh provides a flexible architecture for wallet connectivity with clean separation between transport and business logic layers. The architecture supports multiple simultaneous wallet connections, each with its own transport and adapter configuration.
+## Security Considerations
 
-## DApp Integration
-
-### Setup
-1. Configure available wallets and DApp info
-2. Wrap application with WalletProvider
-3. Use the ConnectButton component
-
-### Connection Flow
-
-#### 1. Initial Setup
+### Icon Security
+All icons (wallet and dApp) must be provided as data URIs to prevent XSS attacks:
 ```typescript
-// Configure DApp information
-const dappInfo = {
-  name: "My DApp",
-  description: "Description",
-  icon: "icon-url",
-  origin: "https://mydapp.com"
-};
+// Good - Using data URI
+icon: "data:image/svg+xml,..."
 
-// Configure available wallets
-const wallets = [
-  {
-    id: "aztec_web",
-    name: "Aztec Web Wallet",
-    icon: "icon-url",
-    transport: {
-      type: TransportType.PostMessage,
-      options: { origin: "https://wallet.aztec.network" }
-    },
-    adapter: {
-      type: AdapterType.WalletMeshAztec
+// Bad - Using URL
+icon: "https://example.com/icon.svg" // Will throw error
+```
+
+### Origin Validation
+Always specify allowed origins for PostMessage transport:
+```typescript
+transport: {
+  type: TransportType.PostMessage,
+  options: {
+    // Explicitly set allowed origin
+    origin: "https://wallet.example.com"
+  }
+}
+```
+
+### Session Management
+Sessions are stored securely in localStorage with:
+- Validation of all stored data
+- Sanitization of restored sessions
+- Automatic session cleanup
+```typescript
+// Configure session timeout
+.setTimeout({
+  connectionTimeout: 30000,  // Connection timeout
+  operationTimeout: 10000   // Operation timeout
+})
+```
+
+### Error Handling
+Implement proper error handling for all operations:
+```typescript
+try {
+  await wallet.connect();
+} catch (error) {
+  if (error instanceof WalletError) {
+    // Handle specific error types
+    if (error.code === -30000) {
+      // Connection error
     }
   }
-];
+}
+```
 
-// Provide wallet configuration
-<WalletProvider wallets={wallets} dappInfo={dappInfo}>
+## Configuration
+
+The WalletMeshConfig builder provides a fluent API for configuring the modal:
+
+```typescript
+const config = WalletMeshConfig.create()
+  // Wallet Management
+  .clearWallets()                  // Remove default wallets
+  .addWallet({...})               // Add single wallet
+  .addWallets([{...}, {...}])     // Add multiple wallets
+  .removeWallet('wallet_id')      // Remove specific wallet
+  
+  // Chain Configuration
+  .setSupportedChains([
+    'aztec:testnet',
+    'aztec:mainnet'
+  ])
+  
+  // DApp Information
+  .setDappInfo({
+    name: 'My DApp',
+    description: 'DApp Description',
+    origin: 'https://mydapp.com',
+    icon: 'data:image/svg+xml,...', // Optional
+    rpcUrl: 'https://rpc.example.com' // Optional
+  })
+
+  // Timeout Configuration
+  .setTimeout({
+    connectionTimeout: 30000,     // 30s for initial connections (default)
+    operationTimeout: 10000       // 10s for other operations (default)
+  })
+  .build();
+```
+
+## Core Components
+
+### Provider
+
+The WalletProvider manages wallet connections and provides state to your application:
+
+```typescript
+interface WalletProviderProps {
+  config: WalletMeshProviderConfig;
+  onError?: (error: Error) => void;
+  children: React.ReactNode;
+}
+
+// Usage
+<WalletProvider 
+  config={config}
+  onError={(error) => {
+    console.error('Wallet error:', error.message);
+    // Error includes code and optional cause
+    if (error.code === -30000) {
+      // Handle connection error
+    }
+  }}
+>
   <App />
 </WalletProvider>
 ```
 
-#### 2. Runtime Flow
-```mermaid
-sequenceDiagram
-    participant User
-    participant DApp
-    participant Modal
-    participant WalletMeshClient
-    participant Transport
-    participant Adapter
-    participant Wallet
+### Hooks
 
-    User->>DApp: Click Connect Button
-    DApp->>Modal: Show wallet options
-    User->>Modal: Select Wallet
-    Modal->>WalletMeshClient: connectWallet(walletInfo)
-    WalletMeshClient->>Transport: Create & Connect
-    WalletMeshClient->>Adapter: Initialize
-    Transport-->>WalletMeshClient: Connected
-    WalletMeshClient->>Adapter: Connect(walletInfo)
-    Adapter->>Wallet: Establish Connection
-    Wallet-->>Adapter: Approve Connection
-    Adapter-->>WalletMeshClient: Connected State
-    WalletMeshClient-->>Modal: Update Status
-    Modal-->>DApp: Close & Update UI
+#### useWalletLogic
+
+Primary hook for interacting with wallets:
+
+```typescript
+function WalletStatus() {
+  const {
+    connectionStatus,     // Current connection state
+    connectedWallet,     // Active wallet info
+    connectWallet,       // Connect function
+    disconnectWallet,    // Disconnect function
+    isModalOpen,         // Modal visibility
+    openModal,           // Show modal
+    closeModal          // Hide modal
+  } = useWalletLogic();
+
+  if (connectionStatus === ConnectionStatus.Connected) {
+    return (
+      <div>
+        Connected to {connectedWallet?.info.name}
+        <button onClick={disconnectWallet}>Disconnect</button>
+      </div>
+    );
+  }
+
+  return <button onClick={openModal}>Connect Wallet</button>;
+}
 ```
-
-### Message Flow
-```mermaid
-sequenceDiagram
-    participant Backend
-    participant Transport
-    participant WalletMeshClient
-    participant Adapter
-
-    Backend->>Transport: message
-    Transport->>WalletMeshClient: onMessage(data)
-    WalletMeshClient->>Adapter: handleMessage(data)
-    
-    Adapter->>WalletMeshClient: need to send(request)
-    WalletMeshClient->>Transport: send(request)
-    Transport->>Backend: transmit
-```
-
-### Disconnection Flow
-```mermaid
-sequenceDiagram
-    participant App
-    participant WalletMeshClient
-    participant Transport
-    participant Adapter
-
-    App->>WalletMeshClient: disconnect()
-    WalletMeshClient->>Adapter: disconnect()
-    WalletMeshClient->>Transport: disconnect()
-    WalletMeshClient-->>App: disconnected
-```
-
-### Multi-Wallet Management
-```mermaid
-sequenceDiagram
-    participant App
-    participant WalletMeshClient
-    participant Transport1
-    participant Adapter1
-    participant Transport2
-    participant Adapter2
-
-    App->>WalletMeshClient: connectWallet(wallet1)
-    WalletMeshClient->>Transport1: connect()
-    WalletMeshClient->>Adapter1: connect()
-    WalletMeshClient-->>App: connectedWallet1
-    
-    App->>WalletMeshClient: connectWallet(wallet2)
-    WalletMeshClient->>Transport2: connect()
-    WalletMeshClient->>Adapter2: connect()
-    WalletMeshClient-->>App: connectedWallet2
-```
-
-#### 3. Connection Process
-1. User Interaction:
-   - User clicks Connect Button
-   - Modal displays available wallets
-   - User selects desired wallet
-
-2. Connection Establishment:
-   - WalletMeshClient creates transport & adapter
-   - Transport establishes communication channel
-   - Adapter initiates chain-specific connection
-   - Wallet confirms connection
-
-3. Connection Management:
-   - Session info stored for persistence
-   - Automatic reconnection on page reload
-   - Clean disconnection handling
-
-#### 4. Error Handling
-- Connection failures surface user-friendly errors
-- Automatic cleanup of failed connections
-- Session restoration failures prompt reconnection
-- Transport errors handled gracefully
-
-## Core Components
 
 ### Transport Layer
-The transport layer handles the raw communication between frontend and backend components:
+
+Handles communication between DApp and wallet:
 
 ```typescript
 interface Transport {
@@ -226,16 +391,21 @@ interface Transport {
   disconnect(): Promise<void>;
   send(data: unknown): Promise<void>;
   onMessage(handler: (data: unknown) => void): void;
+  isConnected(): boolean;
+}
+
+// Available transport types
+enum TransportType {
+  PostMessage = 'postMessage',
+  WebSocket = 'websocket',
+  Extension = 'extension',
+  Null = 'null'
 }
 ```
 
-Available implementations:
-- `PostMessageTransport`: Uses window.postMessage for communication
-- `WebSocketTransport`: (Planned) For WebSocket-based communication
-- `ExtensionTransport`: (Planned) For browser extension communication
-
 ### Adapter Layer
-Adapters handle chain-specific operations and protocol-level interactions:
+
+Manages chain-specific wallet interactions:
 
 ```typescript
 interface Adapter {
@@ -244,122 +414,132 @@ interface Adapter {
   getProvider(): Promise<unknown>;
   handleMessage(data: unknown): void;
 }
-```
 
-### WalletMeshClient
-The client orchestrates multiple wallet connections:
-- Manages transport lifecycle
-- Routes messages between components
-- Handles connection state per wallet
-- Provides a clean API for multi-wallet applications
-
-## Wallet Configuration
-
-Wallets are defined with their required transport and adapter configurations:
-
-```typescript
-interface WalletInfo {
-  id: string;          // Unique identifier
-  name: string;
-  icon: string;
-  url?: string;
-  transport: {
-    type: TransportType;
-    options?: TransportOptions;
-  };
-  adapter: {
-    type: AdapterType;
-    options?: AdapterOptions;
-  };
+// Available adapter types
+enum AdapterType {
+  WalletMeshAztec = 'wm_aztec',
+  ObsidionAztec = 'obsidion_aztec'
 }
 ```
 
-## Usage Example
+## Error Handling
+
+WalletMesh provides structured error handling with specific error types and codes:
 
 ```typescript
-const client = new WalletMeshClient();
+// Error codes by category
+-30000: Connection errors
+-30001: Disconnection errors
+-30002: Session errors
+-30003: Timeout errors
+-30099: Generic wallet errors
 
-// Define wallets
-const webWallet = {
-  id: 'aztec_web_1',
-  name: 'Aztec Web Wallet',
-  icon: 'icon-url',
-  transport: {
-    type: TransportType.PostMessage,
-    options: { origin: 'https://wallet.aztec.network' }
-  },
-  adapter: {
-    type: AdapterType.WalletMeshAztec
+// Error examples
+try {
+  await wallet.connect();
+} catch (error) {
+  if (error instanceof WalletTimeoutError) {
+    console.error(`Operation timed out after ${error.timeout}ms`);
+  } else if (error instanceof WalletConnectionError) {
+    console.error(`Connection failed: ${error.message}`);
+    console.error(`Error code: ${error.code}`);
+    if (error.cause) {
+      console.error('Caused by:', error.cause);
+    }
   }
-};
+}
 
-const extensionWallet = {
-  id: 'aztec_extension_1',
-  name: 'Aztec Extension',
-  transport: {
-    type: TransportType.Extension,
-    options: { extensionId: 'extension-id' }
-  },
-  adapter: {
-    type: AdapterType.WalletMeshAztec
-  }
-};
+// Error utility
+const error = handleWalletError(err, 'connect wallet');
+// WalletConnectionError(-30000): Failed to connect wallet
 
-// Connect multiple wallets
-const web = await client.connectWallet(webWallet);
-const extension = await client.connectWallet(extensionWallet);
-
-// Work with specific wallets
-const webProvider = await client.getProvider(web.id);
-const extensionProvider = await client.getProvider(extension.id);
-
-// List connected wallets
-const connectedWallets = client.getConnectedWallets();
-
-// Disconnect specific wallet
-await client.disconnectWallet(web.id);
-```
-
-## Adding New Components
-
-### Adding a New Transport
-
-1. Implement the Transport interface
-2. Add the transport type to TransportType enum
-3. Register in WalletMeshClient.createTransport
-
-Example:
-```typescript
-class WebSocketTransport implements Transport {
-  async connect(): Promise<void> {
-    // Implement WebSocket connection
-  }
-  
-  async send(data: unknown): Promise<void> {
-    // Implement WebSocket sending
-  }
-  
-  // ... implement other methods
+// Type Guards
+if (isWalletTimeoutError(error)) {
+  // Handle timeout-specific error
+  console.error(`Operation timed out after ${error.timeout}ms`);
 }
 ```
 
-### Adding a New Adapter
+## TypeScript Support
 
-1. Implement the Adapter interface
-2. Add the adapter type to AdapterType enum
-3. Register in WalletMeshClient.createAdapter
+The package is written in TypeScript and provides comprehensive type definitions:
 
-Example:
 ```typescript
-class NewChainAdapter implements Adapter {
+// Type-safe configuration
+const config: WalletMeshProviderConfig = WalletMeshConfig.create()
+  .addWallet({
+    id: string;
+    name: string;
+    icon?: string;
+    url?: string;
+    supportedChains?: string[];
+    adapter: AdapterConfig;
+    transport: TransportConfig;
+  })
+  .build();
+
+// Strongly-typed hooks
+const { 
+  connectionStatus, // ConnectionStatus enum
+  connectedWallet  // ConnectedWallet interface
+} = useWalletLogic();
+
+// Type guards
+if (isWalletError(error)) {
+  // Type-safe error handling
+}
+```
+
+## Advanced Usage
+
+### Custom Adapters
+
+Create adapters for new chains or wallet types:
+
+```typescript
+class CustomAdapter implements Adapter {
   async connect(walletInfo: WalletInfo): Promise<ConnectedWallet> {
-    // Implement chain-specific connection
+    // Implementation
+  }
+  
+  async disconnect(): Promise<void> {
+    // Implementation
+  }
+  
+  async getProvider(): Promise<unknown> {
+    // Implementation
   }
   
   handleMessage(data: unknown): void {
-    // Handle chain-specific messages
+    // Implementation
   }
-  
-  // ... implement other methods
 }
 ```
+
+### Custom Transports
+
+Implement new communication methods:
+
+```typescript
+class CustomTransport implements Transport {
+  async connect(): Promise<void> {
+    // Implementation
+  }
+  
+  async disconnect(): Promise<void> {
+    // Implementation
+  }
+  
+  async send(data: unknown): Promise<void> {
+    // Implementation
+  }
+  
+  onMessage(handler: (data: unknown) => void): void {
+    // Implementation
+  }
+  
+  isConnected(): boolean {
+    // Implementation
+    return true;
+  }
+}

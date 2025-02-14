@@ -3,13 +3,14 @@ import { useState, useEffect } from "react"
 import * as Dialog from "@radix-ui/react-dialog"
 import * as Label from "@radix-ui/react-label"
 import * as Separator from "@radix-ui/react-separator"
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { useWalletContext } from "../WalletContext.js"
+import { WalletInfoModal } from "./WalletInfoModal.js"
 import type { WalletInfo } from "../../types.js"
 import { ConnectionStatus } from "../../types.js"
 import { TransportType } from "../../lib/transports/types.js"
 import { AdapterType } from "../../lib/adapters/types.js"
-import { Loader2, ExternalLink, CheckCircle2, ArrowRight, X } from "lucide-react"
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import { Loader2, ExternalLink, ArrowRight, X } from "lucide-react"
 import styles from "./WalletModal.module.css"
 import { toast } from "react-hot-toast"
 import { validateUrl } from "../../lib/utils/validation.js"
@@ -22,6 +23,7 @@ export const WalletModal: React.FC = () => {
     isModalOpen,
     closeModal,
     connectWallet,
+    disconnectWallet,
     connectionStatus,
     wallets,
     connectedWallet,
@@ -44,10 +46,7 @@ export const WalletModal: React.FC = () => {
     setSelectedWallet(wallet)
     try {
       await connectWallet(wallet)
-      // Add a small delay to show the success state before closing
-      setTimeout(() => {
-        closeModal()
-      }, 500)
+      closeModal()
     } catch (error) {
       console.error(error)
       toast.error(error instanceof Error ? error.message : "Failed to connect wallet")
@@ -57,35 +56,38 @@ export const WalletModal: React.FC = () => {
   }
 
   const handleConnectCustomWallet = async () => {
-    if (customWalletUrl && !isConnecting && !isResumingSession) {
-      const url = validateUrl(customWalletUrl)
-      localStorage.setItem(CUSTOM_WALLET_URL_KEY, url)
-      const customWallet: WalletInfo = {
-        id: "custom-web-wallet",
-        name: "Custom Web Wallet",
-        url: url,
-        transport: {
-          type: TransportType.PostMessage
-        },
-        adapter: {
-          type: AdapterType.WalletMeshAztec,
-          options: {
-            chainId: "aztec:devnet"
-          }
+    if (!customWalletUrl || isConnecting || isResumingSession) {
+      return;
+    }
+    
+    const url = validateUrl(customWalletUrl);
+    localStorage.setItem(CUSTOM_WALLET_URL_KEY, url);
+    const customWallet: WalletInfo = {
+      id: "custom-web-wallet",
+      name: "Custom Web Wallet",
+      url: url,
+      transport: {
+        type: TransportType.PostMessage
+      },
+      adapter: {
+        type: AdapterType.WalletMeshAztec,
+        options: {
+          chainId: "aztec:devnet"
         }
       }
-      setSelectedWallet(customWallet)
-      try {
-        await connectWallet(customWallet)
-        closeModal()
-      } catch (error) {
-        console.error(error)
-        toast.error(error instanceof Error ? error.message : "Failed to connect custom wallet")
-      } finally {
-        setSelectedWallet(null)
-      }
+    };
+
+    setSelectedWallet(customWallet);
+    try {
+      await connectWallet(customWallet);
+      closeModal();
+    } catch (error) {
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "Failed to connect custom wallet");
+    } finally {
+      setSelectedWallet(null);
     }
-  }
+  };
 
   const handleCustomWalletUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCustomWalletUrl(e.target.value.trim())
@@ -145,124 +147,155 @@ export const WalletModal: React.FC = () => {
     }
   }, [focusedIndex])
 
+  // Handle wallet disconnection
+  const handleDisconnect = async () => {
+    try {
+      await disconnectWallet();
+    } finally {
+      closeModal();
+    }
+  };
+
+  // Content for wallet selection view
+  const ConnectWalletContent = () => (
+    <div className={styles['modalContent']}>
+      <div
+        className={styles['walletList']}
+        role="listbox"
+        aria-label="Available wallets"
+        onKeyDown={handleWalletListNavigation}
+        tabIndex={wallets.length ? 0 : -1}
+      >
+        {wallets.map((wallet) => (
+          <button
+            key={wallet.name}
+            className={styles['walletButton']}
+            onClick={() => handleConnectWallet(wallet)}
+            disabled={connectionStatus !== ConnectionStatus.Idle}
+            role="option"
+            aria-selected={selectedWallet === wallet}
+            aria-label={`Connect to ${wallet.name}`}
+          >
+            <div className={styles['walletInfo']}>
+              <img
+                src={wallet.icon ?? DefaultIcon.Wallet}
+                alt={`${wallet.name} icon`}
+                className={styles['walletIcon']}
+                onError={(e) => {
+                  e.currentTarget.src = DefaultIcon.Wallet;
+                }}
+              />
+              <div>
+                <div className={styles['walletName']}>{wallet.name}</div>
+              </div>
+            </div>
+            {connectionStatus === ConnectionStatus.Connecting && selectedWallet === wallet ? (
+              <>
+                <Loader2 className={`${styles['loadingIcon']} ${styles['icon']}`} />
+                <VisuallyHidden.Root>Connecting to {wallet.name}...</VisuallyHidden.Root>
+              </>
+            ) : (
+              <>
+                <ArrowRight className={styles['arrowIcon']} />
+                <VisuallyHidden.Root>Select {wallet.name}</VisuallyHidden.Root>
+              </>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <Separator.Root className={styles['separator']} />
+
+      <div className={styles['customWallet']}>
+        <Label.Root htmlFor="custom-wallet-url" className={styles['customWalletTitle']}>
+          Connect using a custom web wallet
+        </Label.Root>
+        <VisuallyHidden.Root id="custom-wallet-url-desc">
+          Enter the URL of your custom web wallet. The URL must start with https://
+        </VisuallyHidden.Root>
+        <div className={styles['customWalletInput']}>
+          <input
+            id="custom-wallet-url"
+            type="url"
+            placeholder="https://"
+            value={customWalletUrl}
+            onChange={handleCustomWalletUrlChange}
+            onKeyUp={handleCustomWalletUrlEnter}
+            className={styles['input']}
+            aria-label="Custom Wallet URL"
+            aria-invalid={customWalletUrl !== "" && !customWalletUrl.startsWith("https://")}
+            aria-describedby="custom-wallet-url-desc"
+          />
+          <button
+            onClick={handleConnectCustomWallet}
+            disabled={connectionStatus !== ConnectionStatus.Idle || !customWalletUrl}
+            className={styles['connectButton']}
+            aria-label="Connect Custom Wallet"
+            aria-busy={connectionStatus === ConnectionStatus.Connecting && selectedWallet?.name === "Custom Web Wallet"}
+          >
+            {connectionStatus === ConnectionStatus.Connecting && selectedWallet?.name === "Custom Web Wallet" ? (
+              <>
+                <Loader2 className={`${styles['loadingIcon']} ${styles['icon']}`} />
+                <VisuallyHidden.Root>Connecting to custom wallet...</VisuallyHidden.Root>
+              </>
+            ) : (
+              <>
+                <ExternalLink className={styles['externalLinkIcon']} />
+                <VisuallyHidden.Root>Connect to custom wallet at {customWalletUrl}</VisuallyHidden.Root>
+              </>
+            )}
+            <span aria-hidden="true">Connect</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <Dialog.Root open={isModalOpen} onOpenChange={closeModal}>
       <Dialog.Portal>
         <Dialog.Overlay className={styles['overlay']} />
-        <Dialog.Content
+        <Dialog.Content 
           className={styles['content']}
-          onOpenAutoFocus={(e) => {
-            // Prevent default focus behavior
-            e.preventDefault()
-            // Focus the first wallet button or custom URL input if no wallets
-            const firstButton = document.querySelector(`.${styles['walletButton']}`) as HTMLButtonElement
-            const urlInput = document.getElementById('custom-wallet-url') as HTMLInputElement
-            if (firstButton) {
-              firstButton.focus()
-            } else if (urlInput) {
-              urlInput.focus()
-            }
-          }}
-          onEscapeKeyDown={closeModal}
-          onInteractOutside={(e) => {
-            // Prevent closing when clicking overlay if connecting
-            if (isConnecting || isResumingSession) {
-              e.preventDefault()
-            }
-          }}
           role="dialog"
           aria-modal="true"
-          aria-labelledby="wallet-modal-title"
-          aria-describedby="wallet-modal-description"
+          aria-busy={isConnecting || isResumingSession}
+          onEscapeKeyDown={closeModal}
+          onInteractOutside={(e) => {
+            if (isConnecting || isResumingSession) {
+              e.preventDefault();
+              return;
+            }
+            closeModal();
+          }}
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
         >
-          <VisuallyHidden>
-            <Dialog.Title className={styles['title']} id="wallet-modal-title">Connect Wallet</Dialog.Title>
-            <Dialog.Description className={styles['description']} id="wallet-modal-description">
-              Choose a wallet to connect with
-            </Dialog.Description>
-          </VisuallyHidden>
+          <Dialog.Title className={styles['dialogTitle']}>
+            {connectedWallet ? 'Connected Wallet Information' : 'Connect a Wallet'}
+          </Dialog.Title>
+          <Dialog.Description className={styles['dialogDescription']}>
+            {connectedWallet ? 
+              'View and manage your connected wallet settings' : 
+              'Choose a wallet to connect with your application'
+            }
+          </Dialog.Description>
+          
+          <div className={styles['modalInner']}>
+            {connectedWallet ? (
+              <WalletInfoModal onDisconnect={handleDisconnect} />
+            ) : (
+              <ConnectWalletContent />
+            )}
 
-          <div
-            className={styles['walletList']}
-            role="listbox"
-            aria-label="Available wallets"
-            onKeyDown={handleWalletListNavigation}
-            tabIndex={wallets.length ? 0 : -1}
-          >
-            {wallets.map((wallet) => (
-              <button
-                key={wallet.name}
-                className={styles['walletButton']}
-                onClick={() => handleConnectWallet(wallet)}
-                disabled={connectionStatus !== ConnectionStatus.Idle}
-                role="option"
-                aria-selected={selectedWallet === wallet}
-                aria-label={`Connect to ${wallet.name}${connectedWallet?.info.name === wallet.name ? ' (Connected)' : ''}`}
-              >
-                <div className={styles['walletInfo']}>
-                  <img
-                    src={wallet.icon ?? DefaultIcon.Wallet}
-                    alt={`${wallet.name} icon`}
-                    className={styles['walletIcon']}
-                    onError={(e) => {
-                      e.currentTarget.src = DefaultIcon.Wallet;
-                    }}
-                  />
-                  <div>
-                    <div className={styles['walletName']}>{wallet.name}</div>
-                  </div>
-                </div>
-                {connectionStatus === ConnectionStatus.Connecting && selectedWallet === wallet ? (
-                  <Loader2 className={`${styles['loadingIcon']} ${styles['icon']}`} />
-                ) : connectedWallet?.info.name === wallet.name ? (
-                  <CheckCircle2 className={styles['checkIcon']} />
-                ) : (
-                  <ArrowRight className={styles['arrowIcon']} />
-                )}
+            <Dialog.Close asChild>
+              <button className={styles['closeButton']} aria-label="Close">
+                <X />
               </button>
-            ))}
+            </Dialog.Close>
           </div>
-
-          <Separator.Root className={styles['separator']} />
-
-          <div className={styles['customWallet']}>
-            <Label.Root htmlFor="custom-wallet-url" className={styles['customWalletTitle']}>
-              Connect using a custom web wallet
-            </Label.Root>
-            <div className={styles['customWalletInput']}>
-              <input
-                id="custom-wallet-url"
-                type="url"
-                placeholder="https://"
-                value={customWalletUrl}
-                onChange={handleCustomWalletUrlChange}
-                onKeyUp={handleCustomWalletUrlEnter}
-                className={styles['input']}
-                aria-label="Custom Wallet URL"
-              />
-              <button
-                onClick={handleConnectCustomWallet}
-                disabled={connectionStatus !== ConnectionStatus.Idle || !customWalletUrl}
-                className={styles['connectButton']}
-                aria-label="Connect Custom Wallet"
-              >
-                {connectionStatus === ConnectionStatus.Connecting && selectedWallet?.name === "Custom Web Wallet" ? (
-                  <Loader2 className={`${styles['loadingIcon']} ${styles['icon']}`} />
-                ) : (
-                  <ExternalLink className={styles['externalLinkIcon']} />
-                )}
-                Connect
-              </button>
-            </div>
-          </div>
-
-          <Dialog.Close asChild>
-            <button className={styles['closeButton']} aria-label="Close">
-              <X />
-            </button>
-          </Dialog.Close>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
-  )
-}
+  );
+};

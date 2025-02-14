@@ -1,7 +1,56 @@
+/**
+ * Collection of default icons provided as embedded data URIs.
+ *
+ * Each icon is an SVG encoded as a base64 data URI, ensuring:
+ * - No external dependencies
+ * - Immediate availability
+ * - Cross-origin compatibility
+ * - Consistent rendering
+ *
+ * Icon Specifications:
+ * - Format: SVG
+ * - Size: 40x40 pixels
+ * - Style: Flat design with gradients
+ * - Colors: Brand-specific with white details
+ *
+ * @enum {string}
+ *
+ * @example
+ * ```typescript
+ * // Using default wallet icon
+ * const config = {
+ *   icon: DefaultIcon.Wallet
+ * };
+ *
+ * // Using default dApp icon with fallback
+ * const dappInfo = {
+ *   name: "My dApp",
+ *   icon: customIcon || DefaultIcon.Dapp
+ * };
+ * ```
+ */
 export enum DefaultIcon {
-  // Modern wallet icon with a gradient background
+  /**
+   * Generic wallet icon with purple gradient background.
+   * Shows a wallet/lock symbol in white.
+   * Used as fallback for wallets without custom icons.
+   *
+   * SVG Details:
+   * - Background: Purple gradient (#6e3ff3 to #5a32c7)
+   * - Icon: White wallet silhouette
+   * - Rounded corners with 20px radius
+   */
   Wallet = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImEiIHgxPSIwIiB5MT0iMCIgeDI9IjQwIiB5Mj0iNDAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjNmUzZmYzIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjNWEzMmM3Ii8+PC9saW5lYXJHcmFkaWVudD48cmFkaWFsR3JhZGllbnQgaWQ9ImIiIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9InJnYmEoMjU1LCAyNTUsIDI1NSwgMC40KSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0icmdiYSgyNTUsIDI1NSwgMjU1LCAwKSIvPjwvcmFkaWFsR3JhZGllbnQ+PC9kZWZzPjxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjIwIiBmaWxsPSJ1cmwoI2EpIi8+PHBhdGggZD0iTTI4IDEySDI1VjEwQzI1IDcuMjQgMjIuNzYgNSAyMCA1QzE3LjI0IDUgMTUgNy4yNCAxNSAxMFYxMkgxMkMxMiAxMiA5Ljc1IDEyIDkuNzUgMTJDOS43NSAxMiA5IDEyLjc1IDkgMTMuNzVWMjQuMjVDOSAyNS4yNSA5Ljc1IDI2IDkuNzUgMjZIMzAuMjVDMzEuMjUgMjYgMzIgMjUuMjUgMzIgMjQuMjVWMTMuNzVDMzIgMTIuNzUgMzEuMjUgMTIgMzAuMjUgMTJIMjhaTTE3IDEwSDE3Ljc1QzE3Ljc1IDguMzUgMTguODUgNyAyMC4yNSA3QzIxLjY1IDcgMjIuNzUgOC4zNSAyMi43NSAxMFYxMkgxN1YxMFoiIGZpbGw9IndoaXRlIi8+PGNpcmNsZSBjeD0iMjgiIGN5PSIxMiIgcj0iMTIiIGZpbGw9InVybCgjYikiLz48L3N2Zz4=',
-  
-  // Modern dapp icon with a gradient background
-  Dapp = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImEiIHgxPSIwIiB5MT0iMCIgeDI9IjQwIiB5Mj0iNDAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjM2I4MmY2Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMmE2NmNjIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9InVybCgjYSkiLz48cGF0aCBkPSJNMjAgOEMxMy4zNzMgOCA4IDEzLjM3MyA4IDIwQzggMjYuNjI3IDEzLjM3MyAzMiAyMCAzMkMyNi42MjcgMzIgMzIgMjYuNjI3IDMyIDIwQzMyIDEzLjM3MyAyNi42MjcgOCAyMCA4Wk0yMCAyOEMxNS41ODIgMjggMTIgMjQuNDE4IDEyIDIwQzEyIDE1LjU4MiAxNS41ODIgMTIgMjAgMTJDMjQuNDE4IDEyIDI4IDE1LjU4MiAyOCAyMEMyOCAyNC40MTggMjQuNDE4IDI4IDIwIDI4WiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMjAgMTZDMTcuNzkxIDE2IDE2IDE3Ljc5MSAxNiAyMEMxNiAyMi4yMDkgMTcuNzkxIDI0IDIwIDI0QzIyLjIwOSAyNCAyNCAyMi4yMDkgMjQgMjBDMjQgMTcuNzkxIDIyLjIwOSAxNiAyMCAxNloiIGZpbGw9IndoaXRlIi8+PC9zdmc+'
+
+  /**
+   * Generic dApp icon with blue gradient background.
+   * Shows a circular app symbol in white.
+   * Used as fallback for dApps without custom icons.
+   *
+   * SVG Details:
+   * - Background: Blue gradient (#3b82f6 to #2a66cc)
+   * - Icon: White circular app symbol
+   * - Rounded corners with 20px radius
+   */
+  Dapp = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImEiIHgxPSIwIiB5MT0iMCIgeDI9IjQwIiB5Mj0iNDAiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjM2I4MmY2Ii8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMmE2NmNjIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiByeD0iMjAiIGZpbGw9InVybCgjYSkiLz48cGF0aCBkPSJNMjAgOEMxMy4zNzMgOCA4IDEzLjM3MyA4IDIwQzggMjYuNjI3IDEzLjM3MyAzMiAyMCAzMkMyNi42MjcgMzIgMzIgMjYuNjI3IDMyIDIwQzMyIDEzLjM3MyAyNi42MjcgOCAyMCA4Wk0yMCAyOEMxNS41ODIgMjggMTIgMjQuNDE4IDEyIDIwQzEyIDE1LjU4MiAxNS41ODIgMTIgMjAgMTJDMjQuNDE4IDEyIDI4IDE1LjU4MiAyOCAyMEMyOCAyNC40MTggMjQuNDE4IDI4IDIwIDI4WiIgZmlsbD0id2hpdGUiLz48cGF0aCBkPSJNMjAgMTZDMTcuNzkxIDE2IDE2IDE3Ljc5MSAxNiAyMEMxNiAyMi4yMDkgMTcuNzkxIDI0IDIwIDI0QzIyLjIwOSAyNCAyNCAyMi4yMDkgMjQgMjBDMjQgMTcuNzkxIDIyLjIwOSAxNiAyMCAxNloiIGZpbGw9IndoaXRlIi8+PC9zdmc+',
 }
