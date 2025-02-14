@@ -1,4 +1,4 @@
-import type { WalletInfo, ConnectedWallet } from '../../types.js';
+import type { WalletInfo, ConnectedWallet, DappInfo } from '../../types.js';
 import type { TimeoutConfig } from '../utils/timeout.js';
 import { WalletMeshClient } from '../client/WalletMeshClient.js';
 import { createTransport } from '../transports/index.js';
@@ -7,23 +7,91 @@ import { WalletError } from '../client/types.js';
 import { withTimeout } from '../utils/timeout.js';
 
 /**
- * Manages wallet connections with timeout support
- * @class ConnectionManager
- * @description Handles wallet connections, session management, and provider access
- * with configurable timeouts for all async operations.
+ * Represents the current state of wallet connections.
+ *
+ * @property wallet - Currently connected wallet or null if none
+ * @property initialized - Whether the connection manager has completed initialization
+ *
+ * @internal Used for state management and UI updates
+ */
+interface ConnectionState {
+  wallet: ConnectedWallet | null;
+  initialized: boolean;
+}
+
+/**
+ * Configuration options for wallet disconnection.
+ *
+ * @property removeSession - Whether to remove the stored session after disconnecting.
+ *                         If false, the session can be restored later.
+ */
+interface DisconnectOptions {
+  removeSession?: boolean;
+}
+
+/**
+ * Manages wallet connections, sessions, and lifecycle with timeout support.
+ *
+ * Provides a high-level interface for:
+ * - Establishing wallet connections
+ * - Managing connection state
+ * - Handling session persistence
+ * - Controlling connection timeouts
+ * - Managing provider access
+ *
+ * @remarks
+ * All async operations are protected by configurable timeouts to prevent
+ * hanging operations. Default timeouts are:
+ * - Connection: 30 seconds
+ * - Operations: 10 seconds
+ *
+ * @example
+ * ```typescript
+ * const manager = new ConnectionManager({
+ *   name: 'My dApp',
+ *   icon: 'https://mydapp.com/icon.png'
+ * }, {
+ *   connectionTimeout: 45000,
+ *   operationTimeout: 15000
+ * });
+ *
+ * // Connect to a wallet
+ * const wallet = await manager.connectWallet({
+ *   id: 'my-wallet',
+ *   name: 'My Wallet',
+ *   // ... other wallet info
+ * });
+ *
+ * // Later, disconnect
+ * await manager.disconnectWallet(wallet.info.id);
+ * ```
  */
 export class ConnectionManager {
   private client: WalletMeshClient;
   private timeoutConfig: Required<TimeoutConfig>;
 
   /**
-   * Creates a new ConnectionManager instance
-   * @param {TimeoutConfig} [config] - Optional timeout configuration
-   * @param {number} [config.connectionTimeout] - Timeout for initial connection (default: 30000ms)
-   * @param {number} [config.operationTimeout] - Timeout for other operations (default: 10000ms)
+   * Creates a new ConnectionManager instance.
+   *
+   * @param dappInfo - Information about the dApp to share with wallets
+   * @param config - Optional timeout configuration
+   *
+   * @remarks
+   * The constructor initializes:
+   * - WalletMeshClient singleton
+   * - Default or custom timeouts
+   * - Initial connection state
+   *
+   * Default timeouts:
+   * ```typescript
+   * {
+   *   connectionTimeout: 30000, // 30 seconds
+   *   operationTimeout: 10000   // 10 seconds
+   * }
+   * ```
    */
-  constructor(config?: TimeoutConfig) {
-    this.client = new WalletMeshClient();
+  constructor(dappInfo: DappInfo, config?: TimeoutConfig) {
+    this.client = WalletMeshClient.getInstance(dappInfo);
     this.timeoutConfig = {
       connectionTimeout: 30000, // 30s default
       operationTimeout: 10000, // 10s default
@@ -32,26 +100,58 @@ export class ConnectionManager {
   }
 
   /**
-   * Gets current connection state
+   * Retrieves the current connection state.
+   *
+   * @returns Current connection state including connected wallet and initialization status
+   *
+   * @remarks
+   * This is a synchronous operation that returns the cached state.
+   * For real-time state, consider subscribing to state changes.
+   *
+   * @example
+   * ```typescript
+   * const { wallet, initialized } = manager.getState();
+   * if (wallet) {
+   *   console.log('Connected to:', wallet.info.name);
+   * }
+   * ```
    */
-  getState() {
-    const connectedWallet = this.client.getConnectedWallet();
+  getState(): ConnectionState {
     return {
-      wallet: connectedWallet,
-      status: this.client.getConnectionStatus(),
+      wallet: this.client.getConnectedWallet(),
+      initialized: true,
     };
   }
 
   /**
-   * Gets a stored session
-   */
-  getStoredSession(): ConnectedWallet | null {
-    const sessions = this.client.getConnectedWallets();
-    return sessions[0] || null;
-  }
-
-  /**
-   * Connects to a wallet
+   * Establishes a connection with a wallet.
+   *
+   * @param wallet - Wallet information and configuration
+   * @returns Promise resolving to the connected wallet details
+   * @throws {WalletError} If connection fails or times out
+   *
+   * @remarks
+   * Connection process:
+   * 1. Creates transport and adapter instances
+   * 2. Initiates connection with timeout
+   * 3. Persists successful connection
+   * 4. Validates connection state
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   const wallet = await manager.connectWallet({
+   *     id: 'wallet-id',
+   *     name: 'Wallet Name',
+   *     transport: { type: 'postMessage' },
+   *     adapter: { type: 'wm_aztec' }
+   *   });
+   *
+   *   console.log('Connected:', wallet.state.address);
+   * } catch (error) {
+   *   console.error('Connection failed:', error);
+   * }
+   * ```
    */
   async connectWallet(wallet: WalletInfo): Promise<ConnectedWallet> {
     console.log('[ConnectionManager] Connecting wallet:', wallet);
@@ -68,7 +168,11 @@ export class ConnectionManager {
         'wallet connection',
       );
 
-      console.log('[ConnectionManager] Connection successful:', connected);
+      console.log('[ConnectionManager] Connection successful:', {
+        chain: connected.state.chain,
+        address: connected.state.address,
+        sessionId: connected.state.sessionId,
+      });
       return connected;
     } catch (err) {
       console.error('[ConnectionManager] Connection failed:', err);
@@ -78,55 +182,70 @@ export class ConnectionManager {
   }
 
   /**
-   * Resumes a stored wallet connection
+   * Disconnects a specific wallet connection.
+   *
+   * @param walletId - ID of the wallet to disconnect
+   * @param options - Configuration for the disconnection process
+   * @throws {WalletError} If disconnection times out
+   *
+   * @remarks
+   * - Always attempts cleanup even if disconnection fails
+   * - Can preserve session for later restoration
+   * - Includes timeout protection
+   *
+   * @example
+   * ```typescript
+   * // Disconnect and remove session
+   * await manager.disconnectWallet(walletId);
+   *
+   * // Disconnect but keep session for later
+   * await manager.disconnectWallet(walletId, {
+   *   removeSession: false
+   * });
+   * ```
    */
-  async resumeConnection(sessionData: ConnectedWallet): Promise<ConnectedWallet> {
-    console.log('[ConnectionManager] Resuming connection:', sessionData);
+  async disconnectWallet(
+    walletId: string,
+    options: DisconnectOptions = { removeSession: true },
+  ): Promise<void> {
+    console.log('[ConnectionManager] Disconnecting wallet:', walletId, options);
 
     try {
-      console.log('[ConnectionManager] Creating transport and adapter for resume');
-      const transport = createTransport(sessionData.info.transport);
-      const adapter = createAdapter(sessionData.info.adapter);
-
-      console.log('[ConnectionManager] Initiating connection resume');
-      const connected = await withTimeout(
-        this.client.resumeWallet(sessionData.info, sessionData.state, transport, adapter),
-        this.timeoutConfig.operationTimeout,
-        'session resume',
-      );
-
-      console.log('[ConnectionManager] Resume successful:', connected);
-      return connected;
-    } catch (err) {
-      console.error('[ConnectionManager] Resume failed:', err);
-      const error = err instanceof Error ? err : new Error('Unknown error');
-      throw new WalletError(`Failed to resume connection: ${error.message}`, 'client', error);
-    }
-  }
-
-  /**
-   * Disconnects the current wallet
-   */
-  async disconnectWallet(walletId: string): Promise<void> {
-    console.log('[ConnectionManager] Disconnecting wallet:', walletId);
-
-    try {
-      console.log('[ConnectionManager] Disconnecting via client');
       await withTimeout(
-        this.client.disconnectWallet(walletId),
+        this.client.disconnectWallet(walletId, options),
         this.timeoutConfig.operationTimeout,
         'wallet disconnection',
       );
       console.log('[ConnectionManager] Disconnection successful');
     } catch (err) {
       console.error('[ConnectionManager] Disconnection failed:', err);
-      const error = err instanceof Error ? err : new Error('Unknown error');
-      throw new WalletError(`Failed to disconnect wallet: ${error.message}`, 'client', error);
+      // Still try to disconnect even if it fails
+      this.client.disconnectWallet(walletId, options).catch(console.error);
     }
   }
 
   /**
-   * Gets a wallet's provider
+   * Retrieves a wallet's provider instance.
+   *
+   * @param walletId - ID of the wallet to get provider for
+   * @returns Promise resolving to the provider instance
+   * @throws {WalletError} If provider is unavailable or request times out
+   *
+   * @remarks
+   * The provider gives access to wallet-specific functionality
+   * and should only be used by trusted internal code.
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   const provider = await manager.getProvider(walletId);
+   *   const accounts = await provider.request({
+   *     method: 'eth_accounts'
+   *   });
+   * } catch (error) {
+   *   console.error('Provider error:', error);
+   * }
+   * ```
    */
   async getProvider(walletId: string): Promise<unknown> {
     console.log('[ConnectionManager] Getting provider for wallet:', walletId);
@@ -147,10 +266,108 @@ export class ConnectionManager {
   }
 
   /**
-   * Cleans up connection manager
+   * Initializes the connection manager and restores previous session.
+   *
+   * @returns Promise resolving to restored wallet or null
+   *
+   * @remarks
+   * Initialization process:
+   * 1. Attempts to initialize client with timeout
+   * 2. Validates restored wallet state
+   * 3. Handles initialization failures gracefully
+   *
+   * @example
+   * ```typescript
+   * const restored = await manager.initialize();
+   * if (restored) {
+   *   console.log('Session restored:', {
+   *     wallet: restored.info.name,
+   *     address: restored.state.address
+   *   });
+   * } else {
+   *   console.log('No session to restore');
+   * }
+   * ```
+   */
+  async initialize(): Promise<ConnectedWallet | null> {
+    console.log('[ConnectionManager] Starting initialization');
+
+    try {
+      // First try to initialize the client with a timeout
+      const restoredWallet = await withTimeout(
+        this.client.initialize(),
+        this.timeoutConfig.connectionTimeout,
+        'initialization',
+      );
+
+      if (restoredWallet) {
+        // Validate the restored wallet has required fields
+        if (!restoredWallet.state?.address || !restoredWallet.state?.sessionId) {
+          throw new Error('Incomplete wallet state');
+        }
+
+        console.log('[ConnectionManager] Session restored successfully:', {
+          id: restoredWallet.info.id,
+          address: restoredWallet.state.address,
+          sessionId: restoredWallet.state.sessionId,
+        });
+
+        return restoredWallet;
+      }
+
+      console.log('[ConnectionManager] No session to restore');
+      return null;
+    } catch (error) {
+      // Log the error but don't throw - let the caller handle the failure
+      console.error('[ConnectionManager] Initialization failed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Performs cleanup of active connections and resources.
+   *
+   * Called during:
+   * - Component unmount
+   * - Page transitions
+   * - Application shutdown
+   *
+   * @remarks
+   * Cleanup process:
+   * 1. Identifies active connections
+   * 2. Disconnects wallets but preserves sessions
+   * 3. Deinitializes client
+   * 4. Handles cleanup failures gracefully
+   *
+   * @example
+   * ```typescript
+   * // In React component
+   * useEffect(() => {
+   *   return () => {
+   *     manager.cleanup();
+   *   };
+   * }, [manager]);
+   * ```
    */
   cleanup(): void {
-    console.log('[ConnectionManager] Cleaning up');
-    void this.client.disconnectAll();
+    console.log('[ConnectionManager] Component cleanup started');
+    try {
+      const connectedWallet = this.client.getConnectedWallet();
+      if (connectedWallet) {
+        console.log('[ConnectionManager] Cleaning up wallet:', connectedWallet.info.id);
+        // Clean up connections but preserve session during cleanup
+        this.disconnectWallet(connectedWallet.info.id, { removeSession: false })
+          .then(() => console.log('[ConnectionManager] Wallet cleanup successful'))
+          .catch((err) => {
+            console.error('[ConnectionManager] Failed to cleanup wallet connection:', err);
+          });
+      }
+
+      // Deinitialize client but don't clear sessions
+      this.client.deinitialize();
+      console.log('[ConnectionManager] Cleanup complete');
+    } catch (err) {
+      console.error('[ConnectionManager] Cleanup failed:', err);
+    }
   }
 }

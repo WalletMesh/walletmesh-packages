@@ -1,11 +1,9 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-  ],
+const config: UserConfig = {
+  plugins: react() as Plugin[],
   server: {
     host: '127.0.0.1',
     port: 5173,
@@ -19,4 +17,6 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@walletmesh/modal'],
   },
-});
+};
+
+export default defineConfig(config);

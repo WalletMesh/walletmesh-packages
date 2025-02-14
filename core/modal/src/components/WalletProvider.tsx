@@ -65,13 +65,13 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
   config,
   onError,
 }) => {
-  // Extract configuration
   const { wallets, dappInfo, timeoutConfig } = config;
   
-  // Initialize wallet connection logic
-  const walletLogic = useWalletLogic(
-    timeoutConfig ? { timeoutConfig } : {}
-  );
+  // Initialize wallet connection logic with dappInfo
+  const walletLogic = useWalletLogic({
+    dappInfo,
+    ...(timeoutConfig && { timeoutConfig })
+  });
 
   // Memoize context value to prevent unnecessary re-renders
   const contextValue = React.useMemo(() => ({

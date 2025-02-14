@@ -29,7 +29,7 @@ export class WalletErrorBoundary extends React.Component<Props, State> {
 
     if (error instanceof WalletError) {
       console.error(`[WalletMesh Error] ${error.message}`, {
-        context: error.context,
+        type: error.type,
         cause: error.cause,
       });
       toast.error(error.message);

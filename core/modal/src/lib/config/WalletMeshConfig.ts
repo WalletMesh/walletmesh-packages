@@ -4,12 +4,46 @@ import { WalletList } from '../../config/wallets.js';
 import { DefaultIcon } from '../constants/defaultIcons.js';
 
 /**
- * Configuration required by the WalletProvider
- * @interface WalletMeshProviderConfig
- * @property {WalletInfo[]} wallets - List of supported wallets
- * @property {DappInfo} dappInfo - Information about the DApp
- * @property {string[] | undefined} supportedChains - Optional list of supported chain IDs
- * @property {TimeoutConfig | undefined} timeoutConfig - Optional timeout configuration
+ * Configuration object for WalletMesh provider initialization.
+ *
+ * Defines the complete configuration required to initialize a WalletMesh
+ * provider, including supported wallets, dApp information, chain support,
+ * and operation timeouts.
+ *
+ * @property wallets - List of supported wallet configurations
+ * @property dappInfo - Information about the dApp for wallet display
+ * @property supportedChains - Optional list of supported chain IDs
+ * @property timeoutConfig - Optional timeout configuration
+ *
+ * @remarks
+ * Security considerations:
+ * - Icons must be data URIs to prevent XSS
+ * - Origins should be explicitly specified
+ * - Chain IDs should be validated
+ *
+ * @example
+ * ```typescript
+ * const config: WalletMeshProviderConfig = {
+ *   wallets: [
+ *     {
+ *       id: 'my-wallet',
+ *       name: 'My Wallet',
+ *       icon: 'data:image/svg+xml,...',
+ *       transport: { type: 'postMessage' },
+ *       adapter: { type: 'wm_aztec' }
+ *     }
+ *   ],
+ *   dappInfo: {
+ *     name: 'My dApp',
+ *     icon: 'data:image/svg+xml,...',
+ *     origin: 'https://mydapp.com'
+ *   },
+ *   supportedChains: ['aztec:testnet'],
+ *   timeoutConfig: {
+ *     connectionTimeout: 30000
+ *   }
+ * };
+ * ```
  */
 export interface WalletMeshProviderConfig {
   wallets: WalletInfo[];
@@ -19,10 +53,22 @@ export interface WalletMeshProviderConfig {
 }
 
 /**
- * Builder class for creating WalletMesh configurations
- * @class WalletMeshConfig
- * @description Provides a fluent API for configuring WalletMesh, including wallet list
- * management, DApp information, chain support settings, and operation timeouts.
+ * Builder for creating WalletMesh configurations with validation.
+ *
+ * Provides a fluent API for configuring WalletMesh components with:
+ * - Wallet list management
+ * - DApp information setup
+ * - Chain support configuration
+ * - Operation timeout settings
+ * - Built-in validation
+ * - Default configurations
+ *
+ * Key features:
+ * - Validates all configuration at build time
+ * - Enforces security best practices
+ * - Provides sensible defaults
+ * - Supports incremental configuration
+ * - Type-safe builder pattern
  *
  * @example
  * ```typescript
@@ -70,8 +116,30 @@ export class WalletMeshConfig {
   }
 
   /**
-   * Create a new WalletMeshConfig builder instance
-   * @returns {WalletMeshConfig} Builder instance initialized with default wallets
+   * Creates a new WalletMeshConfig builder instance.
+   *
+   * @returns A builder instance initialized with default settings
+   *
+   * @remarks
+   * Default configuration includes:
+   * - Built-in wallet list
+   * - Standard operation timeouts
+   * - No chain restrictions
+   * - No dApp information
+   *
+   * @example
+   * ```typescript
+   * // Basic usage
+   * const config = WalletMeshConfig.create()
+   *   .setDappInfo({ name: 'My dApp' })
+   *   .build();
+   *
+   * // Custom initialization
+   * const config = WalletMeshConfig.create()
+   *   .clearWallets()
+   *   .addWallets(customWallets)
+   *   .build();
+   * ```
    */
   static create(): WalletMeshConfig {
     return new WalletMeshConfig();
@@ -211,6 +279,21 @@ export class WalletMeshConfig {
    * @param {string} context - Context for error messages
    * @throws {Error} If the icon is provided but not a data URI
    */
+  /**
+   * Validates icon format for security.
+   *
+   * @param icon - Icon URL or data URI to validate
+   * @param context - Description for error messages
+   * @throws {Error} If icon is provided but not a data URI
+   *
+   * @remarks
+   * Security measures:
+   * - Requires data URIs to prevent XSS
+   * - Validates icon format before use
+   * - Provides clear error messages
+   *
+   * @internal
+   */
   private validateIcon(icon: string | undefined, context: string): void {
     if (icon && !this.isDataUri(icon)) {
       throw new Error(`${context} icon must be a data URI when provided. Received: ${icon}`);
@@ -223,6 +306,18 @@ export class WalletMeshConfig {
    * @param {string} uri - URI to check
    * @returns {boolean} True if the URI is a data URI
    */
+  /**
+   * Checks if a string is a valid data URI.
+   *
+   * @param uri - URI to validate
+   * @returns True if URI is a valid data URI
+   *
+   * @remarks
+   * Performs basic validation by checking the 'data:' prefix.
+   * Full MIME type validation could be added for stricter checking.
+   *
+   * @internal
+   */
   private isDataUri(uri: string): boolean {
     return uri.startsWith('data:');
   }
@@ -231,6 +326,19 @@ export class WalletMeshConfig {
    * Filter wallets based on supported chains
    * @private
    * @returns {WalletInfo[]} List of wallets supporting configured chains
+   */
+  /**
+   * Filters wallet list based on chain support.
+   *
+   * @returns List of wallets supporting configured chains
+   *
+   * @remarks
+   * Filtering logic:
+   * - Wallets without chain restrictions are always included
+   * - Wallets must support at least one configured chain
+   * - No chains configured means all wallets are included
+   *
+   * @internal
    */
   private filterWalletsByChain(): WalletInfo[] {
     if (!this.supportedChains || this.supportedChains.length === 0) {

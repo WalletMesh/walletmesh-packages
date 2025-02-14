@@ -8,6 +8,7 @@ WalletMesh provides a flexible and powerful solution for integrating multiple wa
   - [Connection Flow](#connection-flow)
   - [Message Flow](#message-flow)
   - [Disconnection Flow](#disconnection-flow)
+  - [Session Restoration Flow](#session-restoration-flow)
 - [Quick Start](#quick-start)
 - [Configuration](#configuration)
 - [Core Components](#core-components)
@@ -15,6 +16,7 @@ WalletMesh provides a flexible and powerful solution for integrating multiple wa
   - [Hooks](#hooks)
   - [Transport Layer](#transport-layer)
   - [Adapter Layer](#adapter-layer)
+- [Security Considerations](#security-considerations)
 - [Error Handling](#error-handling)
 - [TypeScript Support](#typescript-support)
 - [Advanced Usage](#advanced-usage)
@@ -43,26 +45,34 @@ pnpm add @walletmesh/modal
 sequenceDiagram
     participant User
     participant DApp
-    participant Modal
-    participant Provider
+    participant ConnMgr as ConnectionManager
+    participant Client as WalletMeshClient
+    participant Session as SessionManager
     participant Transport
+    participant Adapter
     participant Wallet
 
     User->>DApp: Click Connect Button
-    DApp->>Modal: openModal()
-    Modal->>User: Display Wallet Options
-    User->>Modal: Select Wallet
-    Modal->>Provider: connectWallet(config)
-    Provider->>Transport: connect()
-    Transport->>Wallet: Establish Connection
-    Wallet-->>Transport: Connection Established
-    Transport-->>Provider: Connected
-    Provider->>Wallet: Request Account
-    Wallet-->>User: Prompt for Approval
-    User->>Wallet: Approve Connection
-    Wallet-->>Provider: Account Details
-    Provider-->>Modal: Update State
-    Modal-->>DApp: Close & Update UI
+    DApp->>ConnMgr: connectWallet(config)
+    ConnMgr->>ConnMgr: Create Transport & Adapter
+    
+    rect rgb(200, 200, 255)
+        note right of ConnMgr: Timeout Wrapper
+        ConnMgr->>Client: connectWallet()
+        Client->>Transport: connect()
+        Transport->>Wallet: Establish Connection
+        Wallet-->>Transport: Connection Established
+        Client->>Adapter: connect(walletInfo)
+        Adapter->>Wallet: Request Account
+        Wallet-->>User: Prompt for Approval
+        User->>Wallet: Approve Connection
+        Wallet-->>Adapter: Account Details
+        Adapter-->>Client: Connected Wallet State
+    end
+
+    Client->>Session: setSession(persist=true)
+    Client-->>ConnMgr: Connection Success
+    ConnMgr-->>DApp: Update UI
 ```
 
 ## Message Flow
@@ -70,38 +80,113 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant DApp
-    participant Provider
+    participant ConnMgr as ConnectionManager
+    participant Client as WalletMeshClient
+    participant Adapter
     participant Transport
     participant Wallet
-    participant Adapter
+    participant Session as SessionManager
 
-    DApp->>Provider: Send Request
-    Provider->>Adapter: Format Request
-    Adapter->>Transport: Send Formatted Data
-    Transport->>Wallet: Transmit Message
-    Wallet-->>Transport: Response
-    Transport-->>Adapter: Raw Response
-    Adapter-->>Provider: Parsed Response
-    Provider-->>DApp: Final Result
+    DApp->>ConnMgr: send(message)
+    
+    rect rgb(200, 200, 255)
+        note right of ConnMgr: Timeout Wrapper
+        ConnMgr->>Client: getProvider()
+        Client->>Adapter: Format Request
+        Adapter->>Transport: Send Formatted Data
+        Transport->>Wallet: Transmit Message
+        Wallet-->>Transport: Response
+        Transport->>Adapter: Raw Response
+        Adapter->>Client: Parse Response
+    end
+    
+    Client->>Session: Update State
+    Client-->>ConnMgr: Response
+    ConnMgr-->>DApp: Final Result
+
+    rect rgb(255, 200, 200)
+        note right of ConnMgr: Error Handling
+        Transport-->>Client: Connection Error
+        Client->>Session: Update Status
+        Client-->>ConnMgr: Error Response
+        ConnMgr-->>DApp: Error Handler
+    end
 ```
 
 ## Disconnection Flow
 
 ```mermaid
 sequenceDiagram
-    participant User
     participant DApp
-    participant Provider
+    participant ConnMgr as ConnectionManager
+    participant Client as WalletMeshClient
+    participant Session as SessionManager
     participant Transport
+    participant Adapter
     participant Wallet
 
-    User->>DApp: Click Disconnect
-    DApp->>Provider: disconnectWallet()
-    Provider->>Transport: disconnect()
-    Transport->>Wallet: Close Connection
-    Wallet-->>Transport: Connection Closed
-    Transport-->>Provider: Disconnected
-    Provider-->>DApp: Update UI
+    DApp->>ConnMgr: disconnectWallet(id)
+    
+    rect rgb(200, 200, 255)
+        note right of ConnMgr: Timeout Wrapper
+        ConnMgr->>Client: disconnectWallet(id)
+        Client->>Adapter: disconnect()
+        Client->>Transport: disconnect()
+    end
+
+    opt Keep Session
+        Client->>Session: updateStatus(Resuming)
+    end
+
+    opt Remove Session
+        Client->>Session: removeSession()
+    end
+
+    par Cleanup
+        Transport->>Wallet: Close Connection
+        Adapter->>Wallet: Clear State
+    end
+
+    Client-->>ConnMgr: Disconnected
+    ConnMgr-->>DApp: Update UI
+```
+
+## Session Restoration Flow
+
+```mermaid
+sequenceDiagram
+    participant DApp
+    participant ConnMgr as ConnectionManager
+    participant Client as WalletMeshClient
+    participant Session as SessionManager
+    participant Transport
+    participant Adapter
+    participant Wallet
+
+    DApp->>ConnMgr: initialize()
+    ConnMgr->>Client: initialize()
+    Client->>Session: getSessions()
+    Session-->>Client: Stored Sessions
+
+    loop Retry Logic
+        rect rgb(200, 200, 255)
+            note right of Client: With Timeout
+            Client->>Transport: connect()
+            Transport->>Wallet: Restore Connection
+            Client->>Adapter: resume(session)
+            alt Success
+                Wallet-->>Transport: Connection Restored
+                Adapter-->>Client: Session Restored
+                Client->>Session: updateStatus(Connected)
+            else Failure
+                Client->>Transport: disconnect()
+                Client->>Client: Wait Backoff
+            end
+        end
+    end
+
+    Client-->>ConnMgr: Restoration Result
+    ConnMgr-->>DApp: Update UI
 ```
 
 ## Quick Start
@@ -147,6 +232,58 @@ function App() {
       {/* Your app content */}
     </WalletProvider>
   );
+}
+```
+
+## Security Considerations
+
+### Icon Security
+All icons (wallet and dApp) must be provided as data URIs to prevent XSS attacks:
+```typescript
+// Good - Using data URI
+icon: "data:image/svg+xml,..."
+
+// Bad - Using URL
+icon: "https://example.com/icon.svg" // Will throw error
+```
+
+### Origin Validation
+Always specify allowed origins for PostMessage transport:
+```typescript
+transport: {
+  type: TransportType.PostMessage,
+  options: {
+    // Explicitly set allowed origin
+    origin: "https://wallet.example.com"
+  }
+}
+```
+
+### Session Management
+Sessions are stored securely in localStorage with:
+- Validation of all stored data
+- Sanitization of restored sessions
+- Automatic session cleanup
+```typescript
+// Configure session timeout
+.setTimeout({
+  connectionTimeout: 30000,  // Connection timeout
+  operationTimeout: 10000   // Operation timeout
+})
+```
+
+### Error Handling
+Implement proper error handling for all operations:
+```typescript
+try {
+  await wallet.connect();
+} catch (error) {
+  if (error instanceof WalletError) {
+    // Handle specific error types
+    if (error.code === -30000) {
+      // Connection error
+    }
+  }
 }
 ```
 
@@ -198,7 +335,6 @@ interface WalletProviderProps {
   children: React.ReactNode;
 }
 
-```tsx
 // Usage
 <WalletProvider 
   config={config}
@@ -407,4 +543,3 @@ class CustomTransport implements Transport {
     return true;
   }
 }
-```
