@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Type Alias: WalletContextType
 
-> **WalletContextType**: `ReturnType`\<*typeof* `useWallet`\> & `object`
+> **WalletContextType**: `ReturnType`\<*typeof* `useWalletLogic`\> & `object`
 
-Defined in: [core/modal/src/components/WalletContext.tsx:5](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/components/WalletContext.tsx#L5)
+Defined in: [core/modal/src/components/WalletContext.tsx:5](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/components/WalletContext.tsx#L5)
 
 ## Type declaration
 

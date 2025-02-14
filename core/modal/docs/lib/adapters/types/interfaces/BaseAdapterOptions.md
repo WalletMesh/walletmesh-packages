@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: BaseAdapterOptions
 
-Defined in: [core/modal/src/lib/adapters/types.ts:167](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/adapters/types.ts#L167)
+Defined in: [core/modal/src/lib/adapters/types.ts:167](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/adapters/types.ts#L167)
 
 Base configuration options for wallet adapters.
 
@@ -36,6 +36,6 @@ const baseOptions: BaseAdapterOptions = {
 
 > `optional` **chainId**: `string`
 
-Defined in: [core/modal/src/lib/adapters/types.ts:169](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/adapters/types.ts#L169)
+Defined in: [core/modal/src/lib/adapters/types.ts:169](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/adapters/types.ts#L169)
 
 Target blockchain network identifier

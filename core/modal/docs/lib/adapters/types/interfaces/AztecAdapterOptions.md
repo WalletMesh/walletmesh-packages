@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: AztecAdapterOptions
 
-Defined in: [core/modal/src/lib/adapters/types.ts:215](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/adapters/types.ts#L215)
+Defined in: [core/modal/src/lib/adapters/types.ts:215](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/adapters/types.ts#L215)
 
 Configuration options specific to Aztec protocol adapters
  AztecAdapterOptions
@@ -35,7 +35,7 @@ const options: AztecAdapterOptions = {
 
 > `optional` **chainId**: `string`
 
-Defined in: [core/modal/src/lib/adapters/types.ts:169](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/adapters/types.ts#L169)
+Defined in: [core/modal/src/lib/adapters/types.ts:169](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/adapters/types.ts#L169)
 
 Chain ID for the adapter
 
@@ -49,7 +49,7 @@ Chain ID for the adapter
 
 > `optional` **rpcUrl**: `string`
 
-Defined in: [core/modal/src/lib/adapters/types.ts:216](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/adapters/types.ts#L216)
+Defined in: [core/modal/src/lib/adapters/types.ts:216](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/adapters/types.ts#L216)
 
 Aztec network RPC endpoint URL
 
@@ -59,6 +59,6 @@ Aztec network RPC endpoint URL
 
 > `optional` **networkId**: `string`
 
-Defined in: [core/modal/src/lib/adapters/types.ts:217](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/adapters/types.ts#L217)
+Defined in: [core/modal/src/lib/adapters/types.ts:217](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/adapters/types.ts#L217)
 
 Aztec network identifier

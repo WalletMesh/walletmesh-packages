@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshProviderConfig
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L48)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/config/WalletMeshConfig.ts#L48)
 
 Configuration object for WalletMesh provider initialization.
 
@@ -52,7 +52,7 @@ const config: WalletMeshProviderConfig = {
 
 > **wallets**: [`WalletInfo`](../../../../index/interfaces/WalletInfo.md)[]
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L49)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/config/WalletMeshConfig.ts#L49)
 
 List of supported wallet configurations
 
@@ -62,7 +62,7 @@ List of supported wallet configurations
 
 > **dappInfo**: [`DappInfo`](../../../../index/interfaces/DappInfo.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L50)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/config/WalletMeshConfig.ts#L50)
 
 Information about the dApp for wallet display
 
@@ -72,7 +72,7 @@ Information about the dApp for wallet display
 
 > **supportedChains**: `undefined` \| `string`[]
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L51)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/config/WalletMeshConfig.ts#L51)
 
 Optional list of supported chain IDs
 
@@ -82,6 +82,6 @@ Optional list of supported chain IDs
 
 > `optional` **timeoutConfig**: [`TimeoutConfig`](../../../utils/timeout/interfaces/TimeoutConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L52)
+Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/config/WalletMeshConfig.ts#L52)
 
 Optional timeout configuration

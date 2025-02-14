@@ -1,8 +1,8 @@
-[**@walletmesh/modal v0.0.5**](README.md)
+[**@walletmesh/modal v0.0.6**](README.md)
 
 ***
 
-# @walletmesh/modal v0.0.5
+# @walletmesh/modal v0.0.6
 
 ## Modules
 

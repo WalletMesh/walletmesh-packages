@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletSession
 
-Defined in: [core/modal/src/lib/client/types.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L70)
+Defined in: [core/modal/src/lib/client/types.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/client/types.ts#L70)
 
 Represents an active wallet session with its associated state and configurations.
 
@@ -32,7 +32,7 @@ const session: WalletSession = {
 
 > `optional` **transport**: [`Transport`](../../../transports/types/interfaces/Transport.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L71)
+Defined in: [core/modal/src/lib/client/types.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/client/types.ts#L71)
 
 Optional transport instance for communication
 
@@ -42,7 +42,7 @@ Optional transport instance for communication
 
 > `optional` **adapter**: [`Adapter`](../../../adapters/types/interfaces/Adapter.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:72](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L72)
+Defined in: [core/modal/src/lib/client/types.ts:72](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/client/types.ts#L72)
 
 Optional adapter instance for protocol handling
 
@@ -52,7 +52,7 @@ Optional adapter instance for protocol handling
 
 > **wallet**: [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L73)
+Defined in: [core/modal/src/lib/client/types.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/client/types.ts#L73)
 
 The connected wallet instance
 
@@ -62,7 +62,7 @@ The connected wallet instance
 
 > **status**: [`ConnectionStatus`](../../../../index/enumerations/ConnectionStatus.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L74)
+Defined in: [core/modal/src/lib/client/types.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/client/types.ts#L74)
 
 Current connection status
 
@@ -72,7 +72,7 @@ Current connection status
 
 > `optional` **lastError**: `Error`
 
-Defined in: [core/modal/src/lib/client/types.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L75)
+Defined in: [core/modal/src/lib/client/types.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/client/types.ts#L75)
 
 Last error encountered, if any
 
@@ -82,7 +82,7 @@ Last error encountered, if any
 
 > **transportConfig**: [`TransportConfig`](../../../transports/types/interfaces/TransportConfig.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L77)
+Defined in: [core/modal/src/lib/client/types.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/client/types.ts#L77)
 
 Configuration for transport reconnection
 
@@ -92,6 +92,6 @@ Configuration for transport reconnection
 
 > **adapterConfig**: [`AdapterConfig`](../../../adapters/types/type-aliases/AdapterConfig.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:78](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L78)
+Defined in: [core/modal/src/lib/client/types.ts:78](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/client/types.ts#L78)
 
 Configuration for adapter reconnection

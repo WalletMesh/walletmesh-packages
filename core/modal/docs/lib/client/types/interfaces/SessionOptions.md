@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionOptions
 
-Defined in: [core/modal/src/lib/client/types.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L136)
+Defined in: [core/modal/src/lib/client/types.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/client/types.ts#L136)
 
 Configuration options for session storage behavior.
 
@@ -24,7 +24,7 @@ const options: SessionOptions = {
 
 > `optional` **storageKey**: `string`
 
-Defined in: [core/modal/src/lib/client/types.ts:138](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L138)
+Defined in: [core/modal/src/lib/client/types.ts:138](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/client/types.ts#L138)
 
 Custom key for storing sessions in localStorage.
   Defaults to 'walletmesh_wallet_session' if not specified.

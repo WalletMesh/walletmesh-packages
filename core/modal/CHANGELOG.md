@@ -1,5 +1,11 @@
 # @walletmesh/modal
 
+## 0.0.6
+
+### Patch Changes
+
+- e802804: Fix typedoc generation
+
 ## 0.0.5
 
 ### Patch Changes

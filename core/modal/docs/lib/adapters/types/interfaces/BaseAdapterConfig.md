@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: BaseAdapterConfig\<T\>
 
-Defined in: [core/modal/src/lib/adapters/types.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/adapters/types.ts#L227)
+Defined in: [core/modal/src/lib/adapters/types.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/adapters/types.ts#L227)
 
 Base configuration for wallet adapters
  BaseAdapterConfig
@@ -23,7 +23,7 @@ Type of adapter options extending BaseAdapterOptions
 
 > **type**: [`AdapterType`](../enumerations/AdapterType.md)
 
-Defined in: [core/modal/src/lib/adapters/types.ts:228](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/adapters/types.ts#L228)
+Defined in: [core/modal/src/lib/adapters/types.ts:228](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/adapters/types.ts#L228)
 
 Type of wallet adapter to use
 
@@ -33,6 +33,6 @@ Type of wallet adapter to use
 
 > `optional` **options**: `T`
 
-Defined in: [core/modal/src/lib/adapters/types.ts:229](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/adapters/types.ts#L229)
+Defined in: [core/modal/src/lib/adapters/types.ts:229](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/adapters/types.ts#L229)
 
 Configuration options for the adapter

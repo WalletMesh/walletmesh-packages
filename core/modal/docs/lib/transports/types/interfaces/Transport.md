@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: Transport
 
-Defined in: [core/modal/src/lib/transports/types.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/transports/types.ts#L47)
+Defined in: [core/modal/src/lib/transports/types.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/transports/types.ts#L47)
 
 Core interface for managing communication between dApp and wallet.
 
@@ -61,7 +61,7 @@ class MyTransport implements Transport {
 
 > **connect**(): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/transports/types.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/transports/types.ts#L68)
+Defined in: [core/modal/src/lib/transports/types.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/transports/types.ts#L68)
 
 Initializes and establishes the transport connection.
 
@@ -97,7 +97,7 @@ console.log('Connected:', transport.isConnected());
 
 > **disconnect**(): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/transports/types.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/transports/types.ts#L93)
+Defined in: [core/modal/src/lib/transports/types.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/transports/types.ts#L93)
 
 Terminates the transport connection and cleans up resources.
 
@@ -136,7 +136,7 @@ try {
 
 > **send**(`data`): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/transports/types.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/transports/types.ts#L118)
+Defined in: [core/modal/src/lib/transports/types.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/transports/types.ts#L118)
 
 Sends data to the connected wallet.
 
@@ -182,7 +182,7 @@ await transport.send({
 
 > **onMessage**(`handler`): `void`
 
-Defined in: [core/modal/src/lib/transports/types.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/transports/types.ts#L149)
+Defined in: [core/modal/src/lib/transports/types.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/transports/types.ts#L149)
 
 Registers a callback to handle incoming messages.
 
@@ -230,7 +230,7 @@ transport.onMessage((data) => {
 
 > **isConnected**(): `boolean`
 
-Defined in: [core/modal/src/lib/transports/types.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/transports/types.ts#L168)
+Defined in: [core/modal/src/lib/transports/types.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/f5841069e665bcf8ac8875096f377637e03131d0/core/modal/src/lib/transports/types.ts#L168)
 
 Checks if the transport connection is active.
 
