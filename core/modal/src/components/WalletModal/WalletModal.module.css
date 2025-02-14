@@ -33,20 +33,6 @@
   --transition-default: all 0.2s ease;
 }
 
-/* Accessible but visually hidden elements */
-.dialogTitle,
-.dialogDescription {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
 .content {
   background-color: var(--background);
   border-radius: var(--space-2);
@@ -76,12 +62,19 @@
   }
 }
 
-/* Visual title */
-.title {
-  margin: 0 0 var(--space-4) 0;
-  font-weight: 500;
-  color: var(--primary);
-  font-size: 17px;
+.dialogTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+.dialogDescription {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: var(--space-2) 0 var(--space-4);
+  padding: 0;
 }
 
 .walletList {
@@ -245,6 +238,14 @@
 
 .closeButton:focus {
   box-shadow: 0 0 0 2px var(--primary);
+}
+
+.modalInner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .loadingIcon {

@@ -42,19 +42,6 @@ export const WalletInfoModal: React.FC<WalletInfoModalProps> = ({ onDisconnect }
 
   return (
     <>
-      <Dialog.Title 
-        className={styles['dialogTitle']} 
-        id="wallet-info-title"
-      >
-        Connected Wallet Information
-      </Dialog.Title>
-      <Dialog.Description
-        className={styles['dialogDescription']}
-        id="wallet-info-description"
-      >
-        View and manage your connected wallet settings
-      </Dialog.Description>
-
       <div className={styles['walletCard']}>
         <img
           src={connectedWallet.info.icon ?? DefaultIcon.Wallet}

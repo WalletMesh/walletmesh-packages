@@ -156,23 +156,9 @@ export const WalletModal: React.FC = () => {
     }
   };
 
-  const renderWalletList = () => (
-    <>
-      <Dialog.Title 
-        className={styles['dialogTitle']} 
-        id="wallet-modal-title"
-      >
-        Connect a Wallet
-      </Dialog.Title>
-      <Dialog.Description 
-        className={styles['dialogDescription']} 
-        id="wallet-modal-description"
-      >
-        Choose a wallet to connect with your application
-      </Dialog.Description>
-
-      <h2 className={styles['title']}>Connect Wallet</h2>
-
+  // Content for wallet selection view
+  const ConnectWalletContent = () => (
+    <div className={styles['modalContent']}>
       <div
         className={styles['walletList']}
         role="listbox"
@@ -262,13 +248,7 @@ export const WalletModal: React.FC = () => {
           </button>
         </div>
       </div>
-
-      <Dialog.Close asChild>
-        <button className={styles['closeButton']} aria-label="Close">
-          <X />
-        </button>
-      </Dialog.Close>
-    </>
+    </div>
   );
 
   return (
@@ -288,14 +268,32 @@ export const WalletModal: React.FC = () => {
             }
             closeModal();
           }}
-          aria-labelledby={connectedWallet ? "wallet-info-title" : "wallet-modal-title"}
-          aria-describedby={connectedWallet ? "wallet-info-description" : "wallet-modal-description"}
+          aria-labelledby="modal-title"
+          aria-describedby="modal-description"
         >
-          {connectedWallet ? (
-            <WalletInfoModal onDisconnect={handleDisconnect} />
-          ) : (
-            renderWalletList()
-          )}
+          <Dialog.Title className={styles['dialogTitle']}>
+            {connectedWallet ? 'Connected Wallet Information' : 'Connect a Wallet'}
+          </Dialog.Title>
+          <Dialog.Description className={styles['dialogDescription']}>
+            {connectedWallet ? 
+              'View and manage your connected wallet settings' : 
+              'Choose a wallet to connect with your application'
+            }
+          </Dialog.Description>
+          
+          <div className={styles['modalInner']}>
+            {connectedWallet ? (
+              <WalletInfoModal onDisconnect={handleDisconnect} />
+            ) : (
+              <ConnectWalletContent />
+            )}
+
+            <Dialog.Close asChild>
+              <button className={styles['closeButton']} aria-label="Close">
+                <X />
+              </button>
+            </Dialog.Close>
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
