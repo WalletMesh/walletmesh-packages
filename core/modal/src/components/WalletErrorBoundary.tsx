@@ -3,13 +3,13 @@ import { WalletError } from "../lib/client/types.js";
 import { toast } from "react-hot-toast";
 import styles from "./WalletErrorBoundary.module.css";
 
-interface Props {
+export interface Props {
   children: React.ReactNode;
   fallback?: React.ReactNode;
   onError?: ((error: Error) => void) | undefined;
 }
 
-interface State {
+export interface State {
   hasError: boolean;
   error: Error | null;
 }

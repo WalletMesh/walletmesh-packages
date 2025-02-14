@@ -13,19 +13,18 @@ import { useWalletLogic } from "../hooks/useWalletLogic.js";
  * @property {WalletMeshProviderConfig} config - WalletMesh configuration including wallet and dapp settings
  * @property {(error: Error) => void} [onError] - Optional error handler for wallet-related errors
  */
-interface WalletProviderProps {
+export interface WalletProviderProps {
   children: React.ReactNode;
   config: WalletMeshProviderConfig;
   onError?: (error: Error) => void;
 }
 
 /**
- * Provider component that enables wallet integration in a React application
- * @component WalletProvider
- * @description This component wraps your application and provides wallet
- * connectivity features through React Context. It handles wallet connections,
- * state management, and renders the wallet selection modal. Supports configurable
- * timeouts for wallet operations.
+ * Provider component that enables wallet integration in a React application.
+ * This component wraps your application and provides wallet connectivity features 
+ * through React Context. It handles wallet connections, state management, and 
+ * renders the wallet selection modal. Supports configurable timeouts for wallet 
+ * operations.
  * 
  * @example
  * ```tsx
@@ -56,9 +55,6 @@ interface WalletProviderProps {
  *   );
  * }
  * ```
- * 
- * @param {WalletProviderProps} props - Component props
- * @returns {JSX.Element} Provider component with modal and error handling
  */
 export const WalletProvider: React.FC<WalletProviderProps> = ({
   children,

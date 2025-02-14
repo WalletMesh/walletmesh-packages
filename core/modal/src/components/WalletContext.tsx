@@ -2,7 +2,7 @@ import { createContext, useContext } from "react";
 import { useWalletLogic } from "../hooks/useWalletLogic.js";
 import type { WalletInfo, DappInfo } from "../types.js";
 
-type WalletContextType = ReturnType<typeof useWalletLogic> & {
+export type WalletContextType = ReturnType<typeof useWalletLogic> & {
   wallets: WalletInfo[];
   dappInfo: DappInfo;
 };

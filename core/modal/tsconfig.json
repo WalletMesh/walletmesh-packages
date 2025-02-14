@@ -11,13 +11,10 @@
     "types": []
   },
   "include": [
-    "src/**/*",
-    "src/declaration.d.ts",
-    "src/index.ts",
-    "src/lib/constants/**/*"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist",
+    "dist"
   ]
 }
