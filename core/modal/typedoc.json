@@ -9,10 +9,10 @@
     "src/components/WalletErrorBoundary.tsx",
     "src/components/WalletContext.tsx",
     "src/lib/client/types.ts",
-    "src/lib/adapters/types.ts",
     "src/lib/transports/types.ts",
-    "src/lib/config/WalletMeshConfig.ts",
-    "src/lib/utils/timeout.ts"
+    "src/lib/utils/timeout.ts",
+    "src/hooks/useWallet.ts",
+    "src/lib/connectors/types.ts"
   ],
   "out": "docs",
   "exclude": [

@@ -1,5 +1,4 @@
-import type { AdapterConfig } from './lib/adapters/types.js';
-import type { TransportConfig } from './lib/transports/types.js';
+import type { ConnectorConfig } from './lib/connectors/types.js';
 
 /**
  * Information about a DApp integrating with WalletMesh.
@@ -41,21 +40,19 @@ export interface DappInfo {
 /**
  * Configuration for a supported wallet integration.
  *
- * Defines how to connect to and interact with a specific wallet,
- * including its communication method and protocol adapter.
+ * Defines how to connect to and interact with a specific wallet.
+ * Each wallet implementation manages its own communication transport internally.
  *
  * @property id - Unique identifier for the wallet
  * @property name - User-friendly display name
  * @property icon - Optional data URI of wallet icon
  * @property url - Optional wallet website/install URL
  * @property supportedChains - Optional list of supported chain IDs
- * @property adapter - Chain-specific adapter configuration
- * @property transport - Communication transport configuration
+ * @property connector - Chain-specific connector configuration
  *
  * @remarks
  * Security requirements:
  * - icon must be a data URI
- * - transport origin must be specified for PostMessage
  * - chain IDs should be validated
  *
  * @example
@@ -66,13 +63,9 @@ export interface DappInfo {
  *   icon: "data:image/svg+xml,...",  // Must be data URI
  *   url: "https://wallet.example.com",
  *   supportedChains: ["aztec:testnet", "aztec:mainnet"],
- *   adapter: {
+ *   connector: {
  *     type: "walletmesh_aztec",
  *     options: { chainId: "aztec:testnet" }
- *   },
- *   transport: {
- *     type: "postmessage",
- *     options: { origin: "https://wallet.example.com" }
  *   }
  * };
  * ```
@@ -83,8 +76,7 @@ export interface WalletInfo {
   icon?: string;
   url?: string;
   supportedChains?: string[];
-  adapter: AdapterConfig;
-  transport: TransportConfig;
+  connector: ConnectorConfig;
 }
 
 /**
@@ -99,7 +91,7 @@ export interface WalletInfo {
  *
  * @remarks
  * - All fields are optional for type flexibility
- * - chain format depends on adapter type
+ * - chain format depends on connector type
  * - address format depends on chain
  * - sessionId is used for reconnection
  *

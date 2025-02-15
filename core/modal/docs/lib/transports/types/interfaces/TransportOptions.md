@@ -6,39 +6,9 @@
 
 # Interface: TransportOptions
 
-Defined in: [core/modal/src/lib/transports/types.ts:256](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/transports/types.ts#L256)
+Defined in: [core/modal/src/lib/transports/types.ts:4](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/transports/types.ts#L4)
 
-Configuration options for transport initialization.
-
-Provides a unified interface for configuring different transport types.
-Each transport implementation uses the relevant options for its type.
-
-## Remarks
-
-Option requirements vary by transport type:
-- PostMessage: Requires origin for security
-- WebSocket: Requires URL for connection
-- Extension: Requires extensionId for communication
-- Null: No options required
-
-## Example
-
-```typescript
-// PostMessage options
-const postMessageOpts: TransportOptions = {
-  origin: "https://wallet.example.com"
-};
-
-// WebSocket options
-const wsOpts: TransportOptions = {
-  url: "wss://wallet.example.com/ws"
-};
-
-// Extension options
-const extOpts: TransportOptions = {
-  extensionId: "wallet-extension-id"
-};
-```
+Options for transport configuration
 
 ## Properties
 
@@ -46,9 +16,7 @@ const extOpts: TransportOptions = {
 
 > `optional` **url**: `string`
 
-Defined in: [core/modal/src/lib/transports/types.ts:258](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/transports/types.ts#L258)
-
-WebSocket connection URL
+Defined in: [core/modal/src/lib/transports/types.ts:5](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/transports/types.ts#L5)
 
 ***
 
@@ -56,9 +24,7 @@ WebSocket connection URL
 
 > `optional` **origin**: `string`
 
-Defined in: [core/modal/src/lib/transports/types.ts:260](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/transports/types.ts#L260)
-
-Allowed origin for PostMessage security
+Defined in: [core/modal/src/lib/transports/types.ts:6](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/transports/types.ts#L6)
 
 ***
 
@@ -66,6 +32,4 @@ Allowed origin for PostMessage security
 
 > `optional` **extensionId**: `string`
 
-Defined in: [core/modal/src/lib/transports/types.ts:262](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/transports/types.ts#L262)
-
-Browser extension identifier
+Defined in: [core/modal/src/lib/transports/types.ts:7](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/transports/types.ts#L7)

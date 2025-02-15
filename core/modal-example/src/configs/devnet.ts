@@ -5,6 +5,6 @@ export const devnetConfig = WalletMeshConfig.create()
     name: 'Example dApp',
     description: 'A production example of WalletMesh integration',
     origin: 'http://localhost:3000',
-    icon: '',
+    rpcUrl: 'http://127.0.0.1:8080',
   })
   .build();

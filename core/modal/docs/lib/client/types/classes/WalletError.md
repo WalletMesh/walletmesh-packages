@@ -6,9 +6,9 @@
 
 # Class: WalletError
 
-Defined in: [core/modal/src/lib/client/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L32)
+Defined in: [core/modal/src/lib/client/types.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L45)
 
-Custom error class for wallet-related errors.
+Specialized error class for wallet-related errors.
 
 Extends the native Error class to provide additional context about wallet errors.
 Categorizes errors by type to help with error handling and debugging.
@@ -33,7 +33,7 @@ throw new WalletError(
 
 > **new WalletError**(`message`, `type`, `cause`?): [`WalletError`](WalletError.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L37)
+Defined in: [core/modal/src/lib/client/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L50)
 
 #### Parameters
 
@@ -43,7 +43,7 @@ Defined in: [core/modal/src/lib/client/types.ts:37](https://github.com/WalletMes
 
 ##### type
 
-`"client"` | `"adapter"` | `"transport"` | `"storage"` | `"timeout"`
+`"client"` | `"connector"` | `"transport"` | `"storage"` | `"timeout"`
 
 ##### cause?
 
@@ -63,7 +63,7 @@ Defined in: [core/modal/src/lib/client/types.ts:37](https://github.com/WalletMes
 
 > **name**: `string` = `'WalletError'`
 
-Defined in: [core/modal/src/lib/client/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L33)
+Defined in: [core/modal/src/lib/client/types.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L46)
 
 Always set to 'WalletError'
 
@@ -77,7 +77,7 @@ Always set to 'WalletError'
 
 > `optional` **cause**: `Error`
 
-Defined in: [core/modal/src/lib/client/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L34)
+Defined in: [core/modal/src/lib/client/types.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L47)
 
 Optional underlying error that caused this error
 
@@ -89,13 +89,13 @@ Optional underlying error that caused this error
 
 ### type
 
-> `readonly` **type**: `"client"` \| `"adapter"` \| `"transport"` \| `"storage"` \| `"timeout"`
+> `readonly` **type**: `"client"` \| `"connector"` \| `"transport"` \| `"storage"` \| `"timeout"`
 
-Defined in: [core/modal/src/lib/client/types.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/types.ts#L35)
+Defined in: [core/modal/src/lib/client/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L48)
 
 Categorizes the error source:
   - 'client': Errors from the WalletMeshClient
-  - 'adapter': Errors from wallet protocol adapters
+  - 'connector': Errors from wallet protocol connectors
   - 'transport': Communication/messaging errors
   - 'storage': Session storage/persistence errors
   - 'timeout': Operation timeout errors

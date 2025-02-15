@@ -1,1 +1,1 @@
-export { WalletMeshClient } from './WalletMeshClient.js';
+export { WalletMeshClient } from './client.js';

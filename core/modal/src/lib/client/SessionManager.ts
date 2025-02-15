@@ -1,13 +1,42 @@
+/**
+ * @file SessionManager.ts
+ * @packageDocumentation
+ * Session management and persistence layer for the WalletMesh Modal package.
+ *
+ * This module provides robust session management capabilities including:
+ * - Secure session storage in localStorage
+ * - Session validation and sanitization
+ * - Automatic session recovery
+ * - Error resilient persistence
+ */
+
 import type { WalletSession } from './types.js';
-import { ConnectionStatus, type ConnectedWallet } from '../../types.js';
+import { ConnectionStatus } from '../../types.js';
 import { WalletError } from './types.js';
-import type { TransportConfig } from '../transports/types.js';
-import type { AdapterConfig } from '../adapters/types.js';
 
 const STORAGE_KEY = 'walletmesh_wallet_session';
 
 /**
- * Manages wallet sessions and their persistence in local storage.
+ * Core session management class for WalletMesh.
+ *
+ * The SessionManager is responsible for maintaining wallet connection state
+ * across page reloads and browser sessions. It provides:
+ *
+ * Storage Management:
+ * - Secure persistence to localStorage
+ * - Session data validation
+ * - Automatic cleanup of invalid data
+ *
+ * Session Lifecycle:
+ * - Creation and updates
+ * - Status management
+ * - Graceful restoration
+ * - Safe deletion
+ *
+ * Error Handling:
+ * - Validation errors
+ * - Storage failures
+ * - Corrupted data recovery
  *
  * Handles the lifecycle of wallet sessions including:
  * - Session creation and updates
@@ -33,12 +62,36 @@ const STORAGE_KEY = 'walletmesh_wallet_session';
 export class SessionManager {
   private sessions = new Map<string, WalletSession>();
 
+  /**
+   * Creates a new SessionManager instance.
+   *
+   * @remarks
+   * The constructor automatically attempts to restore any existing
+   * sessions from localStorage, setting their status to Resuming.
+   *
+   * @example
+   * ```typescript
+   * // Create a session manager
+   * const sessionManager = new SessionManager();
+   *
+   * // Check for existing sessions
+   * const sessions = sessionManager.getSessions();
+   * console.log('Restored sessions:', sessions.length);
+   * ```
+   */
   constructor() {
     this.restoreSessions();
   }
 
   /**
    * Creates a new session or updates an existing one.
+   *
+   * This method handles both creation and updates, ensuring data consistency
+   * and proper persistence. It:
+   * - Validates the session state
+   * - Creates a deep copy to prevent mutations
+   * - Persists to storage if requested
+   * - Maintains the in-memory session map
    *
    * @param walletId - Unique identifier for the wallet
    * @param session - Session data to store
@@ -55,7 +108,7 @@ export class SessionManager {
    *   wallet: connectedWallet,
    *   status: ConnectionStatus.Connected,
    *   transportConfig: config,
-   *   adapterConfig: config
+   *   connectorConfig: config
    * }, true);
    * ```
    */
@@ -110,6 +163,12 @@ export class SessionManager {
 
   /**
    * Updates the connection status of a session.
+   *
+   * This method provides atomic status updates with optional error tracking.
+   * It's used to manage the session lifecycle including:
+   * - Connection state changes
+   * - Error state updates
+   * - Automatic persistence
    *
    * @param walletId - Unique identifier for the wallet
    * @param status - New connection status
@@ -196,6 +255,24 @@ export class SessionManager {
   /**
    * Validates session data structure and required fields.
    *
+   * This method ensures data integrity by checking:
+   * - Required fields presence
+   * - Data type correctness
+   * - Relationship validity
+   *
+   * @throws {WalletError} Indirectly through calling methods if validation fails
+   *
+   * Security considerations:
+   * - Prevents injection of malformed data
+   * - Ensures required security fields exist
+   * - Validates relationships between fields
+   *
+   * Common validation failures:
+   * - Missing wallet info
+   * - Invalid state fields
+   * - Missing security tokens
+   *
+   *
    * @param session - Session data to validate
    * @returns True if the session data is valid, false otherwise
    *
@@ -203,9 +280,10 @@ export class SessionManager {
    * This method checks for required fields including:
    * - Wallet ID and info
    * - State fields (address, sessionId, chain)
-   * - Transport and adapter configurations
+   * - Transport and connector configurations
+   * - Timestamp for session tracking
    */
-  private validateSessionData(session: Partial<StoredSession>): boolean {
+  private validateSessionData(session: Partial<WalletSession>): boolean {
     // Required session fields
     const hasValidStructure = !!(
       session?.id &&
@@ -213,8 +291,8 @@ export class SessionManager {
       session?.wallet?.state?.address &&
       session?.wallet?.state?.sessionId &&
       session?.wallet?.state?.chain &&
-      session?.transportConfig &&
-      session?.adapterConfig
+      session?.wallet?.info?.connector &&
+      session?.timestamp
     );
 
     if (!hasValidStructure) {
@@ -224,8 +302,8 @@ export class SessionManager {
         hasAddress: !!session?.wallet?.state?.address,
         hasSessionId: !!session?.wallet?.state?.sessionId,
         hasChain: !!session?.wallet?.state?.chain,
-        hasTransport: !!session?.transportConfig,
-        hasAdapter: !!session?.adapterConfig,
+        hasConnector: !!session?.wallet?.info?.connector,
+        hasTimestamp: !!session?.timestamp,
       });
       return false;
     }
@@ -266,6 +344,23 @@ export class SessionManager {
   /**
    * Persists valid sessions to localStorage.
    *
+   * This method provides atomic persistence with validation:
+   * 1. Validates all sessions before persistence
+   * 2. Filters out invalid sessions
+   * 3. Serializes remaining valid sessions
+   * 4. Performs atomic storage update
+   *
+   * Error handling:
+   * - Storage quota exceeded
+   * - Serialization failures
+   * - Validation errors
+   *
+   * Recovery strategy:
+   * - Maintains in-memory state on failure
+   * - Logs detailed error information
+   * - Throws typed errors for handling
+   *
+   *
    * @internal
    * This method:
    * - Filters out invalid sessions
@@ -285,16 +380,12 @@ export class SessionManager {
       }
 
       const serializedSessions = Array.from(this.sessions.entries())
-        .map(
-          ([id, session]): StoredSession => ({
-            id,
-            wallet: session.wallet,
-            status: session.status,
-            timestamp: Date.now(),
-            transportConfig: session.transportConfig || session.wallet.info.transport,
-            adapterConfig: session.adapterConfig || session.wallet.info.adapter,
-          }),
-        )
+        .map(([id, session]) => ({
+          id,
+          wallet: session.wallet,
+          status: session.status,
+          timestamp: session.timestamp || Date.now(),
+        }))
         .filter((session) => this.validateSessionData(session));
 
       // Only persist if we have valid sessions
@@ -315,6 +406,23 @@ export class SessionManager {
   /**
    * Attempts to restore sessions from localStorage.
    *
+   * This method implements a robust restoration process:
+   * 1. Reads stored session data
+   * 2. Validates each session independently
+   * 3. Restores valid sessions to memory
+   * 4. Handles corrupted data gracefully
+   *
+   * Recovery features:
+   * - Partial session restoration
+   * - Corrupted data cleanup
+   * - Detailed error logging
+   *
+   * Security measures:
+   * - Validates session structure
+   * - Sanitizes restored data
+   * - Maintains session isolation
+   *
+   *
    * @internal
    * This method:
    * - Loads stored session data
@@ -333,7 +441,7 @@ export class SessionManager {
         return;
       }
 
-      let parsedData: StoredSession[];
+      let parsedData: WalletSession[];
       try {
         parsedData = JSON.parse(stored);
         if (!Array.isArray(parsedData)) {
@@ -354,10 +462,10 @@ export class SessionManager {
           }
 
           const restoredSession: WalletSession = {
+            id: session.id,
             wallet: session.wallet,
             status: ConnectionStatus.Resuming,
-            transportConfig: session.transportConfig,
-            adapterConfig: session.adapterConfig,
+            timestamp: session.timestamp || Date.now(),
           };
 
           this.sessions.set(session.id, restoredSession);
@@ -383,19 +491,4 @@ export class SessionManager {
       // Don't clear storage on general errors
     }
   }
-}
-
-/**
- * Represents a session as stored in localStorage
- *
- * @internal
- * This interface defines the shape of serialized session data
- */
-interface StoredSession {
-  id: string;
-  wallet: ConnectedWallet;
-  status: ConnectionStatus;
-  timestamp: number;
-  transportConfig: TransportConfig;
-  adapterConfig: AdapterConfig;
 }

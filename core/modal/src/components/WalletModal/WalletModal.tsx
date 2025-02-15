@@ -8,8 +8,7 @@ import { useWalletContext } from "../WalletContext.js"
 import { WalletInfoModal } from "./WalletInfoModal.js"
 import type { WalletInfo } from "../../types.js"
 import { ConnectionStatus } from "../../types.js"
-import { TransportType } from "../../lib/transports/types.js"
-import { AdapterType } from "../../lib/adapters/types.js"
+import { ConnectorType } from "../../lib/connectors/types.js"
 import { Loader2, ExternalLink, ArrowRight, X } from "lucide-react"
 import styles from "./WalletModal.module.css"
 import { toast } from "react-hot-toast"
@@ -66,11 +65,8 @@ export const WalletModal: React.FC = () => {
       id: "custom-web-wallet",
       name: "Custom Web Wallet",
       url: url,
-      transport: {
-        type: TransportType.PostMessage
-      },
-      adapter: {
-        type: AdapterType.WalletMeshAztec,
+      connector: {
+        type: ConnectorType.FakeAztec,
         options: {
           chainId: "aztec:devnet"
         }

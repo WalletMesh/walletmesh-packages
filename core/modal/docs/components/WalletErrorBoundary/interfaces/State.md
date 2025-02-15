@@ -6,7 +6,7 @@
 
 # Interface: State
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:12](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/components/WalletErrorBoundary.tsx#L12)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:12](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/components/WalletErrorBoundary.tsx#L12)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:12](https://githu
 
 > **hasError**: `boolean`
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:13](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/components/WalletErrorBoundary.tsx#L13)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:13](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/components/WalletErrorBoundary.tsx#L13)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:13](https://githu
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:14](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/components/WalletErrorBoundary.tsx#L14)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:14](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/components/WalletErrorBoundary.tsx#L14)

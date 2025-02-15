@@ -1,13 +1,28 @@
+/**
+ * @file ConnectionManager.ts
+ * @packageDocumentation
+ * High-level connection management layer for the WalletMesh Modal package.
+ *
+ * This module provides a wrapper around the core client that adds:
+ * - Timeout protection for all async operations
+ * - Simplified connection interface for dApps
+ * - Automatic error handling and recovery
+ * - Connection state management
+ *
+ * The ConnectionManager acts as the primary interface between dApps
+ * and the WalletMesh system, abstracting away the complexity of
+ * direct client interactions.
+ */
+
 import type { WalletInfo, ConnectedWallet, DappInfo } from '../../types.js';
 import type { TimeoutConfig } from '../utils/timeout.js';
-import { WalletMeshClient } from '../client/WalletMeshClient.js';
-import { createTransport } from '../transports/index.js';
-import { createAdapter } from '../adapters/createAdapter.js';
+import { WalletMeshClient } from '../client/client.js';
+import { createConnector } from '../connectors/createConnector.js';
 import { WalletError } from '../client/types.js';
 import { withTimeout } from '../utils/timeout.js';
 
 /**
- * Represents the current state of wallet connections.
+ * Internal interface representing the current state of wallet connections.
  *
  * @property wallet - Currently connected wallet or null if none
  * @property initialized - Whether the connection manager has completed initialization
@@ -30,7 +45,29 @@ interface DisconnectOptions {
 }
 
 /**
- * Manages wallet connections, sessions, and lifecycle with timeout support.
+ * High-level manager for wallet connections with timeout protection.
+ *
+ * The ConnectionManager serves as the primary interface for dApps to interact
+ * with the WalletMesh system. It coordinates between multiple components:
+ *
+ * Architecture Role:
+ * - Wraps WalletMeshClient for simplified access
+ * - Manages connection timeouts and retries
+ * - Coordinates session persistence
+ * - Handles error recovery
+ *
+ * Key Features:
+ * - Automatic timeout protection
+ * - Connection state management
+ * - Session restoration
+ * - Error resilience
+ * - Resource cleanup
+ *
+ * Security Features:
+ * - Timeout protection against hanging operations
+ * - Validation of wallet states
+ * - Safe cleanup procedures
+ * - Error boundary protection
  *
  * Provides a high-level interface for:
  * - Establishing wallet connections
@@ -132,7 +169,7 @@ export class ConnectionManager {
    *
    * @remarks
    * Connection process:
-   * 1. Creates transport and adapter instances
+   * 1. Creates connector instance
    * 2. Initiates connection with timeout
    * 3. Persists successful connection
    * 4. Validates connection state
@@ -143,8 +180,7 @@ export class ConnectionManager {
    *   const wallet = await manager.connectWallet({
    *     id: 'wallet-id',
    *     name: 'Wallet Name',
-   *     transport: { type: 'postMessage' },
-   *     adapter: { type: 'wm_aztec' }
+   *     connector: { type: 'wm_aztec' }
    *   });
    *
    *   console.log('Connected:', wallet.state.address);
@@ -153,27 +189,24 @@ export class ConnectionManager {
    * }
    * ```
    */
-  async connectWallet(wallet: WalletInfo): Promise<ConnectedWallet> {
-    console.log('[ConnectionManager] Connecting wallet:', wallet);
+  async connectWallet(walletInfo: WalletInfo): Promise<ConnectedWallet> {
+    console.log('[ConnectionManager] Connecting wallet:', walletInfo);
 
     try {
-      console.log('[ConnectionManager] Creating transport and adapter');
-      const transport = createTransport(wallet.transport);
-      const adapter = createAdapter(wallet.adapter);
-
-      console.log('[ConnectionManager] Initiating wallet connection');
-      const connected = await withTimeout(
-        this.client.connectWallet(wallet, transport, adapter, { persist: true }),
+      console.log('[ConnectionManager] Creating connector and initiating connection');
+      const connector = createConnector(walletInfo.connector);
+      const wallet = await withTimeout(
+        this.client.connectWallet(walletInfo, connector),
         this.timeoutConfig.connectionTimeout,
         'wallet connection',
       );
 
       console.log('[ConnectionManager] Connection successful:', {
-        chain: connected.state.chain,
-        address: connected.state.address,
-        sessionId: connected.state.sessionId,
+        chain: wallet.state.chain,
+        address: wallet.state.address,
+        sessionId: wallet.state.sessionId,
       });
-      return connected;
+      return wallet;
     } catch (err) {
       console.error('[ConnectionManager] Connection failed:', err);
       const error = err instanceof Error ? err : new Error('Unknown error');
@@ -212,7 +245,7 @@ export class ConnectionManager {
 
     try {
       await withTimeout(
-        this.client.disconnectWallet(walletId, options),
+        this.client.disconnectWallet(walletId),
         this.timeoutConfig.operationTimeout,
         'wallet disconnection',
       );
@@ -220,7 +253,7 @@ export class ConnectionManager {
     } catch (err) {
       console.error('[ConnectionManager] Disconnection failed:', err);
       // Still try to disconnect even if it fails
-      this.client.disconnectWallet(walletId, options).catch(console.error);
+      this.client.disconnectWallet(walletId).catch(console.error);
     }
   }
 

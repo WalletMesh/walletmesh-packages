@@ -6,24 +6,50 @@
 
 # Class: WalletMeshClient
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L32)
+Defined in: [core/modal/src/lib/client/client.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L56)
 
-Main client class for managing wallet connections and sessions
+Core client class for managing wallet connections and sessions.
 
-Handles wallet connection lifecycle, session management, and state persistence.
-Implements a singleton pattern to ensure only one instance exists per application.
+The WalletMeshClient is the central coordinator for wallet interactions, responsible for:
+- Managing wallet connections and disconnections
+- Handling session persistence and restoration
+- Coordinating between connectors and session management
+- Providing wallet state and provider access
+
+## Remarks
+
+This class implements the Singleton pattern to ensure consistent state management
+across the application. It automatically handles page transitions and cleanup
+through browser lifecycle events.
+
+Key features:
+- Automatic session restoration
+- Connection state management
+- Page transition handling
+- Error recovery with retry logic
 
 ## Example
 
 ```typescript
+// Get client instance
 const client = WalletMeshClient.getInstance({
-  name: 'My dApp',
-  icon: 'https://mydapp.com/icon.png'
+  name: 'My DApp',
+  description: 'DApp Description',
+  icon: 'data:image/svg+xml,...'
 });
 
+// Initialize and restore sessions
 await client.initialize();
-const wallet = await client.connectWallet(walletInfo);
+
+// Connect a wallet
+const connector = createConnector(walletConfig);
+const wallet = await client.connectWallet(walletInfo, connector);
 ```
+
+## See
+
+ - SessionManager for session persistence details
+ - [Connector](../../lib/connectors/types/interfaces/Connector.md) for wallet connection handling
 
 ## Implements
 
@@ -35,9 +61,9 @@ const wallet = await client.connectWallet(walletInfo);
 
 > `static` **getInstance**(`dappInfo`): [`WalletMeshClient`](WalletMeshClient.md)
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L57)
+Defined in: [core/modal/src/lib/client/client.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L85)
 
-Gets or creates a WalletMeshClient instance. Implements singleton pattern.
+Gets or creates the singleton instance of WalletMeshClient.
 
 #### Parameters
 
@@ -45,7 +71,7 @@ Gets or creates a WalletMeshClient instance. Implements singleton pattern.
 
 [`DappInfo`](../interfaces/DappInfo.md)
 
-Information about the dApp to be shared with wallets
+Information about the dApp to share with wallets
 
 #### Returns
 
@@ -53,38 +79,20 @@ Information about the dApp to be shared with wallets
 
 The singleton WalletMeshClient instance
 
-#### Throws
+#### Remarks
 
-If initialization fails
+This method ensures only one client instance exists and automatically
+sets up cleanup handlers for page transitions.
 
 #### Example
 
 ```typescript
 const client = WalletMeshClient.getInstance({
-  name: 'My dApp',
-  icon: 'https://mydapp.com/icon.png'
+  name: 'My DApp',
+  description: 'DApp Description',
+  icon: 'data:image/svg+xml,...'
 });
 ```
-
-***
-
-### resetInstance()
-
-> `static` **resetInstance**(): `void`
-
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L86)
-
-Resets the singleton instance for testing or hard resets.
-Cleans up existing connections and clears internal state.
-
-#### Returns
-
-`void`
-
-#### Remarks
-
-This method should only be used for testing or when a complete reset is required.
-Normal application flow should use [prepareForTransition](WalletMeshClient.md#preparefortransition) instead.
 
 ***
 
@@ -92,9 +100,9 @@ Normal application flow should use [prepareForTransition](WalletMeshClient.md#pr
 
 > **initialize**(): `Promise`\<`null` \| [`ConnectedWallet`](../interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:209](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L209)
+Defined in: [core/modal/src/lib/client/client.ts:215](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L215)
 
-Initialize the client and attempt to restore any saved session.
+Initializes the client and attempts to restore any saved sessions.
 
 #### Returns
 
@@ -108,9 +116,9 @@ If initialization fails
 
 #### Remarks
 
-This method should be called before any other client operations.
-If already initialized, it will return the current state.
-If initialization is in progress, it will wait for completion.
+- Prevents multiple simultaneous initializations
+- Attempts to restore the most recently active session
+- Handles initialization failures gracefully
 
 #### Example
 
@@ -132,19 +140,19 @@ if (restoredWallet) {
 
 > **getDappInfo**(): `Readonly`\<[`DappInfo`](../interfaces/DappInfo.md)\>
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L283)
+Defined in: [core/modal/src/lib/client/client.ts:286](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L286)
 
-Get the DApp information provided during instantiation.
+Gets the dApp information associated with this client instance.
 
 #### Returns
 
 `Readonly`\<[`DappInfo`](../interfaces/DappInfo.md)\>
 
-Readonly DApp information object
+Immutable dApp information object
 
 #### Remarks
 
-The returned object is frozen to prevent modifications.
+The returned object is frozen to prevent modifications after initialization.
 
 #### Implementation of
 
@@ -154,11 +162,11 @@ The returned object is frozen to prevent modifications.
 
 ### connectWallet()
 
-> **connectWallet**(`walletInfo`, `transport`, `adapter`, `options`): `Promise`\<[`ConnectedWallet`](../interfaces/ConnectedWallet.md)\>
+> **connectWallet**(`walletInfo`, `connector`): `Promise`\<[`ConnectedWallet`](../interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:313](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L313)
+Defined in: [core/modal/src/lib/client/client.ts:317](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L317)
 
-Connect to a wallet using the provided configuration.
+Establishes a connection with a wallet.
 
 #### Parameters
 
@@ -166,29 +174,13 @@ Connect to a wallet using the provided configuration.
 
 [`WalletInfo`](../interfaces/WalletInfo.md)
 
-Information about the wallet to connect to
+Information about the wallet to connect
 
-##### transport
+##### connector
 
-[`Transport`](../../lib/transports/types/interfaces/Transport.md)
+[`Connector`](../../lib/connectors/types/interfaces/Connector.md)
 
-Transport instance for wallet communication
-
-##### adapter
-
-[`Adapter`](../../lib/adapters/types/interfaces/Adapter.md)
-
-Adapter instance for wallet protocol handling
-
-##### options
-
-Connection options
-
-###### persist
-
-`boolean`
-
-Whether to persist the session (default: false)
+The connector instance to use
 
 #### Returns
 
@@ -198,31 +190,27 @@ Promise resolving to the connected wallet
 
 #### Throws
 
-If client is not initialized
+If client is not initialized or connection fails
 
-#### Throws
+#### Remarks
 
-If wallet ID is missing
-
-#### Throws
-
-If wallet is already connected
-
-#### Throws
-
-If connection fails
+- Requires prior client initialization
+- Prevents duplicate connections
+- Automatically persists successful connections
+- Handles cleanup on failure
 
 #### Example
 
 ```typescript
-const transport = createTransport(config);
-const adapter = createAdapter(config);
-const wallet = await client.connectWallet(
-  walletInfo,
-  transport,
-  adapter,
-  { persist: true }
-);
+const connector = createConnector({
+  type: 'wm_aztec',
+  options: { chainId: 'aztec:testnet' }
+});
+
+const wallet = await client.connectWallet({
+  id: 'my-wallet',
+  name: 'My Wallet'
+}, connector);
 ```
 
 #### Implementation of
@@ -233,11 +221,11 @@ const wallet = await client.connectWallet(
 
 ### disconnectWallet()
 
-> **disconnectWallet**(`walletId`, `options`): `Promise`\<`void`\>
+> **disconnectWallet**(`walletId`): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:425](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L425)
+Defined in: [core/modal/src/lib/client/client.ts:367](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L367)
 
-Disconnects a specific wallet and optionally removes its session.
+Disconnects a wallet and cleans up its resources.
 
 #### Parameters
 
@@ -247,33 +235,20 @@ Disconnects a specific wallet and optionally removes its session.
 
 ID of the wallet to disconnect
 
-##### options
-
-Disconnection options
-
-###### removeSession
-
-`boolean`
-
-Whether to remove the session from storage (default: true)
-
 #### Returns
 
 `Promise`\<`void`\>
 
 #### Remarks
 
-If removeSession is false, the session will be kept for potential restoration.
-The method includes a 5-second timeout for cleanup operations.
+- Implements timeout protection (5 seconds)
+- Always removes session even if disconnect fails
+- Handles cleanup of connector resources
 
 #### Example
 
 ```typescript
-// Disconnect and remove session
-await client.disconnectWallet(walletId);
-
-// Disconnect but keep session for later
-await client.disconnectWallet(walletId, { removeSession: false });
+await client.disconnectWallet('wallet-123');
 ```
 
 #### Implementation of
@@ -286,9 +261,9 @@ await client.disconnectWallet(walletId, { removeSession: false });
 
 > **getProvider**(`walletId`): `Promise`\<`unknown`\>
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:481](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L481)
+Defined in: [core/modal/src/lib/client/client.ts:409](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L409)
 
-Gets provider for a specific wallet.
+Gets the blockchain-specific provider for a connected wallet.
 
 #### Parameters
 
@@ -296,21 +271,25 @@ Gets provider for a specific wallet.
 
 `string`
 
-ID of the wallet to get provider for
+ID of the wallet
 
 #### Returns
 
 `Promise`\<`unknown`\>
 
-Promise resolving to the wallet provider
+Promise resolving to the provider instance
 
 #### Throws
 
-If no session is found for the wallet
+If no session exists or no connector is available
 
-#### Throws
+#### Example
 
-If no adapter is available for the wallet
+```typescript
+const provider = await client.getProvider('wallet-123');
+// Use provider for blockchain interactions
+const accounts = await provider.request({ method: 'eth_accounts' });
+```
 
 #### Implementation of
 
@@ -322,21 +301,21 @@ If no adapter is available for the wallet
 
 > **getConnectedWallets**(): [`ConnectedWallet`](../interfaces/ConnectedWallet.md)[]
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:527](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L527)
+Defined in: [core/modal/src/lib/client/client.ts:457](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L457)
 
-Lists all currently connected wallets.
+Gets all currently connected wallets.
 
 #### Returns
 
 [`ConnectedWallet`](../interfaces/ConnectedWallet.md)[]
 
-Array of connected wallet objects
+Array of connected wallet instances
 
 #### Example
 
 ```typescript
 const wallets = client.getConnectedWallets();
-console.log('Connected wallets:', wallets.map(w => w.info.id));
+console.log('Connected wallets:', wallets.length);
 ```
 
 #### Implementation of
@@ -349,9 +328,9 @@ console.log('Connected wallets:', wallets.map(w => w.info.id));
 
 > **getConnectedWallet**(): `null` \| [`ConnectedWallet`](../interfaces/ConnectedWallet.md)
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:547](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L547)
+Defined in: [core/modal/src/lib/client/client.ts:480](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L480)
 
-Gets the currently connected wallet, if any.
+Gets the primary connected wallet.
 
 #### Returns
 
@@ -359,12 +338,16 @@ Gets the currently connected wallet, if any.
 
 The currently connected wallet or null if none connected
 
+#### Remarks
+
+Returns the first connected wallet if multiple are connected.
+
 #### Example
 
 ```typescript
 const wallet = client.getConnectedWallet();
 if (wallet) {
-  console.log('Connected to:', wallet.info.id);
+  console.log('Connected to:', wallet.info.name);
 }
 ```
 
@@ -378,25 +361,26 @@ if (wallet) {
 
 > **handleError**(`error`): `void`
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:561](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L561)
+Defined in: [core/modal/src/lib/client/client.ts:495](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L495)
 
-**`Internal`**
-
-Handles wallet errors by logging them.
+Handles wallet-related errors.
 
 #### Parameters
 
 ##### error
 
-[`WalletError`](../../lib/client/types/classes/WalletError.md)
+`Error`
 
-The wallet error to handle
-
-This is an internal method used for error handling.
+The error to handle
 
 #### Returns
 
 `void`
+
+#### Remarks
+
+Currently logs errors to console, but could be extended
+to implement more sophisticated error handling.
 
 #### Implementation of
 
@@ -408,9 +392,9 @@ This is an internal method used for error handling.
 
 > **prepareForTransition**(): `void`
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:583](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L583)
+Defined in: [core/modal/src/lib/client/client.ts:510](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L510)
 
-Prepares the client for page transitions by preserving wallet states.
+Prepares the client for a page transition.
 
 #### Returns
 
@@ -418,20 +402,12 @@ Prepares the client for page transitions by preserving wallet states.
 
 #### Remarks
 
-This method should be called before page transitions to ensure wallet
-sessions can be properly restored after navigation.
+- Updates connected sessions to resumable state
+- Preserves sessions for restoration after navigation
+- Resets internal state
 
-- Marks connected sessions as resumable
-- Preserves session data for restoration
-- Resets internal state without clearing sessions
-
-#### Example
-
-```typescript
-// Before page navigation
-client.prepareForTransition();
-// Navigate to new page...
-```
+This method is automatically called on 'beforeunload'
+and 'pagehide' events.
 
 ***
 
@@ -439,9 +415,7 @@ client.prepareForTransition();
 
 > **deinitialize**(): `void`
 
-Defined in: [core/modal/src/lib/client/WalletMeshClient.ts:608](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/client/WalletMeshClient.ts#L608)
-
-Deinitialize the client.
+Defined in: [core/modal/src/lib/client/client.ts:530](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L530)
 
 #### Returns
 
@@ -449,8 +423,27 @@ Deinitialize the client.
 
 #### Deprecated
 
-Use [prepareForTransition](WalletMeshClient.md#preparefortransition) instead for page transitions
+Use [prepareForTransition](WalletMeshClient.md#preparefortransition) instead
+Legacy method for backwards compatibility
+
+***
+
+### resetInstance()
+
+> `static` **resetInstance**(): `void`
+
+Defined in: [core/modal/src/lib/client/client.ts:545](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L545)
+
+**`Internal`**
+
+Resets the singleton instance.
+
+#### Returns
+
+`void`
 
 #### Remarks
 
-This method is kept for backwards compatibility but will be removed in a future version.
+- Resets the current instance's state
+- Clears the singleton instance
+- Primarily used for testing
