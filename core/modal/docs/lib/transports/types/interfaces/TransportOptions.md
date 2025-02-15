@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: TransportOptions
 
-Defined in: [core/modal/src/lib/transports/types.ts:4](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/transports/types.ts#L4)
+Defined in: [core/modal/src/lib/transports/types.ts:4](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L4)
 
 Options for transport configuration
 
@@ -16,7 +16,7 @@ Options for transport configuration
 
 > `optional` **url**: `string`
 
-Defined in: [core/modal/src/lib/transports/types.ts:5](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/transports/types.ts#L5)
+Defined in: [core/modal/src/lib/transports/types.ts:5](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L5)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal/src/lib/transports/types.ts:5](https://github.com/Wallet
 
 > `optional` **origin**: `string`
 
-Defined in: [core/modal/src/lib/transports/types.ts:6](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/transports/types.ts#L6)
+Defined in: [core/modal/src/lib/transports/types.ts:6](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L6)
 
 ***
 
@@ -32,4 +32,4 @@ Defined in: [core/modal/src/lib/transports/types.ts:6](https://github.com/Wallet
 
 > `optional` **extensionId**: `string`
 
-Defined in: [core/modal/src/lib/transports/types.ts:7](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/transports/types.ts#L7)
+Defined in: [core/modal/src/lib/transports/types.ts:7](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L7)

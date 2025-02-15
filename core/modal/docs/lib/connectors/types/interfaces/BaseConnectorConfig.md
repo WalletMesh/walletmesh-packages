@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: BaseConnectorConfig\<T\>
 
-Defined in: [core/modal/src/lib/connectors/types.ts:109](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/connectors/types.ts#L109)
+Defined in: [core/modal/src/lib/connectors/types.ts:109](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/connectors/types.ts#L109)
 
 Base configuration for wallet connectors
 
@@ -20,7 +20,7 @@ Base configuration for wallet connectors
 
 > **type**: [`ConnectorType`](../enumerations/ConnectorType.md)
 
-Defined in: [core/modal/src/lib/connectors/types.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/connectors/types.ts#L110)
+Defined in: [core/modal/src/lib/connectors/types.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/connectors/types.ts#L110)
 
 ***
 
@@ -28,4 +28,4 @@ Defined in: [core/modal/src/lib/connectors/types.ts:110](https://github.com/Wall
 
 > `optional` **options**: `T`
 
-Defined in: [core/modal/src/lib/connectors/types.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/connectors/types.ts#L111)
+Defined in: [core/modal/src/lib/connectors/types.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/connectors/types.ts#L111)

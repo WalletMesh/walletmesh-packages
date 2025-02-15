@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: WalletError
 
-Defined in: [core/modal/src/lib/client/types.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L45)
+Defined in: [core/modal/src/lib/client/types.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L45)
 
 Specialized error class for wallet-related errors.
 
@@ -33,7 +33,7 @@ throw new WalletError(
 
 > **new WalletError**(`message`, `type`, `cause`?): [`WalletError`](WalletError.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L50)
+Defined in: [core/modal/src/lib/client/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L50)
 
 #### Parameters
 
@@ -63,7 +63,7 @@ Defined in: [core/modal/src/lib/client/types.ts:50](https://github.com/WalletMes
 
 > **name**: `string` = `'WalletError'`
 
-Defined in: [core/modal/src/lib/client/types.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L46)
+Defined in: [core/modal/src/lib/client/types.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L46)
 
 Always set to 'WalletError'
 
@@ -77,7 +77,7 @@ Always set to 'WalletError'
 
 > `optional` **cause**: `Error`
 
-Defined in: [core/modal/src/lib/client/types.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L47)
+Defined in: [core/modal/src/lib/client/types.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L47)
 
 Optional underlying error that caused this error
 
@@ -91,7 +91,7 @@ Optional underlying error that caused this error
 
 > `readonly` **type**: `"client"` \| `"connector"` \| `"transport"` \| `"storage"` \| `"timeout"`
 
-Defined in: [core/modal/src/lib/client/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L48)
+Defined in: [core/modal/src/lib/client/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L48)
 
 Categorizes the error source:
   - 'client': Errors from the WalletMeshClient

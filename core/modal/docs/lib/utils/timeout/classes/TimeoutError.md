@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: TimeoutError
 
-Defined in: [core/modal/src/lib/utils/timeout.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/utils/timeout.ts#L49)
+Defined in: [core/modal/src/lib/utils/timeout.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/utils/timeout.ts#L49)
 
 Specialized error for timeout conditions.
 
@@ -36,7 +36,7 @@ try {
 
 > **new TimeoutError**(`operation`, `timeout`): [`TimeoutError`](TimeoutError.md)
 
-Defined in: [core/modal/src/lib/utils/timeout.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/utils/timeout.ts#L50)
+Defined in: [core/modal/src/lib/utils/timeout.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/utils/timeout.ts#L50)
 
 #### Parameters
 

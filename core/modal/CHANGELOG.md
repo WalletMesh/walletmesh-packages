@@ -1,5 +1,12 @@
 # @walletmesh/modal
 
+## 0.0.6
+
+### Patch Changes
+
+- eb793a4: Connector and transport refactoring
+- e802804: Fix typedoc generation
+
 ## 0.0.5
 
 ### Patch Changes
