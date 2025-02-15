@@ -1,5 +1,4 @@
 import type { ConnectorConfig } from './lib/connectors/types.js';
-import type { TransportConfig } from './lib/transports/types.js';
 
 /**
  * Information about a DApp integrating with WalletMesh.
@@ -41,8 +40,8 @@ export interface DappInfo {
 /**
  * Configuration for a supported wallet integration.
  *
- * Defines how to connect to and interact with a specific wallet,
- * including its communication method and protocol connector.
+ * Defines how to connect to and interact with a specific wallet.
+ * Each wallet implementation manages its own communication transport internally.
  *
  * @property id - Unique identifier for the wallet
  * @property name - User-friendly display name
@@ -50,12 +49,10 @@ export interface DappInfo {
  * @property url - Optional wallet website/install URL
  * @property supportedChains - Optional list of supported chain IDs
  * @property connector - Chain-specific connector configuration
- * @property transport - Communication transport configuration
  *
  * @remarks
  * Security requirements:
  * - icon must be a data URI
- * - transport origin must be specified for PostMessage
  * - chain IDs should be validated
  *
  * @example
@@ -69,10 +66,6 @@ export interface DappInfo {
  *   connector: {
  *     type: "walletmesh_aztec",
  *     options: { chainId: "aztec:testnet" }
- *   },
- *   transport: {
- *     type: "postmessage",
- *     options: { origin: "https://wallet.example.com" }
  *   }
  * };
  * ```
@@ -84,7 +77,6 @@ export interface WalletInfo {
   url?: string;
   supportedChains?: string[];
   connector: ConnectorConfig;
-  transport: TransportConfig;
 }
 
 /**

@@ -30,7 +30,7 @@
  * }
  * ```
  */
-import { TimeoutError } from './utils/timeout.js';
+import { TimeoutError } from '../utils/timeout.js';
 
 export class WalletError extends Error {
   override name = 'WalletError';

@@ -13,9 +13,11 @@
 ## Classes
 
 - [WalletMeshClient](classes/WalletMeshClient.md)
+- [WalletMeshConfig](classes/WalletMeshConfig.md)
 
 ## Interfaces
 
+- [WalletMeshProviderConfig](interfaces/WalletMeshProviderConfig.md)
 - [DappInfo](interfaces/DappInfo.md)
 - [WalletInfo](interfaces/WalletInfo.md)
 - [WalletState](interfaces/WalletState.md)
@@ -45,21 +47,21 @@ Re-exports [TransportConfig](../lib/transports/types/interfaces/TransportConfig.
 
 ***
 
-### AdapterType
+### ConnectorType
 
-Re-exports [AdapterType](../lib/adapters/types/enumerations/AdapterType.md)
-
-***
-
-### Adapter
-
-Re-exports [Adapter](../lib/adapters/types/interfaces/Adapter.md)
+Re-exports [ConnectorType](../lib/connectors/types/enumerations/ConnectorType.md)
 
 ***
 
-### AdapterConfig
+### Connector
 
-Re-exports [AdapterConfig](../lib/adapters/types/type-aliases/AdapterConfig.md)
+Re-exports [Connector](../lib/connectors/types/interfaces/Connector.md)
+
+***
+
+### ConnectorConfig
+
+Re-exports [ConnectorConfig](../lib/connectors/types/type-aliases/ConnectorConfig.md)
 
 ***
 
@@ -96,18 +98,6 @@ Renames and re-exports [State](../components/WalletErrorBoundary/interfaces/Stat
 ### WalletProviderProps
 
 Re-exports [WalletProviderProps](../components/WalletProvider/interfaces/WalletProviderProps.md)
-
-***
-
-### WalletMeshConfig
-
-Re-exports [WalletMeshConfig](../lib/config/WalletMeshConfig/classes/WalletMeshConfig.md)
-
-***
-
-### WalletMeshProviderConfig
-
-Re-exports [WalletMeshProviderConfig](../lib/config/WalletMeshConfig/interfaces/WalletMeshProviderConfig.md)
 
 ***
 

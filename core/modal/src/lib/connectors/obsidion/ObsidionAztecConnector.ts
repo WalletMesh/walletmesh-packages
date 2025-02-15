@@ -1,6 +1,6 @@
-import type { WalletInfo, ConnectedWallet, WalletState } from '../../types.js';
-import type { Connector, AztecConnectorOptions } from './types.js';
-import { WalletError } from '../client/types.js';
+import type { WalletInfo, ConnectedWallet, WalletState } from '../../../types.js';
+import type { Connector, AztecConnectorOptions } from '../types.js';
+import { WalletError } from '../../client/types.js';
 
 /**
  * Type definition for supported Aztec RPC methods.

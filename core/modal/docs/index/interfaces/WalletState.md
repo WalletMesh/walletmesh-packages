@@ -6,7 +6,7 @@
 
 # Interface: WalletState
 
-Defined in: [core/modal/src/types.ts:115](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/types.ts#L115)
+Defined in: [core/modal/src/types.ts:107](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/types.ts#L107)
 
 Runtime state of a connected wallet.
 
@@ -16,7 +16,7 @@ used for session management and chain interactions.
 ## Remarks
 
 - All fields are optional for type flexibility
-- chain format depends on adapter type
+- chain format depends on connector type
 - address format depends on chain
 - sessionId is used for reconnection
 
@@ -36,7 +36,7 @@ const state: WalletState = {
 
 > `optional` **chain**: `string`
 
-Defined in: [core/modal/src/types.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/types.ts#L116)
+Defined in: [core/modal/src/types.ts:108](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/types.ts#L108)
 
 Current blockchain network identifier
 
@@ -46,7 +46,7 @@ Current blockchain network identifier
 
 > `optional` **address**: `string`
 
-Defined in: [core/modal/src/types.ts:117](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/types.ts#L117)
+Defined in: [core/modal/src/types.ts:109](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/types.ts#L109)
 
 Connected wallet's blockchain address
 
@@ -56,6 +56,6 @@ Connected wallet's blockchain address
 
 > `optional` **sessionId**: `string`
 
-Defined in: [core/modal/src/types.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/types.ts#L118)
+Defined in: [core/modal/src/types.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/types.ts#L110)
 
 Unique identifier for the connection session

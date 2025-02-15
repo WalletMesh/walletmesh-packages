@@ -2,7 +2,7 @@ import { useCallback, useEffect, useReducer, useState } from 'react';
 import { ConnectionStatus, type WalletInfo, type ConnectedWallet, type DappInfo } from '../types.js';
 import type { TimeoutConfig } from '../lib/utils/timeout.js';
 import { ConnectionManager } from '../lib/connection/ConnectionManager.js';
-import { handleWalletError } from '../lib/errors.js';
+import { handleWalletError } from '../lib/errors/errors.js';
 import { toast } from 'react-hot-toast';
 
 /**
@@ -73,7 +73,7 @@ const initialWalletState: WalletState = {
  * @property {boolean} [removeSession] - Whether to remove the stored session
  *   after disconnecting. If false, the session can be restored later.
  */
-interface DisconnectOptions {
+export interface DisconnectOptions {
   removeSession?: boolean;
 }
 
@@ -178,12 +178,12 @@ const walletReducer = (state: WalletState, action: WalletAction): [WalletState, 
 };
 
 /**
- * Configuration options for the useWalletLogic hook.
+ * Configuration options for the useWallet hook.
  *
  * @property {DappInfo} dappInfo - Information about the dApp to share with wallets
  * @property {TimeoutConfig} [timeoutConfig] - Optional configuration for operation timeouts
  */
-interface UseWalletLogicOptions {
+export interface UseWalletOptions {
   dappInfo: DappInfo;
   timeoutConfig?: TimeoutConfig;
 }
@@ -240,7 +240,7 @@ interface UseWalletLogicOptions {
  * - Modal state management
  * - Cleanup on unmount
  */
-export const useWallet = ({ dappInfo, timeoutConfig }: UseWalletLogicOptions) => {
+export const useWallet = ({ dappInfo, timeoutConfig }: UseWalletOptions) => {
   const [manager] = useState(() => new ConnectionManager(dappInfo, timeoutConfig));
   const [isModalOpen, setIsModalOpen] = useState(false);
 

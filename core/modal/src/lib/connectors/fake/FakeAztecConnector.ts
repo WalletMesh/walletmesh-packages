@@ -1,6 +1,6 @@
-import type { WalletInfo, ConnectedWallet, WalletState } from '../../types.js';
-import type { Connector, AztecConnectorOptions } from './types.js';
-import { WalletError } from '../client/types.js';
+import type { WalletInfo, ConnectedWallet, WalletState } from '../../../types.js';
+import type { Connector, AztecConnectorOptions } from '../types.js';
+import { WalletError } from '../../client/types.js';
 
 /**
  * Interface for interacting with the Aztec protocol provider.
@@ -14,7 +14,7 @@ import { WalletError } from '../client/types.js';
  * @property getAccount - Retrieves the connected account address
  * @property sendMessage - Sends messages to the wallet
  */
-interface AztecProvider {
+export interface FakeAztecProvider {
   connect(sessionId?: string): Promise<{ address: string; sessionId: string }>;
   disconnect(): Promise<void>;
   getAccount(): Promise<string>;
@@ -45,8 +45,8 @@ interface AztecProvider {
  * });
  * ```
  */
-export class WalletMeshAztecConnector implements Connector {
-  private provider: AztecProvider | null = null;
+export class FakeAztecConnector implements Connector {
+  private provider: FakeAztecProvider | null = null;
   private connected = false;
   private readonly options: AztecConnectorOptions;
 
@@ -242,7 +242,7 @@ export class WalletMeshAztecConnector implements Connector {
    * The provider instance gives direct access to Aztec protocol
    * functionality. Should only be used by trusted internal code.
    */
-  async getProvider(): Promise<AztecProvider> {
+  async getProvider(): Promise<FakeAztecProvider> {
     if (!this.connected || !this.provider) {
       throw new WalletError('Not connected', 'connector');
     }
@@ -285,7 +285,7 @@ export class WalletMeshAztecConnector implements Connector {
    *
    * @internal
    */
-  private createProvider(): AztecProvider {
+  private createProvider(): FakeAztecProvider {
     return {
       connect: async (sessionId?: string) => {
         // For testing: Simulate connection failures sometimes during session restore

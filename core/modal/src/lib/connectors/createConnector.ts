@@ -1,7 +1,7 @@
 import type { ConnectorConfig, Connector, AztecConnectorOptions } from './types.js';
 import { ConnectorType } from './types.js';
-import { WalletMeshAztecConnector } from './WalletMeshAztecConnector.js';
-import { ObsidionAztecConnector } from './ObsidionAztecConnector.js';
+import { ObsidionAztecConnector } from './obsidion/ObsidionAztecConnector.js';
+import { FakeAztecConnector } from './fake/FakeAztecConnector.js';
 import { WalletError } from '../client/types.js';
 
 /**
@@ -48,15 +48,15 @@ export function createConnector(config: ConnectorConfig): Connector {
   console.log('[createConnector] Creating connector with config:', config);
 
   switch (config.type) {
-    case ConnectorType.WalletMeshAztec: {
-      console.log('[createConnector] Creating WalletMeshAztecConnector with options:', config.options);
-      const connector = new WalletMeshAztecConnector(config.options as AztecConnectorOptions);
-      console.log('[createConnector] Created connector:', connector);
-      return connector;
-    }
     case ConnectorType.ObsidionAztec: {
       console.log('[createConnector] Creating ObsidionAztecConnector with options:', config.options);
       const connector = new ObsidionAztecConnector(config.options as AztecConnectorOptions);
+      console.log('[createConnector] Created connector:', connector);
+      return connector;
+    }
+    case ConnectorType.FakeAztec: {
+      console.log('[createConnector] Creating FakeAztecConnector with options:', config.options);
+      const connector = new FakeAztecConnector(config.options as AztecConnectorOptions);
       console.log('[createConnector] Created connector:', connector);
       return connector;
     }

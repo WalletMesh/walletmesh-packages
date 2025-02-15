@@ -6,7 +6,7 @@
 
 # Class: WalletErrorBoundary
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:17](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/components/WalletErrorBoundary.tsx#L17)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:17](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/components/WalletErrorBoundary.tsx#L17)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:17](https://githu
 
 > **new WalletErrorBoundary**(`props`): [`WalletErrorBoundary`](WalletErrorBoundary.md)
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:18](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/components/WalletErrorBoundary.tsx#L18)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:18](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/components/WalletErrorBoundary.tsx#L18)
 
 #### Parameters
 
@@ -149,7 +149,7 @@ Defined in: node\_modules/@types/react/index.d.ts:1040
 
 > `static` **getDerivedStateFromError**(`error`): [`State`](../interfaces/State.md)
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:23](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/components/WalletErrorBoundary.tsx#L23)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:23](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/components/WalletErrorBoundary.tsx#L23)
 
 #### Parameters
 
@@ -167,7 +167,7 @@ Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:23](https://githu
 
 > **componentDidCatch**(`error`): `void`
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:27](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/components/WalletErrorBoundary.tsx#L27)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:27](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/components/WalletErrorBoundary.tsx#L27)
 
 Catches exceptions generated in descendant components. Unhandled exceptions will cause
 the entire component tree to unmount.
@@ -192,7 +192,7 @@ the entire component tree to unmount.
 
 > **render**(): `ReactNode`
 
-Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:44](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/components/WalletErrorBoundary.tsx#L44)
+Defined in: [core/modal/src/components/WalletErrorBoundary.tsx:44](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/components/WalletErrorBoundary.tsx#L44)
 
 #### Returns
 

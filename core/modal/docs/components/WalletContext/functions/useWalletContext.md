@@ -6,10 +6,10 @@
 
 # Function: useWalletContext()
 
-> **useWalletContext**(): `any`
+> **useWalletContext**(): [`WalletContextType`](../type-aliases/WalletContextType.md)
 
-Defined in: [core/modal/src/components/WalletContext.tsx:12](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/components/WalletContext.tsx#L12)
+Defined in: [core/modal/src/components/WalletContext.tsx:12](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/components/WalletContext.tsx#L12)
 
 ## Returns
 
-`any`
+[`WalletContextType`](../type-aliases/WalletContextType.md)

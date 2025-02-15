@@ -12,6 +12,6 @@
 
 ## Interfaces
 
-- [Transport](interfaces/Transport.md)
-- [TransportConfig](interfaces/TransportConfig.md)
 - [TransportOptions](interfaces/TransportOptions.md)
+- [TransportConfig](interfaces/TransportConfig.md)
+- [Transport](interfaces/Transport.md)

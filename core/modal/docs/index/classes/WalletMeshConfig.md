@@ -1,12 +1,12 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.5**](../../README.md)
 
 ***
 
-[@walletmesh/modal](../../../../modules.md) / [lib/config/WalletMeshConfig](../README.md) / WalletMeshConfig
+[@walletmesh/modal](../../modules.md) / [index](../README.md) / WalletMeshConfig
 
 # Class: WalletMeshConfig
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L103)
+Defined in: [core/modal/src/lib/config/ModalConfig.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/config/ModalConfig.ts#L103)
 
 Builder for creating WalletMesh configurations with validation.
 
@@ -34,8 +34,8 @@ const config = WalletMeshConfig.create()
     id: "my_wallet",
     name: "My Wallet",
     icon: "data:image/svg+xml,...", // Must be data URI
-    adapter: {
-      type: AdapterType.WalletMeshAztec,
+    connector: {
+      type: ConnectorType.WalletMeshAztec,
       options: { chainId: "aztec:testnet" }
     },
     transport: {
@@ -62,7 +62,7 @@ const config = WalletMeshConfig.create()
 
 > `static` **create**(): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:144](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L144)
+Defined in: [core/modal/src/lib/config/ModalConfig.ts:144](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/config/ModalConfig.ts#L144)
 
 Creates a new WalletMeshConfig builder instance.
 
@@ -101,7 +101,7 @@ const config = WalletMeshConfig.create()
 
 > **clearWallets**(): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:152](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L152)
+Defined in: [core/modal/src/lib/config/ModalConfig.ts:152](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/config/ModalConfig.ts#L152)
 
 Remove all wallets from the configuration
 
@@ -117,7 +117,7 @@ Builder instance for chaining
 
 > **addWallet**(`wallet`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:180](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L180)
+Defined in: [core/modal/src/lib/config/ModalConfig.ts:180](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/config/ModalConfig.ts#L180)
 
 Add a wallet to the configuration
 
@@ -125,7 +125,7 @@ Add a wallet to the configuration
 
 ##### wallet
 
-[`WalletInfo`](../../../../index/interfaces/WalletInfo.md)
+[`WalletInfo`](../interfaces/WalletInfo.md)
 
 Wallet configuration to add
 
@@ -150,8 +150,8 @@ config.addWallet({
     type: TransportType.PostMessage,
     options: { origin: "https://wallet.aztec.network" }
   },
-  adapter: {
-    type: AdapterType.WalletMeshAztec,
+  connector: {
+    type: ConnectorType.WalletMeshAztec,
     options: { chainId: "aztec:mainnet" }
   }
 });
@@ -163,7 +163,7 @@ config.addWallet({
 
 > **addWallets**(`wallets`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L192)
+Defined in: [core/modal/src/lib/config/ModalConfig.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/config/ModalConfig.ts#L192)
 
 Add multiple wallets to the configuration
 
@@ -171,7 +171,7 @@ Add multiple wallets to the configuration
 
 ##### wallets
 
-[`WalletInfo`](../../../../index/interfaces/WalletInfo.md)[]
+[`WalletInfo`](../interfaces/WalletInfo.md)[]
 
 Array of wallet configurations
 
@@ -191,7 +191,7 @@ If any wallet icon is not a valid data URI
 
 > **removeWallet**(`walletId`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:205](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L205)
+Defined in: [core/modal/src/lib/config/ModalConfig.ts:205](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/config/ModalConfig.ts#L205)
 
 Remove a wallet from the configuration
 
@@ -215,7 +215,7 @@ Builder instance for chaining
 
 > **setSupportedChains**(`chains`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:223](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L223)
+Defined in: [core/modal/src/lib/config/ModalConfig.ts:223](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/config/ModalConfig.ts#L223)
 
 Set the list of supported blockchain networks
 
@@ -248,7 +248,7 @@ config.setSupportedChains([
 
 > **setTimeout**(`config`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:243](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L243)
+Defined in: [core/modal/src/lib/config/ModalConfig.ts:243](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/config/ModalConfig.ts#L243)
 
 Set timeouts for wallet operations
 
@@ -256,7 +256,7 @@ Set timeouts for wallet operations
 
 ##### config
 
-[`TimeoutConfig`](../../../utils/timeout/interfaces/TimeoutConfig.md)
+[`TimeoutConfig`](../../lib/utils/timeout/interfaces/TimeoutConfig.md)
 
 Timeout configuration
 
@@ -281,7 +281,7 @@ config.setTimeout({
 
 > **setDappInfo**(`info`): [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:268](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L268)
+Defined in: [core/modal/src/lib/config/ModalConfig.ts:268](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/config/ModalConfig.ts#L268)
 
 Set information about the DApp
 
@@ -289,7 +289,7 @@ Set information about the DApp
 
 ##### info
 
-[`DappInfo`](../../../../index/interfaces/DappInfo.md)
+[`DappInfo`](../interfaces/DappInfo.md)
 
 DApp configuration
 
@@ -321,7 +321,7 @@ config.setDappInfo({
 
 > **build**(): [`WalletMeshProviderConfig`](../interfaces/WalletMeshProviderConfig.md)
 
-Defined in: [core/modal/src/lib/config/WalletMeshConfig.ts:378](https://github.com/WalletMesh/walletmesh-packages/blob/8a70240d3d3b081a0c4ff9ed453b724a02fa458c/core/modal/src/lib/config/WalletMeshConfig.ts#L378)
+Defined in: [core/modal/src/lib/config/ModalConfig.ts:360](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/config/ModalConfig.ts#L360)
 
 Build the final configuration
 

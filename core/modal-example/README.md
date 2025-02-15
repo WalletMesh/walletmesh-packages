@@ -4,7 +4,6 @@ This example demonstrates how to integrate the [WalletMesh Modal](../modal/READM
 
 ## Table of Contents
 - [Features](#features)
-- [Prerequisites](#prerequisites)
 - [Setup](#setup)
 - [Running the Example](#running-the-example)
 - [Configuration](#configuration)
@@ -25,12 +24,6 @@ This example demonstrates how to integrate the [WalletMesh Modal](../modal/READM
 - Comprehensive error handling strategy
 - Multiple wallet support (web + extension)
 - Theme customization options
-
-## Prerequisites
-
-- Node.js 16 or higher
-- pnpm package manager
-- Basic knowledge of React and TypeScript
 
 ## Setup
 
