@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../README.md)
+[**@walletmesh/modal v0.0.6**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: WalletMeshClient
 
-Defined in: [core/modal/src/lib/client/client.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L56)
+Defined in: [core/modal/src/lib/client/client.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L56)
 
 Core client class for managing wallet connections and sessions.
 
@@ -61,7 +61,7 @@ const wallet = await client.connectWallet(walletInfo, connector);
 
 > `static` **getInstance**(`dappInfo`): [`WalletMeshClient`](WalletMeshClient.md)
 
-Defined in: [core/modal/src/lib/client/client.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L85)
+Defined in: [core/modal/src/lib/client/client.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L85)
 
 Gets or creates the singleton instance of WalletMeshClient.
 
@@ -100,7 +100,7 @@ const client = WalletMeshClient.getInstance({
 
 > **initialize**(): `Promise`\<`null` \| [`ConnectedWallet`](../interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/client/client.ts:215](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L215)
+Defined in: [core/modal/src/lib/client/client.ts:215](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L215)
 
 Initializes the client and attempts to restore any saved sessions.
 
@@ -140,7 +140,7 @@ if (restoredWallet) {
 
 > **getDappInfo**(): `Readonly`\<[`DappInfo`](../interfaces/DappInfo.md)\>
 
-Defined in: [core/modal/src/lib/client/client.ts:286](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L286)
+Defined in: [core/modal/src/lib/client/client.ts:286](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L286)
 
 Gets the dApp information associated with this client instance.
 
@@ -164,7 +164,7 @@ The returned object is frozen to prevent modifications after initialization.
 
 > **connectWallet**(`walletInfo`, `connector`): `Promise`\<[`ConnectedWallet`](../interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/client/client.ts:317](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L317)
+Defined in: [core/modal/src/lib/client/client.ts:317](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L317)
 
 Establishes a connection with a wallet.
 
@@ -223,7 +223,7 @@ const wallet = await client.connectWallet({
 
 > **disconnectWallet**(`walletId`): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/client/client.ts:367](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L367)
+Defined in: [core/modal/src/lib/client/client.ts:367](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L367)
 
 Disconnects a wallet and cleans up its resources.
 
@@ -261,7 +261,7 @@ await client.disconnectWallet('wallet-123');
 
 > **getProvider**(`walletId`): `Promise`\<`unknown`\>
 
-Defined in: [core/modal/src/lib/client/client.ts:409](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L409)
+Defined in: [core/modal/src/lib/client/client.ts:409](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L409)
 
 Gets the blockchain-specific provider for a connected wallet.
 
@@ -301,7 +301,7 @@ const accounts = await provider.request({ method: 'eth_accounts' });
 
 > **getConnectedWallets**(): [`ConnectedWallet`](../interfaces/ConnectedWallet.md)[]
 
-Defined in: [core/modal/src/lib/client/client.ts:457](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L457)
+Defined in: [core/modal/src/lib/client/client.ts:457](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L457)
 
 Gets all currently connected wallets.
 
@@ -328,7 +328,7 @@ console.log('Connected wallets:', wallets.length);
 
 > **getConnectedWallet**(): `null` \| [`ConnectedWallet`](../interfaces/ConnectedWallet.md)
 
-Defined in: [core/modal/src/lib/client/client.ts:480](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L480)
+Defined in: [core/modal/src/lib/client/client.ts:480](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L480)
 
 Gets the primary connected wallet.
 
@@ -361,7 +361,7 @@ if (wallet) {
 
 > **handleError**(`error`): `void`
 
-Defined in: [core/modal/src/lib/client/client.ts:495](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L495)
+Defined in: [core/modal/src/lib/client/client.ts:495](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L495)
 
 Handles wallet-related errors.
 
@@ -392,7 +392,7 @@ to implement more sophisticated error handling.
 
 > **prepareForTransition**(): `void`
 
-Defined in: [core/modal/src/lib/client/client.ts:510](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L510)
+Defined in: [core/modal/src/lib/client/client.ts:510](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L510)
 
 Prepares the client for a page transition.
 
@@ -415,7 +415,7 @@ and 'pagehide' events.
 
 > **deinitialize**(): `void`
 
-Defined in: [core/modal/src/lib/client/client.ts:530](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L530)
+Defined in: [core/modal/src/lib/client/client.ts:530](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L530)
 
 #### Returns
 
@@ -432,7 +432,7 @@ Legacy method for backwards compatibility
 
 > `static` **resetInstance**(): `void`
 
-Defined in: [core/modal/src/lib/client/client.ts:545](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/client.ts#L545)
+Defined in: [core/modal/src/lib/client/client.ts:545](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/client.ts#L545)
 
 **`Internal`**
 

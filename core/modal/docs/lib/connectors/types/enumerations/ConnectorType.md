@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Enumeration: ConnectorType
 
-Defined in: [core/modal/src/lib/connectors/types.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/connectors/types.ts#L93)
+Defined in: [core/modal/src/lib/connectors/types.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/connectors/types.ts#L93)
 
 Enumeration of supported wallet connector implementations.
 
@@ -16,7 +16,7 @@ Enumeration of supported wallet connector implementations.
 
 > **FakeAztec**: `"fake_aztec"`
 
-Defined in: [core/modal/src/lib/connectors/types.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/connectors/types.ts#L94)
+Defined in: [core/modal/src/lib/connectors/types.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/connectors/types.ts#L94)
 
 ***
 
@@ -24,4 +24,4 @@ Defined in: [core/modal/src/lib/connectors/types.ts:94](https://github.com/Walle
 
 > **ObsidionAztec**: `"obsidion_aztec"`
 
-Defined in: [core/modal/src/lib/connectors/types.ts:95](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/connectors/types.ts#L95)
+Defined in: [core/modal/src/lib/connectors/types.ts:95](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/connectors/types.ts#L95)

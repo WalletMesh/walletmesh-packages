@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../../../README.md)
+[**@walletmesh/modal v0.0.6**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletClient
 
-Defined in: [core/modal/src/lib/client/types.ts:147](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L147)
+Defined in: [core/modal/src/lib/client/types.ts:147](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L147)
 
 Core interface for wallet interactions in the WalletMesh system.
 
@@ -66,7 +66,7 @@ class MyWalletClient implements WalletClient {
 
 > **getDappInfo**(): `Readonly`\<[`DappInfo`](../../../../index/interfaces/DappInfo.md)\>
 
-Defined in: [core/modal/src/lib/client/types.ts:151](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L151)
+Defined in: [core/modal/src/lib/client/types.ts:151](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L151)
 
 Gets the immutable dApp information associated with this client.
 
@@ -80,7 +80,7 @@ Gets the immutable dApp information associated with this client.
 
 > **initialize**(): `Promise`\<`null` \| [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/client/types.ts:164](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L164)
+Defined in: [core/modal/src/lib/client/types.ts:164](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L164)
 
 Initializes the client and attempts to restore any saved sessions.
 
@@ -106,7 +106,7 @@ If initialization fails
 
 > **connectWallet**(`walletInfo`, `connector`, `options`?): `Promise`\<[`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/client/types.ts:180](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L180)
+Defined in: [core/modal/src/lib/client/types.ts:180](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L180)
 
 Establishes a new wallet connection.
 
@@ -154,7 +154,7 @@ If connection fails
 
 > **disconnectWallet**(`walletId`): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/client/types.ts:197](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L197)
+Defined in: [core/modal/src/lib/client/types.ts:197](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L197)
 
 Disconnects a specific wallet.
 
@@ -186,7 +186,7 @@ If disconnection fails
 
 > **getProvider**(`walletId`): `Promise`\<`unknown`\>
 
-Defined in: [core/modal/src/lib/client/types.ts:206](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L206)
+Defined in: [core/modal/src/lib/client/types.ts:206](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L206)
 
 Gets the blockchain-specific provider for a wallet.
 
@@ -214,7 +214,7 @@ If provider unavailable
 
 > **getConnectedWallets**(): [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)[]
 
-Defined in: [core/modal/src/lib/client/types.ts:216](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L216)
+Defined in: [core/modal/src/lib/client/types.ts:216](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L216)
 
 Gets all currently connected wallets.
 
@@ -234,7 +234,7 @@ Returns only wallets in Connected state
 
 > **getConnectedWallet**(): `null` \| [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:223](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L223)
+Defined in: [core/modal/src/lib/client/types.ts:223](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L223)
 
 Gets the primary connected wallet.
 
@@ -250,7 +250,7 @@ Connected wallet or null if none connected
 
 > **handleError**(`error`): `void`
 
-Defined in: [core/modal/src/lib/client/types.ts:237](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/lib/client/types.ts#L237)
+Defined in: [core/modal/src/lib/client/types.ts:237](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L237)
 
 Processes a wallet-related error.
 

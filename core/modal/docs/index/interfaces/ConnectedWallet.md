@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.5**](../../README.md)
+[**@walletmesh/modal v0.0.6**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ConnectedWallet
 
-Defined in: [core/modal/src/types.ts:138](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/types.ts#L138)
+Defined in: [core/modal/src/types.ts:138](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L138)
 
 Combined wallet information and state for an active connection.
 
@@ -36,7 +36,7 @@ const wallet: ConnectedWallet = {
 
 > **info**: [`WalletInfo`](WalletInfo.md)
 
-Defined in: [core/modal/src/types.ts:139](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/types.ts#L139)
+Defined in: [core/modal/src/types.ts:139](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L139)
 
 Static wallet configuration
 
@@ -46,6 +46,6 @@ Static wallet configuration
 
 > **state**: [`WalletState`](WalletState.md)
 
-Defined in: [core/modal/src/types.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/8b444f40d3fbabab05c65771724d742ca4403f5d/core/modal/src/types.ts#L140)
+Defined in: [core/modal/src/types.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L140)
 
 Current connection state

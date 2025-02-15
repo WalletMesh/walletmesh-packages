@@ -1,4 +1,4 @@
-**@walletmesh/modal v0.0.5**
+**@walletmesh/modal v0.0.6**
 
 ***
 
@@ -211,68 +211,6 @@ sequenceDiagram
 
     Client-->>ConnMgr: Success
     ConnMgr-->>DApp: Update UI
-```
-
-## Security Considerations
-
-### Icon Security
-All wallet and dApp icons must be provided as data URIs for security reasons:
-```typescript
-// CORRECT - Using data URI
-const config = WalletMeshConfig.create()
-  .addWallet({
-    icon: "data:image/svg+xml;base64,..." // Base64 encoded SVG
-  })
-  .setDappInfo({
-    icon: "data:image/png;base64,..." // Base64 encoded PNG
-  });
-
-// INCORRECT - Will throw error
-const config = WalletMeshConfig.create()
-  .addWallet({
-    icon: "https://example.com/icon.svg" // URLs not allowed
-  });
-```
-
-### Origin Validation
-```typescript
-// Always validate message origins
-if (!this.isValidOrigin(event.origin)) {
-  throw new WalletError('Invalid origin', 'transport');
-}
-```
-
-### Session Management
-```typescript
-// Validate session state
-validateWalletState(state: WalletState): boolean {
-  return !!(
-    state.chain &&
-    state.address &&
-    state.sessionId
-  );
-}
-```
-
-### Error Recovery
-```typescript
-// Implement retry with backoff
-async function withRetry<T>(
-  operation: () => Promise<T>,
-  maxAttempts = 3
-): Promise<T> {
-  let attempt = 0;
-  while (attempt < maxAttempts) {
-    try {
-      return await operation();
-    } catch (error) {
-      attempt++;
-      if (attempt === maxAttempts) throw error;
-      await new Promise(r => setTimeout(r, Math.pow(2, attempt) * 1000));
-    }
-  }
-  throw new Error('Max retries reached');
-}
 ```
 
 ## API Reference
