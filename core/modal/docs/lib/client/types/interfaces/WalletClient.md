@@ -6,59 +6,9 @@
 
 # Interface: WalletClient
 
-Defined in: [core/modal/src/lib/client/types.ts:147](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L147)
+Defined in: [core/modal/src/lib/client/types.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L80)
 
-Core interface for wallet interactions in the WalletMesh system.
-
-This interface defines the contract that all wallet client implementations
-must fulfill. It provides a complete API for:
-
-Connection Management:
-- Establishing new wallet connections
-- Managing connection lifecycle
-- Handling disconnections
-
-State Management:
-- Reading connection state
-- Querying connected wallets
-- Accessing blockchain providers
-
-Error Handling:
-- Standardized error processing
-- Connection recovery
-
-## Remarks
-
-The WalletClient interface is the primary integration point for dApps.
-It abstracts away the complexities of:
-- Protocol-specific communication
-- Session persistence
-- Connection recovery
-- State synchronization
-
-Implementations of this interface provide methods for:
-- Wallet connection and disconnection
-- Session management
-- State queries
-- Error handling
-
-## Example
-
-```typescript
-class MyWalletClient implements WalletClient {
-  async initialize() {
-    // Restore previous session if available
-    return this.attemptRestore();
-  }
-
-  async connectWallet(walletInfo, transport, connector) {
-    // Establish new wallet connection
-    return this.connect(walletInfo);
-  }
-
-  // ... other method implementations
-}
-```
+Core interface for wallet interactions
 
 ## Methods
 
@@ -66,9 +16,7 @@ class MyWalletClient implements WalletClient {
 
 > **getDappInfo**(): `Readonly`\<[`DappInfo`](../../../../index/interfaces/DappInfo.md)\>
 
-Defined in: [core/modal/src/lib/client/types.ts:151](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L151)
-
-Gets the immutable dApp information associated with this client.
+Defined in: [core/modal/src/lib/client/types.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L81)
 
 #### Returns
 
@@ -80,25 +28,11 @@ Gets the immutable dApp information associated with this client.
 
 > **initialize**(): `Promise`\<`null` \| [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/client/types.ts:164](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L164)
-
-Initializes the client and attempts to restore any saved sessions.
+Defined in: [core/modal/src/lib/client/types.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L82)
 
 #### Returns
 
 `Promise`\<`null` \| [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)\>
-
-Promise resolving to restored wallet if available
-
-#### Throws
-
-If initialization fails
-
-#### Remarks
-
-- Should be called when dApp loads
-- Attempts to restore the most recent session
-- Returns null if no session to restore
 
 ***
 
@@ -106,9 +40,7 @@ If initialization fails
 
 > **connectWallet**(`walletInfo`, `connector`, `options`?): `Promise`\<[`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/client/types.ts:180](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L180)
-
-Establishes a new wallet connection.
+Defined in: [core/modal/src/lib/client/types.ts:83](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L83)
 
 #### Parameters
 
@@ -116,17 +48,11 @@ Establishes a new wallet connection.
 
 [`WalletInfo`](../../../../index/interfaces/WalletInfo.md)
 
-Information about the wallet to connect
-
 ##### connector
 
 [`Connector`](../../../connectors/types/interfaces/Connector.md)
 
-Protocol-specific connector instance
-
 ##### options?
-
-Optional connection configuration
 
 ###### persist
 
@@ -136,59 +62,31 @@ Optional connection configuration
 
 `Promise`\<[`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)\>
 
-Promise resolving to connected wallet instance
-
-#### Throws
-
-If connection fails
-
-#### Remarks
-
-- Validates wallet information
-- Manages connector lifecycle
-- Handles session persistence
-
 ***
 
 ### disconnectWallet()
 
 > **disconnectWallet**(`walletId`): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/client/types.ts:197](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L197)
-
-Disconnects a specific wallet.
+Defined in: [core/modal/src/lib/client/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L88)
 
 #### Parameters
 
 ##### walletId
 
 `string`
-
-ID of wallet to disconnect
 
 #### Returns
 
 `Promise`\<`void`\>
 
-#### Throws
-
-If disconnection fails
-
-#### Remarks
-
-- Cleans up connection resources
-- Removes session data if not preserving
-- Handles failed disconnections
-
 ***
 
-### getProvider()
+### getChainProvider()
 
-> **getProvider**(`walletId`): `Promise`\<`unknown`\>
+> **getChainProvider**(`walletId`): `Promise`\<`unknown`\>
 
-Defined in: [core/modal/src/lib/client/types.ts:206](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L206)
-
-Gets the blockchain-specific provider for a wallet.
+Defined in: [core/modal/src/lib/client/types.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L89)
 
 #### Parameters
 
@@ -196,17 +94,9 @@ Gets the blockchain-specific provider for a wallet.
 
 `string`
 
-ID of wallet to get provider for
-
 #### Returns
 
 `Promise`\<`unknown`\>
-
-Promise resolving to provider instance
-
-#### Throws
-
-If provider unavailable
 
 ***
 
@@ -214,19 +104,29 @@ If provider unavailable
 
 > **getConnectedWallets**(): [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)[]
 
-Defined in: [core/modal/src/lib/client/types.ts:216](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L216)
-
-Gets all currently connected wallets.
+Defined in: [core/modal/src/lib/client/types.ts:90](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L90)
 
 #### Returns
 
 [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)[]
 
-Array of connected wallet instances
+***
 
-#### Remarks
+### getWalletConnections()
 
-Returns only wallets in Connected state
+> **getWalletConnections**(`walletId`): `Promise`\<`undefined` \| `Map`\<`number`, [`ChainConnection`](ChainConnection.md)\>\>
+
+Defined in: [core/modal/src/lib/client/types.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L91)
+
+#### Parameters
+
+##### walletId
+
+`string`
+
+#### Returns
+
+`Promise`\<`undefined` \| `Map`\<`number`, [`ChainConnection`](ChainConnection.md)\>\>
 
 ***
 
@@ -234,25 +134,19 @@ Returns only wallets in Connected state
 
 > **getConnectedWallet**(): `null` \| [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:223](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L223)
-
-Gets the primary connected wallet.
+Defined in: [core/modal/src/lib/client/types.ts:92](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L92)
 
 #### Returns
 
 `null` \| [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)
 
-Connected wallet or null if none connected
-
 ***
 
-### handleError()
+### handleWalletError()
 
-> **handleError**(`error`): `void`
+> **handleWalletError**(`error`): `void`
 
-Defined in: [core/modal/src/lib/client/types.ts:237](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L237)
-
-Processes a wallet-related error.
+Defined in: [core/modal/src/lib/client/types.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L93)
 
 #### Parameters
 
@@ -260,16 +154,6 @@ Processes a wallet-related error.
 
 [`WalletError`](../classes/WalletError.md)
 
-Error to handle
-
 #### Returns
 
 `void`
-
-#### Remarks
-
-Implementations should:
-- Log error details
-- Update connection state
-- Trigger UI updates
-- Attempt recovery if possible

@@ -15,3 +15,4 @@
 - [lib/connectors/types](lib/connectors/types/README.md)
 - [lib/transports/types](lib/transports/types/README.md)
 - [lib/utils/timeout](lib/utils/timeout/README.md)
+- [lib/utils/validation](lib/utils/validation/README.md)

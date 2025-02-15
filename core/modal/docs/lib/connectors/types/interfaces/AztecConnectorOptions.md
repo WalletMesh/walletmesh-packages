@@ -6,17 +6,9 @@
 
 # Interface: AztecConnectorOptions
 
-Defined in: [core/modal/src/lib/connectors/types.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/connectors/types.ts#L101)
+Defined in: [core/modal/src/lib/connectors/types.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L91)
 
 Configuration options specific to Aztec protocol connectors
-
-## Extends
-
-- [`BaseConnectorOptions`](BaseConnectorOptions.md)
-
-## Indexable
-
-\[`key`: `string`\]: `unknown`
 
 ## Properties
 
@@ -24,13 +16,7 @@ Configuration options specific to Aztec protocol connectors
 
 > `optional` **chainId**: `string`
 
-Defined in: [core/modal/src/lib/connectors/types.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/connectors/types.ts#L85)
-
-Chain ID for the connector
-
-#### Inherited from
-
-[`BaseConnectorOptions`](BaseConnectorOptions.md).[`chainId`](BaseConnectorOptions.md#chainid)
+Defined in: [core/modal/src/lib/connectors/types.ts:92](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L92)
 
 ***
 
@@ -38,7 +24,7 @@ Chain ID for the connector
 
 > `optional` **rpcUrl**: `string`
 
-Defined in: [core/modal/src/lib/connectors/types.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/connectors/types.ts#L102)
+Defined in: [core/modal/src/lib/connectors/types.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L93)
 
 ***
 
@@ -46,4 +32,4 @@ Defined in: [core/modal/src/lib/connectors/types.ts:102](https://github.com/Wall
 
 > `optional` **networkId**: `string`
 
-Defined in: [core/modal/src/lib/connectors/types.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/connectors/types.ts#L103)
+Defined in: [core/modal/src/lib/connectors/types.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L94)

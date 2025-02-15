@@ -6,7 +6,7 @@
 
 # Class: TimeoutError
 
-Defined in: [core/modal/src/lib/utils/timeout.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/utils/timeout.ts#L49)
+Defined in: [core/modal/src/lib/utils/timeout.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/utils/timeout.ts#L49)
 
 Specialized error for timeout conditions.
 
@@ -36,7 +36,7 @@ try {
 
 > **new TimeoutError**(`operation`, `timeout`): [`TimeoutError`](TimeoutError.md)
 
-Defined in: [core/modal/src/lib/utils/timeout.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/utils/timeout.ts#L50)
+Defined in: [core/modal/src/lib/utils/timeout.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/utils/timeout.ts#L50)
 
 #### Parameters
 
@@ -57,6 +57,50 @@ Defined in: [core/modal/src/lib/utils/timeout.ts:50](https://github.com/WalletMe
 `Error.constructor`
 
 ## Properties
+
+### prepareStackTrace()?
+
+> `static` `optional` **prepareStackTrace**: (`err`, `stackTraces`) => `any`
+
+Defined in: node\_modules/@types/node/globals.d.ts:143
+
+Optional override for formatting stack traces
+
+#### Parameters
+
+##### err
+
+`Error`
+
+##### stackTraces
+
+`CallSite`[]
+
+#### Returns
+
+`any`
+
+#### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
+#### Inherited from
+
+`Error.prepareStackTrace`
+
+***
+
+### stackTraceLimit
+
+> `static` **stackTraceLimit**: `number`
+
+Defined in: node\_modules/@types/node/globals.d.ts:145
+
+#### Inherited from
+
+`Error.stackTraceLimit`
+
+***
 
 ### cause?
 
@@ -103,3 +147,31 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
 #### Inherited from
 
 `Error.stack`
+
+## Methods
+
+### captureStackTrace()
+
+> `static` **captureStackTrace**(`targetObject`, `constructorOpt`?): `void`
+
+Defined in: node\_modules/@types/node/globals.d.ts:136
+
+Create .stack property on a target object
+
+#### Parameters
+
+##### targetObject
+
+`object`
+
+##### constructorOpt?
+
+`Function`
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+`Error.captureStackTrace`

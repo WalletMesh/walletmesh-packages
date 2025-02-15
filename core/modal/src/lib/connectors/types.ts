@@ -78,16 +78,6 @@ export interface Connector {
 }
 
 /**
- * Base configuration options for wallet connectors.
- */
-export interface BaseConnectorOptions {
-  /** Chain ID for the connector */
-  chainId?: string;
-  /** Additional chain-specific options */
-  [key: string]: unknown | undefined;
-}
-
-/**
  * Enumeration of supported wallet connector implementations.
  */
 export enum ConnectorType {
@@ -98,17 +88,20 @@ export enum ConnectorType {
 /**
  * Configuration options specific to Aztec protocol connectors
  */
-export interface AztecConnectorOptions extends BaseConnectorOptions {
+export interface AztecConnectorOptions {
+  chainId?: string;
   rpcUrl?: string;
   networkId?: string;
 }
 
 /**
- * Base configuration for wallet connectors
+ * Configuration for wallet connectors.
+ * Generic type T allows each connector to define its own options interface.
  */
-export interface BaseConnectorConfig<T extends BaseConnectorOptions = BaseConnectorOptions> {
+export interface WalletConnectorConfig<T = unknown> {
   type: ConnectorType;
   options?: T;
 }
 
-export type ConnectorConfig = BaseConnectorConfig | BaseConnectorConfig<AztecConnectorOptions>;
+// Helper type to enforce Aztec options for Aztec connectors
+export type AztecConnectorConfig = WalletConnectorConfig<AztecConnectorOptions>;

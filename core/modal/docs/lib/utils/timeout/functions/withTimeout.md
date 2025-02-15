@@ -8,7 +8,7 @@
 
 > **withTimeout**\<`T`\>(`promise`, `timeoutMs`, `operation`): `Promise`\<`T`\>
 
-Defined in: [core/modal/src/lib/utils/timeout.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/utils/timeout.ts#L102)
+Defined in: [core/modal/src/lib/utils/timeout.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/utils/timeout.ts#L102)
 
 Adds timeout functionality to any Promise-based operation.
 

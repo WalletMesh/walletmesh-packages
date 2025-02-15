@@ -8,19 +8,14 @@
 
 Core type definitions for the WalletMesh client module.
 
-This module defines the fundamental types and interfaces that form the contract
-between different components of the WalletMesh system. It includes:
-- Error handling types
-- Session management interfaces
-- Core client interface definition
-- Configuration types
-
 ## Classes
 
 - [WalletError](classes/WalletError.md)
 
 ## Interfaces
 
+- [SessionToken](interfaces/SessionToken.md)
+- [ChainConnection](interfaces/ChainConnection.md)
 - [WalletSession](interfaces/WalletSession.md)
+- [SerializedSession](interfaces/SerializedSession.md)
 - [WalletClient](interfaces/WalletClient.md)
-- [SessionOptions](interfaces/SessionOptions.md)

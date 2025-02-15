@@ -1,6 +1,10 @@
-import { TransportType, type TransportConfig, type Transport } from './types.js';
+import type { TransportConfig, Transport, BaseTransportConfig } from './types.js';
+import { TransportTypes } from './types.js';
 import { PostMessageTransport } from './PostMessageTransport.js';
 import { NullTransport } from './NullTransport.js';
+import { ChromeExtensionTransport } from './chrome/ChromeExtensionTransport.js';
+import type { PostMessageTransportConfig } from './postmessage/types.js';
+import type { ChromeTransportConfig } from './chrome/types.js';
 import { WalletError } from '../client/types.js';
 
 /**
@@ -18,7 +22,7 @@ import { WalletError } from '../client/types.js';
  * ```typescript
  * // Create PostMessage transport
  * const postMessageTransport = createTransport({
- *   type: TransportType.PostMessage,
+ *   type: TransportTypes.POSTMESSAGE,
  *   options: {
  *     origin: 'https://wallet.example.com'
  *   }
@@ -26,7 +30,7 @@ import { WalletError } from '../client/types.js';
  *
  * // Create Null transport for testing
  * const nullTransport = createTransport({
- *   type: TransportType.Null
+ *   type: TransportTypes.NULL
  * });
  * ```
  *
@@ -42,15 +46,21 @@ import { WalletError } from '../client/types.js';
  * When requesting an unimplemented transport, the function
  * will throw a WalletError with a descriptive message.
  */
-export function createTransport(config: TransportConfig): Transport {
+export function createTransport(config: TransportConfig<BaseTransportConfig>): Transport {
   switch (config.type) {
-    case TransportType.PostMessage:
-      return new PostMessageTransport(config.options);
-    case TransportType.WebSocket:
+    case TransportTypes.POSTMESSAGE:
+      if (!('origin' in config.config)) {
+        throw new WalletError('PostMessage transport requires origin in config', 'transport');
+      }
+      return new PostMessageTransport(config.config as PostMessageTransportConfig);
+    case TransportTypes.CHROME_EXTENSION:
+      if (!config.config || !('extensionId' in config.config) || !config.config.extensionId) {
+        throw new WalletError('Invalid Chrome extension transport configuration', 'transport');
+      }
+      return new ChromeExtensionTransport(config.config as ChromeTransportConfig);
+    case TransportTypes.WEBSOCKET:
       throw new WalletError('WebSocket transport not implemented', 'transport');
-    case TransportType.Extension:
-      throw new WalletError('Extension transport not implemented', 'transport');
-    case TransportType.Null:
+    case TransportTypes.NULL:
       return new NullTransport();
     default:
       throw new WalletError(`Unsupported transport type: ${config.type}`, 'transport');

@@ -1,7 +1,8 @@
-import type { ConnectorConfig, Connector, AztecConnectorOptions } from './types.js';
 import { ConnectorType } from './types.js';
+import type { WalletConnectorConfig, Connector, AztecConnectorOptions } from './types.js';
 import { ObsidionAztecConnector } from './obsidion/ObsidionAztecConnector.js';
-import { FakeAztecConnector } from './fake/FakeAztecConnector.js';
+import { FakeAztecConnector } from './fake/index.js';
+import type { FakeConnectorOptions } from './fake/index.js';
 import { WalletError } from '../client/types.js';
 
 /**
@@ -17,17 +18,17 @@ import { WalletError } from '../client/types.js';
  *
  * @example
  * ```typescript
- * // Create a WalletMesh Aztec connector
- * const aztecConnector = createConnector({
- *   type: ConnectorType.WalletMeshAztec,
+ * // Create a Fake connector for testing
+ * const fakeConnector = createConnector({
+ *   type: ConnectorType.FakeAztec,
  *   options: {
- *     chainId: 'aztec:testnet',
- *     rpcUrl: 'https://api.aztec.network/testnet',
- *     networkId: '11155111'
+ *     networkId: 'aztec-fake',
+ *     shouldFail: false,
+ *     responseDelay: 500
  *   }
  * });
  *
- * // Create an Obsidion Aztec connector
+ * // Create an Obsidion Aztec connector for production
  * const obsidionConnector = createConnector({
  *   type: ConnectorType.ObsidionAztec,
  *   options: {
@@ -38,26 +39,26 @@ import { WalletError } from '../client/types.js';
  *
  * @remarks
  * Currently supported connector types:
- * - WalletMeshAztec: Standard connector for Aztec protocol wallets
- * - ObsidionAztec: Specialized connector for Obsidion wallet implementation
+ * - FakeAztec: Test connector with configurable behaviors
+ * - ObsidionAztec: Production connector for Obsidion wallet
  *
  * Each connector type may require specific configuration options as defined
- * in their respective interfaces (e.g., AztecConnectorOptions).
+ * in their respective interfaces (e.g., FakeConnectorOptions, AztecConnectorOptions).
  */
-export function createConnector(config: ConnectorConfig): Connector {
+export function createConnector(config: WalletConnectorConfig): Connector {
   console.log('[createConnector] Creating connector with config:', config);
 
   switch (config.type) {
     case ConnectorType.ObsidionAztec: {
       console.log('[createConnector] Creating ObsidionAztecConnector with options:', config.options);
       const connector = new ObsidionAztecConnector(config.options as AztecConnectorOptions);
-      console.log('[createConnector] Created connector:', connector);
+      console.log('[createConnector] Created connector:', config.type);
       return connector;
     }
     case ConnectorType.FakeAztec: {
       console.log('[createConnector] Creating FakeAztecConnector with options:', config.options);
-      const connector = new FakeAztecConnector(config.options as AztecConnectorOptions);
-      console.log('[createConnector] Created connector:', connector);
+      const connector = new FakeAztecConnector(config.options as FakeConnectorOptions);
+      console.log('[createConnector] Created connector:', config.type);
       return connector;
     }
     default:

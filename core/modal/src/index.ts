@@ -1,7 +1,13 @@
 export type { DappInfo, WalletInfo, ConnectedWallet, WalletState } from './types.js';
 export { ConnectionStatus } from './types.js';
 export { TransportType, type Transport, type TransportConfig } from './lib/transports/types.js';
-export { ConnectorType, type Connector, type ConnectorConfig } from './lib/connectors/types.js';
+export {
+  ConnectorType,
+  type Connector,
+  type WalletConnectorConfig,
+  type AztecConnectorConfig,
+  type AztecConnectorOptions,
+} from './lib/connectors/types.js';
 export { WalletMeshClient } from './lib/client/client.js';
 export type { WalletClient, WalletError } from './lib/client/types.js';
 export type { WalletContextType } from './components/WalletContext.js';

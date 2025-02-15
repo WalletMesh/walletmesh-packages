@@ -1,0 +1,211 @@
+.walletList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.walletButton {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background-color: var(--wm-background);
+  border: 1px solid var(--wm-border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--wm-transition-default);
+  user-select: none;
+  position: relative;
+}
+
+.walletButton:hover {
+  background-color: var(--wm-hover-background);
+  border-color: var(--wm-hover-border-color);
+}
+
+.walletButton:focus-visible {
+  outline: 2px solid var(--wm-focus-ring-color);
+  outline-offset: 2px;
+}
+
+.walletButton[aria-selected="true"] {
+  border-color: var(--wm-primary);
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.08), rgba(99, 102, 241, 0.03));
+}
+
+.walletButton[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.walletIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+}
+
+.walletInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.walletName {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--wm-text-color);
+  line-height: 1.2;
+}
+
+.walletDescription {
+  font-size: 0.875rem;
+  color: var(--wm-text-secondary);
+  line-height: 1.4;
+}
+
+.loadingIcon {
+  color: var(--wm-primary);
+  position: relative;
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  animation: pulseAndSpin 2s ease-in-out infinite;
+}
+
+@keyframes pulseAndSpin {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 0.8;
+  }
+}
+
+.walletButton[aria-selected="true"] {
+  animation: selectedPulse 2s infinite;
+  background-size: 200% 200%;
+  background-position: 0% 0%;
+}
+
+@keyframes selectedPulse {
+  0% {
+    background-position: 0% 0%;
+    border-color: var(--wm-primary);
+  }
+  50% {
+    background-position: 100% 100%;
+    border-color: var(--wm-primary-hover);
+  }
+  100% {
+    background-position: 0% 0%;
+    border-color: var(--wm-primary);
+  }
+}
+
+.customWalletSection {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--wm-border-color);
+  background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.customWalletInput {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.urlInput {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: var(--wm-text-color);
+  background-color: var(--wm-background);
+  border: 1px solid var(--wm-border-color);
+  border-radius: 10px;
+  transition: var(--wm-transition-default);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.urlInput:focus {
+  outline: none;
+  border-color: var(--wm-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.urlInput[aria-invalid="true"] {
+  border-color: #ef4444;
+}
+
+.urlInput[disabled] {
+  background-color: #f3f4f6;
+}
+
+.addButton {
+  all: unset;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--wm-text-color);
+  background-color: var(--wm-background);
+  border: 1px solid var(--wm-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 120px;
+  text-align: center;
+  background-color: var(--wm-primary);
+  color: white;
+  font-weight: 600;
+  box-shadow: var(--wm-shadow-sm);
+  transition: var(--wm-transition-default);
+}
+
+.addButton:hover {
+  background-color: var(--wm-hover-background);
+  border-color: var(--wm-hover-border-color);
+}
+
+.addButton:focus-visible {
+  outline: 2px solid var(--wm-focus-ring-color);
+  outline-offset: 2px;
+}
+
+.addButton:active {
+  transform: translateY(1px);
+  box-shadow: none;
+  background-color: var(--wm-primary-hover-background);
+}
+
+.addButton[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.walletButton[aria-selected="true"] .walletIcon {
+  transform: scale(1.05);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

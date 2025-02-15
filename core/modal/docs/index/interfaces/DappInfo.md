@@ -6,7 +6,7 @@
 
 # Interface: DappInfo
 
-Defined in: [core/modal/src/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L32)
+Defined in: [core/modal/src/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L32)
 
 Information about a DApp integrating with WalletMesh.
 
@@ -38,7 +38,7 @@ const dappInfo: DappInfo = {
 
 > **name**: `string`
 
-Defined in: [core/modal/src/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L33)
+Defined in: [core/modal/src/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L33)
 
 Display name shown in wallet interfaces
 
@@ -48,7 +48,7 @@ Display name shown in wallet interfaces
 
 > **description**: `string`
 
-Defined in: [core/modal/src/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L34)
+Defined in: [core/modal/src/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L34)
 
 Brief description of dApp functionality
 
@@ -58,19 +58,17 @@ Brief description of dApp functionality
 
 > **origin**: `string`
 
-Defined in: [core/modal/src/types.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L35)
+Defined in: [core/modal/src/types.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L35)
 
 Origin URL for security validation
 
 ***
 
-### icon?
+### iconDataUri?
 
-> `optional` **icon**: `string`
+> `optional` **iconDataUri**: `string`
 
-Defined in: [core/modal/src/types.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L36)
-
-Optional data URI of dApp icon
+Defined in: [core/modal/src/types.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L36)
 
 ***
 
@@ -78,6 +76,6 @@ Optional data URI of dApp icon
 
 > `optional` **rpcUrl**: `string`
 
-Defined in: [core/modal/src/types.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L37)
+Defined in: [core/modal/src/types.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L37)
 
 Optional RPC endpoint for chain communication

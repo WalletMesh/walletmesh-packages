@@ -202,7 +202,7 @@ export class ConnectionManager {
       );
 
       console.log('[ConnectionManager] Connection successful:', {
-        chain: wallet.state.chain,
+        chain: wallet.state.networkId,
         address: wallet.state.address,
         sessionId: wallet.state.sessionId,
       });
@@ -285,7 +285,7 @@ export class ConnectionManager {
 
     try {
       const provider = await withTimeout(
-        this.client.getProvider(walletId),
+        this.client.getChainProvider(walletId),
         this.timeoutConfig.operationTimeout,
         'get provider',
       );

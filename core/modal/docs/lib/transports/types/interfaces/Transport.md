@@ -6,9 +6,12 @@
 
 # Interface: Transport
 
-Defined in: [core/modal/src/lib/transports/types.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L31)
+Defined in: [core/modal/src/lib/transports/types.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L70)
 
-Core interface for managing communication between dApp and wallet.
+Core transport interface.
+
+Provides a standardized way to communicate between the dApp and wallet,
+abstracting the underlying transport mechanism (PostMessage, Chrome Extension, WebSocket).
 
 ## Methods
 
@@ -16,11 +19,17 @@ Core interface for managing communication between dApp and wallet.
 
 > **connect**(): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/transports/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L32)
+Defined in: [core/modal/src/lib/transports/types.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L75)
+
+Establishes the transport connection.
 
 #### Returns
 
 `Promise`\<`void`\>
+
+#### Throws
+
+If connection fails
 
 ***
 
@@ -28,11 +37,17 @@ Defined in: [core/modal/src/lib/transports/types.ts:32](https://github.com/Walle
 
 > **disconnect**(): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/transports/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L33)
+Defined in: [core/modal/src/lib/transports/types.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L81)
+
+Terminates the transport connection.
 
 #### Returns
 
 `Promise`\<`void`\>
+
+#### Throws
+
+If disconnection fails
 
 ***
 
@@ -40,7 +55,9 @@ Defined in: [core/modal/src/lib/transports/types.ts:33](https://github.com/Walle
 
 > **send**(`data`): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/transports/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L34)
+Defined in: [core/modal/src/lib/transports/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L88)
+
+Sends data through the transport.
 
 #### Parameters
 
@@ -48,9 +65,15 @@ Defined in: [core/modal/src/lib/transports/types.ts:34](https://github.com/Walle
 
 `unknown`
 
+Data to send
+
 #### Returns
 
 `Promise`\<`void`\>
+
+#### Throws
+
+If send operation fails
 
 ***
 
@@ -58,13 +81,39 @@ Defined in: [core/modal/src/lib/transports/types.ts:34](https://github.com/Walle
 
 > **onMessage**(`handler`): `void`
 
-Defined in: [core/modal/src/lib/transports/types.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L35)
+Defined in: [core/modal/src/lib/transports/types.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L94)
+
+Registers message handler.
 
 #### Parameters
 
 ##### handler
 
 (`data`) => `void`
+
+Function to handle incoming messages
+
+#### Returns
+
+`void`
+
+***
+
+### offMessage()
+
+> **offMessage**(`handler`): `void`
+
+Defined in: [core/modal/src/lib/transports/types.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L100)
+
+Removes message handler.
+
+#### Parameters
+
+##### handler
+
+(`data`) => `void`
+
+Previously registered handler to remove
 
 #### Returns
 
@@ -76,8 +125,24 @@ Defined in: [core/modal/src/lib/transports/types.ts:35](https://github.com/Walle
 
 > **isConnected**(): `boolean`
 
-Defined in: [core/modal/src/lib/transports/types.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L36)
+Defined in: [core/modal/src/lib/transports/types.ts:105](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L105)
+
+Checks if transport is currently connected.
 
 #### Returns
 
 `boolean`
+
+***
+
+### getType()
+
+> **getType**(): [`TransportType`](../type-aliases/TransportType.md)
+
+Defined in: [core/modal/src/lib/transports/types.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L110)
+
+Gets transport type identifier.
+
+#### Returns
+
+[`TransportType`](../type-aliases/TransportType.md)

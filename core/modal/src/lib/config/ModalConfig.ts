@@ -178,7 +178,7 @@ export class WalletMeshConfig {
    * ```
    */
   addWallet(wallet: WalletInfo): WalletMeshConfig {
-    this.validateIcon(wallet.icon, `Wallet "${wallet.name}"`);
+    this.validateIcon(wallet.iconDataUri, `Wallet "${wallet.name}"`);
     this.wallets.push(wallet);
     return this;
   }
@@ -191,7 +191,7 @@ export class WalletMeshConfig {
    */
   addWallets(wallets: WalletInfo[]): WalletMeshConfig {
     for (const wallet of wallets) {
-      this.validateIcon(wallet.icon, `Wallet "${wallet.name}"`);
+      this.validateIcon(wallet.iconDataUri, `Wallet "${wallet.name}"`);
     }
     this.wallets.push(...wallets);
     return this;
@@ -267,7 +267,7 @@ export class WalletMeshConfig {
    */
   setDappInfo(info: DappInfo): WalletMeshConfig {
     // Validate dapp icon if provided
-    this.validateIcon(info.icon, 'DApp');
+    this.validateIcon(info.iconDataUri, 'DApp');
     this.dappInfo = info;
     return this;
   }
@@ -366,7 +366,7 @@ export class WalletMeshConfig {
       wallets: this.filterWalletsByChain(),
       dappInfo: {
         ...this.dappInfo,
-        icon: this.dappInfo.icon ?? DefaultIcon.Dapp,
+        iconDataUri: this.dappInfo.iconDataUri ?? DefaultIcon.Dapp,
       },
       supportedChains: this.supportedChains,
       timeoutConfig: this.timeoutConfig,

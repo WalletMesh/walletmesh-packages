@@ -11,6 +11,7 @@
     "src/lib/client/types.ts",
     "src/lib/transports/types.ts",
     "src/lib/utils/timeout.ts",
+    "src/lib/utils/validation.ts",
     "src/hooks/useWallet.ts",
     "src/lib/connectors/types.ts"
   ],

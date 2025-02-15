@@ -31,7 +31,7 @@
 
 ### TransportType
 
-Re-exports [TransportType](../lib/transports/types/enumerations/TransportType.md)
+Re-exports [TransportType](../lib/transports/types/type-aliases/TransportType.md)
 
 ***
 
@@ -59,9 +59,21 @@ Re-exports [Connector](../lib/connectors/types/interfaces/Connector.md)
 
 ***
 
-### ConnectorConfig
+### WalletConnectorConfig
 
-Re-exports [ConnectorConfig](../lib/connectors/types/type-aliases/ConnectorConfig.md)
+Re-exports [WalletConnectorConfig](../lib/connectors/types/interfaces/WalletConnectorConfig.md)
+
+***
+
+### AztecConnectorConfig
+
+Re-exports [AztecConnectorConfig](../lib/connectors/types/type-aliases/AztecConnectorConfig.md)
+
+***
+
+### AztecConnectorOptions
+
+Re-exports [AztecConnectorOptions](../lib/connectors/types/interfaces/AztecConnectorOptions.md)
 
 ***
 
