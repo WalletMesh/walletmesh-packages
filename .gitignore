@@ -130,6 +130,6 @@ dist
 .pnp.*
 
 .DS_Store
-.clinerules
+.aider*
 
 **/.claude/settings.local.json

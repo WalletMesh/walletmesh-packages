@@ -1,6 +1,9 @@
 {
   "name": "WalletMesh Packages",
-  "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/walletmesh-packages,type=bind,consistency=cached",
   "workspaceFolder": "/home/vscode/walletmesh-packages",
   "mounts": [
@@ -31,7 +34,9 @@
         "biomejs.biome",
         "vitest.explorer",
         "bierner.markdown-mermaid",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "saoudrizwan.claude-dev",
+        "rooveterinaryinc.roo-cline"
       ],
       "dev.containers.mountWaylandSocket": false
     }
