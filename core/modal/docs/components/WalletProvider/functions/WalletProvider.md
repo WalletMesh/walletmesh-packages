@@ -8,7 +8,7 @@
 
 > **WalletProvider**(`props`, `deprecatedLegacyContext`?): `ReactNode`
 
-Defined in: [core/modal/src/components/WalletProvider.tsx:59](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/components/WalletProvider.tsx#L59)
+Defined in: [core/modal/src/components/WalletProvider.tsx:60](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/components/WalletProvider.tsx#L60)
 
 Provider component that enables wallet integration in a React application.
 This component wraps your application and provides wallet connectivity features 

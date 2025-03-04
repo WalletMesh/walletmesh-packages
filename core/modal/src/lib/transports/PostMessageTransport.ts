@@ -1,4 +1,6 @@
-import type { Transport, TransportOptions } from './types.js';
+import type { Transport, TransportType } from './types.js';
+import { TransportTypes } from './types.js';
+import type { PostMessageTransportConfig } from './postmessage/types.js';
 import { messageValidation, errorMessages } from '../utils/validation.js';
 
 /**
@@ -53,20 +55,20 @@ export class PostMessageTransport implements Transport {
   private messageHandler: ((data: unknown) => void) | null = null;
   private cleanup: (() => void) | null = null;
   private connected = false;
-  private readonly options: TransportOptions;
+  private readonly config: PostMessageTransportConfig;
 
   /**
    * Creates a new PostMessageTransport instance.
    *
-   * @param options - Configuration options
-   * @param options.origin - Allowed origin for messages (recommended for security)
+   * @param config - Configuration options
+   * @param config.origin - Allowed origin for messages (recommended for security)
    *
    * @remarks
    * If no origin is specified, messages will be accepted from any origin ('*').
    * For security, it's recommended to always specify an allowed origin.
    */
-  constructor(options: TransportOptions = {}) {
-    this.options = options;
+  constructor(config: PostMessageTransportConfig) {
+    this.config = config;
   }
 
   /**
@@ -96,13 +98,8 @@ export class PostMessageTransport implements Transport {
       console.log('[PostMessageTransport] Received message:', event);
 
       // Validate origin if specified
-      if (!messageValidation.isValidOrigin(event.origin, this.options.origin)) {
-        console.warn(
-          '[PostMessageTransport] Invalid origin:',
-          event.origin,
-          'expected:',
-          this.options.origin,
-        );
+      if (!messageValidation.isValidOrigin(event.origin, this.config.origin)) {
+        console.warn('[PostMessageTransport] Invalid origin:', event.origin, 'expected:', this.config.origin);
         return;
       }
 
@@ -200,8 +197,25 @@ export class PostMessageTransport implements Transport {
       origin: window.location.origin,
     };
 
-    console.log('[PostMessageTransport] Sending message:', message, 'to:', this.options.origin || '*');
-    window.postMessage(message, this.options.origin || '*');
+    console.log('[PostMessageTransport] Sending message:', message, 'to:', this.config.origin);
+    window.postMessage(message, this.config.origin);
+  }
+
+  /**
+   * Removes a message handler.
+   * @param handler - Previously registered handler to remove
+   */
+  offMessage(handler: (data: unknown) => void): void {
+    if (this.messageHandler === handler) {
+      this.messageHandler = null;
+    }
+  }
+
+  /**
+   * Gets the transport type.
+   */
+  getType(): TransportType {
+    return TransportTypes.POSTMESSAGE;
   }
 
   /**

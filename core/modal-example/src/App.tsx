@@ -10,8 +10,8 @@ function App() {
 
   return (
     <WalletWrapper onError={handleError}>
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-semibold text-center mb-4">WalletMesh Modal Example</h1>
+      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '16px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: '600', textAlign: 'center', marginBottom: '16px' }}>WalletMesh Modal Example</h1>
         <ConnectButton />
       </div>
     </WalletWrapper>

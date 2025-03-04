@@ -6,12 +6,23 @@
 
 # lib/transports/types
 
-## Enumerations
+Core type definitions for the transport layer.
 
-- [TransportType](enumerations/TransportType.md)
+## Classes
+
+- [TransportError](classes/TransportError.md)
 
 ## Interfaces
 
-- [TransportOptions](interfaces/TransportOptions.md)
+- [BaseTransportConfig](interfaces/BaseTransportConfig.md)
 - [TransportConfig](interfaces/TransportConfig.md)
 - [Transport](interfaces/Transport.md)
+
+## Type Aliases
+
+- [TransportErrorType](type-aliases/TransportErrorType.md)
+- [TransportType](type-aliases/TransportType.md)
+
+## Variables
+
+- [TransportTypes](variables/TransportTypes.md)

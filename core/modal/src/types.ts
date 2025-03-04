@@ -1,4 +1,4 @@
-import type { ConnectorConfig } from './lib/connectors/types.js';
+import type { WalletConnectorConfig } from './lib/connectors/types.js';
 
 /**
  * Information about a DApp integrating with WalletMesh.
@@ -33,7 +33,7 @@ export interface DappInfo {
   name: string;
   description: string;
   origin: string;
-  icon?: string;
+  iconDataUri?: string;
   rpcUrl?: string;
 }
 
@@ -73,10 +73,10 @@ export interface DappInfo {
 export interface WalletInfo {
   id: string;
   name: string;
-  icon?: string;
-  url?: string;
+  iconDataUri?: string;
+  websiteUrl?: string;
   supportedChains?: string[];
-  connector: ConnectorConfig;
+  connector: WalletConnectorConfig;
 }
 
 /**
@@ -105,7 +105,7 @@ export interface WalletInfo {
  * ```
  */
 export interface WalletState {
-  chain?: string;
+  networkId?: string;
   address?: string;
   sessionId?: string;
 }

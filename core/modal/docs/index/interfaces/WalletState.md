@@ -6,7 +6,7 @@
 
 # Interface: WalletState
 
-Defined in: [core/modal/src/types.ts:107](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L107)
+Defined in: [core/modal/src/types.ts:107](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L107)
 
 Runtime state of a connected wallet.
 
@@ -32,13 +32,11 @@ const state: WalletState = {
 
 ## Properties
 
-### chain?
+### networkId?
 
-> `optional` **chain**: `string`
+> `optional` **networkId**: `string`
 
-Defined in: [core/modal/src/types.ts:108](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L108)
-
-Current blockchain network identifier
+Defined in: [core/modal/src/types.ts:108](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L108)
 
 ***
 
@@ -46,7 +44,7 @@ Current blockchain network identifier
 
 > `optional` **address**: `string`
 
-Defined in: [core/modal/src/types.ts:109](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L109)
+Defined in: [core/modal/src/types.ts:109](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L109)
 
 Connected wallet's blockchain address
 
@@ -56,6 +54,6 @@ Connected wallet's blockchain address
 
 > `optional` **sessionId**: `string`
 
-Defined in: [core/modal/src/types.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L110)
+Defined in: [core/modal/src/types.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L110)
 
 Unique identifier for the connection session

@@ -4,12 +4,6 @@ import { WalletError } from '../../client/types.js';
 
 /**
  * Type definition for supported Aztec RPC methods.
- *
- * @remarks
- * Defines the type structure for JSON-RPC methods supported by the Obsidion wallet:
- * - aztec_requestAccounts: Get connected wallet accounts
- * - aztec_sendTransaction: Submit transaction to the network
- * - aztec_call: Make a read-only call to a contract
  */
 type RpcMethods = {
   aztec_requestAccounts: {
@@ -33,11 +27,6 @@ type RpcRequest<M extends keyof RpcMethods = keyof RpcMethods> = {
 
 /**
  * Standard JSON-RPC 2.0 request structure.
- *
- * @property jsonrpc - Always "2.0" per JSON-RPC spec
- * @property id - Unique request identifier
- * @property method - Name of the method to invoke
- * @property params - Array of parameters for the method
  */
 interface JsonRpcRequest {
   jsonrpc: '2.0';
@@ -48,11 +37,6 @@ interface JsonRpcRequest {
 
 /**
  * Standard JSON-RPC 2.0 response structure.
- *
- * @property jsonrpc - Always "2.0" per JSON-RPC spec
- * @property id - ID matching the original request
- * @property result - Method return value on success
- * @property error - Error object on failure
  */
 interface JsonRpcResponse {
   jsonrpc: '2.0';
@@ -67,9 +51,6 @@ interface JsonRpcResponse {
 
 /**
  * Internal message structure for communication.
- *
- * @property requestId - Unique identifier for the message
- * @property data - The JSON-RPC request or response payload
  */
 interface Message {
   requestId: string;
@@ -78,11 +59,6 @@ interface Message {
 
 /**
  * Configuration message for popup window management.
- *
- * @extends Message
- * @property event - Type of popup event:
- *   - PopupLoaded: Window is ready for communication
- *   - PopupUnload: Window is being closed
  */
 interface ConfigMessage extends Message {
   event: 'PopupLoaded' | 'PopupUnload';
@@ -90,22 +66,6 @@ interface ConfigMessage extends Message {
 
 /**
  * Interface for interacting with the Obsidion wallet provider.
- *
- * Provides methods for:
- * - Making RPC requests to the wallet
- * - Managing wallet connections
- * - Retrieving account information
- *
- * @example
- * ```typescript
- * const provider: ObsidionProvider = {
- *   async request({ method: 'aztec_requestAccounts', params: [] }) {
- *     // Request accounts from wallet
- *     return ['0x...'];
- *   },
- *   // ... other methods
- * };
- * ```
  */
 interface ObsidionProvider {
   request<M extends keyof RpcMethods>(request: RpcRequest<M>): Promise<RpcMethods[M]['result']>;
@@ -116,16 +76,6 @@ interface ObsidionProvider {
 
 /**
  * Handles popup window messaging for wallet communication.
- *
- * Manages:
- * - Popup window lifecycle
- * - Message routing
- * - Connection state
- * - Error handling
- *
- * @remarks
- * Uses window.postMessage for secure cross-origin communication
- * between the dApp and wallet popup window.
  */
 class Communicator {
   private readonly url: URL;
@@ -251,31 +201,6 @@ function generateId(): string {
 
 /**
  * Connector implementation for the Obsidion wallet with Aztec protocol support.
- *
- * Provides wallet connection and interaction capabilities through a popup
- * window interface. Implements the standard Connector interface while handling
- * Obsidion-specific communication patterns.
- *
- * @implements {Connector}
- *
- * @example
- * ```typescript
- * const connector = new ObsidionAztecConnector({
- *   chainId: 'aztec:testnet'
- * });
- *
- * const wallet = await connector.connect({
- *   id: 'obsidion',
- *   name: 'Obsidion Wallet',
- *   url: 'https://wallet.obsidion.xyz'
- * });
- * ```
- *
- * @remarks
- * - Uses popup windows for user interaction
- * - Implements JSON-RPC for wallet communication
- * - Handles connection state and session management
- * - Provides automatic reconnection capabilities
  */
 export class ObsidionAztecConnector implements Connector {
   private provider: ObsidionProvider | null = null;
@@ -283,15 +208,6 @@ export class ObsidionAztecConnector implements Connector {
   private connected = false;
   private readonly options: AztecConnectorOptions;
 
-  /**
-   * Creates a new ObsidionAztecConnector instance.
-   *
-   * @param options - Configuration options for the connector
-   *
-   * @remarks
-   * Default chainId is set to '1' if not specified in options.
-   * Additional configuration can be provided through AztecConnectorOptions.
-   */
   constructor(options: AztecConnectorOptions = {}) {
     this.options = {
       chainId: '1',
@@ -299,32 +215,16 @@ export class ObsidionAztecConnector implements Connector {
     };
   }
 
-  /**
-   * Establishes connection with the Obsidion wallet.
-   *
-   * @param walletInfo - Information about the wallet to connect
-   * @returns Promise resolving to the connected wallet details
-   * @throws {WalletError} If already connected or connection fails
-   *
-   * @remarks
-   * Connection process:
-   * 1. Opens wallet popup window
-   * 2. Establishes messaging channel
-   * 3. Requests wallet accounts
-   * 4. Creates and stores session
-   */
   async connect(walletInfo: WalletInfo): Promise<ConnectedWallet> {
     if (this.connected) {
       throw new WalletError('Already connected', 'connector');
     }
 
     try {
-      // Initialize communicator with wallet URL
       this.communicator = new Communicator({
-        url: walletInfo.url || 'https://wallet.aztec.network',
+        url: walletInfo.websiteUrl || 'https://wallet.aztec.network',
       });
 
-      // Create provider that uses communicator
       this.provider = {
         request: async <M extends keyof RpcMethods>(request: RpcRequest<M>) => {
           if (!this.communicator) {
@@ -374,13 +274,12 @@ export class ObsidionAztecConnector implements Connector {
         },
       };
 
-      // Connect and get account
       await this.provider.connect();
       const address = await this.provider.getAccount();
       this.connected = true;
 
       const state: WalletState = {
-        chain: this.options.chainId || '1',
+        networkId: this.options.chainId || '1',
         address,
         sessionId: Date.now().toString(),
       };
@@ -395,35 +294,10 @@ export class ObsidionAztecConnector implements Connector {
     }
   }
 
-  /**
-   * Attempts to resume a previous wallet connection.
-   *
-   * @param walletInfo - Information about the wallet to reconnect
-   * @param _savedState - Previous session state (unused in Obsidion)
-   * @returns Promise resolving to a fresh wallet connection
-   *
-   * @remarks
-   * Obsidion doesn't support session restoration, so this method
-   * creates a new connection instead.
-   */
   async resume(walletInfo: WalletInfo, _savedState: WalletState): Promise<ConnectedWallet> {
-    // Simply connect to get fresh state from the wallet
     return this.connect(walletInfo);
   }
 
-  /**
-   * Terminates the wallet connection.
-   *
-   * @returns Promise that resolves when disconnection is complete
-   * @throws {WalletError} If disconnection fails
-   *
-   * @remarks
-   * Cleanup process:
-   * 1. Disconnects provider
-   * 2. Closes popup window
-   * 3. Cleans up message handlers
-   * 4. Resets internal state
-   */
   async disconnect(): Promise<void> {
     if (!this.connected) return;
 
@@ -440,16 +314,6 @@ export class ObsidionAztecConnector implements Connector {
     }
   }
 
-  /**
-   * Retrieves the Obsidion wallet provider instance.
-   *
-   * @returns Promise resolving to the provider instance
-   * @throws {WalletError} If not connected or provider unavailable
-   *
-   * @remarks
-   * The provider gives access to wallet-specific RPC methods
-   * and should only be used by trusted internal code.
-   */
   async getProvider(): Promise<ObsidionProvider> {
     if (!this.connected || !this.provider) {
       throw new WalletError('Not connected', 'connector');
@@ -457,18 +321,6 @@ export class ObsidionAztecConnector implements Connector {
     return this.provider;
   }
 
-  /**
-   * Processes incoming messages from the transport layer.
-   *
-   * @param data - Message payload from the transport
-   *
-   * @remarks
-   * Message handling:
-   * - Validates connection state
-   * - Forwards messages to popup window
-   * - Handles communication errors gracefully
-   * - Logs warnings for disconnected state
-   */
   handleMessage(data: unknown): void {
     const communicator = this.communicator;
     if (!this.connected || !communicator) {
@@ -476,7 +328,6 @@ export class ObsidionAztecConnector implements Connector {
       return;
     }
 
-    // Forward message to communicator
     void communicator
       .postMessage({
         requestId: generateId(),

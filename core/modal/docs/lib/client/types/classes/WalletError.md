@@ -6,22 +6,9 @@
 
 # Class: WalletError
 
-Defined in: [core/modal/src/lib/client/types.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L45)
+Defined in: [core/modal/src/lib/client/types.ts:13](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L13)
 
-Specialized error class for wallet-related errors.
-
-Extends the native Error class to provide additional context about wallet errors.
-Categorizes errors by type to help with error handling and debugging.
-
-## Example
-
-```typescript
-throw new WalletError(
-  'Failed to connect to wallet',
-  'transport',
-  new Error('Connection refused')
-);
-```
+Error class for wallet-related errors.
 
 ## Extends
 
@@ -33,7 +20,7 @@ throw new WalletError(
 
 > **new WalletError**(`message`, `type`, `cause`?): [`WalletError`](WalletError.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L50)
+Defined in: [core/modal/src/lib/client/types.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L18)
 
 #### Parameters
 
@@ -63,9 +50,7 @@ Defined in: [core/modal/src/lib/client/types.ts:50](https://github.com/WalletMes
 
 > **name**: `string` = `'WalletError'`
 
-Defined in: [core/modal/src/lib/client/types.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L46)
-
-Always set to 'WalletError'
+Defined in: [core/modal/src/lib/client/types.ts:14](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L14)
 
 #### Overrides
 
@@ -77,9 +62,7 @@ Always set to 'WalletError'
 
 > `optional` **cause**: `Error`
 
-Defined in: [core/modal/src/lib/client/types.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L47)
-
-Optional underlying error that caused this error
+Defined in: [core/modal/src/lib/client/types.ts:15](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L15)
 
 #### Overrides
 
@@ -91,14 +74,51 @@ Optional underlying error that caused this error
 
 > `readonly` **type**: `"client"` \| `"connector"` \| `"transport"` \| `"storage"` \| `"timeout"`
 
-Defined in: [core/modal/src/lib/client/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L48)
+Defined in: [core/modal/src/lib/client/types.ts:16](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L16)
 
-Categorizes the error source:
-  - 'client': Errors from the WalletMeshClient
-  - 'connector': Errors from wallet protocol connectors
-  - 'transport': Communication/messaging errors
-  - 'storage': Session storage/persistence errors
-  - 'timeout': Operation timeout errors
+***
+
+### prepareStackTrace()?
+
+> `static` `optional` **prepareStackTrace**: (`err`, `stackTraces`) => `any`
+
+Defined in: node\_modules/@types/node/globals.d.ts:143
+
+Optional override for formatting stack traces
+
+#### Parameters
+
+##### err
+
+`Error`
+
+##### stackTraces
+
+`CallSite`[]
+
+#### Returns
+
+`any`
+
+#### See
+
+https://v8.dev/docs/stack-trace-api#customizing-stack-traces
+
+#### Inherited from
+
+`Error.prepareStackTrace`
+
+***
+
+### stackTraceLimit
+
+> `static` **stackTraceLimit**: `number`
+
+Defined in: node\_modules/@types/node/globals.d.ts:145
+
+#### Inherited from
+
+`Error.stackTraceLimit`
 
 ***
 
@@ -123,3 +143,31 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
 #### Inherited from
 
 `Error.stack`
+
+## Methods
+
+### captureStackTrace()
+
+> `static` **captureStackTrace**(`targetObject`, `constructorOpt`?): `void`
+
+Defined in: node\_modules/@types/node/globals.d.ts:136
+
+Create .stack property on a target object
+
+#### Parameters
+
+##### targetObject
+
+`object`
+
+##### constructorOpt?
+
+`Function`
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+`Error.captureStackTrace`

@@ -6,7 +6,7 @@
 
 # Interface: WalletInfo
 
-Defined in: [core/modal/src/types.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L73)
+Defined in: [core/modal/src/types.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L73)
 
 Configuration for a supported wallet integration.
 
@@ -41,7 +41,7 @@ const walletInfo: WalletInfo = {
 
 > **id**: `string`
 
-Defined in: [core/modal/src/types.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L74)
+Defined in: [core/modal/src/types.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L74)
 
 Unique identifier for the wallet
 
@@ -51,29 +51,25 @@ Unique identifier for the wallet
 
 > **name**: `string`
 
-Defined in: [core/modal/src/types.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L75)
+Defined in: [core/modal/src/types.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L75)
 
 User-friendly display name
 
 ***
 
-### icon?
+### iconDataUri?
 
-> `optional` **icon**: `string`
+> `optional` **iconDataUri**: `string`
 
-Defined in: [core/modal/src/types.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L76)
-
-Optional data URI of wallet icon
+Defined in: [core/modal/src/types.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L76)
 
 ***
 
-### url?
+### websiteUrl?
 
-> `optional` **url**: `string`
+> `optional` **websiteUrl**: `string`
 
-Defined in: [core/modal/src/types.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L77)
-
-Optional wallet website/install URL
+Defined in: [core/modal/src/types.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L77)
 
 ***
 
@@ -81,7 +77,7 @@ Optional wallet website/install URL
 
 > `optional` **supportedChains**: `string`[]
 
-Defined in: [core/modal/src/types.ts:78](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L78)
+Defined in: [core/modal/src/types.ts:78](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L78)
 
 Optional list of supported chain IDs
 
@@ -89,8 +85,8 @@ Optional list of supported chain IDs
 
 ### connector
 
-> **connector**: [`ConnectorConfig`](../../lib/connectors/types/type-aliases/ConnectorConfig.md)
+> **connector**: [`WalletConnectorConfig`](../../lib/connectors/types/interfaces/WalletConnectorConfig.md)
 
-Defined in: [core/modal/src/types.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/types.ts#L79)
+Defined in: [core/modal/src/types.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L79)
 
 Chain-specific connector configuration

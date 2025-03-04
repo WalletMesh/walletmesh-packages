@@ -1,6 +1,8 @@
 import type { WalletInfo, ConnectedWallet } from '../../../types.js';
 import type { Transport } from '../../transports/types.js';
-import { TransportType, type TransportConfig } from '../../transports/types.js';
+import { TransportTypes, type TransportConfig } from '../../transports/types.js';
+import type { ChromeTransportConfig } from '../../transports/chrome/types.js';
+import type { PostMessageTransportConfig } from '../../transports/postmessage/types.js';
 import { BaseConnector } from './base.js';
 import { createTransport } from '../../transports/index.js';
 import { WalletError } from '../../client/types.js';
@@ -17,19 +19,46 @@ export class WalletMeshConnector extends BaseConnector {
   private provider: unknown | null = null;
 
   protected async createTransport(walletInfo: WalletInfo): Promise<Transport> {
-    const config: TransportConfig = {
-      type: TransportType.PostMessage,
-      options: {},
+    // Default to PostMessage with '*' origin
+    let config: TransportConfig<PostMessageTransportConfig | ChromeTransportConfig> = {
+      type: TransportTypes.POSTMESSAGE,
+      config: {
+        origin: '*',
+        autoReconnect: true,
+        reconnectAttempts: 3,
+        reconnectDelay: 1000,
+        timeout: 5000,
+      },
     };
 
-    if (walletInfo.url) {
+    if (walletInfo.websiteUrl) {
       // Web wallet - use PostMessage with origin from URL
-      const origin = new URL(walletInfo.url).origin;
-      config.options = { origin };
+      const origin = new URL(walletInfo.websiteUrl).origin;
+      config = {
+        type: TransportTypes.POSTMESSAGE,
+        config: {
+          origin,
+          autoReconnect: true,
+          reconnectAttempts: 3,
+          reconnectDelay: 1000,
+          timeout: 5000,
+        },
+      };
     } else if ('extensionId' in walletInfo && typeof walletInfo.extensionId === 'string') {
       // Extension wallet - use Extension transport
-      config.type = TransportType.Extension;
-      config.options = { extensionId: walletInfo.extensionId };
+      config = {
+        type: TransportTypes.CHROME_EXTENSION,
+        config: {
+          extensionId: walletInfo.extensionId,
+          autoReconnect: true,
+          portName: 'walletmesh',
+        },
+      };
+    } else if (!walletInfo.websiteUrl && !('extensionId' in walletInfo)) {
+      throw new WalletError(
+        'Invalid wallet configuration - no websiteUrl or extensionId provided',
+        'connector',
+      );
     }
 
     return createTransport(config);

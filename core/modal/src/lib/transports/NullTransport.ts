@@ -1,4 +1,5 @@
-import type { Transport } from './types.js';
+import type { Transport, TransportType } from './types.js';
+import { TransportTypes } from './types.js';
 
 /**
  * No-operation transport implementation for testing purposes.
@@ -106,6 +107,21 @@ export class NullTransport implements Transport {
    */
   onMessage(handler: (data: unknown) => void): void {
     this.messageHandler = handler;
+  }
+
+  /**
+   * Removes a message handler function.
+   *
+   * @param handler - Previously registered handler to remove
+   */
+  offMessage(handler: (data: unknown) => void): void {
+    if (this.messageHandler === handler) {
+      this.messageHandler = null;
+    }
+  }
+
+  getType(): TransportType {
+    return TransportTypes.NULL;
   }
 
   /**

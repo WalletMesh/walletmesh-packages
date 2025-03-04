@@ -8,7 +8,7 @@
  */
 
 import { ConnectionStatus, type WalletInfo, type ConnectedWallet, type DappInfo } from '../../types.js';
-import type { WalletClient, WalletSession } from './types.js';
+import type { WalletClient, WalletSession, ChainConnection } from './types.js';
 import { SessionManager } from './SessionManager.js';
 import type { Connector } from '../connectors/types.js';
 import { createConnector } from '../connectors/createConnector.js';
@@ -109,6 +109,14 @@ export class WalletMeshClient implements WalletClient {
    * @param dappInfo - Information about the dApp
    */
   private constructor(dappInfo: DappInfo) {
+    // Validate origin matches current window location
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : null;
+    if (currentOrigin && dappInfo.origin !== currentOrigin) {
+      throw new Error(
+        `Origin mismatch: DApp info specifies '${dappInfo.origin}' but is being served from '${currentOrigin}'. This is a security violation - the DApp must be served from its declared origin.`,
+      );
+    }
+
     this.dappInfo = Object.freeze({ ...dappInfo });
     this.sessionManager = new SessionManager();
   }
@@ -133,7 +141,11 @@ export class WalletMeshClient implements WalletClient {
    * ```
    */
   private async restoreSession(session: WalletSession): Promise<void> {
-    if (!session.wallet.state?.chain || !session.wallet.state?.address || !session.wallet.state?.sessionId) {
+    if (
+      !session.wallet.state?.networkId ||
+      !session.wallet.state?.address ||
+      !session.wallet.state?.sessionId
+    ) {
       throw new Error('Invalid session state');
     }
 
@@ -152,12 +164,15 @@ export class WalletMeshClient implements WalletClient {
         const connectedWallet = await connector.resume(session.wallet.info, session.wallet.state);
 
         // On success, update session with new connector
-        const restoredSession: WalletSession = {
-          id: session.wallet.info.id,
-          connector,
+        const restoredSession = {
+          ...session,
           wallet: connectedWallet,
+          connector: connector,
           status: ConnectionStatus.Connected,
-          timestamp: Date.now(),
+          chainConnections: session.chainConnections,
+          sessionToken: session.sessionToken,
+          createdAt: session.createdAt,
+          id: session.id,
         };
 
         // Always persist state returned by connector
@@ -165,7 +180,7 @@ export class WalletMeshClient implements WalletClient {
 
         console.log('[WalletMeshClient] Session restored successfully:', {
           id: connectedWallet.info.id,
-          chain: connectedWallet.state.chain,
+          networkId: connectedWallet.state.networkId,
           address: connectedWallet.state.address,
         });
 
@@ -335,10 +350,23 @@ export class WalletMeshClient implements WalletClient {
       // Store session with timestamp and always persist state
       const session: WalletSession = {
         id: walletInfo.id,
-        connector,
+        connector: connector,
         wallet: connectedWallet,
         status: ConnectionStatus.Connected,
-        timestamp: Date.now(),
+        createdAt: Date.now(),
+        chainConnections: new Map(),
+        sessionToken: {
+          id: crypto.randomUUID(),
+          createdAt: Date.now(),
+          expiresAt: Date.now() + 24 * 60 * 60 * 1000,
+          walletType: connectedWallet.info.id,
+          publicKey: '',
+          permissions: [],
+          accounts: [],
+          chainIds: [],
+          nonce: crypto.randomUUID(),
+          signature: '',
+        },
       };
       this.sessionManager.setSession(walletInfo.id, session, true);
 
@@ -406,7 +434,7 @@ export class WalletMeshClient implements WalletClient {
    * const accounts = await provider.request({ method: 'eth_accounts' });
    * ```
    */
-  async getProvider(walletId: string): Promise<unknown> {
+  async getChainProvider(walletId: string): Promise<unknown> {
     const session = this.sessionManager.getSession(walletId);
     if (!session) {
       throw new Error(`No session found for wallet ${walletId}`);
@@ -415,6 +443,16 @@ export class WalletMeshClient implements WalletClient {
       throw new Error(`No connector available for wallet ${walletId}`);
     }
     return session.connector.getProvider();
+  }
+
+  /**
+   * Gets all chain connections for a specific wallet.
+   *
+   * @param walletId - ID of the wallet
+   * @returns Promise resolving to a map of chain connections or undefined if not found
+   */
+  async getWalletConnections(walletId: string): Promise<Map<number, ChainConnection> | undefined> {
+    return this.sessionManager.getWalletConnections(walletId);
   }
 
   /**
@@ -492,7 +530,7 @@ export class WalletMeshClient implements WalletClient {
    * Currently logs errors to console, but could be extended
    * to implement more sophisticated error handling.
    */
-  handleError(error: Error): void {
+  handleWalletError(error: Error): void {
     console.error('[WalletMeshClient] Wallet error:', error);
   }
 

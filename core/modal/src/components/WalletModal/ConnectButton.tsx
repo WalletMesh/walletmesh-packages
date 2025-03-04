@@ -1,19 +1,34 @@
-import React from "react"
-import { useCallback } from "react"
+import React, { useCallback } from "react"
 import { useWalletContext } from "../WalletContext.js"
 import { Loader2 } from "lucide-react"
 import { DefaultIcon } from "../../lib/constants/defaultIcons.js"
 import styles from "./ConnectButton.module.css"
 import { ConnectionStatus } from "../../types.js"
+import type { WalletInfo } from "../../types.js"
+
+const getDisplayName = (walletInfo: WalletInfo): string => {
+  if (walletInfo.name === "Custom Web Wallet" && walletInfo.websiteUrl) {
+    try {
+      const url = new URL(walletInfo.websiteUrl);
+      return `Custom Wallet (${url.hostname})`;
+    } catch (e) {
+      return walletInfo.name;
+    }
+  }
+  return walletInfo.name;
+}
 
 export const ConnectButton: React.FC = React.memo(() => {
-  const { connectionStatus, connectedWallet, openModal } = useWalletContext()
+  const { 
+    connectionStatus, 
+    connectedWallet, 
+    openSelectModal, 
+    openConnectedModal 
+  } = useWalletContext()
 
   const handleConnectedWalletClick = useCallback(() => {
-    if (connectionStatus === ConnectionStatus.Connected) {
-      openModal();
-    }
-  }, [connectionStatus, openModal]);
+    openConnectedModal();
+  }, [openConnectedModal]);
 
   const isConnected = connectionStatus === ConnectionStatus.Connected && connectedWallet;
   const isConnecting = connectionStatus === ConnectionStatus.Connecting;
@@ -29,13 +44,13 @@ export const ConnectButton: React.FC = React.memo(() => {
           aria-label={`Connected to ${connectedWallet.info.name}. Click to view details.`}
         >
           <img
-            src={connectedWallet.info.icon ?? DefaultIcon.Wallet}
+            src={connectedWallet.info.iconDataUri ?? DefaultIcon.Wallet}
             alt={`${connectedWallet.info.name} icon`}
             className={styles['walletIcon']}
           />
           <div className={styles['walletDetails']}>
             <span className={styles['walletName']}>
-              { connectedWallet.info.name === "Custom Web Wallet" ? `Custom (${connectedWallet.info.url})` : connectedWallet.info.name }
+              {getDisplayName(connectedWallet.info)}
             </span>
           </div>
         </button>
@@ -47,10 +62,10 @@ export const ConnectButton: React.FC = React.memo(() => {
           <div className={styles['detailsBox']}>
             <h3 className={styles['detailsTitle']}>DApp Access Example:</h3>
             <p className={styles['detailsItem']}>
-              <strong>Wallet:</strong> {connectedWallet.info.name}
+              <strong>Wallet:</strong> {getDisplayName(connectedWallet.info)}
             </p>
             <p className={styles['detailsItem']}>
-              <strong>Chain:</strong> {connectedWallet.state.chain}
+              <strong>Chain:</strong> {connectedWallet.state.networkId}
             </p>
             <p className={styles['detailsItem']}>
               <strong>Address:</strong> {connectedWallet.state.address}
@@ -66,7 +81,10 @@ export const ConnectButton: React.FC = React.memo(() => {
 
   return (
     <button
-      onClick={openModal}
+      onClick={() => {
+        console.log('[ConnectButton] Opening select modal');
+        openSelectModal();
+      }}
       className={styles['connectButton']}
       disabled={buttonDisabled}
       aria-label="Connect Wallet"

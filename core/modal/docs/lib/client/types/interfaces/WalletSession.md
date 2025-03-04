@@ -6,30 +6,9 @@
 
 # Interface: WalletSession
 
-Defined in: [core/modal/src/lib/client/types.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L86)
+Defined in: [core/modal/src/lib/client/types.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L52)
 
-Represents an active wallet session with its associated state and configuration.
-
-A session is the core data structure that maintains the state of a wallet
-connection, including:
-- Connection status and history
-- Protocol-specific connector instance
-- Wallet state and metadata
-- Error tracking
-
-Maintains the connection state, protocol connector, and wallet information
-required to manage an active wallet connection.
-
-## Example
-
-```typescript
-const session: WalletSession = {
-  connector: new WalletConnector(),
-  wallet: connectedWallet,
-  status: ConnectionStatus.Connected,
-  connectorConfig: { type: 'standard' }
-};
-```
+Represents an active wallet session
 
 ## Properties
 
@@ -37,15 +16,15 @@ const session: WalletSession = {
 
 > **id**: `string`
 
-Defined in: [core/modal/src/lib/client/types.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L87)
+Defined in: [core/modal/src/lib/client/types.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L53)
 
 ***
 
-### timestamp
+### createdAt
 
-> **timestamp**: `number`
+> **createdAt**: `number`
 
-Defined in: [core/modal/src/lib/client/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L88)
+Defined in: [core/modal/src/lib/client/types.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L54)
 
 ***
 
@@ -53,9 +32,7 @@ Defined in: [core/modal/src/lib/client/types.ts:88](https://github.com/WalletMes
 
 > `optional` **connector**: [`Connector`](../../../connectors/types/interfaces/Connector.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L89)
-
-Optional connector instance for protocol handling
+Defined in: [core/modal/src/lib/client/types.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L55)
 
 ***
 
@@ -63,9 +40,23 @@ Optional connector instance for protocol handling
 
 > **wallet**: [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:90](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L90)
+Defined in: [core/modal/src/lib/client/types.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L56)
 
-The connected wallet instance
+***
+
+### chainConnections
+
+> **chainConnections**: `Map`\<`number`, [`ChainConnection`](ChainConnection.md)\>
+
+Defined in: [core/modal/src/lib/client/types.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L57)
+
+***
+
+### sessionToken
+
+> **sessionToken**: [`SessionToken`](SessionToken.md)
+
+Defined in: [core/modal/src/lib/client/types.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L58)
 
 ***
 
@@ -73,16 +64,12 @@ The connected wallet instance
 
 > **status**: [`ConnectionStatus`](../../../../index/enumerations/ConnectionStatus.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L91)
-
-Current connection status
+Defined in: [core/modal/src/lib/client/types.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L59)
 
 ***
 
-### lastError?
+### lastConnectionError?
 
-> `optional` **lastError**: `Error`
+> `optional` **lastConnectionError**: `Error`
 
-Defined in: [core/modal/src/lib/client/types.ts:92](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/client/types.ts#L92)
-
-Last error encountered, if any
+Defined in: [core/modal/src/lib/client/types.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L60)

@@ -8,7 +8,7 @@
 
 > **useWallet**(`options`): `object`
 
-Defined in: [core/modal/src/hooks/useWallet.ts:243](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/hooks/useWallet.ts#L243)
+Defined in: [core/modal/src/hooks/useWallet.ts:243](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/hooks/useWallet.ts#L243)
 
 React hook for managing wallet connections and state.
 
@@ -68,21 +68,41 @@ Object containing wallet state and control functions
 
 `Promise`\<`void`\>
 
-### isModalOpen
+### isSelectModalOpen
 
-> **isModalOpen**: `boolean`
+> **isSelectModalOpen**: `boolean`
 
-### openModal()
+### openSelectModal()
 
-> **openModal**: () => `void`
+> **openSelectModal**: () => `void`
 
 #### Returns
 
 `void`
 
-### closeModal()
+### closeSelectModal()
 
-> **closeModal**: () => `void`
+> **closeSelectModal**: () => `void`
+
+#### Returns
+
+`void`
+
+### isConnectedModalOpen
+
+> **isConnectedModalOpen**: `boolean`
+
+### openConnectedModal()
+
+> **openConnectedModal**: () => `void`
+
+#### Returns
+
+`void`
+
+### closeConnectedModal()
+
+> **closeConnectedModal**: () => `void`
 
 #### Returns
 
@@ -97,9 +117,9 @@ function WalletComponent() {
     connectedWallet,
     connectWallet,
     disconnectWallet,
-    isModalOpen,
-    openModal,
-    closeModal
+    isSelectModalOpen,
+    openSelectModal,
+    closeSelectModal
   } = useWalletLogic({
     dappInfo: {
       name: 'My dApp',
@@ -116,7 +136,7 @@ function WalletComponent() {
     );
   }
 
-  return <button onClick={openModal}>Connect Wallet</button>;
+  return <button onClick={openSelectModal}>Connect Wallet</button>;
 }
 ```
 

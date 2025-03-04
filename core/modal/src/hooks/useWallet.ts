@@ -208,9 +208,9 @@ export interface UseWalletOptions {
  *     connectedWallet,
  *     connectWallet,
  *     disconnectWallet,
- *     isModalOpen,
- *     openModal,
- *     closeModal
+ *     isSelectModalOpen,
+ *     openSelectModal,
+ *     closeSelectModal
  *   } = useWalletLogic({
  *     dappInfo: {
  *       name: 'My dApp',
@@ -227,7 +227,7 @@ export interface UseWalletOptions {
  *     );
  *   }
  *
- *   return <button onClick={openModal}>Connect Wallet</button>;
+ *   return <button onClick={openSelectModal}>Connect Wallet</button>;
  * }
  * ```
  *
@@ -242,7 +242,8 @@ export interface UseWalletOptions {
  */
 export const useWallet = ({ dappInfo, timeoutConfig }: UseWalletOptions) => {
   const [manager] = useState(() => new ConnectionManager(dappInfo, timeoutConfig));
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSelectModalOpen, setIsSelectModalOpen] = useState(false);
+  const [isConnectedModalOpen, setIsConnectedModalOpen] = useState(false);
 
   const [walletState, dispatch] = useReducer<(state: WalletState, action: WalletAction) => WalletState>(
     (state, action) => {
@@ -314,7 +315,7 @@ export const useWallet = ({ dappInfo, timeoutConfig }: UseWalletOptions) => {
       try {
         const connected = await manager.connectWallet(wallet);
         dispatch({ type: 'CONNECTION_SUCCESSFUL', wallet: connected });
-        setIsModalOpen(false);
+        setIsSelectModalOpen(false);
       } catch (err) {
         const error = handleWalletError(err, 'connect wallet');
         toast.error(error.message);
@@ -345,16 +346,38 @@ export const useWallet = ({ dappInfo, timeoutConfig }: UseWalletOptions) => {
     [manager, walletState.wallet],
   );
 
-  const openModal = useCallback(() => setIsModalOpen(true), []);
-  const closeModal = useCallback(() => setIsModalOpen(false), []);
+  const openSelectModal = useCallback(() => {
+    console.log('[WalletLogic] Opening select modal');
+    setIsSelectModalOpen(true);
+  }, []);
+
+  const closeSelectModal = useCallback(() => {
+    console.log('[WalletLogic] Closing select modal');
+    setIsSelectModalOpen(false);
+  }, []);
+
+  const openConnectedModal = useCallback(() => {
+    console.log('[WalletLogic] Opening connected modal');
+    setIsConnectedModalOpen(true);
+  }, []);
+
+  const closeConnectedModal = useCallback(() => {
+    console.log('[WalletLogic] Closing connected modal');
+    setIsConnectedModalOpen(false);
+  }, []);
 
   return {
     connectionStatus: walletState.status,
     connectedWallet: walletState.wallet,
     connectWallet,
     disconnectWallet,
-    isModalOpen,
-    openModal,
-    closeModal,
+    // Select modal state
+    isSelectModalOpen,
+    openSelectModal,
+    closeSelectModal,
+    // Connected modal state
+    isConnectedModalOpen,
+    openConnectedModal,
+    closeConnectedModal,
   };
 };

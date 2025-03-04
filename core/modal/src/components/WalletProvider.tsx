@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import type { WalletMeshProviderConfig } from "../lib/config/ModalConfig.js";
 import { WalletErrorBoundary } from "./WalletErrorBoundary.js";
 import { WalletContext } from "./WalletContext.js";
-import { WalletModal } from "./WalletModal/WalletModal.js";
+import { WalletSelectionDialog } from "./WalletModal/WalletSelectionDialog.js";
+import { WalletConnectedDialog } from "./WalletModal/WalletConnectedDialog.js";
 import { useWallet } from "../hooks/useWallet.js";
 
 /**
@@ -76,11 +77,21 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
     dappInfo,       // DApp information
   }), [walletLogic, wallets, dappInfo]);
 
+  // Debug log for context updates
+  useEffect(() => {
+    console.log('[WalletProvider] Context value updated:', {
+      isSelectModalOpen: contextValue.isSelectModalOpen,
+      connectionStatus: contextValue.connectionStatus,
+      hasConnectedWallet: !!contextValue.connectedWallet
+    });
+  }, [contextValue]);
+
   return (
     <WalletErrorBoundary onError={onError}>
       <WalletContext.Provider value={contextValue}>
         {children}
-        <WalletModal />
+        <WalletSelectionDialog />
+      <WalletConnectedDialog />
         <Toaster position="bottom-right" />
       </WalletContext.Provider>
     </WalletErrorBoundary>

@@ -2,141 +2,172 @@
  * @file SessionManager.ts
  * @packageDocumentation
  * Session management and persistence layer for the WalletMesh Modal package.
- *
- * This module provides robust session management capabilities including:
- * - Secure session storage in localStorage
- * - Session validation and sanitization
- * - Automatic session recovery
- * - Error resilient persistence
  */
 
-import type { WalletSession } from './types.js';
+import type { WalletSession, SessionToken, ChainConnection, SerializedSession } from './types.js';
+import type { WalletState, WalletInfo } from '../../types.js';
+import type { Connector } from '../connectors/types.js';
+import { createConnector } from '../connectors/createConnector.js';
 import { ConnectionStatus } from '../../types.js';
 import { WalletError } from './types.js';
 
+// Constants
+const MAX_RETRIES = 3;
+const BASE_DELAY = 100;
+const FALLBACK_STORAGE_KEY = 'walletmesh_wallet_session_fallback';
 const STORAGE_KEY = 'walletmesh_wallet_session';
+const PERSIST_DEBOUNCE_DELAY = 500;
+const TOKEN_VALIDITY_DURATION = 24 * 60 * 60 * 1000;
 
 /**
- * Core session management class for WalletMesh.
- *
- * The SessionManager is responsible for maintaining wallet connection state
- * across page reloads and browser sessions. It provides:
- *
- * Storage Management:
- * - Secure persistence to localStorage
- * - Session data validation
- * - Automatic cleanup of invalid data
- *
- * Session Lifecycle:
- * - Creation and updates
- * - Status management
- * - Graceful restoration
- * - Safe deletion
- *
- * Error Handling:
- * - Validation errors
- * - Storage failures
- * - Corrupted data recovery
- *
- * Handles the lifecycle of wallet sessions including:
- * - Session creation and updates
- * - State persistence
- * - Session restoration
- * - Validation of session data
- *
- * @remarks
- * Sessions are stored in localStorage under the key 'walletmesh_wallet_session'.
- * Each session contains wallet information, connection status, and configuration data.
- *
- * @example
- * ```typescript
- * const sessionManager = new SessionManager();
- *
- * // Create/update a session
- * sessionManager.setSession(walletId, session, true);
- *
- * // Retrieve a session
- * const session = sessionManager.getSession(walletId);
- * ```
+ * Custom error type for session-specific errors
+ */
+class SessionError extends WalletError {
+  constructor(
+    message: string,
+    code: 'connector' | 'storage' | 'client' | 'transport' | 'timeout',
+    cause?: Error,
+  ) {
+    super(message, code, cause);
+    this.name = 'SessionError';
+  }
+}
+
+/**
+ * Storage interface for session data
+ */
+interface StorageAdapter {
+  get(key: string): string | null;
+  set(key: string, value: string): void;
+  remove(key: string): void;
+}
+
+/**
+ * LocalStorage adapter implementation
+ */
+class LocalStorageAdapter implements StorageAdapter {
+  get(key: string): string | null {
+    return localStorage.getItem(key);
+  }
+
+  set(key: string, value: string): void {
+    localStorage.setItem(key, value);
+  }
+
+  remove(key: string): void {
+    localStorage.removeItem(key);
+  }
+}
+
+/**
+ * In-memory fallback storage adapter
+ */
+class MemoryStorageAdapter implements StorageAdapter {
+  private storage = new Map<string, string>();
+
+  get(key: string): string | null {
+    return this.storage.get(key) || null;
+  }
+
+  set(key: string, value: string): void {
+    this.storage.set(key, value);
+  }
+
+  remove(key: string): void {
+    this.storage.delete(key);
+  }
+}
+
+/**
+ * Manages wallet connection sessions and their persistence.
  */
 export class SessionManager {
   private sessions = new Map<string, WalletSession>();
+  private primaryStorage: StorageAdapter;
+  private fallbackStorage: StorageAdapter;
+  private persistTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  /**
-   * Creates a new SessionManager instance.
-   *
-   * @remarks
-   * The constructor automatically attempts to restore any existing
-   * sessions from localStorage, setting their status to Resuming.
-   *
-   * @example
-   * ```typescript
-   * // Create a session manager
-   * const sessionManager = new SessionManager();
-   *
-   * // Check for existing sessions
-   * const sessions = sessionManager.getSessions();
-   * console.log('Restored sessions:', sessions.length);
-   * ```
-   */
   constructor() {
-    this.restoreSessions();
+    this.primaryStorage = new LocalStorageAdapter();
+    this.fallbackStorage = new MemoryStorageAdapter();
+    this.restoreSessions().catch(console.error);
   }
 
   /**
-   * Creates a new session or updates an existing one.
-   *
-   * This method handles both creation and updates, ensuring data consistency
-   * and proper persistence. It:
-   * - Validates the session state
-   * - Creates a deep copy to prevent mutations
-   * - Persists to storage if requested
-   * - Maintains the in-memory session map
-   *
-   * @param walletId - Unique identifier for the wallet
-   * @param session - Session data to store
-   * @param persist - Whether to persist the session to localStorage
-   * @throws {WalletError} If the wallet state is invalid
-   *
-   * @remarks
-   * When updating a session, it creates a deep copy of the session data
-   * and validates the wallet state before storage.
-   *
-   * @example
-   * ```typescript
-   * sessionManager.setSession(walletId, {
-   *   wallet: connectedWallet,
-   *   status: ConnectionStatus.Connected,
-   *   transportConfig: config,
-   *   connectorConfig: config
-   * }, true);
-   * ```
+   * Creates or updates a session token
+   */
+  private createOrUpdateSessionToken(
+    existing: SessionToken | undefined,
+    incoming: Partial<SessionToken>,
+    chainId: number,
+  ): SessionToken {
+    const now = Date.now();
+
+    if (!existing || existing.expiresAt <= now) {
+      return {
+        id: incoming.id || crypto.randomUUID(),
+        createdAt: now,
+        expiresAt: now + TOKEN_VALIDITY_DURATION,
+        walletType: incoming.walletType || '',
+        publicKey: incoming.publicKey || '',
+        permissions: incoming.permissions || [],
+        accounts: incoming.accounts || [],
+        chainIds: [chainId],
+        nonce: crypto.randomUUID(),
+        signature: incoming.signature || '',
+      };
+    }
+
+    return {
+      ...existing,
+      permissions: Array.from(new Set([...existing.permissions, ...(incoming.permissions || [])])),
+      accounts: Array.from(new Set([...existing.accounts, ...(incoming.accounts || [])])),
+      chainIds: Array.from(new Set([...existing.chainIds, chainId])),
+    };
+  }
+
+  /**
+   * Stores or updates a wallet session.
    */
   setSession(walletId: string, session: WalletSession, persist = true): void {
-    // Validate the wallet state before storing
+    const existingSession = this.sessions.get(walletId);
+    const chainId = Number(session.wallet.state.networkId || 0);
+
     if (!this.validateWalletState(session.wallet.state)) {
       throw new WalletError('Invalid wallet state', 'storage');
     }
 
-    // Create a deep copy of the session with state
     const updatedSession: WalletSession = {
-      ...session,
+      id: session.id,
+      createdAt: session.createdAt,
       wallet: {
         ...session.wallet,
         state: {
-          ...(session.wallet.state.chain && { chain: session.wallet.state.chain }),
-          ...(session.wallet.state.address && { address: session.wallet.state.address }),
-          ...(session.wallet.state.sessionId && { sessionId: session.wallet.state.sessionId }),
+          networkId: session.wallet.state.networkId || '',
+          address: session.wallet.state.address || '',
+          sessionId: session.wallet.state.sessionId || '',
         },
         info: session.wallet.info,
       },
+      chainConnections: new Map(existingSession?.chainConnections || []),
+      sessionToken: this.createOrUpdateSessionToken(
+        existingSession?.sessionToken,
+        session.sessionToken || {},
+        chainId,
+      ),
+      status: session.status,
+      ...(session.connector && { connector: session.connector }),
+      ...(session.lastConnectionError && { lastConnectionError: session.lastConnectionError }),
     };
 
+    if (session.wallet.state.address && session.wallet.state.networkId) {
+      updatedSession.chainConnections.set(chainId, {
+        address: session.wallet.state.address,
+        permissions: updatedSession.sessionToken.permissions,
+      });
+    }
+
     this.sessions.set(walletId, updatedSession);
-    console.log('[SessionManager] Updated session state:', {
-      id: walletId,
-      state: updatedSession.wallet.state,
-    });
 
     if (persist) {
       this.persistSessions();
@@ -144,49 +175,21 @@ export class SessionManager {
   }
 
   /**
-   * Retrieves a session for a specific wallet.
-   *
-   * @param walletId - Unique identifier for the wallet
-   * @returns The wallet session if found, undefined otherwise
-   *
-   * @example
-   * ```typescript
-   * const session = sessionManager.getSession(walletId);
-   * if (session) {
-   *   console.log('Wallet state:', session.wallet.state);
-   * }
-   * ```
+   * Retrieves a stored wallet session.
    */
   getSession(walletId: string): WalletSession | undefined {
     return this.sessions.get(walletId);
   }
 
   /**
-   * Updates the connection status of a session.
-   *
-   * This method provides atomic status updates with optional error tracking.
-   * It's used to manage the session lifecycle including:
-   * - Connection state changes
-   * - Error state updates
-   * - Automatic persistence
-   *
-   * @param walletId - Unique identifier for the wallet
-   * @param status - New connection status
-   * @param error - Optional error that caused the status change
-   * @throws {WalletError} If no session exists for the wallet
-   *
-   * @remarks
-   * This method persists the updated status to storage.
-   *
-   * @example
-   * ```typescript
-   * // Update status on disconnection
-   * sessionManager.updateSessionStatus(
-   *   walletId,
-   *   ConnectionStatus.Disconnected,
-   *   new Error('Connection lost')
-   * );
-   * ```
+   * Gets all chain connections for a specific wallet.
+   */
+  getWalletConnections(walletId: string): Map<number, ChainConnection> | undefined {
+    return this.sessions.get(walletId)?.chainConnections;
+  }
+
+  /**
+   * Updates the connection status of a wallet session.
    */
   updateSessionStatus(walletId: string, status: ConnectionStatus, error?: Error): void {
     const session = this.sessions.get(walletId);
@@ -196,7 +199,7 @@ export class SessionManager {
 
     session.status = status;
     if (error) {
-      session.lastError = error;
+      session.lastConnectionError = error;
     }
 
     this.sessions.set(walletId, session);
@@ -204,15 +207,7 @@ export class SessionManager {
   }
 
   /**
-   * Removes a session from memory and storage.
-   *
-   * @param walletId - Unique identifier for the wallet to remove
-   *
-   * @example
-   * ```typescript
-   * // Clean up on wallet disconnection
-   * sessionManager.removeSession(walletId);
-   * ```
+   * Removes a wallet session from storage.
    */
   removeSession(walletId: string): void {
     this.sessions.delete(walletId);
@@ -220,275 +215,221 @@ export class SessionManager {
   }
 
   /**
-   * Returns an array of all stored sessions.
-   *
-   * @returns Array of wallet sessions
-   *
-   * @example
-   * ```typescript
-   * const sessions = sessionManager.getSessions();
-   * console.log('Active sessions:', sessions.length);
-   * ```
+   * Retrieves all stored wallet sessions.
    */
   getSessions(): WalletSession[] {
     return Array.from(this.sessions.values());
   }
 
   /**
-   * Removes all sessions from memory and storage.
-   *
-   * @remarks
-   * This is a destructive operation that cannot be undone.
-   * Use with caution as it will remove all wallet connections.
-   *
-   * @example
-   * ```typescript
-   * // Reset all connections
-   * sessionManager.clearSessions();
-   * ```
+   * Removes all stored wallet sessions.
    */
   clearSessions(): void {
     this.sessions.clear();
-    localStorage.removeItem(STORAGE_KEY);
+    this.primaryStorage.remove(STORAGE_KEY);
+    this.fallbackStorage.remove(FALLBACK_STORAGE_KEY);
   }
 
   /**
-   * Validates session data structure and required fields.
-   *
-   * This method ensures data integrity by checking:
-   * - Required fields presence
-   * - Data type correctness
-   * - Relationship validity
-   *
-   * @throws {WalletError} Indirectly through calling methods if validation fails
-   *
-   * Security considerations:
-   * - Prevents injection of malformed data
-   * - Ensures required security fields exist
-   * - Validates relationships between fields
-   *
-   * Common validation failures:
-   * - Missing wallet info
-   * - Invalid state fields
-   * - Missing security tokens
-   *
-   *
-   * @param session - Session data to validate
-   * @returns True if the session data is valid, false otherwise
-   *
-   * @internal
-   * This method checks for required fields including:
-   * - Wallet ID and info
-   * - State fields (address, sessionId, chain)
-   * - Transport and connector configurations
-   * - Timestamp for session tracking
+   * Validates the wallet state.
    */
-  private validateSessionData(session: Partial<WalletSession>): boolean {
-    // Required session fields
-    const hasValidStructure = !!(
-      session?.id &&
-      session?.wallet?.info?.id &&
-      session?.wallet?.state?.address &&
-      session?.wallet?.state?.sessionId &&
-      session?.wallet?.state?.chain &&
-      session?.wallet?.info?.connector &&
-      session?.timestamp
-    );
-
-    if (!hasValidStructure) {
-      console.warn('[SessionManager] Invalid session structure:', {
-        hasId: !!session?.id,
-        hasWalletInfo: !!session?.wallet?.info?.id,
-        hasAddress: !!session?.wallet?.state?.address,
-        hasSessionId: !!session?.wallet?.state?.sessionId,
-        hasChain: !!session?.wallet?.state?.chain,
-        hasConnector: !!session?.wallet?.info?.connector,
-        hasTimestamp: !!session?.timestamp,
+  private validateWalletState(state: WalletState): boolean {
+    if (!state?.networkId || !state?.address || !state?.sessionId) {
+      console.warn('[SessionManager] Invalid wallet state:', {
+        hasNetworkId: !!state?.networkId,
+        hasAddress: !!state?.address,
+        hasSessionId: !!state?.sessionId,
       });
       return false;
     }
-
     return true;
   }
 
   /**
-   * Validates that a wallet state contains all required fields.
-   *
-   * @param state - Wallet state to validate
-   * @returns True if the state contains all required fields, false otherwise
-   *
-   * @internal
-   * Required fields:
-   * - chain: The blockchain network identifier
-   * - address: The wallet's blockchain address
-   * - sessionId: Unique session identifier
+   * Validates serialized session data structure.
    */
-  private validateWalletState(
-    state: Partial<{
-      chain: string;
-      address: string;
-      sessionId: string;
-    }>,
-  ): boolean {
-    const isValid = !!(state?.chain && state?.address && state?.sessionId);
-    if (!isValid) {
-      console.warn('[SessionManager] Invalid wallet state:', {
-        hasChain: !!state?.chain,
-        hasAddress: !!state?.address,
-        hasSessionId: !!state?.sessionId,
-      });
-    }
-    return isValid;
+  private validateSerializedSession(data: unknown): data is SerializedSession {
+    const session = data as SerializedSession;
+    return !!(
+      session?.id &&
+      session?.wallet?.info?.id &&
+      session?.wallet?.info?.connector &&
+      session?.wallet?.state?.networkId &&
+      session?.wallet?.state?.address &&
+      session?.wallet?.state?.sessionId &&
+      session?.sessionToken &&
+      Array.isArray(session?.chainConnections) &&
+      session?.createdAt &&
+      typeof session.status === 'string'
+    );
   }
 
   /**
-   * Persists valid sessions to localStorage.
-   *
-   * This method provides atomic persistence with validation:
-   * 1. Validates all sessions before persistence
-   * 2. Filters out invalid sessions
-   * 3. Serializes remaining valid sessions
-   * 4. Performs atomic storage update
-   *
-   * Error handling:
-   * - Storage quota exceeded
-   * - Serialization failures
-   * - Validation errors
-   *
-   * Recovery strategy:
-   * - Maintains in-memory state on failure
-   * - Logs detailed error information
-   * - Throws typed errors for handling
-   *
-   *
-   * @internal
-   * This method:
-   * - Filters out invalid sessions
-   * - Serializes session data
-   * - Handles storage errors
-   * - Cleans up storage if no valid sessions exist
-   *
-   * @throws {WalletError} If persistence fails
+   * Creates a connector instance from wallet info.
+   */
+  private async createConnectorFromInfo(walletInfo: WalletInfo): Promise<Connector | undefined> {
+    try {
+      return createConnector(walletInfo.connector);
+    } catch (error) {
+      console.warn('[SessionManager] Failed to create connector:', error);
+      return undefined;
+    }
+  }
+
+  /**
+   * Persists all valid sessions to storage.
    */
   private persistSessions(): void {
-    try {
-      // If there are no sessions, explicitly remove the storage item
-      if (this.sessions.size === 0) {
-        localStorage.removeItem(STORAGE_KEY);
-        console.log('[SessionManager] Cleared sessions from localStorage');
-        return;
-      }
-
-      const serializedSessions = Array.from(this.sessions.entries())
-        .map(([id, session]) => ({
-          id,
-          wallet: session.wallet,
-          status: session.status,
-          timestamp: session.timestamp || Date.now(),
-        }))
-        .filter((session) => this.validateSessionData(session));
-
-      // Only persist if we have valid sessions
-      if (serializedSessions.length > 0) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(serializedSessions));
-        console.log('[SessionManager] Persisted sessions:', serializedSessions.length);
-      } else {
-        // If no valid sessions remain after filtering, remove from storage
-        localStorage.removeItem(STORAGE_KEY);
-        console.log('[SessionManager] No valid sessions to persist, cleared localStorage');
-      }
-    } catch (error) {
-      console.error('[SessionManager] Failed to persist sessions:', error);
-      throw new WalletError('Failed to persist sessions', 'storage', error as Error);
+    if (this.persistTimeout) {
+      clearTimeout(this.persistTimeout);
     }
+
+    this.persistTimeout = setTimeout(async () => {
+      let attempt = 0;
+      let lastError: Error | null = null;
+
+      while (attempt < MAX_RETRIES) {
+        try {
+          if (this.sessions.size === 0) {
+            this.primaryStorage.remove(STORAGE_KEY);
+            this.fallbackStorage.remove(FALLBACK_STORAGE_KEY);
+            return;
+          }
+
+          const serializedSessions = Array.from(this.sessions.entries())
+            .map(([, session]) => ({
+              id: session.id,
+              createdAt: session.createdAt,
+              walletInfo: session.wallet.info,
+              wallet: session.wallet,
+              chainConnections: Array.from(session.chainConnections.entries()),
+              sessionToken: session.sessionToken,
+              status: session.status,
+              ...(session.lastConnectionError && { lastConnectionError: session.lastConnectionError }),
+            }))
+            .filter(this.validateSerializedSession);
+
+          if (serializedSessions.length > 0) {
+            const sessionsJson = JSON.stringify(serializedSessions);
+            try {
+              this.primaryStorage.set(STORAGE_KEY, sessionsJson);
+              return;
+            } catch (primaryError) {
+              console.warn('[SessionManager] Primary storage failed, using fallback:', primaryError);
+              this.fallbackStorage.set(FALLBACK_STORAGE_KEY, sessionsJson);
+              return;
+            }
+          }
+
+          this.primaryStorage.remove(STORAGE_KEY);
+          this.fallbackStorage.remove(FALLBACK_STORAGE_KEY);
+          return;
+        } catch (error) {
+          lastError = error as Error;
+          attempt++;
+          if (attempt < MAX_RETRIES) {
+            await new Promise((resolve) => setTimeout(resolve, BASE_DELAY * 2 ** (attempt - 1)));
+          }
+        }
+      }
+
+      throw new SessionError(
+        'Failed to persist sessions after multiple attempts',
+        'storage',
+        lastError || undefined,
+      );
+    }, PERSIST_DEBOUNCE_DELAY);
   }
 
   /**
-   * Attempts to restore sessions from localStorage.
-   *
-   * This method implements a robust restoration process:
-   * 1. Reads stored session data
-   * 2. Validates each session independently
-   * 3. Restores valid sessions to memory
-   * 4. Handles corrupted data gracefully
-   *
-   * Recovery features:
-   * - Partial session restoration
-   * - Corrupted data cleanup
-   * - Detailed error logging
-   *
-   * Security measures:
-   * - Validates session structure
-   * - Sanitizes restored data
-   * - Maintains session isolation
-   *
-   *
-   * @internal
-   * This method:
-   * - Loads stored session data
-   * - Validates each session independently
-   * - Handles parsing errors gracefully
-   * - Sets restored sessions to Resuming status
-   * - Cleans up invalid storage data
+   * Restores sessions from storage.
    */
-  private restoreSessions(): void {
-    try {
-      console.log('[SessionManager] Attempting to restore sessions');
-      const stored = localStorage.getItem(STORAGE_KEY);
+  private async restoreSessions(): Promise<void> {
+    let attempt = 0;
+    let lastError: Error | null = null;
 
-      if (!stored) {
-        console.log('[SessionManager] No stored sessions found');
-        return;
-      }
-
-      let parsedData: WalletSession[];
+    while (attempt < MAX_RETRIES) {
       try {
-        parsedData = JSON.parse(stored);
-        if (!Array.isArray(parsedData)) {
-          throw new Error('Invalid data format');
-        }
-      } catch (err) {
-        console.warn('[SessionManager] Failed to parse stored sessions:', err);
-        return;
-      }
+        let stored = this.primaryStorage.get(STORAGE_KEY);
+        let usingFallback = false;
 
-      // Process each session independently
-      for (const session of parsedData) {
+        if (!stored) {
+          stored = this.fallbackStorage.get(FALLBACK_STORAGE_KEY);
+          usingFallback = true;
+        }
+
+        if (!stored) {
+          return;
+        }
+
+        let parsedData: unknown;
         try {
-          // Only validate the structure, don't expire sessions
-          if (!this.validateSessionData(session)) {
-            console.warn('[SessionManager] Skipping invalid session:', session.id);
-            continue;
+          parsedData = JSON.parse(stored);
+          if (!Array.isArray(parsedData) || !parsedData.every(this.validateSerializedSession)) {
+            throw new Error('Invalid data format');
           }
-
-          const restoredSession: WalletSession = {
-            id: session.id,
-            wallet: session.wallet,
-            status: ConnectionStatus.Resuming,
-            timestamp: session.timestamp || Date.now(),
-          };
-
-          this.sessions.set(session.id, restoredSession);
-          console.log('[SessionManager] Restored session:', {
-            id: session.id,
-            state: session.wallet.state,
-          });
         } catch (err) {
-          // Don't let one bad session prevent others from being restored
-          console.warn('[SessionManager] Failed to restore session:', session.id, err);
+          if (!usingFallback) {
+            stored = this.fallbackStorage.get(FALLBACK_STORAGE_KEY);
+            if (stored) {
+              try {
+                parsedData = JSON.parse(stored);
+                if (!Array.isArray(parsedData) || !parsedData.every(this.validateSerializedSession)) {
+                  throw new Error('Invalid fallback data format');
+                }
+              } catch {
+                this.clearSessions();
+                return;
+              }
+            } else {
+              return;
+            }
+          } else {
+            return;
+          }
+        }
+
+        let restoredCount = 0;
+        for (const data of parsedData as SerializedSession[]) {
+          try {
+            const connector = await this.createConnectorFromInfo(data.walletInfo);
+
+            const session: WalletSession = {
+              id: data.id,
+              createdAt: data.createdAt,
+              wallet: data.wallet,
+              chainConnections: new Map(data.chainConnections),
+              sessionToken: data.sessionToken,
+              status: ConnectionStatus.Resuming,
+              ...(connector && { connector }),
+              ...(data.lastConnectionError && { lastConnectionError: data.lastConnectionError }),
+            };
+
+            this.sessions.set(session.id, session);
+            restoredCount++;
+          } catch (err) {
+            console.warn('[SessionManager] Failed to restore session:', data.id, err);
+          }
+        }
+
+        if (restoredCount === 0) {
+          this.clearSessions();
+        }
+
+        return;
+      } catch (error) {
+        lastError = error as Error;
+        attempt++;
+        if (attempt < MAX_RETRIES) {
+          await new Promise((resolve) => setTimeout(resolve, BASE_DELAY * 2 ** (attempt - 1)));
         }
       }
-
-      // Only clear storage if we didn't restore any sessions
-      if (this.sessions.size === 0) {
-        console.log('[SessionManager] No valid sessions could be restored');
-        localStorage.removeItem(STORAGE_KEY);
-      } else {
-        console.log('[SessionManager] Successfully restored', this.sessions.size, 'sessions');
-      }
-    } catch (error) {
-      console.error('[SessionManager] Session restoration failed:', error);
-      // Don't clear storage on general errors
     }
+
+    throw new SessionError(
+      'Failed to restore sessions after multiple attempts',
+      'storage',
+      lastError || undefined,
+    );
   }
 }

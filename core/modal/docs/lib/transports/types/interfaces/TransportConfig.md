@@ -4,24 +4,32 @@
 
 [@walletmesh/modal](../../../../modules.md) / [lib/transports/types](../README.md) / TransportConfig
 
-# Interface: TransportConfig
+# Interface: TransportConfig\<T\>
 
-Defined in: [core/modal/src/lib/transports/types.ts:13](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L13)
+Defined in: [core/modal/src/lib/transports/types.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L57)
 
-Configuration for transport initialization.
+Transport configuration type
+
+## Type Parameters
+
+• **T** *extends* [`BaseTransportConfig`](BaseTransportConfig.md) = [`BaseTransportConfig`](BaseTransportConfig.md)
 
 ## Properties
 
 ### type
 
-> **type**: [`TransportType`](../enumerations/TransportType.md)
+> **type**: [`TransportType`](../type-aliases/TransportType.md)
 
-Defined in: [core/modal/src/lib/transports/types.ts:14](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L14)
+Defined in: [core/modal/src/lib/transports/types.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L59)
+
+Transport type identifier
 
 ***
 
-### options?
+### config
 
-> `optional` **options**: [`TransportOptions`](TransportOptions.md)
+> **config**: `T`
 
-Defined in: [core/modal/src/lib/transports/types.ts:15](https://github.com/WalletMesh/walletmesh-packages/blob/fe58e55749d5c9ff8ebea6f952abd3ab0cbc9512/core/modal/src/lib/transports/types.ts#L15)
+Defined in: [core/modal/src/lib/transports/types.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L61)
+
+Transport-specific configuration

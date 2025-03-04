@@ -16,7 +16,7 @@
     "copy-assets": "cpx \"src/**/*.module.css\" dist/",
     "clean": "rimraf dist node_modules",
     "type-check": "tsc --noEmit",
-    "skip-test": "vitest run",
+    "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "biome lint",
@@ -42,10 +42,16 @@
     "react-hot-toast": "^2.5.1"
   },
   "devDependencies": {
+    "@testing-library/react": "^14.2.1",
+    "@testing-library/user-event": "^14.5.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.2.1",
     "biome": "^0.3.3",
     "cpx": "^1.5.0",
+    "happy-dom": "^13.3.8",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
     "rimraf": "^6.0.1",
     "typescript": "^5.7.3",
     "vitest": "^3.0.5"
