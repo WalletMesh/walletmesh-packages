@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.6**](../../../../README.md)
+[**@walletmesh/modal v0.0.7**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletConnectorConfig\<T\>
 
-Defined in: [core/modal/src/lib/connectors/types.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L101)
+Defined in: [core/modal/src/lib/connectors/types.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/connectors/types.ts#L101)
 
 Configuration for wallet connectors.
 Generic type T allows each connector to define its own options interface.
@@ -21,7 +21,7 @@ Generic type T allows each connector to define its own options interface.
 
 > **type**: [`ConnectorType`](../enumerations/ConnectorType.md)
 
-Defined in: [core/modal/src/lib/connectors/types.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L102)
+Defined in: [core/modal/src/lib/connectors/types.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/connectors/types.ts#L102)
 
 ***
 
@@ -29,4 +29,4 @@ Defined in: [core/modal/src/lib/connectors/types.ts:102](https://github.com/Wall
 
 > `optional` **options**: `T`
 
-Defined in: [core/modal/src/lib/connectors/types.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L103)
+Defined in: [core/modal/src/lib/connectors/types.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/connectors/types.ts#L103)

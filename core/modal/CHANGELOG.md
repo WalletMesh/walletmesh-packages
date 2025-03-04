@@ -1,5 +1,11 @@
 # @walletmesh/modal
 
+## 0.0.7
+
+### Patch Changes
+
+- 301c3d2: Add ChromeExtensionTransport
+
 ## 0.0.6
 
 ### Patch Changes

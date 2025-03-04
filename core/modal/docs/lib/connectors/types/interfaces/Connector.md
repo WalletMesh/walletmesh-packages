@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.6**](../../../../README.md)
+[**@walletmesh/modal v0.0.7**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: Connector
 
-Defined in: [core/modal/src/lib/connectors/types.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L17)
+Defined in: [core/modal/src/lib/connectors/types.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/connectors/types.ts#L17)
 
 Interface for blockchain-specific wallet connectors.
 
@@ -27,7 +27,7 @@ common interface.
 
 > **connect**(`walletInfo`): `Promise`\<[`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/connectors/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L33)
+Defined in: [core/modal/src/lib/connectors/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/connectors/types.ts#L33)
 
 Establishes a new connection with the wallet.
 
@@ -64,7 +64,7 @@ The connection process typically involves:
 
 > **resume**(`walletInfo`, `savedState`): `Promise`\<[`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/connectors/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L50)
+Defined in: [core/modal/src/lib/connectors/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/connectors/types.ts#L50)
 
 Resumes an existing wallet connection.
 
@@ -106,7 +106,7 @@ Session restoration involves:
 
 > **disconnect**(): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/connectors/types.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L64)
+Defined in: [core/modal/src/lib/connectors/types.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/connectors/types.ts#L64)
 
 Terminates the wallet connection and cleans up resources.
 
@@ -133,7 +133,7 @@ Cleanup tasks typically include:
 
 > **handleMessage**(`data`): `void`
 
-Defined in: [core/modal/src/lib/connectors/types.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L70)
+Defined in: [core/modal/src/lib/connectors/types.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/connectors/types.ts#L70)
 
 Processes incoming messages from the transport layer.
 
@@ -155,7 +155,7 @@ Message payload from the transport
 
 > **getProvider**(): `Promise`\<`unknown`\>
 
-Defined in: [core/modal/src/lib/connectors/types.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/connectors/types.ts#L77)
+Defined in: [core/modal/src/lib/connectors/types.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/connectors/types.ts#L77)
 
 Gets chain-specific provider instance.
 

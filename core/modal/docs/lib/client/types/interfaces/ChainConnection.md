@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.6**](../../../../README.md)
+[**@walletmesh/modal v0.0.7**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ChainConnection
 
-Defined in: [core/modal/src/lib/client/types.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L44)
+Defined in: [core/modal/src/lib/client/types.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L44)
 
 Storage format for chain-specific connection data
 
@@ -16,7 +16,7 @@ Storage format for chain-specific connection data
 
 > **address**: `string`
 
-Defined in: [core/modal/src/lib/client/types.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L45)
+Defined in: [core/modal/src/lib/client/types.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L45)
 
 ***
 
@@ -24,4 +24,4 @@ Defined in: [core/modal/src/lib/client/types.ts:45](https://github.com/WalletMes
 
 > **permissions**: `string`[]
 
-Defined in: [core/modal/src/lib/client/types.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L46)
+Defined in: [core/modal/src/lib/client/types.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L46)

@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.6**](../../../../README.md)
+[**@walletmesh/modal v0.0.7**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: TimeoutConfig
 
-Defined in: [core/modal/src/lib/utils/timeout.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/utils/timeout.ts#L17)
+Defined in: [core/modal/src/lib/utils/timeout.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/utils/timeout.ts#L17)
 
 Configuration options for wallet operation timeouts.
 
@@ -30,7 +30,7 @@ const wallet = await connect(walletInfo, config);
 
 > `optional` **connectionTimeout**: `number`
 
-Defined in: [core/modal/src/lib/utils/timeout.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/utils/timeout.ts#L22)
+Defined in: [core/modal/src/lib/utils/timeout.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/utils/timeout.ts#L22)
 
 Timeout in milliseconds for initial wallet connection
 
@@ -46,7 +46,7 @@ Timeout in milliseconds for initial wallet connection
 
 > `optional` **operationTimeout**: `number`
 
-Defined in: [core/modal/src/lib/utils/timeout.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/utils/timeout.ts#L28)
+Defined in: [core/modal/src/lib/utils/timeout.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/utils/timeout.ts#L28)
 
 Timeout in milliseconds for other wallet operations
 

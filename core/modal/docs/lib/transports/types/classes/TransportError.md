@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.6**](../../../../README.md)
+[**@walletmesh/modal v0.0.7**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: TransportError
 
-Defined in: [core/modal/src/lib/transports/types.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L28)
+Defined in: [core/modal/src/lib/transports/types.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L28)
 
 Transport-specific error class.
 
@@ -20,7 +20,7 @@ Transport-specific error class.
 
 > **new TransportError**(`message`, `type`, `cause`?): [`TransportError`](TransportError.md)
 
-Defined in: [core/modal/src/lib/transports/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L32)
+Defined in: [core/modal/src/lib/transports/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L32)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: [core/modal/src/lib/transports/types.ts:32](https://github.com/Walle
 
 > **name**: `string` = `'TransportError'`
 
-Defined in: [core/modal/src/lib/transports/types.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L29)
+Defined in: [core/modal/src/lib/transports/types.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L29)
 
 #### Overrides
 
@@ -62,7 +62,7 @@ Defined in: [core/modal/src/lib/transports/types.ts:29](https://github.com/Walle
 
 > `optional` **cause**: `Error`
 
-Defined in: [core/modal/src/lib/transports/types.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L30)
+Defined in: [core/modal/src/lib/transports/types.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L30)
 
 #### Overrides
 
@@ -74,7 +74,7 @@ Defined in: [core/modal/src/lib/transports/types.ts:30](https://github.com/Walle
 
 > `readonly` **type**: [`TransportErrorType`](../type-aliases/TransportErrorType.md)
 
-Defined in: [core/modal/src/lib/transports/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L34)
+Defined in: [core/modal/src/lib/transports/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L34)
 
 ***
 
