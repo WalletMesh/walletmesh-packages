@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.6**](../../../../README.md)
+[**@walletmesh/modal v0.0.7**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: WalletError
 
-Defined in: [core/modal/src/lib/client/types.ts:13](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L13)
+Defined in: [core/modal/src/lib/client/types.ts:13](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L13)
 
 Error class for wallet-related errors.
 
@@ -20,7 +20,7 @@ Error class for wallet-related errors.
 
 > **new WalletError**(`message`, `type`, `cause`?): [`WalletError`](WalletError.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L18)
+Defined in: [core/modal/src/lib/client/types.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L18)
 
 #### Parameters
 
@@ -50,7 +50,7 @@ Defined in: [core/modal/src/lib/client/types.ts:18](https://github.com/WalletMes
 
 > **name**: `string` = `'WalletError'`
 
-Defined in: [core/modal/src/lib/client/types.ts:14](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L14)
+Defined in: [core/modal/src/lib/client/types.ts:14](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L14)
 
 #### Overrides
 
@@ -62,7 +62,7 @@ Defined in: [core/modal/src/lib/client/types.ts:14](https://github.com/WalletMes
 
 > `optional` **cause**: `Error`
 
-Defined in: [core/modal/src/lib/client/types.ts:15](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L15)
+Defined in: [core/modal/src/lib/client/types.ts:15](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L15)
 
 #### Overrides
 
@@ -74,7 +74,7 @@ Defined in: [core/modal/src/lib/client/types.ts:15](https://github.com/WalletMes
 
 > `readonly` **type**: `"client"` \| `"connector"` \| `"transport"` \| `"storage"` \| `"timeout"`
 
-Defined in: [core/modal/src/lib/client/types.ts:16](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L16)
+Defined in: [core/modal/src/lib/client/types.ts:16](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L16)
 
 ***
 

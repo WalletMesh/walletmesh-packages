@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.6**](../../../../README.md)
+[**@walletmesh/modal v0.0.7**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: Transport
 
-Defined in: [core/modal/src/lib/transports/types.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L70)
+Defined in: [core/modal/src/lib/transports/types.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L70)
 
 Core transport interface.
 
@@ -19,7 +19,7 @@ abstracting the underlying transport mechanism (PostMessage, Chrome Extension, W
 
 > **connect**(): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/transports/types.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L75)
+Defined in: [core/modal/src/lib/transports/types.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L75)
 
 Establishes the transport connection.
 
@@ -37,7 +37,7 @@ If connection fails
 
 > **disconnect**(): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/transports/types.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L81)
+Defined in: [core/modal/src/lib/transports/types.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L81)
 
 Terminates the transport connection.
 
@@ -55,7 +55,7 @@ If disconnection fails
 
 > **send**(`data`): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/transports/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L88)
+Defined in: [core/modal/src/lib/transports/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L88)
 
 Sends data through the transport.
 
@@ -81,7 +81,7 @@ If send operation fails
 
 > **onMessage**(`handler`): `void`
 
-Defined in: [core/modal/src/lib/transports/types.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L94)
+Defined in: [core/modal/src/lib/transports/types.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L94)
 
 Registers message handler.
 
@@ -103,7 +103,7 @@ Function to handle incoming messages
 
 > **offMessage**(`handler`): `void`
 
-Defined in: [core/modal/src/lib/transports/types.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L100)
+Defined in: [core/modal/src/lib/transports/types.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L100)
 
 Removes message handler.
 
@@ -125,7 +125,7 @@ Previously registered handler to remove
 
 > **isConnected**(): `boolean`
 
-Defined in: [core/modal/src/lib/transports/types.ts:105](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L105)
+Defined in: [core/modal/src/lib/transports/types.ts:105](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L105)
 
 Checks if transport is currently connected.
 
@@ -139,7 +139,7 @@ Checks if transport is currently connected.
 
 > **getType**(): [`TransportType`](../type-aliases/TransportType.md)
 
-Defined in: [core/modal/src/lib/transports/types.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/transports/types.ts#L110)
+Defined in: [core/modal/src/lib/transports/types.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/transports/types.ts#L110)
 
 Gets transport type identifier.
 

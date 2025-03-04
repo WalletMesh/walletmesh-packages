@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.6**](../../../../README.md)
+[**@walletmesh/modal v0.0.7**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletClient
 
-Defined in: [core/modal/src/lib/client/types.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L80)
+Defined in: [core/modal/src/lib/client/types.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L80)
 
 Core interface for wallet interactions
 
@@ -16,7 +16,7 @@ Core interface for wallet interactions
 
 > **getDappInfo**(): `Readonly`\<[`DappInfo`](../../../../index/interfaces/DappInfo.md)\>
 
-Defined in: [core/modal/src/lib/client/types.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L81)
+Defined in: [core/modal/src/lib/client/types.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L81)
 
 #### Returns
 
@@ -28,7 +28,7 @@ Defined in: [core/modal/src/lib/client/types.ts:81](https://github.com/WalletMes
 
 > **initialize**(): `Promise`\<`null` \| [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/client/types.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L82)
+Defined in: [core/modal/src/lib/client/types.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L82)
 
 #### Returns
 
@@ -40,7 +40,7 @@ Defined in: [core/modal/src/lib/client/types.ts:82](https://github.com/WalletMes
 
 > **connectWallet**(`walletInfo`, `connector`, `options`?): `Promise`\<[`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)\>
 
-Defined in: [core/modal/src/lib/client/types.ts:83](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L83)
+Defined in: [core/modal/src/lib/client/types.ts:83](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L83)
 
 #### Parameters
 
@@ -68,7 +68,7 @@ Defined in: [core/modal/src/lib/client/types.ts:83](https://github.com/WalletMes
 
 > **disconnectWallet**(`walletId`): `Promise`\<`void`\>
 
-Defined in: [core/modal/src/lib/client/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L88)
+Defined in: [core/modal/src/lib/client/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L88)
 
 #### Parameters
 
@@ -86,7 +86,7 @@ Defined in: [core/modal/src/lib/client/types.ts:88](https://github.com/WalletMes
 
 > **getChainProvider**(`walletId`): `Promise`\<`unknown`\>
 
-Defined in: [core/modal/src/lib/client/types.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L89)
+Defined in: [core/modal/src/lib/client/types.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L89)
 
 #### Parameters
 
@@ -104,7 +104,7 @@ Defined in: [core/modal/src/lib/client/types.ts:89](https://github.com/WalletMes
 
 > **getConnectedWallets**(): [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)[]
 
-Defined in: [core/modal/src/lib/client/types.ts:90](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L90)
+Defined in: [core/modal/src/lib/client/types.ts:90](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L90)
 
 #### Returns
 
@@ -116,7 +116,7 @@ Defined in: [core/modal/src/lib/client/types.ts:90](https://github.com/WalletMes
 
 > **getWalletConnections**(`walletId`): `Promise`\<`undefined` \| `Map`\<`number`, [`ChainConnection`](ChainConnection.md)\>\>
 
-Defined in: [core/modal/src/lib/client/types.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L91)
+Defined in: [core/modal/src/lib/client/types.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L91)
 
 #### Parameters
 
@@ -134,7 +134,7 @@ Defined in: [core/modal/src/lib/client/types.ts:91](https://github.com/WalletMes
 
 > **getConnectedWallet**(): `null` \| [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:92](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L92)
+Defined in: [core/modal/src/lib/client/types.ts:92](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L92)
 
 #### Returns
 
@@ -146,7 +146,7 @@ Defined in: [core/modal/src/lib/client/types.ts:92](https://github.com/WalletMes
 
 > **handleWalletError**(`error`): `void`
 
-Defined in: [core/modal/src/lib/client/types.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L93)
+Defined in: [core/modal/src/lib/client/types.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L93)
 
 #### Parameters
 

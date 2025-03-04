@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.6**](../../../../README.md)
+[**@walletmesh/modal v0.0.7**](../../../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SerializedSession
 
-Defined in: [core/modal/src/lib/client/types.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L66)
+Defined in: [core/modal/src/lib/client/types.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L66)
 
 Serialized format of session data for storage
 
@@ -16,7 +16,7 @@ Serialized format of session data for storage
 
 > **id**: `string`
 
-Defined in: [core/modal/src/lib/client/types.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L67)
+Defined in: [core/modal/src/lib/client/types.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L67)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal/src/lib/client/types.ts:67](https://github.com/WalletMes
 
 > **createdAt**: `number`
 
-Defined in: [core/modal/src/lib/client/types.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L68)
+Defined in: [core/modal/src/lib/client/types.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L68)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/modal/src/lib/client/types.ts:68](https://github.com/WalletMes
 
 > **walletInfo**: [`WalletInfo`](../../../../index/interfaces/WalletInfo.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L69)
+Defined in: [core/modal/src/lib/client/types.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L69)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/modal/src/lib/client/types.ts:69](https://github.com/WalletMes
 
 > **wallet**: [`ConnectedWallet`](../../../../index/interfaces/ConnectedWallet.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L70)
+Defined in: [core/modal/src/lib/client/types.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L70)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [core/modal/src/lib/client/types.ts:70](https://github.com/WalletMes
 
 > **chainConnections**: \[`number`, [`ChainConnection`](ChainConnection.md)\][]
 
-Defined in: [core/modal/src/lib/client/types.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L71)
+Defined in: [core/modal/src/lib/client/types.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L71)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [core/modal/src/lib/client/types.ts:71](https://github.com/WalletMes
 
 > **sessionToken**: [`SessionToken`](SessionToken.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:72](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L72)
+Defined in: [core/modal/src/lib/client/types.ts:72](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L72)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [core/modal/src/lib/client/types.ts:72](https://github.com/WalletMes
 
 > **status**: [`ConnectionStatus`](../../../../index/enumerations/ConnectionStatus.md)
 
-Defined in: [core/modal/src/lib/client/types.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L73)
+Defined in: [core/modal/src/lib/client/types.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L73)
 
 ***
 
@@ -72,4 +72,4 @@ Defined in: [core/modal/src/lib/client/types.ts:73](https://github.com/WalletMes
 
 > `optional` **lastConnectionError**: `Error`
 
-Defined in: [core/modal/src/lib/client/types.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/lib/client/types.ts#L74)
+Defined in: [core/modal/src/lib/client/types.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/lib/client/types.ts#L74)

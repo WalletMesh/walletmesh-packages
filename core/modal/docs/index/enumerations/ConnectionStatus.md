@@ -1,4 +1,4 @@
-[**@walletmesh/modal v0.0.6**](../../README.md)
+[**@walletmesh/modal v0.0.7**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Enumeration: ConnectionStatus
 
-Defined in: [core/modal/src/types.ts:175](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L175)
+Defined in: [core/modal/src/types.ts:175](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/types.ts#L175)
 
 Possible states for a wallet connection.
 
@@ -47,7 +47,7 @@ switch (status) {
 
 > **Idle**: `"idle"`
 
-Defined in: [core/modal/src/types.ts:177](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L177)
+Defined in: [core/modal/src/types.ts:177](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/types.ts#L177)
 
 No active connection or connection attempt
 
@@ -57,7 +57,7 @@ No active connection or connection attempt
 
 > **Connecting**: `"connecting"`
 
-Defined in: [core/modal/src/types.ts:179](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L179)
+Defined in: [core/modal/src/types.ts:179](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/types.ts#L179)
 
 Connection attempt in progress
 
@@ -67,7 +67,7 @@ Connection attempt in progress
 
 > **Connected**: `"connected"`
 
-Defined in: [core/modal/src/types.ts:181](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L181)
+Defined in: [core/modal/src/types.ts:181](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/types.ts#L181)
 
 Successfully connected to wallet
 
@@ -77,7 +77,7 @@ Successfully connected to wallet
 
 > **Disconnecting**: `"disconnecting"`
 
-Defined in: [core/modal/src/types.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L183)
+Defined in: [core/modal/src/types.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/types.ts#L183)
 
 Disconnection in progress
 
@@ -87,6 +87,6 @@ Disconnection in progress
 
 > **Resuming**: `"resuming"`
 
-Defined in: [core/modal/src/types.ts:185](https://github.com/WalletMesh/walletmesh-packages/blob/e3e3b2bcfb125b0418bc540985efd420cfa4d753/core/modal/src/types.ts#L185)
+Defined in: [core/modal/src/types.ts:185](https://github.com/WalletMesh/walletmesh-packages/blob/354613910502fa145d032d1381943edf2007083d/core/modal/src/types.ts#L185)
 
 Attempting to restore previous session
