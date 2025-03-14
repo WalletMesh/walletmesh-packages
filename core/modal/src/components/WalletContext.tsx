@@ -7,7 +7,8 @@ export type WalletContextType = ReturnType<typeof useWallet> & {
   dappInfo: DappInfo;
 };
 
-export const WalletContext = createContext<WalletContextType | undefined>(undefined);
+const WalletContext = createContext<WalletContextType | undefined>(undefined);
+WalletContext.displayName = 'WalletContext';
 
 export const useWalletContext = (): WalletContextType => {
   const context = useContext(WalletContext);
@@ -16,3 +17,5 @@ export const useWalletContext = (): WalletContextType => {
   }
   return context;
 };
+
+export { WalletContext };

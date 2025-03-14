@@ -1,19 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useMemo, useEffect } from 'react';
 import { Toaster } from "react-hot-toast";
 import type { WalletMeshProviderConfig } from "../lib/config/ModalConfig.js";
 import { WalletErrorBoundary } from "./WalletErrorBoundary.js";
-import { WalletContext } from "./WalletContext.js";
 import { WalletSelectionDialog } from "./WalletModal/WalletSelectionDialog.js";
 import { WalletConnectedDialog } from "./WalletModal/WalletConnectedDialog.js";
 import { useWallet } from "../hooks/useWallet.js";
+import { WalletContext } from './WalletContext.js';
 
-/**
- * Props for the WalletProvider component
- * @interface WalletProviderProps
- * @property {React.ReactNode} children - Child components to render inside the provider
- * @property {WalletMeshProviderConfig} config - WalletMesh configuration including wallet and dapp settings
- * @property {(error: Error) => void} [onError] - Optional error handler for wallet-related errors
- */
 export interface WalletProviderProps {
   children: React.ReactNode;
   config: WalletMeshProviderConfig;
@@ -64,20 +57,17 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
 }) => {
   const { wallets, dappInfo, timeoutConfig } = config;
   
-  // Initialize wallet connection logic with dappInfo
   const walletLogic = useWallet({
     dappInfo,
     ...(timeoutConfig && { timeoutConfig })
   });
 
-  // Memoize context value to prevent unnecessary re-renders
-  const contextValue = React.useMemo(() => ({
-    ...walletLogic, // Wallet connection state and methods
-    wallets,        // Available wallet configurations
-    dappInfo,       // DApp information
+  const contextValue = useMemo(() => ({
+    ...walletLogic,
+    wallets,
+    dappInfo,
   }), [walletLogic, wallets, dappInfo]);
 
-  // Debug log for context updates
   useEffect(() => {
     console.log('[WalletProvider] Context value updated:', {
       isSelectModalOpen: contextValue.isSelectModalOpen,
@@ -91,11 +81,11 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({
       <WalletContext.Provider value={contextValue}>
         {children}
         <WalletSelectionDialog />
-      <WalletConnectedDialog />
+        <WalletConnectedDialog />
         <Toaster position="bottom-right" />
       </WalletContext.Provider>
     </WalletErrorBoundary>
   );
 };
 
-WalletProvider.displayName = "WalletProvider";
+WalletProvider.displayName = 'WalletProvider';

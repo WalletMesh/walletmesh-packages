@@ -1,0 +1,162 @@
+:root {
+  /* Button and Status Colors */
+  --wallet-button-bg: #3b4252;
+  --wallet-button-text: #ffffff;
+  --wallet-button-border: #4c566a;
+  --wallet-button-loading-bg: #5e81ac;
+  --wallet-button-connected-bg: #3b82f6;
+  --wallet-status-loading: #5e81ac;
+  --wallet-status-connected: #3b82f6;
+  --wallet-status-idle: #4b5563;
+}
+
+/* Wallet Button Styles */
+.custom-wallet-button {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid var(--wallet-button-border);
+  background: var(--wallet-button-bg);
+  color: var(--wallet-button-text);
+}
+
+.custom-wallet-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.wallet-button-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Custom Example Container */
+.custom-state {
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* Connection Info Styles */
+.connection-info {
+  margin-bottom: 20px;
+}
+
+.connection-info h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.connection-info p {
+  margin: 8px 0;
+  color: #374151;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.action-button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.action-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.action-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.action-button.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.action-button.primary:hover {
+  background: #2563eb;
+}
+
+.action-button.danger {
+  background: #ef4444;
+  color: white;
+}
+
+.action-button.danger:hover {
+  background: #dc2626;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid #e5e7eb;
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Status Text Colors */
+.status-text {
+  color: #374151;
+  font-weight: 500;
+}
+
+.status-text.loading {
+  color: var(--wallet-status-loading);
+}
+
+.status-text.connected {
+  color: var(--wallet-status-connected);
+}
+
+.status-text.idle {
+  color: var(--wallet-status-idle);
+}
+
+/* Helper Text */
+.tip-text {
+  font-size: 14px;
+  color: #6b7280;
+  margin-top: 16px;
+  font-style: italic;
+}
+
+/* Component Spacing */
+.example-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.example-item {
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}

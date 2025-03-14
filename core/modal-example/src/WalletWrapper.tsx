@@ -1,5 +1,5 @@
 import React from 'react';
-import { WalletProvider, WalletErrorBoundary } from '@walletmesh/modal';
+import { WalletProvider } from '@walletmesh/modal';
 import { sandboxConfig } from './configs/sandbox';
 import { devnetConfig } from './configs/devnet';
 
@@ -11,12 +11,8 @@ interface WalletWrapperProps {
   onError?: (error: Error) => void;
 }
 
-export const WalletWrapper: React.FC<WalletWrapperProps> = ({ children, onError }) => {
-  return (
-    <WalletErrorBoundary onError={onError}>
-      <WalletProvider config={config} onError={onError}>
-        {children}
-      </WalletProvider>
-    </WalletErrorBoundary>
-  );
-};
+export const WalletWrapper: React.FC<WalletWrapperProps> = ({ children, onError }) => (
+  <WalletProvider config={config} onError={onError}>
+    {children}
+  </WalletProvider>
+);

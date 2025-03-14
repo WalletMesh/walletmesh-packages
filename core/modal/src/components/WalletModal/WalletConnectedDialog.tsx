@@ -33,7 +33,7 @@ export const WalletConnectedDialog: React.FC = () => {
   } = useWalletContext();
 
   const isResumingSession = connectionStatus === ConnectionStatus.Resuming;
-  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const isDisconnecting = connectionStatus === ConnectionStatus.Disconnecting;
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [connectionDate] = useState(new Date());
   const [selectedTab, setSelectedTab] = useState("details");
@@ -43,7 +43,6 @@ export const WalletConnectedDialog: React.FC = () => {
   }, [isConnectedModalOpen]);
 
   const handleDisconnect = async () => {
-    setIsDisconnecting(true);
     await disconnectWallet();
     closeConnectedModal();
   };

@@ -4,6 +4,19 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./styles": "./dist/**/*.module.css"
+  },
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -27,7 +40,6 @@
     "preversion": "pnpm test",
     "version": "pnpm clean && pnpm build && pnpm run docs && git add docs/"
   },
-  "sideEffects": false,
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
@@ -39,7 +51,8 @@
     "@radix-ui/react-tabs": "^1.0.4",
     "@radix-ui/react-visually-hidden": "^1.1.2",
     "lucide-react": "^0.475.0",
-    "react-hot-toast": "^2.5.1"
+    "react-hot-toast": "^2.5.1",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@testing-library/react": "^14.2.1",
