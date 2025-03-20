@@ -1,65 +1,63 @@
-/**
- * @packageDocumentation
- * Tests for connector registry implementation.
- */
-
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ConnectorRegistry } from './registry.js';
-import { BaseConnector } from './base.js';
+import { MockConnector } from './MockConnector.js';
 import type { ConnectorImplementationConfig } from '../types.js';
-
-class TestConnector extends BaseConnector {
-  async getProvider(): Promise<unknown> {
-    return {};
-  }
-
-  protected handleProtocolMessage(): void {
-    // No-op for test
-  }
-}
+import { ConnectionStatus } from '../types.js';
 
 describe('ConnectorRegistry', () => {
   let registry: ConnectorRegistry;
-  const mockConfig: ConnectorImplementationConfig = {
-    type: 'test',
-    transport: {
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      send: vi.fn(),
-      subscribe: vi.fn(),
-      isConnected: vi.fn(),
-    },
-    protocol: {
-      parseMessage: vi.fn(),
-      formatMessage: vi.fn(),
-      validateMessage: vi.fn(),
-      createRequest: vi.fn(),
-      createResponse: vi.fn(),
-      createError: vi.fn(),
-    },
-  };
+  let mockConfig: ConnectorImplementationConfig;
 
   beforeEach(() => {
     registry = new ConnectorRegistry();
+    mockConfig = {
+      type: 'mock',
+      name: 'Mock Connector',
+      factory: async () => ({
+        request: async <T>(): Promise<T> => ({} as T),
+        connect: async () => {},
+        disconnect: async () => {},
+        isConnected: () => true
+      })
+    };
   });
 
   describe('registration', () => {
     it('should register a connector creator', () => {
-      registry.register('test', (config) => new TestConnector(config));
+      const creator = (config: ConnectorImplementationConfig) => new MockConnector(config);
+      registry.register('test', creator);
       expect(registry.hasType('test')).toBe(true);
     });
 
     it('should not allow duplicate registration', () => {
-      registry.register('test', (config) => new TestConnector(config));
+      const creator = (config: ConnectorImplementationConfig) => new MockConnector(config);
+      registry.register('test', creator);
 
       expect(() => {
-        registry.register('test', (config) => new TestConnector(config));
+        registry.register('test', creator);
       }).toThrow("Connector type 'test' is already registered");
     });
 
+    it('should validate connector type on registration', () => {
+      expect(() => {
+        registry.register('', () => new MockConnector(mockConfig));
+      }).toThrow('Invalid connector type');
+
+      expect(() => {
+        registry.register(' ', () => new MockConnector(mockConfig));
+      }).toThrow('Invalid connector type');
+    });
+
+    it('should validate creator function', () => {
+      expect(() => {
+        // @ts-expect-error Testing invalid creator
+        registry.register('test', null);
+      }).toThrow('Creator must be a function');
+    });
+
     it('should return registered types', () => {
-      registry.register('test1', (config) => new TestConnector(config));
-      registry.register('test2', (config) => new TestConnector(config));
+      registry.register('test1', (config: ConnectorImplementationConfig) => new MockConnector(config));
+      registry.register('test2', (config: ConnectorImplementationConfig) => new MockConnector(config));
 
       const types = registry.getTypes();
       expect(types).toHaveLength(2);
@@ -68,7 +66,8 @@ describe('ConnectorRegistry', () => {
     });
 
     it('should unregister a connector type', () => {
-      registry.register('test', (config) => new TestConnector(config));
+      const creator = (config: ConnectorImplementationConfig) => new MockConnector(config);
+      registry.register('test', creator);
       expect(registry.hasType('test')).toBe(true);
 
       registry.unregister('test');
@@ -76,8 +75,8 @@ describe('ConnectorRegistry', () => {
     });
 
     it('should clear all registrations', () => {
-      registry.register('test1', (config) => new TestConnector(config));
-      registry.register('test2', (config) => new TestConnector(config));
+      registry.register('test1', (config: ConnectorImplementationConfig) => new MockConnector(config));
+      registry.register('test2', (config: ConnectorImplementationConfig) => new MockConnector(config));
       expect(registry.getTypes()).toHaveLength(2);
 
       registry.clear();
@@ -86,11 +85,22 @@ describe('ConnectorRegistry', () => {
   });
 
   describe('connector creation', () => {
-    it('should create a connector instance', () => {
-      registry.register('test', (config) => new TestConnector(config));
+    const setupMockCreator = () => {
+      const creator = vi.fn((config: ConnectorImplementationConfig) => {
+        const connector = new MockConnector(config);
+        vi.spyOn(connector, 'getState').mockReturnValue(ConnectionStatus.DISCONNECTED);
+        return connector;
+      });
+      registry.register('mock', creator);
+      return creator;
+    };
 
+    it('should create a connector instance', () => {
+      const creator = setupMockCreator();
       const connector = registry.create(mockConfig);
-      expect(connector).toBeInstanceOf(BaseConnector);
+      
+      expect(connector).toBeInstanceOf(MockConnector);
+      expect(creator).toHaveBeenCalledWith(mockConfig);
     });
 
     it('should throw for unknown connector type', () => {
@@ -99,12 +109,47 @@ describe('ConnectorRegistry', () => {
       }).toThrow("No connector registered for type 'unknown'");
     });
 
-    it('should pass config to creator', () => {
-      const creator = vi.fn((config) => new TestConnector(config));
-      registry.register('test', creator);
+    it('should validate config object', () => {
+      const creator = setupMockCreator();
 
-      registry.create(mockConfig);
-      expect(creator).toHaveBeenCalledWith(mockConfig);
+      expect(() => {
+        registry.create({ ...mockConfig, type: '' });
+      }).toThrow('Invalid connector type');
+      
+      // Creator should not be called with invalid config
+      expect(creator).not.toHaveBeenCalled();
+
+      expect(() => {
+        registry.create({ ...mockConfig, name: '' });
+      }).toThrow('Invalid connector name');
+
+      expect(() => {
+        // @ts-expect-error Testing missing factory
+        registry.create({ type: 'mock', name: 'test' });
+      }).toThrow('Factory function is required');
+    });
+
+    it('should pass config to creator', () => {
+      const creator = setupMockCreator();
+      const customConfig = {
+        ...mockConfig,
+        customOption: 'test'
+      };
+
+      registry.create(customConfig);
+      expect(creator).toHaveBeenCalledWith(customConfig);
+    });
+
+    it('should preserve factory function', () => {
+      const creator = setupMockCreator();
+      const connector = registry.create(mockConfig);
+
+      expect(connector.getState()).toBe(ConnectionStatus.DISCONNECTED);
+      expect(creator).toHaveBeenCalledWith(
+        expect.objectContaining({
+          factory: expect.any(Function)
+        })
+      );
     });
   });
 
@@ -112,7 +157,7 @@ describe('ConnectorRegistry', () => {
     it('should check for registered types', () => {
       expect(registry.hasType('test')).toBe(false);
 
-      registry.register('test', (config) => new TestConnector(config));
+      registry.register('test', (config: ConnectorImplementationConfig) => new MockConnector(config));
       expect(registry.hasType('test')).toBe(true);
     });
 
@@ -121,27 +166,46 @@ describe('ConnectorRegistry', () => {
         registry.unregister('unknown');
       }).not.toThrow();
     });
+
+    it('should validate type format', () => {
+      expect(registry.hasType('')).toBe(false);
+      expect(registry.hasType(' ')).toBe(false);
+      expect(registry.hasType('valid-type')).toBe(false);
+    });
+
+    it('should maintain type case sensitivity', () => {
+      registry.register('Test', (config: ConnectorImplementationConfig) => new MockConnector(config));
+      expect(registry.hasType('test')).toBe(false);
+      expect(registry.hasType('Test')).toBe(true);
+    });
   });
 
-  describe('default registry', () => {
-    it('should have mock connector registered', () => {
-      const registry = new ConnectorRegistry();
-      expect(registry.hasType('mock')).toBe(false); // Fresh registry has no connectors
+  describe('error handling', () => {
+    it('should handle creator errors', () => {
+      const error = new Error('Creation failed');
+      const failingCreator = () => {
+        throw error;
+      };
+      
+      registry.register('failing', failingCreator);
+      expect(() => {
+        registry.create({ ...mockConfig, type: 'failing' });
+      }).toThrow(error);
     });
 
-    it('should create registered connector', () => {
-      const registry = new ConnectorRegistry();
-      registry.register('test', (config) => new TestConnector(config));
+    it('should handle invalid configs gracefully', () => {
+      const creator = (config: ConnectorImplementationConfig) => new MockConnector(config);
+      registry.register('test', creator);
 
-      const connector = registry.create(mockConfig);
-      expect(connector).toBeInstanceOf(TestConnector);
-    });
+      expect(() => {
+        // @ts-expect-error Testing invalid config
+        registry.create(null);
+      }).toThrow('Invalid config object');
 
-    it('should fail to create unregistered connector', () => {
-      const registry = new ConnectorRegistry();
-      expect(() => registry.create({ ...mockConfig, type: 'unknown' })).toThrow(
-        "No connector registered for type 'unknown'",
-      );
+      expect(() => {
+        // @ts-expect-error Testing invalid config
+        registry.create({});
+      }).toThrow('Invalid connector type');
     });
   });
 });

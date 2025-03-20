@@ -1,26 +1,28 @@
 /**
  * @packageDocumentation
- * Connector creation functionality for WalletMesh.
+ * Connector factory implementation
  */
 
-import type { ConnectorConfig } from '../types.js';
 import type { Connector, ConnectorFactory } from './types.js';
-
-// Registry of connector factories
-const connectorRegistry = new Map<string, ConnectorFactory>();
+import type { WalletConnectorConfig } from '../types.js';
 
 /**
- * Registers a connector factory for a specific connector type
+ * Registry of connector factories
+ */
+const connectorFactories = new Map<string, ConnectorFactory>();
+
+/**
+ * Registers a connector factory
  */
 export function registerConnector(type: string, factory: ConnectorFactory): void {
-  connectorRegistry.set(type, factory);
+  connectorFactories.set(type, factory);
 }
 
 /**
- * Creates a connector instance from a configuration
+ * Creates a connector instance
  */
-export function createConnector(config: ConnectorConfig): Connector {
-  const factory = connectorRegistry.get(config.type);
+export function createConnector(config: WalletConnectorConfig): Connector {
+  const factory = connectorFactories.get(config.type);
   if (!factory) {
     throw new Error(`No connector factory registered for type: ${config.type}`);
   }
@@ -29,9 +31,8 @@ export function createConnector(config: ConnectorConfig): Connector {
 }
 
 /**
- * Clears all registered connector factories
- * Primarily used for testing
+ * Clears connector registry
  */
 export function clearConnectorRegistry(): void {
-  connectorRegistry.clear();
+  connectorFactories.clear();
 }

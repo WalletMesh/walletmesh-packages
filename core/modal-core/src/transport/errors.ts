@@ -1,22 +1,46 @@
 /**
  * @packageDocumentation
- * Error types and factories for protocol-level errors.
+ * Transport and protocol error types for consistent error handling
  */
 
 /**
- * Error codes specific to protocol operations.
+ * Protocol error codes for validation and processing errors
  */
 export enum ProtocolErrorCode {
+  /** General validation failure */
   VALIDATION_FAILED = 'validation_failed',
+  /** Invalid message format or structure */
   INVALID_FORMAT = 'invalid_format',
+  /** Unknown or unsupported message type */
   UNKNOWN_MESSAGE_TYPE = 'unknown_message_type',
+  /** Required field missing in message */
   MISSING_REQUIRED_FIELD = 'missing_required_field',
-  INVALID_PAYLOAD = 'invalid_payload',
+  /** Invalid payload structure or content */
+  INVALID_PAYLOAD = 'invalid_payload'
 }
 
 /**
- * Protocol-specific error type.
- * Used for errors that occur during message validation and processing.
+ * Transport error codes for connection and communication errors
+ */
+export enum TransportErrorCode {
+  /** General transport error */
+  TRANSPORT_ERROR = 'transport_error',
+  /** Failed to establish connection */
+  CONNECTION_FAILED = 'connection_failed',
+  /** Transport not connected */
+  NOT_CONNECTED = 'not_connected',
+  /** Message send failed */
+  SEND_FAILED = 'send_failed',
+  /** Protocol error occurred */
+  PROTOCOL_ERROR = 'protocol_error',
+  /** Operation timed out */
+  TIMEOUT = 'timeout',
+  /** Invalid message format/structure */
+  INVALID_MESSAGE = 'invalid_message'
+}
+
+/**
+ * Protocol-specific error with error code and details
  */
 export class ProtocolError extends Error {
   constructor(
@@ -26,72 +50,99 @@ export class ProtocolError extends Error {
   ) {
     super(message);
     this.name = 'ProtocolError';
-
-    // Ensure proper prototype chain for instanceof checks
-    Object.setPrototypeOf(this, ProtocolError.prototype);
   }
 
-  /**
-   * Creates a string representation of the error.
-   */
   override toString(): string {
-    return `${this.name} [${this.code}]: ${this.message}${
-      this.details ? `\nDetails: ${JSON.stringify(this.details)}` : ''
-    }`;
+    const details = this.details ? `: ${JSON.stringify(this.details)}` : '';
+    return `${this.name}[${this.code}]: ${this.message}${details}`;
   }
 }
 
 /**
- * Factory methods for creating common protocol errors.
+ * Transport-specific error with error code and details
+ */
+export class TransportError extends Error {
+  constructor(
+    message: string,
+    public readonly code: TransportErrorCode,
+    public readonly details?: unknown
+  ) {
+    super(message);
+    this.name = 'TransportError';
+  }
+
+  override toString(): string {
+    const details = this.details ? `: ${JSON.stringify(this.details)}` : '';
+    return `${this.name}[${this.code}]: ${this.message}${details}`;
+  }
+}
+
+/**
+ * Factory methods for protocol errors
  */
 export const createProtocolError = {
-  /**
-   * Creates an error for validation failures.
-   */
-  validation: (message: string, details?: unknown) =>
+  validation: (message: string, details?: unknown) => 
     new ProtocolError(message, ProtocolErrorCode.VALIDATION_FAILED, details),
-
-  /**
-   * Creates an error for invalid message format.
-   */
+  
   invalidFormat: (message: string, details?: unknown) =>
     new ProtocolError(message, ProtocolErrorCode.INVALID_FORMAT, details),
-
-  /**
-   * Creates an error for unknown message types.
-   */
+  
   unknownMessageType: (type: string) =>
     new ProtocolError(
       `Unknown message type: ${type}`,
       ProtocolErrorCode.UNKNOWN_MESSAGE_TYPE,
-      { type }
+      { receivedType: type }
     ),
 
-  /**
-   * Creates an error for missing required fields.
-   */
-  missingField: (fieldName: string) =>
+  missingField: (field: string, details?: unknown) =>
     new ProtocolError(
-      `Missing required field: ${fieldName}`,
+      `Missing required field: ${field}`,
       ProtocolErrorCode.MISSING_REQUIRED_FIELD,
-      { field: fieldName }
+      details
     ),
 
-  /**
-   * Creates an error for invalid payload content.
-   */
   invalidPayload: (message: string, details?: unknown) =>
-    new ProtocolError(message, ProtocolErrorCode.INVALID_PAYLOAD, details),
+    new ProtocolError(
+      message,
+      ProtocolErrorCode.INVALID_PAYLOAD,
+      details
+    )
 };
 
 /**
- * Type guard for checking if an error is a ProtocolError.
+ * Factory methods for transport errors
+ */
+export const createTransportError = {
+  connectionFailed: (message: string, details?: unknown) =>
+    new TransportError(message, TransportErrorCode.CONNECTION_FAILED, details),
+
+  notConnected: (message: string, details?: unknown) =>
+    new TransportError(message, TransportErrorCode.NOT_CONNECTED, details),
+
+  sendFailed: (message: string, details?: unknown) =>
+    new TransportError(message, TransportErrorCode.SEND_FAILED, details),
+
+  protocolError: (message: string, details?: unknown) =>
+    new TransportError(message, TransportErrorCode.PROTOCOL_ERROR, details),
+
+  timeout: (message: string, details?: unknown) =>
+    new TransportError(message, TransportErrorCode.TIMEOUT, details),
+
+  error: (message: string, details?: unknown) =>
+    new TransportError(message, TransportErrorCode.TRANSPORT_ERROR, details),
+    
+  invalidMessage: (message: string, details?: unknown) =>
+    new TransportError(message, TransportErrorCode.INVALID_MESSAGE, details)
+};
+
+/**
+ * Type guard for ProtocolError
  */
 export const isProtocolError = (error: unknown): error is ProtocolError =>
   error instanceof ProtocolError;
 
 /**
- * Type guard for checking if a code is a valid ProtocolErrorCode.
+ * Type guard for TransportError
  */
-export const isProtocolErrorCode = (code: string): code is ProtocolErrorCode =>
-  Object.values(ProtocolErrorCode).includes(code as ProtocolErrorCode);
+export const isTransportError = (error: unknown): error is TransportError =>
+  error instanceof TransportError;

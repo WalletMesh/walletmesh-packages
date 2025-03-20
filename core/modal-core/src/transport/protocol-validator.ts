@@ -1,154 +1,109 @@
 /**
  * @packageDocumentation
- * Protocol validation utilities and types.
+ * Protocol validation utilities.
  */
 
-import { ProtocolError, ProtocolErrorCode, createProtocolError } from './errors.js';
-import type { Message, ProtocolPayload } from './types.js';
-
-/**
- * Result type for validation operations
- */
-export type ValidationResult<T> = {
-  success: true;
-  data: T;
-} | {
-  success: false;
-  error: ProtocolError;
-};
+import type { Message, ValidationResult } from './types.js';
+import { MessageType } from './types.js';
+import { ProtocolError, ProtocolErrorCode } from './errors.js';
 
 /**
- * Protocol message validator that ensures messages conform to expected format
+ * Validates a protocol message.
  */
-export class ProtocolValidator<T extends ProtocolPayload> {
+export class ProtocolValidator<T = unknown> {
   /**
-   * Validates a message's basic structure
+   * Validates a message payload.
    */
-  validateMessageStructure(message: unknown): ValidationResult<Message<T>> {
-    try {
-      if (!message || typeof message !== 'object') {
-        throw createProtocolError.invalidFormat('Message must be an object');
-      }
-
-      const msg = message as Partial<Message<T>>;
-
-      if (!msg.type) {
-        throw createProtocolError.missingField('type');
-      }
-
-      if (!msg.id) {
-        throw createProtocolError.missingField('id');
-      }
-
-      if (!msg.payload) {
-        throw createProtocolError.missingField('payload');
-      }
-
-      if (typeof msg.timestamp !== 'number') {
-        throw createProtocolError.invalidFormat('timestamp must be a number');
-      }
-
-      return {
-        success: true,
-        data: message as Message<T>,
-      };
-    } catch (error) {
+  validatePayload(payload: T): ValidationResult<T> {
+    if (!payload || typeof payload !== 'object') {
       return {
         success: false,
-        error: error instanceof ProtocolError
-          ? error
-          : createProtocolError.validation('Message validation failed', error),
+        error: new ProtocolError('Invalid payload: must be an object', ProtocolErrorCode.INVALID_PAYLOAD),
       };
     }
+
+    // Check if payload has required fields
+    const payloadObj = payload as Record<string, unknown>;
+    if (!('method' in payloadObj) && !('result' in payloadObj) && !('error' in payloadObj)) {
+      return {
+        success: false,
+        error: new ProtocolError('Invalid payload: must contain method, result, or error', ProtocolErrorCode.INVALID_PAYLOAD),
+      };
+    }
+
+    return { success: true, data: payload };
   }
 
   /**
-   * Validates a message payload matches the expected format
+   * Validates a complete message.
    */
-  validatePayload(
-    payload: unknown,
-    requestExpected = true
-  ): ValidationResult<T> {
-    try {
-      if (!payload || typeof payload !== 'object') {
-        throw createProtocolError.invalidPayload('Payload must be an object');
-      }
-
-      const typedPayload = payload as Partial<T>;
-
-      // Validate request if expected
-      if (requestExpected && !this.isValidRequest(typedPayload.request)) {
-        throw createProtocolError.invalidPayload('Invalid request format');
-      }
-
-      // Always validate response
-      if (!this.isValidResponse(typedPayload.response)) {
-        throw createProtocolError.invalidPayload('Invalid response format');
-      }
-
-      return {
-        success: true,
-        data: payload as T,
-      };
-    } catch (error) {
+  validateMessage(message: Message<T>): ValidationResult<Message<T>> {
+    if (!message || typeof message !== 'object') {
       return {
         success: false,
-        error: error instanceof ProtocolError
-          ? error
-          : createProtocolError.validation('Payload validation failed', error),
+        error: new ProtocolError('Invalid message: must be an object', ProtocolErrorCode.INVALID_FORMAT),
       };
     }
-  }
 
-  /**
-   * Validates a complete message including structure and payload
-   */
-  validateMessage(message: unknown): ValidationResult<Message<T>> {
-    const structureResult = this.validateMessageStructure(message);
-    if (!structureResult.success) {
-      return structureResult;
+    // Check for required fields presence
+    for (const field of ['id', 'type', 'timestamp', 'payload'] as const) {
+      if (!(field in message)) {
+        return {
+          success: false,
+          error: new ProtocolError(`Invalid message: missing required field '${field}'`, ProtocolErrorCode.MISSING_REQUIRED_FIELD),
+        };
+      }
     }
 
-    const payloadResult = this.validatePayload(structureResult.data.payload);
+    // Validate field types and values
+    if (typeof message.id !== 'string' || !message.id) {
+      return {
+        success: false,
+        error: new ProtocolError('Invalid message: id must be a non-empty string', ProtocolErrorCode.INVALID_FORMAT),
+      };
+    }
+
+    if (typeof message.type !== 'string' || !Object.values(MessageType).includes(message.type)) {
+      return {
+        success: false,
+        error: new ProtocolError('Invalid message: type must be a valid MessageType', ProtocolErrorCode.UNKNOWN_MESSAGE_TYPE),
+      };
+    }
+
+    if (typeof message.timestamp !== 'number') {
+      return {
+        success: false,
+        error: new ProtocolError('Invalid message: timestamp must be a number', ProtocolErrorCode.INVALID_FORMAT),
+      };
+    }
+
+    if (!message.payload || typeof message.payload !== 'object') {
+      return {
+        success: false,
+        error: new ProtocolError('Invalid message: payload must be an object', ProtocolErrorCode.INVALID_PAYLOAD),
+      };
+    }
+
+    const payloadResult = this.validatePayload(message.payload);
     if (!payloadResult.success) {
-      return {
-        success: false,
-        error: payloadResult.error,
-      };
+      return payloadResult as ValidationResult<Message<T>>;
     }
 
-    return {
-      success: true,
-      data: structureResult.data,
-    };
+    return { success: true, data: message };
   }
+}
 
-  private isValidRequest(request: unknown): boolean {
-    if (!request || typeof request !== 'object') {
-      return false;
-    }
+export type { ValidationResult };
+export interface ProtocolPayload<TRequest = unknown, TResponse = unknown> {
+  request: TRequest;
+  response: TResponse;
+}
 
-    const req = request as Record<string, unknown>;
-    return (
-      typeof req['method'] === 'string' &&
-      req['method'].length > 0 &&
-      'params' in req &&
-      req['params'] !== null &&
-      typeof req['params'] === 'object'
-    );
-  }
+export interface Protocol<T = unknown> {
+  validateMessage(message: Message<T>): ValidationResult<Message<T>>;
+}
 
-  private isValidResponse(response: unknown): boolean {
-    if (!response || typeof response !== 'object') {
-      return false;
-    }
-
-    const res = response as Record<string, unknown>;
-    
-    // Response must have either result or error, but not both
-    const hasResult = 'result' in res;
-    const hasError = typeof res['error'] === 'string';
-    
-    return (hasResult !== hasError) || (!hasResult && !hasError);
-  }
+export interface TransportOptions {
+  timeout?: number;
+  retries?: number;
 }

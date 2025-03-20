@@ -5,16 +5,12 @@
 
 // Base connector implementation
 export { BaseConnector } from './base.js';
-export type { ConnectorMessages } from './base.js';
 
 // Mock connector for testing
 export {
   MockConnector,
-  type MockProvider,
   type MockMessages,
-  type MockConnectorConfig,
-  defaultMockConnector,
-} from './mock.js';
+} from './MockConnector.js';
 
 // Connector registry
 export {

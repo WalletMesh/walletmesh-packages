@@ -1,22 +1,39 @@
 /**
- * @packageDocumentation
- * Core transport layer types and interfaces for WalletMesh.
+ * Transport layer type definitions
  */
 
-import type { ValidationResult, ProtocolValidator } from './protocol-validator.js';
-
 /**
- * Message types supported by the transport layer.
+ * Message types
  */
 export enum MessageType {
   REQUEST = 'request',
   RESPONSE = 'response',
-  NOTIFICATION = 'notification',
-  ERROR = 'error',
+  ERROR = 'error'
 }
 
 /**
- * Core message structure for transport layer communication.
+ * Transport states
+ */
+export enum TransportState {
+  DISCONNECTED = 'disconnected',
+  CONNECTING = 'connecting',
+  CONNECTED = 'connected',
+  ERROR = 'error'
+}
+
+/**
+ * Transport error codes
+ */
+export enum TransportErrorCode {
+  CONNECTION_FAILED = 'CONNECTION_FAILED',
+  INVALID_MESSAGE = 'INVALID_MESSAGE',
+  TIMEOUT = 'TIMEOUT',
+  RPC_ERROR = 'RPC_ERROR',
+  TRANSPORT_ERROR = 'TRANSPORT_ERROR'
+}
+
+/**
+ * Base message interface
  */
 export interface Message<T = unknown> {
   id: string;
@@ -26,44 +43,13 @@ export interface Message<T = unknown> {
 }
 
 /**
- * Handler for processing transport messages.
- */
-export interface MessageHandler {
-  canHandle(message: Message): boolean;
-  handle(message: Message): Promise<void>;
-}
-
-/**
- * Configuration options for transport implementations.
- */
-export interface TransportOptions {
-  /** Maximum time to wait for a response (ms) */
-  timeout?: number;
-  /** Number of retry attempts for failed operations */
-  retries?: number;
-  /** Enable debug logging */
-  debug?: boolean;
-}
-
-/**
- * Error codes specific to transport operations.
- */
-export enum TransportErrorCode {
-  CONNECTION_FAILED = 'connection_failed',
-  TIMEOUT = 'timeout',
-  INVALID_MESSAGE = 'invalid_message',
-  PROTOCOL_ERROR = 'protocol_error',
-  TRANSPORT_ERROR = 'transport_error',
-}
-
-/**
- * Transport-specific error type.
+ * Transport error
  */
 export class TransportError extends Error {
   constructor(
     message: string,
     public readonly code: TransportErrorCode,
-    public readonly details?: unknown,
+    public override readonly cause?: Error
   ) {
     super(message);
     this.name = 'TransportError';
@@ -71,87 +57,71 @@ export class TransportError extends Error {
 }
 
 /**
- * Core transport interface for wallet communication.
+ * Protocol interface
+ */
+export interface Protocol<T = unknown> {
+  createRequest: <M extends string>(method: M, params: T) => Message<T>;
+  createResponse: (id: string, result: T) => Message<T>;
+  createError: (id: string, error: Error) => Message<T>;
+  validateMessage: (message: unknown) => ValidationResult<Message<T>>;
+  formatMessage: (message: Message<T>) => unknown;
+  parseMessage: (data: unknown) => ValidationResult<Message<T>>;
+}
+
+/**
+ * Transport configuration options
+ */
+export interface TransportOptions {
+  /** Connection timeout in ms */
+  timeout?: number;
+  /** Auto-reconnect configuration */
+  reconnect?: {
+    /** Whether to auto-reconnect */
+    enabled: boolean;
+    /** Max reconnection attempts */
+    maxAttempts?: number;
+    /** Base delay between attempts in ms */
+    delay?: number;
+  };
+}
+
+/**
+ * Validation result type
+ */
+export type ValidationResult<T> = { success: true; data: T } | 
+  { success: false; error: Error };
+
+/**
+ * Message handler interface
+ */
+export interface MessageHandler {
+  canHandle: (message: Message) => boolean;
+  handle: (message: Message) => Promise<void>;
+}
+
+/**
+ * Error handler type
+ */
+export type ErrorHandler = (error: Error | TransportError) => void;
+
+/**
+ * Subscription handler interface
+ */
+export interface Subscription {
+  onMessage?: (message: Message) => void;
+  onError?: ErrorHandler;
+}
+
+/**
+ * Transport interface
  */
 export interface Transport {
-  /**
-   * Establishes the transport connection.
-   * @throws {TransportError} If connection fails
-   */
   connect(): Promise<void>;
-
-  /**
-   * Closes the transport connection and cleans up resources.
-   */
   disconnect(): Promise<void>;
-
-  /**
-   * Sends a message and waits for a response.
-   * @param message - The message to send
-   * @returns Promise resolving to the response message
-   * @throws {TransportError} If send fails or times out
-   */
-  send<T, R>(message: Message<T>): Promise<Message<R>>;
-
-  /**
-   * Subscribes to incoming messages.
-   * @param handler - The message handler to register
-   * @returns Function to unsubscribe the handler
-   */
-  subscribe(handler: MessageHandler): () => void;
-
-  /**
-   * Checks if the transport is currently connected.
-   */
+  send<T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>>;
+  subscribe(subscription: Subscription): () => void;
   isConnected(): boolean;
-}
-
-/**
- * Request/Response types for protocols
- */
-export interface ProtocolPayload<TReq = unknown, TRes = unknown> {
-  request: TReq;
-  response: TRes;
-}
-
-/**
- * Base protocol interface for message formatting and validation.
- */
-export interface Protocol<T extends ProtocolPayload = ProtocolPayload> {
-  /**
-   * The validator instance for this protocol.
-   */
-  validator: ProtocolValidator<T>;
-
-  /**
-   * Parses and validates raw message data.
-   * @returns Validation result containing parsed message or error
-   */
-  parseMessage(data: unknown): ValidationResult<Message<T['request']>>;
-
-  /**
-   * Formats a message for transport.
-   */
-  formatMessage(message: Message<T['request']>): unknown;
-
-  /**
-   * Validates an incoming message.
-   * @returns Validation result containing validated message or error
-   */
-  validateMessage(message: unknown): ValidationResult<Message<T>>;
-
-  /**
-   * Creates a request message.
-   */
-  createRequest<M extends string>(method: M, params: T['request']): Message<T['request']>;
-
-  /**
-   * Creates a response message.
-   */
-  createResponse(requestId: string, result: T['response']): Message<T['response']>;
-
-  /**
-   * Creates an error message.
-   */
-  createError(requestId: string, error: Error): Message<T['request']>;
+  getState(): TransportState | string;
+  addErrorHandler(handler: ErrorHandler): void;
+  removeErrorHandler(handler: ErrorHandler): void;
 }

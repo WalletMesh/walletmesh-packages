@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { registerConnector, createConnector, clearConnectorRegistry } from './createConnector.js';
 import type { Connector, ConnectorFactory } from './types.js';
-import type { ConnectorConfig } from '../types.js';
+import { ConnectionStatus } from '../types.js';
+import type { WalletConnectorConfig } from '../types.js';
 
 describe('createConnector', () => {
   const mockConnector: Connector = {
@@ -9,6 +10,7 @@ describe('createConnector', () => {
     resume: vi.fn(),
     disconnect: vi.fn(),
     getProvider: vi.fn(),
+    getState: vi.fn().mockReturnValue(ConnectionStatus.DISCONNECTED),
   };
 
   const mockFactory = vi.fn().mockReturnValue(mockConnector) as unknown as ConnectorFactory;
@@ -22,7 +24,7 @@ describe('createConnector', () => {
     it('should successfully register a connector factory', () => {
       registerConnector('test', mockFactory);
       
-      const config: ConnectorConfig = { type: 'test' };
+      const config: WalletConnectorConfig = { type: 'test' };
       const connector = createConnector(config);
       
       expect(vi.mocked(mockFactory)).toHaveBeenCalledWith(config);
@@ -35,13 +37,14 @@ describe('createConnector', () => {
         resume: vi.fn(),
         disconnect: vi.fn(),
         getProvider: vi.fn(),
+        getState: vi.fn().mockReturnValue(ConnectionStatus.DISCONNECTED),
       };
       const alternativeMockFactory = vi.fn().mockReturnValue(alternativeMockConnector) as unknown as ConnectorFactory;
 
       registerConnector('test', mockFactory);
       registerConnector('test', alternativeMockFactory);
 
-      const config: ConnectorConfig = { type: 'test' };
+      const config: WalletConnectorConfig = { type: 'test' };
       const connector = createConnector(config);
 
       expect(vi.mocked(mockFactory)).not.toHaveBeenCalled();
@@ -56,8 +59,8 @@ describe('createConnector', () => {
       registerConnector('typeA', mockFactoryA);
       registerConnector('typeB', mockFactoryB);
 
-      const configA: ConnectorConfig = { type: 'typeA' };
-      const configB: ConnectorConfig = { type: 'typeB' };
+      const configA: WalletConnectorConfig = { type: 'typeA' };
+      const configB: WalletConnectorConfig = { type: 'typeB' };
 
       createConnector(configA);
       createConnector(configB);
@@ -69,7 +72,7 @@ describe('createConnector', () => {
 
   describe('createConnector', () => {
     it('should throw error for unregistered connector type', () => {
-      const config: ConnectorConfig = { type: 'unknown' };
+      const config: WalletConnectorConfig = { type: 'unknown' };
       
       expect(() => createConnector(config)).toThrow(
         'No connector factory registered for type: unknown'
@@ -77,7 +80,7 @@ describe('createConnector', () => {
     });
 
     it('should pass connector options to factory', () => {
-      const config: ConnectorConfig = {
+      const config: WalletConnectorConfig = {
         type: 'test',
         options: { foo: 'bar' },
       };
@@ -89,7 +92,7 @@ describe('createConnector', () => {
     });
 
     it('should handle undefined options', () => {
-      const config: ConnectorConfig = { type: 'test' };
+      const config: WalletConnectorConfig = { type: 'test' };
 
       registerConnector('test', mockFactory);
       createConnector(config);
@@ -105,7 +108,7 @@ describe('createConnector', () => {
 
       clearConnectorRegistry();
 
-      const config: ConnectorConfig = { type: 'test1' };
+      const config: WalletConnectorConfig = { type: 'test1' };
       expect(() => createConnector(config)).toThrow(
         'No connector factory registered for type: test1'
       );
@@ -116,7 +119,7 @@ describe('createConnector', () => {
       clearConnectorRegistry();
       registerConnector('newTest', mockFactory);
 
-      const config: ConnectorConfig = { type: 'newTest' };
+      const config: WalletConnectorConfig = { type: 'newTest' };
       const connector = createConnector(config);
 
       expect(vi.mocked(mockFactory)).toHaveBeenCalledWith(config);
@@ -133,7 +136,7 @@ describe('createConnector', () => {
       const invalidFactory = vi.fn().mockReturnValue(invalidConnector) as unknown as ConnectorFactory;
 
       registerConnector('test', invalidFactory);
-      const config: ConnectorConfig = { type: 'test' };
+      const config: WalletConnectorConfig = { type: 'test' };
       
       // TypeScript will catch this at compile time, but we should still
       // have runtime tests to ensure interface compliance
@@ -142,15 +145,15 @@ describe('createConnector', () => {
 
     it('should handle null/undefined/invalid config', () => {
       expect(() => 
-        createConnector(null as unknown as ConnectorConfig)
+        createConnector(null as unknown as WalletConnectorConfig)
       ).toThrow();
       
       expect(() => 
-        createConnector(undefined as unknown as ConnectorConfig)
+        createConnector(undefined as unknown as WalletConnectorConfig)
       ).toThrow();
       
       expect(() => 
-        createConnector({} as unknown as ConnectorConfig)
+        createConnector({} as unknown as WalletConnectorConfig)
       ).toThrow();
     });
   });

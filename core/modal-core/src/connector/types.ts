@@ -1,69 +1,51 @@
 /**
  * @packageDocumentation
- * Core connector types and interfaces for WalletMesh.
+ * Connector type definitions
  */
 
-import type { Protocol, Transport } from '../transport/index.js';
-import type { WalletInfo, WalletState, ConnectedWallet } from '../types.js';
+import type { Message, Transport, ErrorHandler } from '../transport/types.js';
+import type { Provider } from '../types.js';
+import type { ProtocolError } from '../transport/errors.js';
 
 /**
- * Configuration options for connectors
+ * Cleanup handler type
  */
-export interface ConnectorConfig<T = unknown> {
-  /** Transport instance for communication */
-  transport: Transport;
-  /** Protocol implementation */
-  protocol: Protocol;
-  /** Connector-specific options */
-  options?: T;
+export type CleanupHandler = () => void;
+
+// Re-export types
+export type { Transport, ErrorHandler, Provider };
+
+/**
+ * Protocol message interface
+ */
+export interface ProtocolMessage<TReq = unknown, TRes = unknown> {
+  request: TReq;
+  response: TRes;
 }
 
 /**
- * Core interface for protocol-specific wallet connectors.
+ * Request message interface
  */
-export interface Connector {
-  /**
-   * Establishes a connection with a wallet.
-   * @param walletInfo Information about the wallet to connect
-   * @returns Connected wallet details
-   */
-  connect(walletInfo: WalletInfo): Promise<ConnectedWallet>;
-
-  /**
-   * Resumes a previously established connection.
-   * @param walletInfo Wallet information
-   * @param state Previous wallet state
-   * @returns Reconnected wallet details
-   */
-  resume(walletInfo: WalletInfo, state: WalletState): Promise<ConnectedWallet>;
-
-  /**
-   * Terminates the wallet connection.
-   */
-  disconnect(): Promise<void>;
-
-  /**
-   * Processes incoming messages from the transport.
-   */
-  handleMessage(data: unknown): void;
-
-  /**
-   * Gets the chain-specific provider instance.
-   */
-  getProvider(): Promise<unknown>;
+export interface RequestMessage<T = unknown> {
+  method: string;
+  params: T[];
 }
 
 /**
- * Factory function type for creating connectors.
+ * Protocol interface
  */
-export type ConnectorFactory<T = unknown> = (config: ConnectorConfig<T>) => Connector;
+export interface Protocol<T extends ProtocolMessage = ProtocolMessage> {
+  createRequest: <M extends string>(method: M, params: T['request']) => Message<T['request']>;
+  createResponse: (id: string, result: T['response']) => Message<T['response']>;
+  createError: (id: string, error: Error) => Message<T['request']>;
+  validateMessage: <K extends keyof T>(message: unknown) => ValidationResult<Message<T[K]>>;
+  formatMessage: <K extends keyof T>(message: Message<T[K]>) => unknown;
+  parseMessage: <K extends keyof T>(data: unknown) => ValidationResult<Message<T[K]>>;
+}
 
 /**
- * Registry of available connector types.
+ * Protocol validation result
  */
-export enum ConnectorType {
-  JSONRPC = 'json-rpc',
-  IFRAME = 'iframe',
-  WINDOW = 'window',
-  CUSTOM = 'custom',
-}
+export type ValidationResult<T> = 
+  | { success: true; data: T } 
+  | { success: false; error: ProtocolError };

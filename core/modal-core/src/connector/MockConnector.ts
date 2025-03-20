@@ -6,8 +6,7 @@
 import { BaseConnector } from './base.js';
 import { MessageType, type Message } from '../transport/index.js';
 import type { Transport, ProtocolMessage } from './types.js';
-import type { ConnectedWallet, WalletInfo, WalletState } from '../types.js';
-import { TransportError, TransportErrorCode } from '../transport/errors.js';
+import type { ConnectedWallet, WalletInfo, WalletState, ConnectorImplementationConfig } from '../types.js';
 import { ProtocolError, ProtocolErrorCode } from '../transport/errors.js';
 
 interface MockRequest {
@@ -19,56 +18,48 @@ interface MockResponse {
   result: unknown;
 }
 
-export interface MockMessageTypes extends ProtocolMessage {
+export interface MockMessages extends ProtocolMessage {
   request: MockRequest;
   response: MockResponse;
 }
 
 /**
- * Mock connector configuration
- */
-export interface MockConnectorConfig {
-  /** Default address to return */
-  address?: string;
-  /** Default chain ID */
-  chainId?: number;
-  /** Whether to simulate connection failures */
-  shouldFail?: boolean;
-  /** Simulated response delay in ms */
-  responseDelay?: number;
-}
-
-/**
  * Mock connector implementation for testing
  */
-export class MockConnector extends BaseConnector<MockMessageTypes> {
+export class MockConnector extends BaseConnector<MockMessages> {
   protected override currentWallet: ConnectedWallet | null = null;
+  private readonly config: {
+    address: string;
+    chainId: number;
+    shouldFail: boolean;
+    responseDelay: number;
+  };
   private _connected = false;
-  private readonly config: Required<MockConnectorConfig>;
 
-  constructor(options: MockConnectorConfig = {}) {
-    const config: Required<MockConnectorConfig> = {
-      address: options.address || '0x1234567890123456789012345678901234567890',
-      chainId: options.chainId || 1,
-      shouldFail: options.shouldFail || false,
-      responseDelay: options.responseDelay || 0
+  constructor(config: ConnectorImplementationConfig) {
+    const defaults = {
+      address: '0x1234567890123456789012345678901234567890',
+      chainId: 1,
+      shouldFail: false,
+      responseDelay: 0,
+      ...(config.options || {})
     };
 
-    const transport: Transport = {
+    const mockTransport: Transport = {
       connect: async () => {
-        if (config.shouldFail) {
-          throw new TransportError('Connection failed', TransportErrorCode.CONNECTION_FAILED);
+        if (defaults.shouldFail) {
+          throw new Error('Connection failed');
         }
-        if (config.responseDelay) {
-          await new Promise(resolve => setTimeout(resolve, config.responseDelay));
+        if (defaults.responseDelay) {
+          await new Promise(resolve => setTimeout(resolve, defaults.responseDelay));
         }
       },
       disconnect: async () => {},
       isConnected: () => this._connected,
       getState: () => this._connected ? 'connected' : 'disconnected',
       send: async <T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>> => {
-        if (config.responseDelay) {
-          await new Promise(resolve => setTimeout(resolve, config.responseDelay));
+        if (defaults.responseDelay) {
+          await new Promise(resolve => setTimeout(resolve, defaults.responseDelay));
         }
         return {
           id: message.id,
@@ -103,10 +94,10 @@ export class MockConnector extends BaseConnector<MockMessageTypes> {
         payload: { method: 'error', params: [error.message] },
         timestamp: Date.now()
       }),
-      formatMessage: <K extends keyof MockMessageTypes>(message: Message<MockMessageTypes[K]>): unknown => message,
-      validateMessage: <K extends keyof MockMessageTypes>(
+      formatMessage: <K extends keyof MockMessages>(message: Message<MockMessages[K]>): unknown => message,
+      validateMessage: <K extends keyof MockMessages>(
         message: unknown
-      ): { success: true; data: Message<MockMessageTypes[K]> } | { success: false; error: ProtocolError } => {
+      ): { success: true; data: Message<MockMessages[K]> } | { success: false; error: ProtocolError } => {
         if (!message) {
           return {
             success: false,
@@ -115,27 +106,19 @@ export class MockConnector extends BaseConnector<MockMessageTypes> {
         }
         return { 
           success: true, 
-          data: message as Message<MockMessageTypes[K]>
+          data: message as Message<MockMessages[K]>
         };
       },
-      parseMessage: <K extends keyof MockMessageTypes>(
+      parseMessage: <K extends keyof MockMessages>(
         data: unknown
-      ): { success: true; data: Message<MockMessageTypes[K]> } => ({ 
+      ): { success: true; data: Message<MockMessages[K]> } => ({ 
         success: true, 
-        data: data as Message<MockMessageTypes[K]>
+        data: data as Message<MockMessages[K]>
       })
     };
 
-    super(transport, protocol);
-    this.config = config;
-  }
-
-  protected async handleProtocolMessage(message: Message<MockMessageTypes[keyof MockMessageTypes]>): Promise<void> {
-    if (message.type === MessageType.REQUEST && 
-        'method' in message.payload && 
-        message.payload.method === 'connect') {
-      this._connected = true;
-    }
+    super(mockTransport, protocol);
+    this.config = defaults;
   }
 
   protected createConnectedWallet(_info: WalletInfo, state?: WalletState): ConnectedWallet {
@@ -147,8 +130,36 @@ export class MockConnector extends BaseConnector<MockMessageTypes> {
     };
   }
 
+  protected async doConnect(walletInfo: WalletInfo): Promise<void> {
+    const provider = await this.getProvider();
+    await provider.connect();
+    this.currentWallet = this.createConnectedWallet(walletInfo);
+  }
+
+  protected async doDisconnect(): Promise<void> {
+    const provider = await this.getProvider();
+    await provider.disconnect();
+    this.currentWallet = null;
+  }
+
   public override isConnected(): boolean {
     return this._connected;
+  }
+
+  public getConnectedWallet(): ConnectedWallet | null {
+    return this.currentWallet;
+  }
+
+  public processTestMessage(message: Message<MockMessages[keyof MockMessages]>): void {
+    this.handleProtocolMessage(message);
+  }
+
+  protected async handleProtocolMessage(message: Message<MockMessages[keyof MockMessages]>): Promise<void> {
+    if (message.type === MessageType.REQUEST && 
+        'method' in message.payload && 
+        message.payload.method === 'connect') {
+      this._connected = true;
+    }
   }
 
   public async getProvider() {
@@ -158,21 +169,5 @@ export class MockConnector extends BaseConnector<MockMessageTypes> {
       disconnect: async () => { this._connected = false; },
       isConnected: () => this._connected
     };
-  }
-
-  protected async doConnect(walletInfo: WalletInfo): Promise<void> {
-    if (this.config.shouldFail) {
-      throw new TransportError('Connection failed', TransportErrorCode.CONNECTION_FAILED);
-    }
-    if (this.config.responseDelay) {
-      await new Promise(resolve => setTimeout(resolve, this.config.responseDelay));
-    }
-    this._connected = true;
-    this.currentWallet = this.createConnectedWallet(walletInfo);
-  }
-
-  protected async doDisconnect(): Promise<void> {
-    this._connected = false;
-    this.currentWallet = null;
   }
 }

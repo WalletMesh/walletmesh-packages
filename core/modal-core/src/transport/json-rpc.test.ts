@@ -1,299 +1,218 @@
-/**
- * @packageDocumentation
- * Tests for JSON-RPC protocol implementation.
- */
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { JsonRpcTransport } from './json-rpc.js';
+import { TransportState, MessageType, type Message } from './types.js';
+import { TransportError, TransportErrorCode } from './errors.js';
+import type { JsonRpcMessage, JsonRpcSendFn } from './json-rpc.js';
 
-import { describe, it, expect } from 'vitest';
-import { JsonRpcProtocol } from './json-rpc.js';
-import { MessageType, type Message, TransportError, TransportErrorCode } from './types.js';
-import type { ValidationResult } from './protocol-validator.js';
-
-interface JsonRpcRequestPayload {
+interface TestPayload {
   method: string;
   params: unknown[];
 }
 
-describe('JsonRpcProtocol', () => {
-  const protocol = new JsonRpcProtocol();
+describe('JsonRpcTransport', () => {
+  const TEST_TIMEOUT = 5000;
+  let transport: JsonRpcTransport;
+  let mockSendRpc: JsonRpcSendFn;
 
-  describe('message validation', () => {
-    it('should validate valid JSON-RPC request', () => {
-      const request: Message<JsonRpcRequestPayload> = {
+  beforeEach(() => {
+    mockSendRpc = vi.fn().mockImplementation(async (message: JsonRpcMessage) => {
+      if ('method' in message) {
+        if (message.method === 'connect' || message.method === 'disconnect') {
+          return Promise.resolve();
+        }
+      }
+
+      // Don't auto-respond to messages, let tests control responses
+      return Promise.resolve();
+    });
+
+    vi.clearAllMocks();
+    transport = new JsonRpcTransport(mockSendRpc);
+  });
+
+  describe('connection management', () => {
+    it('should handle successful connection', async () => {
+      await transport.connect();
+      expect(transport.getState()).toBe(TransportState.CONNECTED);
+      expect(transport.isConnected()).toBe(true);
+    });
+
+    it('should handle connection failures', async () => {
+      const errorHandler = vi.fn();
+      transport.addErrorHandler(errorHandler);
+
+      (mockSendRpc as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Connection failed'));
+      await expect(transport.connect()).rejects.toThrow(TransportError);
+      
+      expect(transport.getState()).toBe(TransportState.ERROR);
+      expect(transport.isConnected()).toBe(false);
+      expect(errorHandler).toHaveBeenCalledWith(expect.any(TransportError));
+    });
+
+    it('should handle disconnection', async () => {
+      await transport.connect();
+      await transport.disconnect();
+      expect(transport.getState()).toBe(TransportState.DISCONNECTED);
+      expect(transport.isConnected()).toBe(false);
+    });
+
+    it('should remove error handlers after disconnect', async () => {
+      const errorHandler = vi.fn();
+      transport.addErrorHandler(errorHandler);
+      await transport.connect();
+      
+      await transport.disconnect();
+      errorHandler.mockClear(); // Clear the disconnect notification
+      
+      await expect(transport.connect()).resolves.toBeUndefined();
+      expect(errorHandler).not.toHaveBeenCalled();
+    }, TEST_TIMEOUT);
+  });
+
+  describe('message handling', () => {
+    it('should handle successful requests', async () => {
+      await transport.connect();
+      
+      const message: Message<TestPayload> = {
         id: '1',
         type: MessageType.REQUEST,
-        timestamp: Date.now(),
-        payload: {
-          method: 'test',
-          params: ['param1'],
-        },
+        payload: { method: 'test', params: [] },
+        timestamp: Date.now()
       };
 
-      const result = protocol.validateMessage(request);
-      expect(result.success).toBe(true);
-    });
-
-    it('should validate valid JSON-RPC response', () => {
-      const response: Message<JsonRpcRequestPayload> = {
-        id: '1',
-        type: MessageType.RESPONSE,
-        timestamp: Date.now(),
-        payload: {
-          method: 'response',
-          params: ['success'],
-        },
-      };
-
-      const result = protocol.validateMessage(response);
-      expect(result.success).toBe(true);
-    });
-
-    it('should validate valid JSON-RPC error', () => {
-      const error: Message<JsonRpcRequestPayload> = {
-        id: '1',
-        type: MessageType.ERROR,
-        timestamp: Date.now(),
-        payload: {
-          method: 'error',
-          params: [{
-            code: -32000,
-            message: 'Error message',
-            data: { details: 'test' },
-          }],
-        },
-      };
-
-      const result = protocol.validateMessage(error);
-      expect(result.success).toBe(true);
-    });
-
-    it('should reject invalid messages', () => {
-      const invalidMessages = [
-        null,
-        undefined,
-        {},
-        { jsonrpc: '1.0', id: '1' },
-        { jsonrpc: '2.0' },
-        { jsonrpc: '2.0', id: 1 },
-      ];
-
-      for (const msg of invalidMessages) {
-        const result = protocol.validateMessage(msg);
-        expect(result.success).toBe(false);
-      }
-    });
-
-    it('should validate error response with optional data', () => {
-      const withData: Message<JsonRpcRequestPayload> = {
-        id: '1',
-        type: MessageType.ERROR,
-        timestamp: Date.now(),
-        payload: {
-          method: 'error',
-          params: [{
-            code: -32000,
-            message: 'Error with data',
-            data: { extra: 'info' },
-          }],
-        },
-      };
-
-      const withoutData: Message<JsonRpcRequestPayload> = {
-        id: '1',
-        type: MessageType.ERROR,
-        timestamp: Date.now(),
-        payload: {
-          method: 'error',
-          params: [{
-            code: -32000,
-            message: 'Error without data',
-          }],
-        },
-      };
-
-      expect(protocol.validateMessage(withData).success).toBe(true);
-      expect(protocol.validateMessage(withoutData).success).toBe(true);
-    });
-  });
-
-  describe('message parsing', () => {
-    it('should parse request message', () => {
-      const request = {
-        jsonrpc: '2.0',
-        id: '1',
-        method: 'test',
-        params: ['param1', 'param2'],
-      };
-
-      const result = protocol.parseMessage(request);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data).toEqual({
-          id: '1',
-          type: MessageType.REQUEST,
-          payload: {
-            method: 'test',
-            params: ['param1', 'param2'],
-            jsonrpc: '2.0',
-          },
-          timestamp: expect.any(Number),
-        });
-      }
-    });
-
-    it('should parse response message', () => {
-      const response = {
-        jsonrpc: '2.0',
-        id: '1',
-        result: 'success',
-      };
-
-      expect(() => protocol.parseMessage(response)).toThrow(TransportError);
-    });
-
-    it('should handle malformed responses', () => {
-      const malformedResponses = [
-        { jsonrpc: '2.0', id: '1' },
-        { jsonrpc: '1.0', id: '1', result: 'wrong version' },
-        { id: '1', error: { code: -32000, message: 'error' } },
-      ];
-
-      for (const response of malformedResponses) {
-        expect(() => protocol.parseMessage(response)).toThrow(TransportError);
-      }
-    });
-
-    it('should throw on invalid messages', () => {
-      expect(() => protocol.parseMessage({})).toThrow(TransportError);
-      expect(() => protocol.parseMessage({ jsonrpc: '1.0' })).toThrow(TransportError);
-    });
-  });
-
-  describe('message creation', () => {
-    it('should create request message', () => {
-      const params = [{ test: true }];
-      const message = protocol.createRequest('test_method', params);
-
-      expect(message.type).toBe(MessageType.REQUEST);
-      expect(message.payload.method).toBe('test_method');
-      expect(message.payload.params).toEqual(params);
-    });
-
-    it('should handle non-array params in createRequest', () => {
-      const params = { test: true };
-      const message = protocol.createRequest('test_method', params);
-
-      expect(message).toMatchObject({
-        type: MessageType.REQUEST,
-        payload: {
-          method: 'test_method',
-          params: [params],
-        },
-      });
-    });
-
-    it('should create response message', () => {
-      const result = { success: true };
-      const message = protocol.createResponse('1', result);
-
-      const formatted = protocol.formatMessage(message);
-      const parsed = JSON.parse(formatted);
-
-      expect(parsed).toEqual({
-        jsonrpc: '2.0',
-        id: '1',
-        result,
-      });
-    });
-
-    it('should create error message', () => {
-      const error = new Error('Test error');
-      const message = protocol.createError('1', error);
-
-      const formatted = protocol.formatMessage(message);
-      const parsed = JSON.parse(formatted);
-
-      expect(parsed).toMatchObject({
-        jsonrpc: '2.0',
-        id: '1',
-        error: expect.objectContaining({
-          code: -32603,
-          message: 'Test error',
-        }),
-      });
-    });
-
-    it('should handle null parameters', () => {
-      const message = protocol.createRequest('test_method', null);
-      expect(message.payload.params).toEqual([]);
-    });
-  });
-
-  describe('message formatting', () => {
-    it('should format request message', () => {
-      const params = ['param1', 'param2'];
-      const message = protocol.createRequest('test_method', params);
-      const formatted = JSON.parse(protocol.formatMessage(message));
-
-      expect(formatted).toEqual({
+      const sendPromise = transport.send(message);
+      
+      // Simulate successful response
+      transport.handleMessage({
         jsonrpc: '2.0',
         id: message.id,
-        method: 'test_method',
-        params,
+        result: { success: true }
       });
-    });
 
-    it('should format response message', () => {
-      const result = { success: true };
-      const message = protocol.createResponse('1', result);
-      const formatted = JSON.parse(protocol.formatMessage(message));
+      const result = await sendPromise;
+      expect(result).toEqual({ success: true });
+    }, TEST_TIMEOUT);
 
-      expect(formatted).toEqual({
-        jsonrpc: '2.0',
-        id: '1',
-        result,
+    it('should handle RPC errors', async () => {
+      await transport.connect();
+      const errorHandler = vi.fn();
+      transport.addErrorHandler(errorHandler);
+
+      (mockSendRpc as ReturnType<typeof vi.fn>).mockImplementation((msg: JsonRpcMessage) => {
+        if ('id' in msg) {
+          transport.handleMessage({
+            jsonrpc: '2.0',
+            id: msg.id,
+            error: {
+              code: -32000,
+              message: 'RPC Error'
+            }
+          });
+        }
+        return Promise.resolve();
       });
-    });
-
-    it('should format error message', () => {
-      const error = new Error('Test error');
-      const message = protocol.createError('1', error);
-      const formatted = JSON.parse(protocol.formatMessage(message));
-
-      expect(formatted).toEqual({
-        jsonrpc: '2.0',
+      
+      const message: Message<TestPayload> = {
         id: '1',
-        error: expect.objectContaining({
-          code: -32603,
-          message: 'Test error',
-        }),
-      });
-    });
-
-    it('should handle complex parameter types', () => {
-      const params = [
-        { nested: { object: true } },
-        [1, 2, 3],
-        null,
-      ];
-      const message = protocol.createRequest('test_method', params);
-      const formatted = JSON.parse(protocol.formatMessage(message));
-
-      expect(formatted.params).toEqual(params);
-    });
-
-    it('should throw on unsupported message type', () => {
-      const invalidMessage = {
-        id: '1',
-        type: 'invalid' as MessageType,
-        timestamp: Date.now(),
-        payload: {
-          method: 'test',
-          params: [],
-          jsonrpc: '2.0',
-        },
+        type: MessageType.REQUEST,
+        payload: { method: 'test', params: [] },
+        timestamp: Date.now()
       };
 
-      expect(() => protocol.formatMessage(invalidMessage)).toThrow(TransportError);
+      await expect(transport.send(message)).rejects.toThrow(TransportError);
+      expect(mockSendRpc).toHaveBeenCalled();
+      expect(errorHandler).toHaveBeenCalledWith(expect.any(TransportError));
+    }, TEST_TIMEOUT);
+
+    it('should handle transport errors', async () => {
+      await transport.connect();
+      const errorHandler = vi.fn();
+      transport.addErrorHandler(errorHandler);
+
+      (mockSendRpc as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new TransportError('Send failed', TransportErrorCode.SEND_FAILED)
+      );
+
+      const message: Message<TestPayload> = {
+        id: '1',
+        type: MessageType.REQUEST,
+        payload: { method: 'test', params: [] },
+        timestamp: Date.now()
+      };
+
+      await expect(transport.send(message)).rejects.toThrow(TransportError);
+      expect(mockSendRpc).toHaveBeenCalled();
+      expect(errorHandler).toHaveBeenCalledWith(expect.any(TransportError));
+    }, TEST_TIMEOUT);
+
+    it('should validate connection state before sending', async () => {
+      const message: Message<TestPayload> = {
+        id: '1',
+        type: MessageType.REQUEST,
+        payload: { method: 'test', params: [] },
+        timestamp: Date.now()
+      };
+
+      await expect(transport.send(message)).rejects.toThrow('Transport not connected');
+      expect(mockSendRpc).not.toHaveBeenCalled();
+    });
+
+    it('should format JSON-RPC requests correctly', async () => {
+      await transport.connect();
+      
+      const message: Message<TestPayload> = {
+        id: '1',
+        type: MessageType.REQUEST,
+        payload: { method: 'test', params: ['param1'] },
+        timestamp: Date.now()
+      };
+      
+      const sendPromise = transport.send(message);
+      
+      expect(mockSendRpc).toHaveBeenCalledWith({
+        jsonrpc: '2.0',
+        id: message.id,
+        method: message.type,
+        params: message.payload
+      });
+
+      // Complete the request
+      transport.handleMessage({
+        jsonrpc: '2.0',
+        id: message.id,
+        result: { success: true }
+      });
+
+      await sendPromise;
+    }, TEST_TIMEOUT);
+  });
+
+  describe('subscription handling', () => {
+    it('should allow subscribing to messages', () => {
+      const onMessage = vi.fn();
+      const unsubscribe = transport.subscribe({ onMessage });
+      expect(typeof unsubscribe).toBe('function');
+      unsubscribe();
+    });
+
+    it('should allow unsubscribing from messages', () => {
+      const onMessage = vi.fn();
+      const unsubscribe = transport.subscribe({ onMessage });
+      unsubscribe();
+    });
+
+    it('should handle multiple subscriptions', async () => {
+      const errorSub1 = vi.fn();
+      const errorSub2 = vi.fn();
+
+      transport.addErrorHandler(errorSub1);
+      transport.addErrorHandler(errorSub2);
+
+      (mockSendRpc as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Test error'));
+      await expect(transport.connect()).rejects.toThrow(TransportError);
+
+      expect(errorSub1).toHaveBeenCalledWith(expect.any(TransportError));
+      expect(errorSub2).toHaveBeenCalledWith(expect.any(TransportError));
     });
   });
 });

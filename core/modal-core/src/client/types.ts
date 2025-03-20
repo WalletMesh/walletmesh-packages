@@ -3,12 +3,12 @@
  * Type definitions for the WalletMesh client module.
  */
 
-import type { ConnectorConfig, WalletInfo, WalletState, ConnectedWallet, BaseConnector } from '../types.js';
+import type { WalletConnectorConfig, WalletInfo, WalletState, ConnectedWallet, Connector as BaseConnector } from '../types.js';
 
 /**
  * Connector interface for wallet interaction.
  */
-export interface Connector extends BaseConnector {
+export interface Connector extends Omit<BaseConnector, 'connect'> {
   connect(walletInfo: WalletInfo): Promise<ConnectedWallet>;
   resume(walletInfo: WalletInfo, state: WalletState): Promise<ConnectedWallet>;
 }
@@ -16,4 +16,4 @@ export interface Connector extends BaseConnector {
 /**
  * Connector factory function type
  */
-export type ConnectorFactory = (config: ConnectorConfig) => Connector;
+export type ConnectorFactory = (config: WalletConnectorConfig) => Connector;

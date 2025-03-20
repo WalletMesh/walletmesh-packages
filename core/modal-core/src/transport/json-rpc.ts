@@ -1,305 +1,144 @@
-/**
- * @packageDocumentation
- * JSON-RPC protocol implementation
- */
+import { EventEmitter } from 'node:events';
+import { v4 as uuid } from 'uuid';
+import { BaseTransport } from './base.js';
+import type { Message } from './types.js';
+import { TransportErrorCode } from './errors.js';
 
-import { 
-  type Protocol,
-  type Message,
-  type ProtocolPayload,
-  MessageType,
-  TransportError,
-  TransportErrorCode,
-} from './types.js';
-import { 
-  type ValidationResult,
-  ProtocolValidator 
-} from './protocol-validator.js';
-import { 
-  ProtocolError,
-  ProtocolErrorCode,
-} from './errors.js';
-
-/**
- * JSON-RPC error object
- */
-export interface JsonRpcError {
-  code: number;
-  message: string;
-  data?: unknown;
-}
-
-/**
- * JSON-RPC method call
- */
-export interface JsonRpcMethodCall {
+interface JsonRpcRequestMessage {
+  jsonrpc: '2.0';
+  id?: string;
   method: string;
-  jsonrpc: string;
-  params?: unknown[];
-  id?: string | number | null;
+  params?: unknown;
 }
 
-/**
- * JSON-RPC response result
- */
-export interface JsonRpcResult {
-  jsonrpc: string;
-  id: string | number | null;
+interface JsonRpcResponseMessage {
+  jsonrpc: '2.0';
+  id: string;
   result?: unknown;
-  error?: JsonRpcError;
+  error?: {
+    code: number;
+    message: string;
+    data?: unknown;
+  };
 }
 
-/**
- * JSON-RPC protocol messages
- */
-export interface JsonRpcPayload extends ProtocolPayload {
-  request: JsonRpcMethodCall;
-  response: JsonRpcResult;
+export type JsonRpcMessage = JsonRpcRequestMessage | JsonRpcResponseMessage;
+export type JsonRpcRequest = JsonRpcRequestMessage;
+export type JsonRpcSendFn = (message: JsonRpcMessage) => Promise<void>;
+
+export interface JsonRpcTransportOptions {
+  timeout?: number;
+  debug?: boolean;
+  retries?: number;
 }
 
-/**
- * JSON-RPC protocol implementation
- */
-export class JsonRpcProtocol implements Protocol<JsonRpcPayload> {
-  validator: ProtocolValidator<JsonRpcPayload>;
+const DEFAULT_OPTIONS = {
+  timeout: 30000,
+  debug: false,
+  retries: 3
+};
 
-  constructor() {
-    this.validator = new ProtocolValidator<JsonRpcPayload>();
+export class JsonRpcTransport extends BaseTransport {
+  private connected = false;
+  private readonly emitter = new EventEmitter();
+  private readonly options: Required<JsonRpcTransportOptions>;
+  private readonly sendFn: JsonRpcSendFn;
+
+  constructor(
+    sendRpc: JsonRpcSendFn,
+    options: JsonRpcTransportOptions = {}
+  ) {
+    super();
+    this.sendFn = sendRpc;
+    this.options = {
+      ...DEFAULT_OPTIONS,
+      ...options
+    };
   }
 
-  /**
-   * Validates a message
-   */
-  validateMessage(message: unknown): ValidationResult<Message<JsonRpcPayload>> {
-    if (!message || typeof message !== 'object') {
-      return { success: false, error: new ProtocolError('Invalid message format', ProtocolErrorCode.INVALID_FORMAT) };
-    }
-
-    const msg = message as Message<JsonRpcPayload['request'] | JsonRpcPayload['response']>;
-    
-    if (!msg.type || !msg.id || !msg.payload) {
-      return { success: false, error: new ProtocolError('Required fields missing', ProtocolErrorCode.INVALID_FORMAT) };
-    }
-
-    if (typeof msg.timestamp !== 'number') {
-      return { success: false, error: new ProtocolError('Invalid timestamp', ProtocolErrorCode.INVALID_FORMAT) };
-    }
-
+  protected async connectImpl(): Promise<void> {
     try {
-      switch (msg.type) {
-        case MessageType.REQUEST:
-        {
-          if (!this.isValidRequest(msg.payload)) {
-            return { success: false, error: new ProtocolError('Invalid request format', ProtocolErrorCode.INVALID_FORMAT) };
-          }
-          break;
-        }
-
-        case MessageType.RESPONSE:
-        case MessageType.ERROR:
-        {
-          break;
-        }
-
-        default:
-          return { success: false, error: new ProtocolError('Unknown message type', ProtocolErrorCode.INVALID_FORMAT) };
-      }
-
-      return {
-        success: true,
-        data: msg as unknown as Message<JsonRpcPayload>,
-      };
-    } catch (error: unknown) {
-      return {
-        success: false,
-        error: error instanceof ProtocolError ? error : new ProtocolError('Validation failed', ProtocolErrorCode.VALIDATION_FAILED),
-      };
-    }
-  }
-
-  /**
-   * Parses raw data into JSON-RPC message
-   */
-  parseMessage(data: unknown): ValidationResult<Message<JsonRpcPayload['request']>> {
-    try {
-      if (!data || typeof data !== 'object') {
-        throw new TransportError('Invalid message format', TransportErrorCode.INVALID_MESSAGE);
-      }
-
-      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
-
-      if (!parsed || typeof parsed !== 'object') {
-        throw new TransportError('Invalid message format', TransportErrorCode.INVALID_MESSAGE);
-      }
-
-      const msg = parsed as Record<string, unknown>;
-
-      // Return error for non-request messages
-      if ('result' in msg || 'error' in msg) {
-        throw new TransportError('Invalid JSON-RPC message', TransportErrorCode.INVALID_MESSAGE);
-      }
-
-      // Validate protocol version and required fields
-      if (msg['jsonrpc'] !== '2.0' || typeof msg['method'] !== 'string') {
-        throw new TransportError('Invalid JSON-RPC message', TransportErrorCode.INVALID_MESSAGE);
-      }
-
-      const message: Message<JsonRpcMethodCall> = {
-        id: String(msg['id'] ?? Date.now()),
-        type: MessageType.REQUEST,
-        timestamp: Date.now(),
-        payload: {
-          method: msg['method'] as string,
-          params: Array.isArray(msg['params']) ? msg['params'] : [],
-          jsonrpc: '2.0',
-        },
-      };
-
-      return {
-        success: true,
-        data: message,
-      };
-
+      await this.sendFn({ jsonrpc: '2.0', method: 'connect' });
+      this.connected = true;
     } catch (error) {
-      throw error instanceof TransportError 
-        ? error 
-        : new TransportError('Failed to parse message', TransportErrorCode.INVALID_MESSAGE);
+      const transportError = this.createError(
+        'Failed to connect',
+        TransportErrorCode.CONNECTION_FAILED,
+        error
+      );
+      this.notifyError(transportError);
+      throw transportError;
     }
   }
 
-  /**
-   * Formats message for transport
-   */
-  formatMessage(message: Message<JsonRpcPayload['request'] | JsonRpcPayload['response']>): string {
-    if (!message.type || !message.payload) {
-      throw new TransportError('Invalid message format', TransportErrorCode.INVALID_MESSAGE);
+  protected async doDisconnect(): Promise<void> {
+    try {
+      await this.sendFn({ jsonrpc: '2.0', method: 'disconnect' });
+    } catch (error) {
+      // Ignore disconnection errors
+    } finally {
+      this.connected = false;
+      this.emitter.removeAllListeners();
     }
-
-    let formatted: Record<string, unknown>;
-
-    switch (message.type) {
-      case MessageType.REQUEST: {
-        const req = message.payload as JsonRpcMethodCall;
-        formatted = {
-          jsonrpc: '2.0',
-          method: req.method,
-          params: req.params,
-          id: message.id,
-        };
-        break;
-      }
-
-      case MessageType.RESPONSE: {
-        const res = message.payload as JsonRpcResult;
-        formatted = {
-          jsonrpc: '2.0',
-          id: message.id,
-          result: res.result,
-        };
-        break;
-      }
-
-      case MessageType.ERROR: {
-        const err = message.payload as JsonRpcMethodCall;
-        formatted = {
-          jsonrpc: '2.0',
-          id: message.id,
-          error: err.params?.[0],
-        };
-        break;
-      }
-
-      default:
-        throw new TransportError('Unsupported message type', TransportErrorCode.INVALID_MESSAGE);
-    }
-
-    return JSON.stringify(formatted);
   }
 
-  /**
-   * Creates a request message
-   */
-  createRequest<M extends string>(method: M, params: unknown): Message<JsonRpcMethodCall> {
-    return {
-      id: String(Date.now()),
-      type: MessageType.REQUEST,
-      timestamp: Date.now(),
-      payload: {
-        method,
-        params: params === null ? [] : (Array.isArray(params) ? params : [params]),
+  protected async sendImpl<T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>> {
+    return new Promise<Message<R>>((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        this.emitter.removeAllListeners(message.id);
+        const error = this.createError(
+          'Message timeout',
+          TransportErrorCode.TIMEOUT
+        );
+        this.notifyError(error);
+        reject(error);
+      }, this.options.timeout);
+
+      this.emitter.once(message.id, (response: JsonRpcResponseMessage) => {
+        clearTimeout(timeoutId);
+        if (response.error) {
+          const error = this.createError(
+            response.error.message,
+            TransportErrorCode.INVALID_MESSAGE,
+            response.error
+          );
+          this.notifyError(error);
+          reject(error);
+        } else {
+          resolve(response.result as unknown as Message<R>);
+        }
+      });
+
+      const rpcMessage: JsonRpcRequestMessage = {
         jsonrpc: '2.0',
-      },
-    };
+        id: message.id || uuid(),
+        method: message.type,
+        params: message.payload
+      };
+
+      this.sendFn(rpcMessage).catch((error) => {
+        clearTimeout(timeoutId);
+        this.emitter.removeAllListeners(message.id);
+        const transportError = this.createError(
+          'Failed to send message',
+          TransportErrorCode.CONNECTION_FAILED,
+          error
+        );
+        this.notifyError(transportError);
+        reject(transportError);
+      });
+    });
   }
 
-  /**
-   * Creates a response message
-   */
-  createResponse(id: string, result: unknown): Message<JsonRpcResult> {
-    return {
-      id,
-      type: MessageType.RESPONSE,
-      timestamp: Date.now(),
-      payload: {
-        jsonrpc: '2.0',
-        id,
-        result,
-      },
-    };
+  public override isConnected(): boolean {
+    return this.connected;
   }
 
-  /**
-   * Creates an error message
-   */
-  createError(requestId: string, error: Error): Message<JsonRpcMethodCall> {
-    const errorResponse: JsonRpcError = {
-      code: -32603,
-      message: error.message,
-      data: {
-        name: error.name,
-        stack: error.stack,
-      },
-    };
-
-    return {
-      id: requestId,
-      type: MessageType.ERROR,
-      timestamp: Date.now(),
-      payload: {
-        method: 'error',
-        params: [errorResponse],
-        jsonrpc: '2.0',
-      },
-    };
-  }
-
-  private isValidRequest(request: unknown): request is JsonRpcMethodCall {
-    if (!request || typeof request !== 'object') {
-      return false;
+  public handleMessage(message: JsonRpcMessage): void {
+    const id = 'id' in message && message.id;
+    if (!id) {
+      return;
     }
-
-    const req = request as JsonRpcMethodCall;
-    return typeof req.method === 'string' &&
-           (!req.params || Array.isArray(req.params));
-  }
-
-  private isValidResponse(response: unknown): response is JsonRpcResult {
-    if (!response || typeof response !== 'object') {
-      return false;
-    }
-
-    const res = response as JsonRpcResult;
-
-    const validId = typeof res.id === 'string' ||
-                   typeof res.id === 'number' ||
-                   res.id === null;
-
-    const validError = !res.error || (
-      typeof res.error === 'object' &&
-      typeof res.error.code === 'number' &&
-      typeof res.error.message === 'string'
-    );
-
-    return validId && (res.result !== undefined || validError);
+    this.emitter.emit(id, message);
   }
 }

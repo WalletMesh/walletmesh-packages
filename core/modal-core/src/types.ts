@@ -1,222 +1,209 @@
 /**
- * @packageDocumentation
- * Core type definitions for the WalletMesh Modal Core package.
+ * Core wallet types and interfaces
  */
 
 /**
- * Core interfaces for wallet connectors.
- */
-
-import type { Protocol, Transport } from './transport/index.js';
-
-/**
- * Configuration for wallet connections
- */
-export interface WalletConnectorConfig {
-  /** Type of connector to use */
-  type: string;
-  /** Connector-specific options */
-  options?: Record<string, unknown>;
-}
-
-/**
- * Configuration for connector implementations
- */
-export interface ConnectorImplementationConfig {
-  /** Transport instance for communication */
-  transport: Transport;
-  /** Protocol implementation */
-  protocol: Protocol;
-  /** Type of connector */
-  type: string;
-  /** Connector-specific options */
-  options?: Record<string, unknown>;
-}
-
-/**
- * Core interface for protocol-specific wallet connectors.
- */
-export interface Connector {
-  /**
-   * Establishes a connection with a wallet.
-   * @param walletInfo Information about the wallet to connect
-   * @returns Connected wallet details
-   */
-  connect(walletInfo: WalletInfo): Promise<ConnectedWallet>;
-
-  /**
-   * Resumes a previously established connection.
-   * @param walletInfo Wallet information
-   * @param state Previous wallet state
-   * @returns Reconnected wallet details
-   */
-  resume(walletInfo: WalletInfo, state: WalletState): Promise<ConnectedWallet>;
-
-  /**
-   * Terminates the wallet connection.
-   */
-  disconnect(): Promise<void>;
-
-  /**
-   * Gets the chain-specific provider instance.
-   */
-  getProvider(): Promise<unknown>;
-}
-
-/**
- * Factory function type for creating connectors.
- */
-export type ConnectorFactory = (config: ConnectorImplementationConfig) => Connector;
-
-/**
- * Represents the connection status of a wallet.
- */
-export enum ConnectionStatus {
-  Idle = 'idle',
-  Connecting = 'connecting',
-  Connected = 'connected',
-  Disconnecting = 'disconnecting',
-  Disconnected = 'disconnected',
-  Resuming = 'resuming',
-  Error = 'error',
-}
-
-/**
- * Information about a dApp using the WalletMesh library.
+ * Dapp information
  */
 export interface DappInfo {
+  /** Dapp name */
   name: string;
-  description?: string;
-  url?: string;
+  /** Dapp icon URL */
   icon?: string;
+  /** Dapp URL */
+  url: string;
+  /** Dapp origin */
   origin: string;
 }
 
 /**
- * Connector configuration for wallet interaction.
- */
-export interface ConnectorConfig {
-  type: string;
-  options?: Record<string, unknown>;
-}
-
-/**
- * Static information about a wallet.
+ * Wallet information
  */
 export interface WalletInfo {
-  id: string;
-  name: string;
-  description?: string;
-  icon?: string;
-  connector: WalletConnectorConfig;
+  /** Wallet address */
+  address: string;
+  /** Connected chain ID */
+  chainId: number;
+  /** Wallet public key */
+  publicKey: string;
+  /** Wallet identifier */
+  id?: string;
+  /** Additional metadata */
+  metadata?: Record<string, unknown>;
 }
 
 /**
- * The current state of a connected wallet.
- */
-export interface WalletState {
-  address: string | null;
-  networkId: string | null;
-  sessionId: string | null;
-  isConnecting?: boolean;
-  hasProvider?: boolean;
-  hasPermissions?: boolean;
-  error?: Error | null;
-  [key: string]: unknown;
-}
-
-/**
- * Represents a connected wallet instance.
+ * Connected wallet instance
  */
 export interface ConnectedWallet {
-  info: WalletInfo;
-  state: WalletState;
-}
-
-/**
- * Session token for managing wallet connections.
- */
-export interface SessionToken {
-  id: string;
-  createdAt: number;
-  expiresAt: number;
-  walletType: string;
+  /** Wallet address */
+  address: string;
+  /** Connected chain ID */
+  chainId: number;
+  /** Wallet public key */
   publicKey: string;
-  permissions: string[];
-  accounts: string[];
-  chainIds: number[];
-  nonce: string;
-  signature: string;
+  /** Whether wallet is connected */
+  connected: boolean;
+  /** Wallet type */
+  type?: string;
+  /** Associated wallet info */
+  info?: WalletInfo;
+  /** Connection state */
+  state?: WalletState;
 }
 
 /**
- * Storage format for chain-specific connection data.
+ * Connection status enum
+ */
+export enum ConnectionStatus {
+  /** Not connected */
+  DISCONNECTED = 'disconnected',
+  /** Connection in progress */
+  CONNECTING = 'connecting',
+  /** Successfully connected */
+  CONNECTED = 'connected',
+  /** Connection error */
+  ERROR = 'error'
+}
+
+/**
+ * Chain connection information
  */
 export interface ChainConnection {
-  address: string;
-  permissions: string[];
+  /** Chain/network ID */
+  chainId: number;
+  /** Connection URL */
+  rpcUrl: string;
+  /** Connection status */
+  status: ConnectionStatus;
 }
 
 /**
- * Core error class for wallet-related errors.
+ * Session store interface
+ */
+export interface SessionStore {
+  /** Gets a specific session */
+  getSession(id: string): WalletSession | undefined;
+  /** Gets all sessions */
+  getSessions(): WalletSession[];
+  /** Sets a session */
+  setSession(id: string, session: WalletSession): void;
+  /** Removes a session */
+  removeSession(id: string): void;
+  /** Clears all sessions */
+  clearSessions(): void;
+  /** Internal sessions map */
+  readonly sessions: Map<string, WalletSession>;
+}
+
+/**
+ * Wallet session information
+ */
+export interface WalletSession {
+  /** Session ID */
+  id: string;
+  /** Connected wallet address */
+  address: string;
+  /** Chain connections */
+  chains: Record<number, ChainConnection>;
+  /** Session expiry timestamp */
+  expiry: number;
+  /** Connection status */
+  status: ConnectionStatus;
+  /** Active connector */
+  connector: Connector;
+  /** Connected wallet */
+  wallet: ConnectedWallet;
+}
+
+/**
+ * Provider interface
+ */
+export interface Provider {
+  /** Sends a request to the provider */
+  request<T = unknown>(method: string, params?: unknown[]): Promise<T>;
+  /** Connect to provider */
+  connect(): Promise<void>;
+  /** Disconnect from provider */
+  disconnect(): Promise<void>;
+  /** Check if provider is connected */
+  isConnected(): boolean;
+}
+
+/**
+ * Wallet state
+ */
+export interface WalletState {
+  /** Connected address */
+  address: string;
+  /** Network/chain ID */
+  networkId: number;
+  /** Session identifier */
+  sessionId: string;
+  /** Last activity timestamp */
+  lastActive: number;
+}
+
+/**
+ * Wallet error
  */
 export class WalletError extends Error {
-  public override name = 'WalletError';
-  public override cause?: Error;
-  public readonly type: 'client' | 'connector' | 'transport' | 'storage' | 'timeout';
-
-  constructor(message: string, type: WalletError['type'], cause?: Error) {
+  constructor(message: string, public code?: string) {
     super(message);
-    this.type = type;
-    if (cause) this.cause = cause;
+    this.name = 'WalletError';
   }
 }
 
 /**
- * Base interface for wallet connectors.
- * Extended in client/types.ts to avoid circular dependencies.
+ * Wallet connector interface
  */
-export interface BaseConnector {
-  getProvider(): Promise<unknown>;
+export interface Connector {
+  /** Gets provider instance */
+  getProvider(): Promise<Provider>;
+  /** Connects to wallet */
+  connect(walletInfo: WalletInfo): Promise<ConnectedWallet>;
+  /** Disconnects from wallet */
   disconnect(): Promise<void>;
+  /** Gets connection state */
+  getState(): ConnectionStatus;
+  /** Resumes existing connection */
+  resume(walletInfo: WalletInfo, state: WalletState): Promise<ConnectedWallet>;
 }
 
 /**
- * Session manager store interface
+ * Connector implementation configuration
  */
-export interface SessionStore {
-  sessions: Map<string, WalletSession>;
-  setSession(id: string, session: WalletSession): void;
-  removeSession(id: string): void;
-  clearSessions(): void;
-  getState(): { sessions: Map<string, WalletSession> };
+export interface ConnectorImplementationConfig {
+  /** Connector type */
+  type: string;
+  /** Human-readable name */
+  name: string;
+  /** Factory function to create provider instance */
+  factory: () => Promise<Provider>;
+  /** Additional options */
+  options?: Record<string, unknown>;
 }
 
 /**
- * Represents an active wallet session with base connector.
+ * Wallet connector configuration
  */
-export interface WalletSession {
-  id: string;
-  createdAt: number;
-  connector?: unknown; // Will be typed as Connector from client/types.js when used
-  wallet: ConnectedWallet;
-  chainConnections: Map<number, ChainConnection>;
-  sessionToken: SessionToken;
-  status: ConnectionStatus;
-  lastConnectionError?: Error;
+export interface WalletConnectorConfig {
+  /** Connector type */
+  type: string;
+  /** Optional config parameters */
+  options?: Record<string, unknown>;
+  /** Default chain ID */
+  defaultChainId?: number;
 }
 
 /**
- * Core interface for wallet interactions with base connector.
+ * Wallet client interface
  */
 export interface WalletClient {
-  getDappInfo(): Readonly<DappInfo>;
-  initialize(): Promise<ConnectedWallet | null>;
-  connectWallet(walletInfo: WalletInfo, connector: unknown): Promise<ConnectedWallet>; // Will be typed as Connector from client/types.js when used
-  disconnectWallet(walletId: string): Promise<void>;
-  getChainProvider(walletId: string): Promise<unknown>;
-  getConnectedWallets(): ConnectedWallet[];
-  getWalletConnections(walletId: string): Promise<Map<number, ChainConnection> | undefined>;
-  getConnectedWallet(): ConnectedWallet | null;
-  handleWalletError(error: WalletError): void;
+  /** Connects to wallet */
+  connect(config: WalletConnectorConfig): Promise<ConnectedWallet>;
+  /** Disconnects current wallet */
+  disconnect(): Promise<void>;
+  /** Gets current state */
+  getState(): ConnectionStatus;
 }

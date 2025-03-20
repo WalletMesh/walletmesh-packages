@@ -1,165 +1,139 @@
-import {
-  WalletError,
-  ConnectionStatus,
-  type WalletSession,
-  type ChainConnection,
-  type WalletState,
-  type SessionStore,
+/**
+ * @packageDocumentation
+ * Manages wallet sessions and connections
+ */
+
+import { WalletError, ErrorCode } from '../index.js';
+import { ConnectionStatus } from '../types.js';
+import type { 
+  SessionStore,
+  WalletSession,
+  ChainConnection
 } from '../types.js';
-import { createConnector } from './createConnector.js';
 import { defaultSessionStore } from '../store/sessionStore.js';
 import { defaultSessionStoreAdapter } from '../store/sessionStoreAdapter.js';
 
-const MAX_RETRIES = 3;
-const BASE_DELAY = 100;
-
+/**
+ * Manages wallet sessions
+ */
 export class SessionManager {
+  /** Session cache */
   private sessionCache = new Map<string, WalletSession>();
 
   constructor(private readonly store: SessionStore = defaultSessionStoreAdapter(defaultSessionStore)) {}
 
-  public async initialize(): Promise<void> {
-    await this.restoreSessions();
-  }
-
-  private validateWalletState(state: WalletState): boolean {
-    if (!state?.networkId || !state?.address || !state?.sessionId) {
-      console.warn('[SessionManager] Invalid wallet state:', {
-        hasNetworkId: !!state?.networkId,
-        hasAddress: !!state?.address,
-        hasSessionId: !!state?.sessionId,
-      });
-      return false;
-    }
-    return true;
-  }
-
-  private async restoreSession(session: WalletSession, attempt = 0): Promise<void> {
-    if (attempt >= MAX_RETRIES) {
-      return;
-    }
-
+  /**
+   * Initializes session manager
+   */
+  async initialize(): Promise<void> {
     try {
-      const connector = await createConnector(session.wallet.info.connector);
-      const restoredSession = {
-        ...session,
-        connector,
-        status: ConnectionStatus.Resuming,
-      };
-      
-      // Only clear error on successful restore
-      restoredSession.lastConnectionError = undefined as unknown as Error;
-      this.sessionCache.set(session.id, restoredSession);
-      this.store.setSession(session.id, restoredSession);
+      // Restore sessions from store
+      await this.restoreSessions();
     } catch (error) {
-      // Persist error between retries
-      const failedSession = {
-        ...session,
-        status: ConnectionStatus.Error,
-        lastConnectionError: error as Error,
-      };
-
-      this.sessionCache.set(session.id, failedSession);
-      this.store.setSession(session.id, failedSession);
-
-      // Schedule next retry
-      if (attempt < MAX_RETRIES - 1) {
-        await new Promise(resolve => setTimeout(resolve, BASE_DELAY * 2 ** attempt));
-        await this.restoreSession(failedSession, attempt + 1);
-      }
+      throw new WalletError('Failed to initialize session manager', ErrorCode.STORAGE);
     }
   }
 
+  /**
+   * Restores wallet sessions
+   */
   private async restoreSessions(): Promise<void> {
     try {
-      const storedSessions = this.store.getState().sessions;
-      console.log('[SessionManager] Restoring sessions, found:', storedSessions?.size);
+      const allSessions = await this.store.getSessions();
+      for (const session of allSessions) {
+        if (!session?.wallet?.state) continue;
 
-      if (!storedSessions || storedSessions.size === 0) {
-        console.log('[SessionManager] No sessions to restore');
-        return;
-      }
+        // Maintain connected status if wallet is connected
+        const status = session.wallet.connected 
+          ? ConnectionStatus.CONNECTED 
+          : ConnectionStatus.CONNECTING;
+        
+        const restoredSession: WalletSession = {
+          ...session,
+          status
+        };
 
-      for (const session of storedSessions.values()) {
-        if (this.validateWalletState(session.wallet.state)) {
-          await this.restoreSession(session);
-        }
+        this.sessionCache.set(restoredSession.id, restoredSession);
+        this.store.setSession(restoredSession.id, restoredSession);
       }
     } catch (error) {
-      throw new WalletError('Failed to restore sessions', 'storage', error as Error);
+      throw new WalletError('Failed to restore sessions', ErrorCode.STORAGE);
     }
   }
 
-  public setSession(walletId: string, session: WalletSession, persist = true): void {
-    if (!this.validateWalletState(session.wallet.state)) {
-      throw new WalletError('Invalid wallet state', 'storage');
-    }
+  /**
+   * Gets session for wallet ID
+   */
+  getSession(walletId: string): WalletSession | undefined {
+    // Always check store first to ensure latest state
+    const session = this.store.getSession(walletId);
     
-    this.sessionCache.set(walletId, session);
-    if (persist) {
-      this.store.setSession(walletId, session);
-    }
-  }
-
-  public getSession(walletId: string): WalletSession | undefined {
-    const session = this.sessionCache.get(walletId) || this.store.getState().sessions.get(walletId);
-    if (session && this.validateWalletState(session.wallet.state)) {
-      this.sessionCache.set(walletId, session);
-      return session;
-    }
-    return undefined;
-  }
-
-  public updateSessionStatus(walletId: string, status: ConnectionStatus, error?: Error): void {
-    const session = this.getSession(walletId);
+    // If session not in store, clear cache and return undefined
     if (!session) {
-      throw new WalletError(`No session found for wallet ${walletId}`, 'client');
+      this.sessionCache.delete(walletId);
+      return undefined;
     }
 
-    const updatedSession = { ...session };
-    updatedSession.status = status;
-    updatedSession.lastConnectionError = error || (undefined as unknown as Error);
-    
-    this.setSession(walletId, updatedSession);
+    // Create a shallow clone and freeze it to prevent mutations
+    const sessionClone = Object.freeze({ ...session });
+
+    this.sessionCache.set(walletId, sessionClone);
+    return sessionClone;
   }
 
-  public removeSession(walletId: string): void {
-    this.sessionCache.delete(walletId);
-    this.store.removeSession(walletId);
+  /**
+   * Gets all active sessions
+   */
+  getSessions(): WalletSession[] {
+    return Array.from(this.sessionCache.values());
   }
 
-  public getSessions(): WalletSession[] {
-    const sessions = this.store.getState().sessions;
-    console.log('[SessionManager] Getting sessions, store has:', sessions.size);
+  /**
+   * Updates session status
+   */
+  updateSessionStatus(walletId: string, status: ConnectionStatus): void {
+    const session = this.getSession(walletId);
+    if (!session) return;
 
-    const result = Array.from(sessions.values()).filter((session) => {
-      try {
-        if (!session?.wallet) {
-          console.warn('[SessionManager] Session missing wallet:', session);
-          return false;
-        }
-
-        return Boolean(
-          session.wallet.state?.sessionId &&
-            session.wallet.info?.connector &&
-            session.wallet.state?.address &&
-            session.wallet.state?.networkId,
-        );
-      } catch (err) {
-        return false;
+    // Update wallet connected state based on status
+    const connected = status === ConnectionStatus.CONNECTED;
+    const updatedSession = {
+      ...session,
+      status,
+      wallet: {
+        ...session.wallet,
+        connected
       }
-    });
+    };
 
-    console.log('[SessionManager] Retrieved valid sessions:', result.length);
-    return result;
+    // Update store first, then cache
+    this.store.setSession(walletId, updatedSession);
+    this.sessionCache.set(walletId, updatedSession);
   }
 
-  public clearSessions(): void {
-    this.sessionCache.clear();
-    this.store.clearSessions();
+  /**
+   * Gets chain connections for wallet
+   */
+  getChainConnections(walletId: string): Record<number, ChainConnection> | undefined {
+    return this.getSession(walletId)?.chains;
   }
 
-  public getWalletConnections(walletId: string): Map<number, ChainConnection> | undefined {
-    return this.getSession(walletId)?.chainConnections;
+  /**
+   * Sets a session
+   */
+  setSession(id: string, session: WalletSession): void {
+    const sessionClone = { ...session }; // Clone to prevent mutation
+    // Store first, then cache
+    this.store.setSession(id, sessionClone);
+    this.sessionCache.set(id, sessionClone);
+  }
+
+  /**
+   * Removes a session
+   */
+  removeSession(id: string): void {
+    // Always attempt removal from both to ensure consistency
+    this.store.removeSession(id);
+    this.sessionCache.delete(id);
   }
 }
