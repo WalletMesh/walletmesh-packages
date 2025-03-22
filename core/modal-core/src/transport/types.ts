@@ -8,7 +8,7 @@
 export enum MessageType {
   REQUEST = 'request',
   RESPONSE = 'response',
-  ERROR = 'error'
+  ERROR = 'error',
 }
 
 /**
@@ -18,7 +18,7 @@ export enum TransportState {
   DISCONNECTED = 'disconnected',
   CONNECTING = 'connecting',
   CONNECTED = 'connected',
-  ERROR = 'error'
+  ERROR = 'error',
 }
 
 /**
@@ -29,7 +29,7 @@ export enum TransportErrorCode {
   INVALID_MESSAGE = 'INVALID_MESSAGE',
   TIMEOUT = 'TIMEOUT',
   RPC_ERROR = 'RPC_ERROR',
-  TRANSPORT_ERROR = 'TRANSPORT_ERROR'
+  TRANSPORT_ERROR = 'TRANSPORT_ERROR',
 }
 
 /**
@@ -49,7 +49,7 @@ export class TransportError extends Error {
   constructor(
     message: string,
     public readonly code: TransportErrorCode,
-    public override readonly cause?: Error
+    public override readonly cause?: Error,
   ) {
     super(message);
     this.name = 'TransportError';
@@ -88,8 +88,7 @@ export interface TransportOptions {
 /**
  * Validation result type
  */
-export type ValidationResult<T> = { success: true; data: T } | 
-  { success: false; error: Error };
+export type ValidationResult<T> = { success: true; data: T } | { success: false; error: Error };
 
 /**
  * Message handler interface

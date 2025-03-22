@@ -41,33 +41,36 @@ describe('Modal Store', () => {
       defaultStore.setState({
         isSelectModalOpen: false,
         isConnectedModalOpen: false,
-        config: { ...defaultStore.getState().config }
+        config: { ...defaultStore.getState().config },
       });
     });
 
     it('should have default handlers that work as expected', async () => {
       const { config } = defaultStore.getState();
-      
+
       const canOpen = await config.onBeforeOpen();
       expect(canOpen).toBe(true);
-      
+
       const canClose = await config.onBeforeClose();
       expect(canClose).toBe(true);
-      
+
       // Test void callbacks don't throw
-      expect(() => { config.onAfterOpen(); config.onAfterClose(); }).not.toThrow();
+      expect(() => {
+        config.onAfterOpen();
+        config.onAfterClose();
+      }).not.toThrow();
     });
   });
 
   describe('setConfig', () => {
     it('should preserve default config when setting new config', () => {
       const newConfig: Partial<ModalConfig> = {
-        onAfterOpen: vi.fn()
+        onAfterOpen: vi.fn(),
       };
-      
+
       store.getState().setConfig(newConfig);
       const state = store.getState();
-      
+
       expect(state.config.onAfterOpen).toBe(newConfig.onAfterOpen);
       expect(state.config.onBeforeOpen).toBeDefined();
       expect(state.config.onBeforeClose).toBeDefined();
@@ -76,17 +79,17 @@ describe('Modal Store', () => {
 
     it('should merge multiple config updates', () => {
       const firstConfig: Partial<ModalConfig> = {
-        onAfterOpen: vi.fn()
+        onAfterOpen: vi.fn(),
       };
       const secondConfig: Partial<ModalConfig> = {
-        onAfterClose: vi.fn()
+        onAfterClose: vi.fn(),
       };
-      
+
       store.getState().setConfig(firstConfig);
       store.getState().setConfig(secondConfig);
-      
+
       const state = store.getState();
-      
+
       expect(state.config.onAfterOpen).toBe(firstConfig.onAfterOpen);
       expect(state.config.onAfterClose).toBe(secondConfig.onAfterClose);
     });

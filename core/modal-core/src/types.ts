@@ -63,7 +63,7 @@ export enum ConnectionStatus {
   /** Successfully connected */
   CONNECTED = 'connected',
   /** Connection error */
-  ERROR = 'error'
+  ERROR = 'error',
 }
 
 /**
@@ -148,7 +148,10 @@ export interface WalletState {
  * Wallet error
  */
 export class WalletError extends Error {
-  constructor(message: string, public code?: string) {
+  constructor(
+    message: string,
+    public code?: string,
+  ) {
     super(message);
     this.name = 'WalletError';
   }

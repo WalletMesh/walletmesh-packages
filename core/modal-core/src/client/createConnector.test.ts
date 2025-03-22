@@ -23,10 +23,10 @@ describe('createConnector', () => {
   describe('registerConnector', () => {
     it('should successfully register a connector factory', () => {
       registerConnector('test', mockFactory);
-      
+
       const config: WalletConnectorConfig = { type: 'test' };
       const connector = createConnector(config);
-      
+
       expect(vi.mocked(mockFactory)).toHaveBeenCalledWith(config);
       expect(connector).toBe(mockConnector);
     });
@@ -39,7 +39,9 @@ describe('createConnector', () => {
         getProvider: vi.fn(),
         getState: vi.fn().mockReturnValue(ConnectionStatus.DISCONNECTED),
       };
-      const alternativeMockFactory = vi.fn().mockReturnValue(alternativeMockConnector) as unknown as ConnectorFactory;
+      const alternativeMockFactory = vi
+        .fn()
+        .mockReturnValue(alternativeMockConnector) as unknown as ConnectorFactory;
 
       registerConnector('test', mockFactory);
       registerConnector('test', alternativeMockFactory);
@@ -73,10 +75,8 @@ describe('createConnector', () => {
   describe('createConnector', () => {
     it('should throw error for unregistered connector type', () => {
       const config: WalletConnectorConfig = { type: 'unknown' };
-      
-      expect(() => createConnector(config)).toThrow(
-        'No connector factory registered for type: unknown'
-      );
+
+      expect(() => createConnector(config)).toThrow('No connector factory registered for type: unknown');
     });
 
     it('should pass connector options to factory', () => {
@@ -109,9 +109,7 @@ describe('createConnector', () => {
       clearConnectorRegistry();
 
       const config: WalletConnectorConfig = { type: 'test1' };
-      expect(() => createConnector(config)).toThrow(
-        'No connector factory registered for type: test1'
-      );
+      expect(() => createConnector(config)).toThrow('No connector factory registered for type: test1');
     });
 
     it('should allow registering new connectors after clearing', () => {
@@ -137,24 +135,18 @@ describe('createConnector', () => {
 
       registerConnector('test', invalidFactory);
       const config: WalletConnectorConfig = { type: 'test' };
-      
+
       // TypeScript will catch this at compile time, but we should still
       // have runtime tests to ensure interface compliance
       expect(() => createConnector(config)).not.toThrow();
     });
 
     it('should handle null/undefined/invalid config', () => {
-      expect(() => 
-        createConnector(null as unknown as WalletConnectorConfig)
-      ).toThrow();
-      
-      expect(() => 
-        createConnector(undefined as unknown as WalletConnectorConfig)
-      ).toThrow();
-      
-      expect(() => 
-        createConnector({} as unknown as WalletConnectorConfig)
-      ).toThrow();
+      expect(() => createConnector(null as unknown as WalletConnectorConfig)).toThrow();
+
+      expect(() => createConnector(undefined as unknown as WalletConnectorConfig)).toThrow();
+
+      expect(() => createConnector({} as unknown as WalletConnectorConfig)).toThrow();
     });
   });
 });

@@ -7,7 +7,10 @@
  * Base wallet error class
  */
 export class WalletError extends Error {
-  constructor(message: string, public code?: string) {
+  constructor(
+    message: string,
+    public code?: string,
+  ) {
     super(message);
     this.name = 'WalletError';
   }
@@ -20,5 +23,5 @@ export enum ErrorCode {
   STORAGE = 'storage',
   CONNECTION = 'connection',
   PROVIDER = 'provider',
-  INVALID_STATE = 'invalid_state'
+  INVALID_STATE = 'invalid_state',
 }

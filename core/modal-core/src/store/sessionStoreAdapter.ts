@@ -7,6 +7,7 @@ import type { UseBoundStore } from 'zustand';
 import type { StoreApi } from 'zustand/vanilla';
 import type { SessionStore } from './sessionStore.js';
 import type { WalletSession } from '../types.js';
+import { createStoreError } from './errors.js';
 
 /**
  * Adapter for zustand session store
@@ -16,7 +17,7 @@ export class SessionStoreAdapter implements SessionStore {
 
   constructor(store: UseBoundStore<StoreApi<SessionStore>>) {
     if (!store) {
-      throw new Error('Store is required');
+      throw createStoreError.storeRequired();
     }
     this.store = store;
   }
@@ -47,9 +48,9 @@ export class SessionStoreAdapter implements SessionStore {
    */
   getSessions(): WalletSession[] {
     const sessions = this.store().getSessions();
-    
+
     // Filter out and cleanup expired sessions
-    const activeSessions = sessions.filter(session => {
+    const activeSessions = sessions.filter((session) => {
       if (this.isExpired(session)) {
         this.removeSession(session.id);
         return false;
@@ -98,7 +99,7 @@ export class SessionStoreAdapter implements SessionStore {
  * Creates a new session store adapter
  */
 export function defaultSessionStoreAdapter(
-  store: UseBoundStore<StoreApi<SessionStore>>
+  store: UseBoundStore<StoreApi<SessionStore>>,
 ): SessionStoreAdapter {
   return new SessionStoreAdapter(store);
 }

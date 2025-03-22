@@ -23,7 +23,7 @@ export interface WindowTransportOptions {
 const DEFAULT_OPTIONS = {
   timeout: 30000,
   debug: false,
-  retries: 3
+  retries: 3,
 };
 
 /**
@@ -44,7 +44,7 @@ export class WindowTransport implements Transport {
     this.#windowRef = typeof window !== 'undefined' ? window : null;
     this.baseOptions = {
       ...DEFAULT_OPTIONS,
-      ...options
+      ...options,
     };
 
     // Initialize message handling
@@ -62,9 +62,9 @@ export class WindowTransport implements Transport {
       this.state = TransportState.CONNECTED;
     } catch (error) {
       const transportError = createTransportError(
-        'Connection failed', 
+        'Connection failed',
         TransportErrorCode.CONNECTION_FAILED,
-        error
+        error,
       );
       this.state = TransportState.ERROR;
       this.notifyError(transportError);
@@ -75,9 +75,9 @@ export class WindowTransport implements Transport {
   public async disconnect(): Promise<void> {
     const disconnectError = createTransportError(
       'Transport disconnected',
-      TransportErrorCode.CONNECTION_FAILED
+      TransportErrorCode.CONNECTION_FAILED,
     );
-    
+
     // Set state first
     this.connected = false;
     this.state = TransportState.DISCONNECTED;
@@ -107,29 +107,20 @@ export class WindowTransport implements Transport {
   public async send<T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>> {
     // Validate message format synchronously
     if (!message || !message.id || !message.type || typeof message.timestamp !== 'number') {
-      const error = createTransportError(
-        'Invalid message format',
-        TransportErrorCode.INVALID_MESSAGE
-      );
+      const error = createTransportError('Invalid message format', TransportErrorCode.INVALID_MESSAGE);
       this.notifyError(error);
       throw error;
     }
 
     if (!this.isConnected() || !this.frame?.contentWindow) {
-      const error = createTransportError(
-        'Transport not connected',
-        TransportErrorCode.CONNECTION_FAILED
-      );
+      const error = createTransportError('Transport not connected', TransportErrorCode.CONNECTION_FAILED);
       this.notifyError(error);
       throw error;
     }
 
     return new Promise<Message<R>>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        const error = createTransportError(
-          'Message timeout',
-          TransportErrorCode.TIMEOUT
-        );
+        const error = createTransportError('Message timeout', TransportErrorCode.TIMEOUT);
         this.notifyError(error);
         reject(error);
       }, this.baseOptions.timeout);
@@ -138,9 +129,9 @@ export class WindowTransport implements Transport {
         canHandle: (response: Message) => response.id === message.id,
         handle: async (response: Message): Promise<void> => {
           clearTimeout(timeoutId);
-          this.messageHandlers = this.messageHandlers.filter(h => h !== handler);
+          this.messageHandlers = this.messageHandlers.filter((h) => h !== handler);
           resolve(response as Message<R>);
-        }
+        },
       };
 
       this.messageHandlers.push(handler);
@@ -164,13 +155,13 @@ export class WindowTransport implements Transport {
             subscription.onError(error instanceof Error ? error : new Error(String(error)));
           }
         }
-      }
+      },
     };
 
     this.messageHandlers.push(handler);
     this.handlers.add(subscription);
     return () => {
-      this.messageHandlers = this.messageHandlers.filter(h => h !== handler);
+      this.messageHandlers = this.messageHandlers.filter((h) => h !== handler);
       this.handlers.delete(subscription);
     };
   }
@@ -215,18 +206,12 @@ export class WindowTransport implements Transport {
 
   protected async waitForWindowLoad(): Promise<void> {
     if (!this.frame) {
-      throw createTransportError(
-        'No window to wait for',
-        TransportErrorCode.CONNECTION_FAILED
-      );
+      throw createTransportError('No window to wait for', TransportErrorCode.CONNECTION_FAILED);
     }
 
     return new Promise<void>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
-        const error = createTransportError(
-          'Window load timeout',
-          TransportErrorCode.TIMEOUT
-        );
+        const error = createTransportError('Window load timeout', TransportErrorCode.TIMEOUT);
         this.notifyError(error);
         reject(error);
       }, this.baseOptions.timeout);
@@ -273,7 +258,7 @@ export class WindowTransport implements Transport {
       const transportError = createTransportError(
         'Failed to process message',
         TransportErrorCode.INVALID_MESSAGE,
-        error
+        error,
       );
       this.notifyError(transportError);
     }
@@ -284,11 +269,7 @@ export class WindowTransport implements Transport {
   }
 }
 
-function createTransportError(
-  message: string, 
-  code: TransportErrorCode, 
-  cause?: unknown
-): TransportError {
+function createTransportError(message: string, code: TransportErrorCode, cause?: unknown): TransportError {
   const error = new TransportError(message, code);
   if (cause) {
     error.cause = cause instanceof Error ? cause : new Error(String(cause));

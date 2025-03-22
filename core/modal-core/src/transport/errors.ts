@@ -16,7 +16,7 @@ export enum ProtocolErrorCode {
   /** Required field missing in message */
   MISSING_REQUIRED_FIELD = 'missing_required_field',
   /** Invalid payload structure or content */
-  INVALID_PAYLOAD = 'invalid_payload'
+  INVALID_PAYLOAD = 'invalid_payload',
 }
 
 /**
@@ -36,7 +36,7 @@ export enum TransportErrorCode {
   /** Operation timed out */
   TIMEOUT = 'timeout',
   /** Invalid message format/structure */
-  INVALID_MESSAGE = 'invalid_message'
+  INVALID_MESSAGE = 'invalid_message',
 }
 
 /**
@@ -46,7 +46,7 @@ export class ProtocolError extends Error {
   constructor(
     message: string,
     public readonly code: ProtocolErrorCode,
-    public readonly details?: unknown
+    public readonly details?: unknown,
   ) {
     super(message);
     this.name = 'ProtocolError';
@@ -65,7 +65,7 @@ export class TransportError extends Error {
   constructor(
     message: string,
     public readonly code: TransportErrorCode,
-    public readonly details?: unknown
+    public readonly details?: unknown,
   ) {
     super(message);
     this.name = 'TransportError';
@@ -81,32 +81,22 @@ export class TransportError extends Error {
  * Factory methods for protocol errors
  */
 export const createProtocolError = {
-  validation: (message: string, details?: unknown) => 
+  validation: (message: string, details?: unknown) =>
     new ProtocolError(message, ProtocolErrorCode.VALIDATION_FAILED, details),
-  
+
   invalidFormat: (message: string, details?: unknown) =>
     new ProtocolError(message, ProtocolErrorCode.INVALID_FORMAT, details),
-  
+
   unknownMessageType: (type: string) =>
-    new ProtocolError(
-      `Unknown message type: ${type}`,
-      ProtocolErrorCode.UNKNOWN_MESSAGE_TYPE,
-      { receivedType: type }
-    ),
+    new ProtocolError(`Unknown message type: ${type}`, ProtocolErrorCode.UNKNOWN_MESSAGE_TYPE, {
+      receivedType: type,
+    }),
 
   missingField: (field: string, details?: unknown) =>
-    new ProtocolError(
-      `Missing required field: ${field}`,
-      ProtocolErrorCode.MISSING_REQUIRED_FIELD,
-      details
-    ),
+    new ProtocolError(`Missing required field: ${field}`, ProtocolErrorCode.MISSING_REQUIRED_FIELD, details),
 
   invalidPayload: (message: string, details?: unknown) =>
-    new ProtocolError(
-      message,
-      ProtocolErrorCode.INVALID_PAYLOAD,
-      details
-    )
+    new ProtocolError(message, ProtocolErrorCode.INVALID_PAYLOAD, details),
 };
 
 /**
@@ -130,19 +120,17 @@ export const createTransportError = {
 
   error: (message: string, details?: unknown) =>
     new TransportError(message, TransportErrorCode.TRANSPORT_ERROR, details),
-    
+
   invalidMessage: (message: string, details?: unknown) =>
-    new TransportError(message, TransportErrorCode.INVALID_MESSAGE, details)
+    new TransportError(message, TransportErrorCode.INVALID_MESSAGE, details),
 };
 
 /**
  * Type guard for ProtocolError
  */
-export const isProtocolError = (error: unknown): error is ProtocolError =>
-  error instanceof ProtocolError;
+export const isProtocolError = (error: unknown): error is ProtocolError => error instanceof ProtocolError;
 
 /**
  * Type guard for TransportError
  */
-export const isTransportError = (error: unknown): error is TransportError =>
-  error instanceof TransportError;
+export const isTransportError = (error: unknown): error is TransportError => error instanceof TransportError;

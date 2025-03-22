@@ -13,21 +13,21 @@ export {
   type WalletState,
   type ChainConnection,
   type WalletConnectorConfig,
-  ConnectionStatus
+  ConnectionStatus,
 } from './types.js';
 
 export {
   type SessionStore as ISessionStore,
   defaultSessionStore,
-  createSessionStore
+  createSessionStore,
 } from './store/sessionStore.js';
 
 export {
   defaultSessionStoreAdapter,
-  type SessionStoreAdapter
+  type SessionStoreAdapter,
 } from './store/sessionStoreAdapter.js';
 
 export {
   WalletError,
-  ErrorCode
+  ErrorCode,
 } from './errors.js';

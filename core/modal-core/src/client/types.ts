@@ -3,7 +3,13 @@
  * Type definitions for the WalletMesh client module.
  */
 
-import type { WalletConnectorConfig, WalletInfo, WalletState, ConnectedWallet, Connector as BaseConnector } from '../types.js';
+import type {
+  WalletConnectorConfig,
+  WalletInfo,
+  WalletState,
+  ConnectedWallet,
+  Connector as BaseConnector,
+} from '../types.js';
 
 /**
  * Connector interface for wallet interaction.

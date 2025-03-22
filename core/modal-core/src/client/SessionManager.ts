@@ -3,15 +3,11 @@
  * Manages wallet sessions and connections
  */
 
-import { WalletError, ErrorCode } from '../index.js';
 import { ConnectionStatus } from '../types.js';
-import type { 
-  SessionStore,
-  WalletSession,
-  ChainConnection
-} from '../types.js';
+import type { SessionStore, WalletSession, ChainConnection } from '../types.js';
 import { defaultSessionStore } from '../store/sessionStore.js';
 import { defaultSessionStoreAdapter } from '../store/sessionStoreAdapter.js';
+import { createClientError } from './errors.js';
 
 /**
  * Manages wallet sessions
@@ -30,7 +26,7 @@ export class SessionManager {
       // Restore sessions from store
       await this.restoreSessions();
     } catch (error) {
-      throw new WalletError('Failed to initialize session manager', ErrorCode.STORAGE);
+      throw createClientError.initFailed('Failed to initialize session manager', { cause: error });
     }
   }
 
@@ -44,20 +40,18 @@ export class SessionManager {
         if (!session?.wallet?.state) continue;
 
         // Maintain connected status if wallet is connected
-        const status = session.wallet.connected 
-          ? ConnectionStatus.CONNECTED 
-          : ConnectionStatus.CONNECTING;
-        
+        const status = session.wallet.connected ? ConnectionStatus.CONNECTED : ConnectionStatus.CONNECTING;
+
         const restoredSession: WalletSession = {
           ...session,
-          status
+          status,
         };
 
         this.sessionCache.set(restoredSession.id, restoredSession);
         this.store.setSession(restoredSession.id, restoredSession);
       }
     } catch (error) {
-      throw new WalletError('Failed to restore sessions', ErrorCode.STORAGE);
+      throw createClientError.restoreFailed('Failed to restore wallet sessions', { cause: error });
     }
   }
 
@@ -67,7 +61,7 @@ export class SessionManager {
   getSession(walletId: string): WalletSession | undefined {
     // Always check store first to ensure latest state
     const session = this.store.getSession(walletId);
-    
+
     // If session not in store, clear cache and return undefined
     if (!session) {
       this.sessionCache.delete(walletId);
@@ -102,8 +96,8 @@ export class SessionManager {
       status,
       wallet: {
         ...session.wallet,
-        connected
-      }
+        connected,
+      },
     };
 
     // Update store first, then cache

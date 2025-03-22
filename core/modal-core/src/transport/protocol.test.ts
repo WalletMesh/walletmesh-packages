@@ -4,10 +4,10 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import type { Protocol } from '../types.js';
-import { MessageType } from '../types.js';
-import type { Message, ValidationResult } from '../types.js';
-import { ProtocolError, ProtocolErrorCode } from '../errors.js';
+import type { Protocol } from './types.js';
+import { MessageType } from './types.js';
+import type { Message, ValidationResult } from './types.js';
+import { ProtocolError, ProtocolErrorCode } from './errors.js';
 
 interface TestPayload {
   request: {
@@ -25,7 +25,7 @@ class TestProtocol implements Protocol<TestPayload> {
     if (!request || typeof request !== 'object') {
       return {
         success: false,
-        error: new ProtocolError('Invalid request format', ProtocolErrorCode.INVALID_PAYLOAD)
+        error: new ProtocolError('Invalid request format', ProtocolErrorCode.INVALID_PAYLOAD),
       };
     }
 
@@ -33,20 +33,20 @@ class TestProtocol implements Protocol<TestPayload> {
     if (typeof req.method !== 'string') {
       return {
         success: false,
-        error: new ProtocolError('Method must be a string', ProtocolErrorCode.INVALID_PAYLOAD)
+        error: new ProtocolError('Method must be a string', ProtocolErrorCode.INVALID_PAYLOAD),
       };
     }
 
     if (!Array.isArray(req.params)) {
       return {
         success: false,
-        error: new ProtocolError('Params must be an array', ProtocolErrorCode.INVALID_PAYLOAD)
+        error: new ProtocolError('Params must be an array', ProtocolErrorCode.INVALID_PAYLOAD),
       };
     }
 
     return {
       success: true,
-      data: { method: req.method, params: req.params }
+      data: { method: req.method, params: req.params },
     };
   }
 
@@ -54,7 +54,7 @@ class TestProtocol implements Protocol<TestPayload> {
     if (!response || typeof response !== 'object') {
       return {
         success: false,
-        error: new ProtocolError('Invalid response format', ProtocolErrorCode.INVALID_PAYLOAD)
+        error: new ProtocolError('Invalid response format', ProtocolErrorCode.INVALID_PAYLOAD),
       };
     }
 
@@ -62,7 +62,7 @@ class TestProtocol implements Protocol<TestPayload> {
     if (res.error !== undefined && typeof res.error !== 'string') {
       return {
         success: false,
-        error: new ProtocolError('Error must be a string', ProtocolErrorCode.INVALID_PAYLOAD)
+        error: new ProtocolError('Error must be a string', ProtocolErrorCode.INVALID_PAYLOAD),
       };
     }
 
@@ -73,7 +73,7 @@ class TestProtocol implements Protocol<TestPayload> {
 
     return {
       success: true,
-      data: response_
+      data: response_,
     };
   }
 
@@ -83,7 +83,7 @@ class TestProtocol implements Protocol<TestPayload> {
       if (!message || typeof message !== 'object') {
         return {
           success: false,
-          error: new ProtocolError('Invalid message format', ProtocolErrorCode.INVALID_FORMAT)
+          error: new ProtocolError('Invalid message format', ProtocolErrorCode.INVALID_FORMAT),
         };
       }
 
@@ -93,28 +93,28 @@ class TestProtocol implements Protocol<TestPayload> {
       if (!msg.id || typeof msg.id !== 'string') {
         return {
           success: false,
-          error: new ProtocolError('Missing or invalid id', ProtocolErrorCode.MISSING_REQUIRED_FIELD)
+          error: new ProtocolError('Missing or invalid id', ProtocolErrorCode.MISSING_REQUIRED_FIELD),
         };
       }
 
       if (!msg.type) {
         return {
           success: false,
-          error: new ProtocolError('Missing message type', ProtocolErrorCode.MISSING_REQUIRED_FIELD)
+          error: new ProtocolError('Missing message type', ProtocolErrorCode.MISSING_REQUIRED_FIELD),
         };
       }
 
       if (!Object.values(MessageType).includes(msg.type)) {
         return {
           success: false,
-          error: new ProtocolError('Unknown message type', ProtocolErrorCode.UNKNOWN_MESSAGE_TYPE)
+          error: new ProtocolError('Unknown message type', ProtocolErrorCode.UNKNOWN_MESSAGE_TYPE),
         };
       }
 
       if (!msg.timestamp || typeof msg.timestamp !== 'number') {
         return {
           success: false,
-          error: new ProtocolError('Missing or invalid timestamp', ProtocolErrorCode.MISSING_REQUIRED_FIELD)
+          error: new ProtocolError('Missing or invalid timestamp', ProtocolErrorCode.MISSING_REQUIRED_FIELD),
         };
       }
 
@@ -122,7 +122,7 @@ class TestProtocol implements Protocol<TestPayload> {
       if (!msg.payload || typeof msg.payload !== 'object') {
         return {
           success: false,
-          error: new ProtocolError('Missing or invalid payload', ProtocolErrorCode.INVALID_PAYLOAD)
+          error: new ProtocolError('Missing or invalid payload', ProtocolErrorCode.INVALID_PAYLOAD),
         };
       }
 
@@ -142,12 +142,12 @@ class TestProtocol implements Protocol<TestPayload> {
 
       return {
         success: true,
-        data: message as Message<TestPayload>
+        data: message as Message<TestPayload>,
       };
     } catch (error) {
       return {
         success: false,
-        error: new ProtocolError('Validation failed', ProtocolErrorCode.INVALID_FORMAT)
+        error: new ProtocolError('Validation failed', ProtocolErrorCode.INVALID_FORMAT),
       };
     }
   }
@@ -159,7 +159,7 @@ class TestProtocol implements Protocol<TestPayload> {
     } catch (error) {
       return {
         success: false,
-        error: new ProtocolError('Parse failed', ProtocolErrorCode.INVALID_FORMAT)
+        error: new ProtocolError('Parse failed', ProtocolErrorCode.INVALID_FORMAT),
       };
     }
   }
@@ -173,7 +173,7 @@ class TestProtocol implements Protocol<TestPayload> {
       id: Math.random().toString(36).slice(2),
       type: MessageType.REQUEST,
       timestamp: Date.now(),
-      payload: data
+      payload: data,
     };
   }
 
@@ -185,12 +185,12 @@ class TestProtocol implements Protocol<TestPayload> {
       payload: {
         request: {
           method: '',
-          params: []
+          params: [],
         },
         response: {
-          result
-        }
-      }
+          result,
+        },
+      },
     };
   }
 
@@ -202,12 +202,12 @@ class TestProtocol implements Protocol<TestPayload> {
       payload: {
         request: {
           method: 'error',
-          params: []
+          params: [],
         },
         response: {
-          error: error.message
-        }
-      }
+          error: error.message,
+        },
+      },
     };
   }
 }
@@ -228,9 +228,9 @@ describe('Protocol', () => {
     payload: {
       request: {
         method: 'test',
-        params: []
+        params: [],
       },
-      response: {}
+      response: {},
     },
     ...overrides,
   });
@@ -239,7 +239,7 @@ describe('Protocol', () => {
     it('should validate valid messages', () => {
       const message = createValidMessage();
       const result = protocol.validateMessage(message);
-      
+
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data).toEqual(message);
@@ -262,10 +262,9 @@ describe('Protocol', () => {
         if (!result.success) {
           expect(result.error).toBeInstanceOf(ProtocolError);
           if (result.error instanceof ProtocolError) {
-            expect([
-              ProtocolErrorCode.INVALID_FORMAT,
-              ProtocolErrorCode.MISSING_REQUIRED_FIELD
-            ]).toContain(result.error.code);
+            expect([ProtocolErrorCode.INVALID_FORMAT, ProtocolErrorCode.MISSING_REQUIRED_FIELD]).toContain(
+              result.error.code,
+            );
           }
         }
       }
@@ -275,33 +274,33 @@ describe('Protocol', () => {
       const invalidMessages = [
         // Missing request field
         createValidMessage({
-          payload: { response: {} } as unknown as TestPayload
+          payload: { response: {} } as unknown as TestPayload,
         }),
         // Missing response field
         createValidMessage({
-          payload: { request: { method: 'test', params: [] } } as unknown as TestPayload
+          payload: { request: { method: 'test', params: [] } } as unknown as TestPayload,
         }),
         // Invalid method type
         createValidMessage({
           payload: {
             request: { method: 123 as unknown as string, params: [] },
-            response: {}
-          }
+            response: {},
+          },
         }),
         // Invalid params type
         createValidMessage({
           payload: {
             request: { method: 'test', params: 'invalid' as unknown as unknown[] },
-            response: {}
-          }
+            response: {},
+          },
         }),
         // Invalid error type
         createValidMessage({
           payload: {
             request: { method: 'test', params: [] },
-            response: { error: 123 as unknown as string }
-          }
-        })
+            response: { error: 123 as unknown as string },
+          },
+        }),
       ];
 
       for (const message of invalidMessages) {
@@ -337,9 +336,9 @@ describe('Protocol', () => {
       const testData: TestPayload = {
         request: {
           method: 'test',
-          params: ['param1', 2]
+          params: ['param1', 2],
         },
-        response: {}
+        response: {},
       };
       const request = protocol.createRequest('test', testData);
       const result = protocol.validateMessage(request);

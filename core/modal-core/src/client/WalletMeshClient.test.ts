@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { WalletMeshClient } from './WalletMeshClient.js';
-import { ConnectionStatus, type ConnectedWallet, type WalletInfo, type Connector, type WalletSession } from '../types.js';
+import {
+  ConnectionStatus,
+  type ConnectedWallet,
+  type WalletInfo,
+  type Connector,
+  type WalletSession,
+} from '../types.js';
+import { createClientError, isClientError } from './errors.js';
 
 // Mock functions need to be defined before vi.mock()
 const mockUpdateSessionStatus = vi.fn();
@@ -35,8 +42,8 @@ describe('WalletMeshClient', () => {
       address: '0x123',
       networkId: 1,
       sessionId: 'test-session',
-      lastActive: Date.now()
-    }
+      lastActive: Date.now(),
+    },
   };
 
   const mockSession: WalletSession = {
@@ -48,11 +55,11 @@ describe('WalletMeshClient', () => {
       disconnect: vi.fn().mockResolvedValue(undefined),
       getProvider: vi.fn().mockResolvedValue({}),
       getState: vi.fn().mockReturnValue(ConnectionStatus.CONNECTED),
-      resume: vi.fn().mockResolvedValue(mockConnectedWallet)
+      resume: vi.fn().mockResolvedValue(mockConnectedWallet),
     },
     status: ConnectionStatus.CONNECTED,
     expiry: Date.now() + 3600000,
-    wallet: mockConnectedWallet
+    wallet: mockConnectedWallet,
   };
 
   // Mock SessionManager
@@ -70,11 +77,11 @@ describe('WalletMeshClient', () => {
 
   // Mock window setup
   const mockWindow = {
-    location: { 
+    location: {
       origin: 'https://test.com',
       protocol: 'https:',
       host: 'test.com',
-      href: 'https://test.com'
+      href: 'https://test.com',
     },
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
@@ -83,17 +90,17 @@ describe('WalletMeshClient', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     WalletMeshClient.resetInstance();
-    
+
     // Setup default mock behaviors
     mockGetSession.mockReturnValue(undefined);
     mockGetSessions.mockReturnValue([mockSession]);
-    
+
     // Reset all global mocks
     vi.unstubAllGlobals();
-    
+
     // Setup window mock
     vi.stubGlobal('window', mockWindow);
-    
+
     // Setup crypto mock
     vi.stubGlobal('crypto', {
       randomUUID: vi.fn().mockReturnValue('test-uuid'),
@@ -114,15 +121,15 @@ describe('WalletMeshClient', () => {
     it('should validate origin against window.location', () => {
       const wrongWindow = {
         ...mockWindow,
-        location: { 
-          origin: 'https://wrong.com', 
-          href: 'https://wrong.com' 
+        location: {
+          origin: 'https://wrong.com',
+          href: 'https://wrong.com',
         },
       };
       vi.stubGlobal('window', wrongWindow);
 
       expect(() => WalletMeshClient.getInstance(mockDappInfo)).toThrow(
-        "Origin mismatch: DApp info specifies 'https://test.com' but is being served from 'https://wrong.com'"
+        createClientError.originMismatch('https://test.com', 'https://wrong.com'),
       );
     });
 
@@ -147,14 +154,11 @@ describe('WalletMeshClient', () => {
 
       // Mock session retrieval
       mockGetSession.mockReturnValue(mockSession);
-      
+
       // Test transition
       client.prepareForTransition();
 
-      expect(mockUpdateSessionStatus).toHaveBeenCalledWith(
-        wallet.address,
-        ConnectionStatus.CONNECTING
-      );
+      expect(mockUpdateSessionStatus).toHaveBeenCalledWith(wallet.address, ConnectionStatus.CONNECTING);
       expect(client['initialized']).toBe(false);
     });
 
@@ -162,13 +166,19 @@ describe('WalletMeshClient', () => {
       const client = WalletMeshClient.getInstance(mockDappInfo);
       await client.initialize();
 
+      const connectionError = new Error('Connection failed');
       const errorConnector: Connector = {
         ...mockSession.connector,
-        connect: vi.fn().mockRejectedValue(new Error('Connection failed')),
+        connect: vi.fn().mockRejectedValue(connectionError),
       };
 
-      await expect(client.connectWallet(mockWalletInfo, errorConnector))
-        .rejects.toThrow('Connection failed');
+      try {
+        await client.connectWallet(mockWalletInfo, errorConnector);
+        throw new Error('Expected error was not thrown');
+      } catch (error) {
+        expect(isClientError(error)).toBe(true);
+        expect((error as Error).message).toBe('Failed to establish wallet connection');
+      }
     });
 
     it('should handle disconnect', async () => {
@@ -188,13 +198,13 @@ describe('WalletMeshClient', () => {
     it('should handle missing session in prepareForTransition', async () => {
       const client = WalletMeshClient.getInstance(mockDappInfo);
       await client.initialize();
-      
+
       // Reset all mocks to ensure clean state
       vi.clearAllMocks();
 
       // Ensure mockGetSession returns undefined
       mockGetSession.mockReturnValue(undefined);
-      
+
       // Set up the current wallet state
       client['currentWallet'] = mockConnectedWallet;
 

@@ -9,7 +9,7 @@ import type {
   Provider,
   ProtocolMessage,
   ErrorHandler,
-  CleanupHandler
+  CleanupHandler,
 } from './types.js';
 import type { Message } from '../transport/types.js';
 import type { WalletInfo, WalletState, ConnectedWallet, Connector } from '../types.js';
@@ -54,8 +54,8 @@ export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage>
   protected currentWallet: ConnectedWallet | null = null;
 
   constructor(transport?: Transport, protocol?: Protocol<T>) {
-    this.transport = transport ?? {} as Transport;
-    this.protocol = protocol ?? {} as Protocol<T>;
+    this.transport = transport ?? ({} as Transport);
+    this.protocol = protocol ?? ({} as Protocol<T>);
     this.boundErrorHandler = this.handleTransportError.bind(this);
   }
 
@@ -67,10 +67,7 @@ export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage>
   /**
    * Generic request method implementation
    */
-  async request<TReq = unknown, TRes = unknown>(
-    method: string,
-    params?: TReq[]
-  ): Promise<TRes> {
+  async request<TReq = unknown, TRes = unknown>(method: string, params?: TReq[]): Promise<TRes> {
     return this.sendRequest<TReq, TRes>(method, params ?? []);
   }
 
@@ -83,7 +80,7 @@ export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage>
 
   /**
    * Gets current connection state
-   */  
+   */
   getState(): ConnectionStatus {
     return this.isConnected() ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED;
   }
@@ -102,12 +99,9 @@ export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage>
 
       // Perform wallet-specific connect operations
       await this.doConnect(walletInfo);
-      
+
       if (!this.currentWallet) {
-        throw new TransportError(
-          'Failed to create wallet connection',
-          TransportErrorCode.CONNECTION_FAILED
-        );
+        throw new TransportError('Failed to create wallet connection', TransportErrorCode.CONNECTION_FAILED);
       }
 
       return this.currentWallet;
@@ -141,7 +135,7 @@ export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage>
   async resume(walletInfo: WalletInfo, state: WalletState): Promise<ConnectedWallet> {
     try {
       await this.transport.connect();
-      
+
       // Set up connection state and error handling
       this.transport.addErrorHandler(this.boundErrorHandler);
       this.isConnectedState = true;
@@ -151,10 +145,7 @@ export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage>
       this.currentWallet = this.createConnectedWallet(walletInfo, state);
 
       if (!this.currentWallet) {
-        throw new TransportError(
-          'Failed to resume wallet connection',
-          TransportErrorCode.CONNECTION_FAILED
-        );
+        throw new TransportError('Failed to resume wallet connection', TransportErrorCode.CONNECTION_FAILED);
       }
 
       return this.currentWallet;
@@ -168,10 +159,7 @@ export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage>
   /**
    * Creates connected wallet instance
    */
-  protected abstract createConnectedWallet(
-    info: WalletInfo,
-    state?: WalletState
-  ): ConnectedWallet;
+  protected abstract createConnectedWallet(info: WalletInfo, state?: WalletState): ConnectedWallet;
 
   /**
    * Performs wallet-specific connect operations
@@ -222,12 +210,12 @@ export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage>
         console.error('Error in cleanup handler:', error);
       }
     }
-    
+
     // Remove transport handler and clear
     if (this.boundErrorHandler) {
       this.transport.removeErrorHandler(this.boundErrorHandler);
     }
-    
+
     // Clear handlers
     this.cleanupHandlers.clear();
   }
@@ -255,10 +243,7 @@ export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage>
   /**
    * Sends a request through the transport
    */
-  protected async sendRequest<TReq, TRes>(
-    method: string,
-    params: TReq[]
-  ): Promise<TRes> {
+  protected async sendRequest<TReq, TRes>(method: string, params: TReq[]): Promise<TRes> {
     if (!this.isConnected()) {
       throw new TransportError('Transport not connected', TransportErrorCode.NOT_CONNECTED);
     }
@@ -270,9 +255,9 @@ export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage>
       } as unknown as T['request']);
 
       const response = await this.transport.send<T['request'], T['response']>(
-        request as Message<T['request']>
+        request as Message<T['request']>,
       );
-      
+
       await this.validateMessage(response);
 
       const payload = response.payload as { result?: TRes; error?: string };

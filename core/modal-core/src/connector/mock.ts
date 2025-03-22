@@ -36,7 +36,24 @@ export interface MockConnectorConfig {
   shouldFail?: boolean;
   /** Simulated response delay in ms */
   responseDelay?: number;
+  /** Additional options for backward compatibility */
+  options?: Record<string, unknown>;
 }
+
+/**
+ * Mock connector implementation for testing
+ * @deprecated Use MockConnector with MockConnectorConfig instead of ConnectorImplementationConfig
+ */
+export type LegacyMockConfig = {
+  type: string;
+  name: string;
+  options?: {
+    address?: string;
+    chainId?: number;
+    shouldFail?: boolean;
+    responseDelay?: number;
+  };
+};
 
 /**
  * Mock connector implementation for testing
@@ -44,44 +61,47 @@ export interface MockConnectorConfig {
 export class MockConnector extends BaseConnector<MockMessageTypes> {
   protected override currentWallet: ConnectedWallet | null = null;
   private _connected = false;
-  private readonly config: Required<MockConnectorConfig>;
+  private readonly config: Required<Omit<MockConnectorConfig, 'options'>>;
 
-  constructor(options: MockConnectorConfig = {}) {
-    const config: Required<MockConnectorConfig> = {
+  constructor(config: MockConnectorConfig | LegacyMockConfig = {}) {
+    // Handle legacy config format
+    const options = 'type' in config ? config.options || {} : config;
+
+    const normalizedConfig = {
       address: options.address || '0x1234567890123456789012345678901234567890',
       chainId: options.chainId || 1,
       shouldFail: options.shouldFail || false,
-      responseDelay: options.responseDelay || 0
+      responseDelay: options.responseDelay || 0,
     };
 
     const transport: Transport = {
       connect: async () => {
-        if (config.shouldFail) {
+        if (normalizedConfig.shouldFail) {
           throw new TransportError('Connection failed', TransportErrorCode.CONNECTION_FAILED);
         }
-        if (config.responseDelay) {
-          await new Promise(resolve => setTimeout(resolve, config.responseDelay));
+        if (normalizedConfig.responseDelay) {
+          await new Promise((resolve) => setTimeout(resolve, normalizedConfig.responseDelay));
         }
       },
       disconnect: async () => {},
       isConnected: () => this._connected,
-      getState: () => this._connected ? 'connected' : 'disconnected',
+      getState: () => (this._connected ? 'connected' : 'disconnected'),
       send: async <T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>> => {
-        if (config.responseDelay) {
-          await new Promise(resolve => setTimeout(resolve, config.responseDelay));
+        if (normalizedConfig.responseDelay) {
+          await new Promise((resolve) => setTimeout(resolve, normalizedConfig.responseDelay));
         }
         return {
           id: message.id,
           type: MessageType.RESPONSE,
           timestamp: Date.now(),
           payload: {
-            result: true
-          } as unknown as R
+            result: true,
+          } as unknown as R,
         };
       },
       subscribe: () => () => {},
       addErrorHandler: () => {},
-      removeErrorHandler: () => {}
+      removeErrorHandler: () => {},
     };
 
     const protocol = {
@@ -89,51 +109,56 @@ export class MockConnector extends BaseConnector<MockMessageTypes> {
         id: String(Date.now()),
         type: MessageType.REQUEST,
         payload: { method, params: params.params },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }),
       createResponse: (id: string, result: MockResponse): Message<MockResponse> => ({
         id,
         type: MessageType.RESPONSE,
         payload: { result: result.result },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }),
       createError: (id: string, error: Error): Message<MockRequest> => ({
         id,
         type: MessageType.ERROR,
         payload: { method: 'error', params: [error.message] },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       }),
-      formatMessage: <K extends keyof MockMessageTypes>(message: Message<MockMessageTypes[K]>): unknown => message,
+      formatMessage: <K extends keyof MockMessageTypes>(message: Message<MockMessageTypes[K]>): unknown =>
+        message,
       validateMessage: <K extends keyof MockMessageTypes>(
-        message: unknown
+        message: unknown,
       ): { success: true; data: Message<MockMessageTypes[K]> } | { success: false; error: ProtocolError } => {
         if (!message) {
           return {
             success: false,
-            error: new ProtocolError('Invalid message', ProtocolErrorCode.INVALID_FORMAT)
+            error: new ProtocolError('Invalid message', ProtocolErrorCode.INVALID_FORMAT),
           };
         }
-        return { 
-          success: true, 
-          data: message as Message<MockMessageTypes[K]>
+        return {
+          success: true,
+          data: message as Message<MockMessageTypes[K]>,
         };
       },
       parseMessage: <K extends keyof MockMessageTypes>(
-        data: unknown
-      ): { success: true; data: Message<MockMessageTypes[K]> } => ({ 
-        success: true, 
-        data: data as Message<MockMessageTypes[K]>
-      })
+        data: unknown,
+      ): { success: true; data: Message<MockMessageTypes[K]> } => ({
+        success: true,
+        data: data as Message<MockMessageTypes[K]>,
+      }),
     };
 
     super(transport, protocol);
-    this.config = config;
+    this.config = normalizedConfig;
   }
 
-  protected async handleProtocolMessage(message: Message<MockMessageTypes[keyof MockMessageTypes]>): Promise<void> {
-    if (message.type === MessageType.REQUEST && 
-        'method' in message.payload && 
-        message.payload.method === 'connect') {
+  protected async handleProtocolMessage(
+    message: Message<MockMessageTypes[keyof MockMessageTypes]>,
+  ): Promise<void> {
+    if (
+      message.type === MessageType.REQUEST &&
+      'method' in message.payload &&
+      message.payload.method === 'connect'
+    ) {
       this._connected = true;
     }
   }
@@ -143,7 +168,7 @@ export class MockConnector extends BaseConnector<MockMessageTypes> {
       address: this.config.address,
       chainId: state?.networkId || this.config.chainId,
       publicKey: '0x',
-      connected: true
+      connected: true,
     };
   }
 
@@ -153,10 +178,14 @@ export class MockConnector extends BaseConnector<MockMessageTypes> {
 
   public async getProvider() {
     return {
-      request: async <T>() => ({} as T),
-      connect: async () => { this._connected = true; },
-      disconnect: async () => { this._connected = false; },
-      isConnected: () => this._connected
+      request: async <T>() => ({}) as T,
+      connect: async () => {
+        this._connected = true;
+      },
+      disconnect: async () => {
+        this._connected = false;
+      },
+      isConnected: () => this._connected,
     };
   }
 
@@ -165,7 +194,7 @@ export class MockConnector extends BaseConnector<MockMessageTypes> {
       throw new TransportError('Connection failed', TransportErrorCode.CONNECTION_FAILED);
     }
     if (this.config.responseDelay) {
-      await new Promise(resolve => setTimeout(resolve, this.config.responseDelay));
+      await new Promise((resolve) => setTimeout(resolve, this.config.responseDelay));
     }
     this._connected = true;
     this.currentWallet = this.createConnectedWallet(walletInfo);
@@ -174,5 +203,13 @@ export class MockConnector extends BaseConnector<MockMessageTypes> {
   protected async doDisconnect(): Promise<void> {
     this._connected = false;
     this.currentWallet = null;
+  }
+
+  /**
+   * Test utility method for processing protocol messages
+   * @param message The message to process
+   */
+  public processTestMessage(message: Message<MockMessageTypes[keyof MockMessageTypes]>): void {
+    this.handleProtocolMessage(message);
   }
 }

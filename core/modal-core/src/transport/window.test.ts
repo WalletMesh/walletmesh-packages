@@ -17,7 +17,7 @@ describe('WindowTransport', () => {
     type: MessageType.REQUEST,
     payload: { test: true },
     timestamp: Date.now(),
-    ...override
+    ...override,
   });
 
   const setupMocks = () => {
@@ -26,13 +26,13 @@ describe('WindowTransport', () => {
     mockFrame = {
       remove: vi.fn(),
       contentWindow: {
-        postMessage: vi.fn()
+        postMessage: vi.fn(),
       } as unknown as Window,
       style: {
-        display: 'none'
+        display: 'none',
       } as CSSStyleDeclaration,
       src: '',
-      onload: null
+      onload: null,
     } as unknown as HTMLIFrameElement;
 
     mockWindow = {
@@ -42,15 +42,15 @@ describe('WindowTransport', () => {
         }
       }),
       removeEventListener: vi.fn(),
-      location: { origin: 'http://localhost' }
+      location: { origin: 'http://localhost' },
     } as unknown as Window;
 
     const documentSpy = {
       createElement: vi.fn(() => mockFrame),
       body: {
         appendChild: vi.fn(),
-        removeChild: vi.fn()
-      }
+        removeChild: vi.fn(),
+      },
     };
 
     vi.stubGlobal('window', mockWindow);
@@ -68,7 +68,7 @@ describe('WindowTransport', () => {
     const handshakeEvent = new MessageEvent('message', {
       data: { type: 'handshake' },
       source: mockFrame.contentWindow,
-      origin: mockUrl
+      origin: mockUrl,
     });
 
     for (const handler of messageHandlers) {
@@ -88,9 +88,9 @@ describe('WindowTransport', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     setupMocks();
-    transport = new WindowTransport({ 
+    transport = new WindowTransport({
       url: mockUrl,
-      timeout: 1000
+      timeout: 1000,
     });
   });
 
@@ -139,17 +139,17 @@ describe('WindowTransport', () => {
       const errorHandler = vi.fn();
       transport.addErrorHandler(errorHandler);
       await connectTransport();
-      
+
       transport.disconnect();
       await vi.advanceTimersByTimeAsync(0);
-      
+
       expect(mockFrame.remove).toHaveBeenCalled();
       expect(transport.getState()).toBe(TransportState.DISCONNECTED);
       expect(errorHandler).toHaveBeenCalledWith(
         expect.objectContaining({
           code: TransportErrorCode.CONNECTION_FAILED,
-          name: 'TransportError'
-        })
+          name: 'TransportError',
+        }),
       );
 
       // Verify handlers are cleared
@@ -170,17 +170,17 @@ describe('WindowTransport', () => {
       const message = createTestMessage();
       const sendPromise = transport.send(message);
       await vi.advanceTimersByTimeAsync(0);
-      
+
       expect(mockFrame.contentWindow?.postMessage).toHaveBeenCalledWith(message, '*');
 
       const responseEvent = new MessageEvent('message', {
         data: {
           id: message.id,
           type: MessageType.RESPONSE,
-          payload: { success: true }
+          payload: { success: true },
         },
         source: mockFrame.contentWindow,
-        origin: mockUrl
+        origin: mockUrl,
       });
 
       for (const handler of messageHandlers) {
@@ -204,8 +204,8 @@ describe('WindowTransport', () => {
       expect(error).toEqual(
         expect.objectContaining({
           code: TransportErrorCode.INVALID_MESSAGE,
-          name: 'TransportError'
-        })
+          name: 'TransportError',
+        }),
       );
 
       expect(errorHandler).toHaveBeenCalledWith(error);
@@ -232,16 +232,16 @@ describe('WindowTransport', () => {
     it('clears error handlers on disconnect', async () => {
       const errorHandler = vi.fn();
       transport.addErrorHandler(errorHandler);
-      
+
       transport.disconnect();
       await vi.advanceTimersByTimeAsync(0);
-      
+
       // Should receive disconnect notification
       expect(errorHandler).toHaveBeenCalledWith(
         expect.objectContaining({
           code: TransportErrorCode.CONNECTION_FAILED,
-          name: 'TransportError'
-        })
+          name: 'TransportError',
+        }),
       );
 
       errorHandler.mockClear();
@@ -250,7 +250,7 @@ describe('WindowTransport', () => {
       const message = createTestMessage();
       await getError<TransportError>(() => transport.send(message));
       await vi.advanceTimersByTimeAsync(0);
-      
+
       expect(errorHandler).not.toHaveBeenCalled();
     });
   });
@@ -269,7 +269,7 @@ describe('WindowTransport', () => {
       const messageEvent = new MessageEvent('message', {
         data: message,
         source: mockFrame.contentWindow,
-        origin: mockUrl
+        origin: mockUrl,
       });
 
       for (const h of messageHandlers) {

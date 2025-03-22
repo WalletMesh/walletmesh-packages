@@ -1,17 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BaseTransport } from '../base.js';
-import { TransportState, MessageType, type Message } from '../types.js';
-import { TransportError, TransportErrorCode } from '../errors.js';
+import { BaseTransport } from './base.js';
+import { TransportState, MessageType, type Message } from './types.js';
+import { TransportError, TransportErrorCode } from './errors.js';
 
 class TestTransport extends BaseTransport {
   private connected = false;
   public mockConnect = vi.fn().mockResolvedValue(undefined);
-  public mockSend = vi.fn().mockImplementation(async <T, R>(_message: Message<T>): Promise<Message<R>> => ({
-    id: '1',
-    type: MessageType.RESPONSE,
-    payload: {} as R,
-    timestamp: Date.now()
-  }));
+  public mockSend = vi.fn().mockImplementation(
+    async <T, R>(_message: Message<T>): Promise<Message<R>> => ({
+      id: '1',
+      type: MessageType.RESPONSE,
+      payload: {} as R,
+      timestamp: Date.now(),
+    }),
+  );
   public mockDisconnect = vi.fn().mockResolvedValue(undefined);
 
   public override async connect(): Promise<void> {
@@ -24,7 +26,7 @@ class TestTransport extends BaseTransport {
       const transportError = this.createError(
         'Connection failed',
         TransportErrorCode.CONNECTION_FAILED,
-        error
+        error,
       );
       this.state = TransportState.ERROR;
       this.notifyError(transportError);
@@ -53,11 +55,7 @@ class TestTransport extends BaseTransport {
     return this.mockDisconnect();
   }
 
-  protected override createError(
-    message: string,
-    code: TransportErrorCode,
-    cause?: unknown
-  ): TransportError {
+  protected override createError(message: string, code: TransportErrorCode, cause?: unknown): TransportError {
     const error = new TransportError(message, code);
     if (cause instanceof Error) {
       error.cause = cause;
@@ -83,7 +81,7 @@ describe('BaseTransport', () => {
     it('should handle connection failures', async () => {
       const error = new Error('Connection failed');
       transport.mockConnect.mockRejectedValueOnce(error);
-      
+
       const rejection = await getError<TransportError>(() => transport.connect());
       expect(rejection.code).toBe(TransportErrorCode.CONNECTION_FAILED);
       expect(rejection.cause).toBe(error);
@@ -99,13 +97,13 @@ describe('BaseTransport', () => {
 
     it('should handle state transitions', async () => {
       expect(transport.getState()).toBe(TransportState.DISCONNECTED);
-      
+
       const connectPromise = transport.connect();
       expect(transport.getState()).toBe(TransportState.CONNECTING);
-      
+
       await connectPromise;
       expect(transport.getState()).toBe(TransportState.CONNECTED);
-      
+
       await transport.disconnect();
       expect(transport.getState()).toBe(TransportState.DISCONNECTED);
     });
@@ -113,7 +111,7 @@ describe('BaseTransport', () => {
     it('should handle error state transition', async () => {
       const error = new Error('Connection failed');
       transport.mockConnect.mockRejectedValueOnce(error);
-      
+
       const rejection = await getError<TransportError>(() => transport.connect());
       expect(rejection.code).toBe(TransportErrorCode.CONNECTION_FAILED);
       expect(rejection.cause).toBe(error);
@@ -160,12 +158,14 @@ describe('BaseTransport', () => {
 
       transport.mockSend.mockRejectedValueOnce(error);
 
-      await expect(transport.send({
-        id: '1',
-        type: MessageType.REQUEST,
-        payload: {},
-        timestamp: Date.now()
-      })).rejects.toThrow(TransportError);
+      await expect(
+        transport.send({
+          id: '1',
+          type: MessageType.REQUEST,
+          payload: {},
+          timestamp: Date.now(),
+        }),
+      ).rejects.toThrow(TransportError);
 
       expect(handler).toHaveBeenCalledWith(expect.any(TransportError));
     });

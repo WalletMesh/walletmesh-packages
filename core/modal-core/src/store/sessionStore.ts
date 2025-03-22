@@ -5,6 +5,7 @@
 
 import { create } from 'zustand';
 import type { WalletSession } from '../types.js';
+import { createStoreError } from './errors.js';
 
 /**
  * Interface for session store state and actions
@@ -49,10 +50,10 @@ export const createSessionStore = () =>
 
     setSession: (id: string, session: WalletSession) => {
       if (!id || id.trim() === '') {
-        throw new Error('Invalid session ID');
+        throw createStoreError.invalidSessionId(id);
       }
       if (!session.wallet?.address || !session.wallet?.state?.sessionId) {
-        throw new Error('Invalid session data');
+        throw createStoreError.invalidSessionData('Session must include wallet with address and sessionId');
       }
       // Don't store expired sessions
       if (session.expiry && session.expiry < Date.now()) return;

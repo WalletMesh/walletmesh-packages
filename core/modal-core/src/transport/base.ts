@@ -15,7 +15,11 @@ export abstract class BaseTransport implements Transport {
       await this.connectImpl();
       this.state = TransportState.CONNECTED;
     } catch (error) {
-      const transportError = this.createError('Connection failed', TransportErrorCode.CONNECTION_FAILED, error);
+      const transportError = this.createError(
+        'Connection failed',
+        TransportErrorCode.CONNECTION_FAILED,
+        error,
+      );
       this.state = TransportState.ERROR;
       this.notifyError(transportError);
       throw transportError;
@@ -23,10 +27,7 @@ export abstract class BaseTransport implements Transport {
   }
 
   public async disconnect(): Promise<void> {
-    const disconnectError = this.createError(
-      'Transport disconnected',
-      TransportErrorCode.CONNECTION_FAILED
-    );
+    const disconnectError = this.createError('Transport disconnected', TransportErrorCode.CONNECTION_FAILED);
 
     // Store current handlers and clear
     const currentHandlers = Array.from(this.handlers);
@@ -55,19 +56,13 @@ export abstract class BaseTransport implements Transport {
 
   public async send<T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>> {
     if (!message || !message.id || !message.type || typeof message.timestamp !== 'number') {
-      const error = this.createError(
-        'Invalid message format',
-        TransportErrorCode.INVALID_MESSAGE
-      );
+      const error = this.createError('Invalid message format', TransportErrorCode.INVALID_MESSAGE);
       this.notifyError(error);
       throw error;
     }
 
     if (!this.isConnected()) {
-      const error = this.createError(
-        'Transport not connected',
-        TransportErrorCode.CONNECTION_FAILED
-      );
+      const error = this.createError('Transport not connected', TransportErrorCode.CONNECTION_FAILED);
       this.notifyError(error);
       throw error;
     }
@@ -75,11 +70,9 @@ export abstract class BaseTransport implements Transport {
     try {
       return await this.sendImpl(message);
     } catch (error) {
-      const transportError = this.createError(
-        'Failed to send message',
-        TransportErrorCode.CONNECTION_FAILED,
-        error
-      );
+      // If it's already a TransportError, preserve its error code
+      const code = error instanceof TransportError ? error.code : TransportErrorCode.CONNECTION_FAILED;
+      const transportError = this.createError('Failed to send message', code, error);
       this.notifyError(transportError);
       throw transportError;
     }
@@ -117,11 +110,7 @@ export abstract class BaseTransport implements Transport {
     }
   }
 
-  protected createError(
-    message: string,
-    code: TransportErrorCode,
-    cause?: unknown
-  ): TransportError {
+  protected createError(message: string, code: TransportErrorCode, cause?: unknown): TransportError {
     const error = new TransportError(message, code);
     if (cause) {
       error.cause = cause instanceof Error ? cause : new Error(String(cause));

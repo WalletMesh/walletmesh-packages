@@ -3,37 +3,28 @@
  * Connector registry implementation.
  */
 
-import { MockConnector } from './MockConnector.js';
-import type { Connector, ConnectorImplementationConfig } from '../types.js';
+import { MockConnector, type MockConnectorConfig } from './mock.js';
+import type { Connector } from '../types.js';
+import { createConnectorError } from './errors.js';
 
 /** Connector creator function type */
-type ConnectorCreator = (config: ConnectorImplementationConfig) => Connector;
+export type ConnectorCreator = (config: MockConnectorConfig) => Connector;
 
 /**
  * Validates a connector type string
  */
 const validateType = (type: string): void => {
   if (!type || type.trim() === '') {
-    throw new Error('Invalid connector type');
+    throw createConnectorError.invalidType(type);
   }
 };
 
 /**
  * Validates a connector configuration
  */
-const validateConfig = (config: ConnectorImplementationConfig): void => {
+const validateConfig = (config: MockConnectorConfig): void => {
   if (!config || typeof config !== 'object') {
-    throw new Error('Invalid config object');
-  }
-
-  validateType(config.type);
-
-  if (!config.name || config.name.trim() === '') {
-    throw new Error('Invalid connector name');
-  }
-
-  if (typeof config.factory !== 'function') {
-    throw new Error('Factory function is required');
+    throw createConnectorError.invalidConfig('Configuration must be a valid object');
   }
 };
 
@@ -56,11 +47,7 @@ export class ConnectorRegistry {
     validateType(type);
 
     if (typeof creator !== 'function') {
-      throw new Error('Creator must be a function');
-    }
-
-    if (this.connectors.has(type)) {
-      throw new Error(`Connector type '${type}' is already registered`);
+      throw createConnectorError.invalidCreator();
     }
 
     this.connectors.set(type, creator);
@@ -96,22 +83,23 @@ export class ConnectorRegistry {
 
   /**
    * Creates a new connector instance
-   * @param config - Connector implementation config
+   * @param config - Connector configuration
    */
-  public create(config: ConnectorImplementationConfig): Connector {
-    // Validate config before checking registration
+  public create(config: MockConnectorConfig & { type: string }): Connector {
     validateConfig(config);
 
     const creator = this.connectors.get(config.type);
     if (!creator) {
-      throw new Error(`No connector registered for type '${config.type}'`);
+      throw createConnectorError.notRegistered(config.type);
     }
 
     try {
       return creator(config);
     } catch (error) {
-      // Re-throw creator errors directly
-      throw error instanceof Error ? error : new Error(String(error));
+      // Wrap non-ConnectorError instances with a general connector error
+      throw error instanceof Error
+        ? createConnectorError.error(error.message, { cause: error })
+        : createConnectorError.error(String(error));
     }
   }
 
@@ -129,4 +117,4 @@ export class ConnectorRegistry {
 export const connectorRegistry = new ConnectorRegistry();
 
 // Register default connectors
-connectorRegistry.register('mock', (config: ConnectorImplementationConfig) => new MockConnector(config));
+connectorRegistry.register('mock', (config: MockConnectorConfig) => new MockConnector(config));

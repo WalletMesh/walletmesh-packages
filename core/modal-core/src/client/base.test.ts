@@ -22,7 +22,7 @@ class TestConnector extends BaseConnector<TestMessages> {
   public messages: Message[] = [];
   protected override currentWallet: ConnectedWallet | null = null;
   private connected = false;
-  
+
   protected async doConnect(walletInfo: WalletInfo): Promise<void> {
     this.currentWallet = this.createConnectedWallet(walletInfo);
     this.connected = true;
@@ -41,7 +41,7 @@ class TestConnector extends BaseConnector<TestMessages> {
     if (!this.isConnected()) {
       throw new Error('Not connected');
     }
-    
+
     return {
       request: async <T>(method: string, params: unknown[] = []): Promise<T> => {
         const result = await this.request(method, params);
@@ -63,8 +63,8 @@ class TestConnector extends BaseConnector<TestMessages> {
         sessionId: 'test-session',
         networkId: info.chainId,
         address: info.address,
-        lastActive: Date.now()
-      }
+        lastActive: Date.now(),
+      },
     };
   }
 
@@ -85,10 +85,7 @@ class TestConnector extends BaseConnector<TestMessages> {
     return this.currentWallet;
   }
 
-  public async testRequest<TReq = unknown, TRes = unknown>(
-    method: string,
-    params: TReq[]
-  ): Promise<TRes> {
+  public async testRequest<TReq = unknown, TRes = unknown>(method: string, params: TReq[]): Promise<TRes> {
     return this.sendRequest(method, params);
   }
 }
@@ -102,15 +99,17 @@ describe('BaseConnector', () => {
   beforeEach(() => {
     const connectMock = vi.fn().mockResolvedValue(undefined);
     const disconnectMock = vi.fn().mockResolvedValue(undefined);
-    const sendMock = vi.fn().mockImplementation((msg: Message<TestMessages>) => Promise.resolve({
-      id: msg.id,
-      type: MessageType.RESPONSE,
-      payload: {
-        request: { method: 'test', params: [] },
-        response: { result: true }
-      },
-      timestamp: Date.now()
-    }));
+    const sendMock = vi.fn().mockImplementation((msg: Message<TestMessages>) =>
+      Promise.resolve({
+        id: msg.id,
+        type: MessageType.RESPONSE,
+        payload: {
+          request: { method: 'test', params: [] },
+          response: { result: true },
+        },
+        timestamp: Date.now(),
+      }),
+    );
 
     mockTransport = {
       connect: connectMock,
@@ -120,7 +119,7 @@ describe('BaseConnector', () => {
       isConnected: vi.fn().mockReturnValue(true),
       getState: vi.fn().mockReturnValue('connected'),
       addErrorHandler: vi.fn(),
-      removeErrorHandler: vi.fn()
+      removeErrorHandler: vi.fn(),
     };
 
     const createMockMessage = (id: string, type: MessageType): Message<TestMessages> => ({
@@ -128,38 +127,44 @@ describe('BaseConnector', () => {
       type,
       payload: {
         request: { method: 'test', params: [] },
-        response: { result: true }
+        response: { result: true },
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
 
-    const validateMessageMock = vi.fn().mockImplementation((msg: unknown): ValidationResult<Message<TestMessages>> => ({
-      success: true,
-      data: msg as Message<TestMessages>
-    }));
+    const validateMessageMock = vi.fn().mockImplementation(
+      (msg: unknown): ValidationResult<Message<TestMessages>> => ({
+        success: true,
+        data: msg as Message<TestMessages>,
+      }),
+    );
 
     mockProtocol = {
-      createRequest: vi.fn().mockImplementation((_method: string, _params: TestMessages['request']) =>
-        createMockMessage('1', MessageType.REQUEST)
-      ),
-      createResponse: vi.fn().mockImplementation((id: string, _result: unknown) =>
-        createMockMessage(id, MessageType.RESPONSE)
-      ),
-      createError: vi.fn().mockImplementation((id: string, _error: Error) =>
-        createMockMessage(id, MessageType.ERROR)
-      ),
+      createRequest: vi
+        .fn()
+        .mockImplementation((_method: string, _params: TestMessages['request']) =>
+          createMockMessage('1', MessageType.REQUEST),
+        ),
+      createResponse: vi
+        .fn()
+        .mockImplementation((id: string, _result: unknown) => createMockMessage(id, MessageType.RESPONSE)),
+      createError: vi
+        .fn()
+        .mockImplementation((id: string, _error: Error) => createMockMessage(id, MessageType.ERROR)),
       validateMessage: validateMessageMock,
       formatMessage: vi.fn().mockReturnValue(''),
-      parseMessage: vi.fn().mockImplementation((): ValidationResult<Message<TestMessages>> => ({
-        success: true,
-        data: createMockMessage('1', MessageType.RESPONSE)
-      }))
+      parseMessage: vi.fn().mockImplementation(
+        (): ValidationResult<Message<TestMessages>> => ({
+          success: true,
+          data: createMockMessage('1', MessageType.RESPONSE),
+        }),
+      ),
     };
 
     testWallet = {
       address: '0xTEST',
       chainId: 1,
-      publicKey: '0x'
+      publicKey: '0x',
     };
 
     connector = new TestConnector(mockTransport, mockProtocol);
@@ -177,7 +182,7 @@ describe('BaseConnector', () => {
         address: testWallet.address,
         networkId: testWallet.chainId,
         sessionId: 'test',
-        lastActive: Date.now()
+        lastActive: Date.now(),
       };
 
       await connector.resume(testWallet, state);
@@ -197,7 +202,7 @@ describe('BaseConnector', () => {
 
     it('should handle connection failures', async () => {
       vi.mocked(mockTransport.connect).mockRejectedValueOnce(
-        new TransportError('Connection failed', TransportErrorCode.CONNECTION_FAILED)
+        new TransportError('Connection failed', TransportErrorCode.CONNECTION_FAILED),
       );
 
       await expect(connector.connect(testWallet)).rejects.toThrow(TransportError);
@@ -218,7 +223,7 @@ describe('BaseConnector', () => {
 
     it('should handle transport errors', async () => {
       vi.mocked(mockTransport.send).mockRejectedValueOnce(
-        new TransportError('Send failed', TransportErrorCode.SEND_FAILED)
+        new TransportError('Send failed', TransportErrorCode.SEND_FAILED),
       );
 
       await expect(connector.testRequest('test', [])).rejects.toThrow(TransportError);
@@ -227,7 +232,7 @@ describe('BaseConnector', () => {
     it('should handle protocol validation errors', async () => {
       vi.mocked(mockProtocol.validateMessage).mockReturnValueOnce({
         success: false,
-        error: new ProtocolError('Invalid message', ProtocolErrorCode.INVALID_FORMAT)
+        error: new ProtocolError('Invalid message', ProtocolErrorCode.INVALID_FORMAT),
       });
 
       await expect(connector.testRequest('test', [])).rejects.toThrow(ProtocolError);
@@ -244,9 +249,9 @@ describe('BaseConnector', () => {
         type: MessageType.REQUEST,
         payload: {
           request: { method: 'test', params: [] },
-          response: {}
+          response: {},
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       await connector['handleProtocolMessage'](message);
@@ -257,10 +262,10 @@ describe('BaseConnector', () => {
   describe('state management', () => {
     it('should track connection state', async () => {
       expect(connector.getState()).toBe(ConnectionStatus.DISCONNECTED);
-      
+
       await connector.connect(testWallet);
       expect(connector.getState()).toBe(ConnectionStatus.CONNECTED);
-      
+
       await connector.disconnect();
       expect(connector.getState()).toBe(ConnectionStatus.DISCONNECTED);
     });
@@ -271,7 +276,7 @@ describe('BaseConnector', () => {
 
     it('should maintain wallet state during connection', async () => {
       await connector.connect(testWallet);
-      
+
       const wallet = connector.getCurrentWalletInfo();
       expect(wallet).toBeDefined();
       expect(wallet?.address).toBe(testWallet.address);

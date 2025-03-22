@@ -46,6 +46,4 @@ export interface Protocol<T extends ProtocolMessage = ProtocolMessage> {
 /**
  * Protocol validation result
  */
-export type ValidationResult<T> = 
-  | { success: true; data: T } 
-  | { success: false; error: ProtocolError };
+export type ValidationResult<T> = { success: true; data: T } | { success: false; error: ProtocolError };

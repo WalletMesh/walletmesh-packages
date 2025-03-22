@@ -1,22 +1,23 @@
-/**
- * @packageDocumentation
- * Connector exports for WalletMesh Core.
- */
+export type {
+  Transport,
+  ErrorHandler,
+  Provider,
+  ProtocolMessage,
+  Protocol,
+  ValidationResult,
+  RequestMessage,
+  CleanupHandler,
+} from './types.js';
 
-// Base connector implementation
 export { BaseConnector } from './base.js';
 
-// Mock connector for testing
 export {
   MockConnector,
-  type MockMessages,
-} from './MockConnector.js';
+  type MockConnectorConfig,
+  type MockMessageTypes,
+} from './mock.js';
 
-// Connector registry
 export {
-  connectorRegistry,
   ConnectorRegistry,
+  connectorRegistry,
 } from './registry.js';
-
-// Reexport core connector types
-export type { Connector, ConnectorImplementationConfig } from '../types.js';

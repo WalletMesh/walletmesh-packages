@@ -27,7 +27,10 @@ export class ProtocolValidator<T = unknown> {
     if (!('method' in payloadObj) && !('result' in payloadObj) && !('error' in payloadObj)) {
       return {
         success: false,
-        error: new ProtocolError('Invalid payload: must contain method, result, or error', ProtocolErrorCode.INVALID_PAYLOAD),
+        error: new ProtocolError(
+          'Invalid payload: must contain method, result, or error',
+          ProtocolErrorCode.INVALID_PAYLOAD,
+        ),
       };
     }
 
@@ -50,7 +53,10 @@ export class ProtocolValidator<T = unknown> {
       if (!(field in message)) {
         return {
           success: false,
-          error: new ProtocolError(`Invalid message: missing required field '${field}'`, ProtocolErrorCode.MISSING_REQUIRED_FIELD),
+          error: new ProtocolError(
+            `Invalid message: missing required field '${field}'`,
+            ProtocolErrorCode.MISSING_REQUIRED_FIELD,
+          ),
         };
       }
     }
@@ -59,28 +65,40 @@ export class ProtocolValidator<T = unknown> {
     if (typeof message.id !== 'string' || !message.id) {
       return {
         success: false,
-        error: new ProtocolError('Invalid message: id must be a non-empty string', ProtocolErrorCode.INVALID_FORMAT),
+        error: new ProtocolError(
+          'Invalid message: id must be a non-empty string',
+          ProtocolErrorCode.INVALID_FORMAT,
+        ),
       };
     }
 
     if (typeof message.type !== 'string' || !Object.values(MessageType).includes(message.type)) {
       return {
         success: false,
-        error: new ProtocolError('Invalid message: type must be a valid MessageType', ProtocolErrorCode.UNKNOWN_MESSAGE_TYPE),
+        error: new ProtocolError(
+          'Invalid message: type must be a valid MessageType',
+          ProtocolErrorCode.UNKNOWN_MESSAGE_TYPE,
+        ),
       };
     }
 
     if (typeof message.timestamp !== 'number') {
       return {
         success: false,
-        error: new ProtocolError('Invalid message: timestamp must be a number', ProtocolErrorCode.INVALID_FORMAT),
+        error: new ProtocolError(
+          'Invalid message: timestamp must be a number',
+          ProtocolErrorCode.INVALID_FORMAT,
+        ),
       };
     }
 
     if (!message.payload || typeof message.payload !== 'object') {
       return {
         success: false,
-        error: new ProtocolError('Invalid message: payload must be an object', ProtocolErrorCode.INVALID_PAYLOAD),
+        error: new ProtocolError(
+          'Invalid message: payload must be an object',
+          ProtocolErrorCode.INVALID_PAYLOAD,
+        ),
       };
     }
 

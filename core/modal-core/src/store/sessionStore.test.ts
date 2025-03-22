@@ -1,181 +1,165 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { SessionStore } from './sessionStore.js';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { createSessionStore } from './sessionStore.js';
 import { ConnectionStatus } from '../types.js';
-import type { WalletSession, ConnectedWallet, Connector } from '../types.js';
-
-// Mock zustand
-vi.mock('zustand', () => ({
-  create: () => vi.fn()
-}));
+import type { Provider } from '../types.js';
+import { isStoreError, StoreErrorCode } from './errors.js';
 
 describe('SessionStore', () => {
-  let store: SessionStore;
-  let mockSessions: Map<string, WalletSession>;
-  let now: number;
-
-  const mockConnector: Connector = {
-    getProvider: vi.fn().mockResolvedValue({}),
-    connect: vi.fn(),
-    disconnect: vi.fn(),
-    getState: vi.fn(),
-    resume: vi.fn(),
+  const mockProvider: Provider = {
+    request: async <T>(): Promise<T> => ({}) as T,
+    connect: async () => {},
+    disconnect: async () => {},
+    isConnected: () => true,
   };
 
-  beforeEach(() => {
-    now = Date.now();
-    vi.useFakeTimers();
-    vi.setSystemTime(now);
-
-    mockSessions = new Map();
-    const storeImpl: SessionStore = {
-      sessions: mockSessions,
-      getSession: (id: string) => {
-        const session = mockSessions.get(id);
-        if (!session) return undefined;
-        if (session.expiry && session.expiry < Date.now()) {
-          mockSessions.delete(id);
-          return undefined;
-        }
-        return session;
-      },
-      getSessions: () => Array.from(mockSessions.values()),
-      setSession: (id: string, session: WalletSession) => {
-        if (!id || id.trim() === '') {
-          throw new Error('Invalid session ID');
-        }
-        if (!session.wallet?.address || !session.wallet?.state?.sessionId) {
-          throw new Error('Invalid session data');
-        }
-        if (session.expiry && session.expiry < Date.now()) return;
-        mockSessions.set(id, session);
-      },
-      removeSession: (id: string) => mockSessions.delete(id),
-      clearSessions: () => mockSessions.clear()
-    };
-
-    store = storeImpl;
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-    vi.clearAllMocks();
-  });
-
-  const createMockSession = (overrides?: Partial<WalletSession>): WalletSession => ({
+  const defaultSession = {
     id: 'test-session',
     address: '0x123',
-    chains: {},
-    expiry: now + 3600000, // 1 hour from now
+    chains: {
+      1: {
+        chainId: 1,
+        rpcUrl: 'https://test.com',
+        status: ConnectionStatus.CONNECTED,
+      },
+    },
+    expiry: Date.now() + 3600000, // 1 hour from now
     status: ConnectionStatus.CONNECTED,
-    connector: mockConnector,
+    connector: {
+      getProvider: async () => mockProvider,
+      connect: async () => ({ address: '0x123', chainId: 1, publicKey: 'test', connected: true }),
+      disconnect: async () => {},
+      getState: () => ConnectionStatus.CONNECTED,
+      resume: async () => ({ address: '0x123', chainId: 1, publicKey: 'test', connected: true }),
+    },
     wallet: {
       address: '0x123',
       chainId: 1,
+      publicKey: 'test-key',
       connected: true,
-      publicKey: '0x456',
       state: {
-        sessionId: 'test-session',
-        networkId: 1,
         address: '0x123',
-        lastActive: Date.now()
-      }
+        networkId: 1,
+        sessionId: 'test-session',
+        lastActive: Date.now(),
+      },
     },
-    ...overrides
+  };
+
+  let useStore: ReturnType<typeof createSessionStore>;
+
+  beforeEach(() => {
+    useStore = createSessionStore();
+    useStore.getState().clearSessions();
   });
 
-  describe('store operations', () => {
-    it('should store and retrieve sessions', () => {
-      const session = createMockSession();
-      store.setSession(session.id, session);
-
-      const retrieved = store.getSession(session.id);
-      expect(retrieved).toEqual(session);
+  describe('setSession', () => {
+    it('should store valid session', () => {
+      useStore.getState().setSession('test-session', defaultSession);
+      expect(useStore.getState().getSession('test-session')).toEqual(defaultSession);
     });
 
-    it('should handle disconnected sessions', () => {
-      const session = createMockSession({
-        status: ConnectionStatus.DISCONNECTED,
-        wallet: {
-          ...createMockSession().wallet,
-          connected: false
+    it('should throw StoreError on empty session ID', () => {
+      try {
+        useStore.getState().setSession('', defaultSession);
+        throw new Error('Expected error was not thrown');
+      } catch (error) {
+        expect(isStoreError(error)).toBe(true);
+        if (isStoreError(error)) {
+          expect(error.code).toBe(StoreErrorCode.INVALID_SESSION_ID);
         }
-      });
+      }
 
-      store.setSession(session.id, session);
-      const retrieved = store.getSession(session.id);
-      expect(retrieved?.status).toBe(ConnectionStatus.DISCONNECTED);
-      expect(retrieved?.wallet.connected).toBe(false);
-    });
-
-    it('should remove sessions', () => {
-      const session = createMockSession();
-      store.setSession(session.id, session);
-      store.removeSession(session.id);
-      expect(store.getSession(session.id)).toBeUndefined();
-    });
-
-    it('should clear all sessions', () => {
-      store.setSession('1', createMockSession({ id: '1' }));
-      store.setSession('2', createMockSession({ id: '2' }));
-      store.clearSessions();
-      expect(store.getSessions()).toHaveLength(0);
-    });
-
-    it('should list all sessions', () => {
-      const session1 = createMockSession({ id: '1' });
-      const session2 = createMockSession({ id: '2' });
-
-      store.setSession('1', session1);
-      store.setSession('2', session2);
-
-      const sessions = store.getSessions();
-      expect(sessions).toHaveLength(2);
-      expect(sessions[0]).toEqual(session1);
-      expect(sessions[1]).toEqual(session2);
-    });
-  });
-
-  describe('validation', () => {
-    it('should validate session expiry', () => {
-      const expiredSession = createMockSession({
-        expiry: now - 1000 // 1 second ago
-      });
-
-      store.setSession(expiredSession.id, expiredSession);
-      expect(store.getSession(expiredSession.id)).toBeUndefined();
-    });
-
-    it('should handle session updates', () => {
-      const session = createMockSession();
-      store.setSession(session.id, session);
-
-      const updatedSession = {
-        ...session,
-        status: ConnectionStatus.DISCONNECTED,
-        wallet: {
-          ...session.wallet,
-          connected: false
+      try {
+        useStore.getState().setSession('  ', defaultSession);
+        throw new Error('Expected error was not thrown');
+      } catch (error) {
+        expect(isStoreError(error)).toBe(true);
+        if (isStoreError(error)) {
+          expect(error.code).toBe(StoreErrorCode.INVALID_SESSION_ID);
         }
+      }
+    });
+
+    it('should throw StoreError on invalid session data', () => {
+      const invalidSession = {
+        ...defaultSession,
+        wallet: { address: '', chainId: 1, publicKey: '', connected: false },
       };
 
-      store.setSession(session.id, updatedSession);
-      const retrieved = store.getSession(session.id);
-      expect(retrieved).toEqual(updatedSession);
+      try {
+        useStore.getState().setSession('test', invalidSession);
+        throw new Error('Expected error was not thrown');
+      } catch (error) {
+        expect(isStoreError(error)).toBe(true);
+        if (isStoreError(error)) {
+          expect(error.code).toBe(StoreErrorCode.INVALID_SESSION_DATA);
+        }
+      }
+    });
+
+    it('should not store expired session', () => {
+      const expiredSession = {
+        ...defaultSession,
+        expiry: Date.now() - 1000, // 1 second ago
+      };
+      useStore.getState().setSession('test-session', expiredSession);
+      expect(useStore.getState().getSession('test-session')).toBeUndefined();
     });
   });
 
-  describe('error handling', () => {
-    it('should reject invalid session IDs', () => {
-      const session = createMockSession();
-      expect(() => store.setSession('', session)).toThrow('Invalid session ID');
+  describe('getSession', () => {
+    it('should return undefined for non-existent session', () => {
+      expect(useStore.getState().getSession('non-existent')).toBeUndefined();
     });
 
-    it('should reject invalid session data', () => {
-      const invalidSession: WalletSession = {
-        ...createMockSession(),
-        wallet: {} as ConnectedWallet // Force invalid wallet data
+    it('should return undefined and remove expired session', () => {
+      const expiredSession = {
+        ...defaultSession,
+        expiry: Date.now() - 1000,
       };
-      expect(() => store.setSession('test', invalidSession)).toThrow('Invalid session data');
+      // First set with future expiry
+      useStore.getState().setSession('expired', { ...expiredSession, expiry: Date.now() + 1000 });
+      // Then manually update to expired state
+      useStore.setState((state) => {
+        const sessions = new Map(state.sessions);
+        sessions.set('expired', expiredSession);
+        return { sessions };
+      });
+      expect(useStore.getState().getSession('expired')).toBeUndefined();
+      expect(useStore.getState().sessions.get('expired')).toBeUndefined();
+    });
+  });
+
+  describe('getSessions', () => {
+    it('should return all sessions', () => {
+      useStore.getState().setSession('test1', defaultSession);
+      useStore.getState().setSession('test2', { ...defaultSession, id: 'test2' });
+      expect(useStore.getState().getSessions()).toHaveLength(2);
+    });
+
+    it('should return empty array when no sessions', () => {
+      expect(useStore.getState().getSessions()).toHaveLength(0);
+    });
+  });
+
+  describe('removeSession', () => {
+    it('should remove existing session', () => {
+      useStore.getState().setSession('test', defaultSession);
+      useStore.getState().removeSession('test');
+      expect(useStore.getState().getSession('test')).toBeUndefined();
+    });
+
+    it('should not throw when removing non-existent session', () => {
+      expect(() => useStore.getState().removeSession('non-existent')).not.toThrow();
+    });
+  });
+
+  describe('clearSessions', () => {
+    it('should remove all sessions', () => {
+      useStore.getState().setSession('test1', defaultSession);
+      useStore.getState().setSession('test2', { ...defaultSession, id: 'test2' });
+      useStore.getState().clearSessions();
+      expect(useStore.getState().getSessions()).toHaveLength(0);
     });
   });
 });

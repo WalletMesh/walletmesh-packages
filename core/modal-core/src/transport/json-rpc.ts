@@ -35,7 +35,7 @@ export interface JsonRpcTransportOptions {
 const DEFAULT_OPTIONS = {
   timeout: 30000,
   debug: false,
-  retries: 3
+  retries: 3,
 };
 
 export class JsonRpcTransport extends BaseTransport {
@@ -44,15 +44,12 @@ export class JsonRpcTransport extends BaseTransport {
   private readonly options: Required<JsonRpcTransportOptions>;
   private readonly sendFn: JsonRpcSendFn;
 
-  constructor(
-    sendRpc: JsonRpcSendFn,
-    options: JsonRpcTransportOptions = {}
-  ) {
+  constructor(sendRpc: JsonRpcSendFn, options: JsonRpcTransportOptions = {}) {
     super();
     this.sendFn = sendRpc;
     this.options = {
       ...DEFAULT_OPTIONS,
-      ...options
+      ...options,
     };
   }
 
@@ -64,7 +61,7 @@ export class JsonRpcTransport extends BaseTransport {
       const transportError = this.createError(
         'Failed to connect',
         TransportErrorCode.CONNECTION_FAILED,
-        error
+        error,
       );
       this.notifyError(transportError);
       throw transportError;
@@ -86,10 +83,7 @@ export class JsonRpcTransport extends BaseTransport {
     return new Promise<Message<R>>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         this.emitter.removeAllListeners(message.id);
-        const error = this.createError(
-          'Message timeout',
-          TransportErrorCode.TIMEOUT
-        );
+        const error = this.createError('Message timeout', TransportErrorCode.TIMEOUT);
         this.notifyError(error);
         reject(error);
       }, this.options.timeout);
@@ -100,7 +94,7 @@ export class JsonRpcTransport extends BaseTransport {
           const error = this.createError(
             response.error.message,
             TransportErrorCode.INVALID_MESSAGE,
-            response.error
+            response.error,
           );
           this.notifyError(error);
           reject(error);
@@ -113,7 +107,7 @@ export class JsonRpcTransport extends BaseTransport {
         jsonrpc: '2.0',
         id: message.id || uuid(),
         method: message.type,
-        params: message.payload
+        params: message.payload,
       };
 
       this.sendFn(rpcMessage).catch((error) => {
@@ -122,7 +116,7 @@ export class JsonRpcTransport extends BaseTransport {
         const transportError = this.createError(
           'Failed to send message',
           TransportErrorCode.CONNECTION_FAILED,
-          error
+          error,
         );
         this.notifyError(transportError);
         reject(transportError);

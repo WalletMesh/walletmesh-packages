@@ -5,15 +5,11 @@
 
 import { EventEmitter } from 'node:events';
 import { ConnectionStatus } from '../types.js';
-import type {
-  DappInfo,
-  WalletInfo,
-  ConnectedWallet,
-  Connector
-} from '../types.js';
+import type { DappInfo, WalletInfo, ConnectedWallet, Connector } from '../types.js';
 import { SessionManager } from './SessionManager.js';
 import { defaultSessionStore } from '../store/sessionStore.js';
 import { defaultSessionStoreAdapter } from '../store/sessionStoreAdapter.js';
+import { createClientError } from './errors.js';
 
 /**
  * Core WalletMesh client
@@ -23,7 +19,7 @@ export class WalletMeshClient extends EventEmitter {
   private initialized = false;
   private currentWallet: ConnectedWallet | null = null;
   private readonly sessionManager: SessionManager;
-  
+
   private constructor(private readonly dappInfo: DappInfo) {
     super();
     this.validateOrigin();
@@ -52,8 +48,12 @@ export class WalletMeshClient extends EventEmitter {
    */
   async initialize(): Promise<void> {
     if (this.initialized) return;
-    await this.sessionManager.initialize();
-    this.initialized = true;
+    try {
+      await this.sessionManager.initialize();
+      this.initialized = true;
+    } catch (error) {
+      throw createClientError.initFailed('Failed to initialize client', { cause: error });
+    }
   }
 
   /**
@@ -61,12 +61,10 @@ export class WalletMeshClient extends EventEmitter {
    */
   private validateOrigin(): void {
     if (typeof window === 'undefined') return;
-    
+
     const windowOrigin = new URL(window.location.href).origin;
     if (windowOrigin !== this.dappInfo.origin) {
-      throw new Error(
-        `Origin mismatch: DApp info specifies '${this.dappInfo.origin}' but is being served from '${windowOrigin}'`
-      );
+      throw createClientError.originMismatch(this.dappInfo.origin, windowOrigin);
     }
   }
 
@@ -79,7 +77,10 @@ export class WalletMeshClient extends EventEmitter {
       this.currentWallet = connectedWallet;
       return connectedWallet;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to connect wallet');
+      throw createClientError.connectFailed('Failed to establish wallet connection', {
+        wallet: walletInfo,
+        cause: error,
+      });
     }
   }
 
@@ -100,7 +101,10 @@ export class WalletMeshClient extends EventEmitter {
       await this.sessionManager.getSession(this.currentWallet.address)?.connector.disconnect();
       this.currentWallet = null;
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to disconnect wallet');
+      throw createClientError.disconnectFailed('Failed to disconnect wallet', {
+        wallet: this.currentWallet,
+        cause: error,
+      });
     }
   }
 
@@ -112,10 +116,7 @@ export class WalletMeshClient extends EventEmitter {
 
     const session = this.sessionManager.getSession(this.currentWallet.address);
     if (session) {
-      this.sessionManager.updateSessionStatus(
-        this.currentWallet.address,
-        ConnectionStatus.CONNECTING
-      );
+      this.sessionManager.updateSessionStatus(this.currentWallet.address, ConnectionStatus.CONNECTING);
     }
     this.initialized = false;
   }
