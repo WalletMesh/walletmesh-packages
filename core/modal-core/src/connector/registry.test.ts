@@ -1,151 +1,146 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConnectorRegistry } from './registry.js';
-import type { ConnectorCreator } from './registry.js';
-import { ConnectionStatus, type Provider } from '../types.js';
-import { isConnectorError, ConnectorErrorCode } from './errors.js';
+import { BaseConnector } from './base.js';
+import type { ConnectorImplementationConfig, Provider, WalletInfo } from '../types.js';
+
+interface TestRequest {
+  method: string;
+  params: unknown[];
+}
 
 describe('ConnectorRegistry', () => {
-  let registry: ConnectorRegistry;
-  let mockCreator: ConnectorCreator;
+  let connectorRegistry: ConnectorRegistry;
+  let mockConfig: ConnectorImplementationConfig;
+  let mockProvider: Provider;
 
   beforeEach(() => {
-    registry = new ConnectorRegistry();
-    mockCreator = () => ({
-      getProvider: async (): Promise<Provider> => ({
-        request: async <T>(): Promise<T> => ({}) as T,
-        connect: async () => {},
-        disconnect: async () => {},
-        isConnected: () => true,
-      }),
-      connect: async () => ({ address: '', chainId: 1, publicKey: '', connected: false }),
-      disconnect: async () => {},
-      getState: () => ConnectionStatus.DISCONNECTED,
-      resume: async () => ({ address: '', chainId: 1, publicKey: '', connected: false }),
+    mockProvider = {
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      request: vi.fn().mockImplementation(async <T>(): Promise<T> => ({}) as T),
+      isConnected: vi.fn().mockReturnValue(true),
+    };
+
+    mockConfig = {
+      type: 'test',
+      name: 'Test Connector',
+      factory: vi.fn().mockResolvedValue(mockProvider),
+    };
+
+    connectorRegistry = new ConnectorRegistry();
+  });
+
+  describe('Registration', () => {
+    it('registers a connector', () => {
+      class TestConnector extends BaseConnector<TestRequest> {
+        protected async doConnect(walletInfo: WalletInfo) {
+          return {
+            address: walletInfo.address,
+            chainId: walletInfo.chainId,
+            publicKey: walletInfo.publicKey,
+            connected: true,
+            type: 'test',
+            info: walletInfo,
+            state: {
+              address: walletInfo.address,
+              networkId: 1,
+              sessionId: 'test',
+              lastActive: Date.now(),
+            },
+          };
+        }
+
+        protected async createProvider(): Promise<Provider> {
+          return mockProvider;
+        }
+
+        protected async handleProtocolMessage(message: TestRequest) {
+          return { result: message.params };
+        }
+      }
+
+      expect(() => {
+        connectorRegistry.register('test', mockConfig, TestConnector);
+      }).not.toThrow();
+    });
+
+    it('prevents duplicate registration', () => {
+      class TestConnector extends BaseConnector<TestRequest> {
+        protected async doConnect(walletInfo: WalletInfo) {
+          return {
+            address: walletInfo.address,
+            chainId: walletInfo.chainId,
+            publicKey: walletInfo.publicKey,
+            connected: true,
+            type: 'test',
+            state: {
+              address: walletInfo.address,
+              networkId: 1,
+              sessionId: 'test',
+              lastActive: Date.now(),
+            },
+          };
+        }
+
+        protected async createProvider(): Promise<Provider> {
+          return mockProvider;
+        }
+
+        protected async handleProtocolMessage(message: TestRequest) {
+          return { result: message.params };
+        }
+      }
+
+      connectorRegistry.register('test', mockConfig, TestConnector);
+      expect(() => {
+        connectorRegistry.register('test', mockConfig, TestConnector);
+      }).toThrow('Connector type already registered: test');
     });
   });
 
-  describe('registration', () => {
-    it('should register and create connectors', () => {
-      registry.register('test', mockCreator);
-      expect(registry.hasType('test')).toBe(true);
+  describe('Creation', () => {
+    it('creates registered connector', async () => {
+      class TestConnector extends BaseConnector<TestRequest> {
+        protected async doConnect(walletInfo: WalletInfo) {
+          return {
+            address: walletInfo.address,
+            chainId: walletInfo.chainId,
+            publicKey: walletInfo.publicKey,
+            connected: true,
+            type: 'test',
+            state: {
+              address: walletInfo.address,
+              networkId: 1,
+              sessionId: 'test',
+              lastActive: Date.now(),
+            },
+          };
+        }
 
-      const connector = registry.create({ type: 'test' });
+        protected async createProvider(): Promise<Provider> {
+          return mockProvider;
+        }
+
+        protected async handleProtocolMessage(message: TestRequest) {
+          return { result: message.params };
+        }
+      }
+
+      connectorRegistry.register('test', mockConfig, TestConnector);
+      const connector = await connectorRegistry.create('test');
+      expect(connector).toBeDefined();
+      expect(mockConfig.factory).toHaveBeenCalled();
+    });
+
+    it('creates mock connector', async () => {
+      const connector = await connectorRegistry.create('mock');
       expect(connector).toBeDefined();
     });
 
-    it('should validate connector type on registration', () => {
-      try {
-        registry.register('', mockCreator);
-        throw new Error('Expected error was not thrown');
-      } catch (error) {
-        expect(isConnectorError(error)).toBe(true);
-        if (isConnectorError(error)) {
-          expect(error.code).toBe(ConnectorErrorCode.INVALID_TYPE);
-        }
-      }
-    });
-
-    it('should validate creator function', () => {
-      try {
-        registry.register('test', null as unknown as ConnectorCreator);
-        throw new Error('Expected error was not thrown');
-      } catch (error) {
-        expect(isConnectorError(error)).toBe(true);
-        if (isConnectorError(error)) {
-          expect(error.code).toBe(ConnectorErrorCode.INVALID_CREATOR);
-        }
-      }
-    });
-
-    it('should unregister connectors', () => {
-      registry.register('test', mockCreator);
-      registry.unregister('test');
-      expect(registry.hasType('test')).toBe(false);
-    });
-  });
-
-  describe('creation', () => {
-    it('should validate config object', () => {
-      try {
-        registry.create(null as unknown as { type: string });
-        throw new Error('Expected error was not thrown');
-      } catch (error) {
-        expect(isConnectorError(error)).toBe(true);
-        if (isConnectorError(error)) {
-          expect(error.code).toBe(ConnectorErrorCode.INVALID_CONFIG);
-        }
-      }
-    });
-
-    it('should handle missing connector type', () => {
-      try {
-        registry.create({ type: 'nonexistent' });
-        throw new Error('Expected error was not thrown');
-      } catch (error) {
-        expect(isConnectorError(error)).toBe(true);
-        if (isConnectorError(error)) {
-          expect(error.code).toBe(ConnectorErrorCode.NOT_REGISTERED);
-        }
-      }
-    });
-
-    it('should handle creator errors', () => {
-      const error = new Error('Creation failed');
-      const failingCreator: ConnectorCreator = () => {
-        throw error;
-      };
-
-      registry.register('test', failingCreator);
-
-      try {
-        registry.create({ type: 'test' });
-        throw new Error('Expected error was not thrown');
-      } catch (error) {
-        expect(isConnectorError(error)).toBe(true);
-        if (isConnectorError(error)) {
-          expect(error.code).toBe(ConnectorErrorCode.CONNECTOR_ERROR);
-        }
-      }
-    });
-
-    it('should handle creator throwing non-Error', () => {
-      const failingCreator: ConnectorCreator = () => {
-        throw 'Creation failed';
-      };
-
-      registry.register('test', failingCreator);
-
-      try {
-        registry.create({ type: 'test' });
-        throw new Error('Expected error was not thrown');
-      } catch (error) {
-        expect(isConnectorError(error)).toBe(true);
-        if (isConnectorError(error)) {
-          expect(error.code).toBe(ConnectorErrorCode.CONNECTOR_ERROR);
-          expect(error.message).toBe('Creation failed');
-        }
-      }
-    });
-  });
-
-  describe('utilities', () => {
-    it('should list registered types', () => {
-      registry.register('test1', mockCreator);
-      registry.register('test2', mockCreator);
-      expect(registry.getTypes()).toContain('test1');
-      expect(registry.getTypes()).toContain('test2');
-    });
-
-    it('should clear all registrations', () => {
-      registry.register('test1', mockCreator);
-      registry.register('test2', mockCreator);
-      registry.clear();
-      expect(registry.getTypes()).toHaveLength(0);
-    });
-
-    it('should handle type checks gracefully', () => {
-      expect(registry.hasType('')).toBe(false);
-      expect(registry.hasType('nonexistent')).toBe(false);
+    it('throws for unknown connector type', async () => {
+      await expect(connectorRegistry.create('unknown')).rejects.toThrow(
+        'Connector type not registered: unknown',
+      );
     });
   });
 });

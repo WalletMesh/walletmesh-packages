@@ -1,212 +1,227 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ConnectionStatus } from '../types.js';
-import type { WalletSession, SessionStore, ConnectedWallet } from '../types.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SessionManager } from './SessionManager.js';
+import { createClientError } from './errors.js';
+import {
+  ConnectionState,
+  type WalletSession,
+  type WalletInfo,
+  type Connector,
+  type ConnectedWallet,
+  type SessionStore,
+  type WalletState,
+} from '../types.js';
 
 describe('SessionManager', () => {
-  let mockStore: SessionStore;
   let sessionManager: SessionManager;
-  let testSessions: Map<string, WalletSession>;
-
-  const createMockWalletSession = (id: string, connected = true): WalletSession => ({
-    id,
-    address: `0x${id}`,
-    chains: {},
-    expiry: Date.now() + 3600000,
-    connector: {
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      getProvider: vi.fn(),
-      getState: vi.fn(),
-      resume: vi.fn(),
-    },
-    status: connected ? ConnectionStatus.CONNECTED : ConnectionStatus.CONNECTING,
-    wallet: {
-      address: `0x${id}`,
-      chainId: 1,
-      publicKey: '0x456',
-      connected,
-      type: 'test',
-      state: {
-        address: `0x${id}`,
-        networkId: 1,
-        sessionId: id,
-        lastActive: Date.now(),
-      },
-    },
-  });
+  let mockStore: SessionStore;
+  let mockDate: Date;
 
   beforeEach(() => {
-    testSessions = new Map();
+    mockDate = new Date('2025-03-26T10:00:00Z');
+    vi.setSystemTime(mockDate);
 
     mockStore = {
-      sessions: testSessions,
-      getSession: vi.fn().mockImplementation((id: string) => testSessions.get(id)),
-      getSessions: vi.fn().mockImplementation(() => Promise.resolve(Array.from(testSessions.values()))),
-      setSession: vi.fn().mockImplementation((id: string, session: WalletSession) => {
-        testSessions.set(id, session);
-      }),
-      removeSession: vi.fn().mockImplementation((id: string) => {
-        testSessions.delete(id);
-      }),
-      clearSessions: vi.fn().mockImplementation(() => testSessions.clear()),
+      sessions: new Map<string, WalletSession>(),
+      getSession: vi.fn(),
+      getSessions: vi.fn(),
+      setSession: vi.fn(),
+      removeSession: vi.fn(),
+      clearSessions: vi.fn(),
     };
 
     sessionManager = new SessionManager(mockStore);
   });
 
+  const createMockConnector = (overrides: Partial<Connector> = {}): Connector => ({
+    getProvider: vi.fn().mockResolvedValue({}),
+    connect: vi.fn().mockResolvedValue({
+      address: '0xtest',
+      chainId: 1,
+      publicKey: '0x123',
+      connected: true,
+      type: 'test',
+      state: {
+        address: '0xtest',
+        networkId: 1,
+        sessionId: 'test',
+        lastActive: mockDate.getTime(),
+      },
+    }),
+    disconnect: vi.fn().mockResolvedValue(undefined),
+    getState: vi.fn().mockReturnValue(ConnectionState.DISCONNECTED),
+    resume: vi.fn().mockResolvedValue({
+      address: '0xtest',
+      chainId: 1,
+      publicKey: '0x123',
+      connected: true,
+      type: 'test',
+      state: {
+        address: '0xtest',
+        networkId: 1,
+        sessionId: 'test',
+        lastActive: mockDate.getTime(),
+      },
+    }),
+    ...overrides,
+  });
+
+  const createMockSession = (
+    id: string,
+    options: { invalid?: boolean; customState?: Partial<WalletState> } = {},
+  ): WalletSession => {
+    const walletInfo: WalletInfo = {
+      address: `0x${id}`,
+      chainId: 1,
+      publicKey: '0x456',
+    };
+
+    const defaultState: WalletState = {
+      address: `0x${id}`,
+      networkId: 1,
+      sessionId: id,
+      lastActive: options.invalid ? 0 : mockDate.getTime() - 60 * 60 * 1000, // 1 hour ago
+    };
+
+    const state = options.customState ? { ...defaultState, ...options.customState } : defaultState;
+
+    const wallet: ConnectedWallet = {
+      ...walletInfo,
+      connected: !options.invalid,
+      type: 'test',
+      info: walletInfo,
+      state,
+    };
+
+    const connector = createMockConnector();
+    if (options.invalid) {
+      connector.resume = vi.fn().mockRejectedValue(new Error('Resume failed'));
+    }
+
+    return {
+      id,
+      address: `0x${id}`,
+      chains: {},
+      expiry: mockDate.getTime() + 24 * 60 * 60 * 1000, // 1 day from now
+      status: options.invalid ? ConnectionState.DISCONNECTED : ConnectionState.CONNECTED,
+      connector,
+      wallet,
+    };
+  };
+
   describe('Initialization', () => {
-    it('should handle initialization errors', async () => {
-      const mockError = new Error('Mock storage error');
-      vi.mocked(mockStore.getSessions).mockRejectedValue(mockError);
-
-      const promise = sessionManager.initialize();
-      await expect(promise).rejects.toHaveProperty('code', 'init_failed');
-      await expect(promise).rejects.toHaveProperty('message', 'Failed to initialize session manager');
-
-      const error = await promise.catch((e) => e);
-      expect(error.details?.cause?.code).toBe('restore_failed');
-      expect(error.details?.cause?.message).toBe('Failed to restore wallet sessions');
-      expect(error.details?.cause?.details?.cause?.message).toBe('Mock storage error');
-
-      expect(vi.mocked(mockStore.getSessions)).toHaveBeenCalled();
-    });
-
     it('should initialize successfully', async () => {
-      const session1 = createMockWalletSession('1');
-      const session2 = createMockWalletSession('2', false);
-      testSessions.set('1', session1);
-      testSessions.set('2', session2);
+      const validSession = createMockSession('valid');
+      vi.mocked(mockStore.getSessions).mockReturnValue([validSession]);
 
       await sessionManager.initialize();
-
       expect(mockStore.getSessions).toHaveBeenCalled();
-      const restoredSessions = sessionManager.getSessions();
-      expect(restoredSessions).toHaveLength(2);
+      expect(mockStore.setSession).toHaveBeenCalledWith('valid', validSession);
+      expect(mockStore.setSession).toHaveBeenCalledTimes(1);
+    });
 
-      // Connected session should maintain status
-      const restored1 = restoredSessions.find((s) => s.id === '1');
-      expect(restored1?.status).toBe(ConnectionStatus.CONNECTED);
-      expect(restored1?.wallet.connected).toBe(true);
+    it('should handle initialization errors', async () => {
+      const mockError = new Error('Mock storage error');
+      vi.mocked(mockStore.getSessions).mockRejectedValueOnce(mockError);
 
-      // Disconnected session should be in connecting state
-      const restored2 = restoredSessions.find((s) => s.id === '2');
-      expect(restored2?.status).toBe(ConnectionStatus.CONNECTING);
-      expect(restored2?.wallet.connected).toBe(false);
+      const expectedError = createClientError.restoreFailed('Failed to restore wallet sessions', {
+        cause: mockError,
+      });
+
+      await expect(sessionManager.initialize()).rejects.toThrow(
+        createClientError.initFailed('Failed to initialize session manager', { cause: expectedError }),
+      );
     });
 
     it('should skip invalid sessions during restore', async () => {
-      const validSession = createMockWalletSession('valid');
+      const validSession = createMockSession('valid');
+      const invalidSession = createMockSession('invalid', { invalid: true });
 
-      // Create an invalid wallet without required state property
-      const invalidWallet: Partial<ConnectedWallet> = {
-        address: '0xinvalid',
-        chainId: 1,
-        publicKey: '0x456',
-        connected: false,
-        type: 'test',
-        // Intentionally omitting state property
+      vi.mocked(mockStore.getSessions).mockReturnValue([validSession, invalidSession]);
+      await sessionManager.initialize();
+
+      expect(mockStore.setSession).toHaveBeenCalledWith('valid', validSession);
+      expect(mockStore.setSession).not.toHaveBeenCalledWith('invalid', expect.any(Object));
+      expect(mockStore.setSession).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle custom session state', async () => {
+      const customState = {
+        lastActive: mockDate.getTime() - 30 * 60 * 1000, // 30 minutes ago
+        extraData: 'test',
       };
 
-      const invalidSession: WalletSession = {
-        id: 'invalid',
-        address: '0xinvalid',
-        chains: {},
-        expiry: Date.now() + 3600000,
-        connector: {
-          connect: vi.fn(),
-          disconnect: vi.fn(),
-          getProvider: vi.fn(),
-          getState: vi.fn(),
-          resume: vi.fn(),
-        },
-        status: ConnectionStatus.DISCONNECTED,
-        wallet: invalidWallet as ConnectedWallet,
-      };
-
-      testSessions.set('valid', validSession);
-      testSessions.set('invalid', invalidSession);
+      const session = createMockSession('custom', { customState });
+      vi.mocked(mockStore.getSessions).mockReturnValue([session]);
 
       await sessionManager.initialize();
-      expect(sessionManager.getSessions()).toEqual([validSession]);
+      expect(mockStore.setSession).toHaveBeenCalledWith(
+        'custom',
+        expect.objectContaining({
+          wallet: expect.objectContaining({
+            state: expect.objectContaining(customState),
+          }),
+        }),
+      );
     });
   });
 
-  // ... rest of the tests remain unchanged
   describe('Session Management', () => {
     beforeEach(async () => {
+      vi.mocked(mockStore.getSessions).mockReturnValue([]);
       await sessionManager.initialize();
     });
 
-    it('should store and retrieve sessions', () => {
-      const session = createMockWalletSession('test');
-      sessionManager.setSession('test', session);
+    it('should create session', () => {
+      const walletInfo: WalletInfo = {
+        address: '0xtest',
+        chainId: 1,
+        publicKey: '0x123',
+      };
 
-      expect(mockStore.setSession).toHaveBeenCalledWith('test', session);
+      const state: WalletState = {
+        address: '0xtest',
+        networkId: 1,
+        sessionId: 'test',
+        lastActive: mockDate.getTime(),
+      };
 
-      const retrieved = sessionManager.getSession('test');
-      expect(retrieved).toEqual(session);
+      const connectedWallet: ConnectedWallet = {
+        ...walletInfo,
+        connected: true,
+        type: 'test',
+        info: walletInfo,
+        state,
+      };
+
+      const mockConnector = createMockConnector();
+      const session = sessionManager.createSession(connectedWallet, mockConnector);
+
+      expect(session.wallet).toEqual(connectedWallet);
+      expect(session.connector).toBe(mockConnector);
+    });
+
+    it('should get session', () => {
+      const session = createMockSession('test');
+      vi.mocked(mockStore.getSession).mockReturnValue(session);
+
+      const result = sessionManager.getSession('test');
+      expect(result).toEqual(session);
+    });
+
+    it('should remove session', () => {
+      sessionManager.removeSession('test');
+      expect(mockStore.removeSession).toHaveBeenCalledWith('test');
     });
 
     it('should update session status', () => {
-      const session = createMockWalletSession('test');
-      testSessions.set('test', session);
+      const session = createMockSession('test');
+      vi.mocked(mockStore.getSession).mockReturnValue(session);
 
-      sessionManager.updateSessionStatus('test', ConnectionStatus.CONNECTING);
-
-      const updated = sessionManager.getSession('test');
-      expect(updated?.status).toBe(ConnectionStatus.CONNECTING);
-      expect(updated?.wallet.connected).toBe(false);
-      expect(mockStore.setSession).toHaveBeenCalled();
-    });
-
-    it('should handle missing sessions in status update', () => {
-      sessionManager.updateSessionStatus('nonexistent', ConnectionStatus.CONNECTING);
-      expect(mockStore.setSession).not.toHaveBeenCalled();
-    });
-
-    it('should remove sessions', () => {
-      const session = createMockWalletSession('test');
-      testSessions.set('test', session);
-
-      sessionManager.removeSession('test');
-
-      expect(mockStore.removeSession).toHaveBeenCalledWith('test');
-      expect(sessionManager.getSession('test')).toBeUndefined();
-    });
-
-    it('should handle removing non-existent sessions', () => {
-      sessionManager.removeSession('nonexistent');
-      expect(mockStore.removeSession).toHaveBeenCalledWith('nonexistent');
-    });
-
-    it('should maintain cache consistency with store', () => {
-      const session = createMockWalletSession('test');
-      sessionManager.setSession('test', session);
-
-      // Modify session in store directly
-      const modifiedSession = { ...session, status: ConnectionStatus.CONNECTING };
-      testSessions.set('test', modifiedSession);
-
-      // Cache should be updated when getting session
-      const retrieved = sessionManager.getSession('test');
-      expect(retrieved).toEqual(modifiedSession);
-    });
-
-    it('should prevent session mutation', () => {
-      const session = createMockWalletSession('test');
-      sessionManager.setSession('test', session);
-
-      const retrieved = sessionManager.getSession('test');
-      expect(() => {
-        if (retrieved) {
-          retrieved.status = ConnectionStatus.CONNECTING;
-        }
-      }).toThrow(TypeError);
-
-      // Original session in store should not be modified
-      const fromStore = sessionManager.getSession('test');
-      expect(fromStore?.status).toBe(ConnectionStatus.CONNECTED);
+      sessionManager.updateSessionStatus('test', ConnectionState.DISCONNECTED);
+      expect(mockStore.setSession).toHaveBeenCalledWith('test', {
+        ...session,
+        status: ConnectionState.DISCONNECTED,
+      });
     });
   });
 });

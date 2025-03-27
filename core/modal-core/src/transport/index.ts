@@ -1,34 +1,33 @@
-/**
- * @packageDocumentation
- * Transport layer exports for WalletMesh Core.
- */
+export { BaseTransport } from './base.js';
 
-// Core types and interfaces
-export * from './types.js';
-
-// JSON-RPC Protocol implementation
-export * from './json-rpc.js';
-
-// Window transport implementation
-export * from './window.js';
-
-// Error types and utilities
-export * from './errors.js';
-
-// Protocol validation
 export {
-  ProtocolValidator,
-  type ValidationResult,
-} from './protocol-validator.js';
-
-// Re-export common types and constants
-export {
-  MessageType,
   TransportError,
   TransportErrorCode,
+  createTransportError,
+} from './errors.js';
+
+export {
+  ConnectionState,
+  MessageType,
   type Message,
-  type MessageHandler,
   type Transport,
-  type Protocol,
-  type TransportOptions,
+  type ErrorHandler,
 } from './types.js';
+
+export {
+  JsonRpcTransport,
+  JsonRpcErrorCode,
+  type JsonRpcMessage,
+  type JsonRpcRequest,
+  type JsonRpcResponse,
+} from './json-rpc.js';
+
+export {
+  WindowTransport,
+  type WindowTransportConfig,
+} from './window.js';
+
+export {
+  ChromeExtensionTransport,
+  type ChromeExtensionTransportConfig,
+} from './chrome-extension.js';

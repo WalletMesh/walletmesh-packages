@@ -1,238 +1,157 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { JsonRpcTransport } from './json-rpc.js';
-import { TransportState, MessageType, type Message } from './types.js';
-import { TransportError, TransportErrorCode } from './errors.js';
-import type { JsonRpcMessage, JsonRpcSendFn } from './json-rpc.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { JsonRpcTransport, type JsonRpcMessage } from './json-rpc.js';
+import { ConnectionState, MessageType } from './types.js';
+import { createTransportError } from './errors.js';
+import type { Message } from './types.js';
 
-interface TestPayload {
-  method: string;
-  params: unknown[];
+class TestJsonRpcTransport extends JsonRpcTransport {
+  private mockMessages: JsonRpcMessage[] = [];
+  private mockErrors: Error[] = [];
+
+  constructor() {
+    super(100); // Short timeout for tests
+  }
+
+  public getMockMessages(): JsonRpcMessage[] {
+    return this.mockMessages;
+  }
+
+  public getMockErrors(): Error[] {
+    return this.mockErrors;
+  }
+
+  // Accept any message-like object for testing
+  public simulateIncomingMessage(message: { id: string } & Record<string, unknown>): void {
+    // Cast to unknown first to avoid direct type assertion
+    this.handleMessage(message as unknown as JsonRpcMessage);
+  }
+
+  protected override sendJsonRpcMessage(message: JsonRpcMessage): void {
+    this.mockMessages.push(message);
+  }
 }
 
 describe('JsonRpcTransport', () => {
-  const TEST_TIMEOUT = 5000;
-  let transport: JsonRpcTransport;
-  let mockSendRpc: JsonRpcSendFn;
+  let transport: TestJsonRpcTransport;
 
   beforeEach(() => {
-    mockSendRpc = vi.fn().mockImplementation(async (message: JsonRpcMessage) => {
-      if ('method' in message) {
-        if (message.method === 'connect' || message.method === 'disconnect') {
-          return Promise.resolve();
-        }
-      }
-
-      // Don't auto-respond to messages, let tests control responses
-      return Promise.resolve();
-    });
-
-    vi.clearAllMocks();
-    transport = new JsonRpcTransport(mockSendRpc);
+    transport = new TestJsonRpcTransport();
+    transport['setState'](ConnectionState.CONNECTED);
   });
 
-  describe('connection management', () => {
-    it('should handle successful connection', async () => {
-      await transport.connect();
-      expect(transport.getState()).toBe(TransportState.CONNECTED);
-      expect(transport.isConnected()).toBe(true);
-    });
-
-    it('should handle connection failures', async () => {
-      const errorHandler = vi.fn();
-      transport.addErrorHandler(errorHandler);
-
-      (mockSendRpc as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Connection failed'));
-      await expect(transport.connect()).rejects.toThrow(TransportError);
-
-      expect(transport.getState()).toBe(TransportState.ERROR);
-      expect(transport.isConnected()).toBe(false);
-      expect(errorHandler).toHaveBeenCalledWith(expect.any(TransportError));
-    });
-
-    it('should handle disconnection', async () => {
-      await transport.connect();
-      await transport.disconnect();
-      expect(transport.getState()).toBe(TransportState.DISCONNECTED);
-      expect(transport.isConnected()).toBe(false);
-    });
-
-    it(
-      'should remove error handlers after disconnect',
-      async () => {
-        const errorHandler = vi.fn();
-        transport.addErrorHandler(errorHandler);
-        await transport.connect();
-
-        await transport.disconnect();
-        errorHandler.mockClear(); // Clear the disconnect notification
-
-        await expect(transport.connect()).resolves.toBeUndefined();
-        expect(errorHandler).not.toHaveBeenCalled();
-      },
-      TEST_TIMEOUT,
-    );
+  afterEach(() => {
+    vi.resetAllMocks();
   });
 
-  describe('message handling', () => {
-    it(
-      'should handle successful requests',
-      async () => {
-        await transport.connect();
-
-        const message: Message<TestPayload> = {
-          id: '1',
-          type: MessageType.REQUEST,
-          payload: { method: 'test', params: [] },
-          timestamp: Date.now(),
-        };
-
-        const sendPromise = transport.send(message);
-
-        // Simulate successful response
-        transport.handleMessage({
-          jsonrpc: '2.0',
-          id: message.id,
-          result: { success: true },
-        });
-
-        const result = await sendPromise;
-        expect(result).toEqual({ success: true });
-      },
-      TEST_TIMEOUT,
-    );
-
-    it(
-      'should handle RPC errors',
-      async () => {
-        await transport.connect();
-        const errorHandler = vi.fn();
-        transport.addErrorHandler(errorHandler);
-
-        (mockSendRpc as ReturnType<typeof vi.fn>).mockImplementation((msg: JsonRpcMessage) => {
-          if ('id' in msg) {
-            transport.handleMessage({
-              jsonrpc: '2.0',
-              id: msg.id,
-              error: {
-                code: -32000,
-                message: 'RPC Error',
-              },
-            });
-          }
-          return Promise.resolve();
-        });
-
-        const message: Message<TestPayload> = {
-          id: '1',
-          type: MessageType.REQUEST,
-          payload: { method: 'test', params: [] },
-          timestamp: Date.now(),
-        };
-
-        await expect(transport.send(message)).rejects.toThrow(TransportError);
-        expect(mockSendRpc).toHaveBeenCalled();
-        expect(errorHandler).toHaveBeenCalledWith(expect.any(TransportError));
-      },
-      TEST_TIMEOUT,
-    );
-
-    it(
-      'should handle transport errors',
-      async () => {
-        await transport.connect();
-        const errorHandler = vi.fn();
-        transport.addErrorHandler(errorHandler);
-
-        (mockSendRpc as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-          new TransportError('Send failed', TransportErrorCode.SEND_FAILED),
-        );
-
-        const message: Message<TestPayload> = {
-          id: '1',
-          type: MessageType.REQUEST,
-          payload: { method: 'test', params: [] },
-          timestamp: Date.now(),
-        };
-
-        await expect(transport.send(message)).rejects.toThrow(TransportError);
-        expect(mockSendRpc).toHaveBeenCalled();
-        expect(errorHandler).toHaveBeenCalledWith(expect.any(TransportError));
-      },
-      TEST_TIMEOUT,
-    );
-
-    it('should validate connection state before sending', async () => {
-      const message: Message<TestPayload> = {
-        id: '1',
+  describe('Message handling', () => {
+    it('should handle request messages', async () => {
+      const requestMessage: Message = {
+        id: 'test',
         type: MessageType.REQUEST,
-        payload: { method: 'test', params: [] },
+        payload: {
+          method: 'test_method',
+          params: ['param1', 'param2'],
+        },
         timestamp: Date.now(),
       };
 
-      await expect(transport.send(message)).rejects.toThrow('Transport not connected');
-      expect(mockSendRpc).not.toHaveBeenCalled();
+      const sendPromise = transport.send(requestMessage);
+
+      // Use type that matches simulator input
+      const jsonRpcResponse: { id: string } & Record<string, unknown> = {
+        jsonrpc: '2.0',
+        id: 'test',
+        result: { success: true },
+      };
+
+      transport.simulateIncomingMessage(jsonRpcResponse);
+      const response = await sendPromise;
+
+      expect(response).toBeDefined();
+      expect(response.payload).toEqual({ success: true });
     });
 
-    it(
-      'should format JSON-RPC requests correctly',
-      async () => {
-        await transport.connect();
+    it('should handle message timeouts', async () => {
+      const requestMessage: Message = {
+        id: 'test',
+        type: MessageType.REQUEST,
+        payload: {
+          method: 'test_method',
+          params: [],
+        },
+        timestamp: Date.now(),
+      };
 
-        const message: Message<TestPayload> = {
-          id: '1',
-          type: MessageType.REQUEST,
-          payload: { method: 'test', params: ['param1'] },
-          timestamp: Date.now(),
-        };
+      const promise = transport.send(requestMessage);
+      await expect(promise).rejects.toThrow(createTransportError.timeout('Message timeout'));
+    });
 
-        const sendPromise = transport.send(message);
+    it('should validate message format', async () => {
+      // Use type that matches simulator input
+      const invalidMessage: { id: string } & Record<string, unknown> = {
+        jsonrpc: '1.0',
+        id: 'test',
+        result: {},
+      };
 
-        expect(mockSendRpc).toHaveBeenCalledWith({
-          jsonrpc: '2.0',
-          id: message.id,
-          method: message.type,
-          params: message.payload,
-        });
+      transport.simulateIncomingMessage(invalidMessage);
+      const errors = transport.getMockErrors();
+      expect(errors[0]).toEqual(createTransportError.error('Invalid JSON-RPC message'));
+    });
 
-        // Complete the request
-        transport.handleMessage({
-          jsonrpc: '2.0',
-          id: message.id,
-          result: { success: true },
-        });
+    it('should handle protocol errors', async () => {
+      const requestMessage: Message = {
+        id: 'test',
+        type: MessageType.REQUEST,
+        payload: {
+          method: 'test_method',
+          params: [],
+        },
+        timestamp: Date.now(),
+      };
 
-        await sendPromise;
-      },
-      TEST_TIMEOUT,
-    );
+      const sendPromise = transport.send(requestMessage);
+
+      // Use type that matches simulator input
+      const errorResponse: { id: string } & Record<string, unknown> = {
+        jsonrpc: '2.0',
+        id: 'test',
+        error: {
+          code: -32000,
+          message: 'Test error',
+        },
+      };
+
+      transport.simulateIncomingMessage(errorResponse);
+      await expect(sendPromise).rejects.toThrow('Test error');
+    });
   });
 
-  describe('subscription handling', () => {
-    it('should allow subscribing to messages', () => {
-      const onMessage = vi.fn();
-      const unsubscribe = transport.subscribe({ onMessage });
-      expect(typeof unsubscribe).toBe('function');
-      unsubscribe();
+  describe('Connection state', () => {
+    it('should reject messages when not connected', async () => {
+      transport['setState'](ConnectionState.DISCONNECTED);
+
+      const message: Message = {
+        id: 'test',
+        type: MessageType.REQUEST,
+        payload: {
+          method: 'test_method',
+          params: [],
+        },
+        timestamp: Date.now(),
+      };
+
+      await expect(transport.send(message)).rejects.toThrow(
+        createTransportError.notConnected('Transport not connected'),
+      );
     });
 
-    it('should allow unsubscribing from messages', () => {
-      const onMessage = vi.fn();
-      const unsubscribe = transport.subscribe({ onMessage });
-      unsubscribe();
-    });
+    it('should handle connection state changes', async () => {
+      transport['setState'](ConnectionState.DISCONNECTED);
+      expect(transport.isConnected()).toBe(false);
 
-    it('should handle multiple subscriptions', async () => {
-      const errorSub1 = vi.fn();
-      const errorSub2 = vi.fn();
-
-      transport.addErrorHandler(errorSub1);
-      transport.addErrorHandler(errorSub2);
-
-      (mockSendRpc as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('Test error'));
-      await expect(transport.connect()).rejects.toThrow(TransportError);
-
-      expect(errorSub1).toHaveBeenCalledWith(expect.any(TransportError));
-      expect(errorSub2).toHaveBeenCalledWith(expect.any(TransportError));
+      transport['setState'](ConnectionState.CONNECTED);
+      expect(transport.isConnected()).toBe(true);
     });
   });
 });

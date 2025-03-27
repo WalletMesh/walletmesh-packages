@@ -1,203 +1,144 @@
-/**
- * @packageDocumentation
- * Tests for mock connector
- */
-
-import { describe, it, expect, beforeEach } from 'vitest';
-import { ConnectionStatus } from '../types.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { MockConnector, type MockRequest } from './mock.js';
+import { ConnectionState, type Message } from '../transport/types.js';
+import type { Protocol, Transport } from '../transport/types.js';
 import type { WalletInfo } from '../types.js';
-import { MockConnector, type MockConnectorConfig, type MockMessageTypes } from './mock.js';
-import { MessageType, type Message } from '../transport/index.js';
-import { ProtocolErrorCode } from '../transport/errors.js';
-import type { Protocol, Transport } from './types.js';
-
-type MockConnectorInternals = {
-  transport: Transport;
-  protocol: Protocol<MockMessageTypes>;
-};
 
 describe('MockConnector', () => {
   let connector: MockConnector;
-  let mockWalletInfo: WalletInfo;
-  let config: MockConnectorConfig;
+  let mockTransport: Transport;
+  let mockProtocol: Protocol<MockRequest>;
+  let walletInfo: WalletInfo;
 
   beforeEach(() => {
-    config = {
-      address: '0x1234567890123456789012345678901234567890',
+    mockTransport = {
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+      send: vi.fn().mockResolvedValue({
+        id: 'test',
+        type: 'response',
+        payload: { result: 'success' },
+        timestamp: Date.now(),
+      }),
+      isConnected: vi.fn().mockReturnValue(true),
+      getState: vi.fn().mockReturnValue(ConnectionState.CONNECTED),
+      addErrorHandler: vi.fn(),
+      removeErrorHandler: vi.fn(),
+    };
+
+    mockProtocol = {
+      validate: vi.fn().mockReturnValue({ success: true, data: {} as Message<MockRequest> }),
+      validateMessage: vi.fn().mockReturnValue({ success: true, data: {} as Message<MockRequest> }),
+      parseMessage: vi.fn().mockReturnValue({ success: true, data: {} as Message<MockRequest> }),
+      formatMessage: vi.fn().mockReturnValue({}),
+      createRequest: vi.fn().mockImplementation((method, params) => ({
+        id: 'test',
+        type: 'request',
+        payload: { method, params },
+        timestamp: Date.now(),
+      })),
+      createResponse: vi.fn().mockImplementation((id, result) => ({
+        id,
+        type: 'response',
+        payload: { result },
+        timestamp: Date.now(),
+      })),
+      createError: vi.fn().mockImplementation((id, error) => ({
+        id,
+        type: 'error',
+        payload: { method: 'error', params: [error.message] },
+        timestamp: Date.now(),
+      })),
+    };
+
+    walletInfo = {
+      address: '0xtest',
       chainId: 1,
-      shouldFail: false,
-      responseDelay: 0,
+      publicKey: '0x123',
     };
 
-    connector = new MockConnector(config);
-
-    mockWalletInfo = {
-      address: config.address ?? '0x1234567890123456789012345678901234567890',
-      chainId: config.chainId ?? 1,
-      publicKey: '0x456',
-    };
-  });
-
-  describe('connection management', () => {
-    it('should handle connect flow', async () => {
-      const result = await connector.connect(mockWalletInfo);
-      expect(result.address).toBe(config.address ?? '0x1234567890123456789012345678901234567890');
-      expect(result.chainId).toBe(config.chainId ?? 1);
-      expect(result.connected).toBe(true);
-    });
-
-    it('should handle disconnect flow', async () => {
-      await connector.connect(mockWalletInfo);
-      await connector.disconnect();
-      expect(connector.getState()).toBe(ConnectionStatus.DISCONNECTED);
-    });
-
-    it('should provide connection state', async () => {
-      expect(connector.getState()).toBe(ConnectionStatus.DISCONNECTED);
-      await connector.connect(mockWalletInfo);
-      expect(connector.getState()).toBe(ConnectionStatus.CONNECTED);
-    });
-
-    it('should handle connection failures', async () => {
-      connector = new MockConnector({ ...config, shouldFail: true });
-      await expect(connector.connect(mockWalletInfo)).rejects.toThrow();
-    });
-
-    it('should handle legacy config format', async () => {
-      const legacyConfig = {
-        type: 'mock',
-        name: 'Mock Wallet',
-        options: {
-          address: '0xabc',
-          chainId: 5,
-          shouldFail: false,
-        },
-      };
-      connector = new MockConnector(legacyConfig);
-      const result = await connector.connect(mockWalletInfo);
-      expect(result.address).toBe(legacyConfig.options.address);
-      expect(result.chainId).toBe(legacyConfig.options.chainId);
+    connector = new MockConnector(mockTransport, mockProtocol, {
+      mockResponses: {
+        test: 'success',
+      },
     });
   });
 
-  describe('provider management', () => {
-    it('should return provider instance', async () => {
+  describe('Connection', () => {
+    it('should initialize in disconnected state', () => {
+      expect(connector.getState()).toBe(ConnectionState.DISCONNECTED);
+      expect(connector.getWallet()).toBeNull();
+    });
+
+    it('should connect successfully', async () => {
+      const wallet = await connector.connect(walletInfo);
+
+      expect(wallet).toBeDefined();
+      expect(wallet.address).toBe(walletInfo.address);
+      expect(wallet.chainId).toBe(walletInfo.chainId);
+      expect(wallet.publicKey).toBe(walletInfo.publicKey);
+      expect(wallet.connected).toBe(true);
+      expect(wallet.type).toBe('mock');
+      expect(wallet.state).toBeDefined();
+      expect(connector.getState()).toBe(ConnectionState.CONNECTED);
+    });
+
+    it('should handle connection failure', async () => {
+      vi.mocked(mockTransport.connect).mockRejectedValueOnce(new Error('Failed to connect to wallet'));
+      await expect(connector.connect(walletInfo)).rejects.toThrow('Failed to connect to wallet');
+      expect(connector.getState()).toBe(ConnectionState.ERROR);
+    });
+  });
+
+  describe('Provider', () => {
+    it('should create provider', async () => {
+      await connector.connect(walletInfo);
       const provider = await connector.getProvider();
+
       expect(provider).toBeDefined();
+      expect(provider.isConnected()).toBe(false);
       expect(typeof provider.request).toBe('function');
     });
 
-    it('should handle delayed responses', { timeout: 2000 }, async () => {
-      // Test immediate connection without delay first
-      connector = new MockConnector(config);
-      await connector.connect(mockWalletInfo);
-      expect(connector.isConnected()).toBe(true);
-      await connector.disconnect();
-      expect(connector.isConnected()).toBe(false);
-
-      // Now test with delay
-      connector = new MockConnector({ ...config, responseDelay: 100 });
-      const connectPromise = connector.connect(mockWalletInfo);
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      await connectPromise;
-      expect(connector.isConnected()).toBe(true);
-    });
-
-    it('should maintain connection state through provider methods', async () => {
-      const provider = await connector.getProvider();
-      expect(connector.isConnected()).toBe(false);
-
-      await provider.connect();
-      expect(connector.isConnected()).toBe(true);
-
-      await provider.disconnect();
-      expect(connector.isConnected()).toBe(false);
-    });
-
     it('should handle provider requests', async () => {
+      await connector.connect(walletInfo);
       const provider = await connector.getProvider();
-      const result = await provider.request();
-      expect(result).toEqual({});
+      const result = await provider.request('test');
+
+      expect(result).toBe('success');
+    });
+
+    it('should handle provider failures', async () => {
+      await connector.connect(walletInfo);
+      const provider = await connector.getProvider();
+
+      await expect(provider.request('unknown')).rejects.toThrow('No mock response for method: unknown');
     });
   });
 
-  describe('protocol handling', () => {
-    it('should create valid request messages', () => {
-      const internals = connector as unknown as MockConnectorInternals;
+  describe('Protocol handling', () => {
+    it('should handle protocol messages', async () => {
+      await connector.connect(walletInfo);
 
-      const request = internals.protocol.createRequest('test', { method: 'test', params: [1, 2] });
-      expect(request.type).toBe(MessageType.REQUEST);
-      expect(request.payload.method).toBe('test');
-      expect(request.payload.params).toEqual([1, 2]);
-    });
-
-    it('should create valid response messages', () => {
-      const internals = connector as unknown as MockConnectorInternals;
-
-      const response = internals.protocol.createResponse('test-id', { result: true });
-      expect(response.type).toBe(MessageType.RESPONSE);
-      expect(response.id).toBe('test-id');
-      expect(response.payload.result).toBe(true);
-    });
-
-    it('should create valid error messages', () => {
-      const internals = connector as unknown as MockConnectorInternals;
-      const error = new Error('Test error');
-
-      const errorMessage = internals.protocol.createError('test-id', error);
-      expect(errorMessage.type).toBe(MessageType.ERROR);
-      expect(errorMessage.id).toBe('test-id');
-      expect(errorMessage.payload.method).toBe('error');
-      expect(errorMessage.payload.params).toEqual([error.message]);
-    });
-
-    it('should validate messages correctly', () => {
-      const internals = connector as unknown as MockConnectorInternals;
-
-      const validResult = internals.protocol.validateMessage({
-        id: 'test',
-        type: MessageType.REQUEST,
-        payload: { method: 'test', params: [] },
-        timestamp: Date.now(),
-      });
-      expect(validResult.success).toBe(true);
-
-      const invalidResult = internals.protocol.validateMessage(null);
-      if (!invalidResult.success) {
-        expect(invalidResult.error.code).toBe(ProtocolErrorCode.INVALID_FORMAT);
-      } else {
-        throw new Error('Expected validation to fail');
-      }
-    });
-
-    it('should process protocol messages', async () => {
-      const message: Message<MockMessageTypes['request']> = {
-        id: 'test',
-        type: MessageType.REQUEST,
-        payload: { method: 'connect', params: [] },
-        timestamp: Date.now(),
+      const message: MockRequest = {
+        method: 'test',
+        params: ['param1', 'param2'],
       };
 
-      connector.processTestMessage(message);
-      expect(connector.isConnected()).toBe(true);
+      const result = await connector['handleProtocolMessage'](message);
+      expect(result).toEqual({ result: 'success' });
     });
 
-    it('should handle transport send with delay', { timeout: 2000 }, async () => {
-      connector = new MockConnector({ ...config, responseDelay: 100 });
-      const internals = connector as unknown as MockConnectorInternals;
+    it('should handle missing mock responses', async () => {
+      await connector.connect(walletInfo);
 
-      const sendPromise = internals.transport.send<{ test: boolean }, { result: boolean }>({
-        id: 'test',
-        type: MessageType.REQUEST,
-        payload: { test: true },
-        timestamp: Date.now(),
-      });
+      const message: MockRequest = {
+        method: 'unknown',
+      };
 
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      const response = await sendPromise;
-
-      expect(response.type).toBe(MessageType.RESPONSE);
-      expect(response.payload.result).toBe(true);
+      await expect(connector['handleProtocolMessage'](message)).rejects.toThrow(
+        'No mock response for method: unknown',
+      );
     });
   });
 });

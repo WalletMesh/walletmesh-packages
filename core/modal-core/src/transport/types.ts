@@ -1,40 +1,10 @@
-/**
- * Transport layer type definitions
- */
-
-/**
- * Message types
- */
 export enum MessageType {
   REQUEST = 'request',
   RESPONSE = 'response',
   ERROR = 'error',
+  NOTIFICATION = 'notification',
 }
 
-/**
- * Transport states
- */
-export enum TransportState {
-  DISCONNECTED = 'disconnected',
-  CONNECTING = 'connecting',
-  CONNECTED = 'connected',
-  ERROR = 'error',
-}
-
-/**
- * Transport error codes
- */
-export enum TransportErrorCode {
-  CONNECTION_FAILED = 'CONNECTION_FAILED',
-  INVALID_MESSAGE = 'INVALID_MESSAGE',
-  TIMEOUT = 'TIMEOUT',
-  RPC_ERROR = 'RPC_ERROR',
-  TRANSPORT_ERROR = 'TRANSPORT_ERROR',
-}
-
-/**
- * Base message interface
- */
 export interface Message<T = unknown> {
   id: string;
   type: MessageType;
@@ -42,85 +12,146 @@ export interface Message<T = unknown> {
   timestamp: number;
 }
 
-/**
- * Transport error
- */
-export class TransportError extends Error {
-  constructor(
-    message: string,
-    public readonly code: TransportErrorCode,
-    public override readonly cause?: Error,
-  ) {
-    super(message);
-    this.name = 'TransportError';
-  }
+export enum ConnectionState {
+  DISCONNECTED = 'DISCONNECTED',
+  CONNECTING = 'CONNECTING',
+  CONNECTED = 'CONNECTED',
+  ERROR = 'ERROR',
 }
 
-/**
- * Protocol interface
- */
-export interface Protocol<T = unknown> {
-  createRequest: <M extends string>(method: M, params: T) => Message<T>;
-  createResponse: (id: string, result: T) => Message<T>;
-  createError: (id: string, error: Error) => Message<T>;
-  validateMessage: (message: unknown) => ValidationResult<Message<T>>;
-  formatMessage: (message: Message<T>) => unknown;
-  parseMessage: (data: unknown) => ValidationResult<Message<T>>;
-}
-
-/**
- * Transport configuration options
- */
-export interface TransportOptions {
-  /** Connection timeout in ms */
-  timeout?: number;
-  /** Auto-reconnect configuration */
-  reconnect?: {
-    /** Whether to auto-reconnect */
-    enabled: boolean;
-    /** Max reconnection attempts */
-    maxAttempts?: number;
-    /** Base delay between attempts in ms */
-    delay?: number;
+export interface JsonRpcMessage {
+  jsonrpc: '2.0';
+  id?: string;
+  method?: string;
+  params?: unknown;
+  result?: unknown;
+  error?: {
+    code: number;
+    message: string;
+    data?: unknown;
   };
 }
 
-/**
- * Validation result type
- */
-export type ValidationResult<T> = { success: true; data: T } | { success: false; error: Error };
-
-/**
- * Message handler interface
- */
-export interface MessageHandler {
-  canHandle: (message: Message) => boolean;
-  handle: (message: Message) => Promise<void>;
-}
-
-/**
- * Error handler type
- */
-export type ErrorHandler = (error: Error | TransportError) => void;
-
-/**
- * Subscription handler interface
- */
-export interface Subscription {
-  onMessage?: (message: Message) => void;
-  onError?: ErrorHandler;
-}
-
-/**
- * Transport interface
- */
 export interface Transport {
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   send<T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>>;
-  subscribe(subscription: Subscription): () => void;
   isConnected(): boolean;
-  getState(): TransportState | string;
+  getState(): ConnectionState;
   addErrorHandler(handler: ErrorHandler): void;
   removeErrorHandler(handler: ErrorHandler): void;
 }
+
+/**
+ * Protocol message structures
+ */
+export interface ProtocolRequest {
+  method: string;
+  params: unknown[];
+}
+
+export interface ProtocolResponse {
+  result?: unknown;
+  error?: {
+    message: string;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Protocol interface for handling messages
+ */
+export interface Protocol<TRequest> {
+  validate(message: unknown): ValidationResult<Message<TRequest>>;
+  validateMessage(message: Message<TRequest>): ValidationResult<Message<TRequest>>;
+  parseMessage(message: unknown): ValidationResult<Message<TRequest>>;
+  formatMessage(message: Message<TRequest>): unknown;
+  createRequest(method: string, params: TRequest): Message<TRequest>;
+  createResponse<TResponse>(id: string, result: TResponse): Message<TResponse>;
+  createError(id: string, error: Error): Message<TRequest>;
+}
+
+export interface ValidationResult<T = unknown> {
+  success: boolean;
+  error?: Error;
+  data?: T;
+}
+
+export interface TransportOptions {
+  timeout?: number;
+  [key: string]: unknown;
+}
+
+/**
+ * Message handling types
+ */
+export interface MessageHandler<T = unknown> {
+  onMessage(message: Message<T>): Promise<void>;
+  onError?(error: Error): void;
+}
+
+export type ErrorHandler = (error: Error) => void;
+
+/**
+ * Subscription types
+ */
+export interface Unsubscribable {
+  unsubscribe(): void;
+}
+
+export interface Subscription extends Unsubscribable {
+  onMessage?(message: Message): Promise<void>;
+  onError?(error: Error): void;
+}
+
+/**
+ * Helper to create type-safe subscriptions
+ */
+export function createSubscription(
+  handlers: Partial<{
+    onMessage(message: Message): Promise<void>;
+    onError(error: Error): void;
+    unsubscribe(): void;
+  }> = {},
+): Subscription {
+  return {
+    unsubscribe: handlers.unsubscribe ?? (() => undefined),
+    ...(handlers.onMessage && { onMessage: handlers.onMessage }),
+    ...(handlers.onError && { onError: handlers.onError }),
+  };
+}
+
+/**
+ * Create a mock protocol for testing
+ */
+export function createMockProtocol<TRequest>(mockData: TRequest): Protocol<TRequest> {
+  const mockRequestMessage: Message<TRequest> = {
+    id: 'mock-id',
+    type: MessageType.REQUEST,
+    payload: mockData,
+    timestamp: Date.now(),
+  };
+
+  return {
+    validate: () => ({ success: true, data: mockRequestMessage }),
+    validateMessage: () => ({ success: true, data: mockRequestMessage }),
+    parseMessage: () => ({ success: true, data: mockRequestMessage }),
+    formatMessage: () => mockRequestMessage,
+    createRequest: () => mockRequestMessage,
+    createResponse: <TResponse>(id: string, result: TResponse) => ({
+      id,
+      type: MessageType.RESPONSE,
+      payload: result,
+      timestamp: Date.now(),
+    }),
+    createError: (id: string, error: Error) => ({
+      id,
+      type: MessageType.ERROR,
+      payload: { error: error.message } as unknown as TRequest,
+      timestamp: Date.now(),
+    }),
+  };
+}
+
+// Re-export types for backward compatibility
+export type MessageSubscription = MessageHandler;

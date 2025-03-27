@@ -1,20 +1,17 @@
-import { EventEmitter } from 'node:events';
-import { v4 as uuid } from 'uuid';
 import { BaseTransport } from './base.js';
+import { createTransportError } from './errors.js';
+import { MessageType } from './types.js';
 import type { Message } from './types.js';
-import { TransportErrorCode } from './errors.js';
 
-interface JsonRpcRequestMessage {
-  jsonrpc: '2.0';
-  id?: string;
-  method: string;
-  params?: unknown;
-}
-
-interface JsonRpcResponseMessage {
-  jsonrpc: '2.0';
+/**
+ * JSON-RPC transport message
+ */
+export interface JsonRpcMessage<T = unknown> {
   id: string;
-  result?: unknown;
+  jsonrpc: '2.0';
+  method?: string;
+  params?: T[];
+  result?: T;
   error?: {
     code: number;
     message: string;
@@ -22,117 +19,235 @@ interface JsonRpcResponseMessage {
   };
 }
 
-export type JsonRpcMessage = JsonRpcRequestMessage | JsonRpcResponseMessage;
-export type JsonRpcRequest = JsonRpcRequestMessage;
-export type JsonRpcSendFn = (message: JsonRpcMessage) => Promise<void>;
-
-export interface JsonRpcTransportOptions {
-  timeout?: number;
-  debug?: boolean;
-  retries?: number;
+/**
+ * JSON-RPC request message
+ */
+export interface JsonRpcRequest<T = unknown> extends JsonRpcMessage<T> {
+  method: string;
+  params: T[];
 }
 
-const DEFAULT_OPTIONS = {
-  timeout: 30000,
-  debug: false,
-  retries: 3,
-};
+/**
+ * JSON-RPC response message
+ */
+export interface JsonRpcResponse<T = unknown> extends JsonRpcMessage<T> {
+  result: T;
+}
 
-export class JsonRpcTransport extends BaseTransport {
-  private connected = false;
-  private readonly emitter = new EventEmitter();
-  private readonly options: Required<JsonRpcTransportOptions>;
-  private readonly sendFn: JsonRpcSendFn;
+/**
+ * Request payload type
+ */
+export interface JsonRpcRequestPayload {
+  method: string;
+  params?: unknown[];
+}
 
-  constructor(sendRpc: JsonRpcSendFn, options: JsonRpcTransportOptions = {}) {
+/**
+ * Error payload type
+ */
+export interface JsonRpcErrorPayload {
+  message: string;
+  code: number;
+  data?: unknown;
+}
+
+/**
+ * JSON-RPC error codes
+ */
+export enum JsonRpcErrorCode {
+  PARSE_ERROR = -32700,
+  INVALID_REQUEST = -32600,
+  METHOD_NOT_FOUND = -32601,
+  INVALID_PARAMS = -32602,
+  INTERNAL_ERROR = -32603,
+  SERVER_ERROR = -32000,
+  TIMEOUT = -32001,
+}
+
+/**
+ * JSON-RPC transport base class
+ */
+export abstract class JsonRpcTransport extends BaseTransport {
+  private pendingMessages: Map<
+    string,
+    {
+      resolve: (value: Message<unknown>) => void;
+      reject: (error: Error) => void;
+      timer: ReturnType<typeof setTimeout>;
+    }
+  > = new Map();
+  private readonly timeout: number;
+
+  constructor(timeout = 5000) {
     super();
-    this.sendFn = sendRpc;
-    this.options = {
-      ...DEFAULT_OPTIONS,
-      ...options,
-    };
+    this.timeout = timeout;
   }
 
   protected async connectImpl(): Promise<void> {
-    try {
-      await this.sendFn({ jsonrpc: '2.0', method: 'connect' });
-      this.connected = true;
-    } catch (error) {
-      const transportError = this.createError(
-        'Failed to connect',
-        TransportErrorCode.CONNECTION_FAILED,
-        error,
-      );
-      this.notifyError(transportError);
-      throw transportError;
-    }
+    // No-op - connection handled externally
   }
 
-  protected async doDisconnect(): Promise<void> {
-    try {
-      await this.sendFn({ jsonrpc: '2.0', method: 'disconnect' });
-    } catch (error) {
-      // Ignore disconnection errors
-    } finally {
-      this.connected = false;
-      this.emitter.removeAllListeners();
+  protected async disconnectImpl(): Promise<void> {
+    // Clean up pending messages
+    for (const { reject, timer } of this.pendingMessages.values()) {
+      clearTimeout(timer);
+      reject(createTransportError.connectionFailed('Transport disconnected'));
     }
+    this.pendingMessages.clear();
   }
 
-  protected async sendImpl<T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>> {
+  protected async sendImpl<T, R>(message: Message<T>): Promise<Message<R>> {
+    if (!this.isConnected()) {
+      throw createTransportError.notConnected('Transport not connected');
+    }
+
     return new Promise<Message<R>>((resolve, reject) => {
-      const timeoutId = setTimeout(() => {
-        this.emitter.removeAllListeners(message.id);
-        const error = this.createError('Message timeout', TransportErrorCode.TIMEOUT);
-        this.notifyError(error);
-        reject(error);
-      }, this.options.timeout);
+      const timer = setTimeout(() => {
+        this.pendingMessages.delete(message.id);
+        const timeoutError = createTransportError.timeout('Message timeout');
+        this.emitError(timeoutError);
+        reject(timeoutError);
+      }, this.timeout);
 
-      this.emitter.once(message.id, (response: JsonRpcResponseMessage) => {
-        clearTimeout(timeoutId);
-        if (response.error) {
-          const error = this.createError(
-            response.error.message,
-            TransportErrorCode.INVALID_MESSAGE,
-            response.error,
-          );
-          this.notifyError(error);
-          reject(error);
-        } else {
-          resolve(response.result as unknown as Message<R>);
-        }
+      this.pendingMessages.set(message.id, {
+        resolve: (value: Message<unknown>) => resolve(value as Message<R>),
+        reject,
+        timer,
       });
 
-      const rpcMessage: JsonRpcRequestMessage = {
-        jsonrpc: '2.0',
-        id: message.id || uuid(),
-        method: message.type,
-        params: message.payload,
-      };
-
-      this.sendFn(rpcMessage).catch((error) => {
-        clearTimeout(timeoutId);
-        this.emitter.removeAllListeners(message.id);
-        const transportError = this.createError(
-          'Failed to send message',
-          TransportErrorCode.CONNECTION_FAILED,
-          error,
-        );
-        this.notifyError(transportError);
+      try {
+        this.doSendMessage(message);
+      } catch (error) {
+        clearTimeout(timer);
+        this.pendingMessages.delete(message.id);
+        const transportError = createTransportError.sendFailed('Failed to send message', { cause: error });
+        this.emitError(transportError);
         reject(transportError);
-      });
+      }
     });
   }
 
-  public override isConnected(): boolean {
-    return this.connected;
+  /**
+   * Handle incoming JSON-RPC message
+   */
+  protected handleMessage(jsonRpcMessage: JsonRpcMessage): void {
+    // Convert JSON-RPC message to internal message format
+    const message = this.parseJsonRpcMessage(jsonRpcMessage);
+    if (!message) return;
+
+    // Handle pending messages
+    const pending = this.pendingMessages.get(message.id);
+    if (pending) {
+      clearTimeout(pending.timer);
+      this.pendingMessages.delete(message.id);
+      if (message.type === MessageType.ERROR) {
+        const payload = message.payload as JsonRpcErrorPayload;
+        const transportError = createTransportError.error(payload.message, { cause: payload });
+        this.emitError(transportError);
+        pending.reject(transportError);
+      } else {
+        pending.resolve(message);
+      }
+    }
   }
 
-  public handleMessage(message: JsonRpcMessage): void {
-    const id = 'id' in message && message.id;
-    if (!id) {
-      return;
-    }
-    this.emitter.emit(id, message);
+  /**
+   * Send message implementation
+   */
+  protected doSendMessage<T>(message: Message<T>): void {
+    const jsonRpcMessage = this.createJsonRpcMessage(message);
+    this.sendJsonRpcMessage(jsonRpcMessage);
   }
+
+  /**
+   * Create JSON-RPC message from internal message
+   */
+  protected createJsonRpcMessage<T>(message: Message<T>): JsonRpcMessage {
+    const base = {
+      jsonrpc: '2.0' as const,
+      id: message.id,
+    };
+
+    if (message.type === MessageType.REQUEST) {
+      const payload = message.payload as JsonRpcRequestPayload;
+      return {
+        ...base,
+        method: payload.method,
+        params: payload.params ?? [],
+      };
+    }
+
+    if (message.type === MessageType.ERROR) {
+      const payload = message.payload as JsonRpcErrorPayload;
+      return {
+        ...base,
+        error: {
+          code: payload.code ?? JsonRpcErrorCode.SERVER_ERROR,
+          message: payload.message ?? 'Unknown error',
+          data: payload.data,
+        },
+      };
+    }
+
+    return {
+      ...base,
+      result: message.payload,
+    };
+  }
+
+  /**
+   * Parse JSON-RPC message to internal message
+   */
+  protected parseJsonRpcMessage(jsonRpcMessage: JsonRpcMessage): Message | null {
+    if (!this.validateJsonRpcMessage(jsonRpcMessage)) {
+      const error = createTransportError.error('Invalid JSON-RPC message');
+      this.emitError(error);
+      return null;
+    }
+
+    if (jsonRpcMessage.error) {
+      return {
+        id: jsonRpcMessage.id,
+        type: MessageType.ERROR,
+        payload: {
+          message: jsonRpcMessage.error.message,
+          code: jsonRpcMessage.error.code,
+          data: jsonRpcMessage.error.data,
+        },
+        timestamp: Date.now(),
+      };
+    }
+
+    return {
+      id: jsonRpcMessage.id,
+      type: jsonRpcMessage.method ? MessageType.REQUEST : MessageType.RESPONSE,
+      payload: jsonRpcMessage.method
+        ? { method: jsonRpcMessage.method, params: jsonRpcMessage.params ?? [] }
+        : jsonRpcMessage.result,
+      timestamp: Date.now(),
+    };
+  }
+
+  /**
+   * Validate JSON-RPC message
+   */
+  protected validateJsonRpcMessage(message: JsonRpcMessage): boolean {
+    return (
+      typeof message === 'object' &&
+      message !== null &&
+      typeof message.id === 'string' &&
+      message.jsonrpc === '2.0' &&
+      ((typeof message.method === 'string' && Array.isArray(message.params)) ||
+        message.result !== undefined ||
+        (typeof message.error === 'object' &&
+          message.error !== null &&
+          typeof message.error.code === 'number' &&
+          typeof message.error.message === 'string'))
+    );
+  }
+
+  /**
+   * Send JSON-RPC message
+   */
+  protected abstract sendJsonRpcMessage(message: JsonRpcMessage): void;
 }

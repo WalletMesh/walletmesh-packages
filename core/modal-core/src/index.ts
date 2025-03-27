@@ -1,33 +1,26 @@
 /**
  * @packageDocumentation
- * Core exports for WalletMesh
+ * WalletMesh Core entry point.
  */
 
+// Client exports
+export { WalletMeshClient } from './client/index.js';
+
+// Common types
 export {
   type DappInfo,
   type WalletInfo,
-  type ConnectedWallet,
-  type WalletSession,
-  type SessionStore,
   type Provider,
+  type Connector,
+  type WalletSession,
+  ConnectionState,
   type WalletState,
-  type ChainConnection,
+  type ConnectedWallet,
   type WalletConnectorConfig,
-  ConnectionStatus,
 } from './types.js';
 
+// Store exports
 export {
-  type SessionStore as ISessionStore,
-  defaultSessionStore,
   createSessionStore,
-} from './store/sessionStore.js';
-
-export {
-  defaultSessionStoreAdapter,
-  type SessionStoreAdapter,
-} from './store/sessionStoreAdapter.js';
-
-export {
-  WalletError,
-  ErrorCode,
-} from './errors.js';
+  type SessionStore,
+} from './store/index.js';

@@ -1,123 +1,55 @@
-/**
- * @packageDocumentation
- * WalletMesh client implementation
- */
-
-import { EventEmitter } from 'node:events';
-import { ConnectionStatus } from '../types.js';
-import type { DappInfo, WalletInfo, ConnectedWallet, Connector } from '../types.js';
-import { SessionManager } from './SessionManager.js';
-import { defaultSessionStore } from '../store/sessionStore.js';
-import { defaultSessionStoreAdapter } from '../store/sessionStoreAdapter.js';
+import {
+  type ConnectedWallet,
+  type WalletConnectorConfig,
+  type WalletInfo,
+  ConnectionState,
+} from '../types.js';
+import { createConnector } from './createConnector.js';
 import { createClientError } from './errors.js';
 
 /**
- * Core WalletMesh client
+ * Core WalletMesh client implementation
  */
-export class WalletMeshClient extends EventEmitter {
-  private static instance: WalletMeshClient;
-  private initialized = false;
-  private currentWallet: ConnectedWallet | null = null;
-  private readonly sessionManager: SessionManager;
+export class WalletMeshClient {
+  private _isConnected = false;
 
-  private constructor(private readonly dappInfo: DappInfo) {
-    super();
-    this.validateOrigin();
-    this.sessionManager = new SessionManager(defaultSessionStoreAdapter(defaultSessionStore));
+  get isConnected(): boolean {
+    return this._isConnected;
   }
 
   /**
-   * Gets singleton instance
+   * Connects to a wallet
    */
-  static getInstance(dappInfo: DappInfo): WalletMeshClient {
-    if (!WalletMeshClient.instance) {
-      WalletMeshClient.instance = new WalletMeshClient(dappInfo);
-    }
-    return WalletMeshClient.instance;
-  }
-
-  /**
-   * Resets singleton instance (for testing)
-   */
-  static resetInstance(): void {
-    WalletMeshClient.instance = undefined as unknown as WalletMeshClient;
-  }
-
-  /**
-   * Initializes client
-   */
-  async initialize(): Promise<void> {
-    if (this.initialized) return;
+  async connect(config: WalletConnectorConfig): Promise<ConnectedWallet> {
     try {
-      await this.sessionManager.initialize();
-      this.initialized = true;
+      const connector = await createConnector(config);
+      const walletInfo: WalletInfo = {
+        address: '',
+        chainId: config.defaultChainId ?? 1,
+        publicKey: '',
+      };
+
+      const wallet = await connector.connect(walletInfo);
+      this._isConnected = true;
+      return wallet;
     } catch (error) {
-      throw createClientError.initFailed('Failed to initialize client', { cause: error });
-    }
-  }
-
-  /**
-   * Validates dapp origin
-   */
-  private validateOrigin(): void {
-    if (typeof window === 'undefined') return;
-
-    const windowOrigin = new URL(window.location.href).origin;
-    if (windowOrigin !== this.dappInfo.origin) {
-      throw createClientError.originMismatch(this.dappInfo.origin, windowOrigin);
-    }
-  }
-
-  /**
-   * Connects to wallet
-   */
-  async connectWallet(walletInfo: WalletInfo, connector: Connector): Promise<ConnectedWallet> {
-    try {
-      const connectedWallet = await connector.connect(walletInfo);
-      this.currentWallet = connectedWallet;
-      return connectedWallet;
-    } catch (error) {
-      throw createClientError.connectFailed('Failed to establish wallet connection', {
-        wallet: walletInfo,
-        cause: error,
+      throw createClientError.connectFailed('Failed to connect wallet', {
+        cause: error instanceof Error ? error : new Error('Unknown error'),
       });
     }
-  }
-
-  /**
-   * Gets current wallet state
-   */
-  getState(): ConnectionStatus {
-    return this.currentWallet?.connected ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED;
   }
 
   /**
    * Disconnects current wallet
    */
   async disconnect(): Promise<void> {
-    if (!this.currentWallet) return;
-
-    try {
-      await this.sessionManager.getSession(this.currentWallet.address)?.connector.disconnect();
-      this.currentWallet = null;
-    } catch (error) {
-      throw createClientError.disconnectFailed('Failed to disconnect wallet', {
-        wallet: this.currentWallet,
-        cause: error,
-      });
-    }
+    this._isConnected = false;
   }
 
   /**
-   * Prepares for transition (e.g. page refresh)
+   * Gets current connection state
    */
-  prepareForTransition(): void {
-    if (!this.currentWallet) return;
-
-    const session = this.sessionManager.getSession(this.currentWallet.address);
-    if (session) {
-      this.sessionManager.updateSessionStatus(this.currentWallet.address, ConnectionStatus.CONNECTING);
-    }
-    this.initialized = false;
+  getState(): ConnectionState {
+    return this._isConnected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED;
   }
 }

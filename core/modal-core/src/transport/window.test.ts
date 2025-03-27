@@ -1,300 +1,211 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WindowTransport } from './window.js';
-import { TransportState, MessageType, type Message } from './types.js';
-import { TransportErrorCode } from './errors.js';
-import type { TransportError } from './errors.js';
+import { ConnectionState, MessageType } from './types.js';
+import { createTransportError } from './errors.js';
+import type { Message } from './types.js';
+import type { Mock } from 'vitest';
 
-describe('WindowTransport', () => {
-  const mockUrl = 'https://test.com';
-  let transport: WindowTransport;
-  let mockFrame: HTMLIFrameElement;
-  let mockWindow: Window;
-  let messageHandlers: Array<(ev: MessageEvent) => void>;
+interface MockWindow {
+  postMessage: Mock;
+  addEventListener: Mock;
+  removeEventListener: Mock;
+}
 
-  // Helper to create a valid message for testing
-  const createTestMessage = (override: Partial<Message> = {}): Message => ({
-    id: '1',
-    type: MessageType.REQUEST,
-    payload: { test: true },
-    timestamp: Date.now(),
-    ...override,
-  });
+/**
+ * Test implementation of WindowTransport
+ */
+class TestWindowTransport extends WindowTransport {
+  private mockWindow: MockWindow;
+  private mockMessages: Message[] = [];
+  private mockErrors: Error[] = [];
+  private testMessageCallback?: (event: MessageEvent) => void;
 
-  const setupMocks = () => {
-    messageHandlers = [];
-
-    mockFrame = {
-      remove: vi.fn(),
-      contentWindow: {
-        postMessage: vi.fn(),
-      } as unknown as Window,
-      style: {
-        display: 'none',
-      } as CSSStyleDeclaration,
-      src: '',
-      onload: null,
-    } as unknown as HTMLIFrameElement;
-
-    mockWindow = {
-      addEventListener: vi.fn((event, handler) => {
+  constructor() {
+    const mockWindow = {
+      postMessage: vi.fn(),
+      addEventListener: vi.fn((event: string, handler: (event: MessageEvent) => void) => {
         if (event === 'message') {
-          messageHandlers.push(handler as (ev: MessageEvent) => void);
+          this.testMessageCallback = handler;
         }
       }),
       removeEventListener: vi.fn(),
-      location: { origin: 'http://localhost' },
-    } as unknown as Window;
-
-    const documentSpy = {
-      createElement: vi.fn(() => mockFrame),
-      body: {
-        appendChild: vi.fn(),
-        removeChild: vi.fn(),
-      },
     };
 
-    vi.stubGlobal('window', mockWindow);
-    vi.stubGlobal('document', documentSpy);
-  };
-
-  async function simulateIframeLoad() {
-    if (mockFrame.onload) {
-      mockFrame.onload(new Event('load'));
-      await vi.advanceTimersByTimeAsync(0);
-    }
-  }
-
-  async function simulateHandshake() {
-    const handshakeEvent = new MessageEvent('message', {
-      data: { type: 'handshake' },
-      source: mockFrame.contentWindow,
-      origin: mockUrl,
+    super({
+      target: mockWindow as unknown as Window,
+      origin: 'http://test.com',
+      timeout: 100,
     });
 
-    for (const handler of messageHandlers) {
-      handler(handshakeEvent);
-    }
-    await vi.advanceTimersByTimeAsync(0);
+    this.mockWindow = mockWindow;
   }
 
-  async function connectTransport() {
-    const connectPromise = transport.connect();
-    await vi.advanceTimersByTimeAsync(0);
-    await simulateIframeLoad();
-    await simulateHandshake();
-    return connectPromise;
+  public getMockWindow(): MockWindow {
+    return this.mockWindow;
   }
+
+  public getMockMessages(): Message[] {
+    return this.mockMessages;
+  }
+
+  public getMockErrors(): Error[] {
+    return this.mockErrors;
+  }
+
+  public simulateMessage(message: Message, origin = 'http://test.com'): void {
+    const event = new MessageEvent('message', {
+      data: message,
+      origin,
+    });
+
+    if (this.testMessageCallback) {
+      this.testMessageCallback(event);
+    }
+  }
+}
+
+describe('WindowTransport', () => {
+  let transport: TestWindowTransport;
 
   beforeEach(() => {
-    vi.useFakeTimers();
-    setupMocks();
-    transport = new WindowTransport({
-      url: mockUrl,
-      timeout: 1000,
-    });
+    transport = new TestWindowTransport();
   });
 
   afterEach(() => {
-    transport.disconnect();
-    messageHandlers = [];
-    vi.clearAllTimers();
-    vi.useRealTimers();
     vi.resetAllMocks();
-    vi.unstubAllGlobals();
   });
 
   describe('connection', () => {
-    it('initializes in disconnected state', () => {
-      expect(transport.getState()).toBe(TransportState.DISCONNECTED);
-      expect(transport.isConnected()).toBe(false);
-    });
+    it('should connect successfully', async () => {
+      const connectPromise = transport.connect();
 
-    it('connects successfully', async () => {
-      await connectTransport();
-      expect(transport.getState()).toBe(TransportState.CONNECTED);
-      expect(transport.isConnected()).toBe(true);
-    });
-
-    it('handles connection failure', async () => {
-      const error = new Error('Connection failed');
-      const errorHandler = vi.fn();
-      transport.addErrorHandler(errorHandler);
-
-      const spyCreate = vi.spyOn(document, 'createElement').mockImplementationOnce(() => {
-        throw error;
+      // Simulate successful ping response
+      transport.simulateMessage({
+        id: 'ping',
+        type: MessageType.RESPONSE,
+        payload: { success: true },
+        timestamp: Date.now(),
       });
 
-      const rejection = await getError<TransportError>(() => transport.connect());
-      await vi.advanceTimersByTimeAsync(0);
-
-      expect(spyCreate).toHaveBeenCalled();
-      expect(rejection.code).toBe(TransportErrorCode.CONNECTION_FAILED);
-      expect(rejection.name).toBe('TransportError');
-      expect((rejection as unknown as { cause: Error }).cause).toBe(error);
-      expect(transport.getState()).toBe(TransportState.ERROR);
-      expect(errorHandler).toHaveBeenCalledWith(rejection);
+      await connectPromise;
+      expect(transport.getState()).toBe(ConnectionState.CONNECTED);
     });
 
-    it('disconnects properly', async () => {
-      const errorHandler = vi.fn();
-      transport.addErrorHandler(errorHandler);
-      await connectTransport();
+    it('should handle connection timeout', async () => {
+      const promise = transport.connect();
+      await expect(promise).rejects.toThrow(createTransportError.connectionFailed('Connection timeout'));
+    });
 
-      transport.disconnect();
-      await vi.advanceTimersByTimeAsync(0);
+    it('should handle invalid origin', async () => {
+      const connectPromise = transport.connect();
 
-      expect(mockFrame.remove).toHaveBeenCalled();
-      expect(transport.getState()).toBe(TransportState.DISCONNECTED);
-      expect(errorHandler).toHaveBeenCalledWith(
-        expect.objectContaining({
-          code: TransportErrorCode.CONNECTION_FAILED,
-          name: 'TransportError',
-        }),
+      // Simulate message from wrong origin
+      transport.simulateMessage(
+        {
+          id: 'ping',
+          type: MessageType.RESPONSE,
+          payload: { success: true },
+          timestamp: Date.now(),
+        },
+        'http://wrong-origin.com',
       );
 
-      // Verify handlers are cleared
-      errorHandler.mockClear();
-      const message = createTestMessage();
-      await getError<TransportError>(() => transport.send(message));
-      await vi.advanceTimersByTimeAsync(0);
-      expect(errorHandler).not.toHaveBeenCalled();
+      await expect(connectPromise).rejects.toThrow();
     });
   });
 
   describe('messaging', () => {
     beforeEach(async () => {
-      await connectTransport();
+      const connectPromise = transport.connect();
+      transport.simulateMessage({
+        id: 'ping',
+        type: MessageType.RESPONSE,
+        payload: { success: true },
+        timestamp: Date.now(),
+      });
+      await connectPromise;
     });
 
-    it('sends and receives messages', async () => {
-      const message = createTestMessage();
-      const sendPromise = transport.send(message);
-      await vi.advanceTimersByTimeAsync(0);
+    it('should send and receive messages', async () => {
+      const requestMessage: Message = {
+        id: 'test',
+        type: MessageType.REQUEST,
+        payload: { method: 'test', params: [] },
+        timestamp: Date.now(),
+      };
 
-      expect(mockFrame.contentWindow?.postMessage).toHaveBeenCalledWith(message, '*');
+      const sendPromise = transport.send(requestMessage);
 
-      const responseEvent = new MessageEvent('message', {
-        data: {
-          id: message.id,
-          type: MessageType.RESPONSE,
-          payload: { success: true },
-        },
-        source: mockFrame.contentWindow,
-        origin: mockUrl,
+      transport.simulateMessage({
+        id: 'test',
+        type: MessageType.RESPONSE,
+        payload: { result: 'success' },
+        timestamp: Date.now(),
       });
 
-      for (const handler of messageHandlers) {
-        handler(responseEvent);
-      }
-
-      await vi.advanceTimersByTimeAsync(0);
       const response = await sendPromise;
-      expect(response.id).toBe(message.id);
-      expect(response.type).toBe(MessageType.RESPONSE);
+      expect(response.payload).toEqual({ result: 'success' });
     });
 
-    it('validates messages synchronously', async () => {
-      const invalidMessage = {} as Message;
-      const errorHandler = vi.fn();
-      transport.addErrorHandler(errorHandler);
+    it('should handle message timeouts', async () => {
+      const message: Message = {
+        id: 'test',
+        type: MessageType.REQUEST,
+        payload: { method: 'test', params: [] },
+        timestamp: Date.now(),
+      };
 
-      const error = await getError<TransportError>(() => transport.send(invalidMessage));
-      await vi.advanceTimersByTimeAsync(0);
-
-      expect(error).toEqual(
-        expect.objectContaining({
-          code: TransportErrorCode.INVALID_MESSAGE,
-          name: 'TransportError',
-        }),
-      );
-
-      expect(errorHandler).toHaveBeenCalledWith(error);
+      const promise = transport.send(message);
+      await expect(promise).rejects.toThrow(createTransportError.timeout('Message timeout'));
     });
 
-    it('validates connection state', async () => {
-      const errorHandler = vi.fn();
-      transport.addErrorHandler(errorHandler);
+    it('should handle error messages', async () => {
+      const message: Message = {
+        id: 'test',
+        type: MessageType.REQUEST,
+        payload: { method: 'test', params: [] },
+        timestamp: Date.now(),
+      };
 
-      transport.disconnect();
-      await vi.advanceTimersByTimeAsync(0);
-      errorHandler.mockClear(); // Clear disconnect notification
+      const sendPromise = transport.send(message);
 
-      const message = createTestMessage();
-      const error = await getError<TransportError>(() => transport.send(message));
-      await vi.advanceTimersByTimeAsync(0);
+      transport.simulateMessage({
+        id: 'test',
+        type: MessageType.ERROR,
+        payload: { message: 'Test error' },
+        timestamp: Date.now(),
+      });
 
-      // Handlers are cleared on disconnect
-      expect(error.code).toBe(TransportErrorCode.CONNECTION_FAILED);
-      expect(error.name).toBe('TransportError');
-      expect(errorHandler).not.toHaveBeenCalled();
-    });
-
-    it('clears error handlers on disconnect', async () => {
-      const errorHandler = vi.fn();
-      transport.addErrorHandler(errorHandler);
-
-      transport.disconnect();
-      await vi.advanceTimersByTimeAsync(0);
-
-      // Should receive disconnect notification
-      expect(errorHandler).toHaveBeenCalledWith(
-        expect.objectContaining({
-          code: TransportErrorCode.CONNECTION_FAILED,
-          name: 'TransportError',
-        }),
-      );
-
-      errorHandler.mockClear();
-
-      // Should not receive any more notifications after disconnect
-      const message = createTestMessage();
-      await getError<TransportError>(() => transport.send(message));
-      await vi.advanceTimersByTimeAsync(0);
-
-      expect(errorHandler).not.toHaveBeenCalled();
+      await expect(sendPromise).rejects.toThrow('Test error');
     });
   });
 
-  describe('subscriptions', () => {
-    beforeEach(async () => {
-      await connectTransport();
+  describe('disconnection', () => {
+    it('should cleanup on disconnect', async () => {
+      const mockWindow = transport.getMockWindow();
+
+      await transport.connect();
+      await transport.disconnect();
+
+      expect(mockWindow.removeEventListener).toHaveBeenCalledWith('message', expect.any(Function));
     });
 
-    it('handles subscriptions', async () => {
-      const handler = vi.fn();
-      const unsubscribe = transport.subscribe({ onMessage: handler });
-      await vi.advanceTimersByTimeAsync(0);
+    it('should reject pending messages on disconnect', async () => {
+      await transport.connect();
 
-      const message = createTestMessage();
-      const messageEvent = new MessageEvent('message', {
-        data: message,
-        source: mockFrame.contentWindow,
-        origin: mockUrl,
-      });
+      const message: Message = {
+        id: 'test',
+        type: MessageType.REQUEST,
+        payload: { method: 'test', params: [] },
+        timestamp: Date.now(),
+      };
 
-      for (const h of messageHandlers) {
-        h(messageEvent);
-      }
-      await vi.advanceTimersByTimeAsync(0);
-      expect(handler).toHaveBeenCalledWith(message);
+      const sendPromise = transport.send(message);
+      await transport.disconnect();
 
-      unsubscribe();
-      await vi.advanceTimersByTimeAsync(0);
-
-      for (const h of messageHandlers) {
-        h(messageEvent);
-      }
-      await vi.advanceTimersByTimeAsync(0);
-      expect(handler).toHaveBeenCalledTimes(1);
+      await expect(sendPromise).rejects.toThrow(
+        createTransportError.connectionFailed('Transport disconnected'),
+      );
     });
   });
 });
-
-async function getError<T extends Error>(fn: () => Promise<unknown>): Promise<T> {
-  try {
-    await fn();
-    throw new Error('Expected function to throw');
-  } catch (error) {
-    return error as T;
-  }
-}

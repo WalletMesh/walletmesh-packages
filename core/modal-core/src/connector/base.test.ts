@@ -1,247 +1,199 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { BaseConnector } from './base.js';
-import type { ConnectedWallet, WalletInfo } from '../types.js';
-import { ConnectionStatus } from '../types.js';
-import type { Protocol, ProtocolMessage, Transport, Provider } from './types.js';
-import type { Message, ValidationResult } from '../transport/types.js';
-import { MessageType } from '../transport/types.js';
-import { TransportError, TransportErrorCode, ProtocolError, ProtocolErrorCode } from '../transport/errors.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { BaseConnector, ConnectionState } from './base.js';
+import type { Protocol, Transport } from '../transport/types.js';
+import type { ConnectedWallet, Provider, WalletInfo } from '../types.js';
 
-// Define test message type
-interface TestMessage extends ProtocolMessage {
-  request: {
-    method: string;
-    params: unknown[];
-  };
-  response: {
-    result?: unknown;
-    error?: string;
-  };
+interface TestRequest {
+  method: string;
+  data: unknown;
+}
+
+interface TestResponse {
+  result: unknown;
+}
+
+class TestConnector extends BaseConnector<TestRequest> {
+  protected async doConnect(walletInfo: WalletInfo): Promise<ConnectedWallet> {
+    return {
+      address: walletInfo.address,
+      chainId: walletInfo.chainId,
+      publicKey: walletInfo.publicKey,
+      connected: true,
+      type: 'test',
+      info: walletInfo,
+      state: {
+        address: walletInfo.address,
+        networkId: 1,
+        sessionId: 'test',
+        lastActive: Date.now(),
+      },
+    };
+  }
+
+  protected async createProvider(): Promise<Provider> {
+    return {
+      isConnected: () => false,
+      request: async <T>(): Promise<T> => ({}) as T,
+      connect: async () => undefined,
+      disconnect: async () => undefined,
+    };
+  }
+
+  protected async handleProtocolMessage(message: TestRequest): Promise<TestResponse> {
+    return { result: message.data };
+  }
 }
 
 describe('BaseConnector', () => {
-  class TestConnector extends BaseConnector<TestMessage> {
-    private connectionState = ConnectionStatus.DISCONNECTED;
-    protected override currentWallet: ConnectedWallet | null = null;
-
-    protected async doConnect(walletInfo: WalletInfo): Promise<void> {
-      await this.transport.connect();
-      this.connectionState = ConnectionStatus.CONNECTED;
-      this.currentWallet = this.createConnectedWallet(walletInfo);
-    }
-
-    protected async doDisconnect(): Promise<void> {
-      await this.transport.disconnect();
-      this.connectionState = ConnectionStatus.DISCONNECTED;
-      this.currentWallet = null;
-    }
-
-    public override async getProvider(): Promise<Provider> {
-      return {
-        request: async <T>(method: string, params: unknown[] = []): Promise<T> => {
-          const result = await this.request(method, params);
-          return result as T;
-        },
-        connect: async () => {},
-        disconnect: async () => {},
-        isConnected: () => this.isConnected(),
-      };
-    }
-
-    protected async handleProtocolMessage(message: Message<TestMessage>): Promise<void> {
-      const validationResult = this.protocol.validateMessage(message);
-      if (!validationResult.success) {
-        throw new ProtocolError(validationResult.error.message, validationResult.error.code);
-      }
-
-      if (validationResult.data.type === MessageType.REQUEST) {
-        const response = this.protocol.createResponse(message.id, {
-          result: true,
-        });
-        await this.transport.send(response);
-      }
-    }
-
-    protected override createConnectedWallet(info: WalletInfo): ConnectedWallet {
-      return {
-        address: info.address,
-        chainId: info.chainId,
-        publicKey: info.publicKey || '0x',
-        connected: true,
-        state: {
-          sessionId: 'test-session',
-          networkId: info.chainId,
-          address: info.address,
-          lastActive: Date.now(),
-        },
-      };
-    }
-
-    public override isConnected(): boolean {
-      return this.connectionState === ConnectionStatus.CONNECTED;
-    }
-
-    public override getState(): ConnectionStatus {
-      return this.connectionState;
-    }
-
-    // Test helper
-    public async testRequest<TReq = unknown, TRes = unknown>(method: string, params: TReq[]): Promise<TRes> {
-      return this.sendRequest(method, params);
-    }
-  }
-
   let connector: TestConnector;
-  let mockTransport: Transport;
-  let mockProtocol: Protocol<TestMessage>;
-  let testWalletInfo: WalletInfo;
+  let mockTransport: {
+    connect: ReturnType<typeof vi.fn>;
+    disconnect: ReturnType<typeof vi.fn>;
+    send: ReturnType<typeof vi.fn>;
+    isConnected: ReturnType<typeof vi.fn>;
+    getState: ReturnType<typeof vi.fn>;
+    addErrorHandler: ReturnType<typeof vi.fn>;
+    removeErrorHandler: ReturnType<typeof vi.fn>;
+  } & Transport;
+  let mockProtocol: Protocol<TestRequest>;
+  let mockWalletInfo: WalletInfo;
 
   beforeEach(() => {
-    const createMockMessage = (id: string, type: MessageType): Message<TestMessage> => ({
-      id,
-      type,
-      payload: {
-        request: { method: 'test', params: [] },
-        response: { result: true },
-      },
-      timestamp: Date.now(),
-    });
+    mockWalletInfo = {
+      address: '0xtest',
+      chainId: 1,
+      publicKey: '0x123',
+    };
 
     mockTransport = {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
-      send: vi
-        .fn()
-        .mockImplementation((msg: Message<TestMessage>) =>
-          Promise.resolve(createMockMessage(msg.id, MessageType.RESPONSE)),
-        ),
-      isConnected: vi.fn().mockImplementation(() => connector?.isConnected() ?? false),
-      getState: vi.fn().mockReturnValue('connected'),
-      subscribe: vi.fn().mockReturnValue(() => {}),
+      send: vi.fn().mockImplementation((message) =>
+        Promise.resolve({
+          ...message,
+          payload: { result: message.payload.data },
+        }),
+      ),
+      isConnected: vi.fn().mockReturnValue(true),
+      getState: vi.fn().mockReturnValue(ConnectionState.CONNECTED),
       addErrorHandler: vi.fn(),
       removeErrorHandler: vi.fn(),
     };
 
     mockProtocol = {
-      createRequest: vi.fn().mockImplementation(() => createMockMessage('1', MessageType.REQUEST)),
-      createResponse: vi.fn().mockImplementation((id: string) => createMockMessage(id, MessageType.RESPONSE)),
-      createError: vi.fn().mockImplementation((id: string) => createMockMessage(id, MessageType.ERROR)),
-      validateMessage: vi.fn().mockImplementation(
-        (msg: unknown): ValidationResult<Message<TestMessage>> => ({
-          success: true,
-          data: msg as Message<TestMessage>,
-        }),
-      ),
-      formatMessage: vi.fn().mockReturnValue(''),
-      parseMessage: vi.fn().mockImplementation(
-        (): ValidationResult<Message<TestMessage>> => ({
-          success: true,
-          data: createMockMessage('1', MessageType.RESPONSE),
-        }),
-      ),
-    };
-
-    testWalletInfo = {
-      address: '0x123',
-      chainId: 1,
-      publicKey: '0x456',
+      validate: vi.fn().mockReturnValue({ success: true }),
+      validateMessage: vi.fn().mockReturnValue({ success: true }),
+      parseMessage: vi.fn().mockReturnValue({ success: true }),
+      formatMessage: vi.fn(),
+      createRequest: vi.fn().mockImplementation((method, params) => ({
+        id: 'test',
+        type: 'request',
+        payload: { method, data: params },
+        timestamp: Date.now(),
+      })),
+      createResponse: vi.fn().mockImplementation((id, result) => ({
+        id,
+        type: 'response',
+        payload: { result },
+        timestamp: Date.now(),
+      })),
+      createError: vi.fn().mockImplementation((id, error) => ({
+        id,
+        type: 'error',
+        payload: { method: 'error', data: error.message },
+        timestamp: Date.now(),
+      })),
     };
 
     connector = new TestConnector(mockTransport, mockProtocol);
   });
 
-  describe('wallet management', () => {
-    it('should connect successfully', async () => {
-      const wallet = await connector.connect(testWalletInfo);
-      expect(connector.isConnected()).toBe(true);
-      expect(wallet.address).toBe(testWalletInfo.address);
-      expect(mockTransport.connect).toHaveBeenCalled();
+  describe('initialization', () => {
+    it('initializes in disconnected state', () => {
+      expect(connector.getState()).toBe(ConnectionState.DISCONNECTED);
+      expect(connector.getWallet()).toBeNull();
+      expect(connector.getWalletState()).toBeNull();
+    });
+  });
+
+  describe('connection management', () => {
+    it('connects successfully', async () => {
+      const wallet = await connector.connect(mockWalletInfo);
+
+      expect(wallet).toBeDefined();
+      expect(wallet.address).toBe(mockWalletInfo.address);
+      expect(connector.getState()).toBe(ConnectionState.CONNECTED);
+      expect(connector.getWallet()).toEqual(wallet);
+      expect(connector.getWalletState()).toEqual(wallet.state);
     });
 
-    it('should resume connection', async () => {
-      const timestamp = Date.now();
-      const state = {
-        sessionId: 'test-session',
-        networkId: testWalletInfo.chainId,
-        address: testWalletInfo.address,
-        lastActive: timestamp,
-      };
+    it('handles connection errors', async () => {
+      class ErrorConnector extends TestConnector {
+        protected override async doConnect(): Promise<ConnectedWallet> {
+          throw new Error('Failed to connect to wallet');
+        }
+      }
 
-      const wallet = await connector.resume(testWalletInfo, state);
-      expect(connector.isConnected()).toBe(true);
-      expect(wallet.address).toBe(testWalletInfo.address);
-      expect(wallet.state).toMatchObject({
-        ...state,
-        lastActive: expect.any(Number),
-      });
+      const errorConnector = new ErrorConnector(mockTransport, mockProtocol);
+      await expect(errorConnector.connect(mockWalletInfo)).rejects.toThrow('Failed to connect to wallet');
+      expect(errorConnector.getState()).toBe(ConnectionState.ERROR);
+      expect(errorConnector.getWallet()).toBeNull();
+      expect(errorConnector.getWalletState()).toBeNull();
     });
 
-    it('should handle disconnection', async () => {
-      await connector.connect(testWalletInfo);
-      expect(connector.isConnected()).toBe(true);
-
+    it('disconnects properly', async () => {
+      await connector.connect(mockWalletInfo);
       await connector.disconnect();
-      expect(connector.isConnected()).toBe(false);
-      expect(mockTransport.disconnect).toHaveBeenCalled();
+
+      expect(connector.getState()).toBe(ConnectionState.DISCONNECTED);
+      expect(connector.getWallet()).toBeNull();
+      expect(connector.getWalletState()).toBeNull();
+    });
+
+    it('handles disconnect errors', async () => {
+      class ErrorConnector extends TestConnector {
+        protected override async doDisconnect(): Promise<void> {
+          throw new Error('Failed to disconnect from wallet');
+        }
+      }
+
+      const errorConnector = new ErrorConnector(mockTransport, mockProtocol);
+      await errorConnector.connect(mockWalletInfo);
+      await expect(errorConnector.disconnect()).rejects.toThrow('Failed to disconnect from wallet');
+      expect(errorConnector.getState()).toBe(ConnectionState.ERROR);
     });
   });
 
   describe('message handling', () => {
-    beforeEach(async () => {
-      await connector.connect(testWalletInfo);
-    });
+    it('sends messages successfully', async () => {
+      await connector.connect(mockWalletInfo);
+      const request: TestRequest = {
+        method: 'test',
+        data: { value: 123 },
+      };
 
-    it('should send requests', async () => {
-      const response = await connector.testRequest('test', ['param1']);
+      const result = await connector['sendMessage'](request);
+      expect(result).toEqual({ result: request.data });
+      expect(mockProtocol.createRequest).toHaveBeenCalledWith('request', request);
       expect(mockTransport.send).toHaveBeenCalled();
-      expect(response).toBeDefined();
     });
 
-    it('should validate connection state before sending', async () => {
-      await connector.disconnect();
-      await expect(connector.testRequest('test', [])).rejects.toThrow(TransportError);
-    });
+    it('handles message errors', async () => {
+      await connector.connect(mockWalletInfo);
+      mockTransport.send.mockRejectedValueOnce(new Error('Failed to send message'));
 
-    it('should handle transport errors', async () => {
-      vi.mocked(mockTransport.send).mockRejectedValueOnce(
-        new TransportError('Test error', TransportErrorCode.CONNECTION_FAILED),
-      );
+      const request: TestRequest = {
+        method: 'test',
+        data: { value: 123 },
+      };
 
-      await expect(connector.testRequest('test', [])).rejects.toThrow(TransportError);
-    });
-
-    it('should handle protocol validation errors', async () => {
-      vi.mocked(mockProtocol.validateMessage).mockReturnValueOnce({
-        success: false,
-        error: new ProtocolError('Invalid message', ProtocolErrorCode.INVALID_FORMAT),
+      await expect(connector['sendMessage'](request)).rejects.toMatchObject({
+        message: 'Failed to send message',
+        code: 'send_failed',
+        details: {
+          cause: expect.any(Error),
+        },
       });
-
-      await expect(connector.testRequest('test', [])).rejects.toThrow(ProtocolError);
-    });
-  });
-
-  describe('state management', () => {
-    it('should track connection state', async () => {
-      expect(connector.getState()).toBe(ConnectionStatus.DISCONNECTED);
-
-      await connector.connect(testWalletInfo);
-      expect(connector.getState()).toBe(ConnectionStatus.CONNECTED);
-
-      await connector.disconnect();
-      expect(connector.getState()).toBe(ConnectionStatus.DISCONNECTED);
-    });
-
-    it('should handle provider creation', async () => {
-      await connector.connect(testWalletInfo);
-      const provider = await connector.getProvider();
-      expect(provider).toBeDefined();
-      expect(provider.isConnected()).toBe(true);
-    });
-
-    it('should handle provider creation when disconnected', async () => {
-      const provider = await connector.getProvider();
-      expect(provider).toBeDefined();
-      expect(provider.isConnected()).toBe(false);
     });
   });
 });

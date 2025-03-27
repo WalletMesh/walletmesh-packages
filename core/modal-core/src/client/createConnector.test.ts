@@ -1,152 +1,118 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { registerConnector, createConnector, clearConnectorRegistry } from './createConnector.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createConnector, registerConnector, clearConnectorRegistry } from './createConnector.js';
+import { ConnectionState, type ConnectedWallet, type WalletConnectorConfig } from '../types.js';
 import type { Connector, ConnectorFactory } from './types.js';
-import { ConnectionStatus } from '../types.js';
-import type { WalletConnectorConfig } from '../types.js';
 
 describe('createConnector', () => {
-  const mockConnector: Connector = {
-    connect: vi.fn(),
-    resume: vi.fn(),
-    disconnect: vi.fn(),
-    getProvider: vi.fn(),
-    getState: vi.fn().mockReturnValue(ConnectionStatus.DISCONNECTED),
+  const mockState = {
+    address: '0xtest',
+    networkId: 1,
+    sessionId: 'test',
+    lastActive: Date.now(),
   };
 
-  const mockFactory = vi.fn().mockReturnValue(mockConnector) as unknown as ConnectorFactory;
+  const mockWallet: ConnectedWallet = {
+    address: '0xtest',
+    chainId: 1,
+    publicKey: '0x123',
+    connected: true,
+    type: 'mock',
+    state: mockState,
+  };
+
+  const createMockConnector = (): Connector => ({
+    connect: vi.fn().mockResolvedValue(mockWallet),
+    disconnect: vi.fn().mockResolvedValue(undefined),
+    getProvider: vi.fn().mockResolvedValue({}),
+    getState: vi.fn().mockReturnValue(ConnectionState.DISCONNECTED),
+    resume: vi.fn().mockResolvedValue(mockWallet),
+  });
+
+  const mockFactory: ConnectorFactory = vi.fn().mockImplementation(() => createMockConnector());
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    registerConnector('mock', mockFactory);
+  });
+
+  afterEach(() => {
     clearConnectorRegistry();
+    vi.clearAllMocks();
   });
 
-  describe('registerConnector', () => {
-    it('should successfully register a connector factory', () => {
-      registerConnector('test', mockFactory);
+  it('should create connector for valid config', () => {
+    const config: WalletConnectorConfig = {
+      type: 'mock',
+      defaultChainId: 1,
+    };
 
-      const config: WalletConnectorConfig = { type: 'test' };
-      const connector = createConnector(config);
-
-      expect(vi.mocked(mockFactory)).toHaveBeenCalledWith(config);
-      expect(connector).toBe(mockConnector);
-    });
-
-    it('should allow overwriting existing connector registration', () => {
-      const alternativeMockConnector: Connector = {
-        connect: vi.fn(),
-        resume: vi.fn(),
-        disconnect: vi.fn(),
-        getProvider: vi.fn(),
-        getState: vi.fn().mockReturnValue(ConnectionStatus.DISCONNECTED),
-      };
-      const alternativeMockFactory = vi
-        .fn()
-        .mockReturnValue(alternativeMockConnector) as unknown as ConnectorFactory;
-
-      registerConnector('test', mockFactory);
-      registerConnector('test', alternativeMockFactory);
-
-      const config: WalletConnectorConfig = { type: 'test' };
-      const connector = createConnector(config);
-
-      expect(vi.mocked(mockFactory)).not.toHaveBeenCalled();
-      expect(vi.mocked(alternativeMockFactory)).toHaveBeenCalledWith(config);
-      expect(connector).toBe(alternativeMockConnector);
-    });
-
-    it('should support multiple different connector types', () => {
-      const mockFactoryA = vi.fn().mockReturnValue({ ...mockConnector }) as unknown as ConnectorFactory;
-      const mockFactoryB = vi.fn().mockReturnValue({ ...mockConnector }) as unknown as ConnectorFactory;
-
-      registerConnector('typeA', mockFactoryA);
-      registerConnector('typeB', mockFactoryB);
-
-      const configA: WalletConnectorConfig = { type: 'typeA' };
-      const configB: WalletConnectorConfig = { type: 'typeB' };
-
-      createConnector(configA);
-      createConnector(configB);
-
-      expect(vi.mocked(mockFactoryA)).toHaveBeenCalledWith(configA);
-      expect(vi.mocked(mockFactoryB)).toHaveBeenCalledWith(configB);
-    });
+    const connector = createConnector(config);
+    expect(connector).toBeDefined();
+    expect(mockFactory).toHaveBeenCalledWith(config);
   });
 
-  describe('createConnector', () => {
-    it('should throw error for unregistered connector type', () => {
-      const config: WalletConnectorConfig = { type: 'unknown' };
+  it('should throw for invalid connector type', () => {
+    const config: WalletConnectorConfig = {
+      type: 'invalid',
+      defaultChainId: 1,
+    };
 
-      expect(() => createConnector(config)).toThrow('No connector factory registered for type: unknown');
-    });
-
-    it('should pass connector options to factory', () => {
-      const config: WalletConnectorConfig = {
-        type: 'test',
-        options: { foo: 'bar' },
-      };
-
-      registerConnector('test', mockFactory);
-      createConnector(config);
-
-      expect(vi.mocked(mockFactory)).toHaveBeenCalledWith(config);
-    });
-
-    it('should handle undefined options', () => {
-      const config: WalletConnectorConfig = { type: 'test' };
-
-      registerConnector('test', mockFactory);
-      createConnector(config);
-
-      expect(vi.mocked(mockFactory)).toHaveBeenCalledWith(config);
-    });
+    expect(() => createConnector(config)).toThrow('No connector factory registered for type: invalid');
   });
 
-  describe('clearConnectorRegistry', () => {
-    it('should remove all registered connectors', () => {
-      registerConnector('test1', mockFactory);
-      registerConnector('test2', mockFactory);
+  it('should create functional connector', async () => {
+    const config: WalletConnectorConfig = {
+      type: 'mock',
+      defaultChainId: 1,
+    };
 
-      clearConnectorRegistry();
+    const connector = createConnector(config);
+    const state = connector.getState();
+    expect(state).toBe(ConnectionState.DISCONNECTED);
 
-      const config: WalletConnectorConfig = { type: 'test1' };
-      expect(() => createConnector(config)).toThrow('No connector factory registered for type: test1');
+    const wallet = await connector.connect({
+      address: '0xtest',
+      chainId: 1,
+      publicKey: '0x123',
     });
 
-    it('should allow registering new connectors after clearing', () => {
-      registerConnector('test', mockFactory);
-      clearConnectorRegistry();
-      registerConnector('newTest', mockFactory);
-
-      const config: WalletConnectorConfig = { type: 'newTest' };
-      const connector = createConnector(config);
-
-      expect(vi.mocked(mockFactory)).toHaveBeenCalledWith(config);
-      expect(connector).toBe(mockConnector);
-    });
+    expect(wallet).toEqual(mockWallet);
   });
 
-  describe('error cases', () => {
-    it('should validate connector implements required interface', () => {
-      const invalidConnector = {
-        // Missing required methods
-        connect: vi.fn(),
-      };
-      const invalidFactory = vi.fn().mockReturnValue(invalidConnector) as unknown as ConnectorFactory;
+  it('should handle provider interactions', async () => {
+    const config: WalletConnectorConfig = {
+      type: 'mock',
+      defaultChainId: 1,
+    };
 
-      registerConnector('test', invalidFactory);
-      const config: WalletConnectorConfig = { type: 'test' };
+    const connector = createConnector(config);
+    const provider = await connector.getProvider();
+    expect(provider).toBeDefined();
+  });
 
-      // TypeScript will catch this at compile time, but we should still
-      // have runtime tests to ensure interface compliance
-      expect(() => createConnector(config)).not.toThrow();
-    });
+  it('should handle multiple registrations', () => {
+    const anotherFactory = vi.fn().mockImplementation(() => createMockConnector());
+    registerConnector('another', anotherFactory);
 
-    it('should handle null/undefined/invalid config', () => {
-      expect(() => createConnector(null as unknown as WalletConnectorConfig)).toThrow();
+    const config1: WalletConnectorConfig = { type: 'mock', defaultChainId: 1 };
+    const config2: WalletConnectorConfig = { type: 'another', defaultChainId: 1 };
 
-      expect(() => createConnector(undefined as unknown as WalletConnectorConfig)).toThrow();
+    const connector1 = createConnector(config1);
+    const connector2 = createConnector(config2);
 
-      expect(() => createConnector({} as unknown as WalletConnectorConfig)).toThrow();
-    });
+    expect(connector1).toBeDefined();
+    expect(connector2).toBeDefined();
+    expect(mockFactory).toHaveBeenCalledWith(config1);
+    expect(anotherFactory).toHaveBeenCalledWith(config2);
+  });
+
+  it('should handle registry clearing', () => {
+    clearConnectorRegistry();
+
+    const config: WalletConnectorConfig = {
+      type: 'mock',
+      defaultChainId: 1,
+    };
+
+    expect(() => createConnector(config)).toThrow('No connector factory registered for type: mock');
   });
 });

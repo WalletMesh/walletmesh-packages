@@ -1,170 +1,254 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChromeExtensionTransport } from './chrome-extension.js';
-import { TransportError } from './errors.js';
-import { MessageType, type Message } from './types.js';
+import { ConnectionState, MessageType } from './types.js';
+import { createTransportError } from './errors.js';
+import type { Message } from './types.js';
+import type { ErrorHandler } from './types.js';
+
+type MockChrome = {
+  runtime: {
+    connect: ReturnType<typeof vi.fn>;
+  };
+};
+
+/**
+ * Test extension transport that exposes protected methods
+ */
+class TestChromeExtensionTransport extends ChromeExtensionTransport {
+  private mockMessages: Message[] = [];
+  private mockErrors: Error[] = [];
+
+  constructor() {
+    super({ extensionId: 'test-extension', timeout: 100 });
+  }
+
+  public getMessages(): Message[] {
+    return this.mockMessages;
+  }
+
+  public getErrors(): Error[] {
+    return this.mockErrors;
+  }
+
+  public async simulateMessage(message: Message): Promise<void> {
+    // Access parent protected method via casting
+    (this as unknown as { handlePortMessage: (message: Message) => void }).handlePortMessage(message);
+  }
+
+  public async simulateDisconnect(): Promise<void> {
+    const mockPort = {
+      name: 'test-port',
+      disconnect: vi.fn(),
+      onDisconnect: {
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        hasListener: vi.fn(),
+        hasListeners: vi.fn(),
+        getRules: vi.fn(),
+        removeRules: vi.fn(),
+        addRules: vi.fn(),
+      },
+      onMessage: {
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        hasListener: vi.fn(),
+        hasListeners: vi.fn(),
+        getRules: vi.fn(),
+        removeRules: vi.fn(),
+        addRules: vi.fn(),
+      },
+      postMessage: vi.fn(),
+    } satisfies chrome.runtime.Port;
+
+    // Access parent protected method via casting
+    (this as unknown as { handleDisconnect: (port: chrome.runtime.Port) => void }).handleDisconnect(mockPort);
+  }
+
+  // Expose protected methods for spying
+  public async testConnectImpl(): Promise<void> {
+    return this.connectImpl();
+  }
+
+  protected override async connectImpl(): Promise<void> {
+    // No-op for testing
+  }
+
+  protected override async disconnectImpl(): Promise<void> {
+    // No-op for testing
+  }
+
+  protected override async sendImpl<T, R>(message: Message<T>): Promise<Message<R>> {
+    return {
+      id: message.id,
+      type: MessageType.RESPONSE,
+      payload: { success: true } as R,
+      timestamp: Date.now(),
+    };
+  }
+}
 
 describe('ChromeExtensionTransport', () => {
-  // Mock chrome.runtime
-  const mockPort = {
-    name: 'test-port',
-    onMessage: {
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-    },
-    onDisconnect: {
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-    },
-    postMessage: vi.fn(),
-    disconnect: vi.fn(),
+  let transport: TestChromeExtensionTransport;
+  let mockChromeRuntime: {
+    connect: ReturnType<typeof vi.fn>;
   };
-
-  const mockConnect = vi.fn(() => mockPort);
-  const mockRuntime = {
-    connect: mockConnect,
-    lastError: null,
-  };
+  let originalChrome: typeof globalThis.chrome;
 
   beforeEach(() => {
-    vi.stubGlobal('chrome', { runtime: mockRuntime });
+    transport = new TestChromeExtensionTransport();
+
+    // Store original chrome object
+    originalChrome = globalThis.chrome;
+
+    // Create mock chrome runtime
+    mockChromeRuntime = {
+      connect: vi.fn().mockReturnValue({
+        onMessage: {
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          hasListener: vi.fn(),
+          hasListeners: vi.fn(),
+          getRules: vi.fn(),
+          removeRules: vi.fn(),
+          addRules: vi.fn(),
+        },
+        onDisconnect: {
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+          hasListener: vi.fn(),
+          hasListeners: vi.fn(),
+          getRules: vi.fn(),
+          removeRules: vi.fn(),
+          addRules: vi.fn(),
+        },
+        disconnect: vi.fn(),
+        postMessage: vi.fn(),
+      }),
+    };
+
+    // Set mock chrome
+    (globalThis as unknown as { chrome: MockChrome }).chrome = {
+      runtime: mockChromeRuntime,
+    };
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    // Restore original chrome object
+    globalThis.chrome = originalChrome;
   });
 
   describe('connection', () => {
-    it('should connect to extension', async () => {
-      const transport = new ChromeExtensionTransport({
-        extensionId: 'test-id',
-        timeout: 1000,
-        connectionInfo: { name: 'test-id' },
-      });
-
+    it('connects successfully', async () => {
       await transport.connect();
-      expect(mockConnect).toHaveBeenCalledWith('test-id', { name: 'test-id' });
-      expect(mockPort.onMessage.addListener).toHaveBeenCalled();
-      expect(mockPort.onDisconnect.addListener).toHaveBeenCalled();
+      expect(transport.getState()).toBe(ConnectionState.CONNECTED);
     });
 
-    it('should handle connection failures', async () => {
-      mockConnect.mockImplementationOnce(() => {
-        throw new Error('Connection failed');
-      });
+    it('handles connection failures', async () => {
+      const error = new Error('Connection failed');
+      vi.spyOn(transport, 'testConnectImpl').mockRejectedValueOnce(error);
 
-      const transport = new ChromeExtensionTransport({ extensionId: 'test-id' });
-      await expect(transport.connect()).rejects.toThrow(TransportError);
+      await expect(transport.connect()).rejects.toThrow(
+        createTransportError.connectionFailed('Failed to connect transport', { cause: error }),
+      );
+      expect(transport.getState()).toBe(ConnectionState.ERROR);
     });
 
-    it('should handle chrome runtime errors', async () => {
-      mockConnect.mockImplementationOnce(() => {
-        throw new Error('Chrome runtime error');
+    it('handles chrome runtime errors', async () => {
+      const error = new Error('Runtime error');
+      mockChromeRuntime.connect.mockImplementationOnce(() => {
+        throw error;
       });
 
-      const transport = new ChromeExtensionTransport({ extensionId: 'test-id' });
-      await expect(transport.connect()).rejects.toThrow(TransportError);
+      await expect(transport.connect()).rejects.toThrow(error);
     });
   });
 
-  describe('message handling', () => {
-    it('should send and receive messages', async () => {
-      const transport = new ChromeExtensionTransport({ extensionId: 'test-id' });
+  describe('messaging', () => {
+    beforeEach(async () => {
       await transport.connect();
-
-      const request: Message = {
-        id: 'test-id',
-        type: MessageType.REQUEST,
-        payload: { test: true },
-        timestamp: Date.now(),
-      };
-
-      mockPort.postMessage.mockImplementationOnce((msg: Message) => {
-        // Simulate response by calling the message handler directly
-        const calls = mockPort.onMessage.addListener.mock.calls;
-        const messageHandler = calls[0]?.[0] as (message: Message) => void;
-
-        if (!messageHandler) {
-          throw new Error('Message handler not registered');
-        }
-
-        messageHandler({
-          id: msg.id,
-          type: MessageType.RESPONSE,
-          payload: { result: true },
-          timestamp: Date.now(),
-        });
-      });
-
-      const response = await transport.send(request);
-      expect(response.type).toBe(MessageType.RESPONSE);
-      expect(response.payload).toEqual({ result: true });
     });
 
-    it('should handle message timeouts', async () => {
-      const transport = new ChromeExtensionTransport({
-        extensionId: 'test-id',
-        timeout: 100,
-      });
-      await transport.connect();
-
-      const request: Message = {
-        id: 'test-id',
+    it('sends and receives messages', async () => {
+      const message: Message = {
+        id: 'test',
         type: MessageType.REQUEST,
         payload: { test: true },
         timestamp: Date.now(),
       };
 
-      await expect(transport.send(request)).rejects.toThrow(TransportError);
+      const responsePromise = transport.send(message);
+      await transport.simulateMessage({
+        id: 'test',
+        type: MessageType.RESPONSE,
+        payload: { success: true },
+        timestamp: Date.now(),
+      });
+
+      await expect(responsePromise).resolves.toBeDefined();
     });
 
-    it('should handle send failures', async () => {
-      const transport = new ChromeExtensionTransport({ extensionId: 'test-id' });
-      await transport.connect();
-
-      mockPort.postMessage.mockImplementationOnce(() => {
-        throw new Error('Send error');
-      });
-
-      const request: Message = {
-        id: 'test-id',
+    it('handles message timeouts', async () => {
+      const message: Message = {
+        id: 'test',
         type: MessageType.REQUEST,
         payload: { test: true },
         timestamp: Date.now(),
       };
 
-      await expect(transport.send(request)).rejects.toThrow(TransportError);
+      const promise = transport.send(message);
+      await expect(promise).rejects.toThrow(createTransportError.timeout('Message timeout'));
+    });
+
+    it('handles disconnect during message', async () => {
+      const message: Message = {
+        id: 'test',
+        type: MessageType.REQUEST,
+        payload: { test: true },
+        timestamp: Date.now(),
+      };
+
+      const promise = transport.send(message);
+      await transport.simulateDisconnect();
+
+      await expect(promise).rejects.toThrow(createTransportError.connectionFailed('Port disconnected'));
     });
   });
 
-  describe('cleanup', () => {
-    it('should clean up on disconnect', async () => {
-      const transport = new ChromeExtensionTransport({ extensionId: 'test-id' });
+  describe('subscriptions', () => {
+    beforeEach(async () => {
       await transport.connect();
-
-      mockPort.disconnect.mockImplementationOnce(() => {
-        throw new Error('Disconnect error');
-      });
-
-      transport.disconnect();
-      expect(mockPort.onMessage.removeListener).toHaveBeenCalled();
-      expect(mockPort.onDisconnect.removeListener).toHaveBeenCalled();
     });
 
-    it('should handle cleanup errors gracefully', async () => {
-      const transport = new ChromeExtensionTransport({ extensionId: 'test-id' });
-      await transport.connect();
+    it('handles message subscriptions', async () => {
+      const errors: Error[] = [];
+      const handler: ErrorHandler = (error) => {
+        errors.push(error);
+      };
 
-      mockPort.onMessage.removeListener.mockImplementationOnce(() => {
-        throw new Error('Remove listener error');
-      });
-      mockPort.onDisconnect.removeListener.mockImplementationOnce(() => {
-        throw new Error('Remove listener error');
+      transport.addErrorHandler(handler);
+      await transport.simulateMessage({
+        id: 'test',
+        type: MessageType.ERROR,
+        payload: { message: 'Test error' },
+        timestamp: Date.now(),
       });
 
-      transport.disconnect();
-      // Should not throw despite cleanup errors
-      expect(transport.isConnected()).toBe(false);
+      expect(errors).toHaveLength(1);
+      transport.removeErrorHandler(handler);
+    });
+
+    it('handles error subscriptions', async () => {
+      const errors: Error[] = [];
+      const handler: ErrorHandler = (error) => {
+        errors.push(error);
+      };
+
+      transport.addErrorHandler(handler);
+      await transport.simulateDisconnect();
+
+      expect(errors).toHaveLength(1);
+      transport.removeErrorHandler(handler);
     });
   });
 });

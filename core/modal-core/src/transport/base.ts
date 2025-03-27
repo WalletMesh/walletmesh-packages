@@ -1,120 +1,120 @@
-import { TransportState } from './types.js';
-import type { Message, Transport, Subscription } from './types.js';
-import { TransportError, TransportErrorCode } from './errors.js';
+import { ConnectionState, type Message } from './types.js';
+import { createTransportError } from './errors.js';
+import type { ErrorHandler, Transport } from './types.js';
 
 /**
- * Base transport implementation with common functionality
+ * Abstract base class for implementing transports
  */
 export abstract class BaseTransport implements Transport {
-  protected handlers = new Set<Subscription>();
-  protected state = TransportState.DISCONNECTED;
+  protected state = ConnectionState.DISCONNECTED;
+  protected errorHandlers: Set<ErrorHandler> = new Set();
 
+  /**
+   * Connect to the transport
+   */
   public async connect(): Promise<void> {
+    if (this.isConnected()) {
+      return;
+    }
+
     try {
-      this.state = TransportState.CONNECTING;
+      this.setState(ConnectionState.CONNECTING);
       await this.connectImpl();
-      this.state = TransportState.CONNECTED;
+      this.setState(ConnectionState.CONNECTED);
     } catch (error) {
-      const transportError = this.createError(
-        'Connection failed',
-        TransportErrorCode.CONNECTION_FAILED,
-        error,
-      );
-      this.state = TransportState.ERROR;
-      this.notifyError(transportError);
-      throw transportError;
+      this.setState(ConnectionState.ERROR);
+      throw createTransportError.connectionFailed('Failed to connect transport', { cause: error });
     }
   }
 
+  /**
+   * Disconnect from the transport
+   */
   public async disconnect(): Promise<void> {
-    const disconnectError = this.createError('Transport disconnected', TransportErrorCode.CONNECTION_FAILED);
+    if (!this.isConnected()) {
+      return;
+    }
 
-    // Store current handlers and clear
-    const currentHandlers = Array.from(this.handlers);
-    this.handlers.clear();
-
-    // Perform disconnect
     try {
-      await this.doDisconnect();
-    } finally {
-      this.state = TransportState.DISCONNECTED;
-
-      // Notify handlers after cleanup
-      for (const handler of currentHandlers) {
-        if (handler.onError) {
-          handler.onError(disconnectError);
-        }
-      }
+      await this.disconnectImpl();
+      this.setState(ConnectionState.DISCONNECTED);
+    } catch (error) {
+      this.setState(ConnectionState.ERROR);
+      throw createTransportError.error('Failed to disconnect transport', { cause: error });
     }
   }
 
-  public abstract isConnected(): boolean;
+  /**
+   * Send a message via the transport
+   */
+  public async send<T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>> {
+    if (!this.isConnected()) {
+      throw createTransportError.notConnected('Not connected to transport');
+    }
 
-  public getState(): TransportState {
+    try {
+      return await this.sendImpl<T, R>(message);
+    } catch (error) {
+      throw createTransportError.sendFailed('Failed to send message', { cause: error });
+    }
+  }
+
+  /**
+   * Check if connected to transport
+   */
+  public isConnected(): boolean {
+    return this.state === ConnectionState.CONNECTED;
+  }
+
+  /**
+   * Get current connection state
+   */
+  public getState(): ConnectionState {
     return this.state;
   }
 
-  public async send<T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>> {
-    if (!message || !message.id || !message.type || typeof message.timestamp !== 'number') {
-      const error = this.createError('Invalid message format', TransportErrorCode.INVALID_MESSAGE);
-      this.notifyError(error);
-      throw error;
-    }
-
-    if (!this.isConnected()) {
-      const error = this.createError('Transport not connected', TransportErrorCode.CONNECTION_FAILED);
-      this.notifyError(error);
-      throw error;
-    }
-
-    try {
-      return await this.sendImpl(message);
-    } catch (error) {
-      // If it's already a TransportError, preserve its error code
-      const code = error instanceof TransportError ? error.code : TransportErrorCode.CONNECTION_FAILED;
-      const transportError = this.createError('Failed to send message', code, error);
-      this.notifyError(transportError);
-      throw transportError;
-    }
+  /**
+   * Add error handler
+   */
+  public addErrorHandler(handler: ErrorHandler): void {
+    this.errorHandlers.add(handler);
   }
 
-  public subscribe(subscription: Subscription): () => void {
-    this.handlers.add(subscription);
-    return () => {
-      this.handlers.delete(subscription);
-    };
+  /**
+   * Remove error handler
+   */
+  public removeErrorHandler(handler: ErrorHandler): void {
+    this.errorHandlers.delete(handler);
   }
 
-  public addErrorHandler(handler: (error: Error) => void): void {
-    this.handlers.add({ onError: handler });
-  }
-
-  public removeErrorHandler(handler: (error: Error) => void): void {
-    for (const subscription of this.handlers) {
-      if (subscription.onError === handler) {
-        this.handlers.delete(subscription);
-      }
-    }
-  }
-
+  /**
+   * Connect implementation
+   */
   protected abstract connectImpl(): Promise<void>;
-  protected abstract sendImpl<T, R>(message: Message<T>): Promise<Message<R>>;
-  protected abstract doDisconnect(): Promise<void>;
 
-  protected notifyError(error: Error): void {
-    const handlers = Array.from(this.handlers);
-    for (const handler of handlers) {
-      if (handler.onError) {
-        handler.onError(error);
-      }
-    }
+  /**
+   * Disconnect implementation
+   */
+  protected abstract disconnectImpl(): Promise<void>;
+
+  /**
+   * Send implementation
+   */
+  protected abstract sendImpl<T, R>(message: Message<T>): Promise<Message<R>>;
+
+  /**
+   * Update connection state
+   */
+  protected setState(state: ConnectionState): void {
+    this.state = state;
   }
 
-  protected createError(message: string, code: TransportErrorCode, cause?: unknown): TransportError {
-    const error = new TransportError(message, code);
-    if (cause) {
-      error.cause = cause instanceof Error ? cause : new Error(String(cause));
+  /**
+   * Emit error to handlers
+   */
+  protected emitError(error: Error): void {
+    for (const handler of this.errorHandlers) {
+      handler(error);
     }
-    return error;
   }
 }

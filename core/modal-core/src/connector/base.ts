@@ -1,276 +1,147 @@
-/**
- * @packageDocumentation
- * Base connector implementation
- */
+import { ConnectionState, type Protocol, type Transport } from '../transport/types.js';
+import { createTransportError } from '../transport/errors.js';
+import type { ConnectedWallet, Provider, WalletInfo } from '../types.js';
 
-import type {
-  Transport,
-  Protocol,
-  Provider,
-  ProtocolMessage,
-  ErrorHandler,
-  CleanupHandler,
-} from './types.js';
-import type { Message } from '../transport/types.js';
-import type { WalletInfo, WalletState, ConnectedWallet, Connector } from '../types.js';
-import { ConnectionStatus } from '../types.js';
-import type { ProtocolError } from '../transport/errors.js';
-import { TransportError } from '../transport/errors.js';
-import { TransportErrorCode } from '../transport/errors.js';
-import { isProtocolError } from '../transport/errors.js';
+export { ConnectionState } from '../transport/types.js';
+export type { ConnectedWallet, Provider, WalletInfo };
 
 /**
- * Base connector implementation
+ * Base class for wallet connectors
  */
-export abstract class BaseConnector<T extends ProtocolMessage = ProtocolMessage> implements Connector {
-  /**
-   * Transport instance
-   */
-  protected transport: Transport;
+export abstract class BaseConnector<TRequest> {
+  protected state: ConnectionState;
+  protected wallet: ConnectedWallet | undefined;
+  protected provider: Provider | undefined;
+  protected readonly protocol: Protocol<TRequest>;
+  protected readonly transport: Transport;
 
-  /**
-   * Protocol instance
-   */
-  protected protocol: Protocol<T>;
-
-  /**
-   * Cleanup handlers
-   */
-  private cleanupHandlers = new Set<CleanupHandler>();
-
-  /**
-   * Bound error handler function
-   */
-  private boundErrorHandler: ErrorHandler;
-
-  /**
-   * Connection state
-   */
-  private isConnectedState = false;
-
-  /**
-   * Current wallet
-   */
-  protected currentWallet: ConnectedWallet | null = null;
-
-  constructor(transport?: Transport, protocol?: Protocol<T>) {
-    this.transport = transport ?? ({} as Transport);
-    this.protocol = protocol ?? ({} as Protocol<T>);
-    this.boundErrorHandler = this.handleTransportError.bind(this);
+  constructor(transport: Transport, protocol: Protocol<TRequest>) {
+    this.transport = transport;
+    this.protocol = protocol;
+    this.state = ConnectionState.DISCONNECTED;
   }
 
   /**
-   * Gets provider instance
+   * Connect to the wallet
    */
-  abstract getProvider(): Promise<Provider>;
+  public async connect(walletInfo: WalletInfo): Promise<ConnectedWallet> {
+    if (this.isConnected() && this.wallet) {
+      return this.wallet;
+    }
 
-  /**
-   * Generic request method implementation
-   */
-  async request<TReq = unknown, TRes = unknown>(method: string, params?: TReq[]): Promise<TRes> {
-    return this.sendRequest<TReq, TRes>(method, params ?? []);
-  }
-
-  /**
-   * Checks if connector is connected
-   */
-  isConnected(): boolean {
-    return this.isConnectedState;
-  }
-
-  /**
-   * Gets current connection state
-   */
-  getState(): ConnectionStatus {
-    return this.isConnected() ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED;
-  }
-
-  /**
-   * Connects to wallet
-   */
-  async connect(walletInfo: WalletInfo): Promise<ConnectedWallet> {
     try {
-      // Initialize connection state
-      await this.transport.connect();
-      this.transport.addErrorHandler(this.boundErrorHandler);
-
-      // Set connection state
-      this.isConnectedState = true;
-
-      // Perform wallet-specific connect operations
-      await this.doConnect(walletInfo);
-
-      if (!this.currentWallet) {
-        throw new TransportError('Failed to create wallet connection', TransportErrorCode.CONNECTION_FAILED);
-      }
-
-      return this.currentWallet;
+      this.setState(ConnectionState.CONNECTING);
+      this.wallet = await this.doConnect(walletInfo);
+      this.setState(ConnectionState.CONNECTED);
+      return this.wallet;
     } catch (error) {
-      // Cleanup on failure
-      this.isConnectedState = false;
-      this.runCleanup();
-      throw error;
+      this.setState(ConnectionState.ERROR);
+      throw createTransportError.connectionFailed('Failed to connect to wallet', { cause: error });
     }
   }
 
   /**
-   * Disconnects from wallet
+   * Disconnect from the wallet
    */
-  async disconnect(): Promise<void> {
-    try {
-      if (this.isConnected()) {
-        await this.doDisconnect();
-        await this.transport.disconnect();
-      }
-    } finally {
-      this.isConnectedState = false;
-      this.currentWallet = null;
-      this.runCleanup();
-    }
-  }
-
-  /**
-   * Resumes previous connection
-   */
-  async resume(walletInfo: WalletInfo, state: WalletState): Promise<ConnectedWallet> {
-    try {
-      await this.transport.connect();
-
-      // Set up connection state and error handling
-      this.transport.addErrorHandler(this.boundErrorHandler);
-      this.isConnectedState = true;
-      await this.doConnect(walletInfo);
-
-      // Update wallet with previous state
-      this.currentWallet = this.createConnectedWallet(walletInfo, state);
-
-      if (!this.currentWallet) {
-        throw new TransportError('Failed to resume wallet connection', TransportErrorCode.CONNECTION_FAILED);
-      }
-
-      return this.currentWallet;
-    } catch (error) {
-      this.isConnectedState = false;
-      this.runCleanup();
-      throw error;
-    }
-  }
-
-  /**
-   * Creates connected wallet instance
-   */
-  protected abstract createConnectedWallet(info: WalletInfo, state?: WalletState): ConnectedWallet;
-
-  /**
-   * Performs wallet-specific connect operations
-   */
-  protected abstract doConnect(walletInfo: WalletInfo): Promise<void>;
-
-  /**
-   * Performs wallet-specific disconnect operations
-   */
-  protected abstract doDisconnect(): Promise<void>;
-
-  /**
-   * Handles protocol messages
-   */
-  protected abstract handleProtocolMessage(message: Message): void;
-
-  /**
-   * Handles protocol errors
-   */
-  protected handleProtocolError(error: ProtocolError): void {
-    // Base implementation - can be overridden
-    console.error('Protocol error:', error);
-  }
-
-  /**
-   * Adds a cleanup handler
-   */
-  protected addCleanupHandler(handler: CleanupHandler): void {
-    this.cleanupHandlers.add(handler);
-  }
-
-  /**
-   * Removes a cleanup handler
-   */
-  protected removeCleanupHandler(handler: CleanupHandler): void {
-    this.cleanupHandlers.delete(handler);
-  }
-
-  /**
-   * Runs cleanup handlers
-   */
-  protected runCleanup(): void {
-    // Run each cleanup handler
-    for (const handler of this.cleanupHandlers) {
-      try {
-        handler();
-      } catch (error) {
-        console.error('Error in cleanup handler:', error);
-      }
-    }
-
-    // Remove transport handler and clear
-    if (this.boundErrorHandler) {
-      this.transport.removeErrorHandler(this.boundErrorHandler);
-    }
-
-    // Clear handlers
-    this.cleanupHandlers.clear();
-  }
-
-  /**
-   * Handles transport errors
-   */
-  protected handleTransportError(error: Error): void {
-    if (error instanceof TransportError && error.code === TransportErrorCode.CONNECTION_FAILED) {
-      this.isConnectedState = false;
-      this.runCleanup();
-    }
-  }
-
-  /**
-   * Validates message format and content
-   */
-  protected async validateMessage(message: Message): Promise<void> {
-    const result = this.protocol.validateMessage(message);
-    if (!result.success) {
-      throw result.error;
-    }
-  }
-
-  /**
-   * Sends a request through the transport
-   */
-  protected async sendRequest<TReq, TRes>(method: string, params: TReq[]): Promise<TRes> {
+  public async disconnect(): Promise<void> {
     if (!this.isConnected()) {
-      throw new TransportError('Transport not connected', TransportErrorCode.NOT_CONNECTED);
+      return;
     }
 
     try {
-      const request = this.protocol.createRequest(method, {
-        method,
-        params,
-      } as unknown as T['request']);
-
-      const response = await this.transport.send<T['request'], T['response']>(
-        request as Message<T['request']>,
-      );
-
-      await this.validateMessage(response);
-
-      const payload = response.payload as { result?: TRes; error?: string };
-      if (payload.error) {
-        throw new Error(payload.error);
-      }
-
-      return payload.result ?? ({} as TRes);
+      await this.doDisconnect();
+      this.setState(ConnectionState.DISCONNECTED);
+      this.wallet = undefined;
+      this.provider = undefined;
     } catch (error) {
-      if (isProtocolError(error)) {
-        this.handleProtocolError(error);
-      }
-      throw error;
+      this.setState(ConnectionState.ERROR);
+      throw createTransportError.error('Failed to disconnect from wallet', { cause: error });
+    }
+  }
+
+  /**
+   * Get the wallet provider
+   */
+  public async getProvider(): Promise<Provider> {
+    if (!this.isConnected()) {
+      throw createTransportError.notConnected('Not connected to wallet');
+    }
+
+    if (!this.provider) {
+      this.provider = await this.createProvider();
+    }
+
+    return this.provider;
+  }
+
+  /**
+   * Get the wallet instance
+   */
+  public getWallet(): ConnectedWallet | null {
+    return this.wallet ?? null;
+  }
+
+  /**
+   * Get the wallet state
+   */
+  public getWalletState(): ConnectedWallet['state'] | null {
+    return this.wallet?.state ?? null;
+  }
+
+  /**
+   * Get the current connection state
+   */
+  public getState(): ConnectionState {
+    return this.state;
+  }
+
+  /**
+   * Check if connected to wallet
+   */
+  public isConnected(): boolean {
+    return this.state === ConnectionState.CONNECTED && Boolean(this.wallet);
+  }
+
+  /**
+   * Handle protocol messages
+   */
+  protected abstract handleProtocolMessage(message: TRequest): Promise<unknown>;
+
+  /**
+   * Create wallet connection
+   */
+  protected abstract doConnect(walletInfo: WalletInfo): Promise<ConnectedWallet>;
+
+  /**
+   * Create wallet provider
+   */
+  protected abstract createProvider(): Promise<Provider>;
+
+  /**
+   * Disconnect implementation
+   */
+  protected async doDisconnect(): Promise<void> {
+    // Optional override
+  }
+
+  /**
+   * Update connection state
+   */
+  protected setState(state: ConnectionState): void {
+    this.state = state;
+  }
+
+  /**
+   * Send a message to the wallet
+   */
+  protected async sendMessage<TResponse>(request: TRequest): Promise<TResponse> {
+    try {
+      const message = this.protocol.createRequest('request', request);
+      await this.transport.send<TRequest, TResponse>(message);
+      const result = await this.handleProtocolMessage(request);
+      return result as TResponse;
+    } catch (error) {
+      throw createTransportError.sendFailed('Failed to send message', { cause: error });
     }
   }
 }

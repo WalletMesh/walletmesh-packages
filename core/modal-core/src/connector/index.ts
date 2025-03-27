@@ -1,23 +1,13 @@
-export type {
-  Transport,
-  ErrorHandler,
-  Provider,
+export {
   ProtocolMessage,
-  Protocol,
-  ValidationResult,
   RequestMessage,
   CleanupHandler,
 } from './types.js';
 
-export { BaseConnector } from './base.js';
+// Re-export types from transport layer
+export type { Protocol, ValidationResult } from '../transport/types.js';
 
-export {
-  MockConnector,
-  type MockConnectorConfig,
-  type MockMessageTypes,
-} from './mock.js';
+// Re-export provider interface
+export type { Provider } from '../types.js';
 
-export {
-  ConnectorRegistry,
-  connectorRegistry,
-} from './registry.js';
+// Export connector implementations

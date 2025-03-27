@@ -1,212 +1,154 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { Provider } from '../types.js';
-import type { SessionStore } from './sessionStore.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { SessionStoreAdapter } from './sessionStoreAdapter.js';
+import { ConnectionState, type WalletSession } from '../types.js';
+import type { SessionStore } from './sessionStore.js';
+import type { StoreApi } from 'zustand';
 import type { UseBoundStore } from 'zustand';
-import type { StoreApi } from 'zustand/vanilla';
-import { ConnectionStatus } from '../types.js';
-import type { WalletSession, ConnectedWallet } from '../types.js';
-import { createStoreError, isStoreError, StoreErrorCode } from './errors.js';
 
 describe('SessionStoreAdapter', () => {
+  let mockStore: SessionStore & { sessions: Map<string, WalletSession> };
+  let mockUseStore: UseBoundStore<StoreApi<SessionStore>>;
   let adapter: SessionStoreAdapter;
-  let mockStore: UseBoundStore<StoreApi<SessionStore>>;
-  let mockSessions: Map<string, WalletSession>;
-  let now: number;
+  let mockDate: Date;
 
   beforeEach(() => {
-    now = Date.now();
-    vi.useFakeTimers();
-    vi.setSystemTime(now);
+    mockDate = new Date('2025-03-26T10:00:00Z');
+    vi.setSystemTime(mockDate);
 
-    mockSessions = new Map();
-    const store = {
-      sessions: mockSessions,
-      getSession: vi.fn((id: string) => mockSessions.get(id)),
-      getSessions: vi.fn(() => Array.from(mockSessions.values())),
-      setSession: vi.fn((id: string, session: WalletSession) => {
-        if (!id || id.trim() === '') {
-          throw createStoreError.invalidSessionId(id);
-        }
-        if (!session.wallet) {
-          throw createStoreError.invalidSessionData('Missing wallet data');
-        }
-        mockSessions.set(id, session);
-      }),
-      removeSession: vi.fn((id: string) => mockSessions.delete(id)),
-      clearSessions: vi.fn(() => mockSessions.clear()),
+    const sessionsMap = new Map<string, WalletSession>();
+
+    mockStore = {
+      sessions: sessionsMap,
+      getSession: vi.fn(),
+      getSessions: vi.fn(),
+      setSession: vi.fn(),
+      removeSession: vi.fn(),
+      clearSessions: vi.fn(),
     };
 
-    mockStore = vi.fn(() => store) as unknown as UseBoundStore<StoreApi<SessionStore>>;
-    adapter = new SessionStoreAdapter(mockStore);
+    mockUseStore = (() => mockStore) as UseBoundStore<StoreApi<SessionStore>>;
+    adapter = new SessionStoreAdapter(mockUseStore);
   });
 
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  const createMockWallet = (overrides?: Partial<ConnectedWallet>): ConnectedWallet => ({
-    address: '0xtest',
-    chainId: 1,
-    publicKey: '0x',
-    connected: true,
-    state: {
-      sessionId: 'test-session',
-      networkId: 1,
-      address: '0xtest',
-      lastActive: Date.now(),
+  const createMockSession = (id: string, expired = false): WalletSession => ({
+    id,
+    address: `0x${id}`,
+    chains: {
+      1: {
+        chainId: 1,
+        rpcUrl: 'https://eth.example.com',
+        status: ConnectionState.DISCONNECTED,
+      },
     },
-    ...overrides,
-  });
-
-  const createMockSession = (overrides?: Partial<WalletSession>): WalletSession => ({
-    id: 'test-session',
-    address: '0xtest',
-    chains: {},
-    expiry: now + 3600000, // 1 hour from now
-    status: ConnectionStatus.CONNECTED,
+    expiry: expired ? mockDate.getTime() - 1000 : mockDate.getTime() + 24 * 60 * 60 * 1000,
+    status: ConnectionState.DISCONNECTED,
     connector: {
-      getProvider: createMockProvider,
+      getProvider: vi.fn(),
       connect: vi.fn(),
       disconnect: vi.fn(),
       getState: vi.fn(),
       resume: vi.fn(),
     },
-    wallet: createMockWallet(),
-    ...overrides,
+    wallet: {
+      address: `0x${id}`,
+      chainId: 1,
+      publicKey: '0x123',
+      connected: false,
+      state: {
+        address: `0x${id}`,
+        networkId: 1,
+        sessionId: id,
+        lastActive: mockDate.getTime(),
+      },
+    },
   });
 
-  describe('session management', () => {
-    it('should store and retrieve sessions', () => {
-      const session = createMockSession();
-      adapter.setSession(session.id, session);
-      const retrieved = adapter.getSession(session.id);
-      expect(retrieved).toEqual(session);
-    });
+  it('should handle store initialization', () => {
+    expect(() => new SessionStoreAdapter(undefined as unknown as typeof mockUseStore)).toThrow();
+    expect(() => new SessionStoreAdapter(mockUseStore)).not.toThrow();
+  });
 
-    it('should list all sessions', () => {
-      const session1 = createMockSession({ id: '1' });
-      const session2 = createMockSession({ id: '2' });
-
-      adapter.setSession('1', session1);
-      adapter.setSession('2', session2);
+  describe('Session Management', () => {
+    it('should get sessions', () => {
+      const mockSessions = [createMockSession('test1'), createMockSession('test2')];
+      vi.mocked(mockStore.getSessions).mockReturnValue(mockSessions);
 
       const sessions = adapter.getSessions();
-      expect(sessions).toHaveLength(2);
-      expect(sessions[0]).toEqual(session1);
-      expect(sessions[1]).toEqual(session2);
+      expect(sessions).toEqual(mockSessions);
+      expect(mockStore.getSessions).toHaveBeenCalled();
     });
 
-    it('should remove sessions', () => {
-      const session = createMockSession();
-      adapter.setSession(session.id, session);
-      adapter.removeSession(session.id);
-      expect(adapter.getSession(session.id)).toBeUndefined();
+    it('should get individual session', () => {
+      const mockSession = createMockSession('test1');
+      vi.mocked(mockStore.getSession).mockReturnValue(mockSession);
+
+      const session = adapter.getSession('test1');
+      expect(session).toEqual(mockSession);
+      expect(mockStore.getSession).toHaveBeenCalledWith('test1');
+    });
+
+    it('should set session', () => {
+      const mockSession = createMockSession('test1');
+      adapter.setSession('test1', mockSession);
+
+      expect(mockStore.setSession).toHaveBeenCalledWith('test1', mockSession);
+    });
+
+    it('should remove session', () => {
+      adapter.removeSession('test1');
+      expect(mockStore.removeSession).toHaveBeenCalledWith('test1');
     });
 
     it('should clear all sessions', () => {
-      adapter.setSession('1', createMockSession({ id: '1' }));
-      adapter.setSession('2', createMockSession({ id: '2' }));
       adapter.clearSessions();
-      expect(adapter.getSessions()).toHaveLength(0);
+      expect(mockStore.clearSessions).toHaveBeenCalled();
     });
   });
 
-  describe('session validation', () => {
-    it('should throw StoreError on invalid session ID', () => {
-      const invalidSession = createMockSession();
-      invalidSession.id = '';
+  describe('Session Expiry', () => {
+    it('should not return expired session', () => {
+      const expiredSession = createMockSession('expired', true);
+      vi.mocked(mockStore.getSession).mockReturnValue(expiredSession);
 
-      try {
-        adapter.setSession(invalidSession.id, invalidSession);
-        throw new Error('Expected error was not thrown');
-      } catch (error) {
-        expect(isStoreError(error)).toBe(true);
-        if (isStoreError(error)) {
-          expect(error.code).toBe(StoreErrorCode.INVALID_SESSION_ID);
-        }
+      const session = adapter.getSession('expired');
+      expect(session).toBeUndefined();
+      expect(mockStore.removeSession).toHaveBeenCalledWith('expired');
+    });
+
+    it('should filter out expired sessions from list', () => {
+      const activeSessions = [createMockSession('active1'), createMockSession('active2')];
+      const expiredSessions = [createMockSession('expired1', true), createMockSession('expired2', true)];
+      vi.mocked(mockStore.getSessions).mockReturnValue([...activeSessions, ...expiredSessions]);
+
+      const sessions = adapter.getSessions();
+      expect(sessions).toEqual(activeSessions);
+
+      for (const session of expiredSessions) {
+        expect(mockStore.removeSession).toHaveBeenCalledWith(session.id);
       }
     });
 
-    it('should throw StoreError on invalid session data', () => {
-      const { wallet: _, ...invalidSession } = createMockSession();
+    it('should not store expired session', () => {
+      const expiredSession = createMockSession('expired', true);
+      adapter.setSession('expired', expiredSession);
 
-      try {
-        adapter.setSession('test', invalidSession as WalletSession);
-        throw new Error('Expected error was not thrown');
-      } catch (error) {
-        expect(isStoreError(error)).toBe(true);
-        if (isStoreError(error)) {
-          expect(error.code).toBe(StoreErrorCode.INVALID_SESSION_DATA);
-        }
-      }
+      expect(mockStore.setSession).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Session Access', () => {
+    it('should access internal sessions map', () => {
+      const session = createMockSession('test1');
+      mockStore.sessions.set('test1', session);
+
+      expect(adapter.sessions.get('test1')).toBe(session);
     });
 
-    it('should validate session expiry', () => {
-      const expiredSession = createMockSession({ expiry: now - 1000 });
-      const id = expiredSession.id;
+    it('should handle missing sessions', () => {
+      vi.mocked(mockStore.getSession).mockReturnValue(undefined);
 
-      adapter.setSession(id, expiredSession);
-      expect(adapter.getSession(id)).toBe(undefined);
-    });
-
-    it('should handle missing or invalid session IDs', () => {
-      expect(adapter.getSession('')).toBeUndefined();
       expect(adapter.getSession('nonexistent')).toBeUndefined();
-      expect(() => adapter.removeSession('')).not.toThrow();
-    });
-  });
-
-  describe('error handling', () => {
-    it('should throw StoreError when store is not provided', () => {
-      try {
-        // Cast to the specific store type to avoid 'any'
-        new SessionStoreAdapter(null as unknown as UseBoundStore<StoreApi<SessionStore>>);
-        throw new Error('Expected error was not thrown');
-      } catch (error) {
-        expect(isStoreError(error)).toBe(true);
-        if (isStoreError(error)) {
-          expect(error.code).toBe(StoreErrorCode.STORE_REQUIRED);
-        }
-      }
-    });
-
-    it('should handle store failures gracefully', () => {
-      const mockError = createStoreError.storageError('Store operation failed');
-      const failingStore = vi.fn(() => ({
-        sessions: mockSessions,
-        getSession: vi.fn().mockImplementation(() => {
-          throw mockError;
-        }),
-        getSessions: vi.fn().mockImplementation(() => {
-          throw mockError;
-        }),
-        setSession: vi.fn().mockImplementation(() => {
-          throw mockError;
-        }),
-        removeSession: vi.fn().mockImplementation(() => {
-          throw mockError;
-        }),
-        clearSessions: vi.fn().mockImplementation(() => {
-          throw mockError;
-        }),
-      })) as unknown as UseBoundStore<StoreApi<SessionStore>>;
-
-      const failingAdapter = new SessionStoreAdapter(failingStore);
-
-      expect(() => failingAdapter.getSession('test')).toThrow(mockError);
-      expect(() => failingAdapter.getSessions()).toThrow(mockError);
-      expect(() => failingAdapter.setSession('test', createMockSession())).toThrow(mockError);
-      expect(() => failingAdapter.removeSession('test')).toThrow(mockError);
-      expect(() => failingAdapter.clearSessions()).toThrow(mockError);
+      expect(mockStore.removeSession).not.toHaveBeenCalled();
     });
   });
 });
-
-const createMockProvider = (): Promise<Provider> =>
-  Promise.resolve({
-    request: async <T>(_method: string, _params?: unknown[]): Promise<T> => ({}) as T,
-    connect: async () => {},
-    disconnect: async () => {},
-    isConnected: () => true,
-  });

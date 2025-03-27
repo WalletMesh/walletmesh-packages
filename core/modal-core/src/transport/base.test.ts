@@ -1,203 +1,164 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BaseTransport } from './base.js';
-import { TransportState, MessageType, type Message } from './types.js';
-import { TransportError, TransportErrorCode } from './errors.js';
+import { ConnectionState, MessageType } from './types.js';
+import { createTransportError } from './errors.js';
+import type { Message } from './types.js';
 
 class TestTransport extends BaseTransport {
-  private connected = false;
-  public mockConnect = vi.fn().mockResolvedValue(undefined);
-  public mockSend = vi.fn().mockImplementation(
-    async <T, R>(_message: Message<T>): Promise<Message<R>> => ({
-      id: '1',
-      type: MessageType.RESPONSE,
-      payload: {} as R,
-      timestamp: Date.now(),
-    }),
-  );
-  public mockDisconnect = vi.fn().mockResolvedValue(undefined);
+  protected errorToThrow?: Error;
+  protected messages: Message[] = [];
 
-  public override async connect(): Promise<void> {
-    try {
-      this.state = TransportState.CONNECTING;
-      await this.connectImpl();
-      this.state = TransportState.CONNECTED;
-      this.connected = true;
-    } catch (error) {
-      const transportError = this.createError(
-        'Connection failed',
-        TransportErrorCode.CONNECTION_FAILED,
-        error,
-      );
-      this.state = TransportState.ERROR;
-      this.notifyError(transportError);
-      throw transportError;
-    }
+  constructor() {
+    super();
+    this.messages = [];
   }
 
-  public override async disconnect(): Promise<void> {
-    await super.disconnect();
-    this.connected = false;
+  public setError(error: Error): void {
+    this.errorToThrow = error;
   }
 
-  public override isConnected(): boolean {
-    return this.connected;
+  public getMessages(): Message[] {
+    return this.messages;
+  }
+
+  // Expose protected methods for testing
+  public async testConnect(): Promise<void> {
+    return this.connectImpl();
+  }
+
+  public async testDisconnect(): Promise<void> {
+    return this.disconnectImpl();
   }
 
   protected async connectImpl(): Promise<void> {
-    return this.mockConnect();
-  }
-
-  protected async sendImpl<T, R>(message: Message<T>): Promise<Message<R>> {
-    return this.mockSend(message);
-  }
-
-  protected async doDisconnect(): Promise<void> {
-    return this.mockDisconnect();
-  }
-
-  protected override createError(message: string, code: TransportErrorCode, cause?: unknown): TransportError {
-    const error = new TransportError(message, code);
-    if (cause instanceof Error) {
-      error.cause = cause;
+    if (this.errorToThrow) {
+      throw this.errorToThrow;
     }
-    return error;
+  }
+
+  protected async disconnectImpl(): Promise<void> {
+    if (this.errorToThrow) {
+      throw this.errorToThrow;
+    }
+  }
+
+  protected async sendImpl<T, R>(_message: Message<T>): Promise<Message<R>> {
+    if (this.errorToThrow) {
+      throw this.errorToThrow;
+    }
+
+    return {
+      id: 'test',
+      type: MessageType.RESPONSE,
+      payload: {} as R,
+      timestamp: Date.now(),
+    };
   }
 }
 
 describe('BaseTransport', () => {
   let transport: TestTransport;
+  let message: Message;
+  let errorHandler: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     transport = new TestTransport();
+    message = {
+      id: 'test',
+      type: MessageType.REQUEST,
+      payload: { test: true },
+      timestamp: Date.now(),
+    };
+    errorHandler = vi.fn();
   });
 
-  describe('connection management', () => {
-    it('should handle successful connection', async () => {
-      await transport.connect();
-      expect(transport.getState()).toBe(TransportState.CONNECTED);
-      expect(transport.isConnected()).toBe(true);
-    });
-
-    it('should handle connection failures', async () => {
-      const error = new Error('Connection failed');
-      transport.mockConnect.mockRejectedValueOnce(error);
-
-      const rejection = await getError<TransportError>(() => transport.connect());
-      expect(rejection.code).toBe(TransportErrorCode.CONNECTION_FAILED);
-      expect(rejection.cause).toBe(error);
-      expect(transport.getState()).toBe(TransportState.ERROR);
-    });
-
-    it('should handle disconnection', async () => {
-      await transport.connect();
-      await transport.disconnect();
-      expect(transport.getState()).toBe(TransportState.DISCONNECTED);
+  describe('Connection state', () => {
+    it('initializes in disconnected state', () => {
+      expect(transport.getState()).toBe(ConnectionState.DISCONNECTED);
       expect(transport.isConnected()).toBe(false);
     });
 
-    it('should handle state transitions', async () => {
-      expect(transport.getState()).toBe(TransportState.DISCONNECTED);
-
-      const connectPromise = transport.connect();
-      expect(transport.getState()).toBe(TransportState.CONNECTING);
-
-      await connectPromise;
-      expect(transport.getState()).toBe(TransportState.CONNECTED);
-
-      await transport.disconnect();
-      expect(transport.getState()).toBe(TransportState.DISCONNECTED);
+    it('connects successfully', async () => {
+      await transport.connect();
+      expect(transport.getState()).toBe(ConnectionState.CONNECTED);
+      expect(transport.isConnected()).toBe(true);
     });
 
-    it('should handle error state transition', async () => {
+    it('handles connection errors', async () => {
       const error = new Error('Connection failed');
-      transport.mockConnect.mockRejectedValueOnce(error);
+      transport.setError(error);
 
-      const rejection = await getError<TransportError>(() => transport.connect());
-      expect(rejection.code).toBe(TransportErrorCode.CONNECTION_FAILED);
-      expect(rejection.cause).toBe(error);
-      expect(transport.getState()).toBe(TransportState.ERROR);
+      await expect(transport.connect()).rejects.toThrow(
+        createTransportError.connectionFailed('Failed to connect transport', { cause: error }),
+      );
+      expect(transport.getState()).toBe(ConnectionState.ERROR);
+      expect(transport.isConnected()).toBe(false);
+    });
+
+    it('skips connect when already connected', async () => {
+      await transport.connect();
+      const spy = vi.spyOn(transport, 'testConnect');
+      await transport.connect();
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('disconnects successfully', async () => {
+      await transport.connect();
+      await transport.disconnect();
+      expect(transport.getState()).toBe(ConnectionState.DISCONNECTED);
+      expect(transport.isConnected()).toBe(false);
+    });
+
+    it('handles disconnect errors', async () => {
+      await transport.connect();
+      const error = new Error('Disconnect failed');
+      transport.setError(error);
+
+      await expect(transport.disconnect()).rejects.toThrow(
+        createTransportError.error('Failed to disconnect transport', { cause: error }),
+      );
+      expect(transport.getState()).toBe(ConnectionState.ERROR);
+    });
+
+    it('skips disconnect when not connected', async () => {
+      const spy = vi.spyOn(transport, 'testDisconnect');
+      await transport.disconnect();
+      expect(spy).not.toHaveBeenCalled();
     });
   });
 
-  describe('error handling', () => {
-    it('should handle multiple error handlers', async () => {
-      const handler1 = vi.fn();
-      const handler2 = vi.fn();
-
-      transport.addErrorHandler(handler1);
-      transport.addErrorHandler(handler2);
-
-      const error = new Error('Test error');
-      transport.mockConnect.mockRejectedValueOnce(error);
-
-      await expect(transport.connect()).rejects.toThrow(TransportError);
-
-      expect(handler1).toHaveBeenCalledWith(expect.any(TransportError));
-      expect(handler2).toHaveBeenCalledWith(expect.any(TransportError));
-    });
-
-    it('should allow removing error handlers', async () => {
-      const handler = vi.fn();
-
-      transport.addErrorHandler(handler);
-      transport.removeErrorHandler(handler);
-
-      const error = new Error('Test error');
-      transport.mockConnect.mockRejectedValueOnce(error);
-
-      await expect(transport.connect()).rejects.toThrow(TransportError);
-      expect(handler).not.toHaveBeenCalled();
-    });
-
-    it('should handle send errors', async () => {
-      const handler = vi.fn();
-      transport.addErrorHandler(handler);
-
-      const error = new Error('Send error');
+  describe('Message handling', () => {
+    it('sends messages when connected', async () => {
       await transport.connect();
-
-      transport.mockSend.mockRejectedValueOnce(error);
-
-      await expect(
-        transport.send({
-          id: '1',
-          type: MessageType.REQUEST,
-          payload: {},
-          timestamp: Date.now(),
-        }),
-      ).rejects.toThrow(TransportError);
-
-      expect(handler).toHaveBeenCalledWith(expect.any(TransportError));
+      await expect(transport.send(message)).resolves.toBeDefined();
     });
 
-    it('should clear error handlers after disconnect', async () => {
-      const handler = vi.fn();
+    it('rejects messages when not connected', async () => {
+      await expect(transport.send(message)).rejects.toThrow(
+        createTransportError.notConnected('Not connected to transport'),
+      );
+    });
 
+    it('handles send errors', async () => {
       await transport.connect();
-      transport.addErrorHandler(handler);
-      await transport.disconnect();
+      const error = new Error('Send failed');
+      transport.setError(error);
 
-      // Should receive disconnect notification
-      expect(handler).toHaveBeenCalledWith(expect.any(TransportError));
-      handler.mockClear();
+      await expect(transport.send(message)).rejects.toThrow(
+        createTransportError.sendFailed('Failed to send message', { cause: error }),
+      );
+    });
+  });
 
-      const error = new Error('Test error');
-      transport.mockConnect.mockRejectedValueOnce(error);
+  describe('Error handling', () => {
+    it('manages error handlers', () => {
+      transport.addErrorHandler(errorHandler);
+      transport['emitError'](new Error('Test error'));
+      expect(errorHandler).toHaveBeenCalled();
 
-      await expect(transport.connect()).rejects.toThrow(TransportError);
-      expect(handler).not.toHaveBeenCalled(); // Should not be called after disconnect
+      transport.removeErrorHandler(errorHandler);
+      transport['emitError'](new Error('Another error'));
+      expect(errorHandler).toHaveBeenCalledTimes(1);
     });
   });
 });
-
-async function getError<T extends Error>(fn: () => Promise<unknown>): Promise<T> {
-  try {
-    await fn();
-    throw new Error('Expected function to throw');
-  } catch (error) {
-    if (!(error instanceof Error)) {
-      throw new Error('Expected error to be an Error instance');
-    }
-    return error as T;
-  }
-}

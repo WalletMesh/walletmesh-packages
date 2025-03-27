@@ -1,296 +1,121 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { BaseConnector } from '../connector/base.js';
-import { MessageType } from '../transport/types.js';
-import { ConnectionStatus } from '../types.js';
-import type { Transport, Message, ValidationResult } from '../transport/types.js';
-import type { ProtocolMessage, Provider, Protocol } from '../connector/types.js';
-import type { WalletInfo, WalletState, ConnectedWallet } from '../types.js';
-import { TransportError, TransportErrorCode, ProtocolError, ProtocolErrorCode } from '../transport/errors.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { WalletMeshClient } from './WalletMeshClient.js';
+import { createConnector } from './createConnector.js';
+import { ConnectionState, type ConnectedWallet, type WalletConnectorConfig } from '../types.js';
+import { createClientError } from './errors.js';
 
-interface TestMessages extends ProtocolMessage {
-  request: {
-    method: string;
-    params: unknown[];
+// Mock createConnector module
+vi.mock('./createConnector', () => ({
+  createConnector: vi.fn(),
+}));
+
+describe('WalletMeshClient', () => {
+  let client: WalletMeshClient;
+  let mockConnector: {
+    connect: ReturnType<typeof vi.fn>;
+    disconnect: ReturnType<typeof vi.fn>;
+    getProvider: ReturnType<typeof vi.fn>;
+    getState: ReturnType<typeof vi.fn>;
+    resume: ReturnType<typeof vi.fn>;
   };
-  response: {
-    result?: unknown;
-    error?: string;
-  };
-}
-
-class TestConnector extends BaseConnector<TestMessages> {
-  public messages: Message[] = [];
-  protected override currentWallet: ConnectedWallet | null = null;
-  private connected = false;
-
-  protected async doConnect(walletInfo: WalletInfo): Promise<void> {
-    this.currentWallet = this.createConnectedWallet(walletInfo);
-    this.connected = true;
-  }
-
-  protected async doDisconnect(): Promise<void> {
-    this.currentWallet = null;
-    this.connected = false;
-  }
-
-  protected async handleProtocolMessage(message: Message<TestMessages>): Promise<void> {
-    this.messages.push(message);
-  }
-
-  public override async getProvider(): Promise<Provider> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected');
-    }
-
-    return {
-      request: async <T>(method: string, params: unknown[] = []): Promise<T> => {
-        const result = await this.request(method, params);
-        return result as T;
-      },
-      connect: async () => {},
-      disconnect: async () => {},
-      isConnected: () => this.isConnected(),
-    };
-  }
-
-  protected override createConnectedWallet(info: WalletInfo, state?: WalletState): ConnectedWallet {
-    return {
-      address: info.address,
-      chainId: info.chainId,
-      publicKey: '0x',
-      connected: true,
-      state: state ?? {
-        sessionId: 'test-session',
-        networkId: info.chainId,
-        address: info.address,
-        lastActive: Date.now(),
-      },
-    };
-  }
-
-  public override isConnected(): boolean {
-    return this.connected;
-  }
-
-  public override getState(): ConnectionStatus {
-    return this.connected ? ConnectionStatus.CONNECTED : ConnectionStatus.DISCONNECTED;
-  }
-
-  // Test helpers
-  public getMessages(): Message[] {
-    return this.messages;
-  }
-
-  public getCurrentWalletInfo(): ConnectedWallet | null {
-    return this.currentWallet;
-  }
-
-  public async testRequest<TReq = unknown, TRes = unknown>(method: string, params: TReq[]): Promise<TRes> {
-    return this.sendRequest(method, params);
-  }
-}
-
-describe('BaseConnector', () => {
-  let connector: TestConnector;
-  let mockTransport: Transport;
-  let mockProtocol: Protocol<TestMessages>;
-  let testWallet: WalletInfo;
 
   beforeEach(() => {
-    const connectMock = vi.fn().mockResolvedValue(undefined);
-    const disconnectMock = vi.fn().mockResolvedValue(undefined);
-    const sendMock = vi.fn().mockImplementation((msg: Message<TestMessages>) =>
-      Promise.resolve({
-        id: msg.id,
-        type: MessageType.RESPONSE,
-        payload: {
-          request: { method: 'test', params: [] },
-          response: { result: true },
-        },
-        timestamp: Date.now(),
-      }),
-    );
-
-    mockTransport = {
-      connect: connectMock,
-      disconnect: disconnectMock,
-      send: sendMock,
-      subscribe: vi.fn().mockReturnValue(() => {}),
-      isConnected: vi.fn().mockReturnValue(true),
-      getState: vi.fn().mockReturnValue('connected'),
-      addErrorHandler: vi.fn(),
-      removeErrorHandler: vi.fn(),
+    mockConnector = {
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      getProvider: vi.fn(),
+      getState: vi.fn(),
+      resume: vi.fn(),
     };
 
-    const createMockMessage = (id: string, type: MessageType): Message<TestMessages> => ({
-      id,
-      type,
-      payload: {
-        request: { method: 'test', params: [] },
-        response: { result: true },
-      },
-      timestamp: Date.now(),
-    });
-
-    const validateMessageMock = vi.fn().mockImplementation(
-      (msg: unknown): ValidationResult<Message<TestMessages>> => ({
-        success: true,
-        data: msg as Message<TestMessages>,
-      }),
-    );
-
-    mockProtocol = {
-      createRequest: vi
-        .fn()
-        .mockImplementation((_method: string, _params: TestMessages['request']) =>
-          createMockMessage('1', MessageType.REQUEST),
-        ),
-      createResponse: vi
-        .fn()
-        .mockImplementation((id: string, _result: unknown) => createMockMessage(id, MessageType.RESPONSE)),
-      createError: vi
-        .fn()
-        .mockImplementation((id: string, _error: Error) => createMockMessage(id, MessageType.ERROR)),
-      validateMessage: validateMessageMock,
-      formatMessage: vi.fn().mockReturnValue(''),
-      parseMessage: vi.fn().mockImplementation(
-        (): ValidationResult<Message<TestMessages>> => ({
-          success: true,
-          data: createMockMessage('1', MessageType.RESPONSE),
-        }),
-      ),
-    };
-
-    testWallet = {
-      address: '0xTEST',
-      chainId: 1,
-      publicKey: '0x',
-    };
-
-    connector = new TestConnector(mockTransport, mockProtocol);
+    client = new WalletMeshClient();
+    vi.mocked(createConnector).mockResolvedValue(mockConnector);
   });
 
-  describe('wallet management', () => {
-    it('should connect successfully', async () => {
-      await connector.connect(testWallet);
-      expect(connector.isConnected()).toBe(true);
-      expect(connector.getCurrentWalletInfo()?.address).toBe(testWallet.address);
-    });
+  it('should create instance', () => {
+    expect(client).toBeInstanceOf(WalletMeshClient);
+    expect(client.isConnected).toBe(false);
+    expect(client.getState()).toBe(ConnectionState.DISCONNECTED);
+  });
 
-    it('should resume connection', async () => {
-      const state: WalletState = {
-        address: testWallet.address,
-        networkId: testWallet.chainId,
+  it('should handle wallet connection', async () => {
+    const mockConfig: WalletConnectorConfig = {
+      type: 'mock',
+      defaultChainId: 1,
+    };
+
+    const mockWallet: ConnectedWallet = {
+      address: '0xtest',
+      chainId: 1,
+      publicKey: '0x123',
+      connected: true,
+      type: 'mock',
+      state: {
+        address: '0xtest',
+        networkId: 1,
         sessionId: 'test',
         lastActive: Date.now(),
-      };
+      },
+    };
 
-      await connector.resume(testWallet, state);
-      expect(connector.isConnected()).toBe(true);
-      expect(connector.getCurrentWalletInfo()?.address).toBe(testWallet.address);
-      expect(connector.getCurrentWalletInfo()?.state).toEqual(state);
+    mockConnector.connect.mockResolvedValue(mockWallet);
+
+    const wallet = await client.connect(mockConfig);
+
+    expect(createConnector).toHaveBeenCalledWith(mockConfig);
+    expect(mockConnector.connect).toHaveBeenCalledWith({
+      address: '',
+      chainId: 1,
+      publicKey: '',
     });
-
-    it('should handle disconnection', async () => {
-      await connector.connect(testWallet);
-      expect(connector.isConnected()).toBe(true);
-
-      await connector.disconnect();
-      expect(connector.isConnected()).toBe(false);
-      expect(connector.getCurrentWalletInfo()).toBeNull();
-    });
-
-    it('should handle connection failures', async () => {
-      vi.mocked(mockTransport.connect).mockRejectedValueOnce(
-        new TransportError('Connection failed', TransportErrorCode.CONNECTION_FAILED),
-      );
-
-      await expect(connector.connect(testWallet)).rejects.toThrow(TransportError);
-      expect(connector.isConnected()).toBe(false);
-    });
+    expect(wallet).toEqual(mockWallet);
+    expect(client.isConnected).toBe(true);
+    expect(client.getState()).toBe(ConnectionState.CONNECTED);
   });
 
-  describe('message handling', () => {
-    beforeEach(async () => {
-      await connector.connect(testWallet);
-    });
+  it('should handle connection failures', async () => {
+    const mockConfig: WalletConnectorConfig = {
+      type: 'mock',
+      defaultChainId: 1,
+    };
 
-    it('should send requests successfully', async () => {
-      const result = await connector.testRequest('test', ['param1']);
-      expect(mockTransport.send).toHaveBeenCalled();
-      expect(result).toBeDefined();
-    });
+    const mockError = new Error('Connection failed');
+    mockConnector.connect.mockRejectedValue(mockError);
 
-    it('should handle transport errors', async () => {
-      vi.mocked(mockTransport.send).mockRejectedValueOnce(
-        new TransportError('Send failed', TransportErrorCode.SEND_FAILED),
-      );
-
-      await expect(connector.testRequest('test', [])).rejects.toThrow(TransportError);
-    });
-
-    it('should handle protocol validation errors', async () => {
-      vi.mocked(mockProtocol.validateMessage).mockReturnValueOnce({
-        success: false,
-        error: new ProtocolError('Invalid message', ProtocolErrorCode.INVALID_FORMAT),
-      });
-
-      await expect(connector.testRequest('test', [])).rejects.toThrow(ProtocolError);
-    });
-
-    it('should validate connection state before sending', async () => {
-      await connector.disconnect();
-      await expect(connector.testRequest('test', [])).rejects.toThrow(TransportError);
-    });
-
-    it('should handle protocol messages', async () => {
-      const message = {
-        id: '1',
-        type: MessageType.REQUEST,
-        payload: {
-          request: { method: 'test', params: [] },
-          response: {},
-        },
-        timestamp: Date.now(),
-      };
-
-      await connector['handleProtocolMessage'](message);
-      expect(connector.getMessages()).toContainEqual(message);
-    });
+    await expect(client.connect(mockConfig)).rejects.toThrow(
+      createClientError.connectFailed('Failed to connect wallet', { cause: mockError }),
+    );
+    expect(client.isConnected).toBe(false);
+    expect(client.getState()).toBe(ConnectionState.DISCONNECTED);
   });
 
-  describe('state management', () => {
-    it('should track connection state', async () => {
-      expect(connector.getState()).toBe(ConnectionStatus.DISCONNECTED);
+  it('should handle disconnection', async () => {
+    // First connect
+    const mockConfig: WalletConnectorConfig = {
+      type: 'mock',
+      defaultChainId: 1,
+    };
 
-      await connector.connect(testWallet);
-      expect(connector.getState()).toBe(ConnectionStatus.CONNECTED);
+    const mockWallet: ConnectedWallet = {
+      address: '0xtest',
+      chainId: 1,
+      publicKey: '0x123',
+      connected: true,
+      type: 'mock',
+      state: {
+        address: '0xtest',
+        networkId: 1,
+        sessionId: 'test',
+        lastActive: Date.now(),
+      },
+    };
 
-      await connector.disconnect();
-      expect(connector.getState()).toBe(ConnectionStatus.DISCONNECTED);
-    });
+    mockConnector.connect.mockResolvedValue(mockWallet);
+    await client.connect(mockConfig);
 
-    it('should prevent requests when disconnected', async () => {
-      await expect(connector.testRequest('test', [])).rejects.toThrow(TransportError);
-    });
-
-    it('should maintain wallet state during connection', async () => {
-      await connector.connect(testWallet);
-
-      const wallet = connector.getCurrentWalletInfo();
-      expect(wallet).toBeDefined();
-      expect(wallet?.address).toBe(testWallet.address);
-      expect(wallet?.chainId).toBe(testWallet.chainId);
-      expect(wallet?.connected).toBe(true);
-    });
-
-    it('should cleanup state on disconnect', async () => {
-      await connector.connect(testWallet);
-      expect(connector.getCurrentWalletInfo()).toBeDefined();
-
-      await connector.disconnect();
-      expect(connector.getCurrentWalletInfo()).toBeNull();
-      expect(connector.isConnected()).toBe(false);
-    });
+    // Then disconnect
+    await client.disconnect();
+    expect(client.isConnected).toBe(false);
+    expect(client.getState()).toBe(ConnectionState.DISCONNECTED);
   });
 });

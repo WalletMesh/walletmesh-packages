@@ -1,278 +1,155 @@
-/**
- * @packageDocumentation
- * Window transport implementation
- */
+import { BaseTransport } from './base.js';
+import { createTransportError } from './errors.js';
+import { MessageType } from './types.js';
+import type { Message } from './types.js';
 
-import { TransportState } from './types.js';
-import type { Transport, Message, Subscription } from './types.js';
-import { TransportError, TransportErrorCode } from './errors.js';
-
-interface MessageHandler {
-  canHandle: (message: Message) => boolean;
-  handle: (message: Message) => Promise<void>;
-}
-
-export interface WindowTransportOptions {
-  url: string;
+export interface WindowTransportConfig {
+  target: Window;
+  origin: string;
   timeout?: number;
-  debug?: boolean;
-  retries?: number;
-  dimensions?: { width: number; height: number };
 }
 
-const DEFAULT_OPTIONS = {
-  timeout: 30000,
-  debug: false,
-  retries: 3,
-};
+interface PendingMessage<R> {
+  resolve: (value: Message<R>) => void;
+  reject: (error: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
+
+interface ErrorPayload {
+  message: string;
+  [key: string]: unknown;
+}
 
 /**
- * Window-based transport implementation
+ * Window transport implementation for cross-window messaging
  */
-export class WindowTransport implements Transport {
-  private frame: HTMLIFrameElement | null = null;
-  private connected = false;
-  private messageHandlers: MessageHandler[] = [];
-  private handlers = new Set<Subscription>();
-  private state: TransportState = TransportState.DISCONNECTED;
-  private readonly options: WindowTransportOptions;
-  private readonly baseOptions: Required<Omit<WindowTransportOptions, 'url' | 'dimensions'>>;
-  readonly #windowRef: Window | null;
+export class WindowTransport extends BaseTransport {
+  private readonly target: Window;
+  private readonly origin: string;
+  private readonly timeout: number;
+  private pendingMessages: Map<string, PendingMessage<unknown>> = new Map();
+  private messageHandler: ((event: MessageEvent) => void) | undefined;
 
-  constructor(options: WindowTransportOptions) {
-    this.options = options;
-    this.#windowRef = typeof window !== 'undefined' ? window : null;
-    this.baseOptions = {
-      ...DEFAULT_OPTIONS,
-      ...options,
-    };
-
-    // Initialize message handling
-    if (this.#windowRef) {
-      this.#windowRef.addEventListener('message', this.onWindowMessage);
-    }
+  constructor(config: WindowTransportConfig) {
+    super();
+    this.target = config.target;
+    this.origin = config.origin;
+    this.timeout = config.timeout ?? 5000;
   }
 
-  public async connect(): Promise<void> {
-    try {
-      this.state = TransportState.CONNECTING;
-      this.frame = await this.createFrame(this.options.url);
-      await this.waitForWindowLoad();
-      this.connected = true;
-      this.state = TransportState.CONNECTED;
-    } catch (error) {
-      const transportError = createTransportError(
-        'Connection failed',
-        TransportErrorCode.CONNECTION_FAILED,
-        error,
-      );
-      this.state = TransportState.ERROR;
-      this.notifyError(transportError);
-      throw transportError;
-    }
-  }
+  protected async connectImpl(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        reject(createTransportError.connectionFailed('Connection timeout'));
+      }, this.timeout);
 
-  public async disconnect(): Promise<void> {
-    const disconnectError = createTransportError(
-      'Transport disconnected',
-      TransportErrorCode.CONNECTION_FAILED,
-    );
+      try {
+        // Create message handler
+        this.messageHandler = this.createMessageHandler();
+        window.addEventListener('message', this.messageHandler);
 
-    // Set state first
-    this.connected = false;
-    this.state = TransportState.DISCONNECTED;
+        // Send ping message
+        const pingMessage: Message = {
+          id: 'ping',
+          type: MessageType.REQUEST,
+          payload: { method: 'ping' },
+          timestamp: Date.now(),
+        };
 
-    // Clean up resources
-    if (this.#windowRef) {
-      this.#windowRef.removeEventListener('message', this.onWindowMessage);
-    }
-    if (this.frame) {
-      this.frame.remove();
-      this.frame = null;
-    }
-
-    // Store current handlers and clear
-    const currentHandlers = Array.from(this.handlers);
-    this.handlers.clear();
-    this.messageHandlers = [];
-
-    // Notify after clearing
-    for (const handler of currentHandlers) {
-      if (handler.onError) {
-        handler.onError(disconnectError);
+        this.target.postMessage(pingMessage, this.origin);
+        resolve();
+        clearTimeout(timer);
+      } catch (error) {
+        clearTimeout(timer);
+        if (this.messageHandler) {
+          window.removeEventListener('message', this.messageHandler);
+          this.messageHandler = undefined;
+        }
+        reject(error);
       }
-    }
+    });
   }
 
-  public async send<T = unknown, R = unknown>(message: Message<T>): Promise<Message<R>> {
-    // Validate message format synchronously
-    if (!message || !message.id || !message.type || typeof message.timestamp !== 'number') {
-      const error = createTransportError('Invalid message format', TransportErrorCode.INVALID_MESSAGE);
-      this.notifyError(error);
-      throw error;
+  protected async disconnectImpl(): Promise<void> {
+    if (this.messageHandler) {
+      window.removeEventListener('message', this.messageHandler);
+      this.messageHandler = undefined;
     }
 
-    if (!this.isConnected() || !this.frame?.contentWindow) {
-      const error = createTransportError('Transport not connected', TransportErrorCode.CONNECTION_FAILED);
-      this.notifyError(error);
-      throw error;
+    // Clean up pending messages
+    for (const { reject, timer } of this.pendingMessages.values()) {
+      clearTimeout(timer);
+      reject(createTransportError.connectionFailed('Transport disconnected'));
+    }
+    this.pendingMessages.clear();
+  }
+
+  protected async sendImpl<T, R>(message: Message<T>): Promise<Message<R>> {
+    if (!this.messageHandler) {
+      throw createTransportError.notConnected('Transport not connected');
     }
 
     return new Promise<Message<R>>((resolve, reject) => {
-      const timeoutId = setTimeout(() => {
-        const error = createTransportError('Message timeout', TransportErrorCode.TIMEOUT);
-        this.notifyError(error);
-        reject(error);
-      }, this.baseOptions.timeout);
+      const timer = setTimeout(() => {
+        this.pendingMessages.delete(message.id);
+        reject(createTransportError.timeout('Message timeout'));
+      }, this.timeout);
 
-      const handler: MessageHandler = {
-        canHandle: (response: Message) => response.id === message.id,
-        handle: async (response: Message): Promise<void> => {
-          clearTimeout(timeoutId);
-          this.messageHandlers = this.messageHandlers.filter((h) => h !== handler);
-          resolve(response as Message<R>);
-        },
-      };
+      this.pendingMessages.set(message.id, {
+        resolve: (value: Message<unknown>) => resolve(value as Message<R>),
+        reject,
+        timer,
+      });
 
-      this.messageHandlers.push(handler);
-      const win = this.frame?.contentWindow;
-      if (win) {
-        win.postMessage(message, '*');
-      }
-    });
-  }
-
-  public subscribe(subscription: Subscription): () => void {
-    const handler: MessageHandler = {
-      canHandle: () => true,
-      handle: async (message: Message) => {
-        try {
-          if (subscription.onMessage) {
-            await subscription.onMessage(message);
-          }
-        } catch (error) {
-          if (subscription.onError) {
-            subscription.onError(error instanceof Error ? error : new Error(String(error)));
-          }
-        }
-      },
-    };
-
-    this.messageHandlers.push(handler);
-    this.handlers.add(subscription);
-    return () => {
-      this.messageHandlers = this.messageHandlers.filter((h) => h !== handler);
-      this.handlers.delete(subscription);
-    };
-  }
-
-  public isConnected(): boolean {
-    return this.connected && !!this.frame?.contentWindow;
-  }
-
-  public getState(): TransportState {
-    return this.state;
-  }
-
-  public addErrorHandler(handler: (error: Error) => void): void {
-    this.handlers.add({ onError: handler });
-  }
-
-  public removeErrorHandler(handler: (error: Error) => void): void {
-    for (const subscription of this.handlers) {
-      if (subscription.onError === handler) {
-        this.handlers.delete(subscription);
-      }
-    }
-  }
-
-  private createFrame(url: string): Promise<HTMLIFrameElement> {
-    return new Promise((resolve, reject) => {
       try {
-        const frame = document.createElement('iframe');
-        frame.style.display = 'none';
-        if (this.options.dimensions) {
-          frame.width = String(this.options.dimensions.width);
-          frame.height = String(this.options.dimensions.height);
-        }
-        frame.src = url;
-        frame.onload = () => resolve(frame);
-        document.body.appendChild(frame);
+        this.target.postMessage(message, this.origin);
       } catch (error) {
-        reject(error);
+        clearTimeout(timer);
+        this.pendingMessages.delete(message.id);
+        reject(createTransportError.sendFailed('Failed to send message', { cause: error }));
       }
     });
   }
 
-  protected async waitForWindowLoad(): Promise<void> {
-    if (!this.frame) {
-      throw createTransportError('No window to wait for', TransportErrorCode.CONNECTION_FAILED);
-    }
-
-    return new Promise<void>((resolve, reject) => {
-      const timeoutId = setTimeout(() => {
-        const error = createTransportError('Window load timeout', TransportErrorCode.TIMEOUT);
-        this.notifyError(error);
-        reject(error);
-      }, this.baseOptions.timeout);
-
-      const handler = (event: MessageEvent) => {
-        const win = this.frame?.contentWindow;
-        if (event.source === win) {
-          if (this.#windowRef) {
-            this.#windowRef.removeEventListener('message', handler);
-          }
-          clearTimeout(timeoutId);
-          resolve();
-        }
-      };
-
-      if (this.#windowRef) {
-        this.#windowRef.addEventListener('message', handler);
+  private createMessageHandler(): (event: MessageEvent) => void {
+    return (event: MessageEvent): void => {
+      // Validate origin
+      if (event.origin !== this.origin) {
+        return;
       }
-    });
-  }
 
-  private notifyError(error: Error): void {
-    const handlers = Array.from(this.handlers);
-    for (const handler of handlers) {
-      if (handler.onError) {
-        handler.onError(error);
+      // Validate message format
+      const message = event.data as Message;
+      if (!this.validateMessage(message)) {
+        this.emitError(createTransportError.error('Invalid message format'));
+        return;
       }
-    }
-  }
 
-  private onWindowMessage = async (event: MessageEvent): Promise<void> => {
-    if (!this.frame || event.source !== this.frame.contentWindow) {
-      return;
-    }
-
-    try {
-      const { data } = event;
-      for (const handler of this.messageHandlers) {
-        if (handler.canHandle(data)) {
-          await handler.handle(data);
+      // Handle pending messages
+      const pending = this.pendingMessages.get(message.id);
+      if (pending) {
+        clearTimeout(pending.timer);
+        this.pendingMessages.delete(message.id);
+        if (message.type === MessageType.ERROR) {
+          const payload = message.payload as ErrorPayload;
+          const error = createTransportError.error(payload.message ?? 'Unknown error', { cause: payload });
+          this.emitError(error);
+          pending.reject(error);
+        } else {
+          pending.resolve(message);
         }
       }
-    } catch (error) {
-      const transportError = createTransportError(
-        'Failed to process message',
-        TransportErrorCode.INVALID_MESSAGE,
-        error,
-      );
-      this.notifyError(transportError);
-    }
-  };
-
-  protected get window(): Window | null {
-    return this.#windowRef;
+    };
   }
-}
 
-function createTransportError(message: string, code: TransportErrorCode, cause?: unknown): TransportError {
-  const error = new TransportError(message, code);
-  if (cause) {
-    error.cause = cause instanceof Error ? cause : new Error(String(cause));
+  private validateMessage(message: unknown): message is Message {
+    return (
+      typeof message === 'object' &&
+      message !== null &&
+      typeof (message as Message).id === 'string' &&
+      typeof (message as Message).type === 'string' &&
+      typeof (message as Message).timestamp === 'number' &&
+      (message as Message).payload !== undefined
+    );
   }
-  return error;
 }

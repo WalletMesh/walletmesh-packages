@@ -1,120 +1,149 @@
-/**
- * @packageDocumentation
- * Connector registry implementation.
- */
+import { ConnectionState, MessageType } from '../transport/types.js';
+import type { Protocol, Transport, Message } from '../transport/types.js';
+import type { BaseConnector } from './base.js';
+import { MockConnector, type MockRequest } from './mock.js';
+import type { ConnectorImplementationConfig, Provider, WalletInfo } from '../types.js';
 
-import { MockConnector, type MockConnectorConfig } from './mock.js';
-import type { Connector } from '../types.js';
-import { createConnectorError } from './errors.js';
+export interface ConnectorConfig extends WalletInfo {
+  type: string;
+  [key: string]: unknown;
+}
 
-/** Connector creator function type */
-export type ConnectorCreator = (config: MockConnectorConfig) => Connector;
+export type ConnectorCreator<TRequest> = new (
+  transport: Transport,
+  protocol: Protocol<TRequest>,
+) => BaseConnector<TRequest>;
 
-/**
- * Validates a connector type string
- */
-const validateType = (type: string): void => {
-  if (!type || type.trim() === '') {
-    throw createConnectorError.invalidType(type);
-  }
-};
-
-/**
- * Validates a connector configuration
- */
-const validateConfig = (config: MockConnectorConfig): void => {
-  if (!config || typeof config !== 'object') {
-    throw createConnectorError.invalidConfig('Configuration must be a valid object');
-  }
-};
-
-/**
- * Connector registry class
- */
 export class ConnectorRegistry {
-  private connectors: Map<string, ConnectorCreator>;
+  private connectors: Map<string, ConnectorImplementationConfig> = new Map();
 
-  constructor() {
-    this.connectors = new Map();
-  }
-
-  /**
-   * Registers a new connector type
-   * @param type - Connector type identifier
-   * @param creator - Connector creator function
-   */
-  public register(type: string, creator: ConnectorCreator): void {
-    validateType(type);
-
-    if (typeof creator !== 'function') {
-      throw createConnectorError.invalidCreator();
+  public register<TRequest>(
+    type: string,
+    config: ConnectorImplementationConfig,
+    ctor: ConnectorCreator<TRequest>,
+  ): void {
+    if (this.connectors.has(type)) {
+      throw new Error(`Connector type already registered: ${type}`);
     }
 
-    this.connectors.set(type, creator);
+    const originalFactory = config.factory;
+    this.connectors.set(type, {
+      ...config,
+      factory: async () => {
+        const result = await originalFactory();
+        const transport = this.createTransport(result);
+        const connector = new ctor(transport, this.createProtocol<TRequest>(type));
+        await connector.connect({
+          address: 'unknown',
+          chainId: 1,
+          publicKey: 'unknown',
+          ...config,
+        });
+        return result;
+      },
+    });
   }
 
-  /**
-   * Unregisters a connector type
-   * @param type - Connector type identifier
-   */
   public unregister(type: string): void {
-    validateType(type);
     this.connectors.delete(type);
   }
 
-  /**
-   * Checks if a connector type is registered
-   * @param type - Connector type identifier
-   */
-  public hasType(type: string): boolean {
-    // Return false for invalid types without throwing
-    if (!type || type.trim() === '') {
-      return false;
-    }
-    return this.connectors.has(type);
-  }
-
-  /**
-   * Gets list of registered connector types
-   */
-  public getTypes(): string[] {
-    return Array.from(this.connectors.keys());
-  }
-
-  /**
-   * Creates a new connector instance
-   * @param config - Connector configuration
-   */
-  public create(config: MockConnectorConfig & { type: string }): Connector {
-    validateConfig(config);
-
-    const creator = this.connectors.get(config.type);
-    if (!creator) {
-      throw createConnectorError.notRegistered(config.type);
+  public async create<TRequest>(type: string): Promise<BaseConnector<TRequest>> {
+    const implementation = this.connectors.get(type);
+    if (!implementation) {
+      if (type === 'mock') {
+        return this.createMockConnector() as unknown as BaseConnector<TRequest>;
+      }
+      throw new Error(`Connector type not registered: ${type}`);
     }
 
-    try {
-      return creator(config);
-    } catch (error) {
-      // Wrap non-ConnectorError instances with a general connector error
-      throw error instanceof Error
-        ? createConnectorError.error(error.message, { cause: error })
-        : createConnectorError.error(String(error));
-    }
+    const result = await implementation.factory();
+    const transport = this.createTransport(result);
+    return new MockConnector(
+      transport,
+      this.createProtocol<MockRequest>(type),
+    ) as unknown as BaseConnector<TRequest>;
   }
 
-  /**
-   * Clears all connector registrations
-   */
-  public clear(): void {
-    this.connectors.clear();
+  private createTransport(provider: Provider): Transport {
+    return {
+      connect: async () => provider.connect(),
+      disconnect: async () => provider.disconnect(),
+      send: async <T, R>(message: Message<T>): Promise<Message<R>> => {
+        const result = await provider.request<R>(message.id, message.payload as unknown[]);
+        return {
+          id: message.id,
+          type: MessageType.RESPONSE,
+          payload: result,
+          timestamp: Date.now(),
+        };
+      },
+      isConnected: () => provider.isConnected(),
+      getState: () => ConnectionState.CONNECTED,
+      addErrorHandler: () => undefined,
+      removeErrorHandler: () => undefined,
+    };
+  }
+
+  private createMockConnector(): MockConnector {
+    const transport = this.createTransport({
+      connect: async () => undefined,
+      disconnect: async () => undefined,
+      request: async <T>(): Promise<T> => ({}) as T,
+      isConnected: () => true,
+    });
+
+    return new MockConnector(transport, this.createProtocol<MockRequest>('mock'));
+  }
+
+  private createProtocol<TRequest>(type: string): Protocol<TRequest> {
+    return {
+      validate: () => ({
+        success: true,
+        data: {
+          id: type,
+          type: MessageType.REQUEST,
+          payload: {} as TRequest,
+          timestamp: Date.now(),
+        },
+      }),
+      validateMessage: () => ({
+        success: true,
+        data: {
+          id: type,
+          type: MessageType.REQUEST,
+          payload: {} as TRequest,
+          timestamp: Date.now(),
+        },
+      }),
+      parseMessage: () => ({
+        success: true,
+        data: {
+          id: type,
+          type: MessageType.REQUEST,
+          payload: {} as TRequest,
+          timestamp: Date.now(),
+        },
+      }),
+      formatMessage: (message: Message<TRequest>) => message,
+      createRequest: (method: string) => ({
+        id: method,
+        type: MessageType.REQUEST,
+        payload: {} as TRequest,
+        timestamp: Date.now(),
+      }),
+      createResponse: <TResponse>(id: string, result: TResponse) => ({
+        id,
+        type: MessageType.RESPONSE,
+        payload: result,
+        timestamp: Date.now(),
+      }),
+      createError: (id: string) => ({
+        id,
+        type: MessageType.ERROR,
+        payload: {} as TRequest,
+        timestamp: Date.now(),
+      }),
+    };
   }
 }
-
-/**
- * Default connector registry instance
- */
-export const connectorRegistry = new ConnectorRegistry();
-
-// Register default connectors
-connectorRegistry.register('mock', (config: MockConnectorConfig) => new MockConnector(config));

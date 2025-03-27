@@ -2,6 +2,13 @@
  * Core wallet types and interfaces
  */
 
+// Import ConnectionState enum and export both the enum and a type alias
+import { ConnectionState } from './transport/types.js';
+export { ConnectionState };
+
+// Legacy type alias for backwards compatibility
+export type ConnectionStatus = ConnectionState;
+
 /**
  * Dapp information
  */
@@ -53,20 +60,6 @@ export interface ConnectedWallet {
 }
 
 /**
- * Connection status enum
- */
-export enum ConnectionStatus {
-  /** Not connected */
-  DISCONNECTED = 'disconnected',
-  /** Connection in progress */
-  CONNECTING = 'connecting',
-  /** Successfully connected */
-  CONNECTED = 'connected',
-  /** Connection error */
-  ERROR = 'error',
-}
-
-/**
  * Chain connection information
  */
 export interface ChainConnection {
@@ -75,7 +68,7 @@ export interface ChainConnection {
   /** Connection URL */
   rpcUrl: string;
   /** Connection status */
-  status: ConnectionStatus;
+  status: ConnectionState;
 }
 
 /**
@@ -109,7 +102,7 @@ export interface WalletSession {
   /** Session expiry timestamp */
   expiry: number;
   /** Connection status */
-  status: ConnectionStatus;
+  status: ConnectionState;
   /** Active connector */
   connector: Connector;
   /** Connected wallet */
@@ -145,19 +138,6 @@ export interface WalletState {
 }
 
 /**
- * Wallet error
- */
-export class WalletError extends Error {
-  constructor(
-    message: string,
-    public code?: string,
-  ) {
-    super(message);
-    this.name = 'WalletError';
-  }
-}
-
-/**
  * Wallet connector interface
  */
 export interface Connector {
@@ -168,7 +148,7 @@ export interface Connector {
   /** Disconnects from wallet */
   disconnect(): Promise<void>;
   /** Gets connection state */
-  getState(): ConnectionStatus;
+  getState(): ConnectionState;
   /** Resumes existing connection */
   resume(walletInfo: WalletInfo, state: WalletState): Promise<ConnectedWallet>;
 }
@@ -208,5 +188,5 @@ export interface WalletClient {
   /** Disconnects current wallet */
   disconnect(): Promise<void>;
   /** Gets current state */
-  getState(): ConnectionStatus;
+  getState(): ConnectionState;
 }
