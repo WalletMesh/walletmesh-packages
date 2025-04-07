@@ -20,20 +20,20 @@
     "@aztec/circuits.js": "0.76.2",
     "@aztec/foundation": "0.76.2",
     "@aztec/noir-contracts.js": "0.76.2",
-    "@walletmesh/jsonrpc": "workspace:^",
     "@walletmesh/aztec": "workspace:^",
     "@walletmesh/aztec-rpc-wallet": "workspace:^",
+    "@walletmesh/jsonrpc": "workspace:^",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.6",
     "@vitejs/plugin-react": "^4.3.4",
-    "globals": "^15.12.0",
-    "vite": "^6.0.1",
+    "globals": "^15.15.0",
+    "vite": "^6.2.5",
     "vite-plugin-node-polyfills": "^0.23.0",
-    "vite-plugin-static-copy": "^2.2.0",
-    "vite-plugin-top-level-await": "^1.4.4"
+    "vite-plugin-static-copy": "^2.3.0",
+    "vite-plugin-top-level-await": "^1.5.0"
   }
 }
