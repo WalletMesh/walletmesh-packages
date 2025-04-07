@@ -12,7 +12,7 @@ export function ModalProvider({ children, config }: ModalProviderProps) {
     config: config ?? {},
   }));
   // TODO: Should look into using useSyncExternalStore for subscribing to store updates outside React
-  // const [_state, setState] = useState(() => store.getState());
+  const [_state, setState] = React.useState(() => store.getState());
 
   // Skip initial config update. On first render, config is applied when the controller is created
   const isFirstRender = React.useRef(true);
@@ -22,21 +22,25 @@ export function ModalProvider({ children, config }: ModalProviderProps) {
     }
     isFirstRender.current = false;
   }, [store, config]);
+
+
+  const [triggerRender, setTriggerRender] = React.useState(0)
   
   // TODO: Should look into using useSyncExternalStore for subscribing to store updates outside React
-  // // Subscribe to store updates
-  // useEffect(() => {
-  //   const unsubscribe = store.subscribe(() => {
-  //     setState(store.getState());
-  //   });
+  // Subscribe to store updates
+  useEffect(() => {
+    const unsubscribe = store.subscribe(() => {
+      setState(store.getState());
+      setTriggerRender(prev => prev + 1);
+    });
     
-  //   return () => {
-  //     unsubscribe();
-  //   };
-  // }, [store]);
+    return () => {
+      unsubscribe();
+    };
+  }, [store]);
 
   return (
-    <ModalContext.Provider value={store}>
+    <ModalContext.Provider value={store} key={triggerRender}>
       {children}
     </ModalContext.Provider>
   );
