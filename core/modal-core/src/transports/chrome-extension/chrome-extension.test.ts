@@ -126,6 +126,8 @@ describe('ChromeExtensionTransport', () => {
       const connectAttempt = async () => {
         try {
           await transport.connect();
+          // If connect succeeds unexpectedly, fail the test
+          throw new Error('Test failed: Connection succeeded unexpectedly');
         } catch (err) {
           // Expected error, return it for assertion
           return err;
@@ -195,6 +197,8 @@ describe('ChromeExtensionTransport', () => {
       const connectAttempt = async () => {
         try {
           await transport.connect();
+          // If connect succeeds unexpectedly, fail the test
+          throw new Error('Test failed: Connection succeeded unexpectedly');
         } catch (err) {
           // Expected timeout error, return it for assertion
           return err;

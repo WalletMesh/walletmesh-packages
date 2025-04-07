@@ -354,7 +354,7 @@ describe('WalletClient', () => {
         expect(() => client.getProvider()).toThrow(ProviderNotSupportedError);
       });
 
-      it('should handle all chain configurations', () => {
+      it('should handle all chain configurations and store state interactions', () => {
         // Test four scenarios:
         // 1. Provider with setChain and explicit chain
         const mockProvider1 = {
