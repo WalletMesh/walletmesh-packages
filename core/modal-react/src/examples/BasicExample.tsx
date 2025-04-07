@@ -1,4 +1,3 @@
-import React from 'react';
 import { ModalProvider, SelectModal, ConnectedModal, useModal } from '../index.js';
 import './BasicExample.css';
 
@@ -82,20 +81,21 @@ export function BasicExample() {
   return (
     <ModalProvider
       config={{
-        onBeforeOpen: async () => {
-          console.log('Modal is about to open');
-          return true;
-        },
-        onAfterOpen: () => {
-          console.log('Modal opened');
-        },
-        onBeforeClose: async () => {
-          console.log('Modal is about to close');
-          return true;
-        },
-        onAfterClose: () => {
-          console.log('Modal closed');
-        },
+        // TODO: lifecycle callbacks are not implemented
+        // onBeforeOpen: async () => {
+        //   console.log('Modal is about to open');
+        //   return true;
+        // },
+        // onAfterOpen: () => {
+        //   console.log('Modal opened');
+        // },
+        // onBeforeClose: async () => {
+        //   console.log('Modal is about to close');
+        //   return true;
+        // },
+        // onAfterClose: () => {
+        //   console.log('Modal closed');
+        // },
       }}
     >
       <WalletUI />

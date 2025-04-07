@@ -25,6 +25,5 @@ export {
 export type {
   ModalConfig,
   ModalState,
-  ModalActions,
-  ModalStore,
+  ModalAction,
 } from '@walletmesh/modal-core';

@@ -62,4 +62,6 @@ export { ChainNotSupportedError } from './types/chains.js';
 /**
  * Storage utilities
  */
-export { WalletStorage, type StorageConfig } from './utils/storage.js';
+export * from './utils/storage.js';
+export * from './types/modal.js';
+export * from './modal/controller.js';

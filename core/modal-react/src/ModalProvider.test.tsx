@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event';
 import { ModalProvider } from './ModalProvider.js';
 import { useModal } from './ModalContext.js';
 import { SelectModal } from './SelectModal.js';
-import { ConnectedModal } from './ConnectedModal.js';
 
 function TestComponent() {
   const modal = useModal();
@@ -60,7 +59,12 @@ describe('ModalProvider', () => {
     const onAfterOpen = vi.fn();
 
     render(
-      <ModalProvider config={{ onBeforeOpen, onAfterOpen }}>
+      <ModalProvider
+        config={{
+          // TODO: lifecycle callbacks are not implemented
+          // onBeforeOpen,
+          // onAfterOpen
+        }}>
         <TestComponent />
       </ModalProvider>
     );

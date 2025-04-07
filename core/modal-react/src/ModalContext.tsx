@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
-import type { ModalStore } from '@walletmesh/modal-core';
+import type { ModalController } from '@walletmesh/modal-core';
 
-export const ModalContext = createContext<ModalStore | null>(null);
+export const ModalContext = createContext<ModalController | null>(null);
 
 export function useModalContext() {
   const context = useContext(ModalContext);
@@ -12,21 +12,16 @@ export function useModalContext() {
 }
 
 export function useModal() {
-  const {
-    isSelectModalOpen,
-    isConnectedModalOpen,
-    openSelectModal,
-    closeSelectModal,
-    openConnectedModal,
-    closeConnectedModal,
-  } = useModalContext();
+  const modalController = useModalContext();
+
+  const modalState = modalController.getState();
 
   return {
-    isSelectModalOpen,
-    isConnectedModalOpen,
-    openSelectModal,
-    closeSelectModal,
-    openConnectedModal,
-    closeConnectedModal,
+    isSelectModalOpen: modalState.isOpen,
+    isConnectedModalOpen: modalState.currentView === 'connected',
+    openSelectModal: () => modalController.open(),
+    closeSelectModal: () => modalController.close(),
+    openConnectedModal: () => modalController.open(),
+    closeConnectedModal: () => modalController.close(),
   };
 }
