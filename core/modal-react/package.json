@@ -18,7 +18,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "tsc",
     "clean": "rimraf dist",
     "test": "vitest run",
     "test:watch": "vitest",
