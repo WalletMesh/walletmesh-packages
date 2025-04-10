@@ -1,4 +1,4 @@
-import { useModal, useModalContext } from '@walletmesh/modal-react'
+import { useModal, useModalContext, WalletmeshModal } from '@walletmesh/modal-react'
 import { useState, useEffect } from 'react'
 
 function App() {
@@ -22,6 +22,29 @@ function App() {
     
     return () => unsubscribe();
   }, [modalContext]);
+  
+  // Sample wallet list for the modal
+  const wallets = [
+    {
+      id: 'metamask',
+      name: 'MetaMask',
+      iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg'
+    },
+    {
+      id: 'walletconnect',
+      name: 'WalletConnect',
+      iconUrl: 'https://avatars.githubusercontent.com/u/37784886'
+    },
+    {
+      id: 'coinbase',
+      name: 'Coinbase Wallet',
+      iconUrl: 'https://avatars.githubusercontent.com/u/1885080'
+    },
+    {
+      id: 'custom',
+      name: 'Custom Wallet'
+    }
+  ];
   
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '16px' }}>
@@ -82,6 +105,12 @@ function App() {
       
       {/* Feature 3: Wallet State */}
       <WalletStateInfo />
+      
+      {/* New Modal Component */}
+      <WalletmeshModal 
+        wallets={wallets}
+        theme="system"
+      />
     </div>
   )
 }

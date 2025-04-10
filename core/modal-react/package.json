@@ -18,7 +18,8 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy-css",
+    "copy-css": "mkdir -p dist/components && cp src/components/*.css dist/components/",
     "clean": "rimraf dist",
     "test": "vitest run",
     "test:watch": "vitest",

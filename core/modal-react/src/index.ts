@@ -21,6 +21,12 @@ export {
   type ConnectedModalProps,
 } from './ConnectedModal.js';
 
+// New unified Modal component
+export {
+  WalletmeshModal,
+  type WalletmeshModalProps,
+} from './components/WalletmeshModal.js';
+
 // Re-export types from core
 export type {
   ModalConfig,
