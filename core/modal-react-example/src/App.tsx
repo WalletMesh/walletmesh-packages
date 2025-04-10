@@ -1,4 +1,4 @@
-import { useModal, useModalContext, WalletmeshModal } from '@walletmesh/modal-react'
+import { useModal, useModalContext } from '@walletmesh/modal-react'
 import { useState, useEffect } from 'react'
 
 function App() {
@@ -106,18 +106,14 @@ function App() {
       {/* Feature 3: Wallet State */}
       <WalletStateInfo />
       
-      {/* New Modal Component */}
-      <WalletmeshModal 
-        wallets={wallets}
-        theme="system"
-      />
+      {/* WalletmeshModal is auto-injected by the WalletmeshProvider */}
     </div>
   )
 }
 
 function WalletStateInfo() {
-  const modalController = useModalContext();
-  const modalState = modalController.getState();
+  const modalContext = useModalContext();
+  const modalState = modalContext.getState();
 
   return (
     <div style={{ padding: '16px', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>

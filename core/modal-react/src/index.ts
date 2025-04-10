@@ -5,11 +5,27 @@ export {
   useModal,
 } from './ModalContext.js';
 
+// Walletmesh context and hooks
+export {
+  WalletmeshContext,
+  useWalletmesh,
+  type WalletmeshContextType,
+  type WalletmeshConfig,
+  type WalletInfo,
+  type ConnectionStatus,
+} from './WalletmeshContext.js';
+
 // Components
 export {
   ModalProvider,
   type ModalProviderProps,
 } from './ModalProvider.js';
+
+// Walletmesh Provider
+export {
+  WalletmeshProvider,
+  type WalletmeshProviderProps,
+} from './WalletmeshProvider.js';
 
 export {
   SelectModal,
