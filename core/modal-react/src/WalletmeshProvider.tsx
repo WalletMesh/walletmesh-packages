@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ModalProvider } from './ModalProvider.js';
-import { useModal, useModalContext } from './ModalContext.js';
+import { ModalControllerImpl, ModalState, ModalAction } from '@walletmesh/modal-core';
 import { WalletmeshContext, WalletmeshConfig, WalletInfo, ConnectionStatus } from './WalletmeshContext.js';
 import { WalletmeshModal } from './components/WalletmeshModal.js';
 
@@ -30,7 +29,7 @@ export function WalletmeshProvider({
   // Selected wallet state
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   // Error state
-  const [error, setError] = useState<Error | null>(null); // Used in connect/disconnect methods
+  const [error, setError] = useState<Error | null>(null);
 
   // Default configuration
   const defaultConfig: WalletmeshConfig = {
@@ -47,107 +46,153 @@ export function WalletmeshProvider({
     ...config,
   }), [config]);
 
+  // Create modal controller
+  const controller = useMemo(() => new ModalControllerImpl({ config: mergedConfig }), [mergedConfig]);
+  
+  // Get current modal state
+  const [currentModalState, setCurrentModalState] = useState(() => controller.getState());
+  
+  // Create wallet state object
+  const walletState = useMemo(() => ({
+    selectedWallet,
+    isConnected: connectionStatus === 'connected',
+    isConnecting: connectionStatus === 'connecting'
+  }), [selectedWallet, connectionStatus]);
+  
+  // Subscribe to state changes
+  useEffect(() => {
+    const unsubscribe = controller.subscribe((state: ModalState) => {
+      // Update modal state
+      setCurrentModalState(state);
+      
+      // Update connection status based on modal state
+      if (state.selectedWallet && state.currentView === 'connected') {
+        setConnectionStatus('connected');
+        setSelectedWallet(state.selectedWallet);
+      } else if (state.isLoading) {
+        setConnectionStatus('connecting');
+      } else if (state.error) {
+        setConnectionStatus('error');
+        setError(state.error);
+      } else if (!state.isOpen) {
+        // Only reset to disconnected if we're not in the middle of connecting
+        if (connectionStatus !== 'connected') {
+          setConnectionStatus('disconnected');
+        }
+      }
+    });
+    
+    return () => unsubscribe();
+  }, [controller, connectionStatus]);
+
+
+
   // Create context value
   const contextValue = useMemo(() => ({
     config: mergedConfig,
     wallets,
     connectionStatus,
     error,
-    openModal: () => {
-      if (modalMethods) {
-        modalMethods.openSelectModal();
-      }
-    },
-    closeModal: () => {
-      if (modalMethods) {
-        modalMethods.closeSelectModal();
+    modalState: currentModalState,
+    walletState,
+    getState: () => controller.getState(),
+    subscribe: controller.subscribe.bind(controller),
+    openModal: () => controller.open(),
+    closeModal: () => controller.close(),
+    openConnectedModal: () => controller.open(), // We'll use the standard open and handle view in the component
+    closeConnectedModal: () => controller.close(),
+    dispatch: (action: ModalAction) => {
+      // Map action types to controller methods
+      switch (action.type) {
+        case 'SELECT_WALLET':
+          controller.selectWallet(action.wallet);
+          break;
+        case 'START_CONNECTING':
+          controller.connect();
+          break;
+        case 'RESET':
+          controller.reset();
+          break;
+        case 'BACK':
+          controller.back();
+          break;
+        case 'OPEN':
+          controller.open();
+          break;
+        case 'CLOSE':
+          controller.close();
+          break;
+        case 'SELECT_PROVIDER':
+          controller.selectProvider(action.provider);
+          break;
+        case 'SELECT_CHAIN':
+          controller.selectChain(action.chain);
+          break;
+        case 'CONNECTION_ERROR':
+          // Already handled by state subscription
+          break;
+        case 'CONNECTION_SUCCESS':
+          // Already handled by state subscription
+          break;
+        default:
+          console.warn('Unsupported action:', action);
       }
     },
     connect: async (walletId: string) => {
       try {
         setConnectionStatus('connecting');
-        // Simulate connection delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
         
         const wallet = wallets.find(w => w.id === walletId);
         if (!wallet) {
           throw new Error(`Wallet with ID ${walletId} not found`);
         }
         
+        // Select the wallet in the modal controller
+        controller.selectWallet(walletId);
+        
+        // Initiate connection
+        await controller.connect();
+        
+        // State will be updated via the subscription to controller state
         setSelectedWallet(walletId);
         setConnectionStatus('connected');
-        
-        // Here you would implement actual wallet connection logic
-        // This is just a placeholder
       } catch (err) {
         setConnectionStatus('error');
         setError(err instanceof Error ? err : new Error('Unknown error'));
+        
+        // No need to dispatch as the state subscription will handle errors
+        
         throw err;
       }
     },
     disconnect: async () => {
       try {
-        // Here you would implement actual wallet disconnection logic
-        // This is just a placeholder
+        // Reset the controller state which will disconnect the wallet
+        controller.reset();
+        
+        // Update local state
         setSelectedWallet(null);
         setConnectionStatus('disconnected');
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err : new Error('Unknown error'));
+        
+        // No need to dispatch as the state subscription will handle errors
+        
         throw err;
       }
     },
-  }), [mergedConfig, wallets, connectionStatus, selectedWallet]);
-
-  // Reference to modal methods
-  let modalMethods: ReturnType<typeof useModal> | null = null;
-
-  // Inner component to access modal context
-  const InnerProvider = ({ children }: { children: React.ReactNode }) => {
-    // Get modal methods
-    modalMethods = useModal();
-    const modalController = useModalContext();
-    
-    // Subscribe to modal state changes
-    useEffect(() => {
-      const unsubscribe = modalController.subscribe((state) => {
-        if (state.selectedWallet && state.currentView === 'connected') {
-          setConnectionStatus('connected');
-          setSelectedWallet(state.selectedWallet);
-        } else if (state.isLoading) {
-          setConnectionStatus('connecting');
-        } else if (state.error) {
-          setConnectionStatus('error');
-          setError(state.error);
-        } else if (!state.isOpen) {
-          // Only reset to disconnected if we're not in the middle of connecting
-          if (connectionStatus !== 'connected') {
-            setConnectionStatus('disconnected');
-          }
-        }
-      });
-      
-      return () => unsubscribe();
-    }, [modalController, connectionStatus]);
-    
-    return (
-      <WalletmeshContext.Provider value={contextValue}>
-        {children}
-        {autoInjectModal && (
-          <WalletmeshModal
-            wallets={wallets}
-            theme={mergedConfig.theme || 'system'}
-          />
-        )}
-      </WalletmeshContext.Provider>
-    );
-  };
+  }), [mergedConfig, wallets, connectionStatus, selectedWallet, currentModalState, walletState, controller]);
 
   return (
-    <ModalProvider config={mergedConfig}>
-      <InnerProvider>
-        {children}
-      </InnerProvider>
-    </ModalProvider>
+    <WalletmeshContext.Provider value={contextValue}>
+      {children}
+      {autoInjectModal && (
+        <WalletmeshModal
+          wallets={wallets}
+          theme={mergedConfig.theme || 'system'}
+        />
+      )}
+    </WalletmeshContext.Provider>
   );
 }

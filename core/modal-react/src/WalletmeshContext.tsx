@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { ModalConfig } from '@walletmesh/modal-core';
+import type { ModalConfig, ModalState, ModalAction } from '@walletmesh/modal-core';
 
 export interface WalletmeshContextType {
   /** Configuration options for the Walletmesh modal */
@@ -10,10 +10,31 @@ export interface WalletmeshContextType {
   connectionStatus: ConnectionStatus;
   /** Error if any occurred during connection */
   error: Error | null;
+  /** Current modal state */
+  modalState: ModalState;
+  /** Current wallet state */
+  walletState: {
+    /** Currently selected wallet ID */
+    selectedWallet: string | null;
+    /** Whether wallet is currently connected */
+    isConnected: boolean;
+    /** Whether wallet is currently connecting */
+    isConnecting: boolean;
+  };
+  /** Get the current modal state */
+  getState: () => ModalState;
+  /** Subscribe to modal state changes */
+  subscribe: (callback: (state: ModalState) => void) => () => void;
   /** Open the wallet selection modal */
   openModal: () => void;
   /** Close the wallet selection modal */
   closeModal: () => void;
+  /** Open the connected wallet modal */
+  openConnectedModal: () => void;
+  /** Close the connected wallet modal */
+  closeConnectedModal: () => void;
+  /** Dispatch an action to the modal controller */
+  dispatch: (action: ModalAction) => void;
   /** Connect to a wallet */
   connect: (walletId: string) => Promise<void>;
   /** Disconnect from the current wallet */

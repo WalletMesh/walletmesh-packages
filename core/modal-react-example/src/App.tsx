@@ -1,50 +1,19 @@
-import { useModal, useModalContext } from '@walletmesh/modal-react'
+import { useWalletmesh } from '@walletmesh/modal-react'
 import { useState, useEffect } from 'react'
+import type { ModalState } from '@walletmesh/modal-core'
 
 function App() {
-  const { openSelectModal, closeSelectModal, isSelectModalOpen } = useModal();
-  const modalContext = useModalContext();
-  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+  const walletmesh = useWalletmesh();
+  const { openModal, closeModal, modalState, walletState } = walletmesh;
   
-  // Subscribe to state changes to update connection status
-  useEffect(() => {
-    const unsubscribe = modalContext.subscribe((state) => {
-      if (state.selectedWallet && state.currentView === 'connected') {
-        setConnectionStatus('Connected');
-      } else if (state.isLoading) {
-        setConnectionStatus('Connecting...');
-      } else if (state.error) {
-        setConnectionStatus('Error: ' + state.error.message);
-      } else {
-        setConnectionStatus('Disconnected');
-      }
-    });
-    
-    return () => unsubscribe();
-  }, [modalContext]);
-  
-  // Sample wallet list for the modal
-  const wallets = [
-    {
-      id: 'metamask',
-      name: 'MetaMask',
-      iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Fox.svg'
-    },
-    {
-      id: 'walletconnect',
-      name: 'WalletConnect',
-      iconUrl: 'https://avatars.githubusercontent.com/u/37784886'
-    },
-    {
-      id: 'coinbase',
-      name: 'Coinbase Wallet',
-      iconUrl: 'https://avatars.githubusercontent.com/u/1885080'
-    },
-    {
-      id: 'custom',
-      name: 'Custom Wallet'
-    }
-  ];
+  // Derive connection status from walletState
+  const connectionStatus = walletState.isConnected 
+    ? 'Connected' 
+    : walletState.isConnecting 
+      ? 'Connecting...' 
+      : modalState.error 
+        ? `Error: ${modalState.error.message}` 
+        : 'Disconnected';
   
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '16px' }}>
@@ -53,7 +22,7 @@ function App() {
       {/* Feature 1: Open Modal */}
       <div style={{ marginBottom: '24px', display: 'flex', gap: '12px', justifyContent: 'center' }}>
         <button 
-          onClick={() => openSelectModal()}
+          onClick={() => openModal()}
           style={{
             padding: '10px 16px',
             backgroundColor: '#4F46E5',
@@ -66,7 +35,7 @@ function App() {
           Open Modal
         </button>
         <button 
-          onClick={() => closeSelectModal()}
+          onClick={() => closeModal()}
           style={{
             padding: '10px 16px',
             backgroundColor: '#6B7280',
@@ -99,7 +68,7 @@ function App() {
           <span>{connectionStatus}</span>
         </div>
         <div style={{ marginTop: '12px' }}>
-          <div>Modal Open: <strong>{isSelectModalOpen ? 'Yes' : 'No'}</strong></div>
+          <div>Modal Open: <strong>{modalState.isOpen ? 'Yes' : 'No'}</strong></div>
         </div>
       </div>
       
@@ -112,8 +81,7 @@ function App() {
 }
 
 function WalletStateInfo() {
-  const modalContext = useModalContext();
-  const modalState = modalContext.getState();
+  const { modalState, walletState } = useWalletmesh();
 
   return (
     <div style={{ padding: '16px', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
@@ -128,7 +96,7 @@ function WalletStateInfo() {
         
         <StateCard 
           title="Selected Wallet" 
-          value={modalState.selectedWallet || 'None'} 
+          value={walletState.selectedWallet || 'None'} 
           description="The wallet that has been selected by the user"
         />
         
@@ -148,6 +116,18 @@ function WalletStateInfo() {
           title="Loading State" 
           value={modalState.isLoading ? 'Loading' : 'Not Loading'} 
           description="Whether the modal is currently in a loading state"
+        />
+        
+        <StateCard 
+          title="Connected" 
+          value={walletState.isConnected ? 'Yes' : 'No'} 
+          description="Whether a wallet is currently connected"
+        />
+        
+        <StateCard 
+          title="Connecting" 
+          value={walletState.isConnecting ? 'Yes' : 'No'} 
+          description="Whether a wallet connection is in progress"
         />
         
         <StateCard 

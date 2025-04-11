@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
-import { ModalProvider } from '@walletmesh/modal-react'
+import { WalletmeshProvider } from '@walletmesh/modal-react'
 
 // Sample wallet list for the modal
 const wallets = [
@@ -28,8 +28,8 @@ const wallets = [
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ModalProvider config={{}}>
+    <WalletmeshProvider config={{}} wallets={wallets}>
       <App />
-    </ModalProvider>
+    </WalletmeshProvider>
   </StrictMode>,
 )
