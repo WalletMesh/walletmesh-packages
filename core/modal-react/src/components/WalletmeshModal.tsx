@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useModalContext } from '../ModalContext.js';
+import { useWalletmesh } from '../WalletmeshContext.js';
 import './WalletmeshModal.css';
 import type { ModalState } from '@walletmesh/modal-core';
 
@@ -31,7 +31,7 @@ export function WalletmeshModal({
   wallets = [],
   theme = 'system',
 }: WalletmeshModalProps) {
-  const modalController = useModalContext();
+  const { controller: modalController } = useWalletmesh();
   const [modalState, setModalState] = useState<ModalState>(modalController.getState());
   
   // Subscribe to state changes

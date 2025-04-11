@@ -1,5 +1,5 @@
 import { createContext, useContext } from 'react';
-import type { ModalConfig, ModalState, ModalAction } from '@walletmesh/modal-core';
+import type { ModalConfig, ModalState, ModalAction, ModalController } from '@walletmesh/modal-core';
 
 export interface WalletmeshContextType {
   /** Configuration options for the Walletmesh modal */
@@ -39,6 +39,8 @@ export interface WalletmeshContextType {
   connect: (walletId: string) => Promise<void>;
   /** Disconnect from the current wallet */
   disconnect: () => Promise<void>;
+  /** The underlying modal controller instance */
+  controller: ModalController;
 }
 
 export interface WalletmeshConfig extends Partial<ModalConfig> {

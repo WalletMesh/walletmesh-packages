@@ -1,9 +1,4 @@
-// Context and hooks
-export {
-  ModalContext,
-  useModalContext,
-  useModal,
-} from './ModalContext.js';
+// Modal hooks have been removed in favor of using useWalletmesh directly
 
 // Walletmesh context and hooks
 export {
@@ -16,10 +11,7 @@ export {
 } from './WalletmeshContext.js';
 
 // Components
-export {
-  ModalProvider,
-  type ModalProviderProps,
-} from './ModalProvider.js';
+// ModalProvider has been merged into WalletmeshProvider
 
 // Walletmesh Provider
 export {

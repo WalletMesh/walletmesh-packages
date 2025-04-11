@@ -3,6 +3,8 @@ import { ModalControllerImpl, ModalState, ModalAction } from '@walletmesh/modal-
 import { WalletmeshContext, WalletmeshConfig, WalletInfo, ConnectionStatus } from './WalletmeshContext.js';
 import { WalletmeshModal } from './components/WalletmeshModal.js';
 
+// useModal hook has been removed in favor of using useWalletmesh directly
+
 export interface WalletmeshProviderProps {
   /** Children components */
   children: React.ReactNode;
@@ -85,9 +87,7 @@ export function WalletmeshProvider({
     return () => unsubscribe();
   }, [controller, connectionStatus]);
 
-
-
-  // Create context value
+  // Create context value, including the controller
   const contextValue = useMemo(() => ({
     config: mergedConfig,
     wallets,
@@ -182,6 +182,7 @@ export function WalletmeshProvider({
         throw err;
       }
     },
+    controller // Add controller directly here
   }), [mergedConfig, wallets, connectionStatus, selectedWallet, currentModalState, walletState, controller]);
 
   return (

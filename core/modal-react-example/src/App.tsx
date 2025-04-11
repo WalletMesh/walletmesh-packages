@@ -1,18 +1,16 @@
 import { useWalletmesh } from '@walletmesh/modal-react'
-import { useState, useEffect } from 'react'
-import type { ModalState } from '@walletmesh/modal-core'
 
 function App() {
-  const walletmesh = useWalletmesh();
-  const { openModal, closeModal, modalState, walletState } = walletmesh;
+  // Get the context from the hook
+  const context = useWalletmesh();
   
-  // Derive connection status from walletState
-  const connectionStatus = walletState.isConnected 
+  // Derive connection status
+  const displayStatus = context.connectionStatus === 'connected'
     ? 'Connected' 
-    : walletState.isConnecting 
+    : context.connectionStatus === 'connecting'
       ? 'Connecting...' 
-      : modalState.error 
-        ? `Error: ${modalState.error.message}` 
+      : context.error 
+        ? `Error: ${context.error.message}` 
         : 'Disconnected';
   
   return (
@@ -22,7 +20,7 @@ function App() {
       {/* Feature 1: Open Modal */}
       <div style={{ marginBottom: '24px', display: 'flex', gap: '12px', justifyContent: 'center' }}>
         <button 
-          onClick={() => openModal()}
+          onClick={() => context.openModal()}
           style={{
             padding: '10px 16px',
             backgroundColor: '#4F46E5',
@@ -35,7 +33,7 @@ function App() {
           Open Modal
         </button>
         <button 
-          onClick={() => closeModal()}
+          onClick={() => context.closeModal()}
           style={{
             padding: '10px 16px',
             backgroundColor: '#6B7280',
@@ -61,14 +59,14 @@ function App() {
             width: '12px', 
             height: '12px', 
             borderRadius: '50%', 
-            backgroundColor: connectionStatus === 'Connected' ? '#10B981' : 
-                           connectionStatus === 'Connecting...' ? '#F59E0B' : 
-                           connectionStatus.includes('Error') ? '#EF4444' : '#6B7280' 
+            backgroundColor: displayStatus === 'Connected' ? '#10B981' : 
+                           displayStatus === 'Connecting...' ? '#F59E0B' : 
+                           displayStatus.includes('Error') ? '#EF4444' : '#6B7280' 
           }}></div>
-          <span>{connectionStatus}</span>
+          <span>{displayStatus}</span>
         </div>
         <div style={{ marginTop: '12px' }}>
-          <div>Modal Open: <strong>{modalState.isOpen ? 'Yes' : 'No'}</strong></div>
+          <div>Modal Open: <strong>{context.modalState?.isOpen ? 'Yes' : 'No'}</strong></div>
         </div>
       </div>
       
@@ -81,7 +79,8 @@ function App() {
 }
 
 function WalletStateInfo() {
-  const { modalState, walletState } = useWalletmesh();
+  // Get the context from the hook
+  const context = useWalletmesh();
 
   return (
     <div style={{ padding: '16px', backgroundColor: '#F3F4F6', borderRadius: '8px' }}>
@@ -90,49 +89,49 @@ function WalletStateInfo() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
         <StateCard 
           title="Current View" 
-          value={modalState.currentView} 
+          value={context.modalState?.currentView} 
           description="The current view being displayed in the modal"
         />
         
         <StateCard 
           title="Selected Wallet" 
-          value={walletState.selectedWallet || 'None'} 
+          value={context.modalState?.selectedWallet || 'None'} 
           description="The wallet that has been selected by the user"
         />
         
         <StateCard 
           title="Selected Provider" 
-          value={modalState.selectedProvider ? JSON.stringify(modalState.selectedProvider) : 'None'} 
+          value={context.modalState?.selectedProvider ? JSON.stringify(context.modalState.selectedProvider) : 'None'} 
           description="The provider interface that has been selected"
         />
         
         <StateCard 
           title="Selected Chain" 
-          value={modalState.selectedChain || 'None'} 
+          value={context.modalState?.selectedChain || 'None'} 
           description="The blockchain network that has been selected"
         />
         
         <StateCard 
           title="Loading State" 
-          value={modalState.isLoading ? 'Loading' : 'Not Loading'} 
+          value={context.modalState?.isLoading ? 'Loading' : 'Not Loading'} 
           description="Whether the modal is currently in a loading state"
         />
         
         <StateCard 
           title="Connected" 
-          value={walletState.isConnected ? 'Yes' : 'No'} 
+          value={context.connectionStatus === 'connected' ? 'Yes' : 'No'} 
           description="Whether a wallet is currently connected"
         />
         
         <StateCard 
           title="Connecting" 
-          value={walletState.isConnecting ? 'Yes' : 'No'} 
+          value={context.connectionStatus === 'connecting' ? 'Yes' : 'No'} 
           description="Whether a wallet connection is in progress"
         />
         
         <StateCard 
           title="Error State" 
-          value={modalState.error ? modalState.error.message : 'No Error'} 
+          value={context.error ? context.error.message : 'No Error'} 
           description="Any error that occurred during the connection process"
         />
       </div>
@@ -147,7 +146,7 @@ function WalletStateInfo() {
           overflow: 'auto',
           fontSize: '14px'
         }}>
-          {JSON.stringify(modalState, null, 2)}
+          {JSON.stringify(context.modalState, null, 2)}
         </pre>
       </div>
     </div>

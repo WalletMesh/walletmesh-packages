@@ -1,5 +1,5 @@
 import React from 'react';
-import { useModal } from './ModalContext.js';
+import { useWalletmesh } from './WalletmeshContext.js';
 
 export interface ConnectedModalProps {
   /** Custom class name for the modal container */
@@ -22,9 +22,9 @@ export function ConnectedModal({
   children,
   renderCloseButton,
 }: ConnectedModalProps) {
-  const { isConnectedModalOpen, closeConnectedModal } = useModal();
+  const { modalState, closeModal } = useWalletmesh();
 
-  if (!isConnectedModalOpen) return null;
+  if (!(modalState.isOpen && modalState.currentView === 'connected')) return null;
 
   return (
     <div className="modal-overlay">
@@ -37,7 +37,7 @@ export function ConnectedModal({
         ) : (
           <button 
             className="modal-close"
-            onClick={() => closeConnectedModal()}
+            onClick={() => closeModal()}
             aria-label="Close modal"
           >
             ×

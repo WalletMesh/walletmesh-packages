@@ -1,8 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ModalProvider } from './ModalProvider.js';
-import { useModal } from './ModalContext.js';
+import { WalletmeshProvider, useModal } from './WalletmeshProvider.js';
 import { SelectModal } from './SelectModal.js';
 
 function TestComponent() {
@@ -20,12 +19,12 @@ function TestComponent() {
   );
 }
 
-describe('ModalProvider', () => {
+describe('WalletmeshProvider', () => {
   it('provides modal context', () => {
     render(
-      <ModalProvider>
+      <WalletmeshProvider config={{}} wallets={[]}>
         <TestComponent />
-      </ModalProvider>
+      </WalletmeshProvider>
     );
 
     const stateElement = screen.getByTestId('select-state');
@@ -36,12 +35,12 @@ describe('ModalProvider', () => {
     const user = userEvent.setup();
     
     render(
-      <ModalProvider>
+      <WalletmeshProvider config={{}} wallets={[]}>
         <TestComponent />
         <SelectModal>
           <div data-testid="modal-content">Modal Content</div>
         </SelectModal>
-      </ModalProvider>
+      </WalletmeshProvider>
     );
 
     expect(screen.queryByTestId('modal-content')).not.toBeInTheDocument();
@@ -59,14 +58,15 @@ describe('ModalProvider', () => {
     const onAfterOpen = vi.fn();
 
     render(
-      <ModalProvider
+      <WalletmeshProvider
         config={{
           // TODO: lifecycle callbacks are not implemented
           // onBeforeOpen,
           // onAfterOpen
-        }}>
+        }}
+        wallets={[]}>
         <TestComponent />
-      </ModalProvider>
+      </WalletmeshProvider>
     );
 
     await user.click(screen.getByTestId('open-select'));

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useModal } from './ModalContext.js';
+import { useWalletmesh } from './WalletmeshContext.js';
 
 export interface SelectModalProps {
   /** Custom class name for the modal container */
@@ -22,9 +22,9 @@ export function SelectModal({
   children,
   renderCloseButton,
 }: SelectModalProps) {
-  const { isSelectModalOpen, closeSelectModal } = useModal();
+  const { modalState, closeModal } = useWalletmesh();
 
-  if (!isSelectModalOpen) return null;
+  if (!modalState.isOpen) return null;
 
   return (
     <div className="modal-overlay">
@@ -37,7 +37,7 @@ export function SelectModal({
         ) : (
           <button 
             className="modal-close"
-            onClick={() => closeSelectModal()}
+            onClick={() => closeModal()}
             aria-label="Close modal"
           >
             ×
