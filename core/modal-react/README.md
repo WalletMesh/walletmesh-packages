@@ -1,6 +1,6 @@
 # @walletmesh/modal-react
 
-React adapter for WalletMesh modal components. This package provides React-specific implementations of the framework-agnostic WalletMesh modal core.
+React adapter for WalletMesh modal components. This package provides React-specific implementations of the framework-agnostic WalletMesh modal core, including a unified modal component for wallet selection and connection.
 
 ## Installation
 
@@ -17,44 +17,41 @@ yarn add @walletmesh/modal-react
 ### Basic Example
 
 ```tsx
-import { ModalProvider, SelectModal, ConnectedModal, useModal } from '@walletmesh/modal-react';
+import { WalletmeshProvider, WalletmeshModal, useWalletmesh } from '@walletmesh/modal-react';
 
 function WalletUI() {
-  const { openSelectModal, openConnectedModal } = useModal();
+  const { controller } = useWalletmesh();
 
   return (
     <>
-      <button onClick={openSelectModal}>Connect Wallet</button>
-      <button onClick={openConnectedModal}>Show Connected Wallet</button>
-
-      <SelectModal>
-        <h2>Select a Wallet</h2>
-        {/* Wallet selection UI */}
-      </SelectModal>
-
-      <ConnectedModal>
-        <h2>Connected Wallet</h2>
-        {/* Connected wallet info */}
-      </ConnectedModal>
+      <button onClick={() => controller.open()}>Connect Wallet</button>
+      
+      <WalletmeshModal 
+        wallets={[
+          { id: 'metamask', name: 'MetaMask', iconUrl: 'https://metamask.io/icon.png' },
+          { id: 'coinbase', name: 'Coinbase Wallet', iconUrl: 'https://www.coinbase.com/icon.png' }
+        ]}
+        theme="system"
+      />
     </>
   );
 }
 
 function App() {
   return (
-    <ModalProvider>
+    <WalletmeshProvider>
       <WalletUI />
-    </ModalProvider>
+    </WalletmeshProvider>
   );
 }
 ```
 
 ### Configuration
 
-You can configure modal behavior through the `ModalProvider`:
+You can configure modal behavior through the `WalletmeshProvider`:
 
 ```tsx
-<ModalProvider
+<WalletmeshProvider
   config={{
     onBeforeOpen: async () => {
       // Return false to prevent modal from opening
@@ -73,28 +70,21 @@ You can configure modal behavior through the `ModalProvider`:
   }}
 >
   <App />
-</ModalProvider>
+</WalletmeshProvider>
 ```
 
-### Using the Modal Hook
+### Using the Walletmesh Hook
 
-The `useModal` hook provides access to modal state and actions:
+The `useWalletmesh` hook provides access to modal state and controller:
 
 ```tsx
 function WalletButton() {
-  const {
-    isSelectModalOpen,
-    isConnectedModalOpen,
-    openSelectModal,
-    closeSelectModal,
-    openConnectedModal,
-    closeConnectedModal,
-  } = useModal();
+  const { controller, modalState } = useWalletmesh();
 
   return (
     <button 
-      onClick={() => openSelectModal()}
-      disabled={isSelectModalOpen || isConnectedModalOpen}
+      onClick={() => controller.open()}
+      disabled={modalState.isOpen}
     >
       Connect Wallet
     </button>
@@ -104,36 +94,58 @@ function WalletButton() {
 
 ### Customizing Modal Appearance
 
-Both `SelectModal` and `ConnectedModal` components accept standard props for customization:
+The `WalletmeshModal` component accepts various props for customization:
 
 ```tsx
-<SelectModal
+<WalletmeshModal
   className="custom-modal"
   style={{ background: '#fff' }}
-  renderCloseButton={() => (
-    <button onClick={closeSelectModal}>
-      Custom Close
-    </button>
-  )}
->
-  {/* Modal content */}
-</SelectModal>
+  renderCloseButton={() => {
+    const { controller } = useWalletmesh();
+    return (
+      <button onClick={() => controller.close()}>
+        Custom Close
+      </button>
+    );
+  }}
+  wallets={[
+    { id: 'metamask', name: 'MetaMask', iconUrl: 'https://metamask.io/icon.png' },
+    { id: 'coinbase', name: 'Coinbase Wallet', iconUrl: 'https://www.coinbase.com/icon.png' }
+  ]}
+  theme="dark"
+/>
 ```
 
 ## API Reference
 
 ### Components
 
-#### ModalProvider
+#### WalletmeshProvider
 
 ```tsx
-interface ModalProviderProps {
+interface WalletmeshProviderProps {
   children: React.ReactNode;
   config?: ModalConfig;
 }
 ```
 
-#### SelectModal
+#### WalletmeshModal
+
+```tsx
+interface WalletmeshModalProps {
+  className?: string;
+  style?: React.CSSProperties;
+  renderCloseButton?: () => React.ReactNode;
+  wallets?: Array<{
+    id: string;
+    name: string;
+    iconUrl?: string;
+  }>;
+  theme?: 'light' | 'dark' | 'system';
+}
+```
+
+#### SelectModal (Legacy)
 
 ```tsx
 interface SelectModalProps {
@@ -144,7 +156,7 @@ interface SelectModalProps {
 }
 ```
 
-#### ConnectedModal
+#### ConnectedModal (Legacy)
 
 ```tsx
 interface ConnectedModalProps {
@@ -157,19 +169,22 @@ interface ConnectedModalProps {
 
 ### Hooks
 
-#### useModal
+#### useWalletmesh
 
 ```tsx
-interface ModalHookResult {
-  isSelectModalOpen: boolean;
-  isConnectedModalOpen: boolean;
-  openSelectModal: () => Promise<void>;
-  closeSelectModal: () => Promise<void>;
-  openConnectedModal: () => Promise<void>;
-  closeConnectedModal: () => Promise<void>;
+interface WalletmeshContextType {
+  controller: {
+    open: () => void;
+    close: () => void;
+    selectWallet: (walletId: string) => void;
+    reset: () => void;
+    getState: () => ModalState;
+    subscribe: (callback: (state: ModalState) => void) => () => void;
+  };
+  modalState: ModalState;
 }
 
-const modalState = useModal();
+const { controller, modalState } = useWalletmesh();
 ```
 
 ### Configuration
