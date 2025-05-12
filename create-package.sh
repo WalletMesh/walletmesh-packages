@@ -20,9 +20,9 @@ done
 if [ -z "$NAME" ]; then
   echo "Create a new package with configurable target directory"
   echo
-  echo "Usage: ./$0 --target <target> <name>"
-  echo "  --target: Target directory (core, aztec, etc.)"
-  echo "  name: Package name (will be prefixed based on target)"
+  echo "Usage: pnpm create-package [--target <target>] <package-name>"
+  echo "  --target: Target directory (core, aztec, etc.), defaults to 'core'"
+  echo "  package-name: Package name (will be prefixed based on target)"
   exit 1
 fi
 

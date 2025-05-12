@@ -14,6 +14,9 @@
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
     "coverage": "pnpm -r run coverage",
+    "type-check": "pnpm -r run type-check",
+    "verify": "pnpm lint && pnpm type-check && pnpm test",
+    "docs": "pnpm -r run docs",
     "changeset": "changeset",
     "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run --filter \"[HEAD]\" docs",
     "publish": "changeset publish",
@@ -23,7 +26,7 @@
     "format": "biome format",
     "format:fix": "biome format --write",
     "create-package": "bash create-package.sh",
-    "update-aztec-deps": "tsx scripts/update-aztec-deps.ts"
+    "update-aztec-deps": "tsx scripts/update-aztec-deps.ts",
   },
   "license": "Apache-2.0",
   "devDependencies": {

@@ -1,0 +1,114 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Build, Lint & Test Commands
+- **Build**: `pnpm build` (all packages), `pnpm -F @walletmesh/package-name build` (single package)
+- **Test**: `pnpm test` (all tests), `pnpm test -- src/path/to/file.test.ts` (single test)
+- **Test with watch**: `pnpm test:watch -- src/path/to/file.test.ts`
+- **Coverage**: `pnpm coverage`
+- **Lint**: `pnpm lint`, `pnpm lint:fix` (auto-fix)
+- **Format**: `pnpm format`, `pnpm format:fix` (auto-fix)
+- **Type check**: `pnpm type-check` (all files), `pnpm type-check:build` (production files only, skips test files)
+- **Documentation**: `pnpm docs` (generates TypeDoc documentation)
+- **Create new package**: `bash create-package.sh package-name`
+- **Versioning**: `pnpm changeset` (create a changeset for version updates)
+- **Before commit verification**: `pnpm lint && pnpm type-check:build && pnpm test`
+
+## Code Style Guidelines
+- **Formatting**: Use Biome with 2-space indentation, single quotes for strings
+- **Imports**: Use ES modules with .js extension in import paths
+- **Types**: Use strict TypeScript. Explicit return types on functions, no implicit any
+- **Naming**: PascalCase for classes/interfaces/types, camelCase for variables/functions/methods
+- **Tests**: Create comprehensive tests with at least 80% coverage. Test both happy and error paths
+- **File Organization**: Related functionality should be grouped together in the same directory
+- **Documentation**: Use JSDoc comments for public APIs and typedoc for generating documentation
+
+## Architecture Overview
+
+WalletMesh is a modular framework for connecting web applications to blockchain wallets. The repository is organized into several packages:
+
+### Core Packages
+
+#### @walletmesh/discovery
+Handles wallet discovery and announcement mechanisms.
+
+**Key Components**:
+- `DiscoveryAnnouncer`: Announces wallet availability to applications
+  - Located in `src/client.ts`
+  - Factory methods: `createWebWalletAnnouncer` and `createExtensionWalletAnnouncer`
+  - Used by wallets to announce their presence across origins
+
+- `DiscoveryListener`: Listens for wallet announcements from applications
+  - Located in `src/server.ts`
+  - Factory method: `createDiscoveryListener`
+  - Used by dApps to discover available wallets
+
+- Event-based communication system
+  - Protocol events defined in `src/constants.ts`
+  - Standard events: ready, request, response, acknowledgment
+  - Secure cross-origin communication
+
+#### @walletmesh/jsonrpc
+A type-safe implementation of the JSON-RPC 2.0 protocol.
+
+**Key Components**:
+- `JSONRPCNode`: Core class for bi-directional JSON-RPC communication
+  - Manages methods, events, middleware, and message handling
+  - Provides type-safe request/response handling
+  - Supports serialization of complex objects
+
+- Supporting Managers:
+  - `MethodManager`: Handles method registration and invocation
+  - `EventManager`: Manages event subscription and publishing
+  - `MiddlewareManager`: Controls middleware execution chain
+  - `RequestHandler`: Processes incoming JSON-RPC requests
+
+- Error Handling:
+  - `JSONRPCError`: Standard-compliant error class with error codes
+  - Proper error serialization and propagation
+
+#### @walletmesh/router
+Router system for managing multi-chain wallet connections.
+
+**Key Components**:
+- `WalletRouter`: Core routing system connecting applications to wallets
+  - Manages sessions, permissions, and client connections
+  - Routes requests to appropriate wallet implementations
+  - Supports batch operations across multiple chains
+
+- Permission System:
+  - Granular per-method and per-chain permissions
+  - `PermissionManager` interface for custom permission strategies
+  - Built-in managers like `AllowAskDenyManager`
+
+- Session Management:
+  - Secure session handling with unique identifiers
+  - Origin validation and permissions enforcement
+  - Persistent sessions via configurable storage backends
+
+### Aztec Packages
+
+#### @walletmesh/aztec/rpc-wallet
+Integration with Aztec network wallets.
+
+**Key Components**:
+- `AztecChainProvider`: Chain-specific provider implementation
+- `AztecChainWallet`: Wallet implementation for Aztec network
+- Specialized serializers for Aztec objects and transactions
+
+### Development Workflow
+
+1. Changes should follow the monorepo structure:
+   - Make changes within the appropriate package
+   - Add tests alongside implementation
+   - Generate documentation for public APIs
+
+2. Use changesets for versioning:
+   - Run `pnpm changeset` after making changes
+   - Document the nature of changes (major/minor/patch)
+   - Changesets are used for automated versioning and changelog generation
+
+3. Test across package boundaries:
+   - Changes in core packages may affect dependent packages
+   - Run the full test suite to catch integration issues

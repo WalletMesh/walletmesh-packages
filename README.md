@@ -4,9 +4,16 @@ Core libraries implementing the WalletMesh Protocol - a protocol enabling secure
 
 ## Packages
 
-- [@walletmesh/discovery](packages/discovery) - A protocol implementation for discovering web3 wallets in both browser extensions and web applications, enabling DApps to discover available wallets and wallets to announce their presence to DApps.
-- [@walletmesh/jsonrpc](packages/jsonrpc) - A comprehensive TypeScript implementation of the JSON-RPC 2.0 protocol, designed for building client-server applications with bi-directional communication capabilities, featuring full type safety, middleware support, and event handling.
-- [@walletmesh/router](packages/router) - A flexible routing system for managing multi-chain wallet connections with bi-directional communication support, providing granular permissions, session management, and unified interfaces across different chains.
+### Core Packages
+
+- [@walletmesh/discovery](core/discovery) - A protocol implementation for discovering web3 wallets in both browser extensions and web applications, enabling DApps to discover available wallets and wallets to announce their presence to DApps.
+- [@walletmesh/jsonrpc](core/jsonrpc) - A comprehensive TypeScript implementation of the JSON-RPC 2.0 protocol, designed for building client-server applications with bi-directional communication capabilities, featuring full type safety, middleware support, and event handling.
+- [@walletmesh/router](core/router) - A flexible routing system for managing multi-chain wallet connections with bi-directional communication support, providing granular permissions, session management, and unified interfaces across different chains.
+
+### Aztec Integration Packages
+
+- [@walletmesh/aztec/rpc-wallet](aztec/rpc-wallet) - Integration with Aztec network supporting chain-specific wallet operations.
+- [@walletmesh/aztec/helpers](aztec/helpers) - Utility functions for working with Aztec contracts and functions.
 
 See individual package READMEs for detailed documentation.
 
@@ -34,6 +41,12 @@ pnpm test
 # Run tests with coverage
 pnpm coverage
 
+# Type check
+pnpm type-check
+
+# Generate documentation
+pnpm docs
+
 # Format code
 pnpm format:fix
 
@@ -41,13 +54,23 @@ pnpm format:fix
 pnpm lint:fix
 ```
 
+### Development Workflow
+
+1. Before making changes, ensure all tests pass: `pnpm test`
+2. Make your changes following the code style guidelines
+3. Run type checks: `pnpm type-check`
+4. Ensure linting passes: `pnpm lint:fix`
+5. Run tests to verify changes: `pnpm test`
+6. Create a changeset to document your changes: `pnpm changeset`
+7. Commit and push your changes
+
 ### Creating a New Package
 
 ```bash
-bash create-package.sh <name>
+pnpm create-package <package-name>
 ```
 
-This will create a new package in `packages/<name>` with the package name `@walletmesh/<name>`.
+This will create a new package in `core/<package-name>` with the package name `@walletmesh/<package-name>`.
 
 ## Release Process
 
