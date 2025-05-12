@@ -1,53 +1,59 @@
 import type {
+  WalletInfo,
   DiscoveryRequestEvent,
   DiscoveryResponseEvent,
   DiscoveryAckEvent,
-  WalletInfo,
 } from './types.js';
-import { isWalletInfo, isDiscoveryRequestEvent, isDiscoveryAckEvent } from './guards.js';
+import { isDiscoveryRequestEvent, isDiscoveryAckEvent, isWalletInfo } from './guards.js';
 import { WM_PROTOCOL_VERSION, WmDiscovery } from './constants.js';
 
 /**
  * Factory method to create a DiscoveryAnnouncer for web wallets.
  *
- * @param {string} name - The name of the wallet.
- * @param {string} icon - The icon URL of the wallet.
- * @param {string} rdns - The reverse DNS identifier of the wallet.
- * @param {string} url - The URL of the web wallet.
- * @param {string[]} supportedTechnologies - An array of supported technologies.
- * @param {(origin: string) => boolean} [callback] - An optional callback function to validate the origin of the discovery request.
- * @returns {DiscoveryAnnouncer} An instantiated DiscoveryAnnouncer object.
+ * @param {string} name - The name of the wallet
+ * @param {string} icon - Base64 data URI of the wallet's icon
+ * @param {string} rdns - Reverse DNS identifier for the wallet
+ * @param {string} url - URL of the web wallet
+ * @param {string[]} [supportedTechnologies] - Optional list of supported blockchain technologies
+ * @param {(origin: string) => boolean} [callback] - Optional callback for origin validation
+ *
+ * @returns {DiscoveryAnnouncer} An instantiated DiscoveryAnnouncer object for web wallets
  */
 export function createWebWalletAnnouncer(
   name: string,
   icon: string,
   rdns: string,
   url: string,
-  supportedTechnologies: string[],
+  supportedTechnologies?: string[],
   callback?: (origin: string) => boolean,
 ): DiscoveryAnnouncer {
   const walletInfo: WalletInfo = { name, icon, rdns, url };
-  const options: DiscoveryAnnouncerOptions = { walletInfo, supportedTechnologies, callback };
+  const options = {
+    walletInfo,
+    ...(supportedTechnologies ? { supportedTechnologies } : {}),
+    ...(callback ? { callback } : {}),
+  };
   return new DiscoveryAnnouncer(options);
 }
 
 /**
  * Factory method to create a DiscoveryAnnouncer for extension wallets.
  *
- * @param {string} name - The name of the wallet.
- * @param {string} icon - The icon URL of the wallet.
- * @param {string} rdns - The reverse DNS identifier of the wallet.
- * @param {string[]} supportedTechnologies - An array of supported technologies.
- * @param {string} extensionId - An optional extension ID of the wallet.
- * @param {string} [code] - An optional code for the extension wallet.
- * @param {(origin: string) => boolean} [callback] - An optional callback function to validate the origin of the discovery request.
- * @returns {DiscoveryAnnouncer} An instantiated DiscoveryAnnouncer object.
+ * @param {string} name - The name of the wallet
+ * @param {string} icon - Base64 data URI of the wallet's icon
+ * @param {string} rdns - Reverse DNS identifier for the wallet
+ * @param {string[]} [supportedTechnologies] - Optional list of supported blockchain technologies
+ * @param {string} [extensionId] - Optional browser extension ID
+ * @param {string} [code] - Optional verification code for extension communication
+ * @param {(origin: string) => boolean} [callback] - Optional callback for origin validation
+ *
+ * @returns {DiscoveryAnnouncer} An instantiated DiscoveryAnnouncer object for extension wallets
  */
 export function createExtensionWalletAnnouncer(
   name: string,
   icon: string,
   rdns: string,
-  supportedTechnologies: string[],
+  supportedTechnologies?: string[],
   extensionId?: string,
   code?: string,
   callback?: (origin: string) => boolean,
@@ -55,8 +61,13 @@ export function createExtensionWalletAnnouncer(
   if (!extensionId && !code) {
     throw new Error('Extension ID or code is required for extension wallets');
   }
+
   const walletInfo: WalletInfo = { name, icon, rdns, extensionId, code };
-  const options: DiscoveryAnnouncerOptions = { walletInfo, supportedTechnologies, callback };
+  const options = {
+    walletInfo,
+    ...(supportedTechnologies ? { supportedTechnologies } : {}),
+    ...(callback ? { callback } : {}),
+  };
   return new DiscoveryAnnouncer(options);
 }
 
@@ -64,18 +75,16 @@ export function createExtensionWalletAnnouncer(
  * Options for initializing a DiscoveryAnnouncer.
  *
  * @interface DiscoveryAnnouncerOptions
- * @property {WalletInfo} walletInfo - The wallet information to announce.
- * @property {string} [sessionId] - An optional session ID for the discovery process.
- * @property {EventTarget} [eventTarget] - An optional event target for dispatching and listening to events. Defaults to the global window object.
- * @property {string[]} [supportedTechnologies] - An optional array of supported technologies.
- * @property {(origin: string) => boolean} [callback] - An optional callback function to validate the origin of the discovery request.
+ * @property {WalletInfo} walletInfo - Information about the wallet to announce
+ * @property {string[]} [supportedTechnologies] - Optional list of supported technologies
+ * @property {(origin: string) => boolean} [callback] - Optional callback for origin validation
+ * @property {EventTarget} [eventTarget] - Optional custom event target (defaults to window)
  */
 export interface DiscoveryAnnouncerOptions {
   walletInfo: WalletInfo;
-  sessionId?: string;
-  eventTarget?: EventTarget;
   supportedTechnologies?: string[];
   callback?: ((origin: string) => boolean) | undefined;
+  eventTarget?: EventTarget;
 }
 
 /**
@@ -88,77 +97,80 @@ export interface DiscoveryAnnouncerOptions {
  */
 export class DiscoveryAnnouncer {
   private walletInfo: WalletInfo;
-  private sessionId: string;
-  private acknowledgedDiscoveryIds = new Set<string>();
-  private pendingDiscoveryIds = new Set<string>();
   private supportedTechnologies: string[];
-  private eventTarget: EventTarget;
   private callback: ((origin: string) => boolean) | null;
+  private eventTarget: EventTarget;
+  private sessionId: string;
+  private pendingDiscoveryIds = new Set<string>();
+  private acknowledgedDiscoveryIds = new Set<string>();
 
   /**
-   * Creates an instance of the announcer.
+   * Creates an instance of the client.
    *
    * @param {DiscoveryAnnouncerOptions} options - The options to initialize the DiscoveryAnnouncer.
    */
-  constructor({
-    walletInfo,
-    sessionId,
-    supportedTechnologies,
-    eventTarget,
-    callback,
-  }: DiscoveryAnnouncerOptions) {
-    if (!isWalletInfo(walletInfo)) {
-      throw new Error('Invalid walletInfo: ${walletInfo}');
+  constructor({ walletInfo, supportedTechnologies, callback, eventTarget }: DiscoveryAnnouncerOptions) {
+    // Early validation to ensure walletInfo has an icon property
+    if (!walletInfo?.icon || typeof walletInfo.icon !== 'string') {
+      throw new Error('Invalid walletInfo: icon is required and must be a string');
     }
+
+    if (!walletInfo.icon.startsWith('data:')) {
+      throw new Error('Invalid walletInfo: icon must be a data URI');
+    }
+
+    if (!isWalletInfo(walletInfo)) {
+      throw new Error(`Invalid walletInfo: ${JSON.stringify(walletInfo)}`);
+    }
+
     this.walletInfo = walletInfo;
-    this.sessionId = sessionId ?? crypto.randomUUID();
     this.supportedTechnologies = supportedTechnologies ?? [];
-    this.eventTarget = eventTarget ?? window;
     this.callback = callback ?? null;
+    this.eventTarget = eventTarget ?? window;
+    this.sessionId = crypto.randomUUID();
   }
 
   /**
-   * Starts the DiscoveryAnnouncer by initializing event listeners and dispatching the initial "Ready" event.
+   * Starts the client by initializing event listeners and dispatching a ready event.
    *
    * This method performs the following actions:
    * 1. Initializes the event listeners required for handling discovery events.
-   * 2. Dispatches the initial "Ready" event to signal that the announcer is ready.
+   * 2. Dispatches a ready event to signal that the client is ready to receive discovery requests.
    *
    * @returns {void}
    */
   start = (): void => {
     this.startEventListeners();
-    this.eventTarget.dispatchEvent(new CustomEvent(WmDiscovery.Ready));
+    this.dispatchDiscoveryReadyEvent();
   };
 
   /**
-   * Stops the DiscoveryAnnouncer by removing event listeners and clearing internal state.
+   * Stops the client by removing event listeners and clearing internal state.
    *
    * This method performs the following actions:
    * 1. Removes the event listeners to stop handling discovery events.
-   * 2. Clears the set of acknowledged discovery IDs.
-   * 3. Clears the set of pending discovery IDs.
+   * 2. Clears the sets of pending and acknowledged discovery IDs.
    *
    * @returns {void}
    */
   stop = (): void => {
     this.stopEventListeners();
-    this.acknowledgedDiscoveryIds.clear();
     this.pendingDiscoveryIds.clear();
+    this.acknowledgedDiscoveryIds.clear();
   };
 
   /**
    * Initializes and starts the event listeners for handling discovery events.
    *
    * This method performs the following actions:
-   * 1. Adds an event listener for the 'Request' event to handle announce requests.
+   * 1. Adds an event listener for the 'Request' event to handle discovery requests.
    * 2. Adds an event listener for the 'Ack' event to handle discovery acknowledgments.
    *
    * @returns {void}
    * @private
    */
-  private startEventListeners = (): void => {
-    this.eventTarget.addEventListener(WmDiscovery.Request, this.handleAnnounceRequestEvent as EventListener);
+  private startEventListeners = () => {
+    this.eventTarget.addEventListener(WmDiscovery.Request, this.handleDiscoveryRequestEvent as EventListener);
     this.eventTarget.addEventListener(WmDiscovery.Ack, this.handleDiscoveryAckEvent as EventListener);
   };
 
@@ -166,7 +178,7 @@ export class DiscoveryAnnouncer {
    * Stops the event listeners for handling discovery events.
    *
    * This method performs the following actions:
-   * 1. Removes the event listener for the 'Request' event to stop handling announce requests.
+   * 1. Removes the event listener for the 'Request' event to stop handling discovery requests.
    * 2. Removes the event listener for the 'Ack' event to stop handling discovery acknowledgments.
    *
    * @returns {void}
@@ -175,31 +187,32 @@ export class DiscoveryAnnouncer {
   private stopEventListeners = () => {
     this.eventTarget.removeEventListener(
       WmDiscovery.Request,
-      this.handleAnnounceRequestEvent as EventListener,
+      this.handleDiscoveryRequestEvent as EventListener,
     );
+
     this.eventTarget.removeEventListener(WmDiscovery.Ack, this.handleDiscoveryAckEvent as EventListener);
   };
 
   /**
-   * Handles the 'Request' event for announce requests.
+   * Handles the 'Request' event for discovery requests.
    *
    * This method performs the following actions:
-   * 1. Validates the announce request event.
-   * 2. Checks if the requested technologies match the supported technologies.
-   * 3. Dispatches an announce response event with the wallet information if the technologies match.
+   * 1. Validates the discovery request event.
+   * 2. Checks if the discovery request has already been acknowledged.
+   * 3. Validates any required technologies against supported technologies.
+   * 4. Dispatches a response event if all validations pass.
    *
-   * @param {CustomEvent<DiscoveryRequestEvent>} event - The announce request event to handle.
-   *
+   * @param {CustomEvent<DiscoveryRequestEvent>} event - The discovery request event to handle.
    * @returns {void}
    * @private
    */
-  private handleAnnounceRequestEvent = (event: CustomEvent<DiscoveryRequestEvent>): void => {
-    const response = event.detail;
-    if (!isDiscoveryRequestEvent(response)) {
+  private handleDiscoveryRequestEvent = (event: CustomEvent<DiscoveryRequestEvent>) => {
+    const request = event.detail;
+    if (!isDiscoveryRequestEvent(request)) {
       return;
     }
 
-    const { discoveryId, technologies } = response;
+    const { discoveryId, technologies } = request;
 
     if (this.acknowledgedDiscoveryIds.has(discoveryId)) {
       return;
@@ -209,16 +222,21 @@ export class DiscoveryAnnouncer {
       return;
     }
 
-    const matchingTechnologies = (technologies ?? []).filter((technology: string) =>
-      this.supportedTechnologies.some((supported) => supported.toLowerCase() === technology.toLowerCase()),
-    );
+    // Filter technologies to only those we support
+    if (technologies && this.supportedTechnologies.length > 0) {
+      const matchingTechnologies = technologies.filter((tech) =>
+        this.supportedTechnologies.some((supported) => supported.toLowerCase() === tech.toLowerCase()),
+      );
 
-    if (technologies && technologies.length > 0 && matchingTechnologies.length === 0) {
-      return;
+      if (matchingTechnologies.length === 0) {
+        return;
+      }
+
+      // Keep case from request
+      this.dispatchDiscoveryResponseEvent(discoveryId, matchingTechnologies);
+    } else {
+      this.dispatchDiscoveryResponseEvent(discoveryId, []);
     }
-    this.pendingDiscoveryIds.add(discoveryId);
-
-    this.dispatchDiscoveryResponseEvent(discoveryId, matchingTechnologies);
   };
 
   /**
@@ -226,80 +244,73 @@ export class DiscoveryAnnouncer {
    *
    * This method performs the following actions:
    * 1. Validates the discovery acknowledgment event.
-   * 2. Checks if the acknowledgment is for the current session and adds a pending discovery ID.
-   * 3. Adds the discovery ID to the acknowledged set and removes it from the pending set if valid.
+   * 2. Checks if the acknowledgment is for a pending discovery request.
+   * 3. Updates internal state to mark the discovery request as acknowledged.
    *
    * @param {CustomEvent<DiscoveryAckEvent>} event - The discovery acknowledgment event to handle.
+   * @returns {void}
+   * @private
+   */
+  private handleDiscoveryAckEvent = (event: CustomEvent<DiscoveryAckEvent>) => {
+    const ack = event.detail;
+    if (!isDiscoveryAckEvent(ack)) {
+      return;
+    }
+
+    const { discoveryId, walletId } = ack;
+    if (!this.pendingDiscoveryIds.has(discoveryId) || walletId !== this.sessionId) {
+      return;
+    }
+
+    this.pendingDiscoveryIds.delete(discoveryId);
+    this.acknowledgedDiscoveryIds.add(discoveryId);
+  };
+
+  /**
+   * Dispatches a `DiscoveryReadyEvent` to the event target.
+   *
+   * This method creates and dispatches a custom event of type `WmDiscovery.Ready`
+   * to signal that the client is ready to receive discovery requests.
    *
    * @returns {void}
    * @private
    */
-  private handleDiscoveryAckEvent = (event: CustomEvent<DiscoveryAckEvent>): void => {
-    const response = event.detail;
-    if (!isDiscoveryAckEvent(response)) {
-      return;
-    }
-    const { walletId, discoveryId } = response;
-
-    if (this.sessionId === walletId && this.pendingDiscoveryIds.has(discoveryId)) {
-      this.acknowledgedDiscoveryIds.add(discoveryId);
-      this.pendingDiscoveryIds.delete(discoveryId);
-    }
+  private dispatchDiscoveryReadyEvent = (): void => {
+    this.eventTarget.dispatchEvent(new CustomEvent(WmDiscovery.Ready));
   };
 
   /**
    * Dispatches a `DiscoveryResponseEvent` to the event target.
    *
-   * This method creates and dispatches a custom event of type `WmDiscovery.Response`
-   * with the details of the discovery response, including the protocol version,
-   * discovery ID, wallet information, and matching technologies.
+   * This method performs the following actions:
+   * 1. Creates a response event with the wallet information and matching technologies.
+   * 2. Adds the discovery ID to the pending set.
+   * 3. Dispatches the response event.
    *
-   * @param {string} discoveryId - The discovery ID for the response.
-   * @param {string[]} technologies - The array of matching technologies.
+   * @param {string} discoveryId - The ID of the discovery request being responded to.
+   * @param {string[]} matchingTechnologies - The list of matching technologies to include in the response.
    *
    * @returns {void}
    * @private
    */
-  private dispatchDiscoveryResponseEvent(discoveryId: string, technologies: string[]): void {
-    // Explicitly select only the required fields
-    /*   const { name, icon, rdns, extensionId, code, url } = this.walletInfo;
+  private dispatchDiscoveryResponseEvent = (discoveryId: string, matchingTechnologies: string[]): void => {
+    // Create a shallow copy of wallet info
+    const walletInfo = { ...this.walletInfo };
 
-    let wallet: WalletInfo;
-
-    if (url) {
-      wallet = {
-        name,
-        icon,
-        rdns,
-        url,
-        ...(technologies.length > 0 && { technologies }),
-      } as WalletInfo;
-    } else {
-      wallet = {
-        name,
-        icon,
-        rdns,
-        ...(extensionId && { extensionId }),
-        ...(code && { code }),
-        ...(technologies.length > 0 && { technologies }),
-      } as WalletInfo; */
-
-    //console.log('wallet', wallet);
-
-    const wallet = this.walletInfo;
-    if (technologies.length > 0) {
-      wallet.technologies = technologies;
+    // Only include technologies if there are matches
+    if (matchingTechnologies.length > 0) {
+      walletInfo.technologies = matchingTechnologies;
     }
 
-    this.eventTarget.dispatchEvent(
-      new CustomEvent<DiscoveryResponseEvent>(WmDiscovery.Response, {
-        detail: {
-          discoveryId,
-          version: WM_PROTOCOL_VERSION,
-          walletId: this.sessionId,
-          wallet,
-        },
-      }),
-    );
-  }
+    const detail: DiscoveryResponseEvent = {
+      version: WM_PROTOCOL_VERSION,
+      discoveryId,
+      wallet: walletInfo,
+      walletId: this.sessionId,
+    };
+
+    this.pendingDiscoveryIds.add(discoveryId);
+
+    this.eventTarget.dispatchEvent(new CustomEvent<DiscoveryResponseEvent>(WmDiscovery.Response, { detail }));
+  };
 }

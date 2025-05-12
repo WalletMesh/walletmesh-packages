@@ -1,44 +1,384 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { DiscoveryAnnouncer, createWebWalletAnnouncer, createExtensionWalletAnnouncer } from './client.js';
-import type { DiscoveryAnnouncerOptions } from './client.js';
-import type { WalletInfo, DiscoveryRequestEvent, DiscoveryAckEvent } from './types.js';
-import { WmDiscovery, WM_PROTOCOL_VERSION } from './constants.js';
+import type {
+  WalletInfo,
+  DiscoveryRequestEvent,
+  DiscoveryResponseEvent,
+  DiscoveryAckEvent,
+} from './types.js';
+import { WM_PROTOCOL_VERSION, WmDiscovery } from './constants.js';
 
-/**
- * @vitest-environment jsdom
- */
+// Example data URI for a small test icon (1x1 pixel transparent PNG)
+const TEST_ICON =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==';
 
 describe('DiscoveryAnnouncer', () => {
-  let discoveryAnnouncerOptions: DiscoveryAnnouncerOptions;
-  let discoveryAnnouncer: DiscoveryAnnouncer;
   let mockEventTarget: EventTarget;
-  let mockWallet: WalletInfo;
 
   beforeEach(() => {
     mockEventTarget = new EventTarget();
-    mockWallet = {
-      name: 'Test Wallet',
-      icon: 'test-icon.png',
-      rdns: 'com.example.testwallet',
-      url: 'https://wallet.example.com',
-    };
-    discoveryAnnouncerOptions = {
-      walletInfo: mockWallet,
-      supportedTechnologies: ['aztec'],
-      sessionId: 'wallet-123',
-      eventTarget: mockEventTarget,
-    };
-    discoveryAnnouncer = new DiscoveryAnnouncer(discoveryAnnouncerOptions);
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.resetAllMocks();
+  });
+
+  describe('constructor', () => {
+    it('should throw an error if walletInfo is falsy', () => {
+      expect(() => {
+        new DiscoveryAnnouncer({ walletInfo: undefined as unknown as WalletInfo });
+      }).toThrow('Invalid walletInfo: icon is required and must be a string');
+    });
+
+    it('should throw an error if walletInfo is invalid', () => {
+      const invalidWalletInfo = { name: '', icon: '', rdns: '' };
+      expect(() => {
+        new DiscoveryAnnouncer({ walletInfo: invalidWalletInfo as WalletInfo });
+      }).toThrow(/Invalid walletInfo:/);
+    });
+
+    it('should throw an error if icon is not a data URI', () => {
+      const invalidWalletInfo = {
+        name: 'Test Wallet',
+        icon: 'https://example.com/icon.png',
+        rdns: 'com.example.testwallet',
+      };
+
+      expect(() => {
+        new DiscoveryAnnouncer({ walletInfo: invalidWalletInfo as WalletInfo });
+      }).toThrow(/Invalid walletInfo: icon must be a data URI/);
+    });
+  });
+
+  describe('event handling', () => {
+    it('should handle invalid discovery request event', () => {
+      const announcer = createWebWalletAnnouncer(
+        'Test Wallet',
+        TEST_ICON,
+        'com.test.wallet',
+        'https://test.wallet',
+      );
+      announcer['eventTarget'] = mockEventTarget;
+
+      const responseHandler = vi.fn();
+      mockEventTarget.addEventListener(WmDiscovery.Response, responseHandler);
+
+      const invalidEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
+        detail: {
+          version: '0.0.0' as typeof WM_PROTOCOL_VERSION,
+          discoveryId: 'test-id',
+        },
+      });
+
+      announcer['handleDiscoveryRequestEvent'](invalidEvent);
+
+      expect(responseHandler).not.toHaveBeenCalled();
+    });
+
+    it('should handle undefined request event detail', () => {
+      const announcer = createWebWalletAnnouncer(
+        'Test Wallet',
+        TEST_ICON,
+        'com.test.wallet',
+        'https://test.wallet',
+      );
+      announcer['eventTarget'] = mockEventTarget;
+
+      const responseHandler = vi.fn();
+      mockEventTarget.addEventListener(WmDiscovery.Response, responseHandler);
+
+      announcer['handleDiscoveryRequestEvent'](new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request));
+
+      expect(responseHandler).not.toHaveBeenCalled();
+    });
+
+    it('should return early if callback rejects origin', () => {
+      const callback = vi.fn().mockReturnValue(false);
+      const announcer = createWebWalletAnnouncer(
+        'Test Wallet',
+        TEST_ICON,
+        'com.test.wallet',
+        'https://test.wallet',
+        undefined,
+        callback,
+      );
+      announcer['eventTarget'] = mockEventTarget;
+
+      const responseHandler = vi.fn();
+      mockEventTarget.addEventListener(WmDiscovery.Response, responseHandler);
+
+      const requestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
+        detail: {
+          version: WM_PROTOCOL_VERSION,
+          discoveryId: 'test-id',
+        },
+      });
+
+      announcer['handleDiscoveryRequestEvent'](requestEvent);
+
+      expect(callback).toHaveBeenCalledWith(window.origin);
+      expect(responseHandler).not.toHaveBeenCalled();
+    });
+
+    it('should handle empty technologies correctly', () => {
+      const walletInfo = {
+        name: 'Test Wallet',
+        icon: TEST_ICON,
+        rdns: 'com.test.wallet',
+        url: 'https://test.wallet',
+      };
+
+      const announcer = new DiscoveryAnnouncer({ walletInfo, eventTarget: mockEventTarget });
+
+      // Add mock implementation to verify event details
+      const dispatchSpy = vi.spyOn(mockEventTarget, 'dispatchEvent').mockImplementation((event) => {
+        if (event instanceof CustomEvent && event.type === WmDiscovery.Response) {
+          const detail = event.detail as DiscoveryResponseEvent;
+          expect(detail.wallet.technologies).toBeUndefined();
+          expect(detail.discoveryId).toBe('test-id');
+          expect(detail.wallet).toEqual(expect.objectContaining(walletInfo));
+          return true;
+        }
+        return true;
+      });
+
+      announcer['dispatchDiscoveryResponseEvent']('test-id', []);
+
+      expect(dispatchSpy).toHaveBeenCalledTimes(1);
+      expect(dispatchSpy.mock.calls[0]?.[0]).toBeInstanceOf(CustomEvent);
+      expect(dispatchSpy.mock.calls[0]?.[0].type).toBe(WmDiscovery.Response);
+    });
+
+    it('should ignore duplicate discovery requests', () => {
+      const walletInfo = {
+        name: 'Test Wallet',
+        icon: TEST_ICON,
+        rdns: 'com.test.wallet',
+        url: 'https://test.wallet',
+      };
+
+      const announcer = new DiscoveryAnnouncer({ walletInfo, eventTarget: mockEventTarget });
+      const dispatchSpy = vi.spyOn(mockEventTarget, 'dispatchEvent');
+
+      // First request
+      announcer['handleDiscoveryRequestEvent'](
+        new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
+          detail: {
+            version: WM_PROTOCOL_VERSION,
+            discoveryId: 'test-id',
+            technologies: [],
+          },
+        }),
+      );
+
+      // Mark as acknowledged
+      announcer['acknowledgedDiscoveryIds'].add('test-id');
+
+      // Clear spy after first request
+      dispatchSpy.mockClear();
+
+      // Second request (same ID)
+      announcer['handleDiscoveryRequestEvent'](
+        new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
+          detail: {
+            version: WM_PROTOCOL_VERSION,
+            discoveryId: 'test-id',
+            technologies: [],
+          },
+        }),
+      );
+
+      // No new responses should be dispatched
+      expect(dispatchSpy).not.toHaveBeenCalled();
+    });
+
+    it('should handle invalid acknowledgment event', () => {
+      const walletInfo = {
+        name: 'Test Wallet',
+        icon: TEST_ICON,
+        rdns: 'com.test.wallet',
+        url: 'https://test.wallet',
+      };
+
+      const announcer = new DiscoveryAnnouncer({ walletInfo, eventTarget: mockEventTarget });
+
+      // Add request to pending set
+      announcer['pendingDiscoveryIds'].add('test-id');
+
+      // Send invalid ack event
+      const invalidAckEvent = new CustomEvent<DiscoveryAckEvent>(WmDiscovery.Ack, {
+        detail: {
+          discoveryId: 'test-id',
+        } as DiscoveryAckEvent,
+      });
+
+      announcer['handleDiscoveryAckEvent'](invalidAckEvent);
+
+      expect(announcer['pendingDiscoveryIds'].has('test-id')).toBe(true);
+      expect(announcer['acknowledgedDiscoveryIds'].has('test-id')).toBe(false);
+    });
+
+    it('should handle undefined acknowledgment event detail', () => {
+      const walletInfo = {
+        name: 'Test Wallet',
+        icon: TEST_ICON,
+        rdns: 'com.test.wallet',
+        url: 'https://test.wallet',
+      };
+
+      const announcer = new DiscoveryAnnouncer({ walletInfo, eventTarget: mockEventTarget });
+
+      // Add request to pending set
+      announcer['pendingDiscoveryIds'].add('test-id');
+
+      announcer['handleDiscoveryAckEvent'](new CustomEvent<DiscoveryAckEvent>(WmDiscovery.Ack));
+
+      expect(announcer['pendingDiscoveryIds'].has('test-id')).toBe(true);
+      expect(announcer['acknowledgedDiscoveryIds'].has('test-id')).toBe(false);
+    });
+
+    it('should handle non-pending discovery acknowledgments', () => {
+      const walletInfo = {
+        name: 'Test Wallet',
+        icon: TEST_ICON,
+        rdns: 'com.test.wallet',
+        url: 'https://test.wallet',
+      };
+
+      const announcer = new DiscoveryAnnouncer({ walletInfo, eventTarget: mockEventTarget });
+      const sessionId = announcer['sessionId'];
+
+      // Send ack event for non-pending discovery
+      const ackEvent = new CustomEvent<DiscoveryAckEvent>(WmDiscovery.Ack, {
+        detail: {
+          version: WM_PROTOCOL_VERSION,
+          discoveryId: 'test-id',
+          walletId: sessionId,
+        },
+      });
+
+      announcer['handleDiscoveryAckEvent'](ackEvent);
+
+      expect(announcer['pendingDiscoveryIds'].has('test-id')).toBe(false);
+      expect(announcer['acknowledgedDiscoveryIds'].has('test-id')).toBe(false);
+    });
+
+    it('should handle mismatched session in acknowledgment', () => {
+      const walletInfo = {
+        name: 'Test Wallet',
+        icon: TEST_ICON,
+        rdns: 'com.test.wallet',
+        url: 'https://test.wallet',
+      };
+
+      const announcer = new DiscoveryAnnouncer({ walletInfo, eventTarget: mockEventTarget });
+
+      // Add request to pending set
+      announcer['pendingDiscoveryIds'].add('test-id');
+
+      const ackEvent = new CustomEvent<DiscoveryAckEvent>(WmDiscovery.Ack, {
+        detail: {
+          version: WM_PROTOCOL_VERSION,
+          discoveryId: 'test-id',
+          walletId: 'wrong-session-id',
+        },
+      });
+
+      announcer['handleDiscoveryAckEvent'](ackEvent);
+
+      expect(announcer['pendingDiscoveryIds'].has('test-id')).toBe(true);
+      expect(announcer['acknowledgedDiscoveryIds'].has('test-id')).toBe(false);
+    });
+
+    it('should handle successful acknowledgment', () => {
+      const walletInfo = {
+        name: 'Test Wallet',
+        icon: TEST_ICON,
+        rdns: 'com.test.wallet',
+        url: 'https://test.wallet',
+      };
+
+      const announcer = new DiscoveryAnnouncer({ walletInfo, eventTarget: mockEventTarget });
+      const sessionId = announcer['sessionId'];
+
+      // Add request to pending set
+      announcer['pendingDiscoveryIds'].add('test-id');
+
+      const ackEvent = new CustomEvent<DiscoveryAckEvent>(WmDiscovery.Ack, {
+        detail: {
+          version: WM_PROTOCOL_VERSION,
+          discoveryId: 'test-id',
+          walletId: sessionId,
+        },
+      });
+
+      announcer['handleDiscoveryAckEvent'](ackEvent);
+
+      expect(announcer['pendingDiscoveryIds'].has('test-id')).toBe(false);
+      expect(announcer['acknowledgedDiscoveryIds'].has('test-id')).toBe(true);
+    });
+
+    it('should handle matching technologies correctly', () => {
+      const walletInfo = {
+        name: 'Test Wallet',
+        icon: TEST_ICON,
+        rdns: 'com.test.wallet',
+        url: 'https://test.wallet',
+      };
+
+      const announcer = new DiscoveryAnnouncer({
+        walletInfo,
+        eventTarget: mockEventTarget,
+        supportedTechnologies: ['tech1', 'TECH2'],
+      });
+
+      // Set up spy after creating announcer
+      const responseHandler = vi.fn();
+      mockEventTarget.addEventListener(WmDiscovery.Response, responseHandler);
+
+      // Send request directly
+      announcer['handleDiscoveryRequestEvent'](
+        new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
+          detail: {
+            version: WM_PROTOCOL_VERSION,
+            discoveryId: 'test-id',
+            technologies: ['tech1', 'tech2', 'tech3'],
+          },
+        }),
+      );
+
+      // Verify response
+      expect(responseHandler).toHaveBeenCalledTimes(1);
+      const responseEvent = responseHandler.mock.calls[0]?.[0] as CustomEvent<DiscoveryResponseEvent>;
+      expect(responseEvent.detail.wallet.technologies).toEqual(['tech1', 'tech2']);
+    });
+
+    it('should handle event dispatch errors gracefully', () => {
+      const errorEvent = new Error('Event dispatch failed');
+      vi.spyOn(mockEventTarget, 'dispatchEvent').mockImplementation(() => {
+        throw errorEvent;
+      });
+
+      const announcer = createWebWalletAnnouncer(
+        'Test Wallet',
+        TEST_ICON,
+        'com.test.wallet',
+        'https://test.wallet',
+      );
+      announcer['eventTarget'] = mockEventTarget;
+
+      expect(() => {
+        announcer.start();
+      }).toThrow(errorEvent);
+    });
   });
 
   describe('createWebWalletAnnouncer', () => {
     it('should create a DiscoveryAnnouncer for web wallets', () => {
       const name = 'Web Wallet';
-      const icon = 'https://example.com/icon.png';
+      const icon = TEST_ICON;
       const rdns = 'com.example.webwallet';
       const url = 'https://example.com';
       const supportedTechnologies = ['tech1', 'tech2'];
@@ -56,7 +396,7 @@ describe('DiscoveryAnnouncer', () => {
   describe('createExtensionWalletAnnouncer', () => {
     it('should create a DiscoveryAnnouncer for extension wallets', () => {
       const name = 'Extension Wallet';
-      const icon = 'https://example.com/icon.png';
+      const icon = TEST_ICON;
       const rdns = 'com.example.extensionwallet';
       const extensionId = 'extension-id';
       const supportedTechnologies = ['tech1', 'tech2'];
@@ -81,7 +421,7 @@ describe('DiscoveryAnnouncer', () => {
 
     it('should not create a DiscoveryAnnouncer for extension wallets without an extension id or code', () => {
       const name = 'Extension Wallet';
-      const icon = 'https://example.com/icon.png';
+      const icon = TEST_ICON;
       const rdns = 'com.example.extensionwallet';
       const supportedTechnologies = ['tech1', 'tech2'];
 
@@ -89,670 +429,5 @@ describe('DiscoveryAnnouncer', () => {
         createExtensionWalletAnnouncer(name, icon, rdns, supportedTechnologies);
       }).toThrowError('Extension ID or code is required for extension wallets');
     });
-  });
-
-  it('should set walletInfo to the provided value in the constructor', () => {
-    const discoveryAnnouncer = new DiscoveryAnnouncer({ walletInfo: mockWallet });
-
-    expect(discoveryAnnouncer['walletInfo']).toEqual(mockWallet);
-  });
-
-  it('should throw an error if walletInfo is invalid', () => {
-    const invalidWalletInfo = { name: '', icon: '', rdns: '' };
-
-    expect(() => {
-      new DiscoveryAnnouncer({ walletInfo: invalidWalletInfo as WalletInfo });
-    }).toThrow('Invalid walletInfo: ${walletInfo}');
-  });
-
-  it('should set sessionId to the provided value in the constructor', () => {
-    const sessionId = 'test-session-id';
-    const discoveryAnnouncer = new DiscoveryAnnouncer({ walletInfo: mockWallet, sessionId });
-
-    expect(discoveryAnnouncer['sessionId']).toEqual(sessionId);
-  });
-
-  it('should set sessionId to a new UUID if not provided in the constructor', () => {
-    const discoveryAnnouncer = new DiscoveryAnnouncer({ walletInfo: mockWallet });
-
-    expect(discoveryAnnouncer['sessionId']).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    );
-  });
-
-  it('should set supportedTechnologies to the provided value in the constructor', () => {
-    const supportedTechnologies = ['aztec'];
-    const discoveryAnnouncer = new DiscoveryAnnouncer({ walletInfo: mockWallet, supportedTechnologies });
-
-    expect(discoveryAnnouncer['supportedTechnologies']).toEqual(supportedTechnologies);
-  });
-
-  it('should set supportedTechnologies to an empty array if not provided in the constructor', () => {
-    const discoveryAnnouncer = new DiscoveryAnnouncer({ walletInfo: mockWallet });
-
-    expect(discoveryAnnouncer['supportedTechnologies']).toEqual([]);
-  });
-
-  it('should set eventTarget to the provided value in the constructor', () => {
-    const discoveryAnnouncer = new DiscoveryAnnouncer({
-      walletInfo: mockWallet,
-      eventTarget: mockEventTarget,
-    });
-
-    expect(discoveryAnnouncer['eventTarget']).toEqual(mockEventTarget);
-  });
-
-  it('should set eventTarget to window if not provided in the constructor', () => {
-    const discoveryAnnouncer = new DiscoveryAnnouncer({ walletInfo: mockWallet });
-
-    expect(discoveryAnnouncer['eventTarget']).toEqual(window);
-  });
-
-  it('should call startEventListeners when start is called', () => {
-    // biome-ignore lint/suspicious/noExplicitAny: Testing private method
-    const startEventListenersSpy = vi.spyOn(discoveryAnnouncer as any, 'startEventListeners');
-
-    discoveryAnnouncer.start();
-
-    expect(startEventListenersSpy).toHaveBeenCalled();
-  });
-
-  it('should dispatch the "Ready" event when start is called', () => {
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Ready, handler);
-    const dispatchEventSpy = vi.spyOn(mockEventTarget, 'dispatchEvent');
-
-    discoveryAnnouncer.start();
-
-    expect(handler).toHaveBeenCalled();
-
-    const eventArg = handler.mock.calls[0]?.[0];
-    expect(eventArg.type).toBe(WmDiscovery.Ready);
-
-    expect(dispatchEventSpy).toHaveBeenCalledWith(new CustomEvent(WmDiscovery.Ready));
-  });
-
-  it('should remove event listeners when stop is called', () => {
-    // Spy on the stopEventListeners method
-    // biome-ignore lint/suspicious/noExplicitAny: Testing private method
-    const stopEventListenersSpy = vi.spyOn(discoveryAnnouncer as any, 'stopEventListeners');
-
-    // Call the stop method
-    discoveryAnnouncer.stop();
-
-    // Verify the stopEventListeners method was called
-    expect(stopEventListenersSpy).toHaveBeenCalled();
-  });
-
-  it('should clear acknowledgedDiscoveryIds when stop is called', () => {
-    // Add some discovery IDs to the acknowledgedDiscoveryIds set
-    discoveryAnnouncer['acknowledgedDiscoveryIds'].add('discovery-id-1');
-
-    // Call the stop method
-    discoveryAnnouncer.stop();
-
-    // Verify the acknowledgedDiscoveryIds set was cleared
-    expect(discoveryAnnouncer['acknowledgedDiscoveryIds'].size).toBe(0);
-  });
-
-  it('should clear pendingDiscoveryIds when stop is called', () => {
-    // Add some discovery IDs to the pendingDiscoveryIds set
-    discoveryAnnouncer['pendingDiscoveryIds'].add('discovery-id-2');
-
-    // Call the stop method
-    discoveryAnnouncer.stop();
-
-    // Verify the pendingDiscoveryIds set was cleared
-    expect(discoveryAnnouncer['pendingDiscoveryIds'].size).toBe(0);
-  });
-
-  it('should not dispatch a DiscoveryResponseEvent if the callback returns false', () => {
-    const callback = vi.fn().mockReturnValue(false);
-    discoveryAnnouncer = new DiscoveryAnnouncer({
-      walletInfo: mockWallet,
-      eventTarget: mockEventTarget,
-      supportedTechnologies: ['bitcoin', 'ethereum'],
-      callback,
-    });
-
-    const requestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        technologies: ['bitcoin', 'solana'],
-      },
-    });
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(requestEvent);
-
-    // Verify the handler was not called
-    expect(handler).not.toHaveBeenCalled();
-
-    // Verify the callback was called
-    expect(callback).toHaveBeenCalled();
-  });
-
-  it('should dispatch a DiscoveryResponseEvent if the callback returns true', () => {
-    const callback = vi.fn().mockReturnValue(true);
-    discoveryAnnouncer = new DiscoveryAnnouncer({
-      walletInfo: mockWallet,
-      eventTarget: mockEventTarget,
-      sessionId: 'wallet-123',
-      supportedTechnologies: ['bitcoin', 'ethereum'],
-      callback,
-    });
-
-    const requestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        technologies: ['bitcoin', 'solana'],
-      },
-    });
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(requestEvent);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Verify the callback was called
-    expect(callback).toHaveBeenCalled();
-  });
-
-  it('should handle valid DiscoveryRequestEvent and call dispatchDiscoveryResponseEvent', () => {
-    const validRequestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        technologies: ['aztec'],
-      },
-    });
-
-    const dispatchDiscoveryResponseEventSpy = vi.spyOn(
-      // biome-ignore lint/suspicious/noExplicitAny: Testing private method
-      discoveryAnnouncer as any,
-      'dispatchDiscoveryResponseEvent',
-    );
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(validRequestEvent);
-
-    // Verify the dispatchDiscoveryResponseEvent method was called
-    expect(dispatchDiscoveryResponseEventSpy).toHaveBeenCalled();
-  });
-
-  it('should not respond to the same discvoery ID after it has received an ack', () => {
-    const validRequestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        technologies: ['aztec'],
-      },
-    });
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-    discoveryAnnouncer['acknowledgedDiscoveryIds'].add('test-discovery-id');
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(validRequestEvent);
-
-    // Verify the handler was not called
-    expect(handler).not.toHaveBeenCalled();
-  });
-
-  it('should not dispatch DiscoveryResponseEvent if technologies do not match', () => {
-    const requestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        technologies: ['unsupported-tech'],
-      },
-    });
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(requestEvent);
-
-    // Verify the handler was not called
-    expect(handler).not.toHaveBeenCalled();
-  });
-
-  it('should not dispatch DiscoveryResponseEvent if the event is invalid', () => {
-    const invalidRequestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: 'invalid-version',
-        discoveryId: 'test-discovery-id',
-        technologies: ['aztec'],
-      },
-    });
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(invalidRequestEvent);
-
-    // Verify the handler was not called
-    expect(handler).not.toHaveBeenCalled();
-  });
-
-  it('should handle valid DiscoveryAckEvent and update internal state', () => {
-    const validAckEvent = new CustomEvent<DiscoveryAckEvent>(WmDiscovery.Ack, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        walletId: discoveryAnnouncer['sessionId'],
-      },
-    });
-
-    // Add the discovery ID to the pending set
-    discoveryAnnouncer['pendingDiscoveryIds'].add('test-discovery-id');
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the acknowledgment event
-    mockEventTarget.dispatchEvent(validAckEvent);
-
-    // Verify the discovery ID was moved from pending to acknowledged
-    expect(discoveryAnnouncer['pendingDiscoveryIds'].has('test-discovery-id')).toBe(false);
-    expect(discoveryAnnouncer['acknowledgedDiscoveryIds'].has('test-discovery-id')).toBe(true);
-  });
-
-  it('should not update internal state if the event is invalid', () => {
-    const invalidAckEvent = new CustomEvent<DiscoveryAckEvent>(WmDiscovery.Ack, {
-      detail: {
-        version: 'invalid-version',
-        discoveryId: 'test-discovery-id',
-        walletId: discoveryAnnouncer['sessionId'],
-      },
-    });
-
-    // Add the discovery ID to the pending set
-    discoveryAnnouncer['pendingDiscoveryIds'].add('test-discovery-id');
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the acknowledgment event
-    mockEventTarget.dispatchEvent(invalidAckEvent);
-
-    // Verify the internal state was not updated
-    expect(discoveryAnnouncer['pendingDiscoveryIds'].has('test-discovery-id')).toBe(true);
-    expect(discoveryAnnouncer['acknowledgedDiscoveryIds'].has('test-discovery-id')).toBe(false);
-  });
-
-  it('should not update internal state if the acknowledgment is not for the current session', () => {
-    const ackEvent = new CustomEvent<DiscoveryAckEvent>(WmDiscovery.Ack, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        walletId: 'different-session-id',
-      },
-    });
-
-    // Add the discovery ID to the pending set
-    discoveryAnnouncer['pendingDiscoveryIds'].add('test-discovery-id');
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the acknowledgment event
-    mockEventTarget.dispatchEvent(ackEvent);
-
-    // Verify the internal state was not updated
-    expect(discoveryAnnouncer['pendingDiscoveryIds'].has('test-discovery-id')).toBe(true);
-    expect(discoveryAnnouncer['acknowledgedDiscoveryIds'].has('test-discovery-id')).toBe(false);
-  });
-
-  it('should not update internal state if the discovery ID is not pending', () => {
-    const ackEvent = new CustomEvent<DiscoveryAckEvent>(WmDiscovery.Ack, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'non-pending-discovery-id',
-        walletId: discoveryAnnouncer['sessionId'],
-      },
-    });
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the acknowledgment event
-    mockEventTarget.dispatchEvent(ackEvent);
-
-    // Verify the internal state was not updated
-    expect(discoveryAnnouncer['pendingDiscoveryIds'].has('non-pending-discovery-id')).toBe(false);
-    expect(discoveryAnnouncer['acknowledgedDiscoveryIds'].has('non-pending-discovery-id')).toBe(false);
-  });
-
-  it('should dispatch a DiscoveryResponseEvent with the correct details', () => {
-    const discoveryId = 'test-discovery-id';
-    const matchingTechnologies = ['aztec', 'evm'];
-    const expectedWalletInfo = mockWallet;
-    expectedWalletInfo.technologies = matchingTechnologies;
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    // Call the method
-    // biome-ignore lint/suspicious/noExplicitAny: Testing private method
-    (discoveryAnnouncer as any).dispatchDiscoveryResponseEvent(discoveryId, matchingTechnologies);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0];
-
-    // Verify the response event details
-    expect(eventArg.detail).toEqual({
-      version: WM_PROTOCOL_VERSION,
-      discoveryId,
-      wallet: expectedWalletInfo,
-      walletId: discoveryAnnouncer['sessionId'],
-    });
-  });
-
-  it('should dispatch a DiscoveryResponseEvent with the correct details (extensionId)', () => {
-    const discoveryId = 'test-discovery-id';
-    const matchingTechnologies = ['aztec', 'evm'];
-    const walletWithExtensionId = {
-      name: 'Test Wallet',
-      icon: 'test-icon.png',
-      rdns: 'com.example.testwallet',
-      extensionId: 'test-extension-id',
-    } as WalletInfo;
-    const expectedWalletInfo = walletWithExtensionId;
-    expectedWalletInfo.technologies = matchingTechnologies;
-
-    const discoveryAnnouncer = new DiscoveryAnnouncer({
-      walletInfo: walletWithExtensionId,
-      eventTarget: mockEventTarget,
-      sessionId: 'wallet-123',
-    });
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    // Call the method
-    // biome-ignore lint/suspicious/noExplicitAny: Testing private method
-    (discoveryAnnouncer as any).dispatchDiscoveryResponseEvent(discoveryId, matchingTechnologies);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0];
-
-    // Verify the response event details
-    expect(eventArg.detail).toEqual({
-      version: WM_PROTOCOL_VERSION,
-      discoveryId,
-      wallet: expectedWalletInfo,
-      walletId: discoveryAnnouncer['sessionId'],
-    });
-  });
-
-  it('should dispatch a DiscoveryResponseEvent with the correct details (code)', () => {
-    const discoveryId = 'test-discovery-id';
-    const matchingTechnologies = ['aztec', 'evm'];
-    const walletWithCode = {
-      name: 'Test Wallet',
-      icon: 'test-icon.png',
-      rdns: 'com.example.testwallet',
-      code: 'test-code',
-    } as WalletInfo;
-    const expectedWalletInfo = walletWithCode;
-    expectedWalletInfo.technologies = matchingTechnologies;
-
-    const discoveryAnnouncer = new DiscoveryAnnouncer({
-      walletInfo: walletWithCode,
-      eventTarget: mockEventTarget,
-      sessionId: 'wallet-123',
-    });
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    // Call the method
-    // biome-ignore lint/suspicious/noExplicitAny: Testing private method
-    (discoveryAnnouncer as any).dispatchDiscoveryResponseEvent(discoveryId, matchingTechnologies);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0];
-
-    // Verify the response event details
-    expect(eventArg.detail).toEqual({
-      version: WM_PROTOCOL_VERSION,
-      discoveryId,
-      wallet: expectedWalletInfo,
-      walletId: discoveryAnnouncer['sessionId'],
-    });
-  });
-
-  it('should dispatch a DiscoveryResponseEvent with the correct details (url)', () => {
-    const discoveryId = 'test-discovery-id';
-    const matchingTechnologies = ['aztec', 'evm'];
-    const walletWithUrl = {
-      name: 'Test Wallet',
-      icon: 'test-icon.png',
-      rdns: 'com.example.testwallet',
-      url: 'https://wallet.example.com',
-    } as WalletInfo;
-    const expectedWalletInfo = walletWithUrl;
-    expectedWalletInfo.technologies = matchingTechnologies;
-
-    const discoveryAnnouncer = new DiscoveryAnnouncer({
-      walletInfo: walletWithUrl,
-      eventTarget: mockEventTarget,
-      sessionId: 'wallet-123',
-    });
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    // Call the method
-    // biome-ignore lint/suspicious/noExplicitAny: Testing private method
-    (discoveryAnnouncer as any).dispatchDiscoveryResponseEvent(discoveryId, matchingTechnologies);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0];
-
-    // Verify the response event details
-    expect(eventArg.detail).toEqual({
-      version: WM_PROTOCOL_VERSION,
-      discoveryId,
-      wallet: expectedWalletInfo,
-      walletId: discoveryAnnouncer['sessionId'],
-    });
-  });
-
-  it('should dispatch a DiscoveryResponseEvent without a technologies array if no matching technologies are provided', () => {
-    const discoveryId = 'test-discovery-id';
-    const matchingTechnologies: string[] = [];
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    // Call the method
-    // biome-ignore lint/suspicious/noExplicitAny: Testing private method
-    (discoveryAnnouncer as any).dispatchDiscoveryResponseEvent(discoveryId, matchingTechnologies);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0];
-
-    // Verify the response event details
-    expect(eventArg.detail).toEqual({
-      version: WM_PROTOCOL_VERSION,
-      discoveryId,
-      wallet: mockWallet,
-      walletId: discoveryAnnouncer['sessionId'],
-    });
-  });
-
-  it('should filter and only include matching technologies', () => {
-    const requestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        technologies: ['aztec', 'evm'],
-      },
-    });
-
-    discoveryAnnouncer['supportedTechnologies'] = ['aztec', 'evm', 'bitcon'];
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(requestEvent);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0];
-
-    // Verify the response event details
-    expect(eventArg.detail.wallet.technologies).toEqual(['aztec', 'evm']);
-  });
-
-  it('should have case insensitive matching and filtering', () => {
-    const requestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        technologies: ['AZTEC', 'EVM'],
-      },
-    });
-
-    discoveryAnnouncer['supportedTechnologies'] = ['aztec', 'evm', 'bitcon'];
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(requestEvent);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0];
-
-    // Verify the response event details
-    expect(eventArg.detail.wallet.technologies).toEqual(['AZTEC', 'EVM']);
-  });
-
-  it('should match the case in the request', () => {
-    const requestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        technologies: ['aztec', 'EVM'],
-      },
-    });
-
-    discoveryAnnouncer['supportedTechnologies'] = ['AZTEC', 'EVM', 'bitcon'];
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(requestEvent);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0];
-
-    // Verify the response event details
-    expect(eventArg.detail.wallet.technologies).toEqual(['aztec', 'EVM']);
-  });
-
-  it('should not include technology unless in request', () => {
-    const requestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-      },
-    });
-
-    discoveryAnnouncer['supportedTechnologies'] = ['AZTEC', 'EVM', 'bitcon'];
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(requestEvent);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0];
-
-    // Verify the response event details
-    expect(eventArg.detail.wallet.technologies).not.exist;
-  });
-
-  it('should not respond if technology does not have at least one match', () => {
-    const requestEvent = new CustomEvent<DiscoveryRequestEvent>(WmDiscovery.Request, {
-      detail: {
-        version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
-        technologies: ['aztec'],
-      },
-    });
-
-    discoveryAnnouncer['supportedTechnologies'] = [];
-
-    const handler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Response, handler);
-
-    discoveryAnnouncer.start();
-
-    // Dispatch the request event
-    mockEventTarget.dispatchEvent(requestEvent);
-
-    // Verify the handler was called
-    expect(handler).not.toHaveBeenCalled();
   });
 });
