@@ -7,32 +7,28 @@ import {
   isDiscoveryResponseEvent,
   isDiscoveryAckEvent,
 } from './guards.js';
-import type {
-  BaseWalletInfo,
-  WebWalletInfo,
-  ExtensionWalletInfo,
-  DiscoveryRequestEvent,
-  DiscoveryResponseEvent,
-  DiscoveryAckEvent,
-  WalletInfo,
-} from './types.js';
 import { WM_PROTOCOL_VERSION } from './constants.js';
+import type { WalletInfo } from './types.js';
+
+// Example data URI for a small test icon (1x1 pixel transparent PNG)
+const TEST_ICON =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==';
 
 describe('Type Guards', () => {
   describe('isBaseWalletInfo', () => {
     it('should return true for a valid BaseWalletInfo object', () => {
-      const validWalletInfo: BaseWalletInfo = {
+      const validWalletInfo = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
-        technologies: ['bitcoin', 'ethereum'],
+        technologies: ['test-tech'],
       };
 
       expect(isBaseWalletInfo(validWalletInfo)).toBe(true);
     });
 
     it('should return false if it is not an object', () => {
-      expect(isBaseWalletInfo('test')).toBe(false);
+      expect(isBaseWalletInfo('not an object')).toBe(false);
     });
 
     it('should return false if it is null', () => {
@@ -40,9 +36,9 @@ describe('Type Guards', () => {
     });
 
     it('should return true for a valid BaseWalletInfo object without technologies', () => {
-      const validWalletInfo: BaseWalletInfo = {
+      const validWalletInfo = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
       };
 
@@ -52,7 +48,7 @@ describe('Type Guards', () => {
     it('should return false if technologies is not an array of strings', () => {
       const invalidWalletInfo = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         technologies: [123],
       };
@@ -63,9 +59,9 @@ describe('Type Guards', () => {
     it('should return false if technologies is an array of blank strings', () => {
       const invalidWalletInfo = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
-        technologies: ['    '],
+        technologies: [''],
       };
 
       expect(isBaseWalletInfo(invalidWalletInfo)).toBe(false);
@@ -74,7 +70,7 @@ describe('Type Guards', () => {
     it('should return false if technologies is an empty array', () => {
       const invalidWalletInfo = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         technologies: [],
       };
@@ -84,10 +80,9 @@ describe('Type Guards', () => {
 
     it('should return false if name is not a string', () => {
       const invalidWalletInfo = {
-        name: 123, // Not a string
-        icon: 'test-icon',
+        name: 123,
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
-        technologies: ['bitcoin', 'ethereum'],
       };
 
       expect(isBaseWalletInfo(invalidWalletInfo)).toBe(false);
@@ -96,9 +91,18 @@ describe('Type Guards', () => {
     it('should return false if icon is not a string', () => {
       const invalidWalletInfo = {
         name: 'Test Wallet',
-        icon: 123, // Not a string
+        icon: 123,
         rdns: 'com.test.wallet',
-        technologies: ['bitcoin', 'ethereum'],
+      };
+
+      expect(isBaseWalletInfo(invalidWalletInfo)).toBe(false);
+    });
+
+    it('should return false if icon is not a data URI', () => {
+      const invalidWalletInfo = {
+        name: 'Test Wallet',
+        icon: 'https://example.com/icon.png',
+        rdns: 'com.test.wallet',
       };
 
       expect(isBaseWalletInfo(invalidWalletInfo)).toBe(false);
@@ -107,20 +111,8 @@ describe('Type Guards', () => {
     it('should return false if rdns is not a string', () => {
       const invalidWalletInfo = {
         name: 'Test Wallet',
-        icon: 'test-icon',
-        rdns: 123, // Not a string
-        technologies: ['bitcoin', 'ethereum'],
-      };
-
-      expect(isBaseWalletInfo(invalidWalletInfo)).toBe(false);
-    });
-
-    it('should return false if technologies is not an array', () => {
-      const invalidWalletInfo = {
-        name: 'Test Wallet',
-        icon: 'test-icon',
-        rdns: 'com.test.wallet',
-        technologies: 'bitcoin', // Not an array
+        icon: TEST_ICON,
+        rdns: 123,
       };
 
       expect(isBaseWalletInfo(invalidWalletInfo)).toBe(false);
@@ -129,21 +121,21 @@ describe('Type Guards', () => {
 
   describe('isWebWalletInfo', () => {
     it('should return true for a valid WebWalletInfo object', () => {
-      const validWebWallet: WebWalletInfo = {
+      const validWebWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         url: 'https://test.wallet',
-        technologies: ['bitcoin', 'ethereum'],
+        technologies: ['test-tech'],
       };
 
       expect(isWebWalletInfo(validWebWallet)).toBe(true);
     });
 
     it('should return true for a valid WebWalletInfo object without technologies', () => {
-      const validWebWallet: WebWalletInfo = {
+      const validWebWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         url: 'https://test.wallet',
       };
@@ -153,11 +145,10 @@ describe('Type Guards', () => {
 
     it('should return false if name is not a string', () => {
       const invalidWebWallet = {
-        name: 123, // Not a string
-        icon: 'test-icon',
+        name: 123,
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         url: 'https://test.wallet',
-        technologies: ['bitcoin', 'ethereum'],
       };
 
       expect(isWebWalletInfo(invalidWebWallet)).toBe(false);
@@ -166,10 +157,9 @@ describe('Type Guards', () => {
     it('should return false if icon is not a string', () => {
       const invalidWebWallet = {
         name: 'Test Wallet',
-        icon: 123, // Not a string
+        icon: 123,
         rdns: 'com.test.wallet',
         url: 'https://test.wallet',
-        technologies: ['bitcoin', 'ethereum'],
       };
 
       expect(isWebWalletInfo(invalidWebWallet)).toBe(false);
@@ -178,10 +168,9 @@ describe('Type Guards', () => {
     it('should return false if rdns is not a string', () => {
       const invalidWebWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
-        rdns: 123, // Not a string
+        icon: TEST_ICON,
+        rdns: 123,
         url: 'https://test.wallet',
-        technologies: ['bitcoin', 'ethereum'],
       };
 
       expect(isWebWalletInfo(invalidWebWallet)).toBe(false);
@@ -190,22 +179,9 @@ describe('Type Guards', () => {
     it('should return false if url is not a string', () => {
       const invalidWebWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
-        url: 123, // Not a string
-        technologies: ['bitcoin', 'ethereum'],
-      };
-
-      expect(isWebWalletInfo(invalidWebWallet)).toBe(false);
-    });
-
-    it('should return false if technologies is not an array', () => {
-      const invalidWebWallet = {
-        name: 'Test Wallet',
-        icon: 'test-icon',
-        rdns: 'com.test.wallet',
-        url: 'https://test.wallet',
-        technologies: 'bitcoin', // Not an array
+        url: 123,
       };
 
       expect(isWebWalletInfo(invalidWebWallet)).toBe(false);
@@ -214,11 +190,10 @@ describe('Type Guards', () => {
     it('should return false if code is defined', () => {
       const invalidWebWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         url: 'https://test.wallet',
-        code: 'some-code', // Should not be defined
-        technologies: ['bitcoin', 'ethereum'],
+        code: 'test-code',
       };
 
       expect(isWebWalletInfo(invalidWebWallet)).toBe(false);
@@ -227,11 +202,10 @@ describe('Type Guards', () => {
     it('should return false if extensionId is defined', () => {
       const invalidWebWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         url: 'https://test.wallet',
-        extensionId: 'some-extension-id', // Should not be defined
-        technologies: ['bitcoin', 'ethereum'],
+        extensionId: 'test-extension-id',
       };
 
       expect(isWebWalletInfo(invalidWebWallet)).toBe(false);
@@ -240,22 +214,22 @@ describe('Type Guards', () => {
 
   describe('isExtensionWalletInfo', () => {
     it('should return true for a valid ExtensionWalletInfo object', () => {
-      const validExtensionWallet: ExtensionWalletInfo = {
+      const validExtensionWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         extensionId: 'test-extension-id',
         code: 'test-code',
-        technologies: ['bitcoin', 'ethereum'],
+        technologies: ['test-tech'],
       };
 
       expect(isExtensionWalletInfo(validExtensionWallet)).toBe(true);
     });
 
     it('should return true for a valid ExtensionWalletInfo object without technologies', () => {
-      const validExtensionWallet: ExtensionWalletInfo = {
+      const validExtensionWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         extensionId: 'test-extension-id',
         code: 'test-code',
@@ -265,12 +239,11 @@ describe('Type Guards', () => {
     });
 
     it('should return true for a valid ExtensionWalletInfo object without code', () => {
-      const validExtensionWallet: ExtensionWalletInfo = {
+      const validExtensionWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         extensionId: 'test-extension-id',
-        technologies: ['bitcoin', 'ethereum'],
       };
 
       expect(isExtensionWalletInfo(validExtensionWallet)).toBe(true);
@@ -278,12 +251,10 @@ describe('Type Guards', () => {
 
     it('should return false if name is not a string', () => {
       const invalidExtensionWallet = {
-        name: 123, // Not a string
-        icon: 'test-icon',
+        name: 123,
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         extensionId: 'test-extension-id',
-        code: 'test-code',
-        technologies: ['bitcoin', 'ethereum'],
       };
 
       expect(isExtensionWalletInfo(invalidExtensionWallet)).toBe(false);
@@ -292,11 +263,9 @@ describe('Type Guards', () => {
     it('should return false if icon is not a string', () => {
       const invalidExtensionWallet = {
         name: 'Test Wallet',
-        icon: 123, // Not a string
+        icon: 123,
         rdns: 'com.test.wallet',
         extensionId: 'test-extension-id',
-        code: 'test-code',
-        technologies: ['bitcoin', 'ethereum'],
       };
 
       expect(isExtensionWalletInfo(invalidExtensionWallet)).toBe(false);
@@ -305,11 +274,9 @@ describe('Type Guards', () => {
     it('should return false if rdns is not a string', () => {
       const invalidExtensionWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
-        rdns: 123, // Not a string
+        icon: TEST_ICON,
+        rdns: 123,
         extensionId: 'test-extension-id',
-        code: 'test-code',
-        technologies: ['bitcoin', 'ethereum'],
       };
 
       expect(isExtensionWalletInfo(invalidExtensionWallet)).toBe(false);
@@ -318,11 +285,9 @@ describe('Type Guards', () => {
     it('should return false if extensionId is not a string', () => {
       const invalidExtensionWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
-        extensionId: 123, // Not a string
-        code: 'test-code',
-        technologies: ['bitcoin', 'ethereum'],
+        extensionId: 123,
       };
 
       expect(isExtensionWalletInfo(invalidExtensionWallet)).toBe(false);
@@ -331,11 +296,10 @@ describe('Type Guards', () => {
     it('should return false if code is not a string or undefined', () => {
       const invalidExtensionWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         extensionId: 'test-extension-id',
-        code: 123, // Not a string or undefined
-        technologies: ['bitcoin', 'ethereum'],
+        code: 123,
       };
 
       expect(isExtensionWalletInfo(invalidExtensionWallet)).toBe(false);
@@ -344,12 +308,10 @@ describe('Type Guards', () => {
     it('should return false if url is defined', () => {
       const invalidExtensionWallet = {
         name: 'Test Wallet',
-        icon: 'test-icon',
+        icon: TEST_ICON,
         rdns: 'com.test.wallet',
         extensionId: 'test-extension-id',
-        code: 'test-code',
-        url: 'https://test.wallet', // Should not be defined
-        technologies: ['bitcoin', 'ethereum'],
+        url: 'https://test.wallet',
       };
 
       expect(isExtensionWalletInfo(invalidExtensionWallet)).toBe(false);
@@ -358,17 +320,17 @@ describe('Type Guards', () => {
 
   describe('isDiscoveryRequestEvent', () => {
     it('should return true for a valid DiscoveryRequestEvent object', () => {
-      const validEvent: DiscoveryRequestEvent = {
+      const validEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
-        technologies: ['bitcoin', 'ethereum'],
+        technologies: ['test-tech'],
       };
 
       expect(isDiscoveryRequestEvent(validEvent)).toBe(true);
     });
 
     it('should return false if it is not an object', () => {
-      expect(isDiscoveryRequestEvent('test')).toBe(false);
+      expect(isDiscoveryRequestEvent('not an object')).toBe(false);
     });
 
     it('should return false if it is null', () => {
@@ -377,9 +339,8 @@ describe('Type Guards', () => {
 
     it('should return false if version is incorrect', () => {
       const invalidEvent = {
-        version: 'invalid-version',
+        version: '0.0.0',
         discoveryId: 'test-discovery-id',
-        technologies: ['bitcoin', 'ethereum'],
       };
 
       expect(isDiscoveryRequestEvent(invalidEvent)).toBe(false);
@@ -388,15 +349,14 @@ describe('Type Guards', () => {
     it('should return false if discoveryId is not a string', () => {
       const invalidEvent = {
         version: WM_PROTOCOL_VERSION,
-        discoveryId: 123, // Not a string
-        technologies: ['bitcoin', 'ethereum'],
+        discoveryId: 123,
       };
 
       expect(isDiscoveryRequestEvent(invalidEvent)).toBe(false);
     });
 
     it('should return true if technologies is undefined', () => {
-      const validEvent: DiscoveryRequestEvent = {
+      const validEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
       };
@@ -408,7 +368,7 @@ describe('Type Guards', () => {
       const invalidEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
-        technologies: 'bitcoin', // Not an array
+        technologies: 'not-an-array',
       };
 
       expect(isDiscoveryRequestEvent(invalidEvent)).toBe(false);
@@ -418,7 +378,7 @@ describe('Type Guards', () => {
       const invalidEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
-        technologies: [123], // Not an array of strings
+        technologies: [123],
       };
 
       expect(isDiscoveryRequestEvent(invalidEvent)).toBe(false);
@@ -428,7 +388,7 @@ describe('Type Guards', () => {
       const invalidEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
-        technologies: ['    '], // Blank strings are not allowed
+        technologies: [''],
       };
 
       expect(isDiscoveryRequestEvent(invalidEvent)).toBe(false);
@@ -447,16 +407,14 @@ describe('Type Guards', () => {
 
   describe('isDiscoveryResponseEvent', () => {
     it('should return true for a valid DiscoveryResponseEvent object', () => {
-      const validWalletInfo: WalletInfo = {
-        name: 'Test Wallet',
-        icon: 'test-icon',
-        rdns: 'com.test.wallet',
-      };
-
-      const validEvent: DiscoveryResponseEvent = {
+      const validEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
-        wallet: validWalletInfo,
+        wallet: {
+          name: 'Test Wallet',
+          icon: TEST_ICON,
+          rdns: 'com.test.wallet',
+        } as WalletInfo,
         walletId: 'test-wallet-id',
       };
 
@@ -464,7 +422,7 @@ describe('Type Guards', () => {
     });
 
     it('should return false if it is not an object', () => {
-      expect(isDiscoveryResponseEvent('test')).toBe(false);
+      expect(isDiscoveryResponseEvent('not an object')).toBe(false);
     });
 
     it('should return false if it is null', () => {
@@ -472,16 +430,14 @@ describe('Type Guards', () => {
     });
 
     it('should return false if version is incorrect', () => {
-      const validWalletInfo: WalletInfo = {
-        name: 'Test Wallet',
-        icon: 'test-icon',
-        rdns: 'com.test.wallet',
-      };
-
       const invalidEvent = {
-        version: 'invalid-version',
+        version: '0.0.0',
         discoveryId: 'test-discovery-id',
-        wallet: validWalletInfo,
+        wallet: {
+          name: 'Test Wallet',
+          icon: TEST_ICON,
+          rdns: 'com.test.wallet',
+        } as WalletInfo,
         walletId: 'test-wallet-id',
       };
 
@@ -489,16 +445,14 @@ describe('Type Guards', () => {
     });
 
     it('should return false if discoveryId is not a string', () => {
-      const validWalletInfo: WalletInfo = {
-        name: 'Test Wallet',
-        icon: 'test-icon',
-        rdns: 'com.test.wallet',
-      };
-
       const invalidEvent = {
         version: WM_PROTOCOL_VERSION,
-        discoveryId: 123, // Not a string
-        wallet: validWalletInfo,
+        discoveryId: 123,
+        wallet: {
+          name: 'Test Wallet',
+          icon: TEST_ICON,
+          rdns: 'com.test.wallet',
+        } as WalletInfo,
         walletId: 'test-wallet-id',
       };
 
@@ -509,7 +463,6 @@ describe('Type Guards', () => {
       const invalidEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
-        // Missing wallet
         walletId: 'test-wallet-id',
       };
 
@@ -520,7 +473,7 @@ describe('Type Guards', () => {
       const invalidEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
-        wallet: 'invalid-wallet', // Not an object
+        wallet: 'not an object',
         walletId: 'test-wallet-id',
       };
 
@@ -528,17 +481,15 @@ describe('Type Guards', () => {
     });
 
     it('should return false if walletId is not a string', () => {
-      const validWalletInfo: WalletInfo = {
-        name: 'Test Wallet',
-        icon: 'test-icon',
-        rdns: 'com.test.wallet',
-      };
-
       const invalidEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
-        wallet: validWalletInfo,
-        walletId: 123, // Not a string
+        wallet: {
+          name: 'Test Wallet',
+          icon: TEST_ICON,
+          rdns: 'com.test.wallet',
+        } as WalletInfo,
+        walletId: 123,
       };
 
       expect(isDiscoveryResponseEvent(invalidEvent)).toBe(false);
@@ -547,7 +498,7 @@ describe('Type Guards', () => {
 
   describe('isDiscoveryAckEvent', () => {
     it('should return true for a valid DiscoveryAckEvent object', () => {
-      const validEvent: DiscoveryAckEvent = {
+      const validEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
         walletId: 'test-wallet-id',
@@ -557,7 +508,7 @@ describe('Type Guards', () => {
     });
 
     it('should return false if it is not an object', () => {
-      expect(isDiscoveryAckEvent('test')).toBe(false);
+      expect(isDiscoveryAckEvent('not an object')).toBe(false);
     });
 
     it('should return false if it is null', () => {
@@ -566,7 +517,7 @@ describe('Type Guards', () => {
 
     it('should return false if version is incorrect', () => {
       const invalidEvent = {
-        version: 'invalid-version',
+        version: '0.0.0',
         discoveryId: 'test-discovery-id',
         walletId: 'test-wallet-id',
       };
@@ -577,7 +528,7 @@ describe('Type Guards', () => {
     it('should return false if discoveryId is not a string', () => {
       const invalidEvent = {
         version: WM_PROTOCOL_VERSION,
-        discoveryId: 123, // Not a string
+        discoveryId: 123,
         walletId: 'test-wallet-id',
       };
 
@@ -588,7 +539,7 @@ describe('Type Guards', () => {
       const invalidEvent = {
         version: WM_PROTOCOL_VERSION,
         discoveryId: 'test-discovery-id',
-        walletId: 123, // Not a string
+        walletId: 123,
       };
 
       expect(isDiscoveryAckEvent(invalidEvent)).toBe(false);

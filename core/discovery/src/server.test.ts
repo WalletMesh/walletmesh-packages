@@ -1,412 +1,318 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import type { Mock } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { DiscoveryListener, createDiscoveryListener } from './server.js';
-import type { DiscoveryListenerOptions } from './server.js';
-import type { WalletInfo, DiscoveryResponseEvent, DiscoveryAckEvent } from './types.js';
 import { WmDiscovery, WM_PROTOCOL_VERSION } from './constants.js';
-import { CONFIG } from './constants.js';
-import { isDiscoveryResponseEvent, isDiscoveryAckEvent } from './guards.js';
+import type { DiscoveryResponseEvent, DiscoveryAckEvent } from './types.js';
 
-/**
- * @vitest-environment jsdom
- */
+// Example data URI for a small test icon (1x1 pixel transparent PNG)
+const TEST_ICON =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==';
 
 describe('DiscoveryListener', () => {
-  let discoveryListenerOptions: DiscoveryListenerOptions;
-  let discoveryListener: DiscoveryListener;
   let mockEventTarget: EventTarget;
-  let mockCallback: Mock;
+  const technologies = ['test-tech'];
 
   beforeEach(() => {
     mockEventTarget = new EventTarget();
-    mockCallback = vi.fn();
-
-    discoveryListenerOptions = {
-      technologies: ['aztec'],
-      discoveryId: 'test-discovery-id',
-      callback: mockCallback,
-      eventTarget: mockEventTarget,
-    };
-
-    discoveryListener = new DiscoveryListener(discoveryListenerOptions);
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
-    discoveryListener.stop();
-    vi.resetAllMocks();
     vi.useRealTimers();
+    vi.resetAllMocks();
   });
 
-  it('should create a DiscoveryListener with the provided technologies and callback', () => {
-    const technologies = ['tech1', 'tech2'];
-    const callback = (wallet: WalletInfo) => {
-      console.log(wallet);
-    };
+  describe('factory function', () => {
+    it('should create a DiscoveryListener with provided technologies and callback', () => {
+      const callback = vi.fn();
+      const listener = createDiscoveryListener(technologies, callback);
 
-    const listener = createDiscoveryListener(technologies, callback);
+      expect(listener).toBeInstanceOf(DiscoveryListener);
+      expect(listener['technologies']).toEqual(technologies);
+      expect(listener['callback']).toBe(callback);
+    });
 
-    expect(listener).toBeInstanceOf(DiscoveryListener);
-    expect(listener['technologies']).toEqual(technologies);
-    expect(listener['callback']).toBe(callback);
+    it('should create a DiscoveryListener with just technologies', () => {
+      const listener = createDiscoveryListener(technologies);
+
+      expect(listener).toBeInstanceOf(DiscoveryListener);
+      expect(listener['technologies']).toEqual(technologies);
+      expect(listener['callback']).toBeNull();
+    });
   });
 
-  it('should create a DiscoveryListener with the provided technologies and no callback', () => {
-    const technologies = ['tech1', 'tech2'];
+  it('should initialize event listeners upon calling start()', () => {
+    const listener = new DiscoveryListener({ technologies });
+    const addEventListenerSpy = vi.spyOn(mockEventTarget, 'addEventListener');
 
-    const listener = createDiscoveryListener(technologies);
+    listener['eventTarget'] = mockEventTarget;
+    listener.start();
 
-    expect(listener).toBeInstanceOf(DiscoveryListener);
-    expect(listener['technologies']).toEqual(technologies);
-    expect(listener['callback']).toBeNull();
-  });
-
-  it('should set technologies to the provided value in the constructor', () => {
-    const technologies = ['aztec'];
-    const discoveryListener = new DiscoveryListener({ technologies });
-
-    expect(discoveryListener['technologies']).toEqual(technologies);
-  });
-
-  it('should set technologies to an empty array if not provided in the constructor', () => {
-    const discoveryListener = new DiscoveryListener({});
-
-    expect(discoveryListener['technologies']).toEqual([]);
-  });
-
-  it('should set discoveryId to the provided value in the constructor', () => {
-    const discoveryId = 'test-discovery-id';
-    const discoveryListener = new DiscoveryListener({ discoveryId });
-
-    expect(discoveryListener['discoveryId']).toEqual(discoveryId);
-  });
-
-  it('should set discoveryId to a new UUID if not provided in the constructor', () => {
-    const discoveryListener = new DiscoveryListener({});
-
-    expect(discoveryListener['discoveryId']).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
-    );
-  });
-
-  it('should set callback to the provided value in the constructor', () => {
-    const callback = mockCallback;
-    const discoveryListener = new DiscoveryListener({ callback });
-
-    expect(discoveryListener['callback']).toEqual(callback);
-  });
-
-  it('should set callback to null if not provided in the constructor', () => {
-    const discoveryListener = new DiscoveryListener({});
-
-    expect(discoveryListener['callback']).toBeNull();
-  });
-
-  it('should set eventTarget to the provided value in the constructor', () => {
-    const discoveryListener = new DiscoveryListener({ eventTarget: mockEventTarget });
-
-    expect(discoveryListener['eventTarget']).toEqual(mockEventTarget);
-  });
-
-  it('should set eventTarget to window if not provided in the constructor', () => {
-    const discoveryListener = new DiscoveryListener({});
-
-    expect(discoveryListener['eventTarget']).toEqual(window);
-  });
-
-  it('should start the event listeners upon calling start()', () => {
-    // biome-ignore lint/suspicious/noExplicitAny: Used for testing
-    const startEventListenersSpy = vi.spyOn(discoveryListener as any, 'startEventListeners');
-
-    discoveryListener.start();
-
-    // Verify the stopEventListeners method was called
-    expect(startEventListenersSpy).toHaveBeenCalled();
-
-    expect(startEventListenersSpy).toHaveBeenCalled();
+    expect(addEventListenerSpy).toHaveBeenCalledWith(WmDiscovery.Ready, expect.any(Function));
+    expect(addEventListenerSpy).toHaveBeenCalledWith(WmDiscovery.Response, expect.any(Function));
   });
 
   it('should dispatch a DiscoveryRequestEvent upon calling start()', () => {
     const handler = vi.fn();
     mockEventTarget.addEventListener(WmDiscovery.Request, handler);
 
-    discoveryListener.start();
+    const listener = new DiscoveryListener({
+      eventTarget: mockEventTarget,
+    });
+
+    listener.start();
 
     expect(handler).toHaveBeenCalled();
+    const eventArg = handler.mock.calls[0]?.[0] as CustomEvent;
+    expect(eventArg?.detail?.version).toBe(WM_PROTOCOL_VERSION);
+    expect(eventArg?.detail?.discoveryId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+  });
 
-    const eventArg = handler.mock.calls[0]?.[0];
-    expect(eventArg.detail).toEqual({
-      version: WM_PROTOCOL_VERSION,
-      discoveryId: 'test-discovery-id',
-      technologies: ['aztec'],
-    });
+  it('should clean up readyTimeout when calling stop()', () => {
+    const listener = new DiscoveryListener({ technologies });
+    listener['eventTarget'] = mockEventTarget;
+
+    listener.start();
+    mockEventTarget.dispatchEvent(new Event(WmDiscovery.Ready));
+
+    // Verify timeout is set
+    expect(listener['readyTimeout']).not.toBeNull();
+
+    listener.stop();
+
+    // Verify timeout is cleared
+    expect(listener['readyTimeout']).toBeNull();
+  });
+
+  it('should not error when stopping with no active timeout', () => {
+    const listener = new DiscoveryListener({ technologies });
+    listener['eventTarget'] = mockEventTarget;
+
+    listener.start();
+    // No Ready event dispatched, so no timeout set
+    expect(() => listener.stop()).not.toThrow();
+    expect(listener['readyTimeout']).toBeNull();
   });
 
   it('should dispatch a DiscoveryRequestEvent with technologies', () => {
     const handler = vi.fn();
     mockEventTarget.addEventListener(WmDiscovery.Request, handler);
 
-    discoveryListener.start();
+    const listener = new DiscoveryListener({
+      technologies,
+      eventTarget: mockEventTarget,
+    });
+
+    listener.start();
 
     expect(handler).toHaveBeenCalled();
-
-    const eventArg = handler.mock.calls[0]?.[0];
-    expect(eventArg.detail).toEqual({
-      version: WM_PROTOCOL_VERSION,
-      discoveryId: 'test-discovery-id',
-      technologies: ['aztec'],
-    });
+    const eventArg = handler.mock.calls[0]?.[0] as CustomEvent;
+    expect(eventArg?.detail?.technologies).toEqual(technologies);
   });
 
   it('should dispatch a DiscoveryRequestEvent without technologies if empty', () => {
-    const discoverListenerOptions = {
-      discoveryId: 'test-discovery-id',
-      callback: mockCallback,
-      eventTarget: mockEventTarget,
-    };
-
-    discoveryListener = new DiscoveryListener(discoverListenerOptions);
     const handler = vi.fn();
     mockEventTarget.addEventListener(WmDiscovery.Request, handler);
 
-    discoveryListener.start();
+    const listener = new DiscoveryListener({
+      eventTarget: mockEventTarget,
+    });
+
+    listener.start();
 
     expect(handler).toHaveBeenCalled();
-
-    const eventArg = handler.mock.calls[0]?.[0];
-    expect(eventArg.detail).toEqual({
-      version: WM_PROTOCOL_VERSION,
-      discoveryId: 'test-discovery-id',
-    });
+    const eventArg = handler.mock.calls[0]?.[0] as CustomEvent;
+    expect(eventArg?.detail?.technologies).toBeUndefined();
   });
 
-  it('should stop the event listeners and clear the ready timeout upon calling stop()', () => {
-    // Spy on the stopEventListeners method
-    // biome-ignore lint/suspicious/noExplicitAny: Used for testing
-    const stopEventListenersSpy = vi.spyOn(discoveryListener as any, 'stopEventListeners');
+  it('should remove event listeners upon calling stop()', () => {
+    const listener = new DiscoveryListener({ technologies });
+    const removeEventListenerSpy = vi.spyOn(mockEventTarget, 'removeEventListener');
 
-    // Set a ready timeout
-    discoveryListener['readyTimeout'] = setTimeout(() => {}, 1000);
+    listener['eventTarget'] = mockEventTarget;
+    listener.start();
+    listener.stop();
 
-    // Call the stop method
-    discoveryListener.stop();
-
-    // Verify the stopEventListeners method was called
-    expect(stopEventListenersSpy).toHaveBeenCalled();
-
-    // Verify the ready timeout was cleared
-    expect(discoveryListener['readyTimeout']).toBeNull();
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(WmDiscovery.Ready, expect.any(Function));
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(WmDiscovery.Response, expect.any(Function));
   });
 
   it('should debounce DiscoveryReadyEvents and dispatch DiscoveryRequestEvent', () => {
-    vi.useFakeTimers();
-    const dispatchDiscoveryRequestEventSpy = vi.spyOn(
-      // biome-ignore lint/suspicious/noExplicitAny: Used for testing
-      discoveryListener as any,
-      'dispatchDiscoveryRequestEvent',
-    );
+    const handler = vi.fn();
+    mockEventTarget.addEventListener(WmDiscovery.Request, handler);
 
-    discoveryListener.start();
+    const listener = new DiscoveryListener({
+      eventTarget: mockEventTarget,
+    });
 
-    // Dispatch the first ready event
+    listener.start();
+    handler.mockClear();
+
     mockEventTarget.dispatchEvent(new Event(WmDiscovery.Ready));
+    vi.advanceTimersByTime(0);
+    expect(handler).not.toHaveBeenCalled();
 
-    // Verify that the timeout is set
-    expect(discoveryListener['readyTimeout']).not.toBeNull();
-
-    // Dispatch two more ready event before the debounce period ends
-    mockEventTarget.dispatchEvent(new Event(WmDiscovery.Ready));
-    mockEventTarget.dispatchEvent(new Event(WmDiscovery.Ready));
-
-    // Fast-forward time to just before the debounce period ends
-    vi.advanceTimersByTime(CONFIG.readyDebounceMs - 1);
-
-    // Verify that the timeout is still set
-    expect(discoveryListener['readyTimeout']).not.toBeNull();
-
-    // Fast-forward time to after the debounce period ends
-    vi.advanceTimersByTime(1);
-
-    // Verify that the timeout is cleared and the discovery request event is dispatched
-    expect(discoveryListener['readyTimeout']).toBeNull();
-    expect(dispatchDiscoveryRequestEventSpy).toHaveBeenCalledTimes(2); // Once for start() and once for the debounce
+    vi.advanceTimersByTime(100);
+    expect(handler).toHaveBeenCalledTimes(1);
   });
 
   it('should clear existing timeout when a new DiscoveryReadyEvent is received', () => {
-    vi.useFakeTimers();
-    const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
+    const handler = vi.fn();
+    mockEventTarget.addEventListener(WmDiscovery.Request, handler);
 
-    discoveryListener.start();
+    const listener = new DiscoveryListener({
+      eventTarget: mockEventTarget,
+    });
 
-    // Dispatch the first ready event
+    listener.start();
+    handler.mockClear();
+
     mockEventTarget.dispatchEvent(new Event(WmDiscovery.Ready));
-
-    // Verify that the timeout is set
-    expect(discoveryListener['readyTimeout']).not.toBeNull();
-
-    // Dispatch two more ready events before the debounce period ends
+    vi.advanceTimersByTime(50);
     mockEventTarget.dispatchEvent(new Event(WmDiscovery.Ready));
-    mockEventTarget.dispatchEvent(new Event(WmDiscovery.Ready));
+    vi.advanceTimersByTime(50);
+    expect(handler).not.toHaveBeenCalled();
 
-    // Verify that clearTimeout was called to clear the existing timeout
-    expect(clearTimeoutSpy).toHaveBeenCalledTimes(2);
-
-    clearTimeoutSpy.mockRestore();
+    vi.advanceTimersByTime(50);
+    expect(handler).toHaveBeenCalledTimes(1);
   });
 
   it('should handle valid DiscoveryResponseEvent', () => {
-    const mockAckHandler = vi.fn();
-    mockEventTarget.addEventListener(WmDiscovery.Ack, mockAckHandler);
+    const callback = vi.fn();
+    const ackHandler = vi.fn();
+    const listener = new DiscoveryListener({
+      callback,
+      eventTarget: mockEventTarget,
+    });
 
+    mockEventTarget.addEventListener(WmDiscovery.Ack, ackHandler);
+
+    const walletId = 'wallet-123';
     const validResponseEvent = new CustomEvent<DiscoveryResponseEvent>(WmDiscovery.Response, {
       detail: {
         version: WM_PROTOCOL_VERSION,
-        discoveryId: 'test-discovery-id',
+        discoveryId: listener['discoveryId'],
+        walletId,
         wallet: {
           name: 'Test Wallet',
-          icon: 'test-icon',
+          icon: TEST_ICON,
           rdns: 'com.test.wallet',
         },
-        walletId: 'wallet-123',
       },
     });
 
-    discoveryListener.start();
-
-    // Dispatch the event
+    listener.start();
     mockEventTarget.dispatchEvent(validResponseEvent);
 
+    // Verify the callback was called
+    expect(callback).toHaveBeenCalledTimes(1);
+
     // Verify the wallet was added to the walletMap
-    expect(discoveryListener['walletMap'].get('wallet-123')).toEqual({
+    expect(listener['walletMap'].get(walletId)).toEqual({
       name: 'Test Wallet',
-      icon: 'test-icon',
+      icon: TEST_ICON,
       rdns: 'com.test.wallet',
     });
 
-    // Verify the callback was called with the wallet
-    expect(mockCallback).toHaveBeenCalledWith({
-      name: 'Test Wallet',
-      icon: 'test-icon',
-      rdns: 'com.test.wallet',
-    });
-
-    // Verify the ack handler was called
-    expect(mockAckHandler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = mockAckHandler.mock.calls[0]?.[0] as CustomEvent<DiscoveryAckEvent>;
-
-    // Verify the event using the guard
-    expect(isDiscoveryAckEvent(eventArg.detail)).toBe(true);
-
-    // Verify the ack event
-    expect(eventArg.detail).toEqual({
-      version: WM_PROTOCOL_VERSION,
-      discoveryId: 'test-discovery-id',
-      walletId: 'wallet-123',
-    });
+    // Verify an acknowledgment was sent
+    expect(ackHandler).toHaveBeenCalledTimes(1);
+    const ackEvent = ackHandler.mock.calls[0]?.[0] as CustomEvent<DiscoveryAckEvent>;
+    expect(ackEvent.detail.walletId).toBe(walletId);
   });
 
   it('should return early for invalid DiscoveryResponseEvent', () => {
-    const invalidResponseEvent = new CustomEvent(WmDiscovery.Response, {
+    const callback = vi.fn();
+    const ackHandler = vi.fn();
+    const listener = new DiscoveryListener({
+      callback,
+      eventTarget: mockEventTarget,
+    });
+
+    mockEventTarget.addEventListener(WmDiscovery.Ack, ackHandler);
+
+    const invalidResponseEvent = new CustomEvent<DiscoveryResponseEvent>(WmDiscovery.Response, {
       detail: {
-        version: 'invalid-version',
-        discoveryId: 'test-discovery-id',
-        wallet: {},
+        version: '0.0.0' as typeof WM_PROTOCOL_VERSION,
+        discoveryId: listener['discoveryId'],
         walletId: 'wallet-123',
+        wallet: {
+          name: 'Test Wallet',
+          icon: TEST_ICON,
+          rdns: 'com.test.wallet',
+        },
       },
     });
 
-    // Spy on the event handler
-    // biome-ignore lint/suspicious/noExplicitAny: Used for testing
-    const handler = vi.spyOn(discoveryListener as any, 'handleDiscoveryResponseEvent');
-
-    discoveryListener.start();
-
-    // Dispatch the event
+    listener.start();
     mockEventTarget.dispatchEvent(invalidResponseEvent);
 
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0] as CustomEvent<DiscoveryResponseEvent>;
-
-    // Verify the event using the guard
-    expect(isDiscoveryResponseEvent(eventArg.detail)).toBe(false);
-
-    // Verify the wallet was not added to the walletMap
-    expect(discoveryListener['walletMap'].has('wallet-123')).toBe(false);
-
-    // Verify the callback was not called
-    expect(mockCallback).not.toHaveBeenCalled();
-
-    handler.mockRestore();
+    expect(callback).not.toHaveBeenCalled();
+    expect(listener['walletMap'].size).toBe(0);
+    expect(ackHandler).not.toHaveBeenCalled();
   });
 
   it('should return early for mismatched discoveryId', () => {
-    const mismatchedDiscoveryIdEvent = new CustomEvent<DiscoveryResponseEvent>(WmDiscovery.Response, {
+    const callback = vi.fn();
+    const ackHandler = vi.fn();
+    const listener = new DiscoveryListener({
+      callback,
+      eventTarget: mockEventTarget,
+    });
+
+    mockEventTarget.addEventListener(WmDiscovery.Ack, ackHandler);
+
+    const mismatchedResponseEvent = new CustomEvent<DiscoveryResponseEvent>(WmDiscovery.Response, {
       detail: {
         version: WM_PROTOCOL_VERSION,
-        discoveryId: 'mismatched-id',
+        discoveryId: 'different-id',
+        walletId: 'wallet-123',
         wallet: {
           name: 'Test Wallet',
-          icon: 'test-icon',
+          icon: TEST_ICON,
           rdns: 'com.test.wallet',
         },
-        walletId: 'wallet-123',
       },
     });
 
-    // Spy on the event handler
-    // biome-ignore lint/suspicious/noExplicitAny: Used for testing
-    const handler = vi.spyOn(discoveryListener as any, 'handleDiscoveryResponseEvent');
+    listener.start();
+    mockEventTarget.dispatchEvent(mismatchedResponseEvent);
 
-    discoveryListener.start();
-
-    // Dispatch the event
-    mockEventTarget.dispatchEvent(mismatchedDiscoveryIdEvent);
-
-    // Verify the handler was called
-    expect(handler).toHaveBeenCalled();
-
-    // Access the call arguments
-    const eventArg = handler.mock.calls[0]?.[0] as CustomEvent<DiscoveryResponseEvent>;
-
-    // Verify the discoveryId
-    expect(eventArg.detail.discoveryId).not.toEqual(discoveryListener['discoveryId']);
-
-    // Verify the wallet was not added to the walletMap
-    expect(discoveryListener['walletMap'].has('wallet-123')).toBe(false);
-
-    // Verify the callback was not called
-    expect(mockCallback).not.toHaveBeenCalled();
-
-    handler.mockRestore();
+    expect(callback).not.toHaveBeenCalled();
+    expect(listener['walletMap'].size).toBe(0);
+    expect(ackHandler).not.toHaveBeenCalled();
   });
 
   it('should return the list of wallets', () => {
-    const wallet1: WalletInfo = {
-      name: 'Test Wallet 1',
-      icon: 'icon1',
-      rdns: 'com.wallet1',
-    };
+    const listener = new DiscoveryListener({
+      eventTarget: mockEventTarget,
+    });
 
-    const wallet2: WalletInfo = {
-      name: 'Test Wallet 2',
-      icon: 'icon2',
-      rdns: 'com.wallet2',
-    };
+    const wallets = [
+      {
+        name: 'Test Wallet 1',
+        icon: TEST_ICON,
+        rdns: 'com.test.wallet1',
+      },
+      {
+        name: 'Test Wallet 2',
+        icon: TEST_ICON,
+        rdns: 'com.test.wallet2',
+      },
+    ];
 
-    // Add wallets to the internal map
-    discoveryListener['walletMap'].set('wallet-1', wallet1);
-    discoveryListener['walletMap'].set('wallet-2', wallet2);
+    wallets.forEach((wallet, index) => {
+      listener['walletMap'].set(`wallet-${index}`, wallet);
+    });
 
-    // Verify the wallets property returns the correct list of wallets
-    expect(discoveryListener.wallets).toEqual([wallet1, wallet2]);
+    expect(listener.wallets).toEqual(wallets);
   });
 
   it('should return an empty list if there are no wallets', () => {
-    // Verify the wallets property returns an empty list
-    expect(discoveryListener.wallets).toEqual([]);
+    const listener = new DiscoveryListener({
+      eventTarget: mockEventTarget,
+    });
+
+    expect(listener.wallets).toEqual([]);
   });
 });

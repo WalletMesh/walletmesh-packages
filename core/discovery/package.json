@@ -25,5 +25,12 @@
     "docs": "typedoc",
     "preversion": "pnpm test",
     "version": "pnpm clean && pnpm build && pnpm run docs"
+  },
+  "devDependencies": {
+    "happy-dom": "^17.4.6",
+    "rimraf": "^5.0.5",
+    "typedoc": "^0.28.0",
+    "typedoc-plugin-markdown": "^4.0.0",
+    "typescript": "^5.4.0"
   }
 }
