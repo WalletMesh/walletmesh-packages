@@ -34,8 +34,9 @@ export { ContractArtifactCache } from './contractArtifactCache.js';
  * Error handling utilities for RPC communication
  * @see AztecWalletError
  * @see AztecWalletErrorMap
+ * @see AztecWalletErrorType
  */
-export { AztecWalletError, AztecWalletErrorMap } from './errors.js';
+export { AztecWalletError, AztecWalletErrorMap, AztecWalletErrorType } from './errors.js';
 
 /**
  * Type definitions for RPC interfaces

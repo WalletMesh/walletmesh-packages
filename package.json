@@ -10,10 +10,18 @@
     "type": "git",
     "url": "https://github.com/WalletMesh/walletmesh-packages.git"
   },
+  "pnpm": {
+    "neverBuiltDependencies": [
+      "@cypress/request"
+    ]
+  },
   "scripts": {
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
     "coverage": "pnpm -r run coverage",
+    "type-check": "pnpm -r run type-check",
+    "verify": "pnpm lint && pnpm type-check && pnpm test",
+    "docs": "pnpm -r run docs",
     "changeset": "changeset",
     "version": "changeset version && pnpm install --no-frozen-lockfile && pnpm run --filter \"[HEAD]\" docs",
     "publish": "changeset publish",

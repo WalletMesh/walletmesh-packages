@@ -6,9 +6,9 @@
 
 # Type Alias: AztecWalletContext
 
-> **AztecWalletContext**: `Record`\<`string`, `unknown`\> & `object`
+> **AztecWalletContext** = `Record`\<`string`, `unknown`\> & `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:133](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L133)
+Defined in: [aztec/rpc-wallet/src/types.ts:133](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L133)
 
 Holds the context passed through RPC middleware.
 

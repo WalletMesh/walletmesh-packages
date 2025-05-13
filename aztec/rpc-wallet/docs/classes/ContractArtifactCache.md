@@ -6,7 +6,7 @@
 
 # Class: ContractArtifactCache
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/contractArtifactCache.ts#L27)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/contractArtifactCache.ts#L27)
 
 Caches contract artifacts to optimize contract interactions.
 
@@ -24,11 +24,11 @@ This caching mechanism helps reduce:
 
 ## Constructors
 
-### new ContractArtifactCache()
+### Constructor
 
-> **new ContractArtifactCache**(`wallet`): [`ContractArtifactCache`](ContractArtifactCache.md)
+> **new ContractArtifactCache**(`wallet`): `ContractArtifactCache`
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/contractArtifactCache.ts#L37)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/contractArtifactCache.ts#L37)
 
 Creates a new ContractArtifactCache instance.
 
@@ -42,7 +42,7 @@ Wallet instance used to fetch contract data when cache misses occur
 
 #### Returns
 
-[`ContractArtifactCache`](ContractArtifactCache.md)
+`ContractArtifactCache`
 
 ## Methods
 
@@ -50,7 +50,7 @@ Wallet instance used to fetch contract data when cache misses occur
 
 > **getContractArtifact**(`contractAddress`): `Promise`\<`ContractArtifact`\>
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/contractArtifactCache.ts#L56)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/contractArtifactCache.ts#L56)
 
 Retrieves the contract artifact for a given contract address.
 First checks the cache, then falls back to fetching from the wallet if needed.

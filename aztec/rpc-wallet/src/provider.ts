@@ -1,5 +1,4 @@
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
-import type { RouterEventMap } from '@walletmesh/router';
 import { WalletRouterProvider } from '@walletmesh/router';
 import { AztecWalletError, AztecWalletErrorType } from './errors.js';
 import type { AztecChainId, AztecWalletMethodMap, TransactionParams } from './types.js';
@@ -68,7 +67,10 @@ export class AztecProvider extends WalletRouterProvider {
    * Updates the set of connected chains based on account availability.
    * @param params - Event parameters containing chain ID and changes
    */
-  private handleWalletStateChanged(params: RouterEventMap['wm_walletStateChanged']): void {
+  private handleWalletStateChanged(params: {
+    chainId: string;
+    changes: { accounts?: string[] };
+  }): void {
     const { chainId, changes } = params;
     const aztecChainId = chainId as AztecChainId;
 
@@ -88,9 +90,12 @@ export class AztecProvider extends WalletRouterProvider {
   /**
    * Handles session termination events from the router.
    * Cleans up session state and connected chains.
-   * @param params - Event parameters containing session ID
+   * @param params - Event parameters containing session ID and reason
    */
-  private handleSessionTerminated(params: RouterEventMap['wm_sessionTerminated']): void {
+  private handleSessionTerminated(params: {
+    sessionId: string;
+    reason: string;
+  }): void {
     const { sessionId } = params;
     if (sessionId === this.sessionId) {
       this.connectedChains.clear();

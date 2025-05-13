@@ -6,7 +6,7 @@
 
 # Interface: AztecWalletMethodMap
 
-Defined in: [aztec/rpc-wallet/src/types.ts:161](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L161)
+Defined in: [aztec/rpc-wallet/src/types.ts:161](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L161)
 
 Type for Aztec wallet RPC method map.
 This extends the AztecWalletBaseMethodMap with the methods used in by Aztec's `AccountWallet`
@@ -25,7 +25,7 @@ This extends the AztecWalletBaseMethodMap with the methods used in by Aztec's `A
 
 > **aztec\_addAuthWitness**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:196](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L196)
+Defined in: [aztec/rpc-wallet/src/types.ts:196](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L196)
 
 #### params
 
@@ -45,7 +45,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:196](https://github.com/WalletMesh/wa
 
 > **aztec\_addCapsule**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:184](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L184)
+Defined in: [aztec/rpc-wallet/src/types.ts:184](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L184)
 
 #### params
 
@@ -73,7 +73,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:184](https://github.com/WalletMesh/wa
 
 > **aztec\_addNote**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:270](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L270)
+Defined in: [aztec/rpc-wallet/src/types.ts:270](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L270)
 
 #### params
 
@@ -93,7 +93,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:270](https://github.com/WalletMesh/wa
 
 > **aztec\_addNullifiedNote**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:271](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L271)
+Defined in: [aztec/rpc-wallet/src/types.ts:271](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L271)
 
 #### params
 
@@ -113,7 +113,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:271](https://github.com/WalletMesh/wa
 
 > **aztec\_connect**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L88)
+Defined in: [aztec/rpc-wallet/src/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L88)
 
 Connects to the Aztec network.
 
@@ -135,7 +135,7 @@ A boolean indicating if the connection was successful
 
 > **aztec\_createAuthWit**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:198](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L198)
+Defined in: [aztec/rpc-wallet/src/types.ts:198](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L198)
 
 #### params
 
@@ -143,7 +143,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:198](https://github.com/WalletMesh/wa
 
 ##### params.intent
 
-> **intent**: `Fr` \| `Buffer` \| `IntentAction` \| `IntentInnerHash`
+> **intent**: `Fr` \| `Buffer`\<`ArrayBufferLike`\> \| `IntentAction` \| `IntentInnerHash`
 
 #### result
 
@@ -155,7 +155,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:198](https://github.com/WalletMesh/wa
 
 > **aztec\_createTxExecutionRequest**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:244](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L244)
+Defined in: [aztec/rpc-wallet/src/types.ts:244](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L244)
 
 #### params
 
@@ -175,7 +175,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:244](https://github.com/WalletMesh/wa
 
 > **aztec\_getAccount**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L94)
+Defined in: [aztec/rpc-wallet/src/types.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L94)
 
 Gets the account address from the wallet.
 
@@ -197,7 +197,7 @@ The account address as a string
 
 > **aztec\_getAddress**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:187](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L187)
+Defined in: [aztec/rpc-wallet/src/types.ts:187](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L187)
 
 #### result
 
@@ -209,7 +209,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:187](https://github.com/WalletMesh/wa
 
 > **aztec\_getAuthWitness**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:197](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L197)
+Defined in: [aztec/rpc-wallet/src/types.ts:197](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L197)
 
 #### params
 
@@ -229,7 +229,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:197](https://github.com/WalletMesh/wa
 
 > **aztec\_getBlock**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L163)
+Defined in: [aztec/rpc-wallet/src/types.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L163)
 
 #### params
 
@@ -249,7 +249,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:163](https://github.com/WalletMesh/wa
 
 > **aztec\_getBlockNumber**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:164](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L164)
+Defined in: [aztec/rpc-wallet/src/types.ts:164](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L164)
 
 #### result
 
@@ -261,7 +261,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:164](https://github.com/WalletMesh/wa
 
 > **aztec\_getChainId**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:165](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L165)
+Defined in: [aztec/rpc-wallet/src/types.ts:165](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L165)
 
 #### result
 
@@ -273,7 +273,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:165](https://github.com/WalletMesh/wa
 
 > **aztec\_getCompleteAddress**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:188](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L188)
+Defined in: [aztec/rpc-wallet/src/types.ts:188](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L188)
 
 #### result
 
@@ -285,7 +285,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:188](https://github.com/WalletMesh/wa
 
 > **aztec\_getContractClassLogs**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:275](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L275)
+Defined in: [aztec/rpc-wallet/src/types.ts:275](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L275)
 
 #### params
 
@@ -305,7 +305,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:275](https://github.com/WalletMesh/wa
 
 > **aztec\_getContractClassMetadata**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:218](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L218)
+Defined in: [aztec/rpc-wallet/src/types.ts:218](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L218)
 
 #### params
 
@@ -329,7 +329,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:218](https://github.com/WalletMesh/wa
 
 > **aztec\_getContractMetadata**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:217](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L217)
+Defined in: [aztec/rpc-wallet/src/types.ts:217](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L217)
 
 #### params
 
@@ -349,7 +349,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:217](https://github.com/WalletMesh/wa
 
 > **aztec\_getContracts**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:216](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L216)
+Defined in: [aztec/rpc-wallet/src/types.ts:216](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L216)
 
 #### result
 
@@ -361,7 +361,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:216](https://github.com/WalletMesh/wa
 
 > **aztec\_getCurrentBaseFees**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:170](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L170)
+Defined in: [aztec/rpc-wallet/src/types.ts:170](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L170)
 
 #### result
 
@@ -373,7 +373,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:170](https://github.com/WalletMesh/wa
 
 > **aztec\_getL1ToL2MembershipWitness**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:178](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L178)
+Defined in: [aztec/rpc-wallet/src/types.ts:178](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L178)
 
 #### params
 
@@ -401,7 +401,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:178](https://github.com/WalletMesh/wa
 
 > **aztec\_getNodeInfo**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:167](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L167)
+Defined in: [aztec/rpc-wallet/src/types.ts:167](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L167)
 
 #### result
 
@@ -413,7 +413,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:167](https://github.com/WalletMesh/wa
 
 > **aztec\_getNotes**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:269](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L269)
+Defined in: [aztec/rpc-wallet/src/types.ts:269](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L269)
 
 #### params
 
@@ -433,7 +433,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:269](https://github.com/WalletMesh/wa
 
 > **aztec\_getPrivateEvents**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:276](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L276)
+Defined in: [aztec/rpc-wallet/src/types.ts:276](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L276)
 
 #### params
 
@@ -465,7 +465,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:276](https://github.com/WalletMesh/wa
 
 > **aztec\_getProvenBlockNumber**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L168)
+Defined in: [aztec/rpc-wallet/src/types.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L168)
 
 #### result
 
@@ -477,7 +477,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:168](https://github.com/WalletMesh/wa
 
 > **aztec\_getPublicEvents**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:280](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L280)
+Defined in: [aztec/rpc-wallet/src/types.ts:280](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L280)
 
 #### params
 
@@ -505,7 +505,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:280](https://github.com/WalletMesh/wa
 
 > **aztec\_getPublicLogs**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:274](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L274)
+Defined in: [aztec/rpc-wallet/src/types.ts:274](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L274)
 
 #### params
 
@@ -525,7 +525,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:274](https://github.com/WalletMesh/wa
 
 > **aztec\_getPublicStorageAt**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:240](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L240)
+Defined in: [aztec/rpc-wallet/src/types.ts:240](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L240)
 
 #### params
 
@@ -549,7 +549,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:240](https://github.com/WalletMesh/wa
 
 > **aztec\_getPXEInfo**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:169](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L169)
+Defined in: [aztec/rpc-wallet/src/types.ts:169](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L169)
 
 #### result
 
@@ -561,7 +561,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:169](https://github.com/WalletMesh/wa
 
 > **aztec\_getRegisteredAccounts**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:193](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L193)
+Defined in: [aztec/rpc-wallet/src/types.ts:193](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L193)
 
 #### result
 
@@ -573,7 +573,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:193](https://github.com/WalletMesh/wa
 
 > **aztec\_getScopes**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:174](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L174)
+Defined in: [aztec/rpc-wallet/src/types.ts:174](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L174)
 
 #### result
 
@@ -585,7 +585,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:174](https://github.com/WalletMesh/wa
 
 > **aztec\_getSenders**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:211](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L211)
+Defined in: [aztec/rpc-wallet/src/types.ts:211](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L211)
 
 #### result
 
@@ -597,7 +597,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:211](https://github.com/WalletMesh/wa
 
 > **aztec\_getTxEffect**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:249](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L249)
+Defined in: [aztec/rpc-wallet/src/types.ts:249](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L249)
 
 #### params
 
@@ -617,7 +617,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:249](https://github.com/WalletMesh/wa
 
 > **aztec\_getTxReceipt**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:250](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L250)
+Defined in: [aztec/rpc-wallet/src/types.ts:250](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L250)
 
 #### params
 
@@ -637,7 +637,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:250](https://github.com/WalletMesh/wa
 
 > **aztec\_getVersion**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:166](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L166)
+Defined in: [aztec/rpc-wallet/src/types.ts:166](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L166)
 
 #### result
 
@@ -649,7 +649,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:166](https://github.com/WalletMesh/wa
 
 > **aztec\_isL1ToL2MessageSynced**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:177](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L177)
+Defined in: [aztec/rpc-wallet/src/types.ts:177](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L177)
 
 #### params
 
@@ -669,7 +669,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:177](https://github.com/WalletMesh/wa
 
 > **aztec\_proveTx**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:245](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L245)
+Defined in: [aztec/rpc-wallet/src/types.ts:245](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L245)
 
 #### params
 
@@ -693,7 +693,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:245](https://github.com/WalletMesh/wa
 
 > **aztec\_registerAccount**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:189](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L189)
+Defined in: [aztec/rpc-wallet/src/types.ts:189](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L189)
 
 #### params
 
@@ -717,7 +717,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:189](https://github.com/WalletMesh/wa
 
 > **aztec\_registerContract**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:228](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L228)
+Defined in: [aztec/rpc-wallet/src/types.ts:228](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L228)
 
 Registers a contract instance in the user's PXE.
 
@@ -751,7 +751,7 @@ True if registration was successful
 
 > **aztec\_registerContractClass**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:238](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L238)
+Defined in: [aztec/rpc-wallet/src/types.ts:238](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L238)
 
 Registers a contract class in the user's PXE.
 
@@ -781,7 +781,7 @@ True if registration was successful
 
 > **aztec\_registerSender**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:210](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L210)
+Defined in: [aztec/rpc-wallet/src/types.ts:210](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L210)
 
 Registers a contact in the user's PXE
 
@@ -811,7 +811,7 @@ True if registration was successful
 
 > **aztec\_removeSender**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L212)
+Defined in: [aztec/rpc-wallet/src/types.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L212)
 
 #### params
 
@@ -831,7 +831,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:212](https://github.com/WalletMesh/wa
 
 > **aztec\_sendTransaction**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L101)
+Defined in: [aztec/rpc-wallet/src/types.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L101)
 
 Sends transactions to the Aztec network.
 
@@ -861,7 +861,7 @@ The transaction hash as a string
 
 > **aztec\_sendTx**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:243](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L243)
+Defined in: [aztec/rpc-wallet/src/types.ts:243](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L243)
 
 #### params
 
@@ -881,7 +881,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:243](https://github.com/WalletMesh/wa
 
 > **aztec\_setScopes**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:173](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L173)
+Defined in: [aztec/rpc-wallet/src/types.ts:173](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L173)
 
 #### params
 
@@ -901,7 +901,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:173](https://github.com/WalletMesh/wa
 
 > **aztec\_simulateTransaction**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L111)
+Defined in: [aztec/rpc-wallet/src/types.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L111)
 
 Simulates a transaction without executing it.
 
@@ -931,7 +931,7 @@ The simulation result
 
 > **aztec\_simulateTx**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:252](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L252)
+Defined in: [aztec/rpc-wallet/src/types.ts:252](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L252)
 
 #### params
 
@@ -971,7 +971,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:252](https://github.com/WalletMesh/wa
 
 > **aztec\_simulateUnconstrained**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:263](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L263)
+Defined in: [aztec/rpc-wallet/src/types.ts:263](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L263)
 
 #### params
 
@@ -1003,7 +1003,7 @@ Defined in: [aztec/rpc-wallet/src/types.ts:263](https://github.com/WalletMesh/wa
 
 > **wm\_getSupportedMethods**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:120](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L120)
+Defined in: [aztec/rpc-wallet/src/types.ts:120](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L120)
 
 Returns the list of supported methods for the wallet.
 
