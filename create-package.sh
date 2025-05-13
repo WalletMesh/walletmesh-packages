@@ -56,3 +56,13 @@ cp -r "$TEMPLATE_DIR"/* "$PACKAGE_DIR"/
 
 # Update package.json
 jq ".name = \"$PACKAGE_NAME\"" "$TEMPLATE_DIR/package.json" > "$PACKAGE_DIR/package.json"
+
+# Update module name in files
+sed -i "s/@walletmesh\/package-name/$PACKAGE_NAME/g" "$PACKAGE_DIR/README.md"
+sed -i "s/@walletmesh\/package-name/$PACKAGE_NAME/g" "$PACKAGE_DIR/CHANGELOG.md"
+sed -i "s/@walletmesh\/package-name/$PACKAGE_NAME/g" "$PACKAGE_DIR/src/index.ts"
+sed -i "s/@walletmesh\/package-name/$PACKAGE_NAME/g" "$PACKAGE_DIR/src/index.test.ts"
+
+# Print success message
+echo "Package $PACKAGE_NAME created successfully at $PACKAGE_DIR"
+echo "You can now start developing your package!"
