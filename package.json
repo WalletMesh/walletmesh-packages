@@ -10,6 +10,11 @@
     "type": "git",
     "url": "https://github.com/WalletMesh/walletmesh-packages.git"
   },
+  "pnpm": {
+    "neverBuiltDependencies": [
+      "@cypress/request"
+    ]
+  },
   "scripts": {
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
@@ -26,7 +31,7 @@
     "format": "biome format",
     "format:fix": "biome format --write",
     "create-package": "bash create-package.sh",
-    "update-aztec-deps": "tsx scripts/update-aztec-deps.ts",
+    "update-aztec-deps": "tsx scripts/update-aztec-deps.ts"
   },
   "license": "Apache-2.0",
   "devDependencies": {
