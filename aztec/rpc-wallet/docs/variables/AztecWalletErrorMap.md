@@ -6,8 +6,8 @@
 
 # Variable: AztecWalletErrorMap
 
-> `const` **AztecWalletErrorMap**: `Record`\<`AztecWalletErrorType`, \{ `code`: `number`; `message`: `string`; \}\>
+> `const` **AztecWalletErrorMap**: `Record`\<[`AztecWalletErrorType`](../type-aliases/AztecWalletErrorType.md), \{ `code`: `number`; `message`: `string`; \}\>
 
-Defined in: [aztec/rpc-wallet/src/errors.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/errors.ts#L37)
+Defined in: [aztec/rpc-wallet/src/errors.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/errors.ts#L38)
 
 Map of error codes and messages for Aztec Wallet RPC errors.

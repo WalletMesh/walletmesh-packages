@@ -23,6 +23,7 @@
 - [AztecChainId](type-aliases/AztecChainId.md)
 - [AztecChainWalletMiddleware](type-aliases/AztecChainWalletMiddleware.md)
 - [AztecWalletContext](type-aliases/AztecWalletContext.md)
+- [AztecWalletErrorType](type-aliases/AztecWalletErrorType.md)
 - [AztecWalletMethodHandler](type-aliases/AztecWalletMethodHandler.md)
 - [AztecWalletMiddleware](type-aliases/AztecWalletMiddleware.md)
 - [AztecWalletRouterClient](type-aliases/AztecWalletRouterClient.md)
@@ -32,3 +33,4 @@
 ## Variables
 
 - [AztecWalletErrorMap](variables/AztecWalletErrorMap.md)
+- [AztecWalletErrorType](variables/AztecWalletErrorType.md)

@@ -6,17 +6,23 @@
 
 # Type Alias: AztecWalletMethodHandler()\<T, M, C\>
 
-> **AztecWalletMethodHandler**\<`T`, `M`, `C`\>: (`context`, `params`, `accountWallet`) => `Promise`\<`T`\[`M`\]\[`"result"`\]\> \| `T`\[`M`\]\[`"result"`\]
+> **AztecWalletMethodHandler**\<`T`, `M`, `C`\> = (`context`, `params`, `accountWallet`) => `Promise`\<`T`\[`M`\]\[`"result"`\]\> \| `T`\[`M`\]\[`"result"`\]
 
-Defined in: [aztec/rpc-wallet/src/types.ts:286](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L286)
+Defined in: [aztec/rpc-wallet/src/types.ts:286](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L286)
 
 ## Type Parameters
 
-• **T** *extends* [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
+### T
 
-• **M** *extends* keyof `T`
+`T` *extends* [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
 
-• **C** *extends* [`AztecWalletContext`](AztecWalletContext.md)
+### M
+
+`M` *extends* keyof `T`
+
+### C
+
+`C` *extends* [`AztecWalletContext`](AztecWalletContext.md)
 
 ## Parameters
 

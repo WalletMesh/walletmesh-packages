@@ -27,6 +27,7 @@ export const AztecWalletErrorType = {
 /**
  * Type representing valid Aztec Wallet RPC error types.
  * @public
+ * @typeParam AztecWalletErrorType - String literal union of error type values
  */
 export type AztecWalletErrorType = (typeof AztecWalletErrorType)[keyof typeof AztecWalletErrorType];
 

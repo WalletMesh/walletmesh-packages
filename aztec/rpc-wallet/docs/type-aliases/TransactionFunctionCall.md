@@ -6,28 +6,38 @@
 
 # Type Alias: TransactionFunctionCall
 
-> **TransactionFunctionCall**: `object`
+> **TransactionFunctionCall** = `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L49)
+Defined in: [aztec/rpc-wallet/src/types.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L49)
 
 Represents a single function call to a contract.
 
-## Type declaration
+## Properties
 
 ### args
 
 > **args**: `unknown`[]
 
+Defined in: [aztec/rpc-wallet/src/types.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L55)
+
 The arguments to pass to the function
+
+***
 
 ### contractAddress
 
 > **contractAddress**: `string`
 
+Defined in: [aztec/rpc-wallet/src/types.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L51)
+
 The address of the contract to interact with
+
+***
 
 ### functionName
 
 > **functionName**: `string`
+
+Defined in: [aztec/rpc-wallet/src/types.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L53)
 
 The name of the function to call

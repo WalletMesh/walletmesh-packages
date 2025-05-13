@@ -6,7 +6,7 @@
 
 # Class: AztecProvider
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L48)
+Defined in: [aztec/rpc-wallet/src/provider.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/provider.ts#L47)
 
 Provider for interacting with multiple Aztec chains through WalletMesh router.
 
@@ -51,25 +51,25 @@ const [account, contracts, blockNumber] = await provider
 
 ## Extends
 
-- `WalletRouterProvider`
+- [`WalletRouterProvider`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/classes/WalletRouterProvider.md)
 
 ## Constructors
 
-### new AztecProvider()
+### Constructor
 
-> **new AztecProvider**(`transport`): [`AztecProvider`](AztecProvider.md)
+> **new AztecProvider**(`transport`): `AztecProvider`
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L52)
+Defined in: [aztec/rpc-wallet/src/provider.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/provider.ts#L51)
 
 #### Parameters
 
 ##### transport
 
-`JSONRPCTransport`
+[`JSONRPCTransport`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCTransport.md)
 
 #### Returns
 
-[`AztecProvider`](AztecProvider.md)
+`AztecProvider`
 
 #### Overrides
 
@@ -103,8 +103,8 @@ a successful connection.
 
 ##### See
 
- - [connect](AztecProvider.md#connect) for establishing a session
- - [disconnect](AztecProvider.md#disconnect) for ending a session
+ - [connect](#connect) for establishing a session
+ - [disconnect](#disconnect) for ending a session
 
 ##### Returns
 
@@ -128,11 +128,11 @@ Defined in: core/jsonrpc/dist/node.d.ts:19
 
 ##### middleware
 
-`JSONRPCMiddleware`\<`RouterMethodMap`, `RouterContext`\>
+[`JSONRPCMiddleware`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/type-aliases/JSONRPCMiddleware.md)\<[`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md), `RouterContext`\>
 
 #### Returns
 
-`Function`
+> (): `void`
 
 ##### Returns
 
@@ -146,7 +146,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:19
 
 ### bulkCall()
 
-> **bulkCall**\<`T`\>(`chainId`, `calls`, `timeout`?): `Promise`\<`MethodResults`\<`T`\>\>
+> **bulkCall**\<`T`\>(`chainId`, `calls`, `timeout?`): `Promise`\<[`MethodResults`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/MethodResults.md)\<`T`\>\>
 
 Defined in: core/router/dist/provider.d.ts:200
 
@@ -155,7 +155,9 @@ More efficient than multiple individual calls for related operations.
 
 #### Type Parameters
 
-• **T** *extends* readonly `MethodCall`[]
+##### T
+
+`T` *extends* readonly [`MethodCall`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/MethodCall.md)\<keyof [`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\>[]
 
 #### Parameters
 
@@ -180,7 +182,7 @@ Optional timeout in milliseconds. If the request takes longer,
 
 #### Returns
 
-`Promise`\<`MethodResults`\<`T`\>\>
+`Promise`\<[`MethodResults`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/MethodResults.md)\<`T`\>\>
 
 Array of results from the wallet method calls
 
@@ -206,7 +208,7 @@ If the request times out
 
 #### See
 
-RouterMethodMap\['wm\_bulkCall'\] for detailed request/response types
+[\['wm\_bulkCall'\]](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md) for detailed request/response types
 
 #### Example
 
@@ -229,7 +231,7 @@ const [accounts, balance] = await provider.bulkCall('eip155:1', [
 
 ### call()
 
-> **call**\<`M`\>(`chainId`, `call`, `timeout`?): `Promise`\<`RouterMethodMap`\[`M`\]\[`"result"`\]\>
+> **call**\<`M`\>(`chainId`, `call`, `timeout?`): `Promise`\<[`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
 
 Defined in: core/router/dist/provider.d.ts:171
 
@@ -238,7 +240,9 @@ Routes the call to the appropriate wallet client based on chain ID.
 
 #### Type Parameters
 
-• **M** *extends* keyof `RouterMethodMap`
+##### M
+
+`M` *extends* keyof [`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)
 
 #### Parameters
 
@@ -250,7 +254,7 @@ Target chain identifier (must match the chain ID used to connect)
 
 ##### call
 
-`MethodCall`\<`M`\>
+[`MethodCall`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/MethodCall.md)\<`M`\>
 
 Method call details including name and parameters
 
@@ -263,7 +267,7 @@ Optional timeout in milliseconds. If the request takes longer,
 
 #### Returns
 
-`Promise`\<`RouterMethodMap`\[`M`\]\[`"result"`\]\>
+`Promise`\<[`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
 
 Result from the wallet method call with proper type inference
 
@@ -289,7 +293,7 @@ If the request times out
 
 #### See
 
-RouterMethodMap\['wm\_call'\] for detailed request/response types
+[\['wm\_call'\]](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md) for detailed request/response types
 
 #### Example
 
@@ -317,13 +321,15 @@ const txHash = await provider.call('eip155:1', {
 
 ### callMethod()
 
-> **callMethod**\<`M`\>(`method`, `params`?, `timeoutInSeconds`?): `Promise`\<`RouterMethodMap`\[`M`\]\[`"result"`\]\>
+> **callMethod**\<`M`\>(`method`, `params?`, `timeoutInSeconds?`): `Promise`\<[`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
 
 Defined in: core/jsonrpc/dist/node.d.ts:15
 
 #### Type Parameters
 
-• **M** *extends* keyof `RouterMethodMap`
+##### M
+
+`M` *extends* keyof [`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)
 
 #### Parameters
 
@@ -333,7 +339,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:15
 
 ##### params?
 
-`RouterMethodMap`\[`M`\]\[`"params"`\]
+[`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\[`M`\]\[`"params"`\]
 
 ##### timeoutInSeconds?
 
@@ -341,7 +347,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:15
 
 #### Returns
 
-`Promise`\<`RouterMethodMap`\[`M`\]\[`"result"`\]\>
+`Promise`\<[`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
 
 #### Inherited from
 
@@ -351,7 +357,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:15
 
 ### chain()
 
-> **chain**(`chainId`): `OperationBuilder`
+> **chain**(`chainId`): [`OperationBuilder`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/classes/OperationBuilder.md)\<readonly \[\]\>
 
 Defined in: core/router/dist/provider.d.ts:243
 
@@ -368,7 +374,7 @@ The chain to execute operations on
 
 #### Returns
 
-`OperationBuilder`
+[`OperationBuilder`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/classes/OperationBuilder.md)\<readonly \[\]\>
 
 A new operation builder instance
 
@@ -406,7 +412,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:25
 
 ### connect()
 
-> **connect**(`permissions`, `timeout`?): `Promise`\<\{ `permissions`: `HumanReadableChainPermissions`; `sessionId`: `string`; \}\>
+> **connect**(`permissions`, `timeout?`): `Promise`\<\{ `permissions`: [`HumanReadableChainPermissions`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md); `sessionId`: `string`; \}\>
 
 Defined in: core/router/dist/provider.d.ts:87
 
@@ -417,7 +423,7 @@ Establishes a session and requests method permissions for each chain.
 
 ##### permissions
 
-`ChainPermissions`
+[`ChainPermissions`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/ChainPermissions.md)
 
 Map of chain IDs to their requested permissions
 
@@ -430,7 +436,7 @@ Optional timeout in milliseconds. If the request takes longer,
 
 #### Returns
 
-`Promise`\<\{ `permissions`: `HumanReadableChainPermissions`; `sessionId`: `string`; \}\>
+`Promise`\<\{ `permissions`: [`HumanReadableChainPermissions`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md); `sessionId`: `string`; \}\>
 
 Session ID that can be used for future requests
 
@@ -448,7 +454,7 @@ If the request times out
 
 #### See
 
-RouterMethodMap\['wm\_connect'\] for detailed request/response types
+[\['wm\_connect'\]](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md) for detailed request/response types
 
 #### Example
 
@@ -473,7 +479,7 @@ const { sessionId, permissions } = await provider.connect({
 
 ### disconnect()
 
-> **disconnect**(`timeout`?): `Promise`\<`void`\>
+> **disconnect**(`timeout?`): `Promise`\<`void`\>
 
 Defined in: core/router/dist/provider.d.ts:101
 
@@ -503,7 +509,7 @@ If the request times out
 
 #### See
 
-RouterMethodMap\['wm\_disconnect'\] for detailed request/response types
+[\['wm\_disconnect'\]](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md) for detailed request/response types
 
 #### Inherited from
 
@@ -519,7 +525,9 @@ Defined in: core/jsonrpc/dist/node.d.ts:18
 
 #### Type Parameters
 
-• **K** *extends* keyof `RouterEventMap`
+##### K
+
+`K` *extends* keyof [`RouterEventMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterEventMap.md)
 
 #### Parameters
 
@@ -529,7 +537,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:18
 
 ##### params
 
-`RouterEventMap`\[`K`\]
+[`RouterEventMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterEventMap.md)\[`K`\]
 
 #### Returns
 
@@ -545,7 +553,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:18
 
 > **getAccount**(`chainId`): `Promise`\<`string`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L110)
+Defined in: [aztec/rpc-wallet/src/provider.ts:115](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/provider.ts#L115)
 
 #### Parameters
 
@@ -561,7 +569,7 @@ Defined in: [aztec/rpc-wallet/src/provider.ts:110](https://github.com/WalletMesh
 
 ### getPermissions()
 
-> **getPermissions**(`chainIds`?, `timeout`?): `Promise`\<`HumanReadableChainPermissions`\>
+> **getPermissions**(`chainIds?`, `timeout?`): `Promise`\<[`HumanReadableChainPermissions`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md)\>
 
 Defined in: core/router/dist/provider.d.ts:115
 
@@ -585,7 +593,7 @@ Optional timeout in milliseconds. If the request takes longer,
 
 #### Returns
 
-`Promise`\<`HumanReadableChainPermissions`\>
+`Promise`\<[`HumanReadableChainPermissions`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md)\>
 
 Record of chain IDs to their permissions with human-readable descriptions
 
@@ -599,8 +607,8 @@ If the request times out
 
 #### See
 
- - HumanReadableChainPermissions for return type details
- - RouterMethodMap\['wm\_getPermissions'\] for detailed request/response types
+ - [HumanReadableChainPermissions](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md) for return type details
+ - [\['wm\_getPermissions'\]](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md) for detailed request/response types
 
 #### Inherited from
 
@@ -612,7 +620,7 @@ If the request times out
 
 > **getSupportedChains**(): `` `aztec:${string}` ``[]
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L106)
+Defined in: [aztec/rpc-wallet/src/provider.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/provider.ts#L111)
 
 Gets the list of currently connected chain IDs.
 
@@ -626,7 +634,7 @@ Array of connected chain IDs
 
 ### getSupportedMethods()
 
-> **getSupportedMethods**(`chainIds`?, `timeout`?): `Promise`\<`Record`\<`string`, `string`[]\>\>
+> **getSupportedMethods**(`chainIds?`, `timeout?`): `Promise`\<`Record`\<`string`, `string`[]\>\>
 
 Defined in: core/router/dist/provider.d.ts:226
 
@@ -668,7 +676,7 @@ If the request times out
 
 #### See
 
-RouterMethodMap\['wm\_getSupportedMethods'\] for detailed request/response types
+[\['wm\_getSupportedMethods'\]](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md) for detailed request/response types
 
 #### Example
 
@@ -697,7 +705,9 @@ Defined in: core/jsonrpc/dist/node.d.ts:16
 
 #### Type Parameters
 
-• **M** *extends* keyof `RouterMethodMap`
+##### M
+
+`M` *extends* keyof [`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)
 
 #### Parameters
 
@@ -707,7 +717,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:16
 
 ##### params
 
-`RouterMethodMap`\[`M`\]\[`"params"`\]
+[`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\[`M`\]\[`"params"`\]
 
 #### Returns
 
@@ -727,7 +737,9 @@ Defined in: core/jsonrpc/dist/node.d.ts:17
 
 #### Type Parameters
 
-• **K** *extends* keyof `RouterEventMap`
+##### K
+
+`K` *extends* keyof [`RouterEventMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterEventMap.md)
 
 #### Parameters
 
@@ -741,7 +753,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:17
 
 #### Returns
 
-`Function`
+> (): `void`
 
 ##### Returns
 
@@ -779,7 +791,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:20
 
 > **registerContract**(`chainId`, `params`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:157](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L157)
+Defined in: [aztec/rpc-wallet/src/provider.ts:162](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/provider.ts#L162)
 
 Registers a contract instance with the wallet.
 
@@ -795,7 +807,7 @@ ID of the chain where contract is deployed
 
 Contract registration parameters
 
-###### artifact
+###### artifact?
 
 `ContractArtifact`
 
@@ -817,7 +829,7 @@ If registration fails
 
 > **registerContractClass**(`chainId`, `params`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:170](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L170)
+Defined in: [aztec/rpc-wallet/src/provider.ts:175](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/provider.ts#L175)
 
 Registers a contract class with the wallet.
 
@@ -855,7 +867,9 @@ Defined in: core/jsonrpc/dist/node.d.ts:13
 
 #### Type Parameters
 
-• **M** *extends* keyof `RouterMethodMap`
+##### M
+
+`M` *extends* keyof [`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)
 
 #### Parameters
 
@@ -865,7 +879,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:13
 
 ##### handler
 
-(`context`, `params`) => `Promise`\<`RouterMethodMap`\[`M`\]\[`"result"`\]\>
+(`context`, `params`) => `Promise`\<[`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
 
 #### Returns
 
@@ -881,7 +895,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:13
 
 > **registerSender**(`chainId`, `params`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L183)
+Defined in: [aztec/rpc-wallet/src/provider.ts:188](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/provider.ts#L188)
 
 Registers a transaction sender with the wallet.
 
@@ -919,7 +933,9 @@ Defined in: core/jsonrpc/dist/node.d.ts:14
 
 #### Type Parameters
 
-• **M** *extends* keyof `RouterMethodMap`
+##### M
+
+`M` *extends* keyof [`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)
 
 #### Parameters
 
@@ -929,7 +945,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:14
 
 ##### serializer
 
-`JSONRPCSerializer`\<`RouterMethodMap`\[`M`\]\[`"params"`\], `RouterMethodMap`\[`M`\]\[`"result"`\]\>
+[`JSONRPCSerializer`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCSerializer.md)\<[`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\[`M`\]\[`"params"`\], [`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
 
 #### Returns
 
@@ -945,7 +961,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:14
 
 > **sendTransaction**(`chainId`, `params`): `Promise`\<`string`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L125)
+Defined in: [aztec/rpc-wallet/src/provider.ts:130](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/provider.ts#L130)
 
 Sends a transaction to the specified chain.
 
@@ -1007,7 +1023,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:11
 
 ##### serializer
 
-`JSONRPCSerializer`\<`unknown`, `unknown`\>
+[`JSONRPCSerializer`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCSerializer.md)\<`unknown`, `unknown`\>
 
 #### Returns
 
@@ -1023,7 +1039,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:11
 
 > **simulateTransaction**(`chainId`, `params`): `Promise`\<`unknown`\>
 
-Defined in: [aztec/rpc-wallet/src/provider.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/provider.ts#L140)
+Defined in: [aztec/rpc-wallet/src/provider.ts:145](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/provider.ts#L145)
 
 Simulates a transaction without submitting it.
 
@@ -1055,7 +1071,7 @@ If simulation fails
 
 ### updatePermissions()
 
-> **updatePermissions**(`permissions`, `timeout`?): `Promise`\<`HumanReadableChainPermissions`\>
+> **updatePermissions**(`permissions`, `timeout?`): `Promise`\<[`HumanReadableChainPermissions`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md)\>
 
 Defined in: core/router/dist/provider.d.ts:137
 
@@ -1079,7 +1095,7 @@ Optional timeout in milliseconds. If the request takes longer,
 
 #### Returns
 
-`Promise`\<`HumanReadableChainPermissions`\>
+`Promise`\<[`HumanReadableChainPermissions`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md)\>
 
 #### Throws
 
@@ -1095,7 +1111,7 @@ If the request times out
 
 #### See
 
-RouterMethodMap\['wm\_updatePermissions'\] for detailed request/response types
+[\['wm\_updatePermissions'\]](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md) for detailed request/response types
 
 #### Example
 

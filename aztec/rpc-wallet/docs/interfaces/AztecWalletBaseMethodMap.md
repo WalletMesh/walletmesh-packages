@@ -6,7 +6,7 @@
 
 # Interface: AztecWalletBaseMethodMap
 
-Defined in: [aztec/rpc-wallet/src/types.ts:83](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L83)
+Defined in: [aztec/rpc-wallet/src/types.ts:83](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L83)
 
 A mapping of JSON-RPC methods to their parameters and return types for Aztec Wallets.
 
@@ -30,7 +30,7 @@ This extends the base WalletMethodMap with Aztec-specific methods.
 
 > **aztec\_connect**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L88)
+Defined in: [aztec/rpc-wallet/src/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L88)
 
 Connects to the Aztec network.
 
@@ -48,7 +48,7 @@ A boolean indicating if the connection was successful
 
 > **aztec\_getAccount**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L94)
+Defined in: [aztec/rpc-wallet/src/types.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L94)
 
 Gets the account address from the wallet.
 
@@ -66,7 +66,7 @@ The account address as a string
 
 > **aztec\_sendTransaction**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L101)
+Defined in: [aztec/rpc-wallet/src/types.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L101)
 
 Sends transactions to the Aztec network.
 
@@ -92,7 +92,7 @@ The transaction hash as a string
 
 > **aztec\_simulateTransaction**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L111)
+Defined in: [aztec/rpc-wallet/src/types.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L111)
 
 Simulates a transaction without executing it.
 
@@ -118,7 +118,7 @@ The simulation result
 
 > **wm\_getSupportedMethods**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:120](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/types.ts#L120)
+Defined in: [aztec/rpc-wallet/src/types.ts:120](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/types.ts#L120)
 
 Returns the list of supported methods for the wallet.
 

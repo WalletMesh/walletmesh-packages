@@ -6,7 +6,7 @@
 
 # Class: AztecChainProvider
 
-Defined in: [aztec/rpc-wallet/src/chainProvider.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/chainProvider.ts#L11)
+Defined in: [aztec/rpc-wallet/src/chainProvider.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/chainProvider.ts#L11)
 
 Provider for directly interacting with an Aztec chain wallet.
 This is a minimal implementation that supports core Aztec operations
@@ -18,9 +18,9 @@ without the complexity of multi-chain routing.
 
 ## Constructors
 
-### new AztecChainProvider()
+### Constructor
 
-> **new AztecChainProvider**(`transport`, `context`?): [`AztecChainProvider`](AztecChainProvider.md)
+> **new AztecChainProvider**(`transport`, `context?`): `AztecChainProvider`
 
 Defined in: core/jsonrpc/dist/node.d.ts:12
 
@@ -28,7 +28,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:12
 
 ##### transport
 
-`JSONRPCTransport`
+[`JSONRPCTransport`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCTransport.md)
 
 ##### context?
 
@@ -36,7 +36,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:12
 
 #### Returns
 
-[`AztecChainProvider`](AztecChainProvider.md)
+`AztecChainProvider`
 
 #### Inherited from
 
@@ -66,11 +66,11 @@ Defined in: core/jsonrpc/dist/node.d.ts:19
 
 ##### middleware
 
-`JSONRPCMiddleware`\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md), `JSONRPCContext`\>
+[`JSONRPCMiddleware`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/type-aliases/JSONRPCMiddleware.md)\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md), `JSONRPCContext`\>
 
 #### Returns
 
-`Function`
+> (): `void`
 
 ##### Returns
 
@@ -84,13 +84,15 @@ Defined in: core/jsonrpc/dist/node.d.ts:19
 
 ### callMethod()
 
-> **callMethod**\<`M`\>(`method`, `params`?, `timeoutInSeconds`?): `Promise`\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)\[`M`\]\[`"result"`\]\>
+> **callMethod**\<`M`\>(`method`, `params?`, `timeoutInSeconds?`): `Promise`\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)\[`M`\]\[`"result"`\]\>
 
 Defined in: core/jsonrpc/dist/node.d.ts:15
 
 #### Type Parameters
 
-• **M** *extends* keyof [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
+##### M
+
+`M` *extends* keyof [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
 
 #### Parameters
 
@@ -136,7 +138,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:25
 
 > **connect**(): `Promise`\<`boolean`\>
 
-Defined in: [aztec/rpc-wallet/src/chainProvider.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/chainProvider.ts#L26)
+Defined in: [aztec/rpc-wallet/src/chainProvider.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/chainProvider.ts#L26)
 
 #### Returns
 
@@ -152,7 +154,9 @@ Defined in: core/jsonrpc/dist/node.d.ts:18
 
 #### Type Parameters
 
-• **K** *extends* `string` \| `number`
+##### K
+
+`K` *extends* `string` \| `number`
 
 #### Parameters
 
@@ -162,7 +166,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:18
 
 ##### params
 
-`JSONRPCEventMap`\[`K`\]
+[`JSONRPCEventMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCEventMap.md)\[`K`\]
 
 #### Returns
 
@@ -178,7 +182,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:18
 
 > **getAccount**(): `Promise`\<`string`\>
 
-Defined in: [aztec/rpc-wallet/src/chainProvider.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/chainProvider.ts#L40)
+Defined in: [aztec/rpc-wallet/src/chainProvider.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/chainProvider.ts#L40)
 
 Gets the account address from the wallet.
 
@@ -196,13 +200,15 @@ If response is invalid
 
 ### makeRequest()
 
-> `protected` **makeRequest**\<`M`\>(`method`, `params`?): `Promise`\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)\[`M`\]\[`"result"`\]\>
+> `protected` **makeRequest**\<`M`\>(`method`, `params?`): `Promise`\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)\[`M`\]\[`"result"`\]\>
 
-Defined in: [aztec/rpc-wallet/src/chainProvider.ts:12](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/chainProvider.ts#L12)
+Defined in: [aztec/rpc-wallet/src/chainProvider.ts:12](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/chainProvider.ts#L12)
 
 #### Type Parameters
 
-• **M** *extends* keyof [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
+##### M
+
+`M` *extends* keyof [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
 
 #### Parameters
 
@@ -228,7 +234,9 @@ Defined in: core/jsonrpc/dist/node.d.ts:16
 
 #### Type Parameters
 
-• **M** *extends* keyof [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
+##### M
+
+`M` *extends* keyof [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
 
 #### Parameters
 
@@ -258,7 +266,9 @@ Defined in: core/jsonrpc/dist/node.d.ts:17
 
 #### Type Parameters
 
-• **K** *extends* `string` \| `number`
+##### K
+
+`K` *extends* `string` \| `number`
 
 #### Parameters
 
@@ -272,7 +282,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:17
 
 #### Returns
 
-`Function`
+> (): `void`
 
 ##### Returns
 
@@ -310,7 +320,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:20
 
 > **registerContract**(`params`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/chainProvider.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/chainProvider.ts#L81)
+Defined in: [aztec/rpc-wallet/src/chainProvider.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/chainProvider.ts#L81)
 
 Registers a contract instance with the wallet.
 
@@ -320,7 +330,7 @@ Registers a contract instance with the wallet.
 
 Contract registration parameters
 
-###### artifact
+###### artifact?
 
 `ContractArtifact`
 
@@ -342,7 +352,7 @@ If registration fails
 
 > **registerContractClass**(`params`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/chainProvider.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/chainProvider.ts#L96)
+Defined in: [aztec/rpc-wallet/src/chainProvider.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/chainProvider.ts#L96)
 
 Registers a contract class with the wallet.
 
@@ -374,7 +384,9 @@ Defined in: core/jsonrpc/dist/node.d.ts:13
 
 #### Type Parameters
 
-• **M** *extends* keyof [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
+##### M
+
+`M` *extends* keyof [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
 
 #### Parameters
 
@@ -400,7 +412,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:13
 
 > **registerSender**(`params`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/chainProvider.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/chainProvider.ts#L110)
+Defined in: [aztec/rpc-wallet/src/chainProvider.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/chainProvider.ts#L110)
 
 Registers a sender with the wallet.
 
@@ -432,7 +444,9 @@ Defined in: core/jsonrpc/dist/node.d.ts:14
 
 #### Type Parameters
 
-• **M** *extends* keyof [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
+##### M
+
+`M` *extends* keyof [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)
 
 #### Parameters
 
@@ -442,7 +456,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:14
 
 ##### serializer
 
-`JSONRPCSerializer`\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)\[`M`\]\[`"params"`\], [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)\[`M`\]\[`"result"`\]\>
+[`JSONRPCSerializer`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCSerializer.md)\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)\[`M`\]\[`"params"`\], [`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)\[`M`\]\[`"result"`\]\>
 
 #### Returns
 
@@ -458,7 +472,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:14
 
 > **sendTransaction**(`params`): `Promise`\<`string`\>
 
-Defined in: [aztec/rpc-wallet/src/chainProvider.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/chainProvider.ts#L54)
+Defined in: [aztec/rpc-wallet/src/chainProvider.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/chainProvider.ts#L54)
 
 Sends a transaction to the chain.
 
@@ -514,7 +528,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:11
 
 ##### serializer
 
-`JSONRPCSerializer`\<`unknown`, `unknown`\>
+[`JSONRPCSerializer`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCSerializer.md)\<`unknown`, `unknown`\>
 
 #### Returns
 
@@ -530,7 +544,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:11
 
 > **simulateTransaction**(`params`): `Promise`\<`unknown`\>
 
-Defined in: [aztec/rpc-wallet/src/chainProvider.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/65bc501d5bed45d0e6d444f53e29595da551d59e/aztec/rpc-wallet/src/chainProvider.ts#L68)
+Defined in: [aztec/rpc-wallet/src/chainProvider.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/chainProvider.ts#L68)
 
 Simulates a transaction without submitting it.
 

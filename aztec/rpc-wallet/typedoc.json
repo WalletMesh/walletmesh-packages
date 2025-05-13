@@ -11,5 +11,27 @@
     "**/*.test.ts"
   ],
   "includeVersion": true,
-  "excludePrivate": true
+  "excludePrivate": true,
+  "externalPattern": [
+    "**/node_modules/@walletmesh/router/**/*",
+    "**/node_modules/@walletmesh/jsonrpc/**/*"
+  ],
+  "externalSymbolLinkMappings": {
+    "@walletmesh/router": {
+      "RouterMethodMap": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md",
+      "HumanReadableChainPermissions": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md",
+      "RouterEventMap": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterEventMap.md",
+      "WalletRouterProvider": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/classes/WalletRouterProvider.md",
+      "OperationBuilder": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/classes/OperationBuilder.md",
+      "ChainPermissions": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/ChainPermissions.md",
+      "MethodCall": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/MethodCall.md",
+      "MethodResults": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/MethodResults.md"
+    },
+    "@walletmesh/jsonrpc": {
+      "JSONRPCTransport": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCTransport.md",
+      "JSONRPCMiddleware": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/type-aliases/JSONRPCMiddleware.md",
+      "JSONRPCEventMap": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCEventMap.md",
+      "JSONRPCSerializer": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCSerializer.md"
+    }
+  }
 }
