@@ -1,6 +1,9 @@
 {
   "name": "WalletMesh Packages",
-  "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/walletmesh-packages,type=bind,consistency=cached",
   "workspaceFolder": "/home/vscode/walletmesh-packages",
   "mounts": [
@@ -17,11 +20,16 @@
     "npm_config_store_dir": "/home/vscode/.pnpm-store"
   },
   "onCreateCommand": {
-    "setup": "mount | egrep 'pnpm-store|node_modules' | awk '{print $3}' | sudo xargs chown `id -u`:`id -g` && pnpm install"
+    "setup": "mount | egrep 'pnpm-store|node_modules' | awk '{print $3}' | sudo xargs chown `id -u`:`id -g` && pnpm install",
+    "install-global-packages": "npm install -g @anthropic-ai/claude-code @informalsystems/quint && npm cache clean --force"
   },
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "20"
+      "version": "20",
+      "pnpmVersion": "10.11.0"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "copyGitConfig": true
     }
   },
   "forwardPorts": [],
@@ -31,9 +39,14 @@
         "biomejs.biome",
         "vitest.explorer",
         "bierner.markdown-mermaid",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "saoudrizwan.claude-dev",
+        "rooveterinaryinc.roo-cline",
+        "informal.quint-vscode",
+        "ms-azuretools.vscode-containers"
       ],
       "dev.containers.mountWaylandSocket": false
     }
-  }
+  },
+  "remoteUser": "vscode"
 }

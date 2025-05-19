@@ -19,6 +19,25 @@ The @walletmesh/discovery package implements a cross-origin wallet discovery pro
 - **Type check**: `pnpm type-check` (all files), `pnpm type-check:build` (production files only)
 - **Documentation**: `pnpm docs` (generates TypeDoc documentation)
 
+## Memory Management
+
+### Key Files to Remember
+- `src/client.ts`: Contains `DiscoveryAnnouncer` implementation
+- `src/server.ts`: Contains `DiscoveryListener` implementation
+- `src/constants.ts`: Contains event type definitions and protocol constants
+- `src/types.ts`: Contains wallet information type definitions
+- `src/guards.ts`: Contains type guards for runtime validation
+
+### Search Patterns
+- Find event types with pattern `wm:discovery:`
+- Find wallet type definitions with `interface *WalletInfo`
+- Find factory methods with `create*`
+
+### Important Relationships
+- DiscoveryAnnouncer sends events, DiscoveryListener receives them
+- Events flow in a specific sequence: ready → request → response → ack
+- Web wallets and extension wallets have different announcement mechanisms
+
 ## Architecture
 
 ### Discovery Protocol Flow
@@ -95,6 +114,21 @@ The @walletmesh/discovery package implements a cross-origin wallet discovery pro
      - `isDiscoveryResponseEvent`: Validates response event structure
      - `isWalletInfo`: Validates wallet information objects
    - Ensures type safety at runtime
+
+## Best Practices
+
+### Working with the Discovery Package
+- Use factory methods instead of direct class instantiation
+- Always validate incoming event data using type guards
+- Implement proper error handling for network failures
+- Cleanup resources with `.stop()` when components are no longer needed
+- Use TypeScript's discriminated unions for wallet type checking
+
+### Debugging Tips
+- Debug event flow issues by logging event sequence
+- Check for origin validation issues when discovery fails
+- Verify protocol version compatibility
+- Inspect event payload structure for malformed data
 
 ## Common Development Workflows
 

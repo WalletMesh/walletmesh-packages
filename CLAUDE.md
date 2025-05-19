@@ -15,6 +15,37 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Versioning**: `pnpm changeset` (create a changeset for version updates)
 - **Before commit verification**: `pnpm lint && pnpm type-check:build && pnpm test`
 
+## Memory Management
+
+### CLAUDE.md Structure
+- **Root CLAUDE.md** (this file): Contains project-wide information and architecture overview
+- **Package-specific CLAUDE.md files**: Located in each package directory, contain detailed implementation information:
+  - `/core/jsonrpc/CLAUDE.md`: Details about JSON-RPC implementation
+  - `/core/router/CLAUDE.md`: Details about router implementation
+  - `/core/discovery/CLAUDE.md`: Details about discovery protocol
+  - Additional package directories may have their own CLAUDE.md files
+- **Usage**: All AI assistants (including cline) should refer to these files first when working with packages
+- **Maintenance**: When making significant changes to a package, update its CLAUDE.md file
+
+### Key Files to Remember
+- **Package Structures**: Each package follows a similar structure with src/, tests/, and docs/ directories
+- **Core Implementation Files**:
+  - `src/index.ts`: Main entry point and public API
+  - `src/types.ts`: Type definitions and interfaces
+  - `src/*.test.ts`: Unit tests for corresponding implementation files
+
+### Search Patterns
+- Use the Glob tool with patterns like `**/*.ts` to find TypeScript files
+- Search for class definitions with `class ClassName`
+- Search for interface definitions with `interface InterfaceName`
+- Search for methods with `methodName(`
+- Search for imports with `import { ComponentName }`
+
+### Important Implementation Details
+- JSONRPCNode (jsonrpc package) is the core communication class
+- WalletRouter (router package) manages multi-chain connections
+- DiscoveryAnnouncer/DiscoveryListener (discovery package) handle wallet discovery
+
 ## Code Style Guidelines
 - **Formatting**: Use Biome with 2-space indentation, single quotes for strings
 - **Imports**: Use ES modules with .js extension in import paths
@@ -23,6 +54,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Tests**: Create comprehensive tests with at least 80% coverage. Test both happy and error paths
 - **File Organization**: Related functionality should be grouped together in the same directory
 - **Documentation**: Use JSDoc comments for public APIs and typedoc for generating documentation
+
+## Best Practices
+
+### Code Modification
+- **Read First**: Always read the existing code thoroughly before making changes
+- **Test Coverage**: Write tests for all new code and changes
+- **Documentation**: Update documentation when changing public APIs
+- **Consistent Style**: Follow existing code style and patterns
+- **Error Handling**: Provide proper error handling with descriptive messages
+
+### Debugging Guidelines
+- Use console.log statements with descriptive tags
+- Add comments explaining complex logic or algorithms
+- Check for TypeScript errors with `pnpm type-check`
+- Run unit tests frequently with `pnpm test`
+
+### TypeScript Best Practices
+- Use interfaces for object shapes that may be implemented
+- Use type aliases for unions, intersections, and complex types
+- Leverage TypeScript's utility types (Partial, Required, Pick, etc.)
+- Use generics to maintain type safety across operations
+- Avoid type assertions (as) unless absolutely necessary
 
 ## Architecture Overview
 
@@ -87,6 +140,14 @@ Router system for managing multi-chain wallet connections.
   - Origin validation and permissions enforcement
   - Persistent sessions via configurable storage backends
 
+#### @walletmesh/modal
+Library for dApps to display a wallet connection modal.
+
+**Key Components**:
+- `WalletMeshClient`: Main client interface for dApps
+- `WalletProvider`: React context provider for wallet state
+- `ConnectButton`: UI component for initiating wallet connections
+
 ### Aztec Packages
 
 #### @walletmesh/aztec/rpc-wallet
@@ -96,6 +157,16 @@ Integration with Aztec network wallets.
 - `AztecChainProvider`: Chain-specific provider implementation
 - `AztecChainWallet`: Wallet implementation for Aztec network
 - Specialized serializers for Aztec objects and transactions
+
+#### @walletmesh/aztec/helpers
+Helper utilities for Aztec integration.
+
+**Key Components**:
+- Functions for working with contract artifacts
+- Functions for extracting function parameter information
+
+#### @walletmesh/aztec/meta
+Meta package that exports all Aztec-related packages.
 
 ### Development Workflow
 
