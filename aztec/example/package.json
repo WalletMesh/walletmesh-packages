@@ -15,11 +15,11 @@
     "format": "biome format"
   },
   "dependencies": {
-    "@aztec/accounts": "0.76.2",
-    "@aztec/aztec.js": "0.76.2",
-    "@aztec/circuits.js": "0.76.2",
-    "@aztec/foundation": "0.76.2",
-    "@aztec/noir-contracts.js": "0.76.2",
+    "@aztec/accounts": "0.87.2",
+    "@aztec/aztec.js": "0.87.2",
+    "@aztec/circuits.js": "0.76.4",
+    "@aztec/foundation": "0.87.2",
+    "@aztec/noir-contracts.js": "0.87.2",
     "@walletmesh/jsonrpc": "workspace:^",
     "@walletmesh/aztec": "workspace:^",
     "@walletmesh/aztec-rpc-wallet": "workspace:^",

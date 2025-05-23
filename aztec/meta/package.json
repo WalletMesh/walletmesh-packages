@@ -38,7 +38,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@aztec/aztec.js": "0.76.2",
+    "@aztec/aztec.js": "0.87.2",
     "@walletmesh/aztec-helpers": "workspace:^",
     "@walletmesh/aztec-rpc-wallet": "workspace:^"
   }

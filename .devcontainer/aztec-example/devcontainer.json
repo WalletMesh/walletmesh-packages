@@ -29,7 +29,7 @@
       "version": "20"
     },
     "ghcr.io/ClarifiedLabs/devcontainer-features/aztec-sandbox:2": {
-      "version": "0.73.0",
+      "version": "0.87.2",
       "verbose": false
     }
   },
