@@ -2,16 +2,18 @@ import React from 'react';
 import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware';
 
 type FunctionCall = {
-  contractAddress: string;
-  functionName: string;
+  to?: { toString: () => string } | string; // New structure uses 'to' instead of 'contractAddress'
+  contractAddress?: string; // Keep for backward compatibility
+  name?: string; // New structure uses 'name' instead of 'functionName'
+  functionName?: string; // Keep for backward compatibility
   args: unknown[];
 };
 
 type FunctionCallDisplayProps = {
   call: FunctionCall;
   functionArgNames?: FunctionArgNames;
+  isDeployment?: boolean;
 };
-
 
 const formatParameterValue = (value: unknown) => {
   if (typeof value === 'number' || typeof value === 'bigint') {
@@ -35,21 +37,29 @@ const formatParameterValue = (value: unknown) => {
   }
 };
 
+const FunctionCallDisplay: React.FC<FunctionCallDisplayProps> = ({ call, functionArgNames, isDeployment }) => {
+  // Handle both old and new property names
+  const contractAddress = call.contractAddress || (call.to ? (typeof call.to === 'string' ? call.to : call.to.toString()) : '');
+  const functionName = call.functionName || call.name || 'unknown';
 
-const FunctionCallDisplay: React.FC<FunctionCallDisplayProps> = ({ call, functionArgNames }) => {
-  const parameterNames = functionArgNames?.[call.contractAddress]?.[call.functionName] || [];
+  // For deployments, use special handling
+  const parameterNames = isDeployment
+    ? functionArgNames?.['__deployment__']?.[functionName] || []
+    : functionArgNames?.[contractAddress]?.[functionName] || [];
 
   return (
     <div>
-      <p className="details">
-        <b>Contract Address:</b> {call.contractAddress}
-      </p>
+      {!isDeployment && (
+        <p className="details">
+          <b>Contract Address:</b> {contractAddress}
+        </p>
+      )}
       <div>
         <p className="details">
-          <b>Function Call:</b>
+          <b>{isDeployment ? 'Contract Deployment:' : 'Function Call:'}</b>
         </p>
         <pre className="function-call">
-          {`${call.functionName}(`}
+          {`${functionName}(`}
           {call.args.map((arg, index) => (
             <React.Fragment key={index}>
               {'\n  '}

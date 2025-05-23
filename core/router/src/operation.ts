@@ -48,6 +48,13 @@ type ExecuteResult<T extends readonly MethodCall[]> = T extends readonly []
  * @typeParam T - Tuple type tracking the sequence of method calls
  */
 export class OperationBuilder<T extends readonly MethodCall[] = readonly []> {
+  /**
+   * Creates an instance of OperationBuilder.
+   * @param chainId - The chain ID for which this operation is being built.
+   * @param provider - The WalletRouterProvider instance used to execute calls.
+   * @param calls - An initial array of method calls (usually empty).
+   * @internal
+   */
   constructor(
     private readonly chainId: ChainId,
     private readonly provider: WalletRouterProvider,
@@ -102,6 +109,7 @@ export class OperationBuilder<T extends readonly MethodCall[] = readonly []> {
    *   .execute();
    * ```
    *
+   * @param timeout - Optional timeout in milliseconds for the entire operation execution.
    * @returns For one call: the direct result. For multiple calls: array of results.
    * @throws {RouterError} If no operations are queued or if result validation fails
    */

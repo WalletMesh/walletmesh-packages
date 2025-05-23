@@ -4,12 +4,13 @@ This dev container includes tools and extensions configured for the WalletMesh P
 
 ## Included Tools
 
-- Node.js 20
-- pnpm 10.11.0
+- Node.js 22
+- pnpm 10.11.1
 - Aider (AI coding assistant)
 - ripgrep (fast text search)
 - claude-code CLI
 - quint (formal specification language)
+- Chromium (for browser-based testing)
 
 ## VS Code Extensions
 
@@ -29,6 +30,8 @@ Note: The `ms-vscode.vscode-typescript-next` extension (for experimental TypeScr
 The dev container pre-configures:
 - Volume mount for pnpm store at `/home/vscode/.pnpm-store`
 - Volume mount for node_modules to improve performance
+- Mount for Claude AI configuration: `~/.claude/` to `/home/vscode/.claude`
+- Mount for Claude AI credentials: `~/.claude.json` to `/home/vscode/.claude.json`
 
 ## Usage
 

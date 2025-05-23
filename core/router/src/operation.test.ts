@@ -21,7 +21,7 @@ interface TransactionFunctionCall {
  */
 class TestProvider extends WalletRouterProvider {
   constructor() {
-    super({ send: async () => {} });
+    super({ send: async () => {}, onMessage: () => {} });
     // Set up a mock session ID for testing
     Object.defineProperty(this, '_sessionId', {
       value: 'test-session',

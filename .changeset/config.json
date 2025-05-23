@@ -9,9 +9,5 @@
   ],
   "access": "public",
   "baseBranch": "main",
-  "updateInternalDependencies": "patch",
-  "ignore": [
-    "@walletmesh/aztec-example",
-    "@walletmesh/modal-example"
-  ]
+  "updateInternalDependencies": "patch"
 }

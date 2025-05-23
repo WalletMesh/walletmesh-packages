@@ -9,7 +9,7 @@ import {
   type ContractInstanceWithAddress,
   PublicKeys,
 } from '@aztec/aztec.js';
-import { FunctionType } from '@aztec/foundation/abi';
+import { FunctionType } from '@aztec/stdlib/abi'; // Corrected import path
 import {
   getContractArtifactFromContractAddress,
   getFunctionArtifactFromContractAddress,
@@ -38,6 +38,7 @@ describe('aztec helpers', () => {
       const mockArtifact = {
         name: 'TestContract',
         functions: [],
+        nonDispatchPublicFunctions: [], // Added missing property
         outputs: { structs: {}, globals: {} },
         storageLayout: {},
         notes: {},
@@ -46,7 +47,8 @@ describe('aztec helpers', () => {
 
       // Setup mocks
       const mockInstance = {
-        contractClassId: mockContractClassId,
+        currentContractClassId: mockContractClassId, // Renamed
+        originalContractClassId: mockContractClassId, // Added
         version: 1,
         salt: Fr.random(),
         deployer: await AztecAddress.random(),
@@ -92,7 +94,8 @@ describe('aztec helpers', () => {
 
     it('should throw if artifact is not found', async () => {
       const mockInstance = {
-        contractClassId: mockContractClassId,
+        currentContractClassId: mockContractClassId, // Renamed
+        originalContractClassId: mockContractClassId, // Added
         version: 1,
         salt: Fr.random(),
         deployer: await AztecAddress.random(),
@@ -132,7 +135,8 @@ describe('aztec helpers', () => {
 
     it('should find function by name', async () => {
       const mockInstance = {
-        contractClassId: mockContractClassId,
+        currentContractClassId: mockContractClassId, // Renamed
+        originalContractClassId: mockContractClassId, // Added
         version: 1,
         salt: Fr.random(),
         deployer: await AztecAddress.random(),
@@ -149,6 +153,7 @@ describe('aztec helpers', () => {
         artifact: {
           name: 'TestContract',
           functions: [mockFunctionArtifact],
+          nonDispatchPublicFunctions: [], // Added missing property
           outputs: { structs: {}, globals: {} },
           storageLayout: {},
           notes: {},
@@ -162,7 +167,11 @@ describe('aztec helpers', () => {
         mockContractAddress.toString(),
         'testFunction',
       );
-      expect(result).toEqual(mockFunctionArtifact);
+      expect(result).toEqual({
+        ...mockFunctionArtifact,
+        contractName: 'TestContract',
+        debug: undefined,
+      });
     });
 
     it('should find function by selector', async () => {
@@ -175,6 +184,7 @@ describe('aztec helpers', () => {
       const mockArtifact = {
         name: 'TestContract',
         functions: [mockFunctionArtifact],
+        nonDispatchPublicFunctions: [], // Added missing property
         outputs: { structs: {}, globals: {} },
         storageLayout: {},
         notes: {},
@@ -182,7 +192,8 @@ describe('aztec helpers', () => {
       } as ContractArtifact;
 
       const mockInstance = {
-        contractClassId: mockContractClassId,
+        currentContractClassId: mockContractClassId, // Renamed
+        originalContractClassId: mockContractClassId, // Added
         version: 1,
         salt: Fr.random(),
         deployer: await AztecAddress.random(),
@@ -206,12 +217,17 @@ describe('aztec helpers', () => {
         mockSelector,
       );
       // The function should be found since it exists in the mock artifact
-      expect(result).toEqual(mockFunctionArtifact);
+      expect(result).toEqual({
+        ...mockFunctionArtifact,
+        contractName: 'TestContract',
+        debug: undefined,
+      });
     });
 
     it('should throw if function is not found', async () => {
       const mockInstance = {
-        contractClassId: mockContractClassId,
+        currentContractClassId: mockContractClassId, // Renamed
+        originalContractClassId: mockContractClassId, // Added
         version: 1,
         salt: Fr.random(),
         deployer: await AztecAddress.random(),
@@ -228,6 +244,7 @@ describe('aztec helpers', () => {
         artifact: {
           name: 'TestContract',
           functions: [],
+          nonDispatchPublicFunctions: [], // Added missing property
           outputs: { structs: {}, globals: {} },
           storageLayout: {},
           notes: {},
@@ -261,7 +278,8 @@ describe('aztec helpers', () => {
       };
 
       const mockInstance = {
-        contractClassId: mockContractClassId,
+        currentContractClassId: mockContractClassId, // Renamed
+        originalContractClassId: mockContractClassId, // Added
         version: 1,
         salt: Fr.random(),
         deployer: await AztecAddress.random(),
@@ -278,6 +296,7 @@ describe('aztec helpers', () => {
         artifact: {
           name: 'TestContract',
           functions: [mockFunctionArtifact],
+          nonDispatchPublicFunctions: [], // Added missing property
           outputs: { structs: {}, globals: {} },
           storageLayout: {},
           notes: {},
@@ -323,7 +342,8 @@ describe('aztec helpers', () => {
       };
 
       const mockInstance = {
-        contractClassId: mockContractClassId,
+        currentContractClassId: mockContractClassId, // Renamed
+        originalContractClassId: mockContractClassId, // Added
         version: 1,
         salt: Fr.random(),
         deployer: await AztecAddress.random(),
@@ -340,6 +360,7 @@ describe('aztec helpers', () => {
         artifact: {
           name: 'TestContract',
           functions: [mockFunctionArtifact],
+          nonDispatchPublicFunctions: [], // Added missing property
           outputs: { structs: {}, globals: {} },
           storageLayout: {},
           notes: {},

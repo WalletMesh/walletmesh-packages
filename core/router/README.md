@@ -11,21 +11,35 @@ pnpm add @walletmesh/router
 
 ### Create a simple router setup
 ```typescript
-import { WalletRouter, WalletRouterProvider, PermissivePermissionsManager, type WalletClient } from '@walletmesh/router';
+import { WalletRouter, WalletRouterProvider, PermissivePermissionsManager, type JSONRPCWallet } from '@walletmesh/router';
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
 
-// Initialize a basic Ethereum wallet client that wraps window.ethereum
-// This client implements the WalletClient interface for Ethereum mainnet
-const ethereumWallet: WalletClient = {
-  async call(method: string, params?: unknown) {
-    // Forward requests to the injected Ethereum provider (e.g., MetaMask)
-    return window.ethereum.request({ method, params });
+// Initialize a basic Ethereum wallet as a JSONRPCNode
+// This node handles JSON-RPC communication for Ethereum mainnet
+const ethereumWallet: JSONRPCWallet = new JSONRPCNode({
+  send: async (message) => {
+    // Forward JSON-RPC messages to the injected Ethereum provider
+    const result = await window.ethereum.request(message);
+    // Send response back through the transport
+    ethereumWallet.receiveMessage({ jsonrpc: '2.0', id: message.id, result });
+  },
+  onMessage: (handler) => {
+    // Setup message handler for responses
   }
-};
+});
+
+// Register wallet methods
+etherneumWallet.registerMethod('eth_accounts', async () => {
+  return window.ethereum.request({ method: 'eth_accounts' });
+});
 
 // Initialize the router with transport layer, wallets, and permission manager
 // The router coordinates communication between the application and wallets
 const router = new WalletRouter(
-  { send: (msg) => Promise.resolve(window.postMessage(msg, '*')) },
+  { 
+    send: (msg) => Promise.resolve(window.postMessage(msg, '*')),
+    onMessage: (handler) => window.addEventListener('message', (e) => handler(e.data))
+  },
   new Map([['eip155:1', ethereumWallet]]),
   // For development, use the permissive permission manager
   new PermissivePermissionsManager()
@@ -34,7 +48,8 @@ const router = new WalletRouter(
 // Initialize the provider that applications use to interact with wallets
 // The provider offers a high-level interface for wallet operations
 const provider = new WalletRouterProvider({
-  send: async (msg) => window.postMessage(msg, '*')
+  send: async (msg) => window.postMessage(msg, '*'),
+  onMessage: (handler) => window.addEventListener('message', (e) => handler(e.data))
 });
 
 // Connect to Ethereum mainnet and request method permissions
@@ -108,9 +123,9 @@ graph TB
     end
 
     subgraph Wallet Layer
-        ClientMgr <-->|JSON-RPC| Ethereum[Ethereum Wallet]
-        ClientMgr <-->|JSON-RPC| Polygon[Polygon Wallet]
-        ClientMgr <-->|JSON-RPC| Other[Other Wallets...]
+        ClientMgr <-->|JSON-RPC| Ethereum[Ethereum Node]
+        ClientMgr <-->|JSON-RPC| Polygon[Polygon Node]
+        ClientMgr <-->|JSON-RPC| Other[Other Nodes...]
     end
 
     classDef provider fill:#6366f1,stroke:#333,stroke-width:2px,color:#fff
@@ -136,7 +151,7 @@ sequenceDiagram
     Provider->>Router: wm_connect
     Router->>Session: createSession()
     Router->>Perms: validatePermissions()
-    Router->>Wallet: setupEventListeners()
+    Router->>Wallet: setup event listeners
     Router-->>Provider: sessionId + permissions
     Provider-->>App: sessionId
 
@@ -207,10 +222,38 @@ sequenceDiagram
      // Get supported methods
      async getSupportedMethods(chainIds?: ChainId[], timeout?: number): Promise<Record<ChainId, string[]>>;
 
-     // Clean up
-     async disconnect(timeout?: number): Promise<void>;
-   }
-   ```
+   // Clean up
+   async disconnect(timeout?: number): Promise<void>;
+ }
+ ```
+
+   **Method-Specific Serialization**:
+   The `WalletRouterProvider` supports registration of custom serializers for specific wallet methods (e.g., `eth_sendTransaction`, `aztec_deployContract`). This allows for automatic transformation of complex parameters before they are sent to the router and deserialization of results when they are received. This is managed internally by the `ProviderSerializerRegistry`.
+
+   - **Purpose**:
+     - Ensures complex objects (like Aztec's `Fr` or `AztecAddress` types) are properly serialized for JSON-RPC transport.
+     - Maintains compatibility with chain-specific data structures.
+     - Provides transparent serialization/deserialization without manual intervention by the dApp developer.
+   - **Registration**:
+     Serializers are registered on the `WalletRouterProvider` instance using the `registerMethodSerializer` method.
+     ```typescript
+     // Example: Registering a serializer for an Aztec method
+     // (Actual Aztec serializers are often bundled in packages like @walletmesh/aztec-rpc-wallet)
+     provider.registerMethodSerializer('aztec_someMethod', {
+       params: {
+         serialize: async (method, params) => ({ method, serialized: JSON.stringify(params) }), // Simplified example
+         deserialize: async (method, data) => JSON.parse(data.serialized)
+       },
+       result: {
+         serialize: async (method, result) => ({ method, serialized: JSON.stringify(result) }),
+         deserialize: async (method, data) => JSON.parse(data.serialized)
+       }
+     });
+     ```
+   - **How it Works**:
+     - When `provider.call()` or `provider.bulkCall()` is used, the registered serializer for the target method (if any) is automatically applied to its parameters before the request is sent to the `WalletRouter` (via `wm_call`).
+     - Similarly, results from `wm_call` are deserialized using the method's registered result serializer before being returned to the dApp.
+     - This mechanism is crucial for handling non-standard JSON types used by specific blockchain SDKs.
 
 2. **WalletRouter**
    ```typescript
@@ -222,10 +265,10 @@ sequenceDiagram
        sessionStore?: SessionStore
      );
 
-     // Add wallet client
-     addWallet(chainId: ChainId, client: WalletClient): void;
+     // Add wallet node
+     addWallet(chainId: ChainId, wallet: JSONRPCWallet): void;
 
-     // Remove wallet client
+     // Remove wallet node
      removeWallet(chainId: ChainId): void;
    }
    ```
@@ -256,18 +299,20 @@ sequenceDiagram
    }
    ```
 
-4. **Wallet Client**
+4. **JSONRPCWallet**
    ```typescript
-   interface WalletClient {
-     // Call wallet method
-     call<T = unknown>(method: string, params?: unknown): Promise<T>;
-
-     // Optional event handling
-     on?(event: string, handler: (data: unknown) => void): void;
-     off?(event: string, handler: (data: unknown) => void): void;
-
-     // Optional method discovery
-     getSupportedMethods?(): Promise<string[]>;
+   // JSONRPCWallet is a type alias for a JSONRPCNode configured for wallet communication
+   type JSONRPCWallet = JSONRPCNode<WalletMethodMap, JSONRPCEventMap, JSONRPCContext>;
+   
+   // The WalletMethodMap includes wallet-specific methods
+   interface WalletMethodMap extends JSONRPCMethodMap {
+     wm_getSupportedMethods: {
+       result: string[];
+     };
+     [method: string]: {
+       params?: JSONRPCParams;
+       result: unknown;
+     };
    }
    ```
 
@@ -387,25 +432,32 @@ import {
   WalletRouterProvider,
   AllowAskDenyManager,
   AllowAskDenyState,
-  type WalletClient
+  type JSONRPCWallet
 } from '@walletmesh/router';
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
 
-// Initialize wallet clients for multiple chains
-const ethereumWallet: WalletClient = {
-  async call(method: string, params?: unknown) {
-    return window.ethereum.request({ method, params });
-  }
-};
+// Initialize wallet nodes for multiple chains
+const ethereumWallet: JSONRPCWallet = new JSONRPCNode(ethereumTransport);
+// Register Ethereum wallet methods
+etherneumWallet.registerMethod('eth_accounts', async () => {
+  return window.ethereum.request({ method: 'eth_accounts' });
+});
+etherneumWallet.registerMethod('eth_sendTransaction', async (context, params) => {
+  return window.ethereum.request({ method: 'eth_sendTransaction', params });
+});
 
-const polygonWallet: WalletClient = {
-  async call(method: string, params?: unknown) {
-    return window.polygon.request({ method, params });
-  }
-};
+const polygonWallet: JSONRPCWallet = new JSONRPCNode(polygonTransport);
+// Register Polygon wallet methods
+polygonWallet.registerMethod('eth_getBalance', async (context, params) => {
+  return window.polygon.request({ method: 'eth_getBalance', params });
+});
 
 // Create router instance with production-ready permission handling
 const router = new WalletRouter(
-  { send: async (msg) => window.postMessage(msg, '*') },
+  { 
+    send: async (msg) => window.postMessage(msg, '*'),
+    onMessage: (handler) => window.addEventListener('message', (e) => handler(e.data))
+  },
   new Map([
     ['eip155:1', ethereumWallet],
     ['eip155:137', polygonWallet]
@@ -433,7 +485,8 @@ const router = new WalletRouter(
 
 // Initialize provider for application use
 const provider = new WalletRouterProvider({
-  send: async (msg) => window.postMessage(msg, '*')
+  send: async (msg) => window.postMessage(msg, '*'),
+  onMessage: (handler) => window.addEventListener('message', (e) => handler(e.data))
 });
 
 // Establish connections to multiple chains with specific method permissions

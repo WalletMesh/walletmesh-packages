@@ -38,6 +38,8 @@ describe('RequestHandler', () => {
       registerSerializer: vi.fn(),
       addPendingRequest: vi.fn(),
       removePendingRequest: vi.fn(),
+      deserializeParams: vi.fn() as Mock,
+      serializeResult: vi.fn() as Mock,
     } as unknown as MethodManager<TestMethods, TestContext>;
     return methodManager;
   };
@@ -82,6 +84,8 @@ describe('RequestHandler', () => {
       (methodManager.getMethod as Mock).mockReturnValue(undefined);
       (methodManager.getFallbackHandler as Mock).mockReturnValue(fallbackHandler);
       (methodManager.getSerializer as Mock).mockReturnValue(undefined);
+      (methodManager.deserializeParams as Mock).mockResolvedValue({ value: 'test' });
+      (methodManager.serializeResult as Mock).mockResolvedValue('fallback result');
 
       const request = {
         jsonrpc: '2.0' as const,
@@ -101,6 +105,8 @@ describe('RequestHandler', () => {
 
       // Verify fallback handler was called with correct arguments
       expect(fallbackHandler).toHaveBeenCalledWith({ userId: '123' }, 'nonexistent', { value: 'test' });
+      expect(methodManager.deserializeParams).toHaveBeenCalledWith('nonexistent', { value: 'test' });
+      expect(methodManager.serializeResult).toHaveBeenCalledWith('nonexistent', 'fallback result');
     });
   });
 
@@ -123,6 +129,7 @@ describe('RequestHandler', () => {
       // Mock method manager to return the error-producing method
       (methodManager.getMethod as Mock).mockReturnValue(methodHandler);
       (methodManager.getSerializer as Mock).mockReturnValue(undefined);
+      (methodManager.deserializeParams as Mock).mockResolvedValue({ value: 'test' });
 
       const request = {
         jsonrpc: '2.0' as const,
@@ -158,6 +165,7 @@ describe('RequestHandler', () => {
       (methodManager.getMethod as Mock).mockReturnValue(undefined);
       (methodManager.getFallbackHandler as Mock).mockReturnValue(fallbackHandler);
       (methodManager.getSerializer as Mock).mockReturnValue(undefined);
+      (methodManager.deserializeParams as Mock).mockResolvedValue({ value: 'test' });
 
       const request = {
         jsonrpc: '2.0' as const,

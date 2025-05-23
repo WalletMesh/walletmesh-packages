@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { ParameterSerializer } from './parameter-serializer.js';
 import { JSONRPCError } from './error.js';
 import type { JSONRPCSerializer, JSONRPCSerializedData } from './types.js';
@@ -175,38 +175,76 @@ describe('ParameterSerializer', () => {
     });
   });
 
-  describe('Parameter Deserialization with Fallback', () => {
-    const fallbackSerializer: JSONRPCSerializer<{ test: string }, { test: string }> = {
+  describe('Parameter Deserialization', () => {
+    const testSerializer: JSONRPCSerializer<{ name: string }, string> = {
       params: {
         serialize: async (method, params) => ({ serialized: JSON.stringify(params), method }),
         deserialize: async (_method, data) => JSON.parse(data.serialized),
       },
       result: {
-        serialize: async (method, result) => ({ serialized: JSON.stringify(result), method }),
-        deserialize: async (_method, data) => JSON.parse(data.serialized),
+        serialize: async (method, result) => ({ serialized: result, method }),
+        deserialize: async (_method, data) => data.serialized,
       },
     };
-
-    beforeEach(() => {
-      serializer.setFallbackSerializer(fallbackSerializer);
-    });
 
     it('should handle undefined params without serializer', async () => {
       const result = await serializer.deserializeParams('test', undefined, undefined);
       expect(result).toBeUndefined();
     });
 
-    it('should throw error when params validation fails without serializer', async () => {
-      const invalidParams = () => {}; // Functions are not valid JSON-RPC values
-      await expect(serializer.deserializeParams('test', invalidParams, undefined)).rejects.toThrow(
-        new JSONRPCError(-32602, 'Invalid params format for serialization'),
-      );
+    it('should pass through params when no serializer is provided', async () => {
+      const params = { name: 'test' };
+      const result = await serializer.deserializeParams('test', params, undefined);
+      expect(result).toBe(params);
     });
 
-    it('should throw error when result validation fails without serializer', async () => {
-      const invalidResult = () => {}; // Functions are not valid JSON-RPC values
-      await expect(serializer.deserializeResult('test', invalidResult, undefined)).rejects.toThrow(
-        new JSONRPCError(-32602, 'Invalid result format for serialization'),
+    it('should deserialize params when serializer is provided', async () => {
+      const serializedData = { serialized: JSON.stringify({ name: 'test' }), method: 'test' };
+      const result = await serializer.deserializeParams('test', serializedData, testSerializer);
+      expect(result).toEqual({ name: 'test' });
+    });
+
+    it('should throw error when serialized data is invalid', async () => {
+      const invalidData = { invalid: 'format' };
+      await expect(serializer.deserializeParams('test', invalidData, testSerializer)).rejects.toThrow(
+        new JSONRPCError(-32602, 'Invalid serialized data format'),
+      );
+    });
+  });
+
+  describe('Result Deserialization', () => {
+    const testSerializer: JSONRPCSerializer<{ name: string }, string> = {
+      params: {
+        serialize: async (method, params) => ({ serialized: JSON.stringify(params), method }),
+        deserialize: async (_method, data) => JSON.parse(data.serialized),
+      },
+      result: {
+        serialize: async (method, result) => ({ serialized: result, method }),
+        deserialize: async (_method, data) => data.serialized,
+      },
+    };
+
+    it('should handle undefined result without serializer', async () => {
+      const result = await serializer.deserializeResult('test', undefined, undefined);
+      expect(result).toBeUndefined();
+    });
+
+    it('should pass through result when no serializer is provided', async () => {
+      const result = 'test';
+      const deserialized = await serializer.deserializeResult('test', result, undefined);
+      expect(deserialized).toBe(result);
+    });
+
+    it('should deserialize result when serializer is provided', async () => {
+      const serializedData = { serialized: 'test', method: 'test' };
+      const result = await serializer.deserializeResult('test', serializedData, testSerializer);
+      expect(result).toBe('test');
+    });
+
+    it('should throw error when serialized data is invalid', async () => {
+      const invalidData = { invalid: 'format' };
+      await expect(serializer.deserializeResult('test', invalidData, testSerializer)).rejects.toThrow(
+        new JSONRPCError(-32602, 'Invalid serialized data format'),
       );
     });
   });

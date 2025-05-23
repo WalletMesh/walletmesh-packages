@@ -2,12 +2,8 @@ import { describe, it, expect } from 'vitest';
 import * as exports from './index.js';
 
 describe('index exports', () => {
-  it('should export AztecProvider', () => {
-    expect(exports.AztecProvider).toBeDefined();
-  });
-
-  it('should export AztecChainWallet', () => {
-    expect(exports.AztecChainWallet).toBeDefined();
+  it('should export AztecDappWallet', () => {
+    expect(exports.AztecDappWallet).toBeDefined();
   });
 
   it('should export error utilities', () => {

@@ -8,7 +8,6 @@ import type {
 import { JSONRPCError } from './error.js';
 import { MessageValidator } from './message-validator.js';
 import type { MethodManager } from './method-manager.js';
-import { ParameterSerializer } from './parameter-serializer.js';
 
 /**
  * Handles processing and validation of JSON-RPC requests.
@@ -36,11 +35,9 @@ import { ParameterSerializer } from './parameter-serializer.js';
  */
 export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext> {
   private validator: MessageValidator;
-  private serializer: ParameterSerializer;
 
   constructor(private methodManager: MethodManager<T, C>) {
     this.validator = new MessageValidator();
-    this.serializer = new ParameterSerializer();
   }
 
   /**
@@ -93,17 +90,15 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
 
     if (method) {
       // Process and validate params for registered method
-      const serializer = this.methodManager.getSerializer(request.method);
-      const methodParams = await this.serializer.deserializeParams<
-        T[keyof T]['params'],
-        T[keyof T]['result']
-      >(String(request.method), request.params, serializer);
+      const methodParams = await this.methodManager.deserializeParams(request.method, request.params);
       methodResponse = await method(context, request.method, methodParams as T[keyof T]['params']);
     } else {
       // Try fallback handler
       const fallback = this.methodManager.getFallbackHandler();
       if (fallback) {
-        methodResponse = await fallback(context, request.method, request.params);
+        // For fallback handler, deserialize params using fallback serializer if available
+        const deserializedParams = await this.methodManager.deserializeParams(request.method, request.params);
+        methodResponse = await fallback(context, request.method, deserializedParams);
       } else {
         throw new JSONRPCError(-32601, 'Method not found', request.method);
       }
@@ -118,11 +113,7 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
     }
 
     // Serialize result if needed
-    const serializer = this.methodManager.getSerializer(request.method);
-    const serializedResult = await this.serializer.serializeResult<
-      T[keyof T]['params'],
-      T[keyof T]['result']
-    >(String(request.method), methodResponse.data, serializer);
+    const serializedResult = await this.methodManager.serializeResult(request.method, methodResponse.data);
 
     // Return JSON-RPC response
     return {

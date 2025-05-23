@@ -11,6 +11,7 @@ type RouterResponse = JSONRPCResponse<RouterMethodMap, keyof RouterMethodMap>;
 describe('createSessionMiddleware', () => {
   const mockSessionStore = {
     validateAndRefresh: vi.fn(),
+    getAll: vi.fn().mockResolvedValue(new Map()),
   } as unknown as SessionStore;
 
   const mockNext = vi.fn(() => Promise.resolve({ jsonrpc: '2.0' as const, result: null } as RouterResponse));
@@ -24,8 +25,9 @@ describe('createSessionMiddleware', () => {
     } as RouterRequest;
     const context = {} as RouterContext;
 
-    const mockSession = { id: 'unknown_123', permissions: {} };
+    const mockSession = { id: 'unknown_123', origin: 'unknown' };
     mockSessionStore.validateAndRefresh = vi.fn().mockResolvedValue(mockSession);
+    mockSessionStore.getAll = vi.fn().mockResolvedValue(new Map([['unknown_123', mockSession]]));
 
     await middleware(context, request, mockNext);
     expect(mockSessionStore.validateAndRefresh).toHaveBeenCalledWith('unknown_123');

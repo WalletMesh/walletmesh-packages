@@ -99,8 +99,6 @@ The release process is automated through changesets and GitHub Actions:
      - Publishes packages to npm with provenance
      - Cleans up the changesets
 
-This automated process eliminates the need for manual version bumping and ensures that all changes are properly tracked and documented.
-
 ## License
 
 Apache-2.0

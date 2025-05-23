@@ -17,3 +17,5 @@ export * from './types.js';
 export * from './error.js';
 export * from './utils.js';
 export * from './node.js';
+export { JSONRPCProxy } from './proxy.js';
+export type { JSONRPCProxyConfig } from './proxy.js';

@@ -15,7 +15,11 @@ describe('WalletRouterProvider', () => {
     mockSendRequest.mockClear();
 
     // Create provider with mocked callMethod
-    provider = new WalletRouterProvider(mockSendRequest as unknown as JSONRPCTransport);
+    const mockTransport: JSONRPCTransport = {
+      send: mockSendRequest,
+      onMessage: vi.fn(),
+    };
+    provider = new WalletRouterProvider(mockTransport);
     // @ts-ignore - mock private method
     provider.callMethod = mockCallMethod;
   });

@@ -9,11 +9,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Coverage**: `pnpm coverage`
 - **Lint**: `pnpm lint`, `pnpm lint:fix` (auto-fix)
 - **Format**: `pnpm format`, `pnpm format:fix` (auto-fix)
-- **Type check**: `pnpm type-check` (all files), `pnpm type-check:build` (production files only, skips test files)
+- **Type check**: `pnpm type-check`
 - **Documentation**: `pnpm docs` (generates TypeDoc documentation)
 - **Create new package**: `bash create-package.sh package-name`
 - **Versioning**: `pnpm changeset` (create a changeset for version updates)
-- **Before commit verification**: `pnpm lint && pnpm type-check:build && pnpm test`
+- **Before commit verification**: `pnpm lint && pnpm type-check && pnpm test`
 
 ## Memory Management
 
@@ -154,8 +154,10 @@ Library for dApps to display a wallet connection modal.
 Integration with Aztec network wallets.
 
 **Key Components**:
-- `AztecChainProvider`: Chain-specific provider implementation
-- `AztecChainWallet`: Wallet implementation for Aztec network
+- `AztecDappWallet`: Implements Aztec's Wallet interface for dApps
+- `AztecWalletRpcServer`: RPC server that handles wallet requests
+- `AztecRouterProvider`: Multi-chain provider with router support
+- `AztecDirectProvider`: Simple direct provider without routing
 - Specialized serializers for Aztec objects and transactions
 
 #### @walletmesh/aztec/helpers
