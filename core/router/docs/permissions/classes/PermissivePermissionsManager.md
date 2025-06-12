@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.4.0**](../../README.md)
+[**@walletmesh/router v0.5.0**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: PermissivePermissionsManager\<T, C\>
 
-Defined in: [core/router/src/permissions/permissive.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/permissive.ts#L50)
+Defined in: [core/router/src/permissions/permissive.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/permissions/permissive.ts#L50)
 
 A permissive implementation of the PermissionManager interface that allows all operations.
 This implementation is designed for:
@@ -50,11 +50,15 @@ const permissions = await devPermissions.getPermissions();
 
 ## Type Parameters
 
-• **T** *extends* [`RouterMethodMap`](../../index/interfaces/RouterMethodMap.md) = [`RouterMethodMap`](../../index/interfaces/RouterMethodMap.md)
+### T
+
+`T` *extends* [`RouterMethodMap`](../../index/interfaces/RouterMethodMap.md) = [`RouterMethodMap`](../../index/interfaces/RouterMethodMap.md)
 
 Router method map type for type-safe method handling
 
-• **C** *extends* [`RouterContext`](../../index/interfaces/RouterContext.md) = [`RouterContext`](../../index/interfaces/RouterContext.md)
+### C
+
+`C` *extends* [`RouterContext`](../../index/interfaces/RouterContext.md) = [`RouterContext`](../../index/interfaces/RouterContext.md)
 
 Router context type for session and origin information
 
@@ -64,13 +68,13 @@ Router context type for session and origin information
 
 ## Constructors
 
-### new PermissivePermissionsManager()
+### Constructor
 
-> **new PermissivePermissionsManager**\<`T`, `C`\>(): [`PermissivePermissionsManager`](PermissivePermissionsManager.md)\<`T`, `C`\>
+> **new PermissivePermissionsManager**\<`T`, `C`\>(): `PermissivePermissionsManager`\<`T`, `C`\>
 
 #### Returns
 
-[`PermissivePermissionsManager`](PermissivePermissionsManager.md)\<`T`, `C`\>
+`PermissivePermissionsManager`\<`T`, `C`\>
 
 ## Methods
 
@@ -78,7 +82,7 @@ Router context type for session and origin information
 
 > **approvePermissions**(`_context`, `_PermissionRequest`): `Promise`\<[`HumanReadableChainPermissions`](../../index/type-aliases/HumanReadableChainPermissions.md)\>
 
-Defined in: [core/router/src/permissions/permissive.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/permissive.ts#L116)
+Defined in: [core/router/src/permissions/permissive.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/permissions/permissive.ts#L116)
 
 Handle permission approval requests.
 Called when new permissions are requested or existing ones are updated.
@@ -116,7 +120,7 @@ Promise resolving to the permissive permissions configuration
 
 > **checkPermissions**(`_context`, `_request`): `Promise`\<`boolean`\>
 
-Defined in: [core/router/src/permissions/permissive.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/permissive.ts#L101)
+Defined in: [core/router/src/permissions/permissive.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/permissions/permissive.ts#L101)
 
 Verify if a method call is permitted.
 Called before each method invocation to enforce permissions.
@@ -155,7 +159,7 @@ Promise resolving to true for all requests
 
 > **getPermissions**(): `Promise`\<[`HumanReadableChainPermissions`](../../index/type-aliases/HumanReadableChainPermissions.md)\>
 
-Defined in: [core/router/src/permissions/permissive.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/permissions/permissive.ts#L87)
+Defined in: [core/router/src/permissions/permissive.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/permissions/permissive.ts#L87)
 
 Get current permissions in human-readable format.
 Used for displaying current permission state to users.

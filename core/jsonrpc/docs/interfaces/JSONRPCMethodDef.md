@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: JSONRPCMethodDef\<P, R\>
 
-Defined in: [core/jsonrpc/src/types.ts:132](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L132)
+Defined in: [core/jsonrpc/src/types.ts:132](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L132)
 
 Defines a JSON-RPC method's parameter and result types, with optional serialization.
 
@@ -30,9 +30,13 @@ type DateMethod = JSONRPCMethodDef<
 
 ## Type Parameters
 
-• **P** *extends* [`JSONRPCParams`](../type-aliases/JSONRPCParams.md) = [`JSONRPCParams`](../type-aliases/JSONRPCParams.md)
+### P
 
-• **R** = `unknown`
+`P` *extends* [`JSONRPCParams`](../type-aliases/JSONRPCParams.md) = [`JSONRPCParams`](../type-aliases/JSONRPCParams.md)
+
+### R
+
+`R` = `unknown`
 
 ## Properties
 
@@ -40,7 +44,7 @@ type DateMethod = JSONRPCMethodDef<
 
 > `optional` **params**: `P`
 
-Defined in: [core/jsonrpc/src/types.ts:134](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L134)
+Defined in: [core/jsonrpc/src/types.ts:134](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L134)
 
 The parameters of the method.
 
@@ -50,7 +54,7 @@ The parameters of the method.
 
 > **result**: `R`
 
-Defined in: [core/jsonrpc/src/types.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L136)
+Defined in: [core/jsonrpc/src/types.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L136)
 
 The result of the method.
 
@@ -60,6 +64,6 @@ The result of the method.
 
 > `optional` **serializer**: [`JSONRPCSerializer`](JSONRPCSerializer.md)\<`P`, `R`\>
 
-Defined in: [core/jsonrpc/src/types.ts:138](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L138)
+Defined in: [core/jsonrpc/src/types.ts:138](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L138)
 
 Optional serializer for parameters and result

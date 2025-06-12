@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.3.1**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.4.0**](../README.md)
 
 ***
 
@@ -6,8 +6,13 @@
 
 # Variable: AztecWalletErrorMap
 
-> `const` **AztecWalletErrorMap**: `Record`\<[`AztecWalletErrorType`](../type-aliases/AztecWalletErrorType.md), \{ `code`: `number`; `message`: `string`; \}\>
+> `const` `readonly` **AztecWalletErrorMap**: `Record`\<`AztecWalletErrorType`, \{ `code`: `number`; `message`: `string`; \}\>
 
-Defined in: [aztec/rpc-wallet/src/errors.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/3c9bdc4653f00d451f270132236708c0e3f71a3c/aztec/rpc-wallet/src/errors.ts#L38)
+Defined in: [aztec/rpc-wallet/src/errors.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/errors.ts#L59)
 
-Map of error codes and messages for Aztec Wallet RPC errors.
+A map associating each AztecWalletErrorType with a specific JSON-RPC error code
+and a human-readable message. This map is used by the [AztecWalletError](../classes/AztecWalletError.md) class
+to construct standardized error objects.
+
+The error codes are chosen from the range typically reserved for server-defined errors
+in JSON-RPC (e.g., -32000 to -32099).

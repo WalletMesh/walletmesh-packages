@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.4.0**](../../README.md)
+[**@walletmesh/router v0.5.0**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: PermissionManager\<T, C\>
 
-Defined in: [core/router/src/types.ts:185](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L185)
+Defined in: [core/router/src/types.ts:158](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L158)
 
 Interface for implementing permission management strategies.
 Handles all aspects of permission lifecycle including approval,
@@ -32,11 +32,15 @@ class MyPermissionManager implements PermissionManager {
 
 ## Type Parameters
 
-• **T** *extends* [`RouterMethodMap`](RouterMethodMap.md)
+### T
+
+`T` *extends* [`RouterMethodMap`](RouterMethodMap.md)
 
 Router method map type for type-safe method handling
 
-• **C** *extends* [`RouterContext`](RouterContext.md)
+### C
+
+`C` *extends* [`RouterContext`](RouterContext.md)
 
 Router context type for session and origin information
 
@@ -46,7 +50,7 @@ Router context type for session and origin information
 
 > **approvePermissions**: [`PermissionApprovalCallback`](../type-aliases/PermissionApprovalCallback.md)\<`C`\>
 
-Defined in: [core/router/src/types.ts:190](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L190)
+Defined in: [core/router/src/types.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L163)
 
 Handle permission approval requests.
 Called when new permissions are requested or existing ones are updated.
@@ -57,7 +61,7 @@ Called when new permissions are requested or existing ones are updated.
 
 > **checkPermissions**: [`PermissionCheckCallback`](../type-aliases/PermissionCheckCallback.md)\<`T`, `C`\>
 
-Defined in: [core/router/src/types.ts:196](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L196)
+Defined in: [core/router/src/types.ts:169](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L169)
 
 Verify if a method call is permitted.
 Called before each method invocation to enforce permissions.
@@ -68,7 +72,7 @@ Called before each method invocation to enforce permissions.
 
 > `optional` **cleanup**: [`PermissionCleanupCallback`](../type-aliases/PermissionCleanupCallback.md)\<`C`\>
 
-Defined in: [core/router/src/types.ts:208](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L208)
+Defined in: [core/router/src/types.ts:181](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L181)
 
 Optional cleanup handler for when sessions end.
 Used to clean up any permission state when sessions are terminated.
@@ -79,7 +83,7 @@ Used to clean up any permission state when sessions are terminated.
 
 > **getPermissions**: [`PermissionGetCallback`](../type-aliases/PermissionGetCallback.md)\<`C`\>
 
-Defined in: [core/router/src/types.ts:202](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L202)
+Defined in: [core/router/src/types.ts:175](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L175)
 
 Get current permissions in human-readable format.
 Used for displaying current permission state to users.

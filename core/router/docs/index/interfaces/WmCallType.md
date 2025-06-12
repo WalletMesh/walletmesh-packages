@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.4.0**](../../README.md)
+[**@walletmesh/router v0.5.0**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WmCallType\<M\>
 
-Defined in: [core/router/src/types.ts:391](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L391)
+Defined in: [core/router/src/types.ts:364](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L364)
 
 Type definition for the wm_call method parameters and result.
 This type enables type-safe method calls to wallets through the router.
@@ -28,7 +28,9 @@ const result = await router.request<WmCallType<'eth_getBalance'>>('wm_call', {
 
 ## Type Parameters
 
-• **M** *extends* keyof [`RouterMethodMap`](RouterMethodMap.md)
+### M
+
+`M` *extends* keyof [`RouterMethodMap`](RouterMethodMap.md)
 
 The specific method being called from RouterMethodMap
 
@@ -38,7 +40,7 @@ The specific method being called from RouterMethodMap
 
 > **params**: `object`
 
-Defined in: [core/router/src/types.ts:392](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L392)
+Defined in: [core/router/src/types.ts:365](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L365)
 
 #### call
 
@@ -58,4 +60,4 @@ Defined in: [core/router/src/types.ts:392](https://github.com/WalletMesh/walletm
 
 > **result**: [`MethodResult`](../type-aliases/MethodResult.md)\<`M`\>
 
-Defined in: [core/router/src/types.ts:397](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L397)
+Defined in: [core/router/src/types.ts:370](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L370)

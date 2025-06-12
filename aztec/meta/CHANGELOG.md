@@ -1,5 +1,21 @@
 # @walletmesh/aztec
 
+## 0.4.0
+
+### Minor Changes
+
+- cb714b7: This meta-package has been updated to include the latest versions of its dependencies.
+
+  - Updated dependencies on `@walletmesh/aztec-rpc-wallet` and `@walletmesh/aztec-helpers`.
+  - Upgraded core `@aztec/aztec.js` dependency to `0.87.8`.
+
+### Patch Changes
+
+- Updated dependencies [cb714b7]
+- Updated dependencies [cb714b7]
+  - @walletmesh/aztec-helpers@0.4.0
+  - @walletmesh/aztec-rpc-wallet@0.4.0
+
 ## 0.3.1
 
 ### Patch Changes

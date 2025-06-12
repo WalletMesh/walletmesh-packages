@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.4.0**](../../README.md)
+[**@walletmesh/router v0.5.0**](../../README.md)
 
 ***
 
@@ -6,16 +6,18 @@
 
 # Type Alias: PermissionApprovalCallback()\<C\>
 
-> **PermissionApprovalCallback**\<`C`\>: (`context`, `permissionRequest`) => `Promise`\<[`HumanReadableChainPermissions`](HumanReadableChainPermissions.md)\>
+> **PermissionApprovalCallback**\<`C`\> = (`context`, `permissionRequest`) => `Promise`\<[`HumanReadableChainPermissions`](HumanReadableChainPermissions.md)\>
 
-Defined in: [core/router/src/types.ts:109](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L109)
+Defined in: [core/router/src/types.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L82)
 
 Callback for handling permission approval requests.
 Called when a client requests new permissions or updates existing ones.
 
 ## Type Parameters
 
-• **C** *extends* [`RouterContext`](../interfaces/RouterContext.md)
+### C
+
+`C` *extends* [`RouterContext`](../interfaces/RouterContext.md)
 
 ## Parameters
 

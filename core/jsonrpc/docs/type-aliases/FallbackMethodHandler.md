@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Type Alias: FallbackMethodHandler()\<C\>
 
-> **FallbackMethodHandler**\<`C`\>: (`context`, `method`, `params`) => `Promise`\<[`MethodResponse`](MethodResponse.md)\<`unknown`\>\>
+> **FallbackMethodHandler**\<`C`\> = (`context`, `method`, `params`) => `Promise`\<[`MethodResponse`](MethodResponse.md)\<`unknown`\>\>
 
-Defined in: [core/jsonrpc/src/types.ts:711](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L711)
+Defined in: [core/jsonrpc/src/types.ts:738](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L738)
 
 Function type for handling unregistered JSON-RPC method calls.
 The fallback handler receives the context, method name, and raw parameters,
@@ -16,7 +16,9 @@ and can implement custom logic for handling unknown methods.
 
 ## Type Parameters
 
-• **C** *extends* [`JSONRPCContext`](JSONRPCContext.md)
+### C
+
+`C` *extends* [`JSONRPCContext`](JSONRPCContext.md)
 
 The context type for method handlers
 

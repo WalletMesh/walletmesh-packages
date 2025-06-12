@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Type Alias: MethodHandler()\<T, M, C\>
 
-> **MethodHandler**\<`T`, `M`, `C`\>: (`context`, `method`, `params`) => `Promise`\<[`MethodResponse`](MethodResponse.md)\<`T`\[`M`\]\[`"result"`\]\>\>
+> **MethodHandler**\<`T`, `M`, `C`\> = (`context`, `method`, `params`) => `Promise`\<[`MethodResponse`](MethodResponse.md)\<`T`\[`M`\]\[`"result"`\]\>\>
 
-Defined in: [core/jsonrpc/src/types.ts:201](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L201)
+Defined in: [core/jsonrpc/src/types.ts:201](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L201)
 
 Function type for handling JSON-RPC method calls.
 Method handlers receive a context object and typed parameters,
@@ -17,15 +17,21 @@ a success result or an error.
 
 ## Type Parameters
 
-• **T** *extends* [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md)
+### T
+
+`T` *extends* [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md)
 
 The RPC method map defining available methods and their types
 
-• **M** *extends* keyof `T`
+### M
+
+`M` *extends* keyof `T`
 
 The specific method name being handled (must be a key of T)
 
-• **C** *extends* [`JSONRPCContext`](JSONRPCContext.md) = [`JSONRPCContext`](JSONRPCContext.md)
+### C
+
+`C` *extends* [`JSONRPCContext`](JSONRPCContext.md) = [`JSONRPCContext`](JSONRPCContext.md)
 
 The context type for method handlers (defaults to JSONRPCContext)
 

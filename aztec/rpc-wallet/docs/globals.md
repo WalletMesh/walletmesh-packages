@@ -1,36 +1,36 @@
-[**@walletmesh/aztec-rpc-wallet v0.3.1**](README.md)
+[**@walletmesh/aztec-rpc-wallet v0.4.0**](README.md)
 
 ***
 
-# @walletmesh/aztec-rpc-wallet v0.3.1
+# @walletmesh/aztec-rpc-wallet v0.4.0
 
 ## Classes
 
-- [AztecChainProvider](classes/AztecChainProvider.md)
-- [AztecChainWallet](classes/AztecChainWallet.md)
-- [AztecProvider](classes/AztecProvider.md)
+- [AztecDappWallet](classes/AztecDappWallet.md)
+- [AztecRouterProvider](classes/AztecRouterProvider.md)
 - [AztecWalletError](classes/AztecWalletError.md)
 - [ContractArtifactCache](classes/ContractArtifactCache.md)
 
 ## Interfaces
 
-- [AztecWalletBaseMethodMap](interfaces/AztecWalletBaseMethodMap.md)
-- [AztecWalletEventMap](interfaces/AztecWalletEventMap.md)
+- [AztecHandlerContext](interfaces/AztecHandlerContext.md)
+- [AztecWalletContext](interfaces/AztecWalletContext.md)
 - [AztecWalletMethodMap](interfaces/AztecWalletMethodMap.md)
 
 ## Type Aliases
 
 - [AztecChainId](type-aliases/AztecChainId.md)
-- [AztecChainWalletMiddleware](type-aliases/AztecChainWalletMiddleware.md)
-- [AztecWalletContext](type-aliases/AztecWalletContext.md)
-- [AztecWalletErrorType](type-aliases/AztecWalletErrorType.md)
-- [AztecWalletMethodHandler](type-aliases/AztecWalletMethodHandler.md)
-- [AztecWalletMiddleware](type-aliases/AztecWalletMiddleware.md)
-- [AztecWalletRouterClient](type-aliases/AztecWalletRouterClient.md)
-- [TransactionFunctionCall](type-aliases/TransactionFunctionCall.md)
-- [TransactionParams](type-aliases/TransactionParams.md)
 
 ## Variables
 
+- [ALL\_AZTEC\_METHODS](variables/ALL_AZTEC_METHODS.md)
 - [AztecWalletErrorMap](variables/AztecWalletErrorMap.md)
-- [AztecWalletErrorType](variables/AztecWalletErrorType.md)
+- [AztecWalletSerializer](variables/AztecWalletSerializer.md)
+
+## Functions
+
+- [connectAztec](functions/connectAztec.md)
+- [createAztecWallet](functions/createAztecWallet.md)
+- [createAztecWalletNode](functions/createAztecWalletNode.md)
+- [registerAztecSerializers](functions/registerAztecSerializers.md)
+- [registerWalletAztecSerializers](functions/registerWalletAztecSerializers.md)

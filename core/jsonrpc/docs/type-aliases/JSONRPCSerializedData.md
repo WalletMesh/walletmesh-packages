@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -6,22 +6,12 @@
 
 # Type Alias: JSONRPCSerializedData
 
-> **JSONRPCSerializedData**: `object`
+> **JSONRPCSerializedData** = `object`
 
-Defined in: [core/jsonrpc/src/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L48)
+Defined in: [core/jsonrpc/src/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L48)
 
 Represents serialized data in a JSON-RPC message.
 Used by serializers to convert complex types to/from JSON-compatible format.
-
-## Type declaration
-
-### method
-
-> **method**: `string`
-
-### serialized
-
-> **serialized**: `string`
 
 ## Example
 
@@ -30,3 +20,19 @@ const serialized: JSONRPCSerializedData = {
   serialized: JSON.stringify({ date: new Date().toISOString() })
 };
 ```
+
+## Properties
+
+### method
+
+> **method**: `string`
+
+Defined in: [core/jsonrpc/src/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L50)
+
+***
+
+### serialized
+
+> **serialized**: `string`
+
+Defined in: [core/jsonrpc/src/types.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L49)

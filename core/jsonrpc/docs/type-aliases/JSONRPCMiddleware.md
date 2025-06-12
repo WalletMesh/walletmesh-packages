@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Type Alias: JSONRPCMiddleware()\<T, C\>
 
-> **JSONRPCMiddleware**\<`T`, `C`\>: (`context`, `request`, `next`) => `Promise`\<[`JSONRPCResponse`](../interfaces/JSONRPCResponse.md)\<`T`\>\>
+> **JSONRPCMiddleware**\<`T`, `C`\> = (`context`, `request`, `next`) => `Promise`\<[`JSONRPCResponse`](../interfaces/JSONRPCResponse.md)\<`T`\>\>
 
-Defined in: [core/jsonrpc/src/types.ts:410](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L410)
+Defined in: [core/jsonrpc/src/types.ts:410](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L410)
 
 Represents a middleware function that can intercept and modify JSON-RPC requests/responses.
 Middleware functions are executed in order before and after method handlers,
@@ -16,11 +16,15 @@ allowing for cross-cutting concerns like logging, authentication, and error hand
 
 ## Type Parameters
 
-• **T** *extends* [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md)
+### T
+
+`T` *extends* [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md)
 
 The RPC method map defining available methods and their types
 
-• **C** *extends* [`JSONRPCContext`](JSONRPCContext.md)
+### C
+
+`C` *extends* [`JSONRPCContext`](JSONRPCContext.md)
 
 The context type shared between middleware and handlers (defaults to JSONRPCContext)
 

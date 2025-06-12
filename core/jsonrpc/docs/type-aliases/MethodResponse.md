@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Type Alias: MethodResponse\<T\>
 
-> **MethodResponse**\<`T`\>: \{ `data`: `T`; `success`: `true`; \} \| \{ `error`: \{ `code`: `number`; `data`: `string` \| `Record`\<`string`, `unknown`\>; `message`: `string`; \}; `success`: `false`; \}
+> **MethodResponse**\<`T`\> = \{ `data`: `T`; `success`: `true`; \} \| \{ `error`: \{ `code`: `number`; `data?`: `string` \| `Record`\<`string`, `unknown`\>; `message`: `string`; \}; `success`: `false`; \}
 
-Defined in: [core/jsonrpc/src/types.ts:674](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L674)
+Defined in: [core/jsonrpc/src/types.ts:701](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L701)
 
 Represents the response from a method handler.
 Uses a discriminated union to distinguish between success and error cases.
@@ -16,7 +16,9 @@ The success field acts as a type guard to narrow the response type.
 
 ## Type Parameters
 
-• **T**
+### T
+
+`T`
 
 The type of the successful result data
 

@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.4.0**](../../README.md)
+[**@walletmesh/router v0.5.0**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: OperationBuilder\<T\>
 
-Defined in: [core/router/src/operation.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/operation.ts#L50)
+Defined in: [core/router/src/operation.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/operation.ts#L50)
 
 A builder class that enables chaining multiple RPC method calls into a single operation.
 This provides a fluent interface for constructing sequences of wallet method calls
@@ -26,17 +26,23 @@ const [balance, code] = await operation.execute();
 
 ## Type Parameters
 
-• **T** *extends* readonly [`MethodCall`](../interfaces/MethodCall.md)[] = readonly \[\]
+### T
+
+`T` *extends* readonly [`MethodCall`](../interfaces/MethodCall.md)[] = readonly \[\]
 
 Tuple type tracking the sequence of method calls
 
 ## Constructors
 
-### new OperationBuilder()
+### Constructor
 
-> **new OperationBuilder**\<`T`\>(`chainId`, `provider`, `calls`): [`OperationBuilder`](OperationBuilder.md)\<`T`\>
+> **new OperationBuilder**\<`T`\>(`chainId`, `provider`, `calls`): `OperationBuilder`\<`T`\>
 
-Defined in: [core/router/src/operation.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/operation.ts#L51)
+Defined in: [core/router/src/operation.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/operation.ts#L58)
+
+**`Internal`**
+
+Creates an instance of OperationBuilder.
 
 #### Parameters
 
@@ -44,32 +50,40 @@ Defined in: [core/router/src/operation.ts:51](https://github.com/WalletMesh/wall
 
 `string`
 
+The chain ID for which this operation is being built.
+
 ##### provider
 
 [`WalletRouterProvider`](WalletRouterProvider.md)
+
+The WalletRouterProvider instance used to execute calls.
 
 ##### calls
 
 `T` = `...`
 
+An initial array of method calls (usually empty).
+
 #### Returns
 
-[`OperationBuilder`](OperationBuilder.md)\<`T`\>
+`OperationBuilder`\<`T`\>
 
 ## Methods
 
 ### call()
 
-> **call**\<`M`\>(`method`, `params`?): [`OperationBuilder`](OperationBuilder.md)\<readonly \[`T`, [`MethodCall`](../interfaces/MethodCall.md)\<`M`\>\]\>
+> **call**\<`M`\>(`method`, `params?`): `OperationBuilder`\<readonly \[`T`, [`MethodCall`](../interfaces/MethodCall.md)\<`M`\>\]\>
 
-Defined in: [core/router/src/operation.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/operation.ts#L73)
+Defined in: [core/router/src/operation.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/operation.ts#L80)
 
 Adds a new method call to the operation chain.
 Returns a new builder instance with the updated call sequence.
 
 #### Type Parameters
 
-• **M** *extends* keyof [`RouterMethodMap`](../interfaces/RouterMethodMap.md)
+##### M
+
+`M` *extends* keyof [`RouterMethodMap`](../interfaces/RouterMethodMap.md)
 
 The specific method key from RouterMethodMap
 
@@ -89,7 +103,7 @@ Optional parameters for the method
 
 #### Returns
 
-[`OperationBuilder`](OperationBuilder.md)\<readonly \[`T`, [`MethodCall`](../interfaces/MethodCall.md)\<`M`\>\]\>
+`OperationBuilder`\<readonly \[`T`, [`MethodCall`](../interfaces/MethodCall.md)\<`M`\>\]\>
 
 A new OperationBuilder instance with the added method call
 
@@ -105,9 +119,9 @@ const operation = provider.chain('eip155:1')
 
 ### execute()
 
-> **execute**(`timeout`?): `Promise`\<`ExecuteResult`\<`T`\>\>
+> **execute**(`timeout?`): `Promise`\<`ExecuteResult`\<`T`\>\>
 
-Defined in: [core/router/src/operation.ts:108](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/operation.ts#L108)
+Defined in: [core/router/src/operation.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/operation.ts#L116)
 
 Executes all method calls in the operation chain in sequence.
 For a single call, returns the direct result.
@@ -118,6 +132,8 @@ For multiple calls, returns an array of results in the same order as the calls.
 ##### timeout?
 
 `number`
+
+Optional timeout in milliseconds for the entire operation execution.
 
 #### Returns
 

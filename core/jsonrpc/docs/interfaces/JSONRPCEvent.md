@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: JSONRPCEvent\<T, E\>
 
-Defined in: [core/jsonrpc/src/types.ts:569](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L569)
+Defined in: [core/jsonrpc/src/types.ts:596](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L596)
 
 Represents a JSON-RPC 2.0 event message.
 Events are similar to notifications but use 'event' instead of 'method'.
@@ -40,11 +40,15 @@ const statusEvent: JSONRPCEvent<EventMap, 'statusUpdate'> = {
 
 ## Type Parameters
 
-• **T** *extends* [`JSONRPCEventMap`](JSONRPCEventMap.md)
+### T
+
+`T` *extends* [`JSONRPCEventMap`](JSONRPCEventMap.md)
 
 The event map defining available events and their payload types
 
-• **E** *extends* keyof `T`
+### E
+
+`E` *extends* keyof `T`
 
 The specific event being emitted (must be a key of T)
 
@@ -54,7 +58,7 @@ The specific event being emitted (must be a key of T)
 
 > **event**: `E`
 
-Defined in: [core/jsonrpc/src/types.ts:573](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L573)
+Defined in: [core/jsonrpc/src/types.ts:600](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L600)
 
 The event name.
 
@@ -64,7 +68,7 @@ The event name.
 
 > **jsonrpc**: `"2.0"`
 
-Defined in: [core/jsonrpc/src/types.ts:571](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L571)
+Defined in: [core/jsonrpc/src/types.ts:598](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L598)
 
 The JSON-RPC version ('2.0').
 
@@ -74,6 +78,6 @@ The JSON-RPC version ('2.0').
 
 > **params**: `T`\[`E`\]
 
-Defined in: [core/jsonrpc/src/types.ts:575](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L575)
+Defined in: [core/jsonrpc/src/types.ts:602](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L602)
 
 The event payload.
