@@ -1,53 +1,56 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv, searchForWorkspaceRoot } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import topLevelAwait from 'vite-plugin-top-level-await';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+
+const nodeModulesPath = `${searchForWorkspaceRoot(process.cwd())}/node_modules`;
 
 // https://vite.dev/config/
-export default defineConfig({
-  cacheDir: '/tmp/.vite',
-  plugins: [
-    react(),
-    // https://github.com/AztecProtocol/aztec-packages/issues/5050
-    nodePolyfills({
-      include: [
-        'buffer',
-        'crypto',
-        'events',
-        // @ts-expect-error - fs/promises is not in the types
-        'fs/promises',
-        'path',
-        'process',
-        'stream',
-        'string_decoder',
-        'tty',
-        'util',
-      ],
-    }),
-    topLevelAwait(),
-  ],
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks(id: string) {
-          if (id.includes('bb-prover')) {
-            return '@aztec/bb-prover';
-          }
-        },
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd());
+  return {
+    cacheDir: '/tmp/.vite',
+    resolve: {
+      alias: {
+        pino: 'pino/browser',
+        // Handle lodash modules
+        'lodash.chunk': 'lodash/chunk',
+        'lodash.isequal': 'lodash/isEqual',
       },
     },
-  },
-  optimizeDeps: {
-    exclude: ['@noir-lang/acvm_js', '@noir-lang/noirc_abi', '@aztec/bb-prover'],
-    esbuildOptions: {
-      supported: {
-        'top-level-await': true,
+    plugins: [
+      react(),
+      nodePolyfills({
+        include: ['buffer', 'path', 'process'],
+      }),
+      viteStaticCopy({
+        targets: [
+          {
+            src: `${nodeModulesPath}/@aztec/noir-acvm_js/web/acvm_js_bg.wasm`,
+            dest: 'assets',
+          },
+          {
+            src: `${nodeModulesPath}/@aztec/noir-noirc_abi/web/noirc_abi_wasm_bg.wasm`,
+            dest: 'assets',
+          },
+        ],
+      }),
+    ],
+    server: {
+      headers: {
+        'Cross-Origin-Embedder-Policy': 'require-corp',
+        'Cross-Origin-Opener-Policy': 'same-origin',
       },
+      host: '127.0.0.1',
     },
-  },
-  esbuild: {
-    supported: {
-      'top-level-await': true,
+    assetsInclude: ['**/*.wasm'],
+    define: {
+      'process.env': JSON.stringify({
+        LOG_LEVEL: env.LOG_LEVEL || 'info',
+      }),
     },
-  },
+    build: {
+      sourcemap: true,
+    },
+  };
 });

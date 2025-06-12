@@ -1,83 +1,86 @@
-import type {
-  AztecWalletContext,
-  AztecChainWalletMiddleware,
-  TransactionParams,
-  TransactionFunctionCall,
-} from '@walletmesh/aztec-rpc-wallet';
+import type { JSONRPCMiddleware } from '@walletmesh/jsonrpc';
+import type { AztecWalletMethodMap, AztecHandlerContext } from '@walletmesh/aztec-rpc-wallet';
+import type { PXE } from '@aztec/aztec.js';
+import { getFunctionParameterInfoFromContractAddress } from '@walletmesh/aztec-helpers';
 
-import { applyToMethods } from '@walletmesh/jsonrpc';
-import {
-  getFunctionParameterInfoFromContractAddress,
-  type FunctionParameterInfo,
-} from '@walletmesh/aztec/helpers';
+export type FunctionArgNames = Record<string, Record<string, Array<{ name: string; type: string }>>>;
 
-export type FunctionArgNames = Record<string, Record<string, FunctionParameterInfo[]>>;
+// TODO(twt): this middleware does not work and needs an overhaul to support the latest @walletmesh/aztec-rpc-wallet methods
 
 /**
- * Stores function parameter information for a given contract and function
- * @param context - The RPC context containing PXE and function argument names
- * @param contractAddress - The address of the contract
- * @param functionName - The name of the function
+ * Middleware that extracts function parameter information for Aztec transactions.
+ * This enriches the context with parameter names and types for better transaction display.
  */
-async function storeFunctionParamInfo(
-  context: AztecWalletContext,
-  contractAddress: string,
-  functionName: string,
-) {
-  const paramInfo = await getFunctionParameterInfoFromContractAddress(
-    context.pxe,
-    contractAddress,
-    functionName,
-  );
+export const createFunctionArgNamesMiddleware = (
+  pxe: PXE,
+): JSONRPCMiddleware<
+  AztecWalletMethodMap,
+  AztecHandlerContext & { functionCallArgNames?: FunctionArgNames }
+> => {
+  return async (context, req, next) => {
+    // Only process transaction-related methods
+    if (req.method === 'aztec_contractInteraction' || req.method === 'aztec_wmDeployContract') {
+      const functionCallArgNames: FunctionArgNames = {};
 
-  if (!context.functionCallArgNames) {
-    context.functionCallArgNames = {} as FunctionArgNames;
-  }
+      try {
+        if (req.method === 'aztec_contractInteraction' && req.params && typeof req.params === 'object') {
+          // biome-ignore lint/suspicious/noExplicitAny: demo
+          const params = req.params as any;
 
-  const functionCallArgNames = context.functionCallArgNames as FunctionArgNames;
-  if (!functionCallArgNames[contractAddress]) {
-    functionCallArgNames[contractAddress] = {};
-  }
+          // Extract function calls from executionPayload
+          if ('executionPayload' in params && params.executionPayload?.calls) {
+            const calls = params.executionPayload.calls as Array<{
+              name: string;
+              to: { toString: () => string };
+              args: unknown[];
+            }>;
 
-  functionCallArgNames[contractAddress][functionName] = paramInfo;
-}
+            // Extract parameter info for each function call
+            for (const call of calls) {
+              if (!call.to || !call.name) continue;
 
-/**
- * Middleware that captures and stores function argument names for transactions
- * @param isConnectedRef - Reference to connection status
- * @returns Middleware function that processes aztec_sendTransaction and aztec_simulateTransaction
- */
-export const functionArgNamesMiddleware = (
-  isConnectedRef: React.MutableRefObject<boolean>,
-): AztecChainWalletMiddleware => {
-  return applyToMethods(
-    ['aztec_sendTransaction', 'aztec_simulateTransaction'],
-    async (context, req, next) => {
-      if (!isConnectedRef.current) return next();
+              try {
+                const contractAddress = call.to.toString();
+                const paramInfo = await getFunctionParameterInfoFromContractAddress(
+                  pxe,
+                  contractAddress,
+                  call.name,
+                );
 
-      if (req.method === 'aztec_sendTransaction') {
-        const { functionCalls } = req.params as TransactionParams;
-        if (functionCalls) {
-          const uniqueCalls = new Set<string>();
-          const uniqueFunctionCalls = functionCalls.filter((call) => {
-            const key = `${call.contractAddress}-${call.functionName}`;
-            if (uniqueCalls.has(key)) return false;
-            uniqueCalls.add(key);
-            return true;
-          });
+                if (!functionCallArgNames[contractAddress]) {
+                  functionCallArgNames[contractAddress] = {};
+                }
 
-          await Promise.all(
-            uniqueFunctionCalls.map((call) =>
-              storeFunctionParamInfo(context, call.contractAddress, call.functionName),
-            ),
-          );
+                functionCallArgNames[contractAddress][call.name] = paramInfo;
+              } catch (error) {
+                // Silently ignore errors for individual calls
+                console.warn(`Failed to get parameter info for ${call.name}:`, error);
+              }
+            }
+          }
+        } else if (req.method === 'aztec_wmDeployContract' && req.params && typeof req.params === 'object') {
+          // For deployContract, we could potentially extract constructor parameter info
+          // from the artifact, but this would require a different approach
+          // For now, we'll just note that this is a deployment
+          // biome-ignore lint/suspicious/noExplicitAny: demo
+          const params = req.params as any;
+          if ('artifact' in params && params.artifact?.name) {
+            // Store a special marker for deployments
+            functionCallArgNames['__deployment__'] = {
+              [params.artifact.name]: params.constructorName
+                ? [{ name: 'constructor', type: params.constructorName }]
+                : [{ name: 'constructor', type: 'default' }],
+            };
+          }
         }
-      } else {
-        const { contractAddress, functionName } = req.params as TransactionFunctionCall;
-        await storeFunctionParamInfo(context, contractAddress, functionName);
+      } catch (error) {
+        console.error('Error in functionArgNamesMiddleware:', error);
       }
 
-      return next();
-    },
-  );
+      // Add to context for downstream use
+      context.functionCallArgNames = functionCallArgNames;
+    }
+
+    return next();
+  };
 };

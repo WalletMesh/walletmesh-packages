@@ -1,0 +1,60 @@
+.params-display {
+  margin: 10px 0;
+}
+
+.params-actions {
+  margin-left: 10px;
+}
+
+.params-button {
+  margin-left: 5px;
+  padding: 2px 8px;
+  font-size: 12px;
+  background: var(--button-bg, #f0f0f0);
+  border: 1px solid var(--button-border, #ccc);
+  color: var(--button-text, #000);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.params-button:hover {
+  background: var(--button-hover-bg, #e0e0e0);
+}
+
+.params-content {
+  background: var(--code-bg, #f5f5f5);
+  border: 1px solid var(--code-border, #ddd);
+  color: var(--code-text, #000);
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.request-details {
+  margin: 5px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .params-button {
+    --button-bg: #3a3a3a;
+    --button-border: #555;
+    --button-text: #fff;
+    --button-hover-bg: #4a4a4a;
+  }
+  
+  .params-content {
+    --code-bg: #2a2a2a;
+    --code-border: #444;
+    --code-text: #e0e0e0;
+  }
+}

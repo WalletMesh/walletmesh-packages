@@ -1,8 +1,21 @@
+/**
+ * @module @walletmesh/aztec-rpc-wallet/errors
+ *
+ * This module defines custom error types and codes specific to the Aztec RPC Wallet.
+ * It provides a structured way to represent errors that can occur during
+ * interactions with the Aztec wallet, aligning with JSON-RPC error standards
+ * while offering more specific error information.
+ */
+
 import { JSONRPCError } from '@walletmesh/jsonrpc';
 
 /**
- * Enum of available Aztec Wallet RPC error types.
+ * An object acting as an enum for specific Aztec Wallet RPC error types.
+ * Each key represents a distinct error condition that can occur within the Aztec wallet system.
+ * These keys are used to look up corresponding error codes and messages in {@link AztecWalletErrorMap}.
+ *
  * @public
+ * @readonly
  */
 export const AztecWalletErrorType = {
   unknownInternalError: 'unknownInternalError',
@@ -25,19 +38,27 @@ export const AztecWalletErrorType = {
 } as const;
 
 /**
- * Type representing valid Aztec Wallet RPC error types.
+ * A type alias representing the string literal union of all valid keys from {@link AztecWalletErrorType}.
+ * This provides type safety when referring to specific Aztec wallet error types.
+ *
  * @public
- * @typeParam AztecWalletErrorType - String literal union of error type values
  */
 export type AztecWalletErrorType = (typeof AztecWalletErrorType)[keyof typeof AztecWalletErrorType];
 
 /**
- * Map of error codes and messages for Aztec Wallet RPC errors.
+ * A map associating each {@link AztecWalletErrorType} with a specific JSON-RPC error code
+ * and a human-readable message. This map is used by the {@link AztecWalletError} class
+ * to construct standardized error objects.
+ *
+ * The error codes are chosen from the range typically reserved for server-defined errors
+ * in JSON-RPC (e.g., -32000 to -32099).
+ *
  * @public
+ * @readonly
  */
 export const AztecWalletErrorMap: Record<AztecWalletErrorType, { code: number; message: string }> = {
   unknownInternalError: { code: -32000, message: 'Unknown internal error' },
-  refused: { code: -32001, message: 'User refused transaction' },
+  refused: { code: -32001, message: 'User refused transaction' }, // Or request
   walletNotConnected: { code: -32002, message: 'Wallet not connected' },
   contractInstanceNotRegistered: { code: -32003, message: 'Contract instance not registered' },
   contractClassNotRegistered: { code: -32004, message: 'Contract class not registered' },
@@ -56,16 +77,42 @@ export const AztecWalletErrorMap: Record<AztecWalletErrorType, { code: number; m
 };
 
 /**
- * Custom error class for Aztec Wallet RPC errors.
+ * Custom error class for representing errors specific to the Aztec RPC Wallet.
+ * It extends the base {@link JSONRPCError} from `@walletmesh/jsonrpc` and uses
+ * predefined error types and messages from {@link AztecWalletErrorMap}.
+ *
+ * This class allows for consistent error handling and reporting within the
+ * Aztec wallet system, providing both a standard JSON-RPC error code and
+ * a more specific Aztec error type.
+ *
  * @public
+ * @example
+ * ```typescript
+ * if (!isConnected) {
+ *   throw new AztecWalletError('walletNotConnected', 'Attempted to call method while disconnected.');
+ * }
+ * ```
  */
 export class AztecWalletError extends JSONRPCError {
   /**
-   * Creates a new AztecWalletError.
-   * @param err - The error type from AztecWalletErrorMap
-   * @param data - Optional additional error data
+   * The specific Aztec wallet error type.
    */
-  constructor(err: AztecWalletErrorType, data?: string) {
-    super(AztecWalletErrorMap[err].code, AztecWalletErrorMap[err].message, data);
+  public readonly aztecErrorType: AztecWalletErrorType;
+
+  /**
+   * Creates a new `AztecWalletError` instance.
+   *
+   * @param errorType - The specific {@link AztecWalletErrorType} identifying the error.
+   *                    This key is used to look up the code and message from {@link AztecWalletErrorMap}.
+   * @param data - Optional additional data associated with the error. This can be a string
+   *               or a record, providing more context. It will be included in the `data`
+   *               field of the JSON-RPC error object.
+   */
+  constructor(errorType: AztecWalletErrorType, data?: string | Record<string, unknown>) {
+    const errorDetails = AztecWalletErrorMap[errorType];
+    super(errorDetails.code, errorDetails.message, data);
+    this.aztecErrorType = errorType;
+    // Ensure the name property is set to the class name
+    this.name = 'AztecWalletError';
   }
 }

@@ -432,51 +432,68 @@ export type JSONRPCMiddleware<T extends JSONRPCMethodMap, C extends JSONRPCConte
 export type JSONRPCContext = Record<string, unknown>;
 
 /**
- * Function type for sending JSON-RPC messages between nodes.
- * Implement this to provide the actual transport mechanism for message delivery.
+ * Bidirectional transport interface for JSON-RPC communication.
+ * Implement this to provide the actual transport mechanism for message delivery and reception.
  * The transport layer handles message serialization and delivery between nodes.
  *
  * @example
  * ```typescript
- * // WebSocket transport with reconnection and error handling
+ * // WebSocket transport
  * const wsTransport: JSONRPCTransport = {
- *   send: message => {
+ *   send: async message => {
  *     if (ws.readyState !== WebSocket.OPEN) {
  *       throw new Error('WebSocket not connected');
  *     }
  *     ws.send(JSON.stringify(message));
+ *   },
+ *   onMessage: callback => {
+ *     ws.onmessage = event => {
+ *       callback(JSON.parse(event.data));
+ *     };
  *   }
  * };
  *
  * // postMessage transport with origin validation
  * const windowTransport: JSONRPCTransport = {
- *   send: message => {
+ *   send: async message => {
  *     if (!targetWindow) {
  *       throw new Error('Target window not available');
  *     }
  *     targetWindow.postMessage(JSON.stringify(message), targetOrigin);
+ *   },
+ *   onMessage: callback => {
+ *     window.addEventListener('message', event => {
+ *       if (event.origin === targetOrigin && event.data) {
+ *         callback(event.data);
+ *       }
+ *     });
  *   }
  * };
  *
- * // HTTP transport with fetch
+ * // HTTP long-polling transport
  * const httpTransport: JSONRPCTransport = {
  *   send: async message => {
- *     try {
- *       const response = await fetch('https://api.example.com/jsonrpc', {
- *         method: 'POST',
- *         headers: {
- *           'Content-Type': 'application/json',
- *           'Authorization': `Bearer ${token}`
- *         },
- *         body: JSON.stringify(message)
- *       });
- *       if (!response.ok) {
- *         throw new Error(`HTTP error: ${response.status}`);
+ *     await fetch('https://api.example.com/jsonrpc', {
+ *       method: 'POST',
+ *       headers: {
+ *         'Content-Type': 'application/json',
+ *         'Authorization': `Bearer ${token}`
+ *       },
+ *       body: JSON.stringify(message)
+ *     });
+ *   },
+ *   onMessage: callback => {
+ *     const poll = async () => {
+ *       try {
+ *         const response = await fetch('https://api.example.com/jsonrpc/poll');
+ *         const messages = await response.json();
+ *         messages.forEach(callback);
+ *       } catch (error) {
+ *         console.error('Polling error:', error);
  *       }
- *     } catch (error) {
- *       console.error('Transport error:', error);
- *       throw error;
- *     }
+ *       setTimeout(poll, 1000); // Poll every second
+ *     };
+ *     poll();
  *   }
  * };
  * ```
@@ -493,6 +510,16 @@ export interface JSONRPCTransport {
    * @throws {Error} If message delivery fails (e.g., connection lost)
    */
   send(message: unknown): Promise<void>;
+
+  /**
+   * Register a callback to receive messages from the remote node.
+   * The JSONRPCNode will call this method during initialization to set up
+   * message reception. The transport should call the provided callback
+   * whenever a message is received from the remote side.
+   *
+   * @param callback - Function to call when messages are received
+   */
+  onMessage(callback: (message: unknown) => void): void;
 }
 
 /**

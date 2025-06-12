@@ -1,63 +1,36 @@
-import type { JSONRPCMethodMap, JSONRPCEventMap, JSONRPCRequest } from '@walletmesh/jsonrpc';
+import type {
+  JSONRPCMethodMap,
+  JSONRPCEventMap,
+  JSONRPCRequest,
+  JSONRPCParams,
+  JSONRPCTransport,
+} from '@walletmesh/jsonrpc';
 
 /**
- * Interface for wallet clients that can be used with the router.
- * Wallet clients provide a standardized way to interact with different blockchain wallets,
- * supporting both method calls and event handling.
+ * Method map for wallet JSON-RPC communication.
+ * Extends the base JSONRPCMethodMap to include wallet-specific methods and
+ * allows for dynamic method names with unknown parameters and return types.
  *
  * @example
  * ```typescript
- * class EthereumWalletClient implements WalletClient {
- *   async call<T>(method: string, params?: unknown): Promise<T> {
- *     // Forward to Ethereum wallet
- *     return ethereum.request({ method, params });
- *   }
- *
- *   on(event: string, handler: (data: unknown) => void): void {
- *     // Listen for Ethereum events
- *     ethereum.on(event, handler);
- *   }
- *
- *   off(event: string, handler: (data: unknown) => void): void {
- *     ethereum.removeListener(event, handler);
- *   }
- * }
+ * // Ethereum wallet methods
+ * type EthereumMethods = {
+ *   eth_accounts: { params: undefined; result: string[] };
+ *   eth_sendTransaction: {
+ *     params: [{ to: string; value: string; data?: string }];
+ *     result: string
+ *   };
+ * } & WalletMethodMap;
  * ```
  */
-export interface WalletClient {
-  /**
-   * Call a method on the wallet
-   * @template T - The expected return type of the method call
-   * @param method - Method name to invoke (e.g., 'eth_accounts', 'eth_sendTransaction')
-   * @param params - Method parameters, can be an array for positional params or an object for named params
-   * @returns Promise resolving to the method result of type T
-   * @throws {Error} If the method call fails or is rejected by the wallet
-   */
-  call<T = unknown>(method: string, params?: unknown): Promise<T>;
-
-  /**
-   * Get supported capabilities of the wallet
-   * @returns Promise resolving to the list of supported method names
-   * @throws {Error} If the capabilities request fails
-   */
-  getSupportedMethods?(): Promise<string[]>;
-
-  /**
-   * Register an event handler for wallet events
-   * Events include:
-   * - 'disconnect': Emitted when the wallet disconnects
-   *
-   * @param event - Event name to listen for
-   * @param handler - Function to call when the event occurs
-   */
-  on?(event: string, handler: (data: unknown) => void): void;
-
-  /**
-   * Remove a previously registered event handler
-   * @param event - Event name to stop listening for
-   * @param handler - Handler function to remove (must be the same reference as used in 'on')
-   */
-  off?(event: string, handler: (data: unknown) => void): void;
+export interface WalletMethodMap extends JSONRPCMethodMap {
+  wm_getSupportedMethods: {
+    result: string[];
+  };
+  [method: string]: {
+    params?: JSONRPCParams;
+    result: unknown;
+  };
 }
 
 /**
@@ -300,18 +273,18 @@ export interface BulkCallParams extends Record<string, unknown> {
 }
 
 /**
- * Maps chain IDs to their corresponding wallet client instances.
- * Used by the router to maintain connections to multiple chains.
+ * Maps chain IDs to their corresponding transport instances.
+ * The router will create JSONRPCProxy instances for each transport.
  *
  * @example
  * ```typescript
  * const wallets = new Map([
- *   ['aztec:testnet', new MyWalletClient(...)],
- *   ['eip155:1', new JSONRPCWalletClient(...)]
+ *   ['aztec:testnet', aztecTransport],
+ *   ['eip155:1', ethereumTransport]
  * ]);
  * ```
  */
-export type Wallets = Map<ChainId, WalletClient>;
+export type Wallets = Map<ChainId, JSONRPCTransport>;
 
 /**
  * Router event map for bi-directional communication.

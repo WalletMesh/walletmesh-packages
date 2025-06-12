@@ -1,6 +1,5 @@
 import { describe, expect, it, vi, beforeEach, type Mock } from 'vitest';
 import type { AztecAddress, ContractArtifact, Fr, Wallet } from '@aztec/aztec.js';
-import { randomDeployedContract } from '@aztec/circuit-types';
 import { ContractArtifactCache } from './contractArtifactCache.js';
 import { AztecWalletError } from './errors.js';
 
@@ -13,13 +12,25 @@ describe('ContractArtifactCache', () => {
 
   beforeEach(async () => {
     // Mock contract address and class ID
-    // Create a complete mock of AztecAddress
+    // Create mocks instead of using randomDeployedContract to avoid native binding issues
+    mockContractAddress = {
+      toString: () => '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
+      equals: () => false,
+      isZero: () => false,
+      toField: () => mockContractClassId,
+    } as unknown as AztecAddress;
 
-    const { instance, artifact } = await randomDeployedContract();
+    mockContractClassId = {
+      toString: () => '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+      toBigInt: () => BigInt(123),
+    } as unknown as Fr;
 
-    mockContractAddress = instance.address;
-    mockContractClassId = instance.contractClassId;
-    mockArtifact = artifact;
+    mockArtifact = {
+      name: 'TestContract',
+      functions: [],
+      outputs: {},
+      fileMap: {},
+    } as unknown as ContractArtifact;
 
     // Create mock wallet
     wallet = {
@@ -50,7 +61,7 @@ describe('ContractArtifactCache', () => {
   it('fetches and caches artifact on cache miss', async () => {
     // Setup: Configure wallet mocks
     (wallet.getContractMetadata as Mock).mockResolvedValue({
-      contractInstance: { contractClassId: mockContractClassId },
+      contractInstance: { currentContractClassId: mockContractClassId },
     });
     (wallet.getContractClassMetadata as Mock).mockResolvedValue({ artifact: mockArtifact });
 
@@ -90,7 +101,7 @@ describe('ContractArtifactCache', () => {
   it('throws error if contract class metadata not found', async () => {
     // Setup: Mock contract metadata found but class metadata missing
     (wallet.getContractMetadata as Mock).mockResolvedValue({
-      contractInstance: { contractClassId: mockContractClassId },
+      contractInstance: { currentContractClassId: mockContractClassId },
     });
     (wallet.getContractClassMetadata as Mock).mockResolvedValue({ artifact: undefined });
 

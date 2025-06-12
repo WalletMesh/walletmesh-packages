@@ -5,62 +5,39 @@ import { MessageValidator } from './message-validator.js';
 
 /**
  * Handles serialization and deserialization of JSON-RPC method parameters and results.
- * Supports custom serializers for complex types and provides fallback serialization.
+ * Supports custom serializers for complex types.
  *
  * @example
  * ```typescript
  * // Create serializer instance
  * const serializer = new ParameterSerializer();
  *
- * // Set fallback serializer for dates
- * serializer.setFallbackSerializer({
+ * // Use serializer with a custom serializer
+ * const customSerializer = {
  *   params: {
- *     serialize: (value, method) => ({
+ *     serialize: (method, value) => ({
  *       serialized: value instanceof Date ? value.toISOString() : String(value),
  *       method
  *     }),
- *     deserialize: (data, method) => new Date(data.serialized)
+ *     deserialize: (method, data) => new Date(data.serialized)
  *   }
- * });
+ * };
  *
- * // Use serializer
+ * // Serialize and deserialize with custom serializer
  * const params = { date: new Date() };
- * const serialized = serializer.serializeParams('processDate', params);
- * const deserialized = serializer.deserializeParams('processDate', serialized);
+ * const serialized = await serializer.serializeParams('processDate', params, customSerializer);
+ * const deserialized = await serializer.deserializeParams('processDate', serialized, customSerializer);
  * ```
  */
 export class ParameterSerializer {
   private validator: MessageValidator;
-  private fallbackSerializer?: JSONRPCSerializer<unknown, unknown>;
 
   constructor() {
     this.validator = new MessageValidator();
   }
 
   /**
-   * Sets a fallback serializer to use when no method-specific serializer is available.
-   *
-   * @param serializer - The serializer to use as fallback
-   *
-   * @example
-   * ```typescript
-   * serializer.setFallbackSerializer({
-   *   params: {
-   *     serialize: (value, method) => ({
-   *       serialized: JSON.stringify(value),
-   *       method
-   *     }),
-   *     deserialize: (data, method) => JSON.parse(data.serialized)
-   *   }
-   * });
-   * ```
-   */
-  public setFallbackSerializer(serializer: JSONRPCSerializer<unknown, unknown>): void {
-    this.fallbackSerializer = serializer;
-  }
-
-  /**
-   * Deserializes method parameters using the provided serializer or fallback.
+   * Deserializes method parameters using the provided serializer.
    *
    * @param method - The method name associated with these parameters
    * @param params - The parameters to deserialize
@@ -71,10 +48,10 @@ export class ParameterSerializer {
    * @example
    * ```typescript
    * // Deserialize date parameter
-   * const params = serializer.deserializeParams('processDate', {
+   * const params = await serializer.deserializeParams('processDate', {
    *   serialized: '2023-01-01T00:00:00Z',
    *   method: 'processDate'
-   * });
+   * }, dateSerializer);
    * ```
    */
   public async deserializeParams<P, R>(
@@ -87,25 +64,6 @@ export class ParameterSerializer {
     }
 
     if (!serializer?.params) {
-      // Use fallback serializer if available
-      if (this.fallbackSerializer?.params) {
-        const serializedData = this.validateSerializedData(params, 'params');
-
-        try {
-          const deserializedParams = await this.fallbackSerializer.params.deserialize(method, serializedData);
-          if (!this.validator.isValidParams(deserializedParams)) {
-            throw new JSONRPCError(-32602, 'Invalid deserialized params format from fallback serializer');
-          }
-          return deserializedParams as P;
-        } catch (error) {
-          if (error instanceof JSONRPCError) {
-            throw error;
-          }
-          // For non-Error throws or other errors, treat as server error
-          throw new JSONRPCError(-32000, error instanceof Error ? error.message : 'Unknown error');
-        }
-      }
-
       return params as P;
     }
 
@@ -120,7 +78,7 @@ export class ParameterSerializer {
   }
 
   /**
-   * Serializes method parameters using the provided serializer or fallback.
+   * Serializes method parameters using the provided serializer.
    *
    * @param method - The method name associated with these parameters
    * @param params - The parameters to serialize
@@ -131,9 +89,9 @@ export class ParameterSerializer {
    * @example
    * ```typescript
    * // Serialize date parameter
-   * const serialized = serializer.serializeParams('processDate', {
+   * const serialized = await serializer.serializeParams('processDate', {
    *   date: new Date()
-   * });
+   * }, dateSerializer);
    * ```
    */
   public async serializeParams<P, R>(
@@ -145,14 +103,6 @@ export class ParameterSerializer {
       return undefined;
     }
     if (!serializer?.params) {
-      // Use fallback serializer if available
-      if (this.fallbackSerializer?.params) {
-        const serializedData = await this.fallbackSerializer.params.serialize(method, params);
-        if (!isJSONRPCSerializedData(serializedData)) {
-          throw new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer');
-        }
-        return { ...serializedData, method };
-      }
       return params;
     }
     const serializedData = await serializer.params.serialize(method, params);
@@ -163,7 +113,7 @@ export class ParameterSerializer {
   }
 
   /**
-   * Deserializes method result using the provided serializer or fallback.
+   * Deserializes method result using the provided serializer.
    *
    * @param method - The method name associated with this result
    * @param result - The result to deserialize
@@ -174,10 +124,10 @@ export class ParameterSerializer {
    * @example
    * ```typescript
    * // Deserialize date result
-   * const result = serializer.deserializeResult('processDate', {
+   * const result = await serializer.deserializeResult('processDate', {
    *   serialized: '2023-01-01T00:00:00Z',
    *   method: 'processDate'
-   * });
+   * }, dateSerializer);
    * ```
    */
   public async deserializeResult<P, R>(
@@ -190,31 +140,14 @@ export class ParameterSerializer {
     }
 
     if (!serializer?.result) {
-      // Use fallback serializer if available
-      if (this.fallbackSerializer?.result) {
-        const serializedData = this.validateSerializedData(result, 'result');
-        try {
-          const deserializedResult = await this.fallbackSerializer.result.deserialize(method, serializedData);
-          if (!this.validator.isValidValue(deserializedResult)) {
-            throw new JSONRPCError(-32602, 'Invalid deserialized result format from fallback serializer');
-          }
-          return deserializedResult as R;
-        } catch (error) {
-          if (error instanceof JSONRPCError) {
-            throw error;
-          }
-          throw new JSONRPCError(-32602, 'Invalid deserialized result format from fallback serializer');
-        }
-      }
       return result as R;
     }
 
     const serializedData = this.validateSerializedData(result, 'result');
     try {
       const deserializedResult = await serializer.result.deserialize(method, serializedData);
-      if (!this.validator.isValidValue(deserializedResult)) {
-        throw new JSONRPCError(-32602, 'Invalid serialized data format');
-      }
+      // Don't validate the deserialized result with isValidValue because custom serializers
+      // are specifically designed to handle non-JSON types like class instances
       return deserializedResult as R;
     } catch (error) {
       if (error instanceof JSONRPCError) {
@@ -225,7 +158,7 @@ export class ParameterSerializer {
   }
 
   /**
-   * Serializes method result using the provided serializer or fallback.
+   * Serializes method result using the provided serializer.
    *
    * @param method - The method name associated with this result
    * @param result - The result to serialize
@@ -236,7 +169,7 @@ export class ParameterSerializer {
    * @example
    * ```typescript
    * // Serialize date result
-   * const serialized = serializer.serializeResult('processDate', new Date());
+   * const serialized = await serializer.serializeResult('processDate', new Date(), dateSerializer);
    * ```
    */
   public async serializeResult<P, R>(
@@ -248,14 +181,6 @@ export class ParameterSerializer {
       return undefined;
     }
     if (!serializer?.result) {
-      // Use fallback serializer if available
-      if (this.fallbackSerializer?.result) {
-        const serializedData = await this.fallbackSerializer.result.serialize(method, result);
-        if (!isJSONRPCSerializedData(serializedData)) {
-          throw new JSONRPCError(-32602, 'Invalid serialized data format from fallback serializer');
-        }
-        return { ...serializedData, method };
-      }
       return result;
     }
     const serializedData = await serializer.result.serialize(method, result);

@@ -1,57 +1,74 @@
-/**
- * @module contractArtifactCache
- *
- * This module provides caching functionality for Aztec contract artifacts.
- * It helps improve performance by avoiding repeated fetches of the same contract artifacts.
- */
-
 import type { AztecAddress, ContractArtifact, Wallet } from '@aztec/aztec.js';
 
 import { AztecWalletError } from './errors.js';
 
 /**
- * Caches contract artifacts to optimize contract interactions.
+ * Manages an in-memory cache for Aztec {@link ContractArtifact}s.
  *
- * This class maintains an in-memory cache of contract artifacts indexed by contract address.
- * When a contract artifact is requested:
- * 1. First checks the cache for an existing artifact
- * 2. If not found, fetches the contract instance and its artifact from the wallet
- * 3. Stores the artifact in the cache for future use
- * 4. Returns the artifact to the caller
+ * This class is designed to optimize performance by reducing redundant fetches
+ * of contract artifacts. When an artifact is requested for a given contract address,
+ * the cache first checks its local store. If the artifact is not found (a cache miss),
+ * it uses the provided {@link Wallet} instance to retrieve the contract's metadata,
+ * then its class metadata (which includes the artifact), stores it in the cache,
+ * and finally returns it. Subsequent requests for the same artifact will be served
+ * directly from the cache.
  *
- * This caching mechanism helps reduce:
- * - Network requests to fetch contract data
- * - Processing overhead of parsing contract artifacts
- * - Memory usage by reusing existing artifacts
+ * This caching strategy helps to:
+ * - Minimize network requests to the PXE or node for contract data.
+ * - Reduce processing overhead associated with fetching and parsing artifacts.
+ * - Conserve memory by reusing already loaded artifact instances.
+ *
+ * The cache is typically used within the `AztecHandlerContext` on the wallet-side
+ * to provide efficient artifact access to RPC method handlers.
+ *
+ * @see {@link AztecHandlerContext}
+ * @see {@link Wallet}
+ * @see {@link ContractArtifact}
  */
 export class ContractArtifactCache {
-  /** Map of contract addresses to their artifacts */
+  /**
+   * In-memory map storing contract artifacts, keyed by their stringified {@link AztecAddress}.
+   * @internal
+   */
   private cache = new Map<string, ContractArtifact>();
-  /** Reference to the wallet instance for fetching contract data */
+
+  /**
+   * Reference to the `aztec.js` {@link Wallet} instance used to fetch contract
+   * metadata and artifacts in case of a cache miss.
+   * @internal
+   */
   private wallet: Wallet;
 
   /**
-   * Creates a new ContractArtifactCache instance.
-   * @param wallet - Wallet instance used to fetch contract data when cache misses occur
+   * Creates a new `ContractArtifactCache` instance.
+   *
+   * @param wallet - The `aztec.js` {@link Wallet} instance that will be used to
+   *                 fetch contract metadata and artifacts if they are not found
+   *                 in the cache. This wallet should be capable of calling
+   *                 `getContractMetadata` and `getContractClassMetadata`.
    */
   constructor(wallet: Wallet) {
     this.wallet = wallet;
   }
 
   /**
-   * Retrieves the contract artifact for a given contract address.
-   * First checks the cache, then falls back to fetching from the wallet if needed.
+   * Retrieves the {@link ContractArtifact} for a given {@link AztecAddress}.
    *
-   * The process:
-   * 1. Check if artifact exists in cache
-   * 2. If not, get contract instance from wallet
-   * 3. Use instance to get contract class ID
-   * 4. Fetch artifact using class ID
-   * 5. Cache the artifact for future use
+   * This method implements a cache-aside pattern:
+   * 1. It first checks if the artifact for the `contractAddress` is already in the cache.
+   * 2. If found (cache hit), the cached artifact is returned immediately.
+   * 3. If not found (cache miss):
+   *    a. It fetches the {@link ContractMetadata} for the `contractAddress` using the wallet.
+   *    b. It then fetches the {@link ContractClassMetadata} using the class ID from the contract metadata.
+   *       This class metadata is expected to contain the artifact.
+   *    c. The retrieved artifact is stored in the cache, associated with the `contractAddress`.
+   *    d. The artifact is then returned.
    *
-   * @param contractAddress - The contract address to retrieve the artifact for
-   * @returns Promise resolving to the contract artifact
-   * @throws {AztecWalletError} If contract instance or class not registered
+   * @param contractAddress - The {@link AztecAddress} of the contract whose artifact is to be retrieved.
+   * @returns A promise that resolves to the {@link ContractArtifact}.
+   * @throws {AztecWalletError} if the contract instance or its class (and thus artifact)
+   *                            is not registered with the wallet or cannot be found.
+   *                            Also re-throws other errors encountered during wallet calls.
    */
   public async getContractArtifact(contractAddress: AztecAddress): Promise<ContractArtifact> {
     const addressStr = contractAddress.toString();
@@ -67,10 +84,12 @@ export class ContractArtifactCache {
         throw new AztecWalletError('contractInstanceNotRegistered', addressStr);
       }
 
-      const contractClassMetadata = await this.wallet.getContractClassMetadata(contract.contractClassId);
+      const contractClassMetadata = await this.wallet.getContractClassMetadata(
+        contract.currentContractClassId,
+      );
       const artifact = contractClassMetadata.artifact;
       if (!artifact) {
-        throw new AztecWalletError('contractClassNotRegistered', contract.contractClassId.toString());
+        throw new AztecWalletError('contractClassNotRegistered', contract.currentContractClassId.toString());
       }
       this.cache.set(addressStr, artifact);
       return artifact;

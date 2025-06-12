@@ -1,22 +1,45 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState, useRef, type FC } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
-  AztecChainWallet,
-  type TransactionFunctionCall,
-  type TransactionParams,
+  createAztecWalletNode,
 } from '@walletmesh/aztec-rpc-wallet'
-import { getSchnorrWallet } from '@aztec/accounts/schnorr';
-import { createPXEClient, type PXE } from '@aztec/aztec.js';
+
+import { WalletRouter, type ChainId, createLocalTransportPair, type WalletRouterConfig } from '@walletmesh/router'
+import { getSchnorrAccount } from '@aztec/accounts/schnorr';
+import { getInitialTestAccounts } from '@aztec/accounts/testing';
+import { createAztecNodeClient, waitForNode, waitForPXE, type AztecNode, type PXE } from '@aztec/aztec.js';
+import { createPXEService, getPXEServiceConfig } from '@aztec/pxe/client/lazy';
+
 import Approve from './Approve.js';
 import './Wallet.css';
 import FunctionCallDisplay from './FunctionCallDisplay.js';
-import { createConnectionMiddleware } from '../middlewares/connectionMiddleware';
-import { createApprovalMiddleware } from '../middlewares/approvalMiddleware';
-import { createHistoryMiddleware, type HistoryEntry } from '../middlewares/historyMiddleware';
-import { functionArgNamesMiddleware } from '../middlewares/functionArgNamesMiddleware';
+import ParameterDisplay from './ParameterDisplay.js';
+import { useToast } from '../contexts/ToastContext.js';
+import { ApprovalPermissionManager } from './ApprovalPermissionManager.js';
+import { createOriginMiddleware } from '../middlewares/originMiddleware.js';
+import { createFunctionArgNamesMiddleware, type FunctionArgNames } from '../middlewares/functionArgNamesMiddleware.js';
+import { createHistoryMiddleware } from '../middlewares/historyMiddleware.js';
 
-import { TEST_ACCOUNT_SCHNORR_ADDRESS, TEST_ACCOUNT_SCHNORR_SIGNING } from '../lib/sandbox-data.js';
+import initNoircAbiWasm from '@aztec/noir-noirc_abi/web/noirc_abi_wasm.js';
+import initAcvmJs from '@aztec/noir-acvm_js/web/acvm_js.js';
 
+// Define types that were removed from the refactored library
+interface TransactionFunctionCall {
+  contractAddress: string;
+  functionName: string;
+  args: unknown[];
+}
+
+interface TransactionParams {
+  functionCalls: TransactionFunctionCall[];
+}
+
+/**
+ * @internal
+ * Type guard to check if an unknown params object matches the {@link TransactionParams} structure.
+ * @param params - The parameters to check.
+ * @returns True if params is a TransactionParams object, false otherwise.
+ */
 function isTransactionParams(params: unknown): params is TransactionParams {
   return (
     typeof params === 'object' &&
@@ -26,6 +49,12 @@ function isTransactionParams(params: unknown): params is TransactionParams {
   );
 }
 
+/**
+ * @internal
+ * Type guard to check if an unknown params object matches the {@link TransactionFunctionCall} structure.
+ * @param params - The parameters to check.
+ * @returns True if params is a TransactionFunctionCall object, false otherwise.
+ */
 function isTransactionFunctionCall(params: unknown): params is TransactionFunctionCall {
   return (
     typeof params === 'object' &&
@@ -36,90 +65,248 @@ function isTransactionFunctionCall(params: unknown): params is TransactionFuncti
   );
 }
 
-const Wallet: FC = () => {
-  const [pendingRequest, setPendingRequest] = useState<any>(null);
-  const isConnectedRef = useRef(false);
-  const [requestHistory, setRequestHistory] = useState<HistoryEntry[]>([]);
-  const setupDoneRef = useRef(false);
+/**
+ * Creates and initializes a PXE (Private eXecution Environment) client.
+ * This function handles the configuration and setup necessary for the PXE service,
+ * including specific error handling for browser environments where IndexedDB might be blocked.
+ *
+ * @param node - An initialized AztecNode client.
+ * @param showError - Callback function to display error messages to the user (e.g., via toasts).
+ * @returns A promise that resolves to an initialized PXE instance.
+ * @throws If PXE creation or initialization fails.
+ */
+export async function createPXE(node: AztecNode, showError: (msg: string) => void): Promise<PXE> {
+  const l1Contracts = await node.getL1ContractAddresses();
+  const nodeInfo = await node.getNodeInfo();
 
+  const config = getPXEServiceConfig();
+  const fullConfig = {
+    ...config,
+    l1Contracts,
+    l1ChainId: nodeInfo.l1ChainId,
+    rollupVersion: nodeInfo.rollupVersion,
+    dataDirectory: undefined,
+  };
+
+
+  try {
+    const pxe = await createPXEService(node, fullConfig);
+    await waitForPXE(pxe);
+    return pxe;
+  } catch (error: any) {
+    // Check if it's an IndexedDB error
+    if (error.message?.includes('denied permission') || error.name === 'UnknownError') {
+      console.error('IndexedDB is blocked:', error);
+      showError('This example requires IndexedDB to work. Your browser is blocking IndexedDB access. Please check: You are not in private/incognito mode, Storage is not disabled in browser settings');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Represents an entry in the request history log displayed by the Wallet component.
+ */
+interface HistoryEntry {
+  time: string;
+  origin: string;
+  method: string;
+  params: unknown;  // Make required to match middleware
+  status?: string;
+  functionArgNames?: FunctionArgNames;
+  id?: number;
+}
+
+/**
+ * Props for the {@link Wallet} component.
+ */
+interface WalletProps {
+  /** Details of a pending approval request, if any. Passed from the App component. */
+  pendingApproval?: {
+    origin: string;
+    chainId: string;
+    method: string;
+    params?: unknown;
+    resolve: (approved: boolean) => void;
+  } | null;
+  /** Callback invoked when the user responds to an approval request. */
+  onApprovalResponse?: (approved: boolean) => void;
+  /** Callback passed to ApprovalPermissionManager to trigger the UI approval flow in App.tsx. */
+  onApprovalRequest?: (request: {
+    origin: string;
+    chainId: string;
+    method: string;
+    params?: unknown;
+  }) => Promise<boolean>;
+}
+
+
+/**
+ * Wallet component for the Aztec example application.
+ * This component simulates the "wallet server" side of the WalletMesh architecture. It:
+ * - Initializes an Aztec Node and PXE client.
+ * - Sets up an Aztec AccountWallet.
+ * - Creates a WalletRouter instance with an `ApprovalPermissionManager` to handle UI-based permissions.
+ * - Uses `createAztecWalletNode` to expose the AccountWallet through the router.
+ * - Communicates with the DApp component via `window.postMessage`.
+ * - Displays a history of requests and manages the UI for pending approvals.
+ */
+const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, onApprovalRequest }) => {
+  const { showError } = useToast();
+  /** State for storing and displaying the history of requests received by the router. */
+  const [requestHistory, setRequestHistory] = useState<HistoryEntry[]>([]);
+  /** State indicating if the wallet router and underlying services are initialized. */
+  const [isConnected, setIsConnected] = useState(false);
+  /** State for the connected Aztec account address string. */
+  const [connectedAccount, setConnectedAccount] = useState<string | null>(null);
+
+  /** Ref to ensure wallet setup runs only once. */
+  const setupDoneRef = useRef(false);
+  /** Ref to the WalletRouter instance. */
+  const routerRef = useRef<WalletRouter | null>(null);
+
+  /** Effect to set up the wallet router, Aztec node, PXE, and account wallet on component mount. */
   useEffect(() => {
     if (setupDoneRef.current) return;
     setupDoneRef.current = true;
 
-    let server: AztecChainWallet;
+    let node: AztecNode;
     let pxe: PXE;
 
-    const setupServer = async () => {
+    const setupWalletRouter = async () => {
       try {
-        pxe = createPXEClient(import.meta.env.VITE_PXE_URL);
-        pxe.getPXEInfo().then((info) => { console.log('PXE Info:', info) }).catch(err => window.alert(`Failed connecting to PXE: ${err}`));
+        // Initialize WASM modules first!
+        await initNoircAbiWasm(fetch('/assets/noirc_abi_wasm_bg.wasm'));
+        await initAcvmJs(fetch('/assets/acvm_js_bg.wasm'));
 
-        const wallet = await getSchnorrWallet(pxe, TEST_ACCOUNT_SCHNORR_ADDRESS, TEST_ACCOUNT_SCHNORR_SIGNING);
-        console.debug('Wallet loaded:', wallet.getAddress().toString());
+        node = createAztecNodeClient(import.meta.env.VITE_NODE_URL);
+        await waitForNode(node);
+        pxe = await createPXE(node, showError);
+        await waitForPXE(pxe);
 
-        server = new AztecChainWallet(pxe, wallet, {
-          send: async (response) => {
-            console.debug('Server sending response:', response);
-            window.postMessage({ type: 'wallet_response', data: response }, '*');
+        const [account_0] = await getInitialTestAccounts();
+
+        const account = await getSchnorrAccount(
+          pxe,
+          account_0.secret,
+          account_0.signingKey,
+          account_0.salt,
+        )
+
+        const wallet = await account.register();
+
+        setConnectedAccount(wallet.getAddress().toString());
+
+        // Create local transport pair for wallet node communication
+        const [clientTransport, walletTransport] = createLocalTransportPair();
+
+        // Create Aztec wallet node with proper transport
+        const aztecWalletNode = createAztecWalletNode(wallet, pxe, walletTransport);
+
+        // Add middleware to the wallet node for function arg names and history
+        aztecWalletNode.addMiddleware(createFunctionArgNamesMiddleware(pxe));
+        aztecWalletNode.addMiddleware(createHistoryMiddleware((entries) => setRequestHistory(entries as HistoryEntry[])));
+
+        // Create bidirectional router transport for DApp communication via postMessage
+        const routerTransport = {
+          send: async (message: unknown) => {
+            window.postMessage({
+              type: 'router_to_dapp',
+              data: message
+            }, '*');
+          },
+          onMessage: (callback: (message: unknown) => void) => {
+            // The router receives messages from DApps
+            window.addEventListener('message', event => {
+              if (event.source === window && event.data?.type === 'dapp_to_router') {
+
+                // History is now handled by the middleware
+
+                callback(event.data.data);
+              }
+            });
           }
+        };
+
+        // Create permission manager with approval handling
+        const permissionManager = new ApprovalPermissionManager({
+          onApprovalRequest: onApprovalRequest || (async () => true),
+          // Configure which methods require approval
+          methodsRequiringApproval: ['aztec_getAddress', 'aztec_getCompleteAddress', 'aztec_proveTx', 'aztec_sendTx', 'aztec_simulateUtility', 'aztec_contractInteraction', 'aztec_wmDeployContract', 'aztec_getPrivateEvents', 'aztec_registerContract', 'aztec_registerContractClass']
         });
 
-        // Create middlewares with necessary dependencies
-        server.addMiddleware(createConnectionMiddleware(isConnectedRef));
-        server.addMiddleware(functionArgNamesMiddleware(isConnectedRef));
-        server.addMiddleware(createHistoryMiddleware(setRequestHistory));
-        server.addMiddleware(createApprovalMiddleware(
-          setPendingRequest,
-          setRequestHistory,
-          isConnectedRef
-        ));
-      } catch (error) {
-        console.error('Error setting up server:', error);
-      }
-    };
+        // Create wallets map with the client transport
+        const wallets = new Map<ChainId, import('@walletmesh/jsonrpc').JSONRPCTransport>([
+          ['aztec:31337', clientTransport]
+        ]);
 
-    // Set up message handler
-    const receiveRequest = (event: MessageEvent) => {
-      if (event.source === window && event.data?.type === 'wallet_request') {
-        console.debug('Processing wallet request:', event.data);
-        // Process the request
-        if (server) {
-          server.receiveMessage(event.data.data);
-        } else {
-          console.error('Server not initialized');
-        }
+
+        // Configure router with optional proxy settings
+        const routerConfig: WalletRouterConfig = {
+          proxyConfig: {
+            timeoutMs: 600000, // 10 minutes
+            debug: process.env.NODE_ENV === 'development',
+          },
+          debug: process.env.NODE_ENV === 'development',
+        };
+
+        // Create the router with transports
+        const router = new WalletRouter(routerTransport, wallets, permissionManager, routerConfig);
+
+
+        // Add origin middleware to provide proper origin context
+        router.addMiddleware(createOriginMiddleware(() => window.location.origin));
+
+        routerRef.current = router;
+
+        setIsConnected(true);
+      } catch (error) {
+        console.error('Error setting up wallet router:', error);
+        showError(`Failed to initialize wallet: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     };
 
     // Initialize
-    setupServer().then(() => {
-      window.addEventListener('message', receiveRequest);
-    });
+    setupWalletRouter();
 
-    return () => {
-      window.removeEventListener('message', receiveRequest);
-    };
+  }, [showError, onApprovalRequest]);
 
-  }, []);
+  // History is now handled by the middleware, so we don't need this effect
+
+  /** Handles the "Approve" action from the approval UI. */
+  const handleApprove = () => {
+    if (onApprovalResponse) {
+      onApprovalResponse(true);
+    }
+  };
+
+  /** Handles the "Deny" action from the approval UI. */
+  const handleDeny = () => {
+    if (onApprovalResponse) {
+      onApprovalResponse(false);
+    }
+  };
 
   return (
     <div className="wallet-server">
-      {pendingRequest && (
+      {pendingApproval && onApprovalResponse && (
         <Approve
-          method={pendingRequest.method}
-          params={pendingRequest.params}
-          origin={pendingRequest.origin}
-          functionArgNames={pendingRequest.functionArgNames}
-          onApprove={pendingRequest.onApprove}
-          onDeny={pendingRequest.onDeny}
+          method={pendingApproval.method}
+          params={pendingApproval.params as { functionCalls?: { contractAddress: string; functionName: string; args: unknown[]; }[] | undefined; } | undefined}
+          origin={pendingApproval.origin}
+          functionArgNames={requestHistory.find(h => !h.status)?.functionArgNames}
+          onApprove={handleApprove}
+          onDeny={handleDeny}
         />
       )}
 
-      {!isConnectedRef.current ? (
-        <p className="connection-status disconnected">Not Connected</p>
+      {!isConnected ? (
+        <p className="connection-status disconnected">Initializing Wallet...</p>
       ) : (
         <>
-          <p className="connection-status connected">Connected</p>
+          <p className="connection-status connected">Wallet Ready</p>
+          <p className="connection-status">
+            <strong>Connected Account:</strong> {connectedAccount || 'Loading...'}
+          </p>
           <h3>Request History</h3>
           <ul className="request-history">
             {requestHistory.length === 0 ? (
@@ -136,6 +323,7 @@ const Wallet: FC = () => {
                   <p className="request-details">
                     <b>Method:</b> {request.method}
                   </p>
+                  <ParameterDisplay params={request.params} />
                   {request.method === 'aztec_sendTransaction' &&
                     request.params &&
                     isTransactionParams(request.params) ? (
@@ -147,7 +335,6 @@ const Wallet: FC = () => {
                       />
                     ))
                   ) : null}
-
                   {request.method === 'aztec_simulateTransaction' &&
                     request.params &&
                     isTransactionFunctionCall(request.params) ? (

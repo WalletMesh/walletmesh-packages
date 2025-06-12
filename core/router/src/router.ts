@@ -1,4 +1,10 @@
-import { JSONRPCNode, type JSONRPCTransport } from '@walletmesh/jsonrpc';
+import {
+  JSONRPCNode,
+  JSONRPCProxy,
+  type JSONRPCTransport,
+  type JSONRPCProxyConfig,
+  JSONRPCError,
+} from '@walletmesh/jsonrpc';
 
 import { RouterError } from './errors.js';
 import { defaultStore, type SessionStore } from './session-store.js';
@@ -12,9 +18,37 @@ import type {
   RouterMethodMap,
   RouterEventMap,
   SessionData,
-  WalletClient,
   Wallets,
 } from './types.js';
+
+/**
+ * Configuration options for the WalletRouter.
+ */
+export interface WalletRouterConfig {
+  /**
+   * Optional session store instance for persisting session data.
+   * Defaults to an in-memory store if not provided.
+   * @see {@link SessionStore}
+   * @see {@link MemorySessionStore}
+   * @see {@link LocalStorageSessionStore}
+   */
+  sessionStore?: SessionStore;
+  /**
+   * Optional base configuration for JSONRPCProxy instances created by the router.
+   * This configuration is applied to each wallet proxy, with `chainId` being
+   * automatically set per proxy.
+   * @see {@link JSONRPCProxyConfig}
+   */
+  proxyConfig?: Omit<JSONRPCProxyConfig, 'chainId'>;
+  /**
+   * Optional flag to enable debug logging for router operations.
+   * If true, detailed logs will be output to the console.
+   * This also enables debug logging for underlying JSONRPCProxy instances
+   * unless overridden in `proxyConfig`.
+   * @default false
+   */
+  debug?: boolean;
+}
 
 /**
  * Multi-chain router for managing wallet connections with bi-directional communication.
@@ -56,10 +90,16 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   protected sessionStore: SessionStore;
 
   /**
-   * Map of chain IDs to their corresponding wallet clients
+   * Map of chain IDs to their corresponding proxies
    * @private
    */
-  private wallets: Wallets;
+  private walletProxies: Map<ChainId, JSONRPCProxy>;
+
+  /**
+   * Configuration for the router
+   * @private
+   */
+  private config: WalletRouterConfig;
 
   /**
    * Manager for handling permission requests, checks, and updates
@@ -68,19 +108,12 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   private permissionManager: PermissionManager<RouterMethodMap, RouterContext>;
 
   /**
-   * Map of cleanup functions for wallet event handlers.
-   * Keys are chain IDs, values are functions that clean up all event handlers for that chain.
-   * @private
-   */
-  private walletEventCleanups: Map<ChainId, () => void> = new Map();
-
-  /**
    * Creates a new WalletRouter instance for managing multi-chain wallet connections.
    *
    * @param transport - Transport layer for sending messages
-   * @param wallets - Map of chain IDs to wallet clients
+   * @param wallets - Map of chain IDs to wallet transports
    * @param permissionManager - Manager for handling permissions
-   * @param sessionStore - Optional store for session persistence (defaults to in-memory store)
+   * @param config - Optional router configuration
    *
    * @throws {RouterError} If transport is invalid or required components are missing
    *
@@ -88,9 +121,9 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * ```typescript
    * const router = new WalletRouter(
    *   { send: async (msg) => window.postMessage(msg, '*') },
-   *   new Map([['eip155:1', ethereumWallet]]),
+   *   new Map([['eip155:1', ethereumTransport]]),
    *   new AllowAskDenyManager(askCallback, initialState),
-   *   new LocalStorageSessionStore()
+   *   { sessionStore: new LocalStorageSessionStore(), debug: true }
    * );
    * ```
    */
@@ -98,15 +131,28 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     transport: JSONRPCTransport,
     wallets: Wallets,
     permissionManager: PermissionManager<RouterMethodMap, RouterContext>,
-    sessionStore: SessionStore = defaultStore,
+    config: WalletRouterConfig = {},
   ) {
     super(transport);
-    this.sessionStore = sessionStore;
-    this.wallets = wallets;
+    this.config = config;
+    this.sessionStore = config.sessionStore || defaultStore;
     this.permissionManager = permissionManager;
 
+    // Create proxies for each wallet transport with chain-specific configuration
+    this.walletProxies = new Map();
+    for (const [chainId, walletTransport] of wallets) {
+      const proxyConfig: JSONRPCProxyConfig = {
+        ...config.proxyConfig,
+        chainId,
+      };
+      if (config.debug || config.proxyConfig?.debug) {
+        proxyConfig.debug = true;
+      }
+      this.walletProxies.set(chainId, new JSONRPCProxy(walletTransport, proxyConfig));
+    }
+
     // Add middleware for session validation and permission checks
-    this.addMiddleware(createSessionMiddleware(sessionStore));
+    this.addMiddleware(createSessionMiddleware(this.sessionStore));
     // Add middleware for permission approvals
     this.addMiddleware(
       createPermissionsMiddleware(this.permissionManager.checkPermissions.bind(this.permissionManager)),
@@ -122,53 +168,53 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     this.registerMethod('wm_bulkCall', this.bulkCall.bind(this));
     this.registerMethod('wm_getSupportedMethods', this.getSupportedMethods.bind(this));
 
-    // Setup initial wallet event listeners
-    this.setupWalletEventListeners(wallets);
+    // We no longer need to setup wallet event listeners for proxies
   }
 
   /**
-   * Validates a chain ID and returns its corresponding JSON-RPC client.
+   * Validates a chain ID and returns its corresponding proxy.
    *
    * @param chainId - Chain ID to validate
-   * @returns The wallet client for the specified chain
+   * @returns The proxy instance for the specified chain
    * @throws {RouterError} With code 'unknownChain' if the chain ID is not configured
    *
    * @protected
    */
-  protected validateChain(chainId: ChainId): WalletClient {
-    const client = this.wallets.get(chainId);
-    if (!client) {
-      throw new RouterError('unknownChain');
+  protected validateChain(chainId: ChainId): JSONRPCProxy {
+    const proxy = this.walletProxies.get(chainId);
+    if (!proxy) {
+      throw new RouterError('unknownChain', `Unknown chain: ${chainId}`);
     }
-    return client;
+    return proxy;
   }
 
   /**
-   * Adds a new wallet client for a specific chain ID.
-   * Sets up event listeners and emits availability notification.
+   * Adds a new wallet for a specific chain ID.
    *
    * @param chainId - Chain ID to add wallet for
-   * @param wallet - Wallet client implementation
-   * @throws {RouterError} With code 'invalidRequest' if chain is already configured
+   * @param transport - Wallet transport instance
+   * @throws {RouterError} With code 'chainAlreadyExists' if chain is already configured
    *
    * @example
    * ```typescript
-   * router.addWallet('eip155:137', new JSONRPCWalletClient(
-   *   'https://polygon-rpc.com'
-   * ));
+   * const polygonTransport = createPolygonTransport();
+   * router.addWallet('eip155:137', polygonTransport);
    * ```
    */
-  public addWallet(chainId: ChainId, wallet: WalletClient): void {
-    if (this.wallets.has(chainId)) {
-      throw new RouterError('invalidRequest', `Chain ${chainId} already configured`);
+  public addWallet(chainId: ChainId, transport: JSONRPCTransport): void {
+    if (this.walletProxies.has(chainId)) {
+      throw new RouterError('invalidRequest', `Chain ${chainId} already exists`);
     }
 
-    // Add the wallet
-    this.wallets.set(chainId, wallet);
+    const proxyConfig: JSONRPCProxyConfig = {
+      ...this.config.proxyConfig,
+      chainId,
+    };
+    if (this.config.debug || this.config.proxyConfig?.debug) {
+      proxyConfig.debug = true;
+    }
 
-    // Setup event listeners just for this new wallet
-    const tempMap = new Map([[chainId, wallet]]);
-    this.setupWalletEventListeners(tempMap);
+    this.walletProxies.set(chainId, new JSONRPCProxy(transport, proxyConfig));
 
     // Emit availability changed event
     this.emit('wm_walletAvailabilityChanged', {
@@ -178,8 +224,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
-   * Removes a wallet client for a specific chain ID.
-   * Cleans up event listeners and emits availability notification.
+   * Removes a wallet for a specific chain ID.
    *
    * @param chainId - Chain ID to remove wallet for
    * @throws {RouterError} With code 'unknownChain' if chain is not configured
@@ -190,24 +235,13 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * ```
    */
   public removeWallet(chainId: ChainId): void {
-    if (!this.wallets.has(chainId)) {
+    const proxy = this.walletProxies.get(chainId);
+    if (!proxy) {
       throw new RouterError('unknownChain');
     }
 
-    // Clean up event listeners
-    const cleanup = this.walletEventCleanups.get(chainId);
-    if (cleanup) {
-      try {
-        cleanup();
-      } catch (error) {
-        // Ignore cleanup errors
-        console.error('Error during wallet event cleanup:', error);
-      }
-      this.walletEventCleanups.delete(chainId);
-    }
-
-    // Remove the wallet
-    this.wallets.delete(chainId);
+    proxy.close();
+    this.walletProxies.delete(chainId);
 
     // Emit availability changed event
     this.emit('wm_walletAvailabilityChanged', {
@@ -257,70 +291,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     // Store session data
     await this.sessionStore.set(`${origin}_${sessionId}`, session);
 
-    // Setup event listeners for any new wallets
-    this.setupWalletEventListeners(this.wallets);
-
     return { sessionId, permissions: approvedPermissions };
-  }
-
-  /**
-   * Sets up event listeners for all wallet clients.
-   * Handles wallet events like disconnects and forwards them to clients.
-   *
-   * @param wallets - Map of chain IDs to wallet clients to setup listeners for
-   * @protected
-   */
-  protected setupWalletEventListeners(wallets: Wallets): void {
-    // Clean up any existing listeners
-    for (const cleanup of this.walletEventCleanups.values()) {
-      try {
-        cleanup();
-      } catch (error) {
-        // Ignore cleanup errors - we still want to clear and setup new listeners
-        console.error('Error during wallet event cleanup:', error);
-      }
-    }
-    this.walletEventCleanups.clear();
-
-    // Setup new listeners for each wallet
-    for (const [chainId, wallet] of wallets.entries()) {
-      if (!wallet.on) continue;
-
-      // Create handlers for wallet events
-      const handlers = [
-        {
-          event: 'disconnect',
-          handler: () => {
-            this.emit('wm_walletStateChanged', {
-              chainId,
-              changes: { connected: false },
-            });
-          },
-        },
-      ];
-
-      // Register handlers and collect cleanup functions
-      const cleanups: Array<() => void> = [];
-      for (const { event, handler } of handlers) {
-        wallet.on(event as string, handler);
-        if (wallet.off) {
-          const off = wallet.off; // Capture off method to avoid undefined check
-          cleanups.push(() => off(event as string, handler));
-        }
-      }
-
-      // Store single cleanup function that handles all events
-      this.walletEventCleanups.set(chainId, () => {
-        for (const cleanup of cleanups) {
-          try {
-            cleanup();
-          } catch (error) {
-            // Ignore individual cleanup errors
-            console.error('Error during wallet event cleanup:', error);
-          }
-        }
-      });
-    }
   }
 
   /**
@@ -450,10 +421,9 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
-   * Internal helper to execute a method call on a wallet.
-   * Handles error translation from wallet-specific to router errors.
+   * Forward a method call to a wallet using the proxy
    *
-   * @param client - Wallet client to execute method on
+   * @param proxy - Proxy instance to forward the call through
    * @param methodCall - Method call details including name and parameters
    * @returns Result of the method call
    * @throws {RouterError} With appropriate error code based on failure type
@@ -461,21 +431,50 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * @protected
    */
   protected async _call(
-    client: WalletClient,
+    proxy: JSONRPCProxy,
     methodCall: MethodCall,
   ): Promise<RouterMethodMap['wm_call']['result']> {
+    // Create inner JSON-RPC request
+    const innerRequest = {
+      jsonrpc: '2.0' as const,
+      method: methodCall.method,
+      params: methodCall.params,
+      id: crypto.randomUUID(),
+    };
+
     try {
-      // Forward request to wallet
-      return await client.call(String(methodCall.method), methodCall.params);
-    } catch (error) {
-      // Handle any errors from the wallet client
-      if (error && typeof error === 'object' && 'code' in error && error.code === -32601) {
-        throw new RouterError('methodNotSupported', String(methodCall.method));
+      // Forward the raw message through the proxy
+      const response = await proxy.forward(innerRequest);
+
+      // Extract result or error from response
+      if (response && typeof response === 'object') {
+        if ('result' in response) {
+          return (response as { result: unknown }).result;
+        }
+        if ('error' in response) {
+          const error = (response as { error: { code: number; message: string; data?: unknown } }).error;
+          throw new RouterError(
+            'walletError',
+            error.data ? { message: error.message, data: error.data } : error.message,
+          );
+        }
       }
-      throw new RouterError(
-        'walletNotAvailable',
-        error instanceof Error ? `${error.constructor.name}: ${error.message}` : String(error),
-      );
+
+      throw new RouterError('walletNotAvailable', 'Invalid response from wallet');
+    } catch (error) {
+      if (error instanceof RouterError) {
+        throw error;
+      }
+
+      // Convert JSONRPCError to RouterError for consistent error handling
+      if (error instanceof JSONRPCError) {
+        throw new RouterError(
+          'walletError',
+          error.data ? { message: error.message, data: error.data } : error.message,
+        );
+      }
+
+      throw new RouterError('walletNotAvailable', error instanceof Error ? error.message : String(error));
     }
   }
 
@@ -574,24 +573,37 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     const result: ChainPermissions = {};
 
     for (const chainId of params.chainIds) {
-      const client = this.validateChain(chainId);
-      if (!client.getSupportedMethods) {
-        result[chainId] = [];
-        continue;
-      }
+      const proxy = this.validateChain(chainId);
       try {
-        const methods = await client.getSupportedMethods();
-        result[chainId] = Array.isArray(methods) ? methods : [];
-      } catch (error) {
-        throw error instanceof RouterError
-          ? error
-          : new RouterError(
-              'walletNotAvailable',
-              error instanceof Error ? `${error.constructor.name}: ${error.message}` : String(error),
-            );
+        // Try to call wm_getSupportedMethods via proxy
+        const response = await this._call(proxy, { method: 'wm_getSupportedMethods' });
+        result[chainId] = Array.isArray(response) ? response : [];
+      } catch (error: unknown) {
+        // If the method doesn't exist, return an empty array
+        if (error instanceof RouterError && error.message === 'Wallet returned an error') {
+          result[chainId] = [];
+          continue;
+        }
+        throw error;
       }
     }
 
     return result;
+  }
+
+  /**
+   * Clean up when closing
+   */
+  override async close(): Promise<void> {
+    // Close all proxies
+    for (const [chainId, proxy] of this.walletProxies) {
+      try {
+        proxy.close();
+      } catch (error) {
+        console.warn(`Failed to close proxy for chain ${chainId}:`, error);
+      }
+    }
+    this.walletProxies.clear();
+    await super.close();
   }
 }

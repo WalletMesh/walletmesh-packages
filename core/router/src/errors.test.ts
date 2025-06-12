@@ -12,6 +12,7 @@ describe('RouterErrorMap', () => {
       walletNotAvailable: { code: -32004, message: 'Wallet service not available' },
       partialFailure: { code: -32005, message: 'Partial failure' },
       invalidRequest: { code: -32006, message: 'Invalid request parameters' },
+      walletError: { code: -32007, message: 'Wallet returned an error' },
       unknownError: { code: -32603, message: 'Internal error' },
     });
   });

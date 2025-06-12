@@ -1,4 +1,4 @@
-import { JSONRPCNode } from '@walletmesh/jsonrpc';
+import { JSONRPCNode, type JSONRPCSerializer } from '@walletmesh/jsonrpc';
 
 import type {
   ChainId,
@@ -13,6 +13,7 @@ import type {
 
 import { RouterError } from './errors.js';
 import { OperationBuilder } from './operation.js';
+import { ProviderSerializerRegistry } from './provider-serialization.js';
 
 /**
  * Client-side provider for interacting with the multi-chain router.
@@ -60,6 +61,7 @@ import { OperationBuilder } from './operation.js';
  */
 export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext> {
   private _sessionId: string | undefined;
+  private serializerRegistry = new ProviderSerializerRegistry();
 
   /**
    * Gets the current session ID if connected, undefined otherwise.
@@ -235,16 +237,24 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     if (!this._sessionId) {
       throw new RouterError('invalidSession');
     }
+
+    // Serialize the method call parameters if a serializer is registered
+    const serializedCall = await this.serializerRegistry.serializeCall(call as MethodCall<string>);
+
     const result = await this.callMethod(
       'wm_call',
       {
         chainId,
-        call,
+        call: serializedCall as MethodCall,
         sessionId: this._sessionId,
       },
       timeout,
     );
-    return result as RouterMethodMap[M]['result'];
+
+    // Deserialize the result if a serializer is registered
+    const deserializedResult = await this.serializerRegistry.deserializeResult(call.method as string, result);
+
+    return deserializedResult as RouterMethodMap[M]['result'];
   }
 
   /**
@@ -283,16 +293,30 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     if (!this._sessionId) {
       throw new RouterError('invalidSession');
     }
-    const result = await this.callMethod(
+
+    // Serialize each method call
+    const serializedCalls = await Promise.all(
+      calls.map((call) => this.serializerRegistry.serializeCall(call as MethodCall<string>)),
+    );
+
+    const results = await this.callMethod(
       'wm_bulkCall',
       {
         chainId,
-        calls: [...calls],
+        calls: serializedCalls as MethodCall[],
         sessionId: this._sessionId,
       },
       timeout,
     );
-    return result as MethodResults<T>;
+
+    // Deserialize each result
+    const deserializedResults = await Promise.all(
+      (results as unknown[]).map((result, index) =>
+        this.serializerRegistry.deserializeResult(String(calls[index]?.method), result),
+      ),
+    );
+
+    return deserializedResults as MethodResults<T>;
   }
 
   /**
@@ -346,5 +370,37 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    */
   public chain(chainId: ChainId): OperationBuilder<readonly []> {
     return new OperationBuilder(chainId, this, [] as const);
+  }
+
+  /**
+   * Registers a serializer for a specific wallet method.
+   * This allows the provider to properly serialize parameters and deserialize results
+   * for wallet methods before they are wrapped in wm_call.
+   *
+   * @param method - The wallet method name (e.g., 'aztec_getAddress', 'eth_getBalance')
+   * @param serializer - The serializer for the method
+   *
+   * @example
+   * ```typescript
+   * // Register a serializer for Aztec addresses
+   * provider.registerMethodSerializer('aztec_getAddress', {
+   *   result: {
+   *     serialize: async (result) => ({ serialized: result.toString() }),
+   *     deserialize: async (data) => AztecAddress.fromString(data.serialized)
+   *   }
+   * });
+   *
+   * // Now calls to aztec_getAddress will automatically serialize/deserialize
+   * const address = await provider.call('aztec:mainnet', {
+   *   method: 'aztec_getAddress'
+   * });
+   * // address is properly typed as AztecAddress
+   * ```
+   */
+  public registerMethodSerializer<P = unknown, R = unknown>(
+    method: string,
+    serializer: JSONRPCSerializer<P, R>,
+  ): void {
+    this.serializerRegistry.register(method, serializer);
   }
 }

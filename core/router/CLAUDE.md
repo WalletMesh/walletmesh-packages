@@ -47,11 +47,16 @@ The router manages connections to multiple blockchain wallets using a uniform in
 1. **WalletRouter** (`src/router.ts`)
    - Central component connecting applications to wallets
    - Methods:
-     - `constructor()`: Initialize with transport, wallets, permissions
-     - `addWallet()`: Register a chain-specific wallet client
-     - `removeWallet()`: Unregister a wallet client
+     - `constructor()`: Initialize with transport, wallets map (chainId -> transport), permissions
+     - `addWallet()`: Register a chain-specific wallet transport
+     - `removeWallet()`: Unregister a wallet
+     - `getProxyStats()`: Get statistics for all wallet proxies
+     - `getWalletHealthStatus()`: Check health of all wallet connections
+   - Internal Architecture:
+     - Creates JSONRPCProxy instances for each wallet transport
+     - Proxies provide transparent message forwarding without serialization overhead
    - Handles:
-     - Request routing to appropriate wallet clients
+     - Request routing to appropriate wallet transports via proxies
      - Session management and validation
      - Permission enforcement
      - Event propagation
@@ -105,17 +110,58 @@ The router manages connections to multiple blockchain wallets using a uniform in
      - Sessions survive page reloads
      - Configurable session lifetime
 
-5. **JSON-RPC Integration** (`src/jsonrpc-adapter.ts`)
-   - Bridges between JSON-RPC protocol and wallet clients
-   - Adapts generic wallet methods to JSON-RPC format
-   - Handles serialization/deserialization
-
-6. **Operation Builder** (`src/operation.ts`)
+5. **Operation Builder** (`src/operation.ts`)
    - Fluent interface for chaining multiple wallet calls
    - Type-safe method calls with proper parameter and result typing
    - Methods:
      - `call()`: Add method call to the chain
      - `execute()`: Execute all chained calls in sequence
+
+6. **Method Serialization** (`src/provider.ts`)
+   - Automatic parameter serialization before method calls
+   - Purpose:
+     - Ensures complex objects are properly serialized before transmission
+     - Maintains compatibility with chain-specific data structures
+     - Provides transparent serialization without manual intervention
+   
+   - **Registering Serializers**:
+     ```typescript
+     // Register a serializer for a specific method
+     provider.registerMethodSerializer('aztec_sendTransaction', (params) => {
+       // Transform parameters before sending
+       return params.map(param => serializeTransaction(param));
+     });
+     
+     // Register multiple serializers at once
+     provider.registerMethodSerializer({
+       'aztec_sendTransaction': transactionSerializer,
+       'aztec_deploy': deploymentSerializer,
+       'aztec_call': callSerializer
+     });
+     ```
+   
+   - **Aztec Example**:
+     ```typescript
+     import { aztecSerializers } from '@walletmesh/aztec/rpc-wallet';
+     
+     // Create provider with Aztec serializers
+     const provider = new WalletRouterProvider(transport);
+     
+     // Register all Aztec-specific serializers
+     provider.registerMethodSerializer(aztecSerializers);
+     
+     // Now calls are automatically serialized
+     const result = await provider.call('aztec:mainnet', {
+       method: 'aztec_sendTransaction',
+       params: [complexAztecTransaction] // Automatically serialized
+     });
+     ```
+   
+   - **How It Works**:
+     - Serializers are applied before the method call is wrapped in `wm_call`
+     - The router receives already-serialized parameters
+     - Return values are not affected (deserialization handled separately)
+     - Serializers are method-specific and only applied when the method matches
 
 7. **Error Handling** (`src/errors.ts`)
    - **RouterError**: Custom error class for router-specific errors
@@ -127,7 +173,37 @@ The router manages connections to multiple blockchain wallets using a uniform in
    - Permission checking middleware
    - Request transformation middleware
 
+9. **Local Transport** (`src/localTransport.ts`)
+   - Utility for creating in-process transport connections
+   - **LocalTransport**: Direct connection between nodes without network overhead
+   - **createLocalTransportPair()**: Creates bidirectionally connected transports
+   - **createLocalTransport()**: Connects to an existing JSONRPCNode
+   - Useful for testing and embedded wallet implementations
+
 ## Main Workflows
+
+### Setting Up the Router
+
+```typescript
+// Create transports for your wallets
+const [ethClientTransport, ethWalletTransport] = createLocalTransportPair();
+const [polygonClientTransport, polygonWalletTransport] = createLocalTransportPair();
+
+// Initialize wallets with the wallet-side transports
+const ethWallet = createEthereumWallet(ethWalletTransport);
+const polygonWallet = createPolygonWallet(polygonWalletTransport);
+
+// Create the router with client-side transports
+const router = new WalletRouter(
+  routerTransport,
+  new Map([
+    ['eip155:1', ethClientTransport],     // Ethereum mainnet
+    ['eip155:137', polygonClientTransport] // Polygon
+  ]),
+  permissionManager,
+  { sessionStore: new LocalStorageSessionStore() }
+);
+```
 
 ### Connecting to Wallets
 
@@ -311,37 +387,67 @@ Standard router error codes:
 - `invalidRequest` (-32006): Invalid request parameters
 - `unknownError` (-32603): Internal error
 
-## Implementing a Wallet Client
+## Implementing a Wallet
 
-To add support for a new blockchain:
+To add support for a new blockchain, you need to provide a transport that connects to your wallet implementation:
 
 ```typescript
-// Create a wallet client implementing the WalletClient interface
-const myChainWallet: WalletClient = {
-  // Required: Method to call blockchain RPC methods
-  async call<T>(method: string, params?: unknown): Promise<T> {
-    // Implement chain-specific logic
-    return myChainAdapter.request({ method, params });
-  },
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
+import type { JSONRPCTransport, WalletMethodMap } from '@walletmesh/router';
+import { createLocalTransportPair } from '@walletmesh/router';
 
-  // Optional: Event handling
-  on(event: string, handler: (data: unknown) => void): void {
-    myChainAdapter.on(event, handler);
-  },
+// Option 1: Create a local transport pair for in-process wallet
+const [clientTransport, walletTransport] = createLocalTransportPair();
 
-  off(event: string, handler: (data: unknown) => void): void {
-    myChainAdapter.off(event, handler);
-  },
+// Create a wallet node with your implementation
+const walletNode = new JSONRPCNode<WalletMethodMap>(walletTransport);
 
-  // Optional: Method discovery
-  async getSupportedMethods(): Promise<string[]> {
-    return ['method1', 'method2', ...];
+// Register wallet methods
+walletNode.registerMethod('method1', async (context, params) => {
+  // Implement method logic
+  return myChainAdapter.doSomething(params);
+});
+
+walletNode.registerMethod('method2', async (context, params) => {
+  // Implement another method
+  return myChainAdapter.doSomethingElse(params);
+});
+
+// Register method discovery (optional but recommended)
+walletNode.registerMethod('wm_getSupportedMethods', async () => {
+  return ['method1', 'method2'];
+});
+
+// Pass the client transport to the router
+router.addWallet('mychain:mainnet', clientTransport);
+
+// Option 2: Create a custom transport for remote wallet
+const remoteTransport: JSONRPCTransport = {
+  send: async (message) => {
+    // Send message to remote wallet (e.g., via WebSocket, HTTP, etc.)
+    await websocket.send(JSON.stringify(message));
+  },
+  onMessage: (handler) => {
+    // Setup handler for incoming messages from remote wallet
+    websocket.on('message', (data) => {
+      handler(JSON.parse(data));
+    });
   }
 };
 
-// Register the wallet with the router
-router.addWallet('mychain:mainnet', myChainWallet);
+// Register the remote transport with the router
+router.addWallet('mychain:mainnet', remoteTransport);
 ```
+
+### Transport Requirements
+
+The transport must implement the `JSONRPCTransport` interface:
+- `send(message: unknown): Promise<void>` - Send messages to the wallet
+- `onMessage(handler: (message: unknown) => void): void` - Register handler for incoming messages
+
+The router will automatically create a JSONRPCProxy to handle:
+- Request/response correlation
+- Timeout management
 
 ## Testing
 

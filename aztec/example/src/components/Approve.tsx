@@ -1,6 +1,7 @@
 import React from 'react';
 import './Approve.css';
 import FunctionCallDisplay from './FunctionCallDisplay.js';
+import ParameterDisplay from './ParameterDisplay.js';
 import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware';
 
 type ApproveProps = {
@@ -35,15 +36,19 @@ const Approve: React.FC<ApproveProps> = ({
       <p className="approve-details">
         <b>Method:</b> {method}
       </p>
-      {params &&
-        params.functionCalls &&
-        params.functionCalls.map((call, index) => (
-          <FunctionCallDisplay
-            key={`${call.contractAddress}-${index}`}
-            call={call}
-            functionArgNames={functionArgNames}
-          />
-        ))}
+      {params && (
+        params.functionCalls ? (
+          params.functionCalls.map((call, index) => (
+            <FunctionCallDisplay
+              key={`${call.contractAddress}-${index}`}
+              call={call}
+              functionArgNames={functionArgNames}
+            />
+          ))
+        ) : (
+          <ParameterDisplay params={params} />
+        )
+      )}
       <div className="approve-buttons">
         <button onClick={onApprove}>Approve</button>
         <button onClick={onDeny}>Deny</button>

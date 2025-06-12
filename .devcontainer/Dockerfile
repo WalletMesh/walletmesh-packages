@@ -8,6 +8,7 @@ RUN apt-get update \
         ripgrep \
         jq \
         curl \
+        chromium \
     && rm -rf /var/lib/apt/lists/*
 # Set environment variables
 ENV AIDER_DIR=/opt/aider

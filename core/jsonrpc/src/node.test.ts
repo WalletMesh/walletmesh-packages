@@ -18,11 +18,17 @@ describe('JSONRPCNode', () => {
     messageReceived: { text: string; from: string };
   };
 
-  let transport: { send: ReturnType<typeof vi.fn<(message: unknown) => Promise<void>>> };
+  let transport: {
+    send: ReturnType<typeof vi.fn<(message: unknown) => Promise<void>>>;
+    onMessage: ReturnType<typeof vi.fn<(callback: (message: unknown) => void) => void>>;
+  };
   let node: JSONRPCNode<TestMethodMap, TestEventMap, TestContext>;
 
   beforeEach(() => {
-    transport = { send: vi.fn().mockResolvedValue(undefined) };
+    transport = {
+      send: vi.fn().mockResolvedValue(undefined),
+      onMessage: vi.fn(),
+    };
     node = new JSONRPCNode<TestMethodMap, TestEventMap, TestContext>(transport);
     vi.useFakeTimers();
   });
@@ -34,8 +40,12 @@ describe('JSONRPCNode', () => {
   describe('Constructor', () => {
     it('should initialize with custom context', () => {
       const customContext = { user: 'alice' };
+      const customTransport = {
+        send: vi.fn().mockResolvedValue(undefined),
+        onMessage: vi.fn(),
+      };
       const nodeWithContext = new JSONRPCNode<TestMethodMap, TestEventMap, TestContext>(
-        transport,
+        customTransport,
         customContext,
       );
       expect(nodeWithContext.context).toEqual(customContext);

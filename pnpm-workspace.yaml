@@ -32,4 +32,5 @@ overrides:
 
   # Fix deprecated lodash packages
   lodash.isequal: 'npm:lodash@4.17.21'
+  lodash.chunk: 'npm:lodash@4.17.21'
   lodash.omit: 'npm:lodash@4.17.21'
