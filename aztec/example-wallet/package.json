@@ -1,0 +1,48 @@
+{
+  "name": "@walletmesh/aztec-example-wallet",
+  "private": true,
+  "version": "0.4.0",
+  "type": "module",
+  "publishConfig": {
+    "publish": false
+  },
+  "scripts": {
+    "dev": "echo \"Error: Due to web worker limitations, use 'pnpm build && pnpm preview' instead of 'pnpm dev'\" && exit 1",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --port 5174",
+    "clean": "rimraf dist node_modules",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --fix",
+    "format": "biome format",
+    "format:fix": "biome format --fix"
+  },
+  "dependencies": {
+    "@aztec/accounts": "0.87.8",
+    "@aztec/aztec.js": "0.87.8",
+    "@aztec/bb-prover": "0.87.8",
+    "@aztec/noir-acvm_js": "0.87.8",
+    "@aztec/noir-contracts.js": "0.87.8",
+    "@aztec/noir-noirc_abi": "0.87.8",
+    "@aztec/noir-test-contracts.js": "0.87.8",
+    "@aztec/pxe": "0.87.8",
+    "@aztec/simulator": "0.87.8",
+    "@walletmesh/aztec": "workspace:^",
+    "@walletmesh/aztec-helpers": "workspace:^",
+    "@walletmesh/aztec-rpc-wallet": "workspace:^",
+    "@walletmesh/jsonrpc": "workspace:^",
+    "@walletmesh/router": "workspace:^",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "globals": "^15.12.0",
+    "vite": "^6.0.1",
+    "vite-plugin-bundlesize": "^0.2.0",
+    "vite-plugin-node-polyfills": "^0.23.0",
+    "vite-plugin-static-copy": "^2.2.0",
+    "vite-plugin-top-level-await": "^1.4.4"
+  }
+}
