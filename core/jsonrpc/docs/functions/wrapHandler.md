@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -8,18 +8,24 @@
 
 > **wrapHandler**\<`T`, `M`, `C`\>(`handler`): [`MethodHandler`](../type-aliases/MethodHandler.md)\<`T`, `M`, `C`\>
 
-Defined in: [core/jsonrpc/src/utils.ts:124](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/utils.ts#L124)
+Defined in: [core/jsonrpc/src/utils.ts:124](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/utils.ts#L124)
 
 Wraps a handler function with standard error handling and response formatting.
 Used by both JSONRPCNode and tests to ensure consistent error handling.
 
 ## Type Parameters
 
-• **T** *extends* [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md)
+### T
 
-• **M** *extends* `string` \| `number` \| `symbol`
+`T` *extends* [`JSONRPCMethodMap`](../interfaces/JSONRPCMethodMap.md)
 
-• **C** *extends* [`JSONRPCContext`](../type-aliases/JSONRPCContext.md)
+### M
+
+`M` *extends* `string` \| `number` \| `symbol`
+
+### C
+
+`C` *extends* [`JSONRPCContext`](../type-aliases/JSONRPCContext.md)
 
 ## Parameters
 

@@ -1,87 +1,80 @@
-**@walletmesh/aztec-helpers v0.3.1**
+**@walletmesh/aztec-helpers v0.4.0**
 
 ***
 
-# WalletMesh Core
+# @walletmesh/aztec-helpers
 
-Core libraries implementing the WalletMesh Protocol - a protocol enabling secure communication between wallets and applications.
+Helper utilities for working with Aztec contracts and PXE (Private Execution Environment) in the WalletMesh ecosystem.
 
-## Packages
+## Overview
 
-- [@walletmesh/discovery](packages/discovery) - A protocol implementation for discovering web3 wallets in both browser extensions and web applications, enabling DApps to discover available wallets and wallets to announce their presence to DApps.
-- [@walletmesh/jsonrpc](packages/jsonrpc) - A comprehensive TypeScript implementation of the JSON-RPC 2.0 protocol, designed for building client-server applications with bi-directional communication capabilities, featuring full type safety, middleware support, and event handling.
-- [@walletmesh/router](packages/router) - A flexible routing system for managing multi-chain wallet connections with bi-directional communication support, providing granular permissions, session management, and unified interfaces across different chains.
+This package provides convenience functions for retrieving contract artifacts and function parameter information from the Aztec PXE. It is intended to simplify common integration tasks for dApps, wallets, and test environments working with Aztec smart contracts.
 
-See individual package READMEs for detailed documentation.
-
-## Development
-
-This is a monorepo managed with [pnpm](https://pnpm.io/). [Biome](https://biomejs.dev) is used for formatting and linting.
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (see package.json for version)
-- [pnpm](https://pnpm.io/)
-
-### Setup
+## Installation
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Build all packages
-pnpm build
-
-# Run tests
-pnpm test
-
-# Run tests with coverage
-pnpm coverage
-
-# Format code
-pnpm format:fix
-
-# Lint code
-pnpm lint:fix
+pnpm add @walletmesh/aztec-helpers
 ```
 
-### Creating a New Package
+## API
 
-```bash
-bash create-package.sh <name>
+### `getContractArtifactFromContractAddress(pxe, contractAddress): Promise<ContractArtifact>`
+
+Fetches and caches the contract artifact for a given Aztec contract address using the provided PXE instance.
+
+- **Parameters:**
+  - `pxe`: An initialized PXE client instance.
+  - `contractAddress`: The Aztec address of the contract (string).
+- **Returns:** Promise resolving to the contract's `ContractArtifact`.
+- **Throws:** If the contract or its artifact is not registered in the PXE.
+
+### `getFunctionArtifactFromContractAddress(pxe, contractAddress, functionNameOrSelector): Promise<FunctionArtifact>`
+
+Retrieves the function artifact for a specific function within a contract.
+
+- **Parameters:**
+  - `pxe`: PXE client instance.
+  - `contractAddress`: Aztec contract address (string).
+  - `functionNameOrSelector`: Name of the function (string) or its `FunctionSelector`.
+- **Returns:** Promise resolving to the function's `FunctionArtifact`.
+- **Throws:** If the contract artifact or function artifact cannot be found.
+
+### `getFunctionParameterInfoFromContractAddress(pxe, contractAddress, functionNameOrSelector): Promise<FunctionParameterInfo[]>`
+
+Returns simplified parameter information (name and type) for a specific contract function.
+
+- **Parameters:**
+  - `pxe`: PXE client instance.
+  - `contractAddress`: Aztec contract address (string).
+  - `functionNameOrSelector`: Name of the function (string) or its `FunctionSelector`.
+- **Returns:** Promise resolving to an array of `{ name: string, type: string }` objects.
+
+## Example Usage
+
+```typescript
+import {
+  getContractArtifactFromContractAddress,
+  getFunctionArtifactFromContractAddress,
+  getFunctionParameterInfoFromContractAddress
+} from '@walletmesh/aztec-helpers';
+
+// Example: Fetch contract artifact
+const artifact = await getContractArtifactFromContractAddress(pxe, '0xabc...');
+
+// Example: Fetch function artifact
+const functionArtifact = await getFunctionArtifactFromContractAddress(pxe, '0xabc...', 'transfer');
+
+// Example: Get function parameter info
+const params = await getFunctionParameterInfoFromContractAddress(pxe, '0xabc...', 'transfer');
+console.log(params); // [{ name: 'to', type: 'AztecAddress' }, { name: 'amount', type: 'field' }]
 ```
 
-This will create a new package in `packages/<name>` with the package name `@walletmesh/<name>`.
+## Caching
 
-## Release Process
+- Contract artifacts are cached in-memory by contract address for the lifetime of the process.
+- **Note:** The cache is not currently network-aware; if you use the same address on multiple networks, results may be incorrect.
 
-This repository uses [Changesets](https://github.com/changesets/changesets) to manage versions, create changelogs, and publish to npm.
+## Error Handling
 
-### Making Changes
-
-1. Create a new branch for your changes
-2. Make your changes
-3. Run `pnpm changeset` to create a changeset
-4. Commit and push your changes
-5. Create a pull request
-
-### Publishing
-
-The release process is automated through changesets and GitHub Actions:
-
-1. **Automated Publishing**
-   - Monitors the main branch for merged changesets
-   - Automatically creates a "Version Packages" PR that:
-     - Aggregates all pending changesets
-     - Updates package versions
-     - Generates changelogs
-   - When the "Version Packages" PR is merged:
-     - Creates git tags for the releases
-     - Publishes packages to npm with provenance
-     - Cleans up the changesets
-
-This automated process eliminates the need for manual version bumping and ensures that all changes are properly tracked and documented.
-
-## License
-
-Apache-2.0
+- Functions throw if the contract or function artifact is not found in the PXE.
+- Errors are standard JavaScript `Error` objects with descriptive messages.

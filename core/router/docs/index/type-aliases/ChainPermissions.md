@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.4.0**](../../README.md)
+[**@walletmesh/router v0.5.0**](../../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Type Alias: ChainPermissions
 
-> **ChainPermissions**: `Record`\<[`ChainId`](ChainId.md), `string`[]\>
+> **ChainPermissions** = `Record`\<[`ChainId`](ChainId.md), `string`[]\>
 
-Defined in: [core/router/src/types.ts:233](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L233)
+Defined in: [core/router/src/types.ts:206](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L206)
 
 Chain permissions mapping.
 Maps chain IDs to arrays of method names that are permitted.

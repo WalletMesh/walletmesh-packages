@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Type Alias: JSONRPCEventHandler()\<T, E\>
 
-> **JSONRPCEventHandler**\<`T`, `E`\>: (`params`) => `void`
+> **JSONRPCEventHandler**\<`T`, `E`\> = (`params`) => `void`
 
-Defined in: [core/jsonrpc/src/types.ts:623](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L623)
+Defined in: [core/jsonrpc/src/types.ts:650](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L650)
 
 Represents a function that handles JSON-RPC events.
 Event handlers receive typed event payloads and are used to react to
@@ -17,11 +17,15 @@ are synchronous and don't return responses.
 
 ## Type Parameters
 
-• **T** *extends* [`JSONRPCEventMap`](../interfaces/JSONRPCEventMap.md)
+### T
+
+`T` *extends* [`JSONRPCEventMap`](../interfaces/JSONRPCEventMap.md)
 
 The event map defining available events and their payload types
 
-• **E** *extends* keyof `T`
+### E
+
+`E` *extends* keyof `T`
 
 The specific event being handled (must be a key of T)
 

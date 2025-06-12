@@ -1,8 +1,8 @@
-[**@walletmesh/jsonrpc v0.4.0**](README.md)
+[**@walletmesh/jsonrpc v0.5.0**](README.md)
 
 ***
 
-# @walletmesh/jsonrpc v0.4.0
+# @walletmesh/jsonrpc v0.5.0
 
 JSON-RPC 2.0 implementation with bi-directional communication support.
 This module provides a complete implementation of the JSON-RPC 2.0 specification
@@ -19,6 +19,7 @@ Key exports:
 
 - [JSONRPCError](classes/JSONRPCError.md)
 - [JSONRPCNode](classes/JSONRPCNode.md)
+- [JSONRPCProxy](classes/JSONRPCProxy.md)
 - [TimeoutError](classes/TimeoutError.md)
 
 ## Interfaces
@@ -28,6 +29,7 @@ Key exports:
 - [JSONRPCEventMap](interfaces/JSONRPCEventMap.md)
 - [JSONRPCMethodDef](interfaces/JSONRPCMethodDef.md)
 - [JSONRPCMethodMap](interfaces/JSONRPCMethodMap.md)
+- [JSONRPCProxyConfig](interfaces/JSONRPCProxyConfig.md)
 - [JSONRPCRequest](interfaces/JSONRPCRequest.md)
 - [JSONRPCResponse](interfaces/JSONRPCResponse.md)
 - [JSONRPCSerializer](interfaces/JSONRPCSerializer.md)

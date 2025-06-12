@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -6,65 +6,107 @@
 
 # Interface: JSONRPCTransport
 
-Defined in: [core/jsonrpc/src/types.ts:484](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L484)
+Defined in: [core/jsonrpc/src/types.ts:501](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L501)
 
-Function type for sending JSON-RPC messages between nodes.
-Implement this to provide the actual transport mechanism for message delivery.
+Bidirectional transport interface for JSON-RPC communication.
+Implement this to provide the actual transport mechanism for message delivery and reception.
 The transport layer handles message serialization and delivery between nodes.
 
 ## Example
 
 ```typescript
-// WebSocket transport with reconnection and error handling
+// WebSocket transport
 const wsTransport: JSONRPCTransport = {
-  send: message => {
+  send: async message => {
     if (ws.readyState !== WebSocket.OPEN) {
       throw new Error('WebSocket not connected');
     }
     ws.send(JSON.stringify(message));
+  },
+  onMessage: callback => {
+    ws.onmessage = event => {
+      callback(JSON.parse(event.data));
+    };
   }
 };
 
 // postMessage transport with origin validation
 const windowTransport: JSONRPCTransport = {
-  send: message => {
+  send: async message => {
     if (!targetWindow) {
       throw new Error('Target window not available');
     }
     targetWindow.postMessage(JSON.stringify(message), targetOrigin);
+  },
+  onMessage: callback => {
+    window.addEventListener('message', event => {
+      if (event.origin === targetOrigin && event.data) {
+        callback(event.data);
+      }
+    });
   }
 };
 
-// HTTP transport with fetch
+// HTTP long-polling transport
 const httpTransport: JSONRPCTransport = {
   send: async message => {
-    try {
-      const response = await fetch('https://api.example.com/jsonrpc', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(message)
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
+    await fetch('https://api.example.com/jsonrpc', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(message)
+    });
+  },
+  onMessage: callback => {
+    const poll = async () => {
+      try {
+        const response = await fetch('https://api.example.com/jsonrpc/poll');
+        const messages = await response.json();
+        messages.forEach(callback);
+      } catch (error) {
+        console.error('Polling error:', error);
       }
-    } catch (error) {
-      console.error('Transport error:', error);
-      throw error;
-    }
+      setTimeout(poll, 1000); // Poll every second
+    };
+    poll();
   }
 };
 ```
 
 ## Methods
 
+### onMessage()
+
+> **onMessage**(`callback`): `void`
+
+Defined in: [core/jsonrpc/src/types.ts:522](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L522)
+
+Register a callback to receive messages from the remote node.
+The JSONRPCNode will call this method during initialization to set up
+message reception. The transport should call the provided callback
+whenever a message is received from the remote side.
+
+#### Parameters
+
+##### callback
+
+(`message`) => `void`
+
+Function to call when messages are received
+
+#### Returns
+
+`void`
+
+***
+
 ### send()
 
 > **send**(`message`): `Promise`\<`void`\>
 
-Defined in: [core/jsonrpc/src/types.ts:495](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L495)
+Defined in: [core/jsonrpc/src/types.ts:512](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L512)
 
 Sends a JSON-RPC message to the remote node.
 The implementation should handle message serialization and delivery.

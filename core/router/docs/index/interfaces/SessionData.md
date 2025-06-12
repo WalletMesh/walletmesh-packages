@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.4.0**](../../README.md)
+[**@walletmesh/router v0.5.0**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionData
 
-Defined in: [core/router/src/types.ts:240](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L240)
+Defined in: [core/router/src/types.ts:213](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L213)
 
 Session data structure representing an active wallet connection.
 Contains metadata about the session including its unique identifier
@@ -18,7 +18,7 @@ and the origin that initiated the connection.
 
 > **id**: `string`
 
-Defined in: [core/router/src/types.ts:242](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L242)
+Defined in: [core/router/src/types.ts:215](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L215)
 
 Unique session identifier
 
@@ -28,6 +28,6 @@ Unique session identifier
 
 > **origin**: `string`
 
-Defined in: [core/router/src/types.ts:244](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L244)
+Defined in: [core/router/src/types.ts:217](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L217)
 
 Origin of the session request (e.g., "https://app.example.com")

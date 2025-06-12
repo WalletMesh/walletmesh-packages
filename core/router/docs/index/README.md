@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.4.0**](../README.md)
+[**@walletmesh/router v0.5.0**](../README.md)
 
 ***
 
@@ -8,10 +8,11 @@
 
 ## Classes
 
-- [JSONRPCWalletClient](classes/JSONRPCWalletClient.md)
 - [LocalStorageSessionStore](classes/LocalStorageSessionStore.md)
+- [LocalTransport](classes/LocalTransport.md)
 - [MemorySessionStore](classes/MemorySessionStore.md)
 - [OperationBuilder](classes/OperationBuilder.md)
+- [ProviderSerializerRegistry](classes/ProviderSerializerRegistry.md)
 - [RouterError](classes/RouterError.md)
 - [WalletRouter](classes/WalletRouter.md)
 - [WalletRouterProvider](classes/WalletRouterProvider.md)
@@ -28,8 +29,8 @@
 - [SessionData](interfaces/SessionData.md)
 - [SessionStore](interfaces/SessionStore.md)
 - [SessionStoreConfig](interfaces/SessionStoreConfig.md)
-- [WalletClient](interfaces/WalletClient.md)
 - [WalletMethodMap](interfaces/WalletMethodMap.md)
+- [WalletRouterConfig](interfaces/WalletRouterConfig.md)
 - [WildcardPermissionConfig](interfaces/WildcardPermissionConfig.md)
 - [WmBulkCallType](interfaces/WmBulkCallType.md)
 - [WmCallType](interfaces/WmCallType.md)
@@ -52,3 +53,8 @@
 
 - [defaultStore](variables/defaultStore.md)
 - [RouterErrorMap](variables/RouterErrorMap.md)
+
+## Functions
+
+- [createLocalTransport](functions/createLocalTransport.md)
+- [createLocalTransportPair](functions/createLocalTransportPair.md)

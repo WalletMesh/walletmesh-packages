@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.4.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.0**](../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Type Alias: JSONRPCParams
 
-> **JSONRPCParams**: `undefined` \| `unknown`[] \| `Record`\<`string`, `unknown`\>
+> **JSONRPCParams** = `undefined` \| `unknown`[] \| `Record`\<`string`, `unknown`\>
 
-Defined in: [core/jsonrpc/src/types.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/jsonrpc/src/types.ts#L35)
+Defined in: [core/jsonrpc/src/types.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L35)
 
 Represents JSON-RPC method parameters.
 - `undefined` for methods without parameters

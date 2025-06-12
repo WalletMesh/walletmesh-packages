@@ -1,4 +1,4 @@
-**@walletmesh/jsonrpc v0.4.0**
+**@walletmesh/jsonrpc v0.5.0**
 
 ***
 
@@ -32,13 +32,24 @@ type Events = {
   notification: { message: string };
 };
 
-// Create server node
-const server = new JSONRPCNode<Methods, Events>({
+// Define a transport (using a WebSocket-like object 'ws' as an example)
+const serverTransport: JSONRPCTransport = {
   send: async message => {
     // In a real app, send to client (e.g., via WebSocket)
-    await client.receiveMessage(message);
+    // ws.send(JSON.stringify(message));
+    console.log('Server sending:', message); // Placeholder
+  },
+  onMessage: callback => {
+    // Set up message reception from client
+    // ws.on('message', data => callback(JSON.parse(data.toString())));
+    console.log('Server onMessage registered.'); // Placeholder
+    // Simulate client sending a message to server
+    // setTimeout(() => callback({ jsonrpc: '2.0', method: 'greet', params: { name: 'Server' }, id: 'client-req-1' }), 500);
   }
-});
+};
+
+// Create server node with the transport
+const server = new JSONRPCNode<Methods, Events>(serverTransport);
 
 // Register server methods with proper error handling
 server.registerMethod('add', async (context, { a, b }) => {
@@ -61,13 +72,28 @@ server.registerMethod('greet', async (context, { name }) => {
   return `Hello, ${name}!`;
 });
 
-// Create client node
-const client = new JSONRPCNode<Methods, Events>({
+// Define a transport for the client
+const clientTransport: JSONRPCTransport = {
   send: async message => {
     // In a real app, send to server (e.g., via WebSocket)
-    await server.receiveMessage(message);
+    // ws.send(JSON.stringify(message));
+    console.log('Client sending:', message); // Placeholder
+    // Simulate server responding to client's 'greet' request
+    // if ((message as any).method === 'greet') {
+    //   setTimeout(() => client.receiveMessage({ jsonrpc: '2.0', result: 'Hello, Client!', id: (message as any).id }), 100);
+    // }
+  },
+  onMessage: callback => {
+    // Set up message reception from server
+    // ws.on('message', data => callback(JSON.parse(data.toString())));
+    console.log('Client onMessage registered.'); // Placeholder
+    // Simulate server sending an event to client
+    // setTimeout(() => callback({ jsonrpc: '2.0', event: 'notification', params: { message: 'Server event to client' } }), 1000);
   }
-});
+};
+
+// Create client node with the transport
+const client = new JSONRPCNode<Methods, Events>(clientTransport);
 
 // Use client to call server methods
 async function main() {
@@ -189,18 +215,22 @@ graph LR
 
 ### Key Components
 
-1. **JSONRPCNode**: The main class that implements the JSON-RPC 2.0 protocol
-   - Handles both client and server functionality
-   - Manages method registration and invocation
-   - Processes incoming/outgoing messages
-   - Coordinates middleware execution
-   - Supports automatic cleanup of event handlers and middleware
-   - Provides comprehensive error handling with custom error types
+1. **JSONRPCNode**: The main class that implements the JSON-RPC 2.0 protocol.
+   - Handles both client and server functionality.
+   - Manages method registration (`registerMethod`, `setFallbackHandler`), invocation (`callMethod`, `notify`), and custom serialization (`registerSerializer`).
+   - Processes incoming messages (via `transport.onMessage` which calls `receiveMessage` internally) and outgoing messages.
+   - Coordinates middleware execution (`addMiddleware`).
+   - Manages event handling (`on`, `emit`).
+   - Supports automatic cleanup of event handlers, middleware, and pending requests on `close()`.
+   - Provides comprehensive error handling with `JSONRPCError` and `TimeoutError`.
+   - Exposes a `context` object shared across handlers and middleware.
 
-2. **Transport Layer**: Abstract interface for message transmission
-   - Implemented by the user (e.g., WebSocket, postMessage)
-   - Handles actual message delivery between nodes
-   - Supports both synchronous and asynchronous communication
+2. **Transport Layer**: Bidirectional interface for message transmission
+   - Implemented by the user (e.g., WebSocket, postMessage, HTTP)
+   - Handles both sending and receiving messages
+   - `send`: Delivers messages to the remote node
+   - `onMessage`: Registers a callback for incoming messages
+   - Automatic connection during node initialization
 
 3. **Middleware Stack**: Chain of request/response processors
    - Request/response modification
@@ -233,15 +263,28 @@ type EventMap = {
 type Context = JSONRPCContext & {
   userId?: string;
   sessionData?: Record<string, unknown>;
+  // Add any other custom context properties
+  customValue?: number;
 };
 
-// Create a node instance
-const node = new JSONRPCNode<MethodMap, EventMap, Context>({
-  send: async message => {
-    // Transport implementation (e.g., WebSocket, postMessage)
-    await ws.send(JSON.stringify(message));
+// Implement a transport (e.g., using a WebSocket-like object 'ws')
+const transport: JSONRPCTransport = {
+  send: async (message) => {
+    // Send messages to remote node
+    // await ws.send(JSON.stringify(message));
+    console.log('Node sending message:', message); // Placeholder
+  },
+  onMessage: (callback) => {
+    // Receive messages from remote node
+    // ws.on('message', data => {
+    //   callback(JSON.parse(data.toString()));
+    // });
+    console.log('Node onMessage registered.'); // Placeholder
   }
-});
+};
+
+// Create a node instance with the transport and optional initial context
+const node = new JSONRPCNode<MethodMap, EventMap, Context>(transport, { customValue: 123 });
 ```
 
 ### Method Registration and Calls
@@ -435,7 +478,7 @@ cleanupValidation();
 // Define serializer for complex types with proper error handling
 const dateSerializer: JSONRPCSerializer<Date, string> = {
   params: {
-    serialize: (method, date) => {
+    serialize: async (method, date) => {
       if (!(date instanceof Date)) {
         throw new JSONRPCError(-32602, 'Invalid date parameter', {
           expected: 'Date',
@@ -444,7 +487,7 @@ const dateSerializer: JSONRPCSerializer<Date, string> = {
       }
       return { serialized: date.toISOString(), method };
     },
-    deserialize: (data, method) => {
+    deserialize: async (data, method) => {
       try {
         return new Date(data.serialized);
       } catch (error) {
@@ -456,16 +499,16 @@ const dateSerializer: JSONRPCSerializer<Date, string> = {
     }
   },
   result: {
-    serialize: (method, date) => {
+    serialize: async (method, date) => {
       if (!(date instanceof Date)) {
-        throw new JSONRPCError(-32603, 'Invalid date result', {
+        throw new JSONRPCError(-32603, 'Invalid date result for serialization', {
           expected: 'Date',
           received: typeof date
         });
       }
       return { serialized: date.toISOString(), method };
     },
-    deserialize: (data, method) => {
+    deserialize: async (data, method) => {
       try {
         return new Date(data.serialized);
       } catch (error) {
@@ -500,6 +543,26 @@ try {
 }
 ```
 
+### Transport Interface
+
+The transport layer provides bidirectional communication between JSON-RPC nodes:
+
+```typescript
+interface JSONRPCTransport {
+  // Send messages to the remote node
+  send(message: unknown): Promise<void>;
+  
+  // Register a callback to receive messages from the remote node
+  onMessage(callback: (message: unknown) => void): void;
+}
+```
+
+The `JSONRPCNode` automatically connects to the transport during initialization by calling `onMessage` to register its message handler. This design:
+- Separates transport concerns from protocol logic
+- Supports any communication mechanism (WebSocket, postMessage, HTTP, etc.)
+- Handles both synchronous and asynchronous transports
+- Ensures automatic message routing without manual `receiveMessage` calls
+
 ### Transport Layer Examples
 
 The library is transport-agnostic and can work with any messaging system. Here are examples of common transport implementations:
@@ -514,7 +577,7 @@ type Methods = {
   getData: { params: { id: string }; result: { data: string } };
 };
 
-// Create node for Website A
+// Create node for Website A with bidirectional transport
 const nodeA = new JSONRPCNode<Methods>({
   send: async message => {
     // Send to Website B's iframe
@@ -524,14 +587,13 @@ const nodeA = new JSONRPCNode<Methods>({
     } else {
       throw new Error('Target iframe not found');
     }
-  }
-});
-
-// Listen for messages from Website B with origin validation
-window.addEventListener('message', event => {
-  if (event.origin === 'https://website-b.com') {
-    nodeA.receiveMessage(event.data).catch(error => {
-      console.error('Error handling message:', error);
+  },
+  onMessage: callback => {
+    // Listen for messages from Website B with origin validation
+    window.addEventListener('message', event => {
+      if (event.origin === 'https://website-b.com') {
+        callback(event.data);
+      }
     });
   }
 });
@@ -555,11 +617,19 @@ type Methods = {
   getData: { params: { id: string }; result: { data: string } };
 };
 
-// Create node for Website B
+// Create node for Website B with bidirectional transport
 const nodeB = new JSONRPCNode<Methods>({
   send: async message => {
     // Send to parent window (Website A)
     window.parent.postMessage(message, 'https://website-a.com');
+  },
+  onMessage: callback => {
+    // Listen for messages from Website A with origin validation
+    window.addEventListener('message', event => {
+      if (event.origin === 'https://website-a.com') {
+        callback(event.data);
+      }
+    });
   }
 });
 
@@ -572,15 +642,6 @@ nodeB.registerMethod('getData', async (context, { id }) => {
     });
   }
   return { data: `Data for ${id}` };
-});
-
-// Listen for messages from Website A with origin validation
-window.addEventListener('message', event => {
-  if (event.origin === 'https://website-a.com') {
-    nodeB.receiveMessage(event.data).catch(error => {
-      console.error('Error handling message:', error);
-    });
-  }
 });
 ```
 
@@ -598,79 +659,29 @@ type Events = {
   update: { topic: string; data: unknown };
 };
 
-// Create WebSocket connection with reconnection logic
-class WSClient {
-  private ws: WebSocket | null = null;
-  private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
-  private messageQueue: unknown[] = [];
+// Create WebSocket connection
+const ws = new WebSocket('wss://api.example.com');
 
-  constructor(private url: string, private onMessage: (data: unknown) => void) {
-    this.connect();
-  }
-
-  private connect() {
-    this.ws = new WebSocket(this.url);
-
-    this.ws.addEventListener('open', () => {
-      console.log('Connected to server');
-      this.messageQueue.forEach(msg => this.send(msg));
-      this.messageQueue = [];
-    });
-
-    this.ws.addEventListener('message', event => {
+// Create JSON-RPC node with WebSocket transport
+const client = new JSONRPCNode<Methods, Events>({
+  send: async message => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(message));
+    } else {
+      // Queue message or throw error
+      throw new Error('WebSocket not connected');
+    }
+  },
+  onMessage: callback => {
+    ws.addEventListener('message', event => {
       try {
         const data = JSON.parse(event.data);
-        this.onMessage(data);
+        callback(data);
       } catch (error) {
         console.error('Failed to parse message:', error);
       }
     });
-
-    this.ws.addEventListener('close', () => {
-      console.log('Connection closed, reconnecting...');
-      this.scheduleReconnect();
-    });
-
-    this.ws.addEventListener('error', error => {
-      console.error('WebSocket error:', error);
-      this.ws?.close();
-    });
   }
-
-  private scheduleReconnect() {
-    if (this.reconnectTimer) return;
-    this.reconnectTimer = setTimeout(() => {
-      this.reconnectTimer = null;
-      this.connect();
-    }, 5000);
-  }
-
-  async send(message: unknown): Promise<void> {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      await this.ws.send(JSON.stringify(message));
-    } else {
-      this.messageQueue.push(message);
-    }
-  }
-
-  close() {
-    if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer);
-      this.reconnectTimer = null;
-    }
-    this.ws?.close();
-    this.ws = null;
-  }
-}
-
-// Create WebSocket client
-const wsClient = new WSClient('wss://api.example.com', message => {
-  client.receiveMessage(message).catch(console.error);
-});
-
-// Create JSON-RPC node
-const client = new JSONRPCNode<Methods, Events>({
-  send: async message => await wsClient.send(message)
 });
 
 // Use the client with proper error handling
@@ -693,7 +704,7 @@ try {
 // Clean up
 window.addEventListener('beforeunload', () => {
   client.close();
-  wsClient.close();
+  ws.close();
 });
 ```
 
@@ -705,44 +716,33 @@ import { JSONRPCNode, JSONRPCError } from '@walletmesh/jsonrpc';
 const wss = new WebSocketServer({ port: 8080 });
 
 wss.on('connection', ws => {
-  // Create JSON-RPC node for this connection
+  // Create JSON-RPC node for this connection with bidirectional transport
   const server = new JSONRPCNode<Methods, Events>({
     send: async message => {
       if (ws.readyState === ws.OPEN) {
-        await ws.send(JSON.stringify(message));
+        ws.send(JSON.stringify(message));
       }
-    }
-  });
-
-  // Handle incoming messages with error handling
-  ws.on('message', data => {
-    try {
-      const message = JSON.parse(data.toString());
-      server.receiveMessage(message).catch(error => {
-        console.error('Error handling message:', error);
-        if (error instanceof JSONRPCError) {
+    },
+    onMessage: callback => {
+      // Handle incoming messages with error handling
+      ws.on('message', data => {
+        try {
+          const message = JSON.parse(data.toString());
+          callback(message);
+        } catch (error) {
+          console.error('Failed to parse message:', error);
+          // Send parse error response
           ws.send(JSON.stringify({
             jsonrpc: '2.0',
             error: {
-              code: error.code,
-              message: error.message,
-              data: error.data
+              code: -32700,
+              message: 'Parse error',
+              data: error instanceof Error ? error.message : String(error)
             },
             id: null
           }));
         }
       });
-    } catch (error) {
-      console.error('Failed to parse message:', error);
-      ws.send(JSON.stringify({
-        jsonrpc: '2.0',
-        error: {
-          code: -32700,
-          message: 'Parse error',
-          data: error instanceof Error ? error.message : String(error)
-        },
-        id: null
-      }));
     }
   });
 
@@ -784,29 +784,35 @@ type Methods = {
   getUser: { params: { id: number }; result: { name: string; email: string } };
 };
 
-// Create client with fetch-based transport
+// For HTTP transports, we need to handle the synchronous request-response pattern
+let messageHandler: ((message: unknown) => void) | null = null;
+
+// Create client with HTTP transport
 const client = new JSONRPCNode<Methods>({
   send: async message => {
-    try {
-      const response = await fetch('https://api.example.com/jsonrpc', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(message)
-      });
+    const response = await fetch('https://api.example.com/jsonrpc', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(message)
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      client.receiveMessage(data);
-    } catch (error) {
-      console.error('Transport error:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
     }
+
+    const data = await response.json();
+    
+    // Call the message handler with the response
+    if (messageHandler) {
+      messageHandler(data);
+    }
+  },
+  onMessage: callback => {
+    // Store the callback for use in send()
+    messageHandler = callback;
   }
 });
 
@@ -834,9 +840,20 @@ const app = express();
 app.use(express.json());
 
 app.post('/jsonrpc', async (req, res) => {
-  // Create new node for each request
+  let responded = false;
+  
+  // Create new node for each request with bidirectional transport
   const server = new JSONRPCNode<Methods>({
-    send: async message => await res.json(message)
+    send: async message => {
+      if (!responded) {
+        responded = true;
+        res.json(message);
+      }
+    },
+    onMessage: callback => {
+      // For HTTP server, we process the request body immediately
+      setImmediate(() => callback(req.body));
+    }
   });
 
   // Register methods with validation
@@ -848,46 +865,27 @@ app.post('/jsonrpc', async (req, res) => {
       });
     }
 
-    try {
-      // Fetch user from database
-      return {
-        name: 'John Doe',
-        email: 'john@example.com'
-      };
-    } catch (error) {
-      throw new JSONRPCError(-32603, 'Database error', {
-        error: error instanceof Error ? error.message : String(error)
-      });
-    }
+    // Fetch user from database
+    return {
+      name: 'John Doe',
+      email: 'john@example.com'
+    };
   });
 
-  try {
-    // Handle the request
-    await server.receiveMessage(req.body);
-  } catch (error) {
-    console.error('Error handling request:', error);
-    if (error instanceof JSONRPCError) {
-      res.status(400).json({
-        jsonrpc: '2.0',
-        error: {
-          code: error.code,
-          message: error.message,
-          data: error.data
-        },
-        id: req.body.id ?? null
-      });
-    } else {
+  // Wait a bit for the node to process the message
+  setTimeout(() => {
+    if (!responded) {
       res.status(500).json({
         jsonrpc: '2.0',
         error: {
           code: -32603,
           message: 'Internal error',
-          data: error instanceof Error ? error.message : String(error)
+          data: 'No response generated'
         },
         id: req.body.id ?? null
       });
     }
-  }
+  }, 5000);
 });
 
 app.listen(3000);

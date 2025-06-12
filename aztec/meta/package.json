@@ -1,6 +1,6 @@
 {
   "name": "@walletmesh/aztec",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "WalletMesh Aztec package",
   "type": "module",
   "main": "dist/index.js",

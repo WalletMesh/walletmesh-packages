@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.4.0**](../../README.md)
+[**@walletmesh/router v0.5.0**](../../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Type Alias: MethodParams\<M\>
 
-> **MethodParams**\<`M`\>: [`RouterMethodMap`](../interfaces/RouterMethodMap.md)\[`M`\]\[`"params"`\]
+> **MethodParams**\<`M`\> = [`RouterMethodMap`](../interfaces/RouterMethodMap.md)\[`M`\]\[`"params"`\]
 
-Defined in: [core/router/src/types.ts:261](https://github.com/WalletMesh/walletmesh-packages/blob/937a416f9c444488735f94f0d3eb35a7feadda3e/core/router/src/types.ts#L261)
+Defined in: [core/router/src/types.ts:234](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/types.ts#L234)
 
 **`Internal`**
 
@@ -16,4 +16,6 @@ Helper type to extract parameter types from method definitions
 
 ## Type Parameters
 
-• **M** *extends* keyof [`RouterMethodMap`](../interfaces/RouterMethodMap.md)
+### M
+
+`M` *extends* keyof [`RouterMethodMap`](../interfaces/RouterMethodMap.md)
