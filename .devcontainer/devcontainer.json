@@ -2,6 +2,9 @@
   "name": "WalletMesh Packages",
   "build": {
     "dockerfile": "Dockerfile",
+    "args": {
+      "TZ": "${localEnv:TZ:America/Los_Angeles}"
+    },
     "context": "."
   },
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/walletmesh-packages,type=bind,consistency=cached",
@@ -54,7 +57,17 @@
         "informal.quint-vscode",
         "ms-azuretools.vscode-containers"
       ],
-      "dev.containers.mountWaylandSocket": false
+      "dev.containers.mountWaylandSocket": false,
+      "terminal.integrated.defaultProfile.linux": "zsh",
+      "terminal.integrated.profiles.linux": {
+        "bash": {
+          "path": "bash",
+          "icon": "terminal-bash"
+        },
+        "zsh": {
+          "path": "zsh"
+        }
+      }
     }
   },
   "remoteUser": "vscode",
