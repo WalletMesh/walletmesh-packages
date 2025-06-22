@@ -348,14 +348,12 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
           return [];
         case 'aztec_createAuthWit': {
           const intentRaw = ensureParam<unknown>(dAppParams, 'intent');
-          let intentInput: Fr | Buffer | IntentAction | IntentInnerHash;
+          let intentInput: Fr | IntentAction | IntentInnerHash;
           if (
             typeof intentRaw === 'string' &&
             (intentRaw.startsWith('0x') || !Number.isNaN(Number(intentRaw)))
           ) {
             intentInput = Fr.fromString(intentRaw);
-          } else if (intentRaw instanceof Buffer) {
-            intentInput = intentRaw;
           } else if (typeof intentRaw === 'object' && intentRaw !== null) {
             intentInput = intentRaw as
               | import('@aztec/aztec.js/utils').IntentAction

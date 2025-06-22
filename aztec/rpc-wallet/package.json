@@ -37,8 +37,10 @@
     "@aztec/aztec.js": "0.87.8",
     "@aztec/blob-lib": "0.87.8",
     "@aztec/entrypoints": "0.87.8",
+    "@aztec/foundation": "0.87.8",
     "@aztec/stdlib": "0.87.8",
     "@walletmesh/jsonrpc": "workspace:^",
-    "@walletmesh/router": "workspace:^"
+    "@walletmesh/router": "workspace:^",
+    "zod": "^3.25.67"
   }
 }
