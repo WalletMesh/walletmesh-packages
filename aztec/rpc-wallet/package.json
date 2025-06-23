@@ -14,7 +14,7 @@
   },
   "homepage": "https://github.com/WalletMesh/walletmesh-packages/tree/main/aztec/aztec-rpc-wallet#readme",
   "scripts": {
-    "build": "tsc --build tsconfig.build.json",
+    "build": "NODE_OPTIONS=\"--max-old-space-size=8192\" tsc --build tsconfig.build.json",
     "clean": "rimraf dist node_modules",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
