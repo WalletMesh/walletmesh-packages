@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.4.0**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.4.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **connectAztec**(`provider`, `chainId`, `methods`): `Promise`\<\{ `sessionId`: `string`; `wallet`: [`AztecDappWallet`](../classes/AztecDappWallet.md); \}\>
 
-Defined in: [aztec/rpc-wallet/src/client/helpers.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/helpers.ts#L75)
+Defined in: [aztec/rpc-wallet/src/client/helpers.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/helpers.ts#L75)
 
 Establishes a connection to an Aztec wallet service and creates an initialized [AztecDappWallet](../classes/AztecDappWallet.md) instance.
 This function requests permissions for the specified methods on the given Aztec chain,

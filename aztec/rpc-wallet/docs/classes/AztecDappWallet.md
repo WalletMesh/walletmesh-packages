@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.4.0**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.4.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: AztecDappWallet
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:84](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L84)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:84](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L84)
 
 Aztec DApp Wallet that implements the aztec.js Wallet interface.
 This class provides a client-side representation of an Aztec wallet,
@@ -40,7 +40,7 @@ const txHash = await wallet.sendTx(someTx);
 
 > **new AztecDappWallet**(`routerProvider`, `chainId`): `AztecDappWallet`
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L100)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L100)
 
 Creates an instance of AztecDappWallet.
 Note: Prefer using the [createAztecWallet](../functions/createAztecWallet.md) helper function for creating
@@ -72,7 +72,7 @@ The Aztec chain ID this wallet is associated with.
 
 > **createAuthWit**(`messageHash`): `Promise`\<`AuthWitness`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:437](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L437)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:437](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L437)
 
 Creates an authorization witness for a given message hash or intent by making an RPC call to the remote wallet.
 Implements Wallet.createAuthWit.
@@ -101,7 +101,7 @@ A promise that resolves to the AuthWitness.
 
 > **createAuthWit**(`intent`): `Promise`\<`AuthWitness`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:438](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L438)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:438](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L438)
 
 Creates an authorization witness for a given message hash or intent by making an RPC call to the remote wallet.
 Implements Wallet.createAuthWit.
@@ -134,7 +134,7 @@ A promise that resolves to the AuthWitness.
 
 > **createTxExecutionRequest**(`exec`, `fee`, `options`): `Promise`\<`TxExecutionRequest`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:415](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L415)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:415](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L415)
 
 Creates a transaction execution request using the wallet's entrypoint.
 Implements Wallet.createTxExecutionRequest.
@@ -179,7 +179,7 @@ If the wallet or its entrypoint is not initialized.
 
 > **deployContract**(`artifact`, `args`, `constructorName?`): `Promise`\<`DeploySentTx`\<`Contract`\>\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:815](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L815)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:815](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L815)
 
 Deploys a contract using its artifact and constructor arguments.
 This WalletMesh-specific helper method makes an RPC call to the `aztec_wmDeployContract`
@@ -222,7 +222,7 @@ A DeploySentTx object that can be used to track the deployment transaction
 
 > **getAddress**(): `AztecAddress`
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:170](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L170)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:170](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L170)
 
 Gets the primary Aztec address for this wallet.
 This value is cached during initialization.
@@ -248,7 +248,7 @@ If the wallet is not initialized.
 
 > **getAddressAsync**(): `Promise`\<`AztecAddress`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:184](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L184)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:184](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L184)
 
 Asynchronously fetches the primary Aztec address from the remote wallet via an RPC call.
 This method directly queries the connected wallet node.
@@ -269,7 +269,7 @@ A promise that resolves to the wallet's AztecAddress.
 
 > **getBlock**(`number`): `Promise`\<`undefined` \| `L2Block`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:372](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L372)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:372](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L372)
 
 Retrieves a specific L2 block by its number via an RPC call.
 Implements Wallet.getBlock.
@@ -298,7 +298,7 @@ A promise that resolves to the L2Block or `undefined` if not found.
 
 > **getBlockNumber**(): `Promise`\<`number`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:386](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L386)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:386](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L386)
 
 Retrieves the current L2 block number via an RPC call.
 Implements Wallet.getBlockNumber.
@@ -319,7 +319,7 @@ A promise that resolves to the current block number.
 
 > **getChainId**(): `Fr`
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L111)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L111)
 
 Gets the chain ID for this wallet.
 This value is cached during initialization.
@@ -344,7 +344,7 @@ If the wallet is not initialized (e.g., if not created via `createAztecWallet`).
 
 > **getChainIdAsync**(): `Promise`\<`Fr`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:127](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L127)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:127](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L127)
 
 Asynchronously fetches the chain ID from the remote wallet via an RPC call.
 This method directly queries the connected wallet node.
@@ -365,7 +365,7 @@ A promise that resolves to the chain ID as an Fr.
 
 > **getCompleteAddress**(): `CompleteAddress`
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:198](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L198)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:198](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L198)
 
 Gets the complete address (including public keys) for this wallet.
 This value is cached during initialization.
@@ -391,7 +391,7 @@ If the wallet is not initialized.
 
 > **getCompleteAddressAsync**(): `Promise`\<`CompleteAddress`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L212)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L212)
 
 Asynchronously fetches the complete address (including public keys) from the remote wallet via an RPC call.
 This method directly queries the connected wallet node.
@@ -412,7 +412,7 @@ A promise that resolves to the wallet's CompleteAddress.
 
 > **getContractClassMetadata**(`id`, `includeArtifact?`): `Promise`\<`ContractClassMetadata`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:701](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L701)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:701](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L701)
 
 Retrieves metadata for a contract class by making an RPC call to the remote wallet.
 Implements Wallet.getContractClassMetadata.
@@ -451,7 +451,7 @@ A promise that resolves to the ContractClassMetadata.
 
 > **getContractMetadata**(`address`): `Promise`\<`ContractMetadata`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:685](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L685)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:685](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L685)
 
 Retrieves metadata for a specific contract by making an RPC call to the remote wallet.
 Implements Wallet.getContractMetadata.
@@ -484,7 +484,7 @@ A promise that resolves to the ContractMetadata.
 
 > **getContracts**(): `Promise`\<`AztecAddress`[]\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:734](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L734)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:734](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L734)
 
 Retrieves a list of all contracts registered with the remote wallet via an RPC call.
 Implements Wallet.getContracts.
@@ -505,7 +505,7 @@ A promise that resolves to an array of AztecAddress objects for the contracts.
 
 > **getCurrentBaseFees**(): `Promise`\<`GasFees`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:399](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L399)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:399](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L399)
 
 Retrieves the current base gas fees on the network via an RPC call.
 Implements Wallet.getCurrentBaseFees.
@@ -530,7 +530,7 @@ A promise that resolves to the GasFees.
 
 > **getNodeInfo**(): `Promise`\<`NodeInfo`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:345](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L345)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:345](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L345)
 
 Retrieves information about the connected Aztec node via an RPC call.
 Implements Wallet.getNodeInfo.
@@ -555,7 +555,7 @@ A promise that resolves to the NodeInfo.
 
 > **getPrivateEvents**\<`T`\>(`contractAddress`, `eventMetadata`, `from`, `numBlocks`, `recipients`): `Promise`\<`T`[]\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:642](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L642)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:642](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L642)
 
 Retrieves private events (encrypted logs) by making an RPC call to the remote wallet.
 Implements Wallet.getPrivateEvents.
@@ -620,7 +620,7 @@ A promise that resolves to an array of decoded event data of type `T`.
 
 > **getPublicEvents**\<`T`\>(`eventMetadata`, `from`, `limit`): `Promise`\<`T`[]\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:666](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L666)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:666](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L666)
 
 Retrieves public events (unencrypted logs) by making an RPC call to the remote wallet.
 Implements Wallet.getPublicEvents.
@@ -673,7 +673,7 @@ A promise that resolves to an array of decoded event data of type `T`.
 
 > **getPXEInfo**(): `Promise`\<`PXEInfo`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:358](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L358)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:358](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L358)
 
 Retrieves information about the PXE service via an RPC call.
 Implements Wallet.getPXEInfo.
@@ -698,7 +698,7 @@ A promise that resolves to the PXEInfo.
 
 > **getSenders**(): `Promise`\<`AztecAddress`[]\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:281](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L281)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:281](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L281)
 
 Retrieves the list of registered senders for this account by making an RPC call to the remote wallet.
 Implements Wallet.getSenders.
@@ -723,7 +723,7 @@ A promise that resolves to an array of AztecAddress objects.
 
 > **getTxReceipt**(`txHash`): `Promise`\<`TxReceipt`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:505](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L505)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:505](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L505)
 
 Retrieves the receipt for a given transaction hash via an RPC call to the remote wallet.
 Implements Wallet.getTxReceipt.
@@ -756,7 +756,7 @@ A promise that resolves to the TxReceipt.
 
 > **getVersion**(): `Fr`
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L140)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L140)
 
 Gets the version of the wallet (typically PXE version).
 This value is cached during initialization.
@@ -781,7 +781,7 @@ If the wallet is not initialized.
 
 > **getVersionAsync**(): `Promise`\<`Fr`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:156](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L156)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:156](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L156)
 
 Asynchronously fetches the wallet version (typically the PXE version) from the remote wallet via an RPC call.
 This method directly queries the connected wallet node.
@@ -802,7 +802,7 @@ A promise that resolves to the wallet version as an Fr.
 
 > **initialize**(): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:237](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L237)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:237](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L237)
 
 **`Internal`**
 
@@ -819,7 +819,7 @@ This method is called by [createAztecWallet](../functions/createAztecWallet.md).
 
 > **profileTx**(`txRequest`, `profileMode`, `skipProofGeneration?`, `msgSender?`): `Promise`\<`TxProfileResult`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:566](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L566)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:566](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L566)
 
 Profiles a transaction for performance analysis by making an RPC call to the remote wallet.
 Implements Wallet.profileTx.
@@ -870,7 +870,7 @@ A promise that resolves to the TxProfileResult.
 
 > **proveTx**(`txRequest`, `privateExecutionResult?`): `Promise`\<`TxProvingResult`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:455](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L455)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:455](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L455)
 
 Proves a transaction execution request by making an RPC call to the remote wallet.
 Implements Wallet.proveTx.
@@ -909,7 +909,7 @@ A promise that resolves to the TxProvingResult.
 
 > **registerContract**(`contract`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:309](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L309)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:309](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L309)
 
 Registers a deployed contract instance with the remote wallet via an RPC call.
 Implements Wallet.registerContract.
@@ -948,7 +948,7 @@ A promise that resolves when the contract is registered by the remote wallet.
 
 > **registerContractClass**(`artifact`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:332](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L332)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:332](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L332)
 
 Registers a contract class (artifact/bytecode) with the remote wallet via an RPC call.
 Implements Wallet.registerContractClass.
@@ -981,7 +981,7 @@ A promise that resolves when the class is registered by the remote wallet.
 
 > **registerSender**(`address`): `Promise`\<`AztecAddress`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:267](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L267)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:267](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L267)
 
 Registers an authorized sender for this account by making an RPC call to the remote wallet.
 Implements Wallet.registerSender.
@@ -1014,7 +1014,7 @@ A promise that resolves to the registered sender's AztecAddress.
 
 > **removeSender**(`sender`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:295](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L295)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:295](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L295)
 
 Removes an authorized sender from this account by making an RPC call to the remote wallet.
 Implements Wallet.removeSender.
@@ -1047,7 +1047,7 @@ A promise that resolves when the sender is removed by the remote wallet.
 
 > **sendTx**(`tx`): `Promise`\<`TxHash`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:490](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L490)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:490](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L490)
 
 Sends a proven transaction to the network via an RPC call to the remote wallet.
 Implements Wallet.sendTx.
@@ -1080,7 +1080,7 @@ A promise that resolves to the TxHash.
 
 > **simulateTx**(`txRequest`, `simulatePublic`, `msgSender?`, `skipTxValidation?`, `skipFeeEnforcement?`, `scopes?`): `Promise`\<`TxSimulationResult`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:525](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L525)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:525](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L525)
 
 Simulates a transaction by making an RPC call to the remote wallet.
 Implements Wallet.simulateTx.
@@ -1143,7 +1143,7 @@ A promise that resolves to the TxSimulationResult.
 
 > **simulateUtility**(`functionName`, `args`, `to`, `authWits?`, `from?`): `Promise`\<`UtilitySimulationResult`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:602](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L602)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:602](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L602)
 
 Simulates a utility function call (view function) by making an RPC call to the remote wallet.
 Implements Wallet.simulateUtility.
@@ -1200,7 +1200,7 @@ A promise that resolves to the UtilitySimulationResult.
 
 > **updateContract**(`_contractAddress`, `artifact`): `Promise`\<`void`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:721](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L721)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:721](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L721)
 
 Updates a contract's artifact by re-registering its class with the remote wallet via an RPC call.
 Implements Wallet.updateContract.
@@ -1239,7 +1239,7 @@ A promise that resolves when the update is complete on the remote wallet.
 
 > **wmExecuteTx**(`interaction`): `Promise`\<`SentTx`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:752](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L752)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:752](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L752)
 
 Executes a transaction based on a ContractFunctionInteraction.
 This WalletMesh-specific helper method simplifies sending a transaction by deriving
@@ -1271,7 +1271,7 @@ A SentTx object that can be used to track the transaction.
 
 > **wmSimulateTx**(`interaction`): `Promise`\<`TxSimulationResult`\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:785](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L785)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:785](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L785)
 
 Simulates a transaction based on a ContractFunctionInteraction.
 This WalletMesh-specific helper method simplifies simulating a transaction by deriving

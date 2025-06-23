@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.4.0**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.4.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > `const` **AztecWalletSerializer**: [`JSONRPCSerializer`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCSerializer.md)\<`JSONRPCParams`, `unknown`\>
 
-Defined in: [aztec/rpc-wallet/src/wallet/serializers.ts:265](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/wallet/serializers.ts#L265)
+Defined in: [aztec/rpc-wallet/src/wallet/serializers.ts:265](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/wallet/serializers.ts#L265)
 
 A comprehensive [JSONRPCSerializer](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCSerializer.md) for all Aztec wallet methods.
 

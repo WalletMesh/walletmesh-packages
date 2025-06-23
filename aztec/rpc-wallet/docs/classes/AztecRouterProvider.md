@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.4.0**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.4.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: AztecRouterProvider
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L46)
+Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L46)
 
 An extended [WalletRouterProvider](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/classes/WalletRouterProvider.md) specifically for Aztec network interactions.
 
@@ -61,7 +61,7 @@ const address = await wallet.getAddress(); // AztecAddress instance
 
 > **new AztecRouterProvider**(`transport`, `context?`): `AztecRouterProvider`
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L58)
+Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L58)
 
 Constructs an instance of `AztecRouterProvider`.
 
