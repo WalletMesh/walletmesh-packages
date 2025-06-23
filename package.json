@@ -13,7 +13,7 @@
   },
   "pnpm": {
     "overrides": {
-      "@aztec/**": "0.87.8"
+      "@aztec/**": "0.87.9"
     },
     "neverBuiltDependencies": [
       "@cypress/request"
