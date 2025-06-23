@@ -1,5 +1,11 @@
 # @walletmesh/aztec-rpc-wallet
 
+## 0.4.1
+
+### Patch Changes
+
+- c22c977: Minor build fixes
+
 ## 0.4.0
 
 ### Minor Changes
