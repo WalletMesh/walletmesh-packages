@@ -20,6 +20,7 @@
     "@aztec/accounts": "0.87.8",
     "@aztec/aztec.js": "0.87.8",
     "@aztec/bb-prover": "0.87.8",
+    "@aztec/foundation": "0.87.9",
     "@aztec/noir-acvm_js": "0.87.8",
     "@aztec/noir-contracts.js": "0.87.8",
     "@aztec/noir-noirc_abi": "0.87.8",

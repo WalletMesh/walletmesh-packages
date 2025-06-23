@@ -3,6 +3,7 @@
   "description": "WalletMesh Core Monorepo",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.12.1",
   "publishConfig": {
     "access": "restricted"
   },
@@ -43,18 +44,18 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@changesets/cli": "^2.29.4",
+    "@changesets/cli": "^2.29.5",
     "@types/glob": "^8.1.0",
-    "@types/node": "^22.15.23",
-    "@vitest/coverage-v8": "^3.1.4",
-    "glob": "^11.0.2",
+    "@types/node": "^22.15.32",
+    "@vitest/coverage-v8": "^3.2.4",
+    "glob": "^11.0.3",
     "node-gyp": "^11.2.0",
     "rimraf": "^6.0.1",
-    "tsx": "^4.19.4",
+    "tsx": "^4.20.3",
     "typedoc": "^0.28.5",
-    "typedoc-plugin-markdown": "^4.6.3",
+    "typedoc-plugin-markdown": "^4.7.0",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.4"
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "lodash": "^4.17.21"

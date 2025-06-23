@@ -5,7 +5,7 @@ This dev container includes tools and extensions configured for the WalletMesh P
 ## Included Tools
 
 - Node.js 22
-- pnpm 10.11.1
+- pnpm
 - Aider (AI coding assistant)
 - ripgrep (fast text search)
 - claude-code CLI
