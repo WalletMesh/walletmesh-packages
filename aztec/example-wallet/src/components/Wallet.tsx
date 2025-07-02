@@ -9,8 +9,6 @@ import {
   type ChainId,
   createLocalTransportPair,
   type WalletRouterConfig,
-  type RouterContext,
-  type RouterMethodMap,
   type HumanReadableChainPermissions,
 } from '@walletmesh/router'
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
@@ -22,11 +20,12 @@ import Approve from './Approve.js';
 import './Wallet.css';
 import FunctionCallDisplay from './FunctionCallDisplay.js';
 import ParameterDisplay from './ParameterDisplay.js';
-import { AllowAskDenyManager, AllowAskDenyState } from '@walletmesh/router/permissions';
+import { AllowAskDenyState } from '@walletmesh/router/permissions';
 import { createOriginMiddleware } from '../middlewares/originMiddleware.js';
 import { createFunctionArgNamesMiddleware, type FunctionArgNames } from '../middlewares/functionArgNamesMiddleware.js';
 import { createHistoryMiddleware } from '../middlewares/historyMiddleware.js';
 import { createDappToWalletTransport } from '../transports/CrossWindowTransport.js';
+import { CustomPermissionManager } from './CustomPermissionManager.js';
 
 import initNoircAbiWasm from '@aztec/noir-noirc_abi/web/noirc_abi_wasm.js';
 import initAcvmJs from '@aztec/noir-acvm_js/web/acvm_js.js';
@@ -145,6 +144,10 @@ interface WalletProps {
     method: string;
     params?: unknown;
   }) => Promise<boolean>;
+  /** Callback invoked when the user selects "Always Allow". */
+  onAlwaysAllow?: () => void;
+  /** Reference to the permission manager for updating permission states. */
+  permissionManagerRef?: React.MutableRefObject<CustomPermissionManager | null>;
 }
 
 
@@ -157,7 +160,7 @@ interface WalletProps {
  * - Communicates with DApps via cross-window postMessage
  * - Displays a history of requests and manages UI for pending approvals
  */
-const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, onApprovalRequest }) => {
+const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, onApprovalRequest, onAlwaysAllow, permissionManagerRef }) => {
   /** State for storing and displaying the history of requests received by the router. */
   const [requestHistory, setRequestHistory] = useState<HistoryEntry[]>([]);
   /** State indicating if the wallet router and underlying services are initialized. */
@@ -238,8 +241,8 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
 
         const routerTransport = createDappToWalletTransport(dappWindow, dappOrigin);
 
-                // Create permission manager with AllowAskDenyManager
-        const permissionManager = new AllowAskDenyManager<RouterMethodMap, RouterContext>(
+                // Create permission manager with CustomPermissionManager
+        const permissionManager = new CustomPermissionManager(
           // approvePermissionsCallback: Handle initial connection permissions
           async (context, permissionRequest) => {
             const origin = context.origin || 'unknown';
@@ -308,6 +311,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
               ['aztec_contractInteraction', AllowAskDenyState.ASK],
               ['aztec_registerContract', AllowAskDenyState.ASK],
               ['aztec_registerContractClass', AllowAskDenyState.ASK],
+              ['aztec_registerSender', AllowAskDenyState.ASK],
               ['aztec_createAuthWit', AllowAskDenyState.ASK],
               ['aztec_profileTx', AllowAskDenyState.ASK],
               ['aztec_simulateTx', AllowAskDenyState.ASK],
@@ -319,6 +323,9 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
               // Methods that are always allowed (ALLOW state)
               ['aztec_getAddress', AllowAskDenyState.ALLOW],
               ['aztec_getCompleteAddress', AllowAskDenyState.ALLOW],
+              ['aztec_getChainId', AllowAskDenyState.ALLOW],
+              ['aztec_getVersion', AllowAskDenyState.ALLOW],
+              ['aztec_getNodeInfo', AllowAskDenyState.ALLOW],
               ['aztec_getPublicEvents', AllowAskDenyState.ALLOW],
               ['aztec_getContractMetadata', AllowAskDenyState.ALLOW],
               ['aztec_getContractClassMetadata', AllowAskDenyState.ALLOW],
@@ -355,6 +362,11 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
 
         // Create the router with transports
         const router = new WalletRouter(routerTransport, wallets, permissionManager, routerConfig);
+
+        // Set the permission manager reference for the App component
+        if (permissionManagerRef) {
+          permissionManagerRef.current = permissionManager;
+        }
 
 
         // Add origin middleware to provide proper origin context
@@ -408,6 +420,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
           functionArgNames={requestHistory.find(h => !h.status)?.functionArgNames}
           onApprove={handleApprove}
           onDeny={handleDeny}
+          onAlwaysAllow={onAlwaysAllow || (() => {})}
         />
       )}
 

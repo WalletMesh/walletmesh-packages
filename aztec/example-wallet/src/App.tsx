@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import './App.css';
 import Wallet from './components/Wallet.js';
+import { CustomPermissionManager } from './components/CustomPermissionManager.js';
+import { AllowAskDenyState } from '@walletmesh/router/permissions';
 
 interface ApprovalRequest {
   origin: string;
@@ -13,6 +15,7 @@ interface ApprovalRequest {
 function App() {
   const [pendingApproval, setPendingApproval] = useState<ApprovalRequest | null>(null);
   const [autoApprove, setAutoApprove] = useState(false);
+  const permissionManagerRef = useRef<CustomPermissionManager | null>(null);
 
   const handleApprovalRequest = async (request: {
     origin: string;
@@ -43,6 +46,20 @@ function App() {
     }
   };
 
+  const handleAlwaysAllow = () => {
+    if (pendingApproval && permissionManagerRef.current) {
+      // Update the permission state to ALLOW
+      permissionManagerRef.current.updatePermissionState(
+        pendingApproval.chainId as any,
+        pendingApproval.method,
+        AllowAskDenyState.ALLOW
+      );
+
+      // Resolve the approval as true
+      pendingApproval.resolve(true);
+    }
+  };
+
   return (
     <div className="App">
       <h1>WalletMesh Aztec Wallet</h1>
@@ -67,6 +84,8 @@ function App() {
         pendingApproval={pendingApproval}
         onApprovalResponse={handleApprovalResponse}
         onApprovalRequest={handleApprovalRequest}
+        onAlwaysAllow={handleAlwaysAllow}
+        permissionManagerRef={permissionManagerRef}
       />
     </div>
   );
