@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import './App.css';
 import Wallet from './components/Wallet.js';
 import { CustomPermissionManager } from './components/CustomPermissionManager.js';
@@ -16,6 +16,13 @@ function App() {
   const [pendingApproval, setPendingApproval] = useState<ApprovalRequest | null>(null);
   const [autoApprove, setAutoApprove] = useState(false);
   const permissionManagerRef = useRef<CustomPermissionManager | null>(null);
+
+  // Update the permission manager when auto-approve state changes
+  useEffect(() => {
+    if (permissionManagerRef.current) {
+      permissionManagerRef.current.setAutoApprove(autoApprove);
+    }
+  }, [autoApprove]);
 
   const handleApprovalRequest = async (request: {
     origin: string;
@@ -60,6 +67,16 @@ function App() {
     }
   };
 
+  const handleEnableAutoApprove = () => {
+    // Enable auto-approve globally
+    setAutoApprove(true);
+
+    // If there's a pending approval, approve it immediately
+    if (pendingApproval) {
+      pendingApproval.resolve(true);
+    }
+  };
+
   return (
     <div className="App">
       <h1>WalletMesh Aztec Wallet</h1>
@@ -85,6 +102,7 @@ function App() {
         onApprovalResponse={handleApprovalResponse}
         onApprovalRequest={handleApprovalRequest}
         onAlwaysAllow={handleAlwaysAllow}
+        onEnableAutoApprove={handleEnableAutoApprove}
         permissionManagerRef={permissionManagerRef}
       />
     </div>

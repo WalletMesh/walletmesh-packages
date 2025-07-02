@@ -55,7 +55,7 @@
 }
 
 .pane {
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color, #ccc);
   padding: 16px;
   box-sizing: border-box;
   flex: 1;
@@ -76,23 +76,24 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: var(--background-color, #242424);
-  border: 1px solid #ccc;
+  background: var(--modal-bg, #242424);
+  border: 1px solid var(--modal-border, #ccc);
   padding: 20px;
   max-width: 90vw;
   width: auto;
   max-height: 90vh;
   overflow-y: auto;
   z-index: 1000;
+  color: var(--text-primary, inherit);
 }
 
 /* Auto approve toggle styles */
 .auto-approve-toggle {
   margin: 20px 0;
   padding: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--toggle-border, #ccc);
   border-radius: 8px;
-  background: var(--background-color, #242424);
+  background: var(--toggle-bg, #242424);
   text-align: left;
 }
 
@@ -102,6 +103,7 @@
   gap: 8px;
   font-weight: 500;
   cursor: pointer;
+  color: var(--toggle-text, inherit);
 }
 
 .auto-approve-toggle input[type="checkbox"] {
@@ -115,4 +117,21 @@
   color: #ff6b6b;
   font-size: 14px;
   font-weight: 500;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .approve-container {
+    --modal-bg: #2a2a2a;
+    --modal-border: #444;
+  }
+
+  .auto-approve-toggle {
+    --toggle-bg: #2a2a2a;
+    --toggle-border: #444;
+  }
+
+  .auto-approve-toggle label {
+    --toggle-text: #e0e0e0;
+  }
 }

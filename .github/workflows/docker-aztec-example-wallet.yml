@@ -1,23 +1,12 @@
 name: Build and Publish Aztec Example Wallet Docker Image
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'aztec/example-wallet/**'
-      - 'aztec/helpers/**'
-      - 'aztec/rpc-wallet/**'
-      - 'core/**'
-      - '.github/workflows/docker-aztec-example-wallet.yml'
-      - 'Dockerfile'
-      - '.dockerignore'
+  workflow_call:
   workflow_dispatch:
     inputs:
       tag:
         description: 'Docker image tag'
         required: false
-        default: 'latest'
 
 env:
   REGISTRY: ghcr.io

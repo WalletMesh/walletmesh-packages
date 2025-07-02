@@ -22,8 +22,8 @@ import FunctionCallDisplay from './FunctionCallDisplay.js';
 import ParameterDisplay from './ParameterDisplay.js';
 import { AllowAskDenyState } from '@walletmesh/router/permissions';
 import { createOriginMiddleware } from '../middlewares/originMiddleware.js';
-import { createFunctionArgNamesMiddleware, type FunctionArgNames } from '../middlewares/functionArgNamesMiddleware.js';
-import { createHistoryMiddleware } from '../middlewares/historyMiddleware.js';
+import { createFunctionArgNamesMiddleware } from '../middlewares/functionArgNamesMiddleware.js';
+import { createHistoryMiddleware, type HistoryEntry } from '../middlewares/historyMiddleware.js';
 import { createDappToWalletTransport } from '../transports/CrossWindowTransport.js';
 import { CustomPermissionManager } from './CustomPermissionManager.js';
 
@@ -73,6 +73,28 @@ function isTransactionFunctionCall(params: unknown): params is TransactionFuncti
 }
 
 /**
+ * Live timer component that shows elapsed time for processing requests
+ */
+const LiveTimer: React.FC<{ startTime: number }> = ({ startTime }) => {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const elapsedMs = Date.now() - startTime;
+      setElapsed(elapsedMs);
+    }, 1000); // Update every 1 second
+
+    return () => clearInterval(interval);
+  }, [startTime]);
+
+  // Display in seconds if >= 1 second, otherwise in milliseconds
+  const displayValue = elapsed >= 1000 ? (elapsed / 1000).toFixed(1) : elapsed;
+  const displayUnit = elapsed >= 1000 ? 's' : 'ms';
+
+  return <span>{displayValue}{displayUnit}</span>;
+};
+
+/**
  * Creates and initializes a PXE (Private eXecution Environment) client.
  * This function handles the configuration and setup necessary for the PXE service,
  * including specific error handling for browser environments where IndexedDB might be blocked.
@@ -110,18 +132,7 @@ export async function createPXE(node: AztecNode, showError: (msg: string) => voi
   }
 }
 
-/**
- * Represents an entry in the request history log displayed by the Wallet component.
- */
-interface HistoryEntry {
-  time: string;
-  origin: string;
-  method: string;
-  params: unknown;  // Make required to match middleware
-  status?: string;
-  functionArgNames?: FunctionArgNames;
-  id?: number;
-}
+
 
 /**
  * Props for the {@link Wallet} component.
@@ -146,6 +157,8 @@ interface WalletProps {
   }) => Promise<boolean>;
   /** Callback invoked when the user selects "Always Allow". */
   onAlwaysAllow?: () => void;
+  /** Callback invoked when the user enables auto-approve from an approval prompt. */
+  onEnableAutoApprove?: () => void;
   /** Reference to the permission manager for updating permission states. */
   permissionManagerRef?: React.MutableRefObject<CustomPermissionManager | null>;
 }
@@ -160,13 +173,19 @@ interface WalletProps {
  * - Communicates with DApps via cross-window postMessage
  * - Displays a history of requests and manages UI for pending approvals
  */
-const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, onApprovalRequest, onAlwaysAllow, permissionManagerRef }) => {
+const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, onApprovalRequest, onAlwaysAllow, onEnableAutoApprove, permissionManagerRef }) => {
   /** State for storing and displaying the history of requests received by the router. */
   const [requestHistory, setRequestHistory] = useState<HistoryEntry[]>([]);
   /** State indicating if the wallet router and underlying services are initialized. */
   const [isConnected, setIsConnected] = useState(false);
   /** State for the connected Aztec account address string. */
   const [connectedAccount, setConnectedAccount] = useState<string | null>(null);
+  /** State for filtering request history by processing status */
+  const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({
+    processing: true,
+    success: true,
+    error: true,
+  });
 
   /** Ref to ensure wallet setup runs only once. */
   const setupDoneRef = useRef(false);
@@ -232,8 +251,10 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
         // Get the dApp origin from the opener
         // In production, you'd want to validate this against a whitelist
         let dappOrigin = '*'; // Using wildcard for simplicity, but you can restrict this
+        let detectedOrigin: string | undefined;
         try {
-          dappOrigin = dappWindow.location.origin;
+          detectedOrigin = dappWindow.location.origin;
+          dappOrigin = detectedOrigin || '*';
         } catch (e) {
           // Cross-origin access might be blocked, use wildcard
           console.warn('Could not access dApp origin, using wildcard');
@@ -370,14 +391,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
 
 
         // Add origin middleware to provide proper origin context
-        router.addMiddleware(createOriginMiddleware(() => {
-          // Try to get the actual dApp origin
-          try {
-            return dappWindow.location.origin;
-          } catch (e) {
-            return window.location.origin; // Fallback to wallet origin
-          }
-        }));
+        router.addMiddleware(createOriginMiddleware(detectedOrigin));
 
         routerRef.current = router;
 
@@ -410,6 +424,11 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
     }
   };
 
+  /** Filter request history based on selected status filters */
+  const filteredHistory = requestHistory.filter(req =>
+    req.processingStatus && statusFilters[req.processingStatus]
+  );
+
   return (
     <div className="wallet-server">
       {pendingApproval && onApprovalResponse && (
@@ -421,6 +440,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
           onApprove={handleApprove}
           onDeny={handleDeny}
           onAlwaysAllow={onAlwaysAllow || (() => {})}
+          onEnableAutoApprove={onEnableAutoApprove || (() => {})}
         />
       )}
 
@@ -432,12 +452,62 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
           <p className="connection-status">
             <strong>Connected Account:</strong> {connectedAccount || 'Loading...'}
           </p>
+          {(() => {
+            const processingCount = requestHistory.filter(req => req.processingStatus === 'processing').length;
+            return processingCount > 0 ? (
+              <p className="processing-indicator">
+                <strong>⏳ {processingCount} request{processingCount !== 1 ? 's' : ''} currently processing</strong>
+              </p>
+            ) : null;
+          })()}
           <h3>Request History</h3>
-          <ul className="request-history">
-            {requestHistory.length === 0 ? (
-              <li>None</li>
+          <div className="history-filters">
+            <div className="filter-controls">
+              <button
+                className="filter-button"
+                onClick={() => setStatusFilters({ processing: true, success: true, error: true })}
+              >
+                Select All
+              </button>
+              <button
+                className="filter-button"
+                onClick={() => setStatusFilters({ processing: false, success: false, error: false })}
+              >
+                Clear All
+              </button>
+            </div>
+            <div className="filter-options">
+              <label className="filter-label">
+                <input
+                  type="checkbox"
+                  checked={statusFilters.processing}
+                  onChange={(e) => setStatusFilters(prev => ({ ...prev, processing: e.target.checked }))}
+                />
+                ⏳ Processing
+              </label>
+              <label className="filter-label">
+                <input
+                  type="checkbox"
+                  checked={statusFilters.success}
+                  onChange={(e) => setStatusFilters(prev => ({ ...prev, success: e.target.checked }))}
+                />
+                ✅ Success
+              </label>
+              <label className="filter-label">
+                <input
+                  type="checkbox"
+                  checked={statusFilters.error}
+                  onChange={(e) => setStatusFilters(prev => ({ ...prev, error: e.target.checked }))}
+                />
+                ❌ Error
+              </label>
+            </div>
+          </div>
+                    <ul className="request-history">
+            {filteredHistory.length === 0 ? (
+              <li key="no-results">No requests match the current filters</li>
             ) : (
-              [...requestHistory].reverse().map((request, index) => (
+              [...filteredHistory].reverse().map((request, index) => (
                 <li key={index}>
                   <p className="request-details">
                     <b>Time:</b> {request.time}
@@ -468,16 +538,41 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
                       functionArgNames={request.functionArgNames}
                     />
                   ) : null}
-                  {request.status && (
+                  {request.approvalStatus && (
                     <p className="request-details">
-                      <b>Status:</b>{' '}
+                      <b>Approval Status:</b>{' '}
                       <span
                         className={
-                          request.status === 'Denied' ? 'denied-status' : ''
+                          request.approvalStatus === 'denied' ? 'denied-status' : ''
                         }
                       >
-                        {request.status}
+                        {request.approvalStatus === 'approved' ? 'Approved' : 'Denied'}
                       </span>
+                    </p>
+                  )}
+                  {request.processingStatus && (
+                    <p className="request-details">
+                      <b>Processing Status:</b>{' '}
+                      <span
+                        className={
+                          request.processingStatus === 'processing' ? 'processing-status' :
+                          request.processingStatus === 'error' ? 'error-status' :
+                          'success-status'
+                        }
+                      >
+                        {request.processingStatus === 'processing' ? '⏳ Processing' :
+                         request.processingStatus === 'error' ? '❌ Error' :
+                         '✅ Success'}
+                      </span>
+                    </p>
+                  )}
+                  {request.processingStatus === 'processing' ? (
+                    <p className="request-details">
+                      <b>Duration:</b> <LiveTimer startTime={request.requestTimestamp} />
+                    </p>
+                  ) : request.duration && (
+                    <p className="request-details">
+                      <b>Duration:</b> {request.duration}ms
                     </p>
                   )}
                   <hr />

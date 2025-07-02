@@ -39,6 +39,7 @@ export default defineConfig(({ mode }) => {
     server: {
       headers: {
         'Cross-Origin-Embedder-Policy': 'require-corp',
+        'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
       },
       host: '127.0.0.1',
     },
