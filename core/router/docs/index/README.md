@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.0**](../README.md)
+[**@walletmesh/router v0.5.1**](../README.md)
 
 ***
 

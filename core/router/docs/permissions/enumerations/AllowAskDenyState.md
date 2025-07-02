@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.0**](../../README.md)
+[**@walletmesh/router v0.5.1**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Enumeration: AllowAskDenyState
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/permissions/allowAskDeny.ts#L38)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/permissions/allowAskDeny.ts#L38)
 
 Permission states for the three-state permission model.
 Each method can be in one of these three states.
@@ -17,7 +17,7 @@ Each method can be in one of these three states.
 
 > **ALLOW**: `"allow"`
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/permissions/allowAskDeny.ts#L40)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/permissions/allowAskDeny.ts#L40)
 
 Method is always allowed without prompting
 
@@ -27,7 +27,7 @@ Method is always allowed without prompting
 
 > **ASK**: `"ask"`
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/permissions/allowAskDeny.ts#L44)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/permissions/allowAskDeny.ts#L44)
 
 User should be prompted for permission each time
 
@@ -37,6 +37,6 @@ User should be prompted for permission each time
 
 > **DENY**: `"deny"`
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/permissions/allowAskDeny.ts#L42)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/permissions/allowAskDeny.ts#L42)
 
 Method is always denied without prompting

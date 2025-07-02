@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.0**](../../README.md)
+[**@walletmesh/router v0.5.1**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionStore
 
-Defined in: [core/router/src/session-store.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/session-store.ts#L11)
+Defined in: [core/router/src/session-store.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/session-store.ts#L11)
 
 Interface for session storage implementations
 
@@ -16,7 +16,7 @@ Interface for session storage implementations
 
 > **cleanExpired**(): `Promise`\<`number`\>
 
-Defined in: [core/router/src/session-store.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/session-store.ts#L54)
+Defined in: [core/router/src/session-store.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/session-store.ts#L54)
 
 Remove all expired sessions
 
@@ -32,7 +32,7 @@ Promise resolving to number of sessions removed
 
 > **clear**(): `Promise`\<`void`\>
 
-Defined in: [core/router/src/session-store.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/session-store.ts#L41)
+Defined in: [core/router/src/session-store.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/session-store.ts#L41)
 
 Clear all sessions
 
@@ -46,7 +46,7 @@ Clear all sessions
 
 > **delete**(`sessionId`): `Promise`\<`void`\>
 
-Defined in: [core/router/src/session-store.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/session-store.ts#L36)
+Defined in: [core/router/src/session-store.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/session-store.ts#L36)
 
 Remove a session
 
@@ -68,7 +68,7 @@ Unique session identifier
 
 > **get**(`sessionId`): `Promise`\<`undefined` \| [`SessionData`](SessionData.md)\>
 
-Defined in: [core/router/src/session-store.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/session-store.ts#L24)
+Defined in: [core/router/src/session-store.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/session-store.ts#L24)
 
 Retrieve a session if it exists and has not expired
 
@@ -92,7 +92,7 @@ Promise resolving to session data if found and valid, undefined otherwise
 
 > **getAll**(): `Promise`\<`Map`\<`string`, [`SessionData`](SessionData.md)\>\>
 
-Defined in: [core/router/src/session-store.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/session-store.ts#L30)
+Defined in: [core/router/src/session-store.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/session-store.ts#L30)
 
 Get all non-expired sessions
 
@@ -108,7 +108,7 @@ Promise resolving to Map of session IDs to session data
 
 > **set**(`sessionId`, `data`): `Promise`\<`void`\>
 
-Defined in: [core/router/src/session-store.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/session-store.ts#L17)
+Defined in: [core/router/src/session-store.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/session-store.ts#L17)
 
 Store a new session
 
@@ -136,7 +136,7 @@ Session data to store
 
 > **validateAndRefresh**(`sessionId`): `Promise`\<`undefined` \| [`SessionData`](SessionData.md)\>
 
-Defined in: [core/router/src/session-store.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/session-store.ts#L48)
+Defined in: [core/router/src/session-store.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/session-store.ts#L48)
 
 Validate a session and optionally refresh its expiry
 

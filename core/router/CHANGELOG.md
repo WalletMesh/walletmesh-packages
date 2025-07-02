@@ -1,5 +1,11 @@
 # @walletmesh/router
 
+## 0.5.1
+
+### Patch Changes
+
+- 29a725f: Make the `ask` callback for the AllowAskDeny permission manager async
+
 ## 0.5.0
 
 ### Minor Changes

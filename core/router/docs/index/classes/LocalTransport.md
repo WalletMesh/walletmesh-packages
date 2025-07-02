@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.0**](../../README.md)
+[**@walletmesh/router v0.5.1**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: LocalTransport
 
-Defined in: [core/router/src/localTransport.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/localTransport.ts#L35)
+Defined in: [core/router/src/localTransport.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/localTransport.ts#L35)
 
 A local transport that directly connects two JSONRPCNodes without network overhead.
 This transport calls receiveMessage directly on the connected nodes, maintaining
@@ -52,7 +52,7 @@ const router = new WalletRouter(transport, new Map([
 
 > **connectTo**(`remoteNode`): `void`
 
-Defined in: [core/router/src/localTransport.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/localTransport.ts#L42)
+Defined in: [core/router/src/localTransport.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/localTransport.ts#L42)
 
 Connect this transport to a remote JSONRPCNode
 
@@ -72,7 +72,7 @@ Connect this transport to a remote JSONRPCNode
 
 > **onMessage**(`handler`): `void`
 
-Defined in: [core/router/src/localTransport.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/localTransport.ts#L66)
+Defined in: [core/router/src/localTransport.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/localTransport.ts#L66)
 
 Register a message handler for incoming messages
 
@@ -96,7 +96,7 @@ Register a message handler for incoming messages
 
 > **receive**(`message`): `void`
 
-Defined in: [core/router/src/localTransport.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/localTransport.ts#L73)
+Defined in: [core/router/src/localTransport.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/localTransport.ts#L73)
 
 Receive a message and pass it to the registered handler
 
@@ -116,7 +116,7 @@ Receive a message and pass it to the registered handler
 
 > **send**(`message`): `Promise`\<`void`\>
 
-Defined in: [core/router/src/localTransport.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/localTransport.ts#L49)
+Defined in: [core/router/src/localTransport.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/localTransport.ts#L49)
 
 Send a message to the connected remote node
 
