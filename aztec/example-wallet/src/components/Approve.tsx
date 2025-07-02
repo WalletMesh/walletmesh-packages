@@ -63,7 +63,11 @@ const Approve: React.FC<ApproveProps> = ({
           <label className="auto-approve-checkbox">
             <input
               type="checkbox"
-              onChange={onEnableAutoApprove}
+              onChange={(event) => {
+                if (event.target.checked) {
+                  onEnableAutoApprove();
+                }
+              }}
             />
             Auto Approve All Requests
           </label>
@@ -78,7 +82,11 @@ const Approve: React.FC<ApproveProps> = ({
           <label className="always-allow-checkbox">
             <input
               type="checkbox"
-              onChange={onAlwaysAllow}
+              onChange={(event) => {
+                if (event.target.checked) {
+                  onAlwaysAllow();
+                }
+              }}
             />
             Always allow {method} requests
           </label>

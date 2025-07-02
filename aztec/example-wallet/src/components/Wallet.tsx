@@ -76,13 +76,22 @@ function isTransactionFunctionCall(params: unknown): params is TransactionFuncti
  * Live timer component that shows elapsed time for processing requests
  */
 const LiveTimer: React.FC<{ startTime: number }> = ({ startTime }) => {
-  const [elapsed, setElapsed] = useState(0);
+  const [elapsed, setElapsed] = useState(() => Date.now() - startTime);
 
   useEffect(() => {
+    const updateTimer = () => {
+      const elapsedMs = Date.now() - startTime;
+      setElapsed(elapsedMs);
+    };
+
+    // Update immediately to show current elapsed time
+    updateTimer();
+
+    // Use different intervals based on elapsed time for better UX
     const interval = setInterval(() => {
       const elapsedMs = Date.now() - startTime;
       setElapsed(elapsedMs);
-    }, 1000); // Update every 1 second
+    }, elapsed < 1000 ? 100 : 1000); // Update every 100ms for sub-second times, 1000ms for longer times
 
     return () => clearInterval(interval);
   }, [startTime]);
