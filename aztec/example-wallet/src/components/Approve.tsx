@@ -18,7 +18,9 @@ type ApproveProps = {
   onApprove: () => void;
   onDeny: () => void;
   onAlwaysAllow: () => void;
+  onEnableAutoApprove: () => void;
   showAlwaysAllow?: boolean;
+  showAutoApprove?: boolean;
 };
 
 const Approve: React.FC<ApproveProps> = ({
@@ -29,7 +31,9 @@ const Approve: React.FC<ApproveProps> = ({
   onApprove,
   onDeny,
   onAlwaysAllow,
+  onEnableAutoApprove,
   showAlwaysAllow = true,
+  showAutoApprove = true,
 }) => {
   return (
     <div className="approve-container">
@@ -53,14 +57,48 @@ const Approve: React.FC<ApproveProps> = ({
           <ParameterDisplay params={params} />
         )
       )}
+
+      {showAutoApprove && (
+        <div className="auto-approve-option">
+          <label className="auto-approve-checkbox">
+            <input
+              type="checkbox"
+              onChange={(event) => {
+                if (event.target.checked) {
+                  onEnableAutoApprove();
+                }
+              }}
+            />
+            Auto Approve All Requests
+          </label>
+          <p className="auto-approve-hint">
+            Enable this to automatically approve all future requests without prompting
+          </p>
+        </div>
+      )}
+
+      {showAlwaysAllow && (
+        <div className="always-allow-option">
+          <label className="always-allow-checkbox">
+            <input
+              type="checkbox"
+              onChange={(event) => {
+                if (event.target.checked) {
+                  onAlwaysAllow();
+                }
+              }}
+            />
+            Always allow {method} requests
+          </label>
+          <p className="always-allow-hint">
+            Enable this to automatically approve this specific method without prompting in the future
+          </p>
+        </div>
+      )}
+
       <div className="approve-buttons">
-        <button onClick={onApprove}>Approve</button>
-        {showAlwaysAllow && (
-          <button onClick={onAlwaysAllow} className="always-allow-button">
-            Always Allow
-          </button>
-        )}
-        <button onClick={onDeny}>Deny</button>
+        <button onClick={onApprove} className="approve-button">Approve</button>
+        <button onClick={onDeny} className="deny-button">Deny</button>
       </div>
     </div>
   );

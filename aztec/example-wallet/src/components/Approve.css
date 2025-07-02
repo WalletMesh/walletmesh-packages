@@ -12,9 +12,10 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #615653;
+  background-color: var(--modal-bg, #615653);
   padding: 20px;
   border-radius: 8px;
+  color: var(--modal-text, inherit);
 }
 
 .modal-buttons {
@@ -26,9 +27,11 @@
 .approve-container {
   width: 100%;
   padding: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--approve-border, #ccc);
   margin-bottom: 16px;
   text-align: left;
+  background-color: var(--approve-bg, transparent);
+  color: var(--approve-text, inherit);
 }
 
 .approve-buttons {
@@ -39,18 +42,132 @@
 
 .approve-buttons button {
   flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.always-allow-button {
-  background-color: #4caf50 !important;
-  color: white !important;
-  font-weight: bold;
+.approve-button {
+  background-color: #4caf50;
+  color: white;
 }
 
-.always-allow-button:hover {
-  background-color: #45a049 !important;
+.approve-button:hover {
+  background-color: #45a049;
+}
+
+.deny-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.deny-button:hover {
+  background-color: #d32f2f;
 }
 
 .approve-details {
   margin: 4px 0;
+}
+
+.auto-approve-option {
+  margin: 16px 0;
+  padding: 12px;
+  background-color: var(--auto-approve-bg, #f5f5f5);
+  border-radius: 6px;
+  border: 1px solid var(--auto-approve-border, #ddd);
+}
+
+.auto-approve-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 4px;
+  color: var(--auto-approve-text, inherit);
+}
+
+.auto-approve-checkbox input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.auto-approve-hint {
+  margin: 0;
+  font-size: 0.9em;
+  color: var(--auto-approve-hint-color, #666);
+  font-style: italic;
+}
+
+.always-allow-option {
+  margin: 16px 0;
+  padding: 12px;
+  background-color: var(--always-allow-bg, #f5f5f5);
+  border-radius: 6px;
+  border: 1px solid var(--always-allow-border, #ddd);
+}
+
+.always-allow-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 4px;
+  color: var(--always-allow-text, inherit);
+}
+
+.always-allow-checkbox input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.always-allow-hint {
+  margin: 0;
+  font-size: 0.9em;
+  color: var(--always-allow-hint-color, #666);
+  font-style: italic;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .modal {
+    --modal-bg: #2a2a2a;
+    --modal-text: #e0e0e0;
+  }
+
+  .approve-container {
+    --approve-bg: #2a2a2a;
+    --approve-border: #444;
+    --approve-text: #e0e0e0;
+  }
+
+  .auto-approve-option {
+    --auto-approve-bg: #2a2a2a;
+    --auto-approve-border: #444;
+  }
+
+  .auto-approve-checkbox {
+    --auto-approve-text: #e0e0e0;
+  }
+
+  .auto-approve-hint {
+    --auto-approve-hint-color: #aaa;
+  }
+
+  .always-allow-option {
+    --always-allow-bg: #2a2a2a;
+    --always-allow-border: #444;
+  }
+
+  .always-allow-checkbox {
+    --always-allow-text: #e0e0e0;
+  }
+
+  .always-allow-hint {
+    --always-allow-hint-color: #aaa;
+  }
 }
