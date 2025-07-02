@@ -87,11 +87,11 @@ const LiveTimer: React.FC<{ startTime: number }> = ({ startTime }) => {
     // Update immediately to show current elapsed time
     updateTimer();
 
-    // Use different intervals based on elapsed time for better UX
+    // Update every 1 second for consistent, readable updates
     const interval = setInterval(() => {
       const elapsedMs = Date.now() - startTime;
       setElapsed(elapsedMs);
-    }, elapsed < 1000 ? 100 : 1000); // Update every 100ms for sub-second times, 1000ms for longer times
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [startTime]);
