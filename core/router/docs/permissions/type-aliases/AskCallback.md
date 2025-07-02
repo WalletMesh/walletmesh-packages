@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.0**](../../README.md)
+[**@walletmesh/router v0.5.1**](../../README.md)
 
 ***
 
@@ -6,9 +6,9 @@
 
 # Type Alias: AskCallback()\<T, C\>
 
-> **AskCallback**\<`T`, `C`\> = (`context`, `request`) => `boolean`
+> **AskCallback**\<`T`, `C`\> = (`context`, `request`) => `Promise`\<`boolean`\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/router/src/permissions/allowAskDeny.ts#L29)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/permissions/allowAskDeny.ts#L29)
 
 Callback for handling permission prompts when a method is in ASK state.
 This callback is invoked to determine if a method call should be allowed.
@@ -43,15 +43,15 @@ The JSON-RPC request being checked
 
 ## Returns
 
-`boolean`
+`Promise`\<`boolean`\>
 
-boolean indicating if the method call should be allowed
+Promise resolving to boolean indicating if the method call should be allowed
 
 ## Example
 
 ```typescript
-const askCallback: AskCallback = (context, request) => {
+const askCallback: AskCallback = async (context, request) => {
   // Show a prompt to the user
-  return window.confirm(`Allow ${request.method}?`);
+  return await showPermissionDialog(`Allow ${request.method}?`);
 };
 ```
