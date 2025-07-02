@@ -35,7 +35,7 @@ describe('AllowAskDenyManager', () => {
       ],
     ]);
 
-    const askCallback = vi.fn((_context, _request) => true);
+    const askCallback = vi.fn(async (_context, _request) => true);
     const approveCallback = vi.fn(
       (_context, permissionRequest: ChainPermissions): Promise<HumanReadableChainPermissions> => {
         const result: HumanReadableChainPermissions = {};

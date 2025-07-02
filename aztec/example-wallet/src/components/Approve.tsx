@@ -17,6 +17,8 @@ type ApproveProps = {
   functionArgNames?: FunctionArgNames;
   onApprove: () => void;
   onDeny: () => void;
+  onAlwaysAllow: () => void;
+  showAlwaysAllow?: boolean;
 };
 
 const Approve: React.FC<ApproveProps> = ({
@@ -26,6 +28,8 @@ const Approve: React.FC<ApproveProps> = ({
   functionArgNames,
   onApprove,
   onDeny,
+  onAlwaysAllow,
+  showAlwaysAllow = true,
 }) => {
   return (
     <div className="approve-container">
@@ -51,6 +55,11 @@ const Approve: React.FC<ApproveProps> = ({
       )}
       <div className="approve-buttons">
         <button onClick={onApprove}>Approve</button>
+        {showAlwaysAllow && (
+          <button onClick={onAlwaysAllow} className="always-allow-button">
+            Always Allow
+          </button>
+        )}
         <button onClick={onDeny}>Deny</button>
       </div>
     </div>

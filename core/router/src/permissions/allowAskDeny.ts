@@ -16,20 +16,20 @@ import type { ChainId } from '../types.js';
  * @template C - Router context type for session and origin information
  * @param context - Router context containing session and origin information
  * @param request - The JSON-RPC request being checked
- * @returns boolean indicating if the method call should be allowed
+ * @returns Promise resolving to boolean indicating if the method call should be allowed
  *
  * @example
  * ```typescript
- * const askCallback: AskCallback = (context, request) => {
+ * const askCallback: AskCallback = async (context, request) => {
  *   // Show a prompt to the user
- *   return window.confirm(`Allow ${request.method}?`);
+ *   return await showPermissionDialog(`Allow ${request.method}?`);
  * };
  * ```
  */
 export type AskCallback<T extends RouterMethodMap, C extends RouterContext> = (
   context: C,
   request: JSONRPCRequest<T, keyof T>,
-) => boolean;
+) => Promise<boolean>;
 
 /**
  * Permission states for the three-state permission model.
@@ -278,7 +278,7 @@ export class AllowAskDenyManager<
       return state === AllowAskDenyState.ASK || state === undefined;
     });
 
-    if (ask) return this.askPermissions ? this.askPermissions(context, request) : false;
+    if (ask) return this.askPermissions ? await this.askPermissions(context, request) : false;
 
     // If all call methods are allowed, allow. This should only be reached if all methods are allowed
     // but we check to be safe
@@ -324,7 +324,7 @@ export class AllowAskDenyManager<
       case AllowAskDenyState.DENY:
         return false;
       case AllowAskDenyState.ASK:
-        return this.askPermissions ? this.askPermissions(context, request) : false;
+        return this.askPermissions ? await this.askPermissions(context, request) : false;
       default:
         return false;
     }

@@ -4,7 +4,13 @@ import {
   createAztecWalletNode,
 } from '@walletmesh/aztec-rpc-wallet'
 
-import { WalletRouter, type ChainId, createLocalTransportPair, type WalletRouterConfig } from '@walletmesh/router'
+import {
+  WalletRouter,
+  type ChainId,
+  createLocalTransportPair,
+  type WalletRouterConfig,
+  type HumanReadableChainPermissions,
+} from '@walletmesh/router'
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { getInitialTestAccounts } from '@aztec/accounts/testing';
 import { createAztecNodeClient, waitForNode, waitForPXE, type AztecNode, type PXE } from '@aztec/aztec.js';
@@ -14,11 +20,12 @@ import Approve from './Approve.js';
 import './Wallet.css';
 import FunctionCallDisplay from './FunctionCallDisplay.js';
 import ParameterDisplay from './ParameterDisplay.js';
-import { ApprovalPermissionManager } from './ApprovalPermissionManager.js';
+import { AllowAskDenyState } from '@walletmesh/router/permissions';
 import { createOriginMiddleware } from '../middlewares/originMiddleware.js';
 import { createFunctionArgNamesMiddleware, type FunctionArgNames } from '../middlewares/functionArgNamesMiddleware.js';
 import { createHistoryMiddleware } from '../middlewares/historyMiddleware.js';
 import { createDappToWalletTransport } from '../transports/CrossWindowTransport.js';
+import { CustomPermissionManager } from './CustomPermissionManager.js';
 
 import initNoircAbiWasm from '@aztec/noir-noirc_abi/web/noirc_abi_wasm.js';
 import initAcvmJs from '@aztec/noir-acvm_js/web/acvm_js.js';
@@ -137,6 +144,10 @@ interface WalletProps {
     method: string;
     params?: unknown;
   }) => Promise<boolean>;
+  /** Callback invoked when the user selects "Always Allow". */
+  onAlwaysAllow?: () => void;
+  /** Reference to the permission manager for updating permission states. */
+  permissionManagerRef?: React.MutableRefObject<CustomPermissionManager | null>;
 }
 
 
@@ -149,7 +160,7 @@ interface WalletProps {
  * - Communicates with DApps via cross-window postMessage
  * - Displays a history of requests and manages UI for pending approvals
  */
-const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, onApprovalRequest }) => {
+const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, onApprovalRequest, onAlwaysAllow, permissionManagerRef }) => {
   /** State for storing and displaying the history of requests received by the router. */
   const [requestHistory, setRequestHistory] = useState<HistoryEntry[]>([]);
   /** State indicating if the wallet router and underlying services are initialized. */
@@ -230,12 +241,109 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
 
         const routerTransport = createDappToWalletTransport(dappWindow, dappOrigin);
 
-        // Create permission manager with approval handling
-        const permissionManager = new ApprovalPermissionManager({
-          onApprovalRequest: onApprovalRequest || (async () => true),
-          // Configure which methods require approval
-          methodsRequiringApproval: ['aztec_getAddress', 'aztec_getCompleteAddress', 'aztec_proveTx', 'aztec_sendTx', 'aztec_simulateUtility', 'aztec_contractInteraction', 'aztec_wmDeployContract', 'aztec_getPrivateEvents', 'aztec_registerContract', 'aztec_registerContractClass']
-        });
+                // Create permission manager with CustomPermissionManager
+        const permissionManager = new CustomPermissionManager(
+          // approvePermissionsCallback: Handle initial connection permissions
+          async (context, permissionRequest) => {
+            const origin = context.origin || 'unknown';
+            const chainIds = Object.keys(permissionRequest).join(', ');
+
+            // Prompt user for initial connection approval
+            const userApproved = await (onApprovalRequest || (async () => true))({
+              origin,
+              chainId: chainIds,
+              method: 'wm_connect',
+              params: permissionRequest
+            });
+
+            if (!userApproved) {
+              return {}; // Return empty permissions if denied
+            }
+
+            // If approved, convert to human-readable format
+            const result: HumanReadableChainPermissions = {};
+            for (const [chainId, methods] of Object.entries(permissionRequest)) {
+              result[chainId] = {};
+              for (const method of methods) {
+                result[chainId][method] = {
+                  allowed: true,
+                  shortDescription: 'allowed',
+                };
+              }
+            }
+            return result;
+          },
+                              // askCallback: Handle individual method calls in ASK state
+          async (context, request) => {
+            const origin = context.origin || 'unknown';
+
+            // Extract method details from the request
+            let chainId = '';
+            let method = '';
+            let params: unknown;
+
+            if (request.method === 'wm_call' && request.params) {
+              const callParams = request.params as any;
+              chainId = callParams.chainId;
+              method = callParams.call?.method;
+              params = callParams.call?.params;
+            } else if (request.method === 'wm_bulkCall' && request.params) {
+              const bulkParams = request.params as any;
+              chainId = bulkParams.chainId;
+              method = 'bulk_call'; // Simplified for UI
+              params = bulkParams.calls;
+            }
+
+            // Now we can use the async approval flow
+            return await (onApprovalRequest || (async () => true))({
+              origin,
+              chainId,
+              method,
+              params
+            });
+          },
+          // initialState: Define initial permission states
+          new Map([
+            ['aztec:31337', new Map([
+              // Methods that require approval each time (ASK state)
+              ['aztec_sendTx', AllowAskDenyState.ASK],
+              ['aztec_proveTx', AllowAskDenyState.ASK],
+              ['aztec_contractInteraction', AllowAskDenyState.ASK],
+              ['aztec_registerContract', AllowAskDenyState.ASK],
+              ['aztec_registerContractClass', AllowAskDenyState.ASK],
+              ['aztec_registerSender', AllowAskDenyState.ASK],
+              ['aztec_createAuthWit', AllowAskDenyState.ASK],
+              ['aztec_profileTx', AllowAskDenyState.ASK],
+              ['aztec_simulateTx', AllowAskDenyState.ASK],
+              ['aztec_simulateUtility', AllowAskDenyState.ASK],
+              ['aztec_wmDeployContract', AllowAskDenyState.ASK],
+              ['aztec_wmExecuteTx', AllowAskDenyState.ASK],
+              ['aztec_wmSimulateTx', AllowAskDenyState.ASK],
+
+              // Methods that are always allowed (ALLOW state)
+              ['aztec_getAddress', AllowAskDenyState.ALLOW],
+              ['aztec_getCompleteAddress', AllowAskDenyState.ALLOW],
+              ['aztec_getChainId', AllowAskDenyState.ALLOW],
+              ['aztec_getVersion', AllowAskDenyState.ALLOW],
+              ['aztec_getNodeInfo', AllowAskDenyState.ALLOW],
+              ['aztec_getPublicEvents', AllowAskDenyState.ALLOW],
+              ['aztec_getContractMetadata', AllowAskDenyState.ALLOW],
+              ['aztec_getContractClassMetadata', AllowAskDenyState.ALLOW],
+              ['aztec_getTxReceipt', AllowAskDenyState.ALLOW],
+              ['aztec_getBlock', AllowAskDenyState.ALLOW],
+              ['aztec_getBlockNumber', AllowAskDenyState.ALLOW],
+              ['aztec_getCurrentBaseFees', AllowAskDenyState.ALLOW],
+              ['aztec_getPXEInfo', AllowAskDenyState.ALLOW],
+
+              // Methods that are always denied (DENY state) - if any
+              // ['some_risky_method', AllowAskDenyState.DENY],
+              ['aztec_removeSender', AllowAskDenyState.DENY],
+              ['aztec_getSenders', AllowAskDenyState.DENY],
+              ['aztec_getPrivateEvents', AllowAskDenyState.DENY],
+              ['aztec_getContracts', AllowAskDenyState.DENY],
+            ])]
+          ])
+        );
 
         // Create wallets map with the client transport
         const wallets = new Map<ChainId, import('@walletmesh/jsonrpc').JSONRPCTransport>([
@@ -254,6 +362,11 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
 
         // Create the router with transports
         const router = new WalletRouter(routerTransport, wallets, permissionManager, routerConfig);
+
+        // Set the permission manager reference for the App component
+        if (permissionManagerRef) {
+          permissionManagerRef.current = permissionManager;
+        }
 
 
         // Add origin middleware to provide proper origin context
@@ -307,6 +420,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
           functionArgNames={requestHistory.find(h => !h.status)?.functionArgNames}
           onApprove={handleApprove}
           onDeny={handleDeny}
+          onAlwaysAllow={onAlwaysAllow || (() => {})}
         />
       )}
 
