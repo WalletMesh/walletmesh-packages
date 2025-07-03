@@ -26,6 +26,7 @@ import { createFunctionArgNamesMiddleware } from '../middlewares/functionArgName
 import { createHistoryMiddleware, type HistoryEntry } from '../middlewares/historyMiddleware.js';
 import { createDappToWalletTransport } from '../transports/CrossWindowTransport.js';
 import { CustomPermissionManager } from './CustomPermissionManager.js';
+import { useToast } from '../contexts/ToastContext.js';
 
 import initNoircAbiWasm from '@aztec/noir-noirc_abi/web/noirc_abi_wasm.js';
 import initAcvmJs from '@aztec/noir-acvm_js/web/acvm_js.js';
@@ -201,11 +202,8 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
   /** Ref to the WalletRouter instance. */
   const routerRef = useRef<WalletRouter | null>(null);
 
-  /** Simple toast-like error display */
-  const showError = (message: string) => {
-    console.error(message);
-    // You can add a proper toast component here if needed
-  };
+  /** Toast system for error display */
+  const { showError, showSuccess } = useToast();
 
   /** Effect to set up the wallet router, Aztec node, PXE, and account wallet on component mount. */
   useEffect(() => {
@@ -248,7 +246,18 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
 
         // Add middleware to the wallet node for function arg names and history
         aztecWalletNode.addMiddleware(createFunctionArgNamesMiddleware(pxe));
-        aztecWalletNode.addMiddleware(createHistoryMiddleware((entries) => setRequestHistory(entries as HistoryEntry[])));
+                aztecWalletNode.addMiddleware(createHistoryMiddleware((entries) => {
+          setRequestHistory(entries as HistoryEntry[]);
+
+          // Show toast for errors
+          const historyEntries = entries as HistoryEntry[];
+          const latestEntry = historyEntries[historyEntries.length - 1];
+          if (latestEntry?.processingStatus === 'error' && latestEntry?.error) {
+            showError(`Request failed: ${latestEntry.error.message}`);
+          } else if (latestEntry?.processingStatus === 'success') {
+            showSuccess(`Request completed successfully`);
+          }
+        }));
 
         // Create cross-window router transport for DApp communication
         // We need to get the opener (dApp) window reference
@@ -261,12 +270,30 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
         // In production, you'd want to validate this against a whitelist
         let dappOrigin = '*'; // Using wildcard for simplicity, but you can restrict this
         let detectedOrigin: string | undefined;
-        try {
-          detectedOrigin = dappWindow.location.origin;
-          dappOrigin = detectedOrigin || '*';
-        } catch (e) {
-          // Cross-origin access might be blocked, use wildcard
-          console.warn('Could not access dApp origin, using wildcard');
+
+        // Method 1: Try document.referrer first (most reliable for cross-origin scenarios)
+        if (typeof document !== 'undefined' && document.referrer) {
+          try {
+            const referrerUrl = new URL(document.referrer);
+            detectedOrigin = referrerUrl.origin;
+            dappOrigin = detectedOrigin;
+            console.log('Detected dApp origin from document.referrer:', detectedOrigin);
+          } catch (e) {
+            console.warn('Failed to parse document.referrer:', e);
+          }
+        }
+
+        // Method 2: Fallback to window.opener.location.origin (only for same-origin scenarios)
+        if (!detectedOrigin && typeof window !== 'undefined' && window.opener) {
+          try {
+            detectedOrigin = dappWindow.location.origin;
+            dappOrigin = detectedOrigin || '*';
+            console.log('Detected dApp origin from window.opener:', detectedOrigin);
+          } catch (e) {
+            // Cross-origin access might be blocked, use wildcard
+            // This is expected behavior in cross-origin scenarios
+            console.log('Cross-origin context detected, using wildcard for dApp origin');
+          }
         }
 
         const routerTransport = createDappToWalletTransport(dappWindow, dappOrigin);
@@ -407,7 +434,12 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
         setIsConnected(true);
 
         // Send ready message to dApp
-        dappWindow.postMessage({ type: 'wallet_ready' }, dappOrigin);
+        if (dappWindow) {
+          dappWindow.postMessage({ type: 'wallet_ready' }, dappOrigin);
+        } else {
+          // In fallback mode, broadcast the ready message
+          window.postMessage({ type: 'wallet_ready' }, '*');
+        }
       } catch (error) {
         console.error('Error setting up wallet router:', error);
         showError(`Failed to initialize wallet: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -417,7 +449,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
     // Initialize
     setupWalletRouter();
 
-  }, [onApprovalRequest]);
+  }, [onApprovalRequest, showError, showSuccess]);
 
   /** Handles the "Approve" action from the approval UI. */
   const handleApprove = () => {
@@ -574,6 +606,19 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
                          '✅ Success'}
                       </span>
                     </p>
+                  )}
+                  {request.error && (
+                    <div className="error-details">
+                      <p className="request-details">
+                        <b>Error:</b> {request.error.message}
+                      </p>
+                      {request.error.stack && (
+                        <details className="error-stack">
+                          <summary>Stack Trace</summary>
+                          <pre className="error-stack-content">{request.error.stack}</pre>
+                        </details>
+                      )}
+                    </div>
                   )}
                   {request.processingStatus === 'processing' ? (
                     <p className="request-details">

@@ -3,22 +3,10 @@ import type { RouterMethodMap, RouterContext } from '@walletmesh/router';
 
 /**
  * Gets the origin of the dApp that opened this wallet window.
- * Uses window.opener as the primary method since we've configured CORS headers
- * to allow cross-origin access.
+ * Prioritizes document.referrer since it works reliably in cross-origin scenarios.
  */
 function getDappOrigin(): string | undefined {
-  // Method 1: Try to access window.opener.location.origin (should work with proper CORS headers)
-  if (typeof window !== 'undefined' && window.opener) {
-    try {
-      const origin = window.opener.location.origin;
-      console.log('Successfully detected dApp origin from window.opener:', origin);
-      return origin;
-    } catch (e) {
-      console.warn('Could not access window.opener.location.origin due to CORS:', e);
-    }
-  }
-
-  // Method 2: Use document.referrer (fallback for popup windows)
+  // Method 1: Use document.referrer (most reliable for cross-origin scenarios)
   if (typeof document !== 'undefined' && document.referrer) {
     try {
       const referrerUrl = new URL(document.referrer);
@@ -29,6 +17,18 @@ function getDappOrigin(): string | undefined {
     }
   }
 
+  // Method 2: Try to access window.opener.location.origin (only for same-origin scenarios)
+  if (typeof window !== 'undefined' && window.opener) {
+    try {
+      const origin = window.opener.location.origin;
+      console.log('Successfully detected dApp origin from window.opener:', origin);
+      return origin;
+    } catch (e) {
+      // CORS error - this is expected in cross-origin scenarios
+      console.log('Cross-origin context detected, window.opener access blocked by CORS');
+    }
+  }
+
   // Method 3: Try to access window.parent.location.origin (for iframe scenarios)
   if (typeof window !== 'undefined' && window.parent !== window) {
     try {
@@ -36,7 +36,8 @@ function getDappOrigin(): string | undefined {
       console.log('Detected dApp origin from window.parent:', origin);
       return origin;
     } catch (e) {
-      console.warn('Could not access window.parent.location.origin due to CORS:', e);
+      // CORS error - this is expected in cross-origin scenarios
+      console.log('Cross-origin context detected, window.parent access blocked by CORS');
     }
   }
 

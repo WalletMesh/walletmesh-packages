@@ -3,6 +3,7 @@ import './App.css';
 import Wallet from './components/Wallet.js';
 import { CustomPermissionManager } from './components/CustomPermissionManager.js';
 import { AllowAskDenyState } from '@walletmesh/router/permissions';
+import { ToastProvider } from './contexts/ToastContext.js';
 
 interface ApprovalRequest {
   origin: string;
@@ -78,34 +79,36 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <h1>WalletMesh Aztec Wallet</h1>
+    <ToastProvider>
+      <div className="App">
+        <h1>WalletMesh Aztec Wallet</h1>
 
-      <div className="auto-approve-toggle">
-        <label>
-          <input
-            type="checkbox"
-            checked={autoApprove}
-            onChange={(e) => setAutoApprove(e.target.checked)}
-          />
-          Auto Approve All Requests
-        </label>
-        {autoApprove && (
-          <p className="auto-approve-warning">
-            ⚠️ Warning: All requests will be automatically approved without user confirmation.
-          </p>
-        )}
+        <div className="auto-approve-toggle">
+          <label>
+            <input
+              type="checkbox"
+              checked={autoApprove}
+              onChange={(e) => setAutoApprove(e.target.checked)}
+            />
+            Auto Approve All Requests
+          </label>
+          {autoApprove && (
+            <p className="auto-approve-warning">
+              ⚠️ Warning: All requests will be automatically approved without user confirmation.
+            </p>
+          )}
+        </div>
+
+        <Wallet
+          pendingApproval={pendingApproval}
+          onApprovalResponse={handleApprovalResponse}
+          onApprovalRequest={handleApprovalRequest}
+          onAlwaysAllow={handleAlwaysAllow}
+          onEnableAutoApprove={handleEnableAutoApprove}
+          permissionManagerRef={permissionManagerRef}
+        />
       </div>
-
-      <Wallet
-        pendingApproval={pendingApproval}
-        onApprovalResponse={handleApprovalResponse}
-        onApprovalRequest={handleApprovalRequest}
-        onAlwaysAllow={handleAlwaysAllow}
-        onEnableAutoApprove={handleEnableAutoApprove}
-        permissionManagerRef={permissionManagerRef}
-      />
-    </div>
+    </ToastProvider>
   );
 }
 

@@ -18,25 +18,20 @@ export type HistoryEntry = {
   duration?: number;
   approvalStatus?: 'approved' | 'denied';
   processingStatus?: 'processing' | 'success' | 'error';
+  // New field for error information
+  error?: {
+    message: string;
+    stack?: string;
+    details?: unknown;
+  };
 };
 
 /**
  * Gets the origin of the dApp that opened this wallet window.
- * Uses the same logic as the origin middleware since they run in different chains.
+ * Prioritizes document.referrer since it works reliably in cross-origin scenarios.
  */
 function getDappOrigin(): string | undefined {
-  // Method 1: Try to access window.opener.location.origin (should work with proper CORS headers)
-  if (typeof window !== 'undefined' && window.opener) {
-    try {
-      const origin = window.opener.location.origin;
-      console.log('History middleware: Successfully detected dApp origin from window.opener:', origin);
-      return origin;
-    } catch (e) {
-      console.warn('History middleware: Could not access window.opener.location.origin due to CORS:', e);
-    }
-  }
-
-  // Method 2: Use document.referrer (fallback for popup windows)
+  // Method 1: Use document.referrer (most reliable for cross-origin scenarios)
   if (typeof document !== 'undefined' && document.referrer) {
     try {
       const referrerUrl = new URL(document.referrer);
@@ -47,6 +42,18 @@ function getDappOrigin(): string | undefined {
     }
   }
 
+  // Method 2: Try to access window.opener.location.origin (only for same-origin scenarios)
+  if (typeof window !== 'undefined' && window.opener) {
+    try {
+      const origin = window.opener.location.origin;
+      console.log('History middleware: Successfully detected dApp origin from window.opener:', origin);
+      return origin;
+    } catch (e) {
+      // CORS error - this is expected in cross-origin scenarios
+      console.log('History middleware: Cross-origin context detected, window.opener access blocked by CORS');
+    }
+  }
+
   // Method 3: Try to access window.parent.location.origin (for iframe scenarios)
   if (typeof window !== 'undefined' && window.parent !== window) {
     try {
@@ -54,7 +61,8 @@ function getDappOrigin(): string | undefined {
       console.log('History middleware: Detected dApp origin from window.parent:', origin);
       return origin;
     } catch (e) {
-      console.warn('History middleware: Could not access window.parent.location.origin due to CORS:', e);
+      // CORS error - this is expected in cross-origin scenarios
+      console.log('History middleware: Cross-origin context detected, window.parent access blocked by CORS');
     }
   }
 
@@ -123,17 +131,26 @@ export const createHistoryMiddleware = (
       const responseTimestamp = Date.now();
       const duration = responseTimestamp - requestTimestamp;
 
-      // Update with error status
+      // Extract error information
+      const errorInfo = {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        details: error
+      };
+
+      // Update with error status - but don't change approval status to 'denied'
+      // The approval status should remain as it was (approved if user approved it)
       setRequestHistory((prev) =>
         prev.map((item) =>
           item.id === newHistoryId
             ? {
                 ...item,
                 status: 'error',
-                approvalStatus: 'denied',
+                // Keep the existing approval status - don't override it
                 processingStatus: 'error',
                 responseTimestamp,
-                duration
+                duration,
+                error: errorInfo
               }
             : item
         ),
