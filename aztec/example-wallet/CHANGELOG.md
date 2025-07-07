@@ -1,5 +1,11 @@
 # @walletmesh/aztec-example-wallet
 
+## 0.4.4
+
+### Patch Changes
+
+- 92129cd: Improve errors in example wallet
+
 ## 0.4.3
 
 ### Patch Changes
