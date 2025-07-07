@@ -63,3 +63,11 @@ jobs:
     needs: release # Wait for publish to complete
     if: needs.release.outputs.published == 'true' # Only run if packages were published
     uses: ./.github/workflows/docker-aztec-example-wallet.yml
+
+  aztec-example-dapp-release:
+    permissions:
+      contents: read
+      packages: write
+    needs: release # Wait for publish to complete
+    if: needs.release.outputs.published == 'true' # Only run if packages were published
+    uses: ./.github/workflows/docker-aztec-example-dapp.yml

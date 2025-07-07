@@ -8,7 +8,21 @@ This is an example decentralized application (dApp) that demonstrates how to con
 - An Aztec sandbox running locally (see parent README)
 - The example-wallet project built and running
 
+## Configuration
+
+The dApp can be configured using environment variables:
+
+- `VITE_WALLET_URL` - URL of the wallet application (default: `http://localhost:5174` for development)
+- `VITE_NODE_URL` - URL of the Aztec sandbox node (default: `https://sandbox.aztec.walletmesh.com/api/v1/public`)
+- `LOG_LEVEL` - Logging level (default: `debug`)
+
+Environment files:
+- `.env.development` - Used during local development
+- `.env.production` - Used for production builds
+
 ## Getting Started
+
+### Local Development
 
 1. Install dependencies:
    ```bash
@@ -26,6 +40,24 @@ This is an example decentralized application (dApp) that demonstrates how to con
    ```
 
    The dApp will be available at http://localhost:5173
+
+### Docker Deployment
+
+To build and run the dApp using Docker:
+
+1. Build the Docker image from the repository root:
+   ```bash
+   docker build -f aztec/example-dapp/Dockerfile -t aztec-example-dapp .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -p 8080:80 aztec-example-dapp
+   ```
+
+   The dApp will be available at http://localhost:8080
+
+The Docker build uses the production environment configuration by default, which points to `https://sandbox-example-wallet.aztec.walletmesh.com` for the wallet URL.
 
 ## Usage
 

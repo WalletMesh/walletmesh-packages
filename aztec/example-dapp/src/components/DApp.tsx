@@ -56,8 +56,8 @@ const DApp: React.FC = () => {
 
     try {
       // Open wallet in a new window
-      // In production, this would be the deployed wallet URL
-      const walletOrigin = 'http://localhost:5174'; // Wallet will run on port 5174
+      // Use environment variable or fallback to localhost for development
+      const walletOrigin = import.meta.env.VITE_WALLET_URL || 'http://localhost:5174';
 
       // Set up the message listener BEFORE opening the window to avoid race conditions
       let handleReady: ((event: MessageEvent) => void) | null = null;

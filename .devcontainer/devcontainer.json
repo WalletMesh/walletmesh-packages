@@ -70,6 +70,5 @@
       }
     }
   },
-  "remoteUser": "vscode",
-  "postCreateCommand": "echo 'source `code --locate-shell-integration-path bash`' >> ~/.bashrc"
+  "remoteUser": "vscode"
 }
