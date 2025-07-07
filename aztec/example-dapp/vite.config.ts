@@ -47,6 +47,8 @@ export default defineConfig(({ mode }) => {
     define: {
       'process.env': JSON.stringify({
         LOG_LEVEL: env.LOG_LEVEL || 'info',
+        VITE_WALLET_URL: env.VITE_WALLET_URL,
+        VITE_NODE_URL: env.VITE_NODE_URL,
       }),
     },
     build: {
