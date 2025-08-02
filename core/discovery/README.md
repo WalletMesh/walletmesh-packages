@@ -1,6 +1,64 @@
 # @walletmesh/discovery
 
-Cross-origin wallet discovery protocol implementation for WalletMesh.
+**Version 0.1.0** - Development Release
+
+Cross-origin discovery protocol implementation for WalletMesh. This package implements a capability-first discovery model that enables secure, privacy-preserving discovery between initiators (dApps) and responders (wallets).
+
+> ⚠️ **Development Release**: Version 0.1.0 indicates this package is still in active development. APIs may change between releases until version 1.0.0.
+
+## Features
+
+- **Capability-First Discovery**: Initiators request specific capabilities, responders self-qualify and respond
+- **Multi-Chain Support**: Supports EVM, Solana, Aztec, and other blockchain networks
+- **Privacy-Preserving**: Only capability intersections are revealed, protecting responder privacy
+- **Modular Architecture**: Import only the parts you need for optimal bundle size
+- **Security-First**: Built-in origin validation, rate limiting, and session tracking
+- **Type-Safe**: Full TypeScript support with runtime validation
+
+## Terminology
+
+Understanding the discovery protocol requires familiarity with these key concepts:
+
+### Capabilities
+The complete set of functionalities a wallet can provide, organized into three distinct categories:
+
+1. **Chains**: Blockchain networks the wallet supports
+   - Examples: `'eip155:1'` (Ethereum mainnet), `'eip155:137'` (Polygon)
+   - Uses CAIP-2 chain identifiers for standardization
+
+2. **Features**: Specific wallet functionalities beyond basic blockchain support
+   - Examples: `'hardware-wallet'`, `'batch-transactions'`, `'gasless-transactions'`
+   - Describes WHAT the wallet can do (security features, transaction capabilities, etc.)
+   - See `RESPONDER_FEATURES` constant for standard identifiers
+
+3. **Interfaces**: API standards the wallet implements for programmatic communication
+   - Examples: `'eip-1193'` (Ethereum provider), `'solana-wallet-standard'` (Solana)
+   - Describes HOW dApps can interact with the wallet
+   - See `RESPONDER_INTERFACES` constant for standard identifiers
+
+### Key Concepts
+
+- **Initiator**: The dApp or application seeking to connect to a wallet
+- **Responder**: The wallet that can potentially fulfill the initiator's requirements
+- **Capability Requirements**: The mandatory capabilities a wallet must support
+- **Capability Preferences**: Optional capabilities that enhance user experience
+- **Capability Intersection**: The overlap between requested and supported capabilities
+
+### Example
+
+```typescript
+// A dApp's capability requirements
+const requirements: CapabilityRequirements = {
+  chains: ['eip155:1'],                    // Must support Ethereum mainnet
+  features: ['account-management'],         // Must have account viewing
+  interfaces: ['eip-1193']                 // Must implement EIP-1193 API
+};
+
+// Optional preferences for better UX
+const preferences: CapabilityPreferences = {
+  features: ['hardware-wallet']            // Prefer hardware security
+};
+```
 
 ## Installation
 
@@ -12,85 +70,455 @@ pnpm add @walletmesh/discovery
 yarn add @walletmesh/discovery
 ```
 
-## Usage
+## Quick Start
 
-### For Wallets (Announcing)
-
-```typescript
-import { createWebWalletAnnouncer, createExtensionWalletAnnouncer } from '@walletmesh/discovery';
-
-// For web-based wallets
-const webWalletAnnouncer = createWebWalletAnnouncer(
-  'My Web Wallet',
-  'https://my-wallet.com/icon.png',
-  'com.my-wallet.web',
-  'https://my-wallet.com',
-  ['ethereum', 'evm'],
-  (origin) => allowedOrigins.includes(origin)
-);
-
-webWalletAnnouncer.start();
-
-// For extension-based wallets
-const extensionWalletAnnouncer = createExtensionWalletAnnouncer(
-  'My Extension Wallet',
-  'chrome://extension/icon.png',
-  'com.my-wallet.extension',
-  ['ethereum', 'evm'],
-  'my-extension-id',
-  'optional-code'
-);
-
-extensionWalletAnnouncer.start();
-```
-
-### For dApps (Discovery)
+### For Initiators (Discovery)
 
 ```typescript
-import { createDiscoveryListener } from '@walletmesh/discovery';
+import { createDiscoveryInitiator } from '@walletmesh/discovery/initiator';
+import type { CapabilityRequirements } from '@walletmesh/discovery/types';
 
-const listener = createDiscoveryListener(['ethereum', 'evm'], (wallet) => {
-  console.log('Discovered wallet:', wallet);
+// Define what your initiator needs
+const requirements: CapabilityRequirements = {
+  chains: ['eip155:1'], // Ethereum mainnet
+  features: ['account-management', 'transaction-signing'],
+  interfaces: ['eip-1193']
+};
+
+// Create discovery listener
+const listener = createDiscoveryInitiator({
+  initiatorInfo: {
+    name: 'My DeFi App',
+    url: 'https://my-defi-app.com',
+    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+PC9zdmc+'
+  },
+  requirements,
+  preferences: {
+    chains: ['eip155:5'], // Also prefer testnet support
+    features: ['hardware-wallet']
+  }
 });
 
-listener.start();
+// Listen for discovery events
+listener.on('discovery:wallet:complete', (event) => {
+  console.log(`Discovery completed: ${event.reason}, found ${event.respondersFound} responders`);
+});
 
-// Get all discovered wallets
-const wallets = listener.wallets;
+listener.on('discovery:wallet:error', (event) => {
+  console.error(`Discovery error: ${event.errorMessage} (code: ${event.errorCode})`);
+});
+
+// Start discovery
+const qualifiedResponders = await listener.startDiscovery();
+
+console.log('Found qualified responders:', qualifiedResponders);
+// Each responder includes capability intersection
 ```
 
-## API Documentation
+### For Responders (Announcing)
 
-### DiscoveryAnnouncer
+```typescript
+import { createDiscoveryResponder, createResponderInfo } from '@walletmesh/discovery/responder';
 
-Class for announcing wallet availability to dApps.
+// Define your responder's capabilities
+const responderInfo = createResponderInfo.ethereum({
+  uuid: 'my-awesome-wallet',
+  rdns: 'com.mycompany.wallet',
+  name: 'My Awesome Wallet',
+  icon: 'data:image/png;base64,...',
+  version: '1.0.0',
+  // Optional: Specify how dApps should connect
+  transportConfig: {
+    type: 'extension',
+    extensionId: 'nkbihfbeogaeaoehlefnkodbefgpgknn'
+  }
+  // Additional Ethereum-specific capabilities are auto-included
+});
 
-- `start()`: Begin announcing wallet availability
-- `stop()`: Stop announcing wallet availability
+// Create announcer with security policy
+const announcer = createDiscoveryResponder({
+  responderInfo,
+  securityPolicy: {
+    allowedOrigins: ['https://trusted-dapp.com'],
+    requireHttps: true,
+    rateLimit: {
+      enabled: true,
+      maxRequests: 10,
+      windowMs: 60000
+    }
+  }
+});
 
-### DiscoveryListener
+// Start listening for capability requests
+announcer.startListening();
+```
 
-Class for discovering available wallets.
+## Modular Imports
 
-- `start()`: Begin listening for wallet announcements
-- `stop()`: Stop listening for wallet announcements
-- `wallets`: Get array of discovered wallets
+The package is designed with modular exports to minimize bundle size:
 
-## Events
+```typescript
+// Core types and constants
+import type { CapabilityRequirements } from '@walletmesh/discovery/types';
+import { DISCOVERY_PROTOCOL_VERSION } from '@walletmesh/discovery';
 
-The discovery protocol uses custom events for communication:
+// Initiator-side functionality
+import { createDiscoveryInitiator, DiscoveryInitiator } from '@walletmesh/discovery/initiator';
 
-- `wm:discovery:ready`: Announced by wallet when ready
-- `wm:discovery:request`: Sent by dApp to discover wallets
-- `wm:discovery:response`: Sent by wallet in response to request
-- `wm:discovery:ack`: Sent by dApp to acknowledge wallet
+// Responder-side functionality  
+import { createDiscoveryResponder, CapabilityMatcher } from '@walletmesh/discovery/responder';
 
-## Security
+// Browser extension components
+import { ContentScriptRelay, WalletDiscovery } from '@walletmesh/discovery/extension';
 
-- Cross-origin communication is handled securely
-- Wallet announcer can filter origins
-- Events are validated before processing
-- Discovery IDs prevent replay attacks
+// Protocol state machine
+import { ProtocolStateMachine } from '@walletmesh/discovery';
+
+// Testing utilities (for tests only)
+import { createDiscoveryTestScenario, MockEventTarget } from '@walletmesh/discovery/testing';
+```
+
+## Architecture Overview
+
+### Capability-First Discovery Model
+
+Unlike traditional discovery that announces all available responders, this protocol uses a **capability-first** approach:
+
+1. **Initiator Broadcasts Requirements**: Announces needed capabilities (chains, features, interfaces)
+2. **Responders Self-Qualify**: Each responder determines if it can fulfill the requirements
+3. **Intersection Response**: Qualified responders respond with only the capability intersection
+4. **Privacy Preservation**: Responders don't reveal capabilities beyond what's requested
+
+### Protocol Flow
+
+```mermaid
+sequenceDiagram
+    participant I as Initiator
+    participant R as Responder
+    
+    Note over I: State: IDLE → DISCOVERING
+    I->>R: discovery:wallet:request (requirements + preferences)
+    R->>R: Calculate capability intersection
+    alt Can fulfill requirements
+        R->>I: discovery:wallet:response (intersection)
+    else Cannot fulfill
+        R-->>I: (No response - privacy preserved)
+    end
+    
+    alt Discovery completes successfully
+        Note over I: State: DISCOVERING → COMPLETED
+        I->>I: discovery:wallet:complete (timeout/manual/max)
+    else Security violation detected
+        Note over I: State: DISCOVERING → ERROR
+        I->>I: discovery:wallet:error (duplicate response)
+    end
+    
+    Note over I: Connection handled by higher-level libraries
+```
+
+### Protocol States
+
+The discovery protocol uses a 4-state machine to manage the discovery lifecycle:
+
+1. **IDLE**: No active discovery session
+2. **DISCOVERING**: Actively collecting responder announcements
+3. **COMPLETED**: Discovery finished successfully (terminal state)
+4. **ERROR**: Discovery failed due to security violation (terminal state)
+
+State transitions:
+- `IDLE → DISCOVERING`: When discovery starts
+- `DISCOVERING → COMPLETED`: On timeout, manual stop, or max responders reached
+- `DISCOVERING → ERROR`: On security violation (e.g., duplicate response from same wallet)
+- `COMPLETED/ERROR → IDLE`: Must explicitly reset to start new discovery
+
+### Security Features
+
+- **Origin Validation**: Prevents cross-origin attacks with configurable origin policies
+- **Session Tracking**: Origin-bound session tracking prevents session poisoning
+- **Rate Limiting**: Per-origin rate limiting with sliding window algorithm
+- **Replay Protection**: Unique session IDs prevent replay attacks
+- **HTTPS Enforcement**: Configurable HTTPS requirements for production security
+- **Duplicate Response Detection**: Prevents wallet spoofing by detecting multiple responses from same RDNS
+
+## Protocol Messages
+
+The discovery protocol uses four message types:
+
+1. **DiscoveryRequestEvent** (`discovery:wallet:request`): Initiator broadcasts capability requirements
+   - `required`: Required capabilities (chains, features, interfaces)
+   - `optional`: Preferred capabilities  
+   - `initiatorInfo`: Information about the requesting application
+   - `origin`: Request origin for security validation
+
+2. **DiscoveryResponseEvent** (`discovery:wallet:response`): Responder announces capability match
+   - `responderId`: Ephemeral session identifier
+   - `rdns`: Stable reverse DNS identifier  
+   - `matched`: Capability intersection with requirements
+   - `transportConfig`: Optional connection configuration
+
+3. **DiscoveryCompleteEvent** (`discovery:wallet:complete`): Discovery session completed
+   - `reason`: 'timeout' | 'manual-stop' | 'max-responders'
+   - `respondersFound`: Number of qualified responders
+
+4. **DiscoveryErrorEvent** (`discovery:wallet:error`): Security violation or error
+   - `errorCode`: Numeric error code
+   - `errorMessage`: Human-readable error description
+   - `errorCategory`: Error categorization for handling
+
+## Protocol Documentation
+
+The complete protocol is documented across three complementary specifications:
+
+### 📘 [Protocol Specification](specs/PROTOCOL_SPECIFICATION.md)
+**Purpose**: Main protocol specification defining the overall architecture and design  
+**Audience**: Anyone who needs to understand the protocol - developers, architects, security reviewers  
+**Contents**:
+- Protocol architecture and communication model
+- Wallet information schemas
+- Discovery flow and capability-first design
+- Security model and privacy features
+- Blockchain abstraction layer
+- Extensibility and backward compatibility
+
+### 📊 [State Machine Specification](specs/PROTOCOL_STATE_MACHINE.md)
+**Purpose**: Formal definition of protocol behavior and security properties  
+**Audience**: Implementers, security auditors, and formal verification engineers  
+**Contents**:
+- Complete state definitions for all actors (initiator, responder, user)
+- State transition diagrams and rules
+- Security invariants and properties
+- Formal verification models using Quint
+- Attack scenarios and prevention mechanisms
+- Timing requirements and error handling
+
+### 🔧 [Implementation Guide](specs/PROTOCOL_IMPLEMENTATION_GUIDE.md)
+**Purpose**: Concrete technical requirements for building compatible implementations  
+**Audience**: Developers implementing the protocol in any programming language  
+**Contents**:
+- Wire format specifications and JSON schemas
+- Platform abstraction layer and transport interfaces
+- Complete type definitions and validation rules
+- Security implementation details (crypto, rate limiting, sessions)
+- Platform-specific implementation examples (mobile, desktop, CLI)
+- Test vectors and compliance testing
+- Message examples and error codes
+
+### How to Use These Documents
+
+1. **New to the protocol?** Start with the Protocol Specification to understand concepts
+2. **Implementing the protocol?** Use all three documents:
+   - Protocol Specification for architecture
+   - State Machine for behavior requirements  
+   - Implementation Guide for technical details
+3. **Security review?** Focus on Protocol Specification security model and State Machine formal properties
+4. **Testing implementation?** Use Implementation Guide test vectors and State Machine transitions
+
+## Protocol Reference
+
+### Chain Identifiers
+
+The protocol uses CAIP-2 compliant chain identifiers:
+
+- **EVM chains**: `eip155:1`, `eip155:5`, `eip155:137`
+- **Solana**: `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`, `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1`
+- **Aztec**: `aztec:mainnet`, `aztec:testnet`
+
+### Standard Features
+
+- `account-management`: Basic account operations
+- `transaction-signing`: Transaction signing capabilities  
+- `message-signing`: Message signing support
+- `private-transactions`: Privacy-focused transaction support
+- `cross-chain-swaps`: Cross-chain asset swapping
+- `hardware-wallet`: Hardware security module support
+
+### Standard Interfaces
+
+- `eip-1193`: Ethereum Provider API
+- `solana-wallet-standard`: Solana Wallet Standard
+- `aztec-wallet-api-v1`: Aztec Wallet API
+
+## Examples
+
+### Multi-Chain Initiator
+
+```typescript
+import { createDiscoveryInitiator } from '@walletmesh/discovery/initiator';
+
+const listener = createDiscoveryInitiator({
+  initiatorInfo: {
+    name: 'Multi-Chain DEX',
+    url: 'https://multichain-dex.com',
+    icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
+  },
+  requirements: {
+    // Require at least one of these chains
+    chains: ['eip155:1', 'eip155:137', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+    features: ['account-management', 'transaction-signing'],
+    interfaces: ['eip-1193', 'solana-wallet-standard']
+  },
+  preferences: {
+    // Prefer wallets that support multiple chains
+    features: ['cross-chain-swaps']
+  }
+});
+
+const responders = await listener.startDiscovery();
+
+// User selects from qualified responders
+console.log('Available responders:', responders);
+
+// Note: Connection is handled by higher-level libraries (modal-core, modal-react)
+// The transport configuration provides connection details:
+const selectedResponder = responders[0];
+console.log('Selected responder:', selectedResponder.name);
+console.log('RDNS:', selectedResponder.rdns);
+console.log('Matched capabilities:', selectedResponder.matched);
+
+// Higher-level libraries use transportConfig to establish connection
+if (selectedResponder.transportConfig) {
+  console.log('Transport type:', selectedResponder.transportConfig.type);
+  // modal-core or modal-react will handle the actual connection
+}
+```
+
+### Hardware Responder
+
+```typescript
+import { createResponderInfo, createDiscoveryResponder } from '@walletmesh/discovery/responder';
+
+const hardwareWallet = createResponderInfo.ethereum({
+  uuid: 'secure-hardware-wallet',
+  rdns: 'com.securecompany.hardwarewallet',
+  name: 'Secure Hardware Wallet',
+  icon: 'data:image/png;base64,...',
+  version: '2.0.0',
+  // Hardware wallet capabilities are included based on config
+});
+
+const announcer = createDiscoveryResponder({
+  responderInfo: hardwareWallet,
+  securityPolicy: {
+    // Hardware wallets typically have stricter security
+    requireHttps: true,
+    allowLocalhost: false,
+    certificateValidation: true,
+    rateLimit: {
+      enabled: true,
+      maxRequests: 5, // Lower rate limit
+      windowMs: 60000
+    }
+  }
+});
+
+announcer.startListening();
+```
+
+### Testing
+
+```typescript
+import { 
+  createDiscoveryTestScenario,
+  createTestResponderInfo,
+  createTestDAppInfo 
+} from '@walletmesh/discovery/testing';
+
+// Create test scenario
+const scenario = createDiscoveryTestScenario({
+  initiatorInfo: createTestInitiatorInfo({
+    name: 'Test DeFi App',
+    url: 'https://test-defi.com'
+  }),
+  responders: [
+    createTestResponderInfo.ethereum(),
+    createTestResponderInfo.solana(),
+    createTestResponderInfo.multiChain()
+  ],
+  requirements: {
+    chains: ['eip155:1'],
+    features: ['account-management'],
+    interfaces: ['eip-1193']
+  }
+});
+
+// Run discovery test
+const result = await scenario.runDiscovery();
+
+expect(result.qualifiedResponders.length).toBeGreaterThan(0);
+expect(result.qualifiedResponders[0].matched.required.chains).toContain('eip155:1');
+
+scenario.cleanup();
+```
+
+## API Reference
+
+### Types
+
+- **CapabilityRequirements**: Capabilities that initiator requires
+- **CapabilityPreferences**: Optional capabilities that initiator prefers  
+- **QualifiedResponder**: Responder that can fulfill requirements with capability intersection
+- **ResponderInfo**: Complete responder capability information (BaseResponderInfo, ExtensionResponderInfo, WebResponderInfo)
+- **SecurityPolicy**: Security configuration for origin validation and rate limiting
+- **TransportConfig**: Configuration for how dApps should connect to responders
+  - `type`: 'extension' | 'popup' | 'websocket' | 'injected'
+  - `extensionId?`: Chrome extension ID (for extension transport)
+  - `popupUrl?`: Popup window URL (for popup transport)
+  - `websocketUrl?`: WebSocket endpoint URL (for websocket transport)
+  - `walletAdapter?`: Wallet adapter class name
+  - `adapterConfig?`: Additional adapter configuration
+
+### Protocol Events
+
+- **DiscoveryRequestEvent**: Broadcast by initiator to discover wallets (`discovery:wallet:request`)
+- **DiscoveryResponseEvent**: Response from qualified wallets (`discovery:wallet:response`)
+- **DiscoveryCompleteEvent**: Emitted when discovery completes (`discovery:wallet:complete`)
+- **DiscoveryErrorEvent**: Emitted on security violations or errors (`discovery:wallet:error`)
+
+### Initiator Functions
+
+- **createDiscoveryInitiator(config)**: Create discovery listener for initiators
+- **createInitiatorDiscoverySetup(config)**: Complete initiator setup helper
+- **createCapabilityRequirements(chains, features?, interfaces?)**: Helper to create requirements
+
+### Responder Functions
+
+- **createDiscoveryResponder(config)**: Create discovery announcer for responders
+- **createCapabilityMatcher(walletInfo)**: Create capability matching engine
+- **createResponderInfo.{ethereum|solana|aztec|multiChain}()**: Helper functions to create responder info
+
+### Security
+
+- **OriginValidator**: Validate request origins against security policy
+- **RateLimiter**: Per-origin rate limiting with sliding window
+- **SessionTracker**: Track sessions to prevent replay attacks
+- **createSecurityPolicy**: Factory functions for common security configurations
+
+## Module Structure
+
+The package is organized into focused modules that can be imported separately for optimal bundle size:
+
+### Main Entry Points
+
+- **`@walletmesh/discovery`**: Core functionality, types, and utilities
+- **`@walletmesh/discovery/initiator`**: Initiator-specific functionality (DiscoveryInitiator)
+- **`@walletmesh/discovery/responder`**: Responder-specific functionality (DiscoveryResponder, CapabilityMatcher)
+- **`@walletmesh/discovery/types`**: TypeScript type definitions
+- **`@walletmesh/discovery/extension`**: Browser extension specific components (ContentScriptRelay, WalletDiscovery)
+- **`@walletmesh/discovery/testing`**: Testing utilities (for development only)
+
+### Import Examples
+
+```typescript
+// Import only what you need for smaller bundles
+import { createDiscoveryInitiator } from '@walletmesh/discovery/initiator';
+import type { CapabilityRequirements } from '@walletmesh/discovery/types';
+
+// For browser extensions
+import { ContentScriptRelay, WalletDiscovery } from '@walletmesh/discovery/extension';
+
+// For testing (development dependencies)
+import { MockDiscoveryInitiator, createTestScenario } from '@walletmesh/discovery/testing';
+```
 
 ## Development
 
@@ -101,13 +529,41 @@ pnpm install
 # Run tests
 pnpm test
 
-# Build
+# Run tests with coverage
+pnpm coverage
+
+# Build package
 pnpm build
 
-# Generate docs
+# Generate documentation
 pnpm docs
+
+# Lint code
+pnpm lint
+
+# Type check
+pnpm type-check
 ```
+
+## Protocol Version
+
+Current protocol version: **0.1.0**
+
+The protocol version is included in all discovery messages to ensure compatibility between initiators and responders. Incompatible versions will be rejected.
+
+## Security Considerations
+
+- **Always validate origins** in production environments
+- **Use HTTPS** for all production traffic  
+- **Implement rate limiting** to prevent abuse
+- **Validate all messages** using provided type guards
+- **Track sessions** to prevent replay attacks
+- **Regular security audits** of custom security policies
 
 ## License
 
 Apache-2.0
+
+## Contributing
+
+See the main [WalletMesh repository](https://github.com/walletmesh/walletmesh-packages) for contribution guidelines.

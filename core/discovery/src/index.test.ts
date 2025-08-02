@@ -1,123 +1,82 @@
+/**
+ * Test suite for main package exports
+ * Validates that all expected exports are available and correctly typed
+ */
+
 import { describe, it, expect } from 'vitest';
-import * as discovery from './index.js';
 
-describe('@walletmesh/discovery exports', () => {
-  it('should export core classes', () => {
-    expect(discovery.DiscoveryListener).toBeDefined();
-    expect(discovery.DiscoveryAnnouncer).toBeDefined();
+describe('Package Exports', () => {
+  it('should export core types and constants', async () => {
+    const constants = await import('./core/constants.js');
+    expect(constants).toBeDefined();
+    expect(constants.DISCOVERY_PROTOCOL_VERSION).toBeDefined();
   });
 
-  it('should export factory functions', () => {
-    expect(discovery.createDiscoveryListener).toBeDefined();
-    expect(discovery.createExtensionWalletAnnouncer).toBeDefined();
-    expect(discovery.createWebWalletAnnouncer).toBeDefined();
+  it('should export initiator functionality', async () => {
+    const initiatorModule = await import('./initiator/index.js');
+
+    expect(initiatorModule.DiscoveryInitiator).toBeDefined();
+    expect(initiatorModule.createDiscoveryInitiator).toBeDefined();
+    expect(initiatorModule.createInitiatorDiscoverySetup).toBeDefined();
+    expect(initiatorModule.createCapabilityRequirements).toBeDefined();
   });
 
-  it('should export type guards', () => {
-    expect(discovery.isDiscoveryRequestEvent).toBeDefined();
-    expect(discovery.isDiscoveryResponseEvent).toBeDefined();
-    expect(discovery.isDiscoveryAckEvent).toBeDefined();
+  it('should export responder functionality', async () => {
+    const responderModule = await import('./responder/index.js');
+
+    expect(responderModule.DiscoveryResponder).toBeDefined();
+    expect(responderModule.CapabilityMatcher).toBeDefined();
+    expect(responderModule.createDiscoveryResponder).toBeDefined();
+    expect(responderModule.createCapabilityMatcher).toBeDefined();
+    expect(responderModule.createResponderDiscoverySetup).toBeDefined();
+    expect(responderModule.createResponderInfo).toBeDefined();
   });
 
-  it('should export constants', () => {
-    expect(discovery.WmDiscovery).toBeDefined();
-    expect(discovery.CONFIG).toBeDefined();
+  it('should export security utilities', async () => {
+    const securityModule = await import('./security/index.js');
+
+    expect(securityModule.SessionTracker).toBeDefined();
+    expect(securityModule.OriginValidator).toBeDefined();
+    expect(securityModule.RateLimiter).toBeDefined();
+    expect(securityModule.validateOrigin).toBeDefined();
+    expect(securityModule.validateEventOrigin).toBeDefined();
   });
 
-  // Type system tests
-  it('should provide correct type information', () => {
-    // Create test objects that must satisfy the types
-    const webWallet: discovery.WebWalletInfo = {
-      name: 'Test Web Wallet',
-      icon: 'test.png',
-      rdns: 'com.test',
-      url: 'https://test.com',
-      technologies: ['test'],
-    };
+  it('should export testing utilities', async () => {
+    const testingModule = await import('./testing/index.js');
 
-    const extWallet: discovery.ExtensionWalletInfo = {
-      name: 'Test Ext Wallet',
-      icon: 'test.png',
-      rdns: 'com.test',
-      extensionId: 'test-id',
-      technologies: ['test'],
-    };
-
-    const request: discovery.DiscoveryRequestEvent = {
-      version: '1.0.0',
-      discoveryId: 'test',
-      technologies: ['test'],
-    };
-
-    const response: discovery.DiscoveryResponseEvent = {
-      version: '1.0.0',
-      discoveryId: 'test',
-      walletId: 'test',
-      wallet: webWallet,
-    };
-
-    const ack: discovery.DiscoveryAckEvent = {
-      version: '1.0.0',
-      discoveryId: 'test',
-      walletId: 'test',
-    };
-
-    const listenerOpts: discovery.DiscoveryListenerOptions = {
-      technologies: ['test'],
-      callback: () => {},
-    };
-
-    const announcerOpts: discovery.DiscoveryAnnouncerOptions = {
-      walletInfo: webWallet,
-      supportedTechnologies: ['test'],
-      callback: () => true,
-    };
-
-    // Verify objects match their types
-    expect(webWallet.url).toBe('https://test.com');
-    expect(extWallet.extensionId).toBe('test-id');
-    expect(request.technologies).toEqual(['test']);
-    expect(response.wallet).toBe(webWallet);
-    expect(ack.walletId).toBe('test');
-    expect(listenerOpts.technologies).toEqual(['test']);
-    expect(announcerOpts.walletInfo).toBe(webWallet);
+    expect(testingModule.MockDiscoveryInitiator).toBeDefined();
+    expect(testingModule.MockDiscoveryResponder).toBeDefined();
+    expect(testingModule.MockEventTarget).toBeDefined();
   });
 
-  // Test type constraints
-  it('should enforce type constraints', () => {
-    type BadExtensionWallet = {
-      name: string;
-      icon: string;
-      rdns: string;
-      url: string; // This should cause a type error
-    };
+  it('should export all expected main package exports', async () => {
+    const mainExports = await import('./index.js');
 
-    type BadWebWallet = {
-      name: string;
-      icon: string;
-      rdns: string;
-      extensionId: string; // This should cause a type error
-    };
+    // Check that all main exports are available
+    expect(mainExports.DiscoveryInitiator).toBeDefined();
+    expect(mainExports.DiscoveryResponder).toBeDefined();
+    expect(mainExports.CapabilityMatcher).toBeDefined();
 
-    // These type assertions should fail at compile time
-    // @ts-expect-error ExtensionWalletInfo cannot have url
-    const invalidExt: discovery.ExtensionWalletInfo = {
-      name: 'Test',
-      icon: 'test.png',
-      rdns: 'com.test',
-      url: 'https://test.com',
-    } satisfies BadExtensionWallet;
+    // Factory functions
+    expect(mainExports.createDiscoveryInitiator).toBeDefined();
+    expect(mainExports.createDiscoveryResponder).toBeDefined();
+    expect(mainExports.createCapabilityMatcher).toBeDefined();
+    expect(mainExports.createInitiatorDiscoverySetup).toBeDefined();
+    expect(mainExports.createResponderDiscoverySetup).toBeDefined();
+    expect(mainExports.createResponderInfo).toBeDefined();
+    expect(mainExports.createCapabilityRequirements).toBeDefined();
 
-    // @ts-expect-error WebWalletInfo cannot have extensionId
-    const invalidWeb: discovery.WebWalletInfo = {
-      name: 'Test',
-      icon: 'test.png',
-      rdns: 'com.test',
-      extensionId: 'test-id',
-    } satisfies BadWebWallet;
+    // Security utilities (including createSecurityPolicy)
+    expect(mainExports.SessionTracker).toBeDefined();
+    expect(mainExports.OriginValidator).toBeDefined();
+    expect(mainExports.RateLimiter).toBeDefined();
+    expect(mainExports.validateOrigin).toBeDefined();
+    expect(mainExports.validateEventOrigin).toBeDefined();
+    expect(mainExports.createSecurityPolicy).toBeDefined();
 
-    // Just to make sure the variables are used
-    expect(invalidExt).toBeDefined();
-    expect(invalidWeb).toBeDefined();
+    // Constants
+    expect(mainExports.DISCOVERY_PROTOCOL_VERSION).toBeDefined();
+    expect(mainExports.DISCOVERY_EVENTS).toBeDefined();
   });
 });

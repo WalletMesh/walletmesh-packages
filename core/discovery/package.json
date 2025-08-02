@@ -1,9 +1,32 @@
 {
   "name": "@walletmesh/discovery",
   "version": "0.1.0",
+  "description": "Generic Cross-Blockchain Wallet Discovery Protocol",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./initiator": {
+      "types": "./dist/initiator/index.d.ts",
+      "import": "./dist/initiator/index.js"
+    },
+    "./responder": {
+      "types": "./dist/responder/index.d.ts",
+      "import": "./dist/responder/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.js"
+    },
+    "./extension": {
+      "types": "./dist/extension.d.ts",
+      "import": "./dist/extension.js"
+    }
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -11,6 +34,19 @@
     "type": "git",
     "url": "git+https://github.com/WalletMesh/walletmesh-packages.git"
   },
+  "bugs": {
+    "url": "https://github.com/WalletMesh/walletmesh-packages/issues"
+  },
+  "homepage": "https://github.com/WalletMesh/walletmesh-packages#readme",
+  "license": "Apache-2.0",
+  "keywords": [
+    "wallet",
+    "discovery", 
+    "blockchain",
+    "web3",
+    "capability-first",
+    "development"
+  ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "clean": "rimraf dist node_modules",
@@ -27,6 +63,7 @@
     "version": "pnpm clean && pnpm build && pnpm run docs"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.280",
     "happy-dom": "^17.4.6",
     "rimraf": "^5.0.5",
     "typedoc": "^0.28.0",
