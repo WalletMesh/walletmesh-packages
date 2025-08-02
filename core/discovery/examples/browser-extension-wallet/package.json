@@ -1,0 +1,28 @@
+{
+  "name": "walletmesh-browser-extension-example",
+  "version": "1.0.0",
+  "description": "Example browser extension wallet using WalletMesh discovery protocol",
+  "private": true,
+  "scripts": {
+    "build": "vite build",
+    "build:watch": "vite build --watch",
+    "dev": "vite build --watch --mode development",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@walletmesh/discovery": "workspace:*",
+    "@walletmesh/jsonrpc": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.254",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0"
+  },
+  "notes": {
+    "bundling": "This example uses Vite to bundle the extension. The background-simple.ts file is a simplified version that demonstrates the concepts without requiring external dependencies.",
+    "development": "For development, use 'pnpm dev' to watch for changes and rebuild automatically.",
+    "production": "For production, use 'pnpm build' to create an optimized bundle.",
+    "extension": "After building, load the 'dist' directory as an unpacked extension in Chrome."
+  }
+}
