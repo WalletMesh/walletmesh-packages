@@ -143,16 +143,16 @@ importers:
     dependencies:
       '@aztec/accounts':
         specifier: 0.87.8
-        version: 0.87.8(typescript@5.8.3)
+        version: 0.87.8(typescript@5.8.3)(zod@3.25.67)
       '@aztec/aztec.js':
         specifier: 0.87.8
-        version: 0.87.8(encoding@0.1.13)(typescript@5.8.3)
+        version: 0.87.8(encoding@0.1.13)(typescript@5.8.3)(zod@3.25.67)
       '@aztec/noir-contracts.js':
         specifier: 0.87.8
-        version: 0.87.8(typescript@5.8.3)
+        version: 0.87.8(typescript@5.8.3)(zod@3.25.67)
       '@aztec/noir-test-contracts.js':
         specifier: 0.87.8
-        version: 0.87.8(typescript@5.8.3)
+        version: 0.87.8(typescript@5.8.3)(zod@3.25.67)
       '@walletmesh/aztec-rpc-wallet':
         specifier: workspace:^
         version: link:../rpc-wallet
@@ -277,7 +277,7 @@ importers:
     dependencies:
       '@aztec/aztec.js':
         specifier: 0.87.8
-        version: 0.87.8(encoding@0.1.13)(typescript@5.8.3)
+        version: 0.87.8(encoding@0.1.13)(typescript@5.8.3)(zod@3.25.67)
       '@aztec/stdlib':
         specifier: 0.87.8
         version: 0.87.8(encoding@0.1.13)(typescript@5.8.3)
@@ -286,7 +286,7 @@ importers:
     dependencies:
       '@aztec/aztec.js':
         specifier: 0.87.8
-        version: 0.87.8(encoding@0.1.13)(typescript@5.8.3)
+        version: 0.87.8(encoding@0.1.13)(typescript@5.8.3)(zod@3.25.67)
       '@walletmesh/aztec-helpers':
         specifier: workspace:^
         version: link:../helpers
@@ -330,6 +330,9 @@ importers:
 
   core/discovery:
     devDependencies:
+      '@types/chrome':
+        specifier: ^0.0.280
+        version: 0.0.280
       happy-dom:
         specifier: ^17.4.6
         version: 17.5.6
@@ -1436,6 +1439,9 @@ packages:
   '@types/chai@5.2.2':
     resolution: {integrity: sha512-8kB30R7Hwqf40JPiKhVzodJs2Qc1ZJ5zuT3uzw5Hq/dhNCl3G3l83jfpdI1e20BP348+fV7VIL/+FxaXkqBmWg==}
 
+  '@types/chrome@0.0.280':
+    resolution: {integrity: sha512-AotSmZrL9bcZDDmSI1D9dE7PGbhOur5L0cKxXd7IqbVizQWCY4gcvupPUVsQ4FfDj3V2tt/iOpomT9EY0s+w1g==}
+
   '@types/deep-eql@4.0.2':
     resolution: {integrity: sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==}
 
@@ -1445,8 +1451,17 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
+  '@types/filesystem@0.0.36':
+    resolution: {integrity: sha512-vPDXOZuannb9FZdxgHnqSwAG/jvdGM8Wq+6N4D/d80z+D4HWH+bItqsZaVRQykAn6WEVeEkLm2oQigyHtgb0RA==}
+
+  '@types/filewriter@0.0.33':
+    resolution: {integrity: sha512-xFU8ZXTw4gd358lb2jw25nxY9QAgqn2+bKKjKOYfNCzN4DKCFetK7sPtrlpg66Ywe3vWY9FNxprZawAh9wfJ3g==}
+
   '@types/glob@8.1.0':
     resolution: {integrity: sha512-IO+MJPVhoqz+28h1qLAcBEH2+xHMK6MTyHJc7MTnnYb6wsoLR29POVGJ7LycmVXIqyy/4/2ShP5sUwTXuOwb/w==}
+
+  '@types/har-format@1.2.16':
+    resolution: {integrity: sha512-fluxdy7ryD3MV6h8pTfTYpy/xQzCFC7m89nOH9y94cNqJ1mDIDPut7MnRHI3F6qRmh/cT2fUjG1MLdCNb4hE9A==}
 
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
@@ -3904,23 +3919,6 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@aztec/accounts@0.87.8(typescript@5.8.3)':
-    dependencies:
-      '@aztec/aztec.js': 0.87.8(encoding@0.1.13)(typescript@5.8.3)
-      '@aztec/entrypoints': 0.87.8(encoding@0.1.13)(typescript@5.8.3)
-      '@aztec/ethereum': 0.87.8(typescript@5.8.3)
-      '@aztec/foundation': 0.87.8
-      '@aztec/stdlib': 0.87.8(encoding@0.1.13)(typescript@5.8.3)
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - encoding
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
   '@aztec/accounts@0.87.8(typescript@5.8.3)(zod@3.25.67)':
     dependencies:
       '@aztec/aztec.js': 0.87.8(encoding@0.1.13)(typescript@5.8.3)(zod@3.25.67)
@@ -3929,27 +3927,6 @@ snapshots:
       '@aztec/foundation': 0.87.8
       '@aztec/stdlib': 0.87.8(encoding@0.1.13)(typescript@5.8.3)
       tslib: 2.8.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - encoding
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
-  '@aztec/aztec.js@0.87.8(encoding@0.1.13)(typescript@5.8.3)':
-    dependencies:
-      '@aztec/constants': 0.87.8
-      '@aztec/entrypoints': 0.87.8(encoding@0.1.13)(typescript@5.8.3)
-      '@aztec/ethereum': 0.87.8(typescript@5.8.3)
-      '@aztec/foundation': 0.87.8
-      '@aztec/l1-artifacts': 0.87.8
-      '@aztec/protocol-contracts': 0.87.8(encoding@0.1.13)(typescript@5.8.3)
-      '@aztec/stdlib': 0.87.8(encoding@0.1.13)(typescript@5.8.3)
-      axios: 1.9.0
-      tslib: 2.8.1
-      viem: 2.23.7(typescript@5.8.3)(zod@3.25.30)
     transitivePeerDependencies:
       - bufferutil
       - debug
@@ -4196,19 +4173,6 @@ snapshots:
 
   '@aztec/noir-acvm_js@0.87.8': {}
 
-  '@aztec/noir-contracts.js@0.87.8(typescript@5.8.3)':
-    dependencies:
-      '@aztec/aztec.js': 0.87.8(encoding@0.1.13)(typescript@5.8.3)
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - encoding
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
   '@aztec/noir-contracts.js@0.87.8(typescript@5.8.3)(zod@3.25.67)':
     dependencies:
       '@aztec/aztec.js': 0.87.8(encoding@0.1.13)(typescript@5.8.3)(zod@3.25.67)
@@ -4251,19 +4215,6 @@ snapshots:
       - supports-color
       - typescript
       - utf-8-validate
-
-  '@aztec/noir-test-contracts.js@0.87.8(typescript@5.8.3)':
-    dependencies:
-      '@aztec/aztec.js': 0.87.8(encoding@0.1.13)(typescript@5.8.3)
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - encoding
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
 
   '@aztec/noir-test-contracts.js@0.87.8(typescript@5.8.3)(zod@3.25.67)':
     dependencies:
@@ -5381,16 +5332,29 @@ snapshots:
     dependencies:
       '@types/deep-eql': 4.0.2
 
+  '@types/chrome@0.0.280':
+    dependencies:
+      '@types/filesystem': 0.0.36
+      '@types/har-format': 1.2.16
+
   '@types/deep-eql@4.0.2': {}
 
   '@types/estree@1.0.7': {}
 
   '@types/estree@1.0.8': {}
 
+  '@types/filesystem@0.0.36':
+    dependencies:
+      '@types/filewriter': 0.0.33
+
+  '@types/filewriter@0.0.33': {}
+
   '@types/glob@8.1.0':
     dependencies:
       '@types/minimatch': 5.1.2
       '@types/node': 22.15.32
+
+  '@types/har-format@1.2.16': {}
 
   '@types/hast@3.0.4':
     dependencies:
