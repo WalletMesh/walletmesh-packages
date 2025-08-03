@@ -76,6 +76,11 @@ export {
    * Implements a three-state model for method permissions.
    */
   AllowAskDenyManager,
+  /**
+   * Type representing permission states for methods across chains.
+   * Maps chain IDs to their method permissions.
+   */
+  type AllowAskDenyChainPermissions,
 } from './allowAskDeny.js';
 
 export {

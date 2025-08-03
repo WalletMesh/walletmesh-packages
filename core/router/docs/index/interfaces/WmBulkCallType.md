@@ -6,7 +6,7 @@
 
 # Interface: WmBulkCallType\<M\>
 
-Defined in: [core/router/src/types.ts:400](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/types.ts#L400)
+Defined in: [core/router/src/types.ts:400](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/types.ts#L400)
 
 Type definition for the wm_bulkCall method parameters and result.
 Enables type-safe execution of multiple method calls in sequence.
@@ -47,7 +47,7 @@ The specific method being called from RouterMethodMap
 
 > **params**: `object`
 
-Defined in: [core/router/src/types.ts:401](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/types.ts#L401)
+Defined in: [core/router/src/types.ts:401](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/types.ts#L401)
 
 #### calls
 
@@ -67,4 +67,4 @@ Defined in: [core/router/src/types.ts:401](https://github.com/WalletMesh/walletm
 
 > **result**: [`MethodResult`](../type-aliases/MethodResult.md)\<`M`\>[]
 
-Defined in: [core/router/src/types.ts:406](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/types.ts#L406)
+Defined in: [core/router/src/types.ts:406](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/types.ts#L406)

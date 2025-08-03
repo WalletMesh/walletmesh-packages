@@ -6,7 +6,7 @@
 
 # Interface: CallParams
 
-Defined in: [core/router/src/types.ts:252](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/types.ts#L252)
+Defined in: [core/router/src/types.ts:252](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/types.ts#L252)
 
 Parameters required to invoke a single method on a specific chain.
 Used with the wm_call method to execute wallet operations.
@@ -25,7 +25,7 @@ Used with the wm_call method to execute wallet operations.
 
 > **call**: [`MethodCall`](MethodCall.md)
 
-Defined in: [core/router/src/types.ts:258](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/types.ts#L258)
+Defined in: [core/router/src/types.ts:258](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/types.ts#L258)
 
 Method call details including name and parameters
 
@@ -35,7 +35,7 @@ Method call details including name and parameters
 
 > **chainId**: `string`
 
-Defined in: [core/router/src/types.ts:254](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/types.ts#L254)
+Defined in: [core/router/src/types.ts:254](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/types.ts#L254)
 
 Target chain ID where the method will be executed
 
@@ -45,6 +45,6 @@ Target chain ID where the method will be executed
 
 > **sessionId**: `string`
 
-Defined in: [core/router/src/types.ts:256](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/types.ts#L256)
+Defined in: [core/router/src/types.ts:256](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/types.ts#L256)
 
 Session ID for authorization and context

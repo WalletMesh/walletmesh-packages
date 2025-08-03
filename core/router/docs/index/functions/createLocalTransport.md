@@ -6,9 +6,9 @@
 
 # Function: createLocalTransport()
 
-> **createLocalTransport**(`remoteNode`): [`LocalTransport`](../classes/LocalTransport.md)
+> **createLocalTransport**(`remoteNode`, `options?`): [`LocalTransport`](../classes/LocalTransport.md)
 
-Defined in: [core/router/src/localTransport.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/localTransport.ts#L140)
+Defined in: [core/router/src/localTransport.ts:224](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/localTransport.ts#L224)
 
 Create a local transport that connects to an existing JSONRPCNode.
 This is useful when you already have a node instance and want to
@@ -21,6 +21,12 @@ create a transport that sends messages to it.
 `JSONRPCNode`\<`JSONRPCMethodMap`, `JSONRPCEventMap`, `JSONRPCContext`\>
 
 The JSONRPCNode to connect to
+
+### options?
+
+[`LocalTransportOptions`](../interfaces/LocalTransportOptions.md)
+
+Configuration options for the transport
 
 ## Returns
 

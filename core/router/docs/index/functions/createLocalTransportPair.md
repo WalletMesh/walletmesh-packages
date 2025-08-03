@@ -6,12 +6,20 @@
 
 # Function: createLocalTransportPair()
 
-> **createLocalTransportPair**(): \[[`LocalTransport`](../classes/LocalTransport.md), [`LocalTransport`](../classes/LocalTransport.md)\]
+> **createLocalTransportPair**(`options?`): \[[`LocalTransport`](../classes/LocalTransport.md), [`LocalTransport`](../classes/LocalTransport.md)\]
 
-Defined in: [core/router/src/localTransport.ts:105](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/localTransport.ts#L105)
+Defined in: [core/router/src/localTransport.ts:178](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/localTransport.ts#L178)
 
 Create a pair of connected local transports for bidirectional communication.
 This is the recommended way to connect a local wallet implementation to a router.
+
+## Parameters
+
+### options?
+
+[`LocalTransportOptions`](../interfaces/LocalTransportOptions.md)
+
+Configuration options for both transports
 
 ## Returns
 
@@ -22,7 +30,11 @@ A tuple of [clientTransport, serverTransport] that are connected to each other
 ## Example
 
 ```typescript
+// Create transports with default options (errors logged)
 const [clientTransport, serverTransport] = createLocalTransportPair();
+
+// Create transports that throw errors instead of logging
+const [strictClient, strictServer] = createLocalTransportPair({ throwOnError: true });
 
 // Server side (wallet implementation)
 const walletNode = new JSONRPCNode(serverTransport, context);

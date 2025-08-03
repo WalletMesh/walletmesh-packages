@@ -7,6 +7,37 @@ import type {
 } from '@walletmesh/jsonrpc';
 
 /**
+ * Configuration options for LocalTransport
+ *
+ * @example
+ * ```typescript
+ * // Default behavior - errors are logged as warnings
+ * const transport = new LocalTransport();
+ *
+ * // Throw errors instead of logging
+ * const strictTransport = new LocalTransport({ throwOnError: true });
+ * ```
+ *
+ * @public
+ */
+export interface LocalTransportOptions {
+  /**
+   * Whether to throw errors instead of logging warnings.
+   * When true, errors in message handling will be thrown.
+   * When false (default), errors will be logged as warnings.
+   *
+   * Use cases:
+   * - Set to `true` in test environments for immediate error feedback
+   * - Set to `true` when you need strict error handling and want failures to propagate
+   * - Leave as `false` (default) in production for resilient operation where
+   *   transient errors shouldn't crash the transport
+   *
+   * @defaultValue false
+   */
+  throwOnError?: boolean;
+}
+
+/**
  * A local transport that directly connects two JSONRPCNodes without network overhead.
  * This transport calls receiveMessage directly on the connected nodes, maintaining
  * proper serialization and protocol handling while avoiding actual transport costs.
@@ -35,6 +66,18 @@ import type {
 export class LocalTransport implements JSONRPCTransport {
   private remoteNode: JSONRPCNode<JSONRPCMethodMap, JSONRPCEventMap, JSONRPCContext> | null = null;
   private messageHandler: ((message: unknown) => void) | null = null;
+  private options: LocalTransportOptions;
+
+  /**
+   * Creates an instance of LocalTransport.
+   * @param options - Configuration options for the transport
+   */
+  constructor(options: LocalTransportOptions = {}) {
+    this.options = {
+      throwOnError: false,
+      ...options,
+    };
+  }
 
   /**
    * Connect this transport to a remote JSONRPCNode
@@ -52,10 +95,21 @@ export class LocalTransport implements JSONRPCTransport {
     }
 
     // Simulate async transport by using setTimeout (browser-compatible)
-    await new Promise<void>((resolve) => {
+    await new Promise<void>((resolve, reject) => {
       setTimeout(() => {
-        this.remoteNode?.receiveMessage(message);
-        resolve();
+        try {
+          if (this.remoteNode) {
+            this.remoteNode.receiveMessage(message);
+          }
+          resolve();
+        } catch (error) {
+          if (this.options.throwOnError) {
+            reject(error);
+          } else {
+            console.warn('LocalTransport: Error in receiveMessage:', error);
+            resolve(); // Still resolve to prevent hanging
+          }
+        }
       }, 0);
     });
   }
@@ -74,7 +128,21 @@ export class LocalTransport implements JSONRPCTransport {
     if (this.messageHandler) {
       // Simulate async transport (browser-compatible)
       setTimeout(() => {
-        this.messageHandler?.(message);
+        try {
+          if (this.messageHandler) {
+            this.messageHandler(message);
+          }
+        } catch (error) {
+          if (this.options.throwOnError) {
+            // Schedule the error to be thrown in the next tick
+            // This ensures it can be caught by error handlers while maintaining async behavior
+            setTimeout(() => {
+              throw error;
+            }, 0);
+          } else {
+            console.warn('LocalTransport: Error in message handler:', error);
+          }
+        }
       }, 0);
     }
   }
@@ -84,11 +152,16 @@ export class LocalTransport implements JSONRPCTransport {
  * Create a pair of connected local transports for bidirectional communication.
  * This is the recommended way to connect a local wallet implementation to a router.
  *
+ * @param options - Configuration options for both transports
  * @returns A tuple of [clientTransport, serverTransport] that are connected to each other
  *
  * @example
  * ```typescript
+ * // Create transports with default options (errors logged)
  * const [clientTransport, serverTransport] = createLocalTransportPair();
+ *
+ * // Create transports that throw errors instead of logging
+ * const [strictClient, strictServer] = createLocalTransportPair({ throwOnError: true });
  *
  * // Server side (wallet implementation)
  * const walletNode = new JSONRPCNode(serverTransport, context);
@@ -102,19 +175,29 @@ export class LocalTransport implements JSONRPCTransport {
  *
  * @public
  */
-export function createLocalTransportPair(): [LocalTransport, LocalTransport] {
-  const transport1 = new LocalTransport();
-  const transport2 = new LocalTransport();
+export function createLocalTransportPair(options?: LocalTransportOptions): [LocalTransport, LocalTransport] {
+  const transport1 = new LocalTransport(options);
+  const transport2 = new LocalTransport(options);
 
-  // Cross-connect the transports
-  // When transport1 sends, transport2 receives
+  // Override send methods to route to each other's receive
   transport1.send = async (message: unknown) => {
-    transport2.receive(message);
+    // Simulate async transport by using setTimeout
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        transport2.receive(message);
+        resolve();
+      }, 0);
+    });
   };
 
-  // When transport2 sends, transport1 receives
   transport2.send = async (message: unknown) => {
-    transport1.receive(message);
+    // Simulate async transport by using setTimeout
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        transport1.receive(message);
+        resolve();
+      }, 0);
+    });
   };
 
   return [transport1, transport2];
@@ -126,6 +209,7 @@ export function createLocalTransportPair(): [LocalTransport, LocalTransport] {
  * create a transport that sends messages to it.
  *
  * @param remoteNode The JSONRPCNode to connect to
+ * @param options - Configuration options for the transport
  * @returns A transport that sends messages to the remote node
  *
  * @example
@@ -139,8 +223,9 @@ export function createLocalTransportPair(): [LocalTransport, LocalTransport] {
  */
 export function createLocalTransport(
   remoteNode: JSONRPCNode<JSONRPCMethodMap, JSONRPCEventMap, JSONRPCContext>,
+  options?: LocalTransportOptions,
 ): LocalTransport {
-  const transport = new LocalTransport();
+  const transport = new LocalTransport(options);
   transport.connectTo(remoteNode);
   return transport;
 }
