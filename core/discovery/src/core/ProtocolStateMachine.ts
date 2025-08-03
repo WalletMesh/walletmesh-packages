@@ -222,7 +222,7 @@ export class ProtocolStateMachine extends EventEmitter {
    * }
    * ```
    *
-   * @see {@link VALID_TRANSITIONS} for transition rules
+   * @see Valid transitions: IDLE→DISCOVERING, DISCOVERING→COMPLETED/ERROR
    */
   canTransition(toState: ProtocolState): boolean {
     // Enhanced validation
@@ -274,7 +274,7 @@ export class ProtocolStateMachine extends EventEmitter {
    * }
    * ```
    *
-   * @fires stateChange - When the transition completes successfully
+   * Emits 'stateChange' event when the transition completes successfully
    * @see {@link canTransition} to check validity before transitioning
    */
   transition(toState: ProtocolState, metadata?: Record<string, unknown>): void {

@@ -19,10 +19,8 @@ The @walletmesh/discovery package implements a **cross-origin discovery protocol
 
 ### Formal Protocol Specifications
 
-This implementation is based on formal protocol specifications:
-- **[specs/PROTOCOL_SPECIFICATION.md](specs/PROTOCOL_SPECIFICATION.md)**: Protocol specification emphasizing security through simplicity
-- **[specs/PROTOCOL_STATE_MACHINE.md](specs/PROTOCOL_STATE_MACHINE.md)**: State machine definition with formal verification
-- **[specs/PROTOCOL_IMPLEMENTATION_GUIDE.md](specs/PROTOCOL_IMPLEMENTATION_GUIDE.md)**: Implementation requirements and guidelines
+This implementation is based on a consolidated protocol specification:
+- **[specs/PROTOCOL.md](specs/PROTOCOL.md)**: Complete protocol specification including architecture, state machine, implementation guide, and security model
 
 ## Protocol Change Management
 
@@ -41,10 +39,8 @@ When modifying the protocol, follow this checklist to ensure all components rema
   - [ ] Update initiator/responder logic as needed
 
 - [ ] **Update Protocol Specifications**
-  - [ ] Update `specs/PROTOCOL_SPECIFICATION.md` with new protocol details
-  - [ ] Update `specs/PROTOCOL_STATE_MACHINE.md` with state changes
-  - [ ] Update `specs/PROTOCOL_IMPLEMENTATION_GUIDE.md` with implementation requirements
-  - [ ] Update `specs/PRACTICAL_SECURITY_GUIDE.md` if security model changes
+  - [ ] Update `specs/PROTOCOL.md` with new protocol details, state changes, implementation requirements, and security model updates
+  - [ ] Note: The protocol specification has been consolidated into a single document
 
 - [ ] **Update Quint Formal Specifications**
   - [ ] Update `quint/discovery/protocol.qnt` main protocol specification
@@ -1074,6 +1070,31 @@ The protocol achieves strong security guarantees through design clarity:
 The key insight is that **security through simplicity** provides more effective real-world protection than complexity.
 
 ## Recent Changes
+
+### Documentation Consolidation (Current)
+
+**Major Changes**:
+1. **Protocol Documentation Reorganization**
+   - Consolidated three separate specification documents into single `PROTOCOL.md`
+   - Removed `PROTOCOL_SPECIFICATION.md`, `PROTOCOL_STATE_MACHINE.md`, and `PROTOCOL_IMPLEMENTATION_GUIDE.md`
+   - New consolidated document provides better organization and reduces duplication
+   - Added comprehensive table of contents for easy navigation
+
+2. **Content Updates**:
+   - Updated all chain identifiers to proper CAIP-2 format (e.g., 'eip155:1' instead of 'evm:1')
+   - Changed terminology from listener/announcer to initiator/responder throughout
+   - Added missing documentation for Logger interface and InitiatorStateMachine
+   - Removed deprecated references to timestamps and OriginProof
+
+3. **Benefits**:
+   - Single source of truth for protocol specification
+   - Easier to maintain and keep synchronized
+   - Better navigation with comprehensive table of contents
+   - Reduced confusion from conflicting information across documents
+
+**Migration Guide**:
+- Update any references to the three separate specification files to point to `specs/PROTOCOL.md`
+- All content has been preserved and reorganized - use table of contents to find specific sections
 
 ### Version 0.6.0 (Logger Interface)
 

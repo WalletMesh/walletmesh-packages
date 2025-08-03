@@ -13,7 +13,6 @@
  *
  * @packageDocumentation
  * @module @walletmesh/discovery
- * @version 0.1.0
  */
 
 // Export core protocol types
@@ -72,6 +71,10 @@ export type {
 
 // Export constants
 export * from './core/constants.js';
+
+// Export state machine types
+export { ProtocolStateMachine, createProtocolStateMachine } from './core/ProtocolStateMachine.js';
+export type { ProtocolState, StateTimeouts, StateTransitionEvent } from './core/ProtocolStateMachine.js';
 
 // Export logger
 export { ConsoleLogger, createLogger, defaultLogger } from './core/logger.js';

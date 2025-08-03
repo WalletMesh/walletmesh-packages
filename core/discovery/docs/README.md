@@ -1,10 +1,14 @@
+**@walletmesh/discovery v0.1.0**
+
+***
+
 # @walletmesh/discovery
 
 **Version 0.1.0** - Development Release
 
 Cross-origin discovery protocol implementation for WalletMesh. This package implements a capability-first discovery model that enables secure, privacy-preserving discovery between initiators (dApps) and responders (wallets).
 
-📖 **Protocol Documentation**: For complete protocol specification, state machine details, and implementation guide, see [PROTOCOL.md](specs/PROTOCOL.md).
+📖 **Protocol Documentation**: For complete protocol specification, state machine details, and implementation guide, see [PROTOCOL.md](_media/PROTOCOL.md).
 
 > ⚠️ **Development Release**: Version 0.1.0 indicates this package is still in active development. APIs may change between releases until version 1.0.0.
 
@@ -31,12 +35,12 @@ The complete set of functionalities a wallet can provide, organized into three d
 2. **Features**: Specific wallet functionalities beyond basic blockchain support
    - Examples: `'hardware-wallet'`, `'batch-transactions'`, `'gasless-transactions'`
    - Describes WHAT the wallet can do (security features, transaction capabilities, etc.)
-   - See [RESPONDER_FEATURES](src/core/constants.ts) constant for standard identifiers
+   - See [RESPONDER_FEATURES](_media/constants.ts) constant for standard identifiers
 
 3. **Interfaces**: API standards the wallet implements for programmatic communication
    - Examples: `'eip-1193'` (Ethereum provider), `'solana-wallet-standard'` (Solana)
    - Describes HOW dApps can interact with the wallet
-   - See [RESPONDER_INTERFACES](src/core/constants.ts) constant for standard identifiers
+   - See [RESPONDER_INTERFACES](_media/constants.ts) constant for standard identifiers
 
 ### Key Concepts
 
@@ -269,7 +273,7 @@ The discovery protocol uses four message types:
 
 ## Protocol Documentation
 
-For complete protocol documentation including state machine, security model, and implementation details, see [PROTOCOL.md](specs/PROTOCOL.md).
+For complete protocol documentation including state machine, security model, and implementation details, see [PROTOCOL.md](_media/PROTOCOL.md).
 
 ## Protocol Reference
 

@@ -416,7 +416,7 @@ export interface DiscoveryResponseEvent extends BaseDiscoveryMessage {
  *
  * @category Connection
  * @since 0.1.0
- * @see {@link ConnectionResponse} for account delivery
+ * @see Account information used during connection phase
  */
 export interface Account {
   address: string;
@@ -1297,7 +1297,7 @@ export interface SessionOptions {
  * @category Errors
  * @since 0.1.0
  * @see {@link DiscoveryErrorEvent} for protocol error events
- * @see {@link ProtocolError} for internal error handling
+ * @see {@link DiscoveryErrorEvent} for error event handling
  * @see {@link ERROR_CODES} in constants.ts for standard error codes
  * @see {@link SecurityPolicy} for origin validation configuration
  */
@@ -1541,7 +1541,7 @@ export interface DiscoveryResponderConfig {
  *
  * @category Connection
  * @since 0.1.0
- * @see {@link ConnectionManager} for implementation
+ * @see Connection management handled by higher-level libraries
  */
 export interface ConnectionManagerConfig {
   maxConnections?: number;
