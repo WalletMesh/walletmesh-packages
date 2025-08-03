@@ -6,7 +6,7 @@
 
 # Class: JSONRPCNode\<T, E, C\>
 
-Defined in: [core/jsonrpc/src/node.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L69)
+Defined in: [core/jsonrpc/src/node.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L69)
 
 Represents a JSON-RPC 2.0 node capable of bi-directional communication.
 It can register methods, handle incoming requests, send requests,
@@ -77,7 +77,7 @@ A context type shared across method handlers and middleware.
 
 > **new JSONRPCNode**\<`T`, `E`, `C`\>(`transport`, `context`): `JSONRPCNode`\<`T`, `E`, `C`\>
 
-Defined in: [core/jsonrpc/src/node.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L88)
+Defined in: [core/jsonrpc/src/node.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L88)
 
 Creates an instance of JSONRPCNode.
 
@@ -107,7 +107,7 @@ An optional initial context object to be passed to middleware and method handler
 
 > `readonly` **context**: `C`
 
-Defined in: [core/jsonrpc/src/node.ts:90](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L90)
+Defined in: [core/jsonrpc/src/node.ts:90](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L90)
 
 An optional initial context object to be passed to middleware and method handlers.
                  Defaults to an empty object.
@@ -118,7 +118,7 @@ An optional initial context object to be passed to middleware and method handler
 
 > **addMiddleware**(`middleware`): () => `void`
 
-Defined in: [core/jsonrpc/src/node.ts:229](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L229)
+Defined in: [core/jsonrpc/src/node.ts:229](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L229)
 
 Adds a middleware function to the request processing chain.
 Middleware functions can intercept and modify incoming requests and outgoing responses.
@@ -147,7 +147,7 @@ A function that, when called, will remove this middleware.
 
 > **callMethod**\<`M`\>(`method`, `params?`, `timeoutInSeconds?`): `Promise`\<`T`\[`M`\]\[`"result"`\]\>
 
-Defined in: [core/jsonrpc/src/node.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L149)
+Defined in: [core/jsonrpc/src/node.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L149)
 
 Calls a remote JSON-RPC method.
 
@@ -201,7 +201,7 @@ If sending the request fails.
 
 > **close**(): `Promise`\<`void`\>
 
-Defined in: [core/jsonrpc/src/node.ts:329](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L329)
+Defined in: [core/jsonrpc/src/node.ts:470](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L470)
 
 Closes the JSON-RPC node, cleaning up resources.
 This includes removing all event handlers, middleware, and rejecting any pending requests.
@@ -217,7 +217,7 @@ The underlying transport is not closed by this method and should be managed sepa
 
 > **emit**\<`K`\>(`event`, `params`): `Promise`\<`void`\>
 
-Defined in: [core/jsonrpc/src/node.ts:213](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L213)
+Defined in: [core/jsonrpc/src/node.ts:213](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L213)
 
 Emits an event to the remote end.
 
@@ -251,7 +251,7 @@ The payload for the event.
 
 > **notify**\<`M`\>(`method`, `params`): `Promise`\<`void`\>
 
-Defined in: [core/jsonrpc/src/node.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L186)
+Defined in: [core/jsonrpc/src/node.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L186)
 
 Sends a JSON-RPC notification (a request without an ID, expecting no response).
 
@@ -285,7 +285,7 @@ The parameters for the notification.
 
 > **on**\<`K`\>(`event`, `handler`): () => `void`
 
-Defined in: [core/jsonrpc/src/node.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L203)
+Defined in: [core/jsonrpc/src/node.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L203)
 
 Registers an event handler for a specific event name.
 
@@ -325,7 +325,7 @@ A function that, when called, will remove this event handler.
 
 > **receiveMessage**(`message`): `Promise`\<`void`\>
 
-Defined in: [core/jsonrpc/src/node.ts:240](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L240)
+Defined in: [core/jsonrpc/src/node.ts:240](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L240)
 
 Processes an incoming message from the transport.
 This method is typically called by the transport's `onMessage` handler.
@@ -349,7 +349,7 @@ The raw message received from the transport.
 
 > **registerMethod**\<`M`\>(`name`, `handler`): `void`
 
-Defined in: [core/jsonrpc/src/node.ts:117](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L117)
+Defined in: [core/jsonrpc/src/node.ts:117](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L117)
 
 Registers a method handler for a given method name.
 
@@ -384,7 +384,7 @@ The asynchronous function to handle requests for this method.
 
 > **registerSerializer**\<`M`\>(`method`, `serializer`): `void`
 
-Defined in: [core/jsonrpc/src/node.ts:131](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L131)
+Defined in: [core/jsonrpc/src/node.ts:131](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L131)
 
 Registers a custom serializer for the parameters and/or result of a specific method.
 
@@ -418,7 +418,7 @@ The serializer implementation for the method's parameters and/or result.
 
 > **setFallbackHandler**(`handler`): `void`
 
-Defined in: [core/jsonrpc/src/node.ts:318](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/node.ts#L318)
+Defined in: [core/jsonrpc/src/node.ts:318](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/node.ts#L318)
 
 Sets a fallback handler for methods that are not explicitly registered.
 This handler will be invoked if a request is received for a method name

@@ -15,15 +15,22 @@ Key exports:
 - Type definitions for method maps, events, and context
 - Utility functions for validation and type checking
 
+## Enumerations
+
+- [ErrorSeverity](enumerations/ErrorSeverity.md)
+- [ReceiveErrorCategory](enumerations/ReceiveErrorCategory.md)
+
 ## Classes
 
 - [JSONRPCError](classes/JSONRPCError.md)
 - [JSONRPCNode](classes/JSONRPCNode.md)
 - [JSONRPCProxy](classes/JSONRPCProxy.md)
+- [ReceiveErrorHandler](classes/ReceiveErrorHandler.md)
 - [TimeoutError](classes/TimeoutError.md)
 
 ## Interfaces
 
+- [ErrorRecoveryStrategy](interfaces/ErrorRecoveryStrategy.md)
 - [JSONRPCErrorInterface](interfaces/JSONRPCErrorInterface.md)
 - [JSONRPCEvent](interfaces/JSONRPCEvent.md)
 - [JSONRPCEventMap](interfaces/JSONRPCEventMap.md)
@@ -34,6 +41,8 @@ Key exports:
 - [JSONRPCResponse](interfaces/JSONRPCResponse.md)
 - [JSONRPCSerializer](interfaces/JSONRPCSerializer.md)
 - [JSONRPCTransport](interfaces/JSONRPCTransport.md)
+- [ReceiveErrorEvent](interfaces/ReceiveErrorEvent.md)
+- [ReceiveErrorHandlerConfig](interfaces/ReceiveErrorHandlerConfig.md)
 - [Serializer](interfaces/Serializer.md)
 
 ## Type Aliases
@@ -47,6 +56,7 @@ Key exports:
 - [JSONRPCSerializedData](type-aliases/JSONRPCSerializedData.md)
 - [MethodHandler](type-aliases/MethodHandler.md)
 - [MethodResponse](type-aliases/MethodResponse.md)
+- [ReceiveErrorHandlerFunction](type-aliases/ReceiveErrorHandlerFunction.md)
 
 ## Functions
 

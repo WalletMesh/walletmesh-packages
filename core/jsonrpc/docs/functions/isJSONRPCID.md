@@ -8,7 +8,7 @@
 
 > **isJSONRPCID**(`value`): `value is JSONRPCID`
 
-Defined in: [core/jsonrpc/src/utils.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/utils.ts#L27)
+Defined in: [core/jsonrpc/src/utils.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/utils.ts#L27)
 
 Type guard to check if a value is a valid JSON-RPC ID.
 Valid IDs can be strings, numbers, or undefined.

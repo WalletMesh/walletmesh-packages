@@ -19,3 +19,14 @@ export * from './utils.js';
 export * from './node.js';
 export { JSONRPCProxy } from './proxy.js';
 export type { JSONRPCProxyConfig } from './proxy.js';
+
+// Enhanced error handling
+export {
+  ReceiveErrorHandler,
+  ReceiveErrorCategory,
+  ErrorSeverity,
+  type ReceiveErrorEvent,
+  type ReceiveErrorHandlerFunction,
+  type ReceiveErrorHandlerConfig,
+  type ErrorRecoveryStrategy,
+} from './error-handling/receiveErrorHandler.js';

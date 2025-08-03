@@ -6,7 +6,7 @@
 
 # Interface: JSONRPCTransport
 
-Defined in: [core/jsonrpc/src/types.ts:501](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L501)
+Defined in: [core/jsonrpc/src/types.ts:501](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/types.ts#L501)
 
 Bidirectional transport interface for JSON-RPC communication.
 Implement this to provide the actual transport mechanism for message delivery and reception.
@@ -81,7 +81,7 @@ const httpTransport: JSONRPCTransport = {
 
 > **onMessage**(`callback`): `void`
 
-Defined in: [core/jsonrpc/src/types.ts:522](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L522)
+Defined in: [core/jsonrpc/src/types.ts:522](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/types.ts#L522)
 
 Register a callback to receive messages from the remote node.
 The JSONRPCNode will call this method during initialization to set up
@@ -106,7 +106,7 @@ Function to call when messages are received
 
 > **send**(`message`): `Promise`\<`void`\>
 
-Defined in: [core/jsonrpc/src/types.ts:512](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L512)
+Defined in: [core/jsonrpc/src/types.ts:512](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/types.ts#L512)
 
 Sends a JSON-RPC message to the remote node.
 The implementation should handle message serialization and delivery.

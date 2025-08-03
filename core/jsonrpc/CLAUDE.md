@@ -357,10 +357,57 @@ interface JSONRPCTransport {
 
 ## Error Handling Best Practices
 
+### Basic Error Handling
 - Use `JSONRPCError` for standard-compliant errors
 - Include detailed error data for client diagnostics
 - Handle timeout errors explicitly
 - Implement proper error recovery strategies
+
+### Enhanced Error Handling (New)
+The package now includes an enhanced error handling system for receive errors:
+
+#### Built-in Enhanced Error Handling
+As of the latest version, `JSONRPCNode` includes improved error handling by default:
+- **Error categorization**: Parse, Validation, Method, Transport, Unknown
+- **Severity levels**: Low, Medium, High, Critical
+- **Recovery suggestions**: Actionable guidance for each error type
+- **Appropriate logging**: Debug for low, warn for medium, error for high/critical
+
+#### Advanced Error Handling with `ReceiveErrorHandler`
+For more sophisticated error handling, use the `ReceiveErrorHandler` class:
+
+```typescript
+import { ReceiveErrorHandler, ReceiveErrorCategory } from '@walletmesh/jsonrpc';
+
+// Enhance existing node
+const { node, errorHandler } = ReceiveErrorHandler.enhanceNode(existingNode, {
+  globalHandler: async (event) => {
+    // Custom handling for all errors
+    await logToMonitoring(event);
+  },
+  handlers: {
+    [ReceiveErrorCategory.TRANSPORT]: async (event) => {
+      // Handle transport errors specifically
+      if (event.severity === 'HIGH') {
+        await attemptReconnection();
+      }
+    },
+  },
+  maxErrorRate: 10,
+  errorRateWindow: 60000,
+});
+
+// Get error statistics
+const stats = errorHandler.getErrorStats();
+console.log('Circuit breaker active:', stats.circuitBreakerOpen);
+```
+
+#### Error Categories and Recovery Actions
+- **PARSE**: Malformed JSON → "Validate message format before processing"
+- **VALIDATION**: Invalid JSON-RPC → "Check JSON-RPC message structure and required fields"  
+- **METHOD**: Method errors → "Register the missing method handler" or "Review method implementation"
+- **TRANSPORT**: Connection issues → "Check transport connection and retry"
+- **UNKNOWN**: Unexpected errors → "Investigate unexpected error and add proper handling"
 
 ## Standard Error Codes
 

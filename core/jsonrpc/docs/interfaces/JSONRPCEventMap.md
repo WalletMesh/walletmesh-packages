@@ -6,7 +6,7 @@
 
 # Interface: JSONRPCEventMap
 
-Defined in: [core/jsonrpc/src/types.ts:559](https://github.com/WalletMesh/walletmesh-packages/blob/cb714b71a23dbdbacd8723a799d14c589fdf51f9/core/jsonrpc/src/types.ts#L559)
+Defined in: [core/jsonrpc/src/types.ts:559](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/types.ts#L559)
 
 Maps event names to their payload types for JSON-RPC events.
 Events provide a way to handle asynchronous notifications with typed payloads.

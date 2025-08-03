@@ -101,8 +101,8 @@ export class JSONRPCNode<
     // Automatically connect to the transport's message receiver
     this.transport.onMessage((message) => {
       this.receiveMessage(message).catch((error) => {
-        // TODO: Consider a more robust error handling/logging strategy for unhandled receive errors.
-        console.error('[JSONRPCNode] Error handling received message:', error);
+        // Enhanced error handling with categorization and recovery strategies
+        this.handleReceiveError(error, message);
       });
     });
   }
@@ -319,6 +319,147 @@ export class JSONRPCNode<
     handler: (context: C, method: string, params: JSONRPCParams) => Promise<unknown>,
   ): void {
     this.methodManager.setFallbackHandler(wrapHandler(handler));
+  }
+
+  /**
+   * Enhanced error handler for receive errors with categorization and recovery strategies.
+   * This method provides improved error handling compared to basic console logging.
+   *
+   * @param error - The error that occurred during message processing
+   * @param rawMessage - The raw message that caused the error
+   * @private
+   */
+  private handleReceiveError(error: unknown, rawMessage: unknown): void {
+    // Enhanced error handling with categorization
+    const errorInfo = this.categorizeReceiveError(error);
+
+    // Log with appropriate severity
+    const logMessage = `[JSONRPCNode] Receive error - Category: ${errorInfo.category}, Severity: ${errorInfo.severity}`;
+    const logData = {
+      error: error instanceof Error ? error.message : String(error),
+      rawMessage,
+      recoveryAction: errorInfo.recoveryAction,
+    };
+
+    switch (errorInfo.severity) {
+      case 'LOW':
+        console.debug(logMessage, logData);
+        break;
+      case 'MEDIUM':
+        console.warn(logMessage, logData);
+        break;
+      case 'HIGH':
+      case 'CRITICAL':
+        console.error(logMessage, logData);
+        break;
+    }
+
+    // Emit error event for external handling
+    try {
+      if (this.eventManager && 'emit' in this.eventManager) {
+        // Emit internal error event if supported
+        (this.eventManager as { emit?: (event: string, data: unknown) => void }).emit?.('receiveError', {
+          category: errorInfo.category,
+          severity: errorInfo.severity,
+          error: error instanceof Error ? error : new Error(String(error)),
+          rawMessage,
+          recoveryAction: errorInfo.recoveryAction,
+          timestamp: Date.now(),
+        });
+      }
+    } catch (emitError) {
+      // Don't let error emission cause further issues
+      console.warn('[JSONRPCNode] Failed to emit error event:', emitError);
+    }
+  }
+
+  /**
+   * Categorizes receive errors for improved handling and observability.
+   *
+   * @param error - The error to categorize
+   * @returns Error information with category, severity, and recovery action
+   * @private
+   */
+  private categorizeReceiveError(error: unknown): {
+    category: string;
+    severity: string;
+    recoveryAction: string;
+  } {
+    if (error instanceof Error) {
+      const message = error.message.toLowerCase();
+
+      // Check for JSON-RPC specific errors
+      if ('code' in error && typeof error.code === 'number') {
+        const code = error.code;
+        switch (code) {
+          case -32700: // Parse error
+            return {
+              category: 'PARSE',
+              severity: 'HIGH',
+              recoveryAction: 'Validate message format before processing',
+            };
+          case -32600: // Invalid Request
+          case -32602: // Invalid params
+            return {
+              category: 'VALIDATION',
+              severity: 'MEDIUM',
+              recoveryAction: 'Check JSON-RPC message structure and required fields',
+            };
+          case -32601: // Method not found
+            return {
+              category: 'METHOD',
+              severity: 'LOW',
+              recoveryAction: 'Register the missing method handler',
+            };
+          case -32603: // Internal error
+            return {
+              category: 'METHOD',
+              severity: 'MEDIUM',
+              recoveryAction: 'Review method implementation for errors',
+            };
+          default:
+            if (code >= -32099 && code <= -32000) {
+              return {
+                category: 'METHOD',
+                severity: 'MEDIUM',
+                recoveryAction: 'Review server error and retry if appropriate',
+              };
+            }
+        }
+      }
+
+      // Categorize by error message content
+      if (message.includes('parse') || message.includes('json')) {
+        return {
+          category: 'PARSE',
+          severity: 'HIGH',
+          recoveryAction: 'Validate message format before processing',
+        };
+      }
+
+      if (message.includes('invalid') || message.includes('validation')) {
+        return {
+          category: 'VALIDATION',
+          severity: 'MEDIUM',
+          recoveryAction: 'Check JSON-RPC message structure and required fields',
+        };
+      }
+
+      if (message.includes('transport') || message.includes('connection')) {
+        return {
+          category: 'TRANSPORT',
+          severity: 'HIGH',
+          recoveryAction: 'Check transport connection and retry',
+        };
+      }
+    }
+
+    // Default for unknown errors
+    return {
+      category: 'UNKNOWN',
+      severity: 'CRITICAL',
+      recoveryAction: 'Investigate unexpected error and add proper handling',
+    };
   }
 
   /**
