@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ParameterSpec
 
-Defined in: [core/types.ts:609](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L609)
+Defined in: [core/types.ts:609](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L609)
 
 Parameter specification for transaction and method arguments.
 
@@ -58,7 +58,7 @@ const amountParam: ParameterSpec = {
 
 > `optional` **description**: `string`
 
-Defined in: [core/types.ts:613](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L613)
+Defined in: [core/types.ts:613](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L613)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [core/types.ts:613](https://github.com/WalletMesh/walletmesh-package
 
 > **name**: `string`
 
-Defined in: [core/types.ts:610](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L610)
+Defined in: [core/types.ts:610](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L610)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [core/types.ts:610](https://github.com/WalletMesh/walletmesh-package
 
 > **required**: `boolean`
 
-Defined in: [core/types.ts:612](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L612)
+Defined in: [core/types.ts:612](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L612)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [core/types.ts:612](https://github.com/WalletMesh/walletmesh-package
 
 > **type**: `string`
 
-Defined in: [core/types.ts:611](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L611)
+Defined in: [core/types.ts:611](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L611)
 
 ***
 
@@ -90,4 +90,4 @@ Defined in: [core/types.ts:611](https://github.com/WalletMesh/walletmesh-package
 
 > `optional` **validation**: [`ValidationRule`](ValidationRule.md)[]
 
-Defined in: [core/types.ts:614](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L614)
+Defined in: [core/types.ts:614](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L614)

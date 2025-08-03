@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: DiscoveryInitiator
 
-Defined in: [initiator/DiscoveryInitiator.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L68)
+Defined in: [initiator/DiscoveryInitiator.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L68)
 
 Discovery listener for initiators to discover and connect to qualified responders.
 
@@ -70,7 +70,7 @@ const listener = new DiscoveryInitiator({
 
 > **new DiscoveryInitiator**(`config`): `DiscoveryInitiator`
 
-Defined in: [initiator/DiscoveryInitiator.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L81)
+Defined in: [initiator/DiscoveryInitiator.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L81)
 
 #### Parameters
 
@@ -88,7 +88,7 @@ Defined in: [initiator/DiscoveryInitiator.ts:81](https://github.com/WalletMesh/w
 
 > **getQualifiedResponders**(): [`QualifiedResponder`](../interfaces/QualifiedResponder.md)[]
 
-Defined in: [initiator/DiscoveryInitiator.ts:288](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L288)
+Defined in: [initiator/DiscoveryInitiator.ts:288](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L288)
 
 Get the list of qualified wallets from the last discovery.
 
@@ -122,7 +122,7 @@ wallets.forEach(wallet => {
 
 > **isDiscoveryInProgress**(): `boolean`
 
-Defined in: [initiator/DiscoveryInitiator.ts:325](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L325)
+Defined in: [initiator/DiscoveryInitiator.ts:325](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L325)
 
 Check if discovery is currently in progress.
 
@@ -155,7 +155,7 @@ if (!listener.isDiscoveryInProgress()) {
 
 > **startDiscovery**(): `Promise`\<[`QualifiedResponder`](../interfaces/QualifiedResponder.md)[]\>
 
-Defined in: [initiator/DiscoveryInitiator.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L126)
+Defined in: [initiator/DiscoveryInitiator.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L126)
 
 Start discovery process by broadcasting capability requirements.
 
@@ -205,7 +205,7 @@ try {
 
 > **stopDiscovery**(): `void`
 
-Defined in: [initiator/DiscoveryInitiator.ts:238](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L238)
+Defined in: [initiator/DiscoveryInitiator.ts:238](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L238)
 
 Stop the current discovery process.
 
@@ -240,7 +240,7 @@ const wallets = await discoveryPromise;
 
 > **dispose**(): `void`
 
-Defined in: [initiator/DiscoveryInitiator.ts:700](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L700)
+Defined in: [initiator/DiscoveryInitiator.ts:700](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L700)
 
 Cleanup resources on disposal.
 
@@ -254,7 +254,7 @@ Cleanup resources on disposal.
 
 > **getCurrentSessionId**(): `null` \| `string`
 
-Defined in: [initiator/DiscoveryInitiator.ts:332](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L332)
+Defined in: [initiator/DiscoveryInitiator.ts:332](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L332)
 
 Get the current session ID.
 
@@ -268,7 +268,7 @@ Get the current session ID.
 
 > **getQualifiedResponder**(`responderId`): `undefined` \| [`QualifiedResponder`](../interfaces/QualifiedResponder.md)
 
-Defined in: [initiator/DiscoveryInitiator.ts:301](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L301)
+Defined in: [initiator/DiscoveryInitiator.ts:301](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L301)
 
 Get a specific qualified responder by its ID.
 
@@ -295,7 +295,7 @@ The qualified responder if found, undefined otherwise
 
 > **getState**(): [`ProtocolState`](../type-aliases/ProtocolState.md)
 
-Defined in: [initiator/DiscoveryInitiator.ts:378](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L378)
+Defined in: [initiator/DiscoveryInitiator.ts:378](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L378)
 
 Get the current protocol state.
 
@@ -309,7 +309,7 @@ Get the current protocol state.
 
 > **getStats**(): `object`
 
-Defined in: [initiator/DiscoveryInitiator.ts:346](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L346)
+Defined in: [initiator/DiscoveryInitiator.ts:346](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L346)
 
 Get discovery statistics.
 
@@ -379,7 +379,7 @@ Get discovery statistics.
 
 > **updateConfig**(`config`): `void`
 
-Defined in: [initiator/DiscoveryInitiator.ts:339](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/DiscoveryInitiator.ts#L339)
+Defined in: [initiator/DiscoveryInitiator.ts:339](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/DiscoveryInitiator.ts#L339)
 
 Update the discovery configuration.
 

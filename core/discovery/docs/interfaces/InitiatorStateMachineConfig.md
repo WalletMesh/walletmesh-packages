@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: InitiatorStateMachineConfig
 
-Defined in: [initiator/InitiatorStateMachine.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L24)
+Defined in: [initiator/InitiatorStateMachine.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L24)
 
 Configuration for the InitiatorStateMachine.
 
@@ -20,7 +20,7 @@ Configuration for the InitiatorStateMachine.
 
 > `optional` **eventTarget**: `EventTarget`
 
-Defined in: [initiator/InitiatorStateMachine.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L29)
+Defined in: [initiator/InitiatorStateMachine.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L29)
 
 Event target for dispatching discovery messages.
 Defaults to window in browser environments.
@@ -31,7 +31,7 @@ Defaults to window in browser environments.
 
 > **initiatorInfo**: [`InitiatorInfo`](InitiatorInfo.md)
 
-Defined in: [initiator/InitiatorStateMachine.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L45)
+Defined in: [initiator/InitiatorStateMachine.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L45)
 
 Information about the initiator application.
 
@@ -41,7 +41,7 @@ Information about the initiator application.
 
 > `optional` **logger**: [`Logger`](Logger.md)
 
-Defined in: [initiator/InitiatorStateMachine.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L65)
+Defined in: [initiator/InitiatorStateMachine.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L65)
 
 Optional logger instance.
 
@@ -51,7 +51,7 @@ Optional logger instance.
 
 > **origin**: `string`
 
-Defined in: [initiator/InitiatorStateMachine.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L40)
+Defined in: [initiator/InitiatorStateMachine.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L40)
 
 Origin of the initiator application.
 
@@ -61,7 +61,7 @@ Origin of the initiator application.
 
 > `optional` **preferences**: [`CapabilityPreferences`](CapabilityPreferences.md)
 
-Defined in: [initiator/InitiatorStateMachine.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L55)
+Defined in: [initiator/InitiatorStateMachine.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L55)
 
 Optional capability preferences for discovery.
 
@@ -71,7 +71,7 @@ Optional capability preferences for discovery.
 
 > **requirements**: [`CapabilityRequirements`](CapabilityRequirements.md)
 
-Defined in: [initiator/InitiatorStateMachine.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L50)
+Defined in: [initiator/InitiatorStateMachine.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L50)
 
 Required capability requirements for discovery.
 
@@ -81,7 +81,7 @@ Required capability requirements for discovery.
 
 > **sessionId**: `string`
 
-Defined in: [initiator/InitiatorStateMachine.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L35)
+Defined in: [initiator/InitiatorStateMachine.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L35)
 
 Session ID for the discovery session.
 Should be generated using crypto.randomUUID().
@@ -92,6 +92,6 @@ Should be generated using crypto.randomUUID().
 
 > `optional` **timeouts**: `Partial`\<[`StateTimeouts`](StateTimeouts.md)\>
 
-Defined in: [initiator/InitiatorStateMachine.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L60)
+Defined in: [initiator/InitiatorStateMachine.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L60)
 
 Custom timeouts for state transitions.

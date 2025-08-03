@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionOptions
 
-Defined in: [core/types.ts:1255](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1255)
+Defined in: [core/types.ts:1255](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1255)
 
 Session tracking and management options.
 
@@ -45,7 +45,7 @@ const devSessionOptions: SessionOptions = {
 
 > **cleanupInterval**: `number`
 
-Defined in: [core/types.ts:1257](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1257)
+Defined in: [core/types.ts:1257](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1257)
 
 ***
 
@@ -53,7 +53,7 @@ Defined in: [core/types.ts:1257](https://github.com/WalletMesh/walletmesh-packag
 
 > **maxAge**: `number`
 
-Defined in: [core/types.ts:1256](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1256)
+Defined in: [core/types.ts:1256](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1256)
 
 ***
 
@@ -61,4 +61,4 @@ Defined in: [core/types.ts:1256](https://github.com/WalletMesh/walletmesh-packag
 
 > **maxSessionsPerOrigin**: `number`
 
-Defined in: [core/types.ts:1258](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1258)
+Defined in: [core/types.ts:1258](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1258)

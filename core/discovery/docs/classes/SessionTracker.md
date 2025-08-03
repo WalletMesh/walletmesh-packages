@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: SessionTracker
 
-Defined in: [security/SessionTracker.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L80)
+Defined in: [security/SessionTracker.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L80)
 
 Session tracker implementing origin-bound session tracking for replay attack prevention.
 
@@ -92,7 +92,7 @@ console.log(`Tracking ${memory.totalSessions} sessions across ${memory.totalOrig
 
 > **new SessionTracker**(`options`): `SessionTracker`
 
-Defined in: [security/SessionTracker.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L89)
+Defined in: [security/SessionTracker.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L89)
 
 #### Parameters
 
@@ -110,7 +110,7 @@ Defined in: [security/SessionTracker.ts:89](https://github.com/WalletMesh/wallet
 
 > **cleanup**(): `void`
 
-Defined in: [security/SessionTracker.ts:469](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L469)
+Defined in: [security/SessionTracker.ts:469](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L469)
 
 Clean up expired sessions and old request tracking data.
 
@@ -146,7 +146,7 @@ console.log(`Memory freed, now tracking ${stats.totalSessions} sessions`);
 
 > **clear**(): `void`
 
-Defined in: [security/SessionTracker.ts:534](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L534)
+Defined in: [security/SessionTracker.ts:534](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L534)
 
 Clear all tracking data.
 
@@ -182,7 +182,7 @@ schedule.daily(() => {
 
 > **getState**(): [`SessionTrackingState`](../interfaces/SessionTrackingState.md)
 
-Defined in: [security/SessionTracker.ts:383](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L383)
+Defined in: [security/SessionTracker.ts:383](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L383)
 
 Get the current state of session tracking for debugging and monitoring.
 
@@ -225,7 +225,7 @@ for (const [origin, timestamps] of state.sessionTimestamps) {
 
 > **isRateLimited**(`origin`, `timestamp`): `boolean`
 
-Defined in: [security/SessionTracker.ts:301](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L301)
+Defined in: [security/SessionTracker.ts:301](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L301)
 
 Check if an origin is rate limited.
 
@@ -273,7 +273,7 @@ if (tracker.isRateLimited('https://suspicious.com')) {
 
 > **trackRequest**(`origin`, `timestamp`): `void`
 
-Defined in: [security/SessionTracker.ts:263](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L263)
+Defined in: [security/SessionTracker.ts:263](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L263)
 
 Track a request for rate limiting purposes.
 
@@ -321,7 +321,7 @@ if (tracker.isRateLimited('https://dapp.com')) {
 
 > **removeSession**(`origin`, `sessionId`): `void`
 
-Defined in: [security/SessionTracker.ts:334](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L334)
+Defined in: [security/SessionTracker.ts:334](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L334)
 
 Remove a session from tracking.
 
@@ -370,7 +370,7 @@ expiredSessions.forEach(session => {
 
 > **hasSession**(`origin`, `sessionId`): `boolean`
 
-Defined in: [security/SessionTracker.ts:234](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L234)
+Defined in: [security/SessionTracker.ts:234](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L234)
 
 Check if a session has been used for the given origin.
 
@@ -420,7 +420,7 @@ if (tracker.hasSession(origin, sessionId)) {
 
 > **trackSession**(`origin`, `sessionId`, `timestamp`): `boolean`
 
-Defined in: [security/SessionTracker.ts:142](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L142)
+Defined in: [security/SessionTracker.ts:142](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L142)
 
 Track a new session for the given origin.
 
@@ -495,7 +495,7 @@ tracker.trackSession('https://origin1.com', sessionId); // → false (replay for
 
 > **getMemoryStats**(): `object`
 
-Defined in: [security/SessionTracker.ts:573](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L573)
+Defined in: [security/SessionTracker.ts:573](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L573)
 
 Get memory usage statistics.
 
@@ -568,7 +568,7 @@ console.log(`Entries: ${memoryFootprint.sessionEntries}`);
 
 > **getOriginStats**(`origin`): `object`
 
-Defined in: [security/SessionTracker.ts:423](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/SessionTracker.ts#L423)
+Defined in: [security/SessionTracker.ts:423](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/SessionTracker.ts#L423)
 
 Get session statistics for an origin.
 

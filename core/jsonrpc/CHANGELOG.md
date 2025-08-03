@@ -1,5 +1,11 @@
 # @walletmesh/jsonrpc
 
+## 0.5.2
+
+### Patch Changes
+
+- d63428d: This release introduces comprehensive error handling improvements to both the JSON-RPC and Router packages
+
 ## 0.5.0
 
 ### Minor Changes

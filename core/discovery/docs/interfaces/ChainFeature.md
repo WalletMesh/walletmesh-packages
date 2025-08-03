@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ChainFeature
 
-Defined in: [core/types.ts:705](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L705)
+Defined in: [core/types.ts:705](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L705)
 
 Chain-specific feature definition for advanced blockchain capabilities.
 
@@ -56,7 +56,7 @@ const tokenSupport: ChainFeature = {
 
 > `optional` **configuration**: `Record`\<`string`, `unknown`\>
 
-Defined in: [core/types.ts:709](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L709)
+Defined in: [core/types.ts:709](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L709)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [core/types.ts:709](https://github.com/WalletMesh/walletmesh-package
 
 > `optional` **description**: `string`
 
-Defined in: [core/types.ts:708](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L708)
+Defined in: [core/types.ts:708](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L708)
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: [core/types.ts:708](https://github.com/WalletMesh/walletmesh-package
 
 > **id**: `string`
 
-Defined in: [core/types.ts:706](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L706)
+Defined in: [core/types.ts:706](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L706)
 
 ***
 
@@ -80,4 +80,4 @@ Defined in: [core/types.ts:706](https://github.com/WalletMesh/walletmesh-package
 
 > **name**: `string`
 
-Defined in: [core/types.ts:707](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L707)
+Defined in: [core/types.ts:707](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L707)

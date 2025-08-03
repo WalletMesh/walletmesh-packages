@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CapabilityPreferences
 
-Defined in: [core/types.ts:157](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L157)
+Defined in: [core/types.ts:157](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L157)
 
 Optional capability preferences for enhanced responder matching.
 
@@ -50,7 +50,7 @@ const preferences: CapabilityPreferences = {
 
 > `optional` **chains**: `string`[]
 
-Defined in: [core/types.ts:162](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L162)
+Defined in: [core/types.ts:162](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L162)
 
 Additional blockchain networks that would be beneficial.
 These chains are not required but having them increases wallet ranking.
@@ -61,7 +61,7 @@ These chains are not required but having them increases wallet ranking.
 
 > `optional` **features**: `string`[]
 
-Defined in: [core/types.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L168)
+Defined in: [core/types.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L168)
 
 Additional wallet features that would enhance the user experience.
 These are "nice to have" capabilities beyond the required features.

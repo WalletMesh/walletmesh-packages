@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: QualifiedResponder
 
-Defined in: [core/types.ts:1161](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1161)
+Defined in: [core/types.ts:1161](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1161)
 
 Qualified responder information for user selection.
 
@@ -57,7 +57,7 @@ const qualified: QualifiedResponder = {
 
 > **icon**: `string`
 
-Defined in: [core/types.ts:1165](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1165)
+Defined in: [core/types.ts:1165](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1165)
 
 ***
 
@@ -65,7 +65,7 @@ Defined in: [core/types.ts:1165](https://github.com/WalletMesh/walletmesh-packag
 
 > **matched**: [`CapabilityIntersection`](CapabilityIntersection.md)
 
-Defined in: [core/types.ts:1166](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1166)
+Defined in: [core/types.ts:1166](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1166)
 
 ***
 
@@ -73,7 +73,7 @@ Defined in: [core/types.ts:1166](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **metadata**: `Record`\<`string`, `unknown`\>
 
-Defined in: [core/types.ts:1168](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1168)
+Defined in: [core/types.ts:1168](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1168)
 
 ***
 
@@ -81,7 +81,7 @@ Defined in: [core/types.ts:1168](https://github.com/WalletMesh/walletmesh-packag
 
 > **name**: `string`
 
-Defined in: [core/types.ts:1164](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1164)
+Defined in: [core/types.ts:1164](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1164)
 
 ***
 
@@ -89,7 +89,7 @@ Defined in: [core/types.ts:1164](https://github.com/WalletMesh/walletmesh-packag
 
 > **rdns**: `string`
 
-Defined in: [core/types.ts:1163](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1163)
+Defined in: [core/types.ts:1163](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1163)
 
 ***
 
@@ -97,7 +97,7 @@ Defined in: [core/types.ts:1163](https://github.com/WalletMesh/walletmesh-packag
 
 > **responderId**: `string`
 
-Defined in: [core/types.ts:1162](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1162)
+Defined in: [core/types.ts:1162](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1162)
 
 ***
 
@@ -105,4 +105,4 @@ Defined in: [core/types.ts:1162](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **transportConfig**: [`TransportConfig`](TransportConfig.md)
 
-Defined in: [core/types.ts:1167](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1167)
+Defined in: [core/types.ts:1167](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1167)

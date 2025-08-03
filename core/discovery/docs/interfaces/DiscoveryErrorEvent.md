@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: DiscoveryErrorEvent
 
-Defined in: [core/types.ts:1820](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1820)
+Defined in: [core/types.ts:1820](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1820)
 
 Event emitted when a discovery session encounters an error.
 
@@ -39,7 +39,7 @@ eventTarget.addEventListener(DISCOVERY_EVENTS.ERROR, (event) => {
 
 > **errorCategory**: [`ErrorCategory`](../type-aliases/ErrorCategory.md)
 
-Defined in: [core/types.ts:1830](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1830)
+Defined in: [core/types.ts:1830](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1830)
 
 Error category for handling
 
@@ -49,7 +49,7 @@ Error category for handling
 
 > **errorCode**: `number`
 
-Defined in: [core/types.ts:1824](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1824)
+Defined in: [core/types.ts:1824](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1824)
 
 Error code for categorization
 
@@ -59,7 +59,7 @@ Error code for categorization
 
 > **errorMessage**: `string`
 
-Defined in: [core/types.ts:1827](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1827)
+Defined in: [core/types.ts:1827](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1827)
 
 Human-readable error message
 
@@ -69,7 +69,7 @@ Human-readable error message
 
 > **sessionId**: `string`
 
-Defined in: [core/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L32)
+Defined in: [core/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L32)
 
 #### Inherited from
 
@@ -81,7 +81,7 @@ Defined in: [core/types.ts:32](https://github.com/WalletMesh/walletmesh-packages
 
 > **type**: `"discovery:wallet:error"`
 
-Defined in: [core/types.ts:1821](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1821)
+Defined in: [core/types.ts:1821](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1821)
 
 #### Overrides
 
@@ -93,7 +93,7 @@ Defined in: [core/types.ts:1821](https://github.com/WalletMesh/walletmesh-packag
 
 > **version**: `"0.1.0"`
 
-Defined in: [core/types.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L31)
+Defined in: [core/types.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L31)
 
 #### Inherited from
 

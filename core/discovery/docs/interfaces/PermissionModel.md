@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: PermissionModel
 
-Defined in: [core/types.ts:989](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L989)
+Defined in: [core/types.ts:989](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L989)
 
 Permission model specification for wallet access control.
 
@@ -52,7 +52,7 @@ const defiPermissions: PermissionModel = {
 
 > `optional` **optional**: `string`[]
 
-Defined in: [core/types.ts:991](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L991)
+Defined in: [core/types.ts:991](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L991)
 
 ***
 
@@ -60,7 +60,7 @@ Defined in: [core/types.ts:991](https://github.com/WalletMesh/walletmesh-package
 
 > **required**: `string`[]
 
-Defined in: [core/types.ts:990](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L990)
+Defined in: [core/types.ts:990](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L990)
 
 ***
 
@@ -68,4 +68,4 @@ Defined in: [core/types.ts:990](https://github.com/WalletMesh/walletmesh-package
 
 > `optional` **scopes**: `Record`\<`string`, `string`[]\>
 
-Defined in: [core/types.ts:992](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L992)
+Defined in: [core/types.ts:992](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L992)

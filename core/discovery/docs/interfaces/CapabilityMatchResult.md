@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CapabilityMatchResult
 
-Defined in: [responder/CapabilityMatcher.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/CapabilityMatcher.ts#L47)
+Defined in: [responder/CapabilityMatcher.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L47)
 
 Result of capability matching between responder and initiator requirements.
 
@@ -58,7 +58,7 @@ const result: CapabilityMatchResult = {
 
 > **canFulfill**: `boolean`
 
-Defined in: [responder/CapabilityMatcher.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/CapabilityMatcher.ts#L48)
+Defined in: [responder/CapabilityMatcher.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L48)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [responder/CapabilityMatcher.ts:48](https://github.com/WalletMesh/wa
 
 > **intersection**: `null` \| [`CapabilityIntersection`](CapabilityIntersection.md)
 
-Defined in: [responder/CapabilityMatcher.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/CapabilityMatcher.ts#L49)
+Defined in: [responder/CapabilityMatcher.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L49)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [responder/CapabilityMatcher.ts:49](https://github.com/WalletMesh/wa
 
 > **missing**: `object`
 
-Defined in: [responder/CapabilityMatcher.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/CapabilityMatcher.ts#L50)
+Defined in: [responder/CapabilityMatcher.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L50)
 
 #### chains
 

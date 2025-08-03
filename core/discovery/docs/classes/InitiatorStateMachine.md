@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: InitiatorStateMachine
 
-Defined in: [initiator/InitiatorStateMachine.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L118)
+Defined in: [initiator/InitiatorStateMachine.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L118)
 
 Initiator-specific state machine that automatically sends discovery protocol
 messages on state transitions.
@@ -72,7 +72,7 @@ stateMachine.transition('COMPLETED', { reason: 'timeout' });
 
 > **new InitiatorStateMachine**(`config`): `InitiatorStateMachine`
 
-Defined in: [initiator/InitiatorStateMachine.ts:128](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L128)
+Defined in: [initiator/InitiatorStateMachine.ts:128](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L128)
 
 Creates a new InitiatorStateMachine instance.
 
@@ -98,7 +98,7 @@ Configuration for the state machine
 
 > **canTransition**(`toState`): `boolean`
 
-Defined in: [core/ProtocolStateMachine.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/ProtocolStateMachine.ts#L227)
+Defined in: [core/ProtocolStateMachine.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L227)
 
 Check if a transition to the target state is valid from the current state.
 
@@ -143,7 +143,7 @@ Valid transitions: IDLE→DISCOVERING, DISCOVERING→COMPLETED/ERROR
 
 > **checkMemoryLeaks**(): `object`
 
-Defined in: [utils/EventEmitter.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L163)
+Defined in: [utils/EventEmitter.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L163)
 
 Check for potential memory leaks by analyzing listener counts.
 Returns information about events that may have memory leaks.
@@ -170,7 +170,7 @@ Returns information about events that may have memory leaks.
 
 > **dispose**(): `void`
 
-Defined in: [core/ProtocolStateMachine.ts:415](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/ProtocolStateMachine.ts#L415)
+Defined in: [core/ProtocolStateMachine.ts:415](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L415)
 
 Dispose of the state machine and cleanup all resources.
 
@@ -207,7 +207,7 @@ async function cleanup() {
 
 > **emit**(`event`, ...`args`): `boolean`
 
-Defined in: [utils/EventEmitter.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L102)
+Defined in: [utils/EventEmitter.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L102)
 
 Emit an event with the specified arguments.
 
@@ -235,7 +235,7 @@ Emit an event with the specified arguments.
 
 > **eventNames**(): (`string` \| `symbol`)[]
 
-Defined in: [utils/EventEmitter.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L140)
+Defined in: [utils/EventEmitter.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L140)
 
 Get all event names.
 
@@ -253,7 +253,7 @@ Get all event names.
 
 > **getMaxListeners**(): `number`
 
-Defined in: [utils/EventEmitter.ts:155](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L155)
+Defined in: [utils/EventEmitter.ts:155](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L155)
 
 Get the maximum number of listeners.
 
@@ -271,7 +271,7 @@ Get the maximum number of listeners.
 
 > **getSessionId**(): `string`
 
-Defined in: [initiator/InitiatorStateMachine.ts:275](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L275)
+Defined in: [initiator/InitiatorStateMachine.ts:275](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L275)
 
 Get the current session ID.
 
@@ -287,7 +287,7 @@ The session ID for this discovery session
 
 > **getState**(): [`ProtocolState`](../type-aliases/ProtocolState.md)
 
-Defined in: [core/ProtocolStateMachine.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/ProtocolStateMachine.ts#L203)
+Defined in: [core/ProtocolStateMachine.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L203)
 
 Get the current state of the state machine.
 
@@ -314,7 +314,7 @@ console.log(`Current state: ${currentState}`);
 
 > **getStateMetadata**(): `undefined` \| `Record`\<`string`, `unknown`\>
 
-Defined in: [core/ProtocolStateMachine.ts:366](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/ProtocolStateMachine.ts#L366)
+Defined in: [core/ProtocolStateMachine.ts:366](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L366)
 
 Get metadata associated with the current state.
 
@@ -348,7 +348,7 @@ console.log('Connecting to:', metadata?.responderId);
 
 > **isInState**(`state`): `boolean`
 
-Defined in: [core/ProtocolStateMachine.ts:390](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/ProtocolStateMachine.ts#L390)
+Defined in: [core/ProtocolStateMachine.ts:390](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L390)
 
 Check if the state machine is currently in a specific state.
 
@@ -391,7 +391,7 @@ const isActive = stateMachine.isInState('DISCOVERING') ||
 
 > **listenerCount**(`event`): `number`
 
-Defined in: [utils/EventEmitter.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L126)
+Defined in: [utils/EventEmitter.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L126)
 
 Get the listener count for the specified event.
 
@@ -415,7 +415,7 @@ Get the listener count for the specified event.
 
 > **listeners**(`event`): (...`args`) => `void`[]
 
-Defined in: [utils/EventEmitter.ts:133](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L133)
+Defined in: [utils/EventEmitter.ts:133](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L133)
 
 Get all listeners for the specified event.
 
@@ -439,7 +439,7 @@ Get all listeners for the specified event.
 
 > **off**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L82)
+Defined in: [utils/EventEmitter.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L82)
 
 Alias for removeListener.
 
@@ -467,7 +467,7 @@ Alias for removeListener.
 
 > **on**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L17)
+Defined in: [utils/EventEmitter.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L17)
 
 Add a listener for the specified event.
 
@@ -495,7 +495,7 @@ Add a listener for the specified event.
 
 > **once**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L45)
+Defined in: [utils/EventEmitter.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L45)
 
 Add a one-time listener for the specified event.
 
@@ -523,7 +523,7 @@ Add a one-time listener for the specified event.
 
 > **prependListener**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:188](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L188)
+Defined in: [utils/EventEmitter.ts:188](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L188)
 
 Prepend a listener to the beginning of the listeners array.
 
@@ -551,7 +551,7 @@ Prepend a listener to the beginning of the listeners array.
 
 > **prependOnceListener**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L212)
+Defined in: [utils/EventEmitter.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L212)
 
 Prepend a one-time listener to the beginning of the listeners array.
 
@@ -579,7 +579,7 @@ Prepend a one-time listener to the beginning of the listeners array.
 
 > **removeAllListeners**(`event?`): `this`
 
-Defined in: [utils/EventEmitter.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L89)
+Defined in: [utils/EventEmitter.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L89)
 
 Remove all listeners for the specified event, or all events if no event is specified.
 
@@ -603,7 +603,7 @@ Remove all listeners for the specified event, or all events if no event is speci
 
 > **removeListener**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L57)
+Defined in: [utils/EventEmitter.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L57)
 
 Remove a listener from the specified event.
 
@@ -631,7 +631,7 @@ Remove a listener from the specified event.
 
 > **setMaxListeners**(`n`): `this`
 
-Defined in: [utils/EventEmitter.ts:147](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/utils/EventEmitter.ts#L147)
+Defined in: [utils/EventEmitter.ts:147](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L147)
 
 Set the maximum number of listeners.
 
@@ -655,7 +655,7 @@ Set the maximum number of listeners.
 
 > **transition**(`toState`, `metadata?`): `void`
 
-Defined in: [core/ProtocolStateMachine.ts:280](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/ProtocolStateMachine.ts#L280)
+Defined in: [core/ProtocolStateMachine.ts:280](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L280)
 
 Transition to a new state with optional metadata.
 
@@ -725,7 +725,7 @@ Emits 'stateChange' event when the transition completes successfully
 
 > **updateConfig**(`updates`): `void`
 
-Defined in: [initiator/InitiatorStateMachine.ts:285](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/initiator/InitiatorStateMachine.ts#L285)
+Defined in: [initiator/InitiatorStateMachine.ts:285](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/InitiatorStateMachine.ts#L285)
 
 Update the configuration for the state machine.
 Note: This does not affect messages already sent.

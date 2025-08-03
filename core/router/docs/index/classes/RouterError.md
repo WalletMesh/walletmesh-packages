@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.1**](../../README.md)
+[**@walletmesh/router v0.5.2**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: RouterError
 
-Defined in: [core/router/src/errors.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/errors.ts#L21)
+Defined in: [core/router/src/errors.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/errors.ts#L21)
 
 Custom error class for router errors
 
@@ -20,7 +20,7 @@ Custom error class for router errors
 
 > **new RouterError**(`err`, `data?`): `RouterError`
 
-Defined in: [core/router/src/errors.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/errors.ts#L29)
+Defined in: [core/router/src/errors.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/errors.ts#L29)
 
 Creates a new RouterError.
 
@@ -104,7 +104,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 > **name**: `string` = `'RouterError'`
 
-Defined in: [core/router/src/errors.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/errors.ts#L22)
+Defined in: [core/router/src/errors.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/errors.ts#L22)
 
 #### Overrides
 

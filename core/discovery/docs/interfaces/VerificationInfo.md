@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: VerificationInfo
 
-Defined in: [core/types.ts:947](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L947)
+Defined in: [core/types.ts:947](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L947)
 
 Wallet verification and trust information.
 
@@ -47,7 +47,7 @@ const domainVerification: VerificationInfo = {
 
 > `optional` **authority**: `string`
 
-Defined in: [core/types.ts:950](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L950)
+Defined in: [core/types.ts:950](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L950)
 
 ***
 
@@ -55,7 +55,7 @@ Defined in: [core/types.ts:950](https://github.com/WalletMesh/walletmesh-package
 
 > `optional` **certificate**: `string`
 
-Defined in: [core/types.ts:948](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L948)
+Defined in: [core/types.ts:948](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L948)
 
 ***
 
@@ -63,7 +63,7 @@ Defined in: [core/types.ts:948](https://github.com/WalletMesh/walletmesh-package
 
 > `optional` **signature**: `string`
 
-Defined in: [core/types.ts:949](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L949)
+Defined in: [core/types.ts:949](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L949)
 
 ***
 
@@ -71,4 +71,4 @@ Defined in: [core/types.ts:949](https://github.com/WalletMesh/walletmesh-package
 
 > `optional` **timestamp**: `number`
 
-Defined in: [core/types.ts:951](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L951)
+Defined in: [core/types.ts:951](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L951)

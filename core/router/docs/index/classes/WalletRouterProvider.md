@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.1**](../../README.md)
+[**@walletmesh/router v0.5.2**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: WalletRouterProvider
 
-Defined in: [core/router/src/provider.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L62)
+Defined in: [core/router/src/provider.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L62)
 
 Client-side provider for interacting with the multi-chain router.
 Provides a simplified interface for applications to connect to and interact with wallets.
@@ -112,7 +112,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:51
 
 > **get** **sessionId**(): `undefined` \| `string`
 
-Defined in: [core/router/src/provider.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L75)
+Defined in: [core/router/src/provider.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L75)
 
 Gets the current session ID if connected, undefined otherwise.
 The session ID is required for most operations and is set after
@@ -168,7 +168,7 @@ A function that, when called, will remove this middleware.
 
 > **bulkCall**\<`T`\>(`chainId`, `calls`, `timeout?`): `Promise`\<[`MethodResults`](../type-aliases/MethodResults.md)\<`T`\>\>
 
-Defined in: [core/router/src/provider.ts:288](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L288)
+Defined in: [core/router/src/provider.ts:288](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L288)
 
 Executes multiple method calls in sequence on the same chain.
 More efficient than multiple individual calls for related operations.
@@ -249,7 +249,7 @@ const [accounts, balance] = await provider.bulkCall('eip155:1', [
 
 > **call**\<`M`\>(`chainId`, `call`, `timeout?`): `Promise`\<[`RouterMethodMap`](../interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
 
-Defined in: [core/router/src/provider.ts:232](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L232)
+Defined in: [core/router/src/provider.ts:232](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L232)
 
 Invokes a method on the connected wallet.
 Routes the call to the appropriate wallet client based on chain ID.
@@ -393,7 +393,7 @@ If sending the request fails.
 
 > **chain**(`chainId`): [`OperationBuilder`](OperationBuilder.md)\<readonly \[\]\>
 
-Defined in: [core/router/src/provider.ts:371](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L371)
+Defined in: [core/router/src/provider.ts:371](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L371)
 
 Creates a new operation builder for chaining method calls.
 Enables fluent method call chaining with proper type inference.
@@ -448,7 +448,7 @@ The underlying transport is not closed by this method and should be managed sepa
 
 > **connect**(`permissions`, `timeout?`): `Promise`\<\{ `permissions`: [`HumanReadableChainPermissions`](../type-aliases/HumanReadableChainPermissions.md); `sessionId`: `string`; \}\>
 
-Defined in: [core/router/src/provider.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L106)
+Defined in: [core/router/src/provider.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L106)
 
 Connects to multiple chains with specified permissions.
 Establishes a session and requests method permissions for each chain.
@@ -511,7 +511,7 @@ const { sessionId, permissions } = await provider.connect({
 
 > **disconnect**(`timeout?`): `Promise`\<`void`\>
 
-Defined in: [core/router/src/provider.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L125)
+Defined in: [core/router/src/provider.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L125)
 
 Disconnects the current session if one exists.
 Cleans up session state and notifies the router to terminate the session.
@@ -585,7 +585,7 @@ The payload for the event.
 
 > **getPermissions**(`chainIds?`, `timeout?`): `Promise`\<[`HumanReadableChainPermissions`](../type-aliases/HumanReadableChainPermissions.md)\>
 
-Defined in: [core/router/src/provider.ts:146](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L146)
+Defined in: [core/router/src/provider.ts:146](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L146)
 
 Gets current session permissions.
 Returns a human-readable format suitable for displaying to users.
@@ -630,7 +630,7 @@ If the request times out
 
 > **getSupportedMethods**(`chainIds?`, `timeout?`): `Promise`\<`Record`\<`string`, `string`[]\>\>
 
-Defined in: [core/router/src/provider.ts:347](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L347)
+Defined in: [core/router/src/provider.ts:347](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L347)
 
 Gets supported methods for one or more chains.
 Used for capability discovery and feature detection.
@@ -840,7 +840,7 @@ The asynchronous function to handle requests for this method.
 
 > **registerMethodSerializer**\<`P`, `R`\>(`method`, `serializer`): `void`
 
-Defined in: [core/router/src/provider.ts:400](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L400)
+Defined in: [core/router/src/provider.ts:400](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L400)
 
 Registers a serializer for a specific wallet method.
 This allows the provider to properly serialize parameters and deserialize results
@@ -967,7 +967,7 @@ The asynchronous function to handle fallback requests.
 
 > **updatePermissions**(`permissions`, `timeout?`): `Promise`\<[`HumanReadableChainPermissions`](../type-aliases/HumanReadableChainPermissions.md)\>
 
-Defined in: [core/router/src/provider.ts:180](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/provider.ts#L180)
+Defined in: [core/router/src/provider.ts:180](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/provider.ts#L180)
 
 Updates session permissions.
 Requests additional permissions or modifies existing ones.

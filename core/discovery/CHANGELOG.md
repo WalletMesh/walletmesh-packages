@@ -1,5 +1,12 @@
 # @walletmesh/discovery
 
+## 0.1.1
+
+### Patch Changes
+
+- 4c28325: Implement enhanced discovery protocol with modular architecture. This is a complete rewrite
+- 6ca137d: migrate documentation to markdown format and add protocol specification
+
 ## 0.1.0
 
 ### Minor Changes
