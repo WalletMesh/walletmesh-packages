@@ -98,10 +98,8 @@ export function createDiscoveryInitiator(config: {
  * Streamlined factory function that creates a discovery listener with sensible defaults
  * for common use cases. Connection handling is left to modal-core and modal-react packages.
  *
- * @param requirements - Capability requirements for discovery
- * @param initiatorInfo - Information about the requesting application
- * @param options - Optional configuration overrides
- * @returns Configured DiscoveryInitiator instance
+ * @param config - Configuration object with chains and optional settings
+ * @returns Object containing listener, config, requirements, and security policy
  *
  * @example Simple setup:
  * ```typescript

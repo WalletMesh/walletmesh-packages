@@ -1,36 +1,13 @@
 {
   "$schema": "https://typedoc-plugin-markdown.org/schema.json",
-  "plugin": [],
+  "plugin": [
+    "typedoc-plugin-markdown"
+  ],
   "entryPoints": [
-    "src/index.ts",
-    "src/client.ts",
-    "src/server.ts",
-    "src/types.ts",
-    "src/guards.ts",
-    "src/constants.ts"
+    "src/index.ts"
   ],
   "out": "docs",
   "exclude": ["**/*.test.ts"],
   "includeVersion": true,
-  "excludePrivate": true,
-  "excludeInternal": true,
-  "readme": "./README.md",
-  "name": "@walletmesh/discovery",
-  "hideGenerator": true,
-  "searchInComments": true,
-  "theme": "default",
-  "cleanOutputDir": true,
-  "githubPages": true,
-  "validation": {
-    "invalidLink": true,
-    "notExported": true
-  },
-  "logLevel": "Verbose",
-  "treatWarningsAsErrors": false,
-  "visibilityFilters": {
-    "protected": false,
-    "private": false,
-    "inherited": true,
-    "external": true
-  }
+  "excludePrivate": true
 }

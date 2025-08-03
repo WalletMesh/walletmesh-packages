@@ -63,7 +63,7 @@ import { createInitiatorStateMachine, type InitiatorStateMachine } from './Initi
  * @category Discovery
  * @since 0.1.0
  * @see {@link DiscoveryResponder} for wallet-side implementation
- * @see {@link ConnectionManager} for post-discovery connection
+ * @see Connection handling is done by higher-level libraries (modal-core, modal-react)
  */
 export class DiscoveryInitiator {
   private config: DiscoveryInitiatorConfig;
