@@ -50,6 +50,7 @@ export enum AllowAskDenyState {
  * has an associated AllowAskDenyState.
  *
  * @template T - Router method map type for type-safe method names
+ * @public
  *
  * @example
  * ```typescript
@@ -61,7 +62,10 @@ export enum AllowAskDenyState {
  * ]);
  * ```
  */
-type AllowAskDenyChainPermissions<T extends RouterMethodMap> = Map<ChainId, Map<keyof T, AllowAskDenyState>>;
+export type AllowAskDenyChainPermissions<T extends RouterMethodMap> = Map<
+  ChainId,
+  Map<keyof T, AllowAskDenyState>
+>;
 
 /**
  * Implementation of the PermissionManager interface using a three-state model.

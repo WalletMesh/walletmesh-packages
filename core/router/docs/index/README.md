@@ -21,11 +21,13 @@
 
 - [BulkCallParams](interfaces/BulkCallParams.md)
 - [CallParams](interfaces/CallParams.md)
+- [LocalTransportOptions](interfaces/LocalTransportOptions.md)
 - [MethodCall](interfaces/MethodCall.md)
 - [PermissionManager](interfaces/PermissionManager.md)
 - [RouterContext](interfaces/RouterContext.md)
 - [RouterEventMap](interfaces/RouterEventMap.md)
 - [RouterMethodMap](interfaces/RouterMethodMap.md)
+- [SerializedMethodCall](interfaces/SerializedMethodCall.md)
 - [SessionData](interfaces/SessionData.md)
 - [SessionStore](interfaces/SessionStore.md)
 - [SessionStoreConfig](interfaces/SessionStoreConfig.md)
@@ -39,6 +41,7 @@
 
 - [ChainId](type-aliases/ChainId.md)
 - [ChainPermissions](type-aliases/ChainPermissions.md)
+- [ExecuteResult](type-aliases/ExecuteResult.md)
 - [HumanReadableChainPermissions](type-aliases/HumanReadableChainPermissions.md)
 - [MethodParams](type-aliases/MethodParams.md)
 - [MethodResult](type-aliases/MethodResult.md)

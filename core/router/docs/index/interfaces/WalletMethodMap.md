@@ -6,7 +6,7 @@
 
 # Interface: WalletMethodMap
 
-Defined in: [core/router/src/types.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/types.ts#L26)
+Defined in: [core/router/src/types.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/types.ts#L26)
 
 Method map for wallet JSON-RPC communication.
 Extends the base JSONRPCMethodMap to include wallet-specific methods and
@@ -39,7 +39,7 @@ type EthereumMethods = {
 
 > **wm\_getSupportedMethods**: `object`
 
-Defined in: [core/router/src/types.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/types.ts#L27)
+Defined in: [core/router/src/types.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/types.ts#L27)
 
 #### result
 

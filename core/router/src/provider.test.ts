@@ -438,4 +438,123 @@ describe('WalletRouterProvider', () => {
       );
     });
   });
+
+  describe('registerMethodSerializer', () => {
+    it('should register a serializer for a method', () => {
+      const serializer = {
+        params: {
+          serialize: vi.fn(),
+          deserialize: vi.fn(),
+        },
+        result: {
+          serialize: vi.fn(),
+          deserialize: vi.fn(),
+        },
+      };
+
+      // Should not throw
+      expect(() => provider.registerMethodSerializer('test_method', serializer)).not.toThrow();
+    });
+
+    it('should register a serializer through the overloaded method signature', () => {
+      const serializers = {
+        aztec_sendTransaction: {
+          params: {
+            serialize: vi.fn().mockResolvedValue('serialized'),
+            deserialize: vi.fn(),
+          },
+        },
+        aztec_call: {
+          params: {
+            serialize: vi.fn().mockResolvedValue('serialized'),
+            deserialize: vi.fn(),
+          },
+        },
+      };
+
+      // Should not throw
+      expect(() => {
+        provider.registerMethodSerializer('aztec_sendTransaction', serializers.aztec_sendTransaction);
+        provider.registerMethodSerializer('aztec_call', serializers.aztec_call);
+      }).not.toThrow();
+    });
+
+    it('should use registered serializer during method calls', async () => {
+      // Create a custom provider to test serialization directly
+      const sessionId = 'test-session';
+      mockCallMethod.mockResolvedValueOnce({ sessionId });
+
+      await provider.connect({ 'test-chain': ['test_method'] });
+
+      // Register a serializer
+      const serializedParams = { custom: 'serialized-data' };
+      const serializer = {
+        params: {
+          serialize: vi.fn().mockResolvedValue(serializedParams),
+          deserialize: vi.fn(),
+        },
+      };
+
+      provider.registerMethodSerializer('test_method', serializer);
+
+      // Mock the callMethod to return a result
+      mockCallMethod.mockResolvedValueOnce('test-result');
+
+      // Make a call
+      const originalParams = { data: 'original' };
+      await provider.call('test-chain', {
+        method: 'test_method',
+        params: originalParams,
+      });
+
+      // Verify serializer was called
+      expect(serializer.params?.serialize).toHaveBeenCalledWith('test_method', originalParams);
+
+      // Verify the serialized params were sent to callMethod
+      expect(mockCallMethod).toHaveBeenCalledWith(
+        'wm_call',
+        {
+          sessionId: 'test-session',
+          chainId: 'test-chain',
+          call: {
+            method: 'test_method',
+            params: serializedParams, // Serialized params should be used
+          },
+        },
+        undefined,
+      );
+    });
+
+    it('should handle serialization errors', async () => {
+      const sessionId = 'test-session';
+      mockCallMethod.mockResolvedValueOnce({ sessionId });
+
+      await provider.connect({ 'test-chain': ['test_method'] });
+
+      // Register a serializer that throws
+      const serializationError = new Error('Serialization failed');
+      const serializer = {
+        params: {
+          serialize: vi.fn().mockRejectedValue(serializationError),
+          deserialize: vi.fn(),
+        },
+      };
+
+      provider.registerMethodSerializer('test_method', serializer);
+
+      // Clear previous calls
+      mockCallMethod.mockClear();
+
+      // Make a call - should throw the serialization error
+      await expect(
+        provider.call('test-chain', {
+          method: 'test_method',
+          params: { data: 'test' },
+        }),
+      ).rejects.toThrow(serializationError);
+
+      // Verify callMethod was never called due to serialization error
+      expect(mockCallMethod).not.toHaveBeenCalled();
+    });
+  });
 });

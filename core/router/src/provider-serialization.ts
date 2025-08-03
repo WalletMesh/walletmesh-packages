@@ -3,8 +3,9 @@ import type { MethodCall } from './types.js';
 
 /**
  * A method call with potentially serialized parameters
+ * @public
  */
-interface SerializedMethodCall {
+export interface SerializedMethodCall {
   method: string;
   params?: unknown;
 }

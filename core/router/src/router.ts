@@ -37,7 +37,7 @@ export interface WalletRouterConfig {
    * Optional base configuration for JSONRPCProxy instances created by the router.
    * This configuration is applied to each wallet proxy, with `chainId` being
    * automatically set per proxy.
-   * @see {@link JSONRPCProxyConfig}
+   * @see JSONRPCProxyConfig from @walletmesh/jsonrpc
    */
   proxyConfig?: Omit<JSONRPCProxyConfig, 'chainId'>;
   /**

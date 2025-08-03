@@ -627,3 +627,118 @@ const manager = new AllowAskDenyManager(approveCallback, askCallback, initialSta
    - Method calls: Session validated → Permissions checked → Method routed
    - Updates: Client requests changes → Manager approves → Session updated
    - Events: Permission changes trigger `wm_permissionsChanged` event
+
+### Local Transport
+
+The router package provides a `LocalTransport` implementation for creating in-process wallet connections without network overhead. This is particularly useful for:
+- Testing wallet implementations
+- Embedding wallets directly in applications
+- Creating mock wallets for development
+- Implementing custom wallet adapters
+
+```typescript
+import { LocalTransport, createLocalTransportPair, createLocalTransport } from '@walletmesh/router';
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
+
+// Method 1: Create a pair of connected transports
+const [clientTransport, walletTransport] = createLocalTransportPair();
+
+// Set up the wallet side
+const walletNode = new JSONRPCNode(walletTransport);
+walletNode.registerMethod('eth_accounts', async () => {
+  return ['0x123...', '0x456...'];
+});
+
+// Use client transport with the router
+router.addWallet('eip155:1', clientTransport);
+
+// Method 2: Connect directly to an existing node
+const existingWalletNode = new JSONRPCNode(someTransport);
+const transport = createLocalTransport(existingWalletNode);
+router.addWallet('eip155:1', transport);
+```
+
+#### Error Handling Configuration
+
+LocalTransport supports configurable error handling through the `LocalTransportOptions` interface:
+
+```typescript
+interface LocalTransportOptions {
+  /**
+   * Whether to throw errors instead of logging warnings.
+   * When true, errors in message handling will be thrown.
+   * When false (default), errors will be logged as warnings.
+   * @defaultValue false
+   */
+  throwOnError?: boolean;
+}
+
+// Default behavior - errors are logged as warnings
+const transport = new LocalTransport();
+
+// Throw errors for stricter error handling (useful in tests)
+const strictTransport = new LocalTransport({ throwOnError: true });
+
+// Create transport pairs with error handling options
+const [client, wallet] = createLocalTransportPair({ throwOnError: true });
+```
+
+#### Example: Embedded Wallet Implementation
+
+```typescript
+import { createLocalTransportPair, WalletRouter, type JSONRPCWallet } from '@walletmesh/router';
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
+
+// Create an embedded wallet implementation
+class EmbeddedWallet {
+  private node: JSONRPCWallet;
+  
+  constructor(transport: LocalTransport) {
+    this.node = new JSONRPCNode(transport);
+    this.setupMethods();
+  }
+  
+  private setupMethods() {
+    this.node.registerMethod('eth_accounts', async () => {
+      // Return accounts from secure storage
+      return this.getAccounts();
+    });
+    
+    this.node.registerMethod('eth_sendTransaction', async (context, params) => {
+      // Sign and send transaction
+      return this.signAndSendTransaction(params[0]);
+    });
+  }
+}
+
+// Set up the wallet connection
+const [clientTransport, walletTransport] = createLocalTransportPair();
+const embeddedWallet = new EmbeddedWallet(walletTransport);
+
+// Add to router
+router.addWallet('eip155:1', clientTransport);
+```
+
+#### Testing with LocalTransport
+
+LocalTransport is ideal for testing because it:
+- Provides synchronous-like behavior with minimal async overhead
+- Supports error injection for testing error paths
+- Maintains message ordering guarantees
+- Has no network dependencies
+
+```typescript
+// In tests, use throwOnError for immediate error feedback
+const [client, wallet] = createLocalTransportPair({ throwOnError: true });
+
+// Set up a mock wallet
+const mockWallet = new JSONRPCNode(wallet);
+mockWallet.registerMethod('eth_accounts', async () => {
+  throw new Error('Wallet locked');
+});
+
+// Test error handling
+await expect(provider.call('eip155:1', {
+  method: 'eth_accounts'
+})).rejects.toThrow('Wallet locked');
+```

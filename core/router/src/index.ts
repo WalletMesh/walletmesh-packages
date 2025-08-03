@@ -21,5 +21,5 @@ export * from './provider.js';
 export * from './router.js';
 export * from './session-store.js';
 export * from './types.js';
-export { OperationBuilder } from './operation.js';
-export { ProviderSerializerRegistry } from './provider-serialization.js';
+export { OperationBuilder, type ExecuteResult } from './operation.js';
+export { ProviderSerializerRegistry, type SerializedMethodCall } from './provider-serialization.js';

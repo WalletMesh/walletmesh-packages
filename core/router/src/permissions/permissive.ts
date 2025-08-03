@@ -79,8 +79,6 @@ export class PermissivePermissionsManager<
    * This method is part of the PermissionManager interface but always returns
    * the same wildcard configuration regardless of input parameters.
    *
-   * @param _context - Router context (unused in permissive implementation)
-   * @param _chainIds - Optional chain IDs to filter by (unused in permissive implementation)
    * @returns Promise resolving to the permissive permissions configuration
    * @see {@link HumanReadableChainPermissions} for return type structure
    */
@@ -107,8 +105,6 @@ export class PermissivePermissionsManager<
    * This method implements the PermissionManager interface's permission approval
    * but automatically approves all requests without user interaction.
    *
-   * @param _context - Router context (unused in permissive implementation)
-   * @param _permissionRequest - Requested permissions (unused in permissive implementation)
    * @returns Promise resolving to the permissive permissions configuration
    * @see {@link HumanReadableChainPermissions} for return type structure
    * @see {@link ChainPermissions} for permission request structure

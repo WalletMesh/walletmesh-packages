@@ -6,7 +6,7 @@
 
 # Class: PermissivePermissionsManager\<T, C\>
 
-Defined in: [core/router/src/permissions/permissive.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/permissions/permissive.ts#L50)
+Defined in: [core/router/src/permissions/permissive.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/permissions/permissive.ts#L50)
 
 A permissive implementation of the PermissionManager interface that allows all operations.
 This implementation is designed for:
@@ -82,7 +82,7 @@ Router context type for session and origin information
 
 > **approvePermissions**(`_context`, `_PermissionRequest`): `Promise`\<[`HumanReadableChainPermissions`](../../index/type-aliases/HumanReadableChainPermissions.md)\>
 
-Defined in: [core/router/src/permissions/permissive.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/permissions/permissive.ts#L116)
+Defined in: [core/router/src/permissions/permissive.ts:112](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/permissions/permissive.ts#L112)
 
 Handle permission approval requests. Always returns the permissive configuration.
 This method implements the PermissionManager interface's permission approval
@@ -93,8 +93,6 @@ but automatically approves all requests without user interaction.
 ##### \_context
 
 `C`
-
-Router context (unused in permissive implementation)
 
 ##### \_PermissionRequest
 
@@ -121,7 +119,7 @@ Promise resolving to the permissive permissions configuration
 
 > **checkPermissions**(`_context`, `_request`): `Promise`\<`boolean`\>
 
-Defined in: [core/router/src/permissions/permissive.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/permissions/permissive.ts#L101)
+Defined in: [core/router/src/permissions/permissive.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/permissions/permissive.ts#L99)
 
 Check if a method call is permitted. Always returns true.
 This method implements the PermissionManager interface's permission
@@ -161,7 +159,7 @@ Promise resolving to true for all requests
 
 > **getPermissions**(): `Promise`\<[`HumanReadableChainPermissions`](../../index/type-aliases/HumanReadableChainPermissions.md)\>
 
-Defined in: [core/router/src/permissions/permissive.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/29a725fa4894aa0a113a79e94e05ab0d38faf617/core/router/src/permissions/permissive.ts#L87)
+Defined in: [core/router/src/permissions/permissive.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/b4e8275ca7fd630da8805eefb9f46ce3ea47f1dc/core/router/src/permissions/permissive.ts#L85)
 
 Get current permissions, which are always the permissive wildcard configuration.
 This method is part of the PermissionManager interface but always returns

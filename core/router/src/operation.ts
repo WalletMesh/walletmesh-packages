@@ -18,12 +18,12 @@ import { RouterError } from './errors.js';
 type Concat<T extends readonly unknown[], U extends readonly unknown[]> = readonly [...T, ...U];
 
 /**
- * @internal
- * Helper type for operation execution result
- * Returns a single result for one call, or a tuple of results for multiple calls
+ * Helper type for operation execution result.
+ * Returns a single result for one call, or a tuple of results for multiple calls.
  * @typeParam T - Tuple of MethodCall types
+ * @public
  */
-type ExecuteResult<T extends readonly MethodCall[]> = T extends readonly []
+export type ExecuteResult<T extends readonly MethodCall[]> = T extends readonly []
   ? never
   : T extends readonly [MethodCall<infer M>]
     ? MethodResult<M>

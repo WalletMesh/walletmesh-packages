@@ -17,4 +17,5 @@
 
 ## Type Aliases
 
+- [AllowAskDenyChainPermissions](type-aliases/AllowAskDenyChainPermissions.md)
 - [AskCallback](type-aliases/AskCallback.md)

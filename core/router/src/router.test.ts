@@ -645,5 +645,94 @@ describe('WalletRouter', () => {
       // Verify walletProxies is cleared
       expect(router['walletProxies'].size).toBe(0);
     });
+
+    it('should handle proxy close errors gracefully', async () => {
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Create a mock proxy that throws on close
+      const mockProxy = {
+        close: vi.fn().mockImplementation(() => {
+          throw new Error('Close failed');
+        }),
+        forward: vi.fn(),
+      };
+
+      // Add the mock proxy to walletProxies
+      router['walletProxies'].set(
+        'test-chain',
+        mockProxy as unknown as InstanceType<typeof import('@walletmesh/jsonrpc').JSONRPCProxy>,
+      );
+
+      // Close should not throw despite proxy error
+      await expect(router.close()).resolves.not.toThrow();
+
+      // Verify warning was logged
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'Failed to close proxy for chain test-chain:',
+        expect.any(Error),
+      );
+
+      consoleWarnSpy.mockRestore();
+    });
+  });
+
+  describe('_call error handling', () => {
+    it('should throw RouterError when response is invalid', async () => {
+      const mockProxy = {
+        forward: vi.fn().mockResolvedValue(null),
+        close: vi.fn(),
+      };
+
+      router['walletProxies'].set(
+        'eip155:1',
+        mockProxy as unknown as InstanceType<typeof import('@walletmesh/jsonrpc').JSONRPCProxy>,
+      );
+
+      await expect(
+        router['_call'](
+          mockProxy as unknown as InstanceType<typeof import('@walletmesh/jsonrpc').JSONRPCProxy>,
+          { method: 'test', params: [] },
+        ),
+      ).rejects.toThrow(new RouterError('walletNotAvailable', 'Invalid response from wallet'));
+    });
+
+    it('should handle JSONRPCError by converting to RouterError', async () => {
+      const { JSONRPCError } = await import('@walletmesh/jsonrpc');
+      const mockProxy = {
+        forward: vi.fn().mockRejectedValue(new JSONRPCError(-32000, 'Test error', { details: 'test' })),
+        close: vi.fn(),
+      };
+
+      router['walletProxies'].set(
+        'eip155:1',
+        mockProxy as unknown as InstanceType<typeof import('@walletmesh/jsonrpc').JSONRPCProxy>,
+      );
+
+      await expect(
+        router['_call'](
+          mockProxy as unknown as InstanceType<typeof import('@walletmesh/jsonrpc').JSONRPCProxy>,
+          { method: 'test', params: [] },
+        ),
+      ).rejects.toThrow(new RouterError('walletError', { message: 'Test error', data: { details: 'test' } }));
+    });
+
+    it('should handle non-Error objects in catch', async () => {
+      const mockProxy = {
+        forward: vi.fn().mockRejectedValue('string error'),
+        close: vi.fn(),
+      };
+
+      router['walletProxies'].set(
+        'eip155:1',
+        mockProxy as unknown as InstanceType<typeof import('@walletmesh/jsonrpc').JSONRPCProxy>,
+      );
+
+      await expect(
+        router['_call'](
+          mockProxy as unknown as InstanceType<typeof import('@walletmesh/jsonrpc').JSONRPCProxy>,
+          { method: 'test', params: [] },
+        ),
+      ).rejects.toThrow(new RouterError('walletNotAvailable', 'string error'));
+    });
   });
 });

@@ -176,9 +176,14 @@ The router manages connections to multiple blockchain wallets using a uniform in
 9. **Local Transport** (`src/localTransport.ts`)
    - Utility for creating in-process transport connections
    - **LocalTransport**: Direct connection between nodes without network overhead
-   - **createLocalTransportPair()**: Creates bidirectionally connected transports
-   - **createLocalTransport()**: Connects to an existing JSONRPCNode
+   - **LocalTransportOptions**: Configuration interface with error handling options
+     - `throwOnError?: boolean` - Whether to throw errors (true) or log warnings (false, default)
+   - **createLocalTransportPair(options?)**: Creates bidirectionally connected transports
+   - **createLocalTransport(node, options?)**: Connects to an existing JSONRPCNode
    - Useful for testing and embedded wallet implementations
+   - Error handling modes:
+     - Default mode: Errors are logged as warnings, transport continues operating
+     - Strict mode (`throwOnError: true`): Errors are thrown, useful for testing
 
 ## Main Workflows
 
@@ -398,6 +403,9 @@ import { createLocalTransportPair } from '@walletmesh/router';
 
 // Option 1: Create a local transport pair for in-process wallet
 const [clientTransport, walletTransport] = createLocalTransportPair();
+
+// Option 1a: Create with strict error handling (useful for tests)
+const [strictClient, strictWallet] = createLocalTransportPair({ throwOnError: true });
 
 // Create a wallet node with your implementation
 const walletNode = new JSONRPCNode<WalletMethodMap>(walletTransport);
