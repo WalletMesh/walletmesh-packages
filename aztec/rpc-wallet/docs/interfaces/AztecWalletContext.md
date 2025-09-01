@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.4.1**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.0**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: AztecWalletContext
 
-Defined in: [aztec/rpc-wallet/src/types.ts:72](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L72)
+Defined in: [aztec/rpc-wallet/src/types.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L70)
 
 Defines the context object provided to all Aztec wallet-side JSON-RPC method handlers.
 This context aggregates essential dependencies required by handlers to perform their operations.
@@ -21,7 +21,7 @@ This context aggregates essential dependencies required by handlers to perform t
 
 > **cache**: [`ContractArtifactCache`](../classes/ContractArtifactCache.md)
 
-Defined in: [aztec/rpc-wallet/src/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L88)
+Defined in: [aztec/rpc-wallet/src/types.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L86)
 
 An instance of [ContractArtifactCache](../classes/ContractArtifactCache.md) used for caching contract artifacts.
 This helps optimize performance by avoiding redundant fetches of artifact data.
@@ -32,7 +32,7 @@ This helps optimize performance by avoiding redundant fetches of artifact data.
 
 > **pxe**: `PXE`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:83](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L83)
+Defined in: [aztec/rpc-wallet/src/types.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L81)
 
 The `aztec.js` PXE (Private Execution Environment) client instance.
 This is used for interacting with the Aztec network, such as simulating transactions,
@@ -44,7 +44,7 @@ getting node information, fetching blocks, and managing private state.
 
 > **wallet**: `AccountWallet`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L77)
+Defined in: [aztec/rpc-wallet/src/types.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L75)
 
 The `aztec.js` AccountWallet instance. This wallet holds the user's account keys
 and provides methods for signing, creating transactions, and interacting with the PXE.
