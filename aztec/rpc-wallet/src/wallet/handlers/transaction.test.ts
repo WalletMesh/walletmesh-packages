@@ -1,19 +1,27 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createTransactionHandlers } from './transaction.js';
-import type { AccountWallet, PXE, AztecAddress, TxHash, AuthWitness } from '@aztec/aztec.js';
-import type { TxExecutionRequest, Tx, TxReceipt } from '@aztec/aztec.js';
-// import type { FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfaces'; // Unused
-// import type { ExecutionPayload } from '@aztec/entrypoints/payload'; // Unused
-import type { AztecHandlerContext } from './index.js';
-import type { ContractArtifactCache } from '../../contractArtifactCache.js';
+import type {
+  AccountWallet,
+  AuthWitness,
+  AztecAddress,
+  PXE,
+  Tx,
+  TxExecutionRequest,
+  TxHash,
+  TxReceipt,
+} from '@aztec/aztec.js';
 import { Fr } from '@aztec/aztec.js';
 import type {
   PrivateExecutionResult,
+  TxProfileResult,
   TxProvingResult,
   TxSimulationResult,
-  TxProfileResult,
   UtilitySimulationResult,
 } from '@aztec/stdlib/tx';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ContractArtifactCache } from '../../contractArtifactCache.js';
+// import type { FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfaces'; // Unused
+// import type { ExecutionPayload } from '@aztec/entrypoints/payload'; // Unused
+import type { AztecHandlerContext } from './index.js';
+import { createTransactionHandlers } from './transaction.js';
 
 // Mock dependencies
 const createMockWallet = () =>
@@ -175,9 +183,10 @@ describe('Transaction Handlers', () => {
         txRequest: { exec: { calls: [] } },
       } as unknown as TxExecutionRequest;
       const simulatePublic = true;
-      const msgSender = '0x1234567890abcdef' as unknown as AztecAddress;
       const skipTxValidation = true;
       const skipFeeEnforcement = true;
+      const msgSender = '0x1234567890abcdef' as unknown as AztecAddress;
+      const overrides = { msgSender };
 
       const expectedSimulation = {
         txRequest,
@@ -190,17 +199,17 @@ describe('Transaction Handlers', () => {
       const result = await handlers.aztec_simulateTx(context, [
         txRequest,
         simulatePublic,
-        msgSender,
         skipTxValidation,
         skipFeeEnforcement,
+        overrides,
       ]);
 
       expect(mockWallet.simulateTx).toHaveBeenCalledWith(
         txRequest,
         simulatePublic,
-        msgSender,
         skipTxValidation,
         skipFeeEnforcement,
+        overrides,
       );
       expect(result).toBe(expectedSimulation);
     });
@@ -226,7 +235,7 @@ describe('Transaction Handlers', () => {
         undefined,
       ]);
 
-      expect(mockWallet.simulateTx).toHaveBeenCalledWith(txRequest, false, undefined, undefined, false);
+      expect(mockWallet.simulateTx).toHaveBeenCalledWith(txRequest, false, undefined, false, undefined);
       expect(result).toBe(expectedSimulation);
     });
 

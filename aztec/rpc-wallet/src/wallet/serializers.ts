@@ -19,33 +19,23 @@
  *   to reconstruct complex Aztec objects from their JSON representations.
  */
 
-import type { AztecWalletMethodMap } from '../types.js';
-
-import type {
-  JSONRPCNode,
-  JSONRPCSerializer,
-  JSONRPCSerializedData,
-  JSONRPCParams,
-} from '@walletmesh/jsonrpc';
-import { JSONRPCError } from '@walletmesh/jsonrpc';
-
+import type { NodeInfo } from '@aztec/aztec.js';
 import {
+  AuthWitness,
   AztecAddress,
   CompleteAddress,
-  TxExecutionRequest,
   Fr,
   Tx,
+  TxExecutionRequest,
   TxHash,
-  AuthWitness,
 } from '@aztec/aztec.js';
-import type { NodeInfo } from '@aztec/aztec.js';
-
 import type { IntentAction, IntentInnerHash } from '@aztec/aztec.js/utils';
+import { jsonStringify } from '@aztec/foundation/json-rpc';
+import { createLogger } from '@aztec/foundation/log';
+import type { ZodFor } from '@aztec/foundation/schemas';
 
 import { AbiTypeSchema, ContractArtifactSchema, FunctionSelector, FunctionType } from '@aztec/stdlib/abi';
-import { schemas } from '@aztec/stdlib/schemas';
-
-import type { PXEInfo, ContractMetadata, ContractClassMetadata } from '@aztec/stdlib/interfaces/client';
+import { L2Block } from '@aztec/stdlib/block';
 import {
   ContractClassWithIdSchema,
   ContractInstanceWithAddressSchema,
@@ -53,7 +43,8 @@ import {
   ProtocolContractAddressesSchema,
 } from '@aztec/stdlib/contract';
 import { GasFees } from '@aztec/stdlib/gas';
-import { L2Block } from '@aztec/stdlib/block';
+import type { ContractClassMetadata, ContractMetadata, PXEInfo } from '@aztec/stdlib/interfaces/client';
+import { schemas } from '@aztec/stdlib/schemas';
 import {
   Capsule,
   HashedValues,
@@ -64,12 +55,15 @@ import {
   TxSimulationResult,
   UtilitySimulationResult,
 } from '@aztec/stdlib/tx';
-
-import { jsonStringify, jsonParseWithSchema } from '@aztec/foundation/json-rpc';
-import { createLogger } from '@aztec/foundation/log';
-import type { ZodFor } from '@aztec/foundation/schemas';
-
-import { z, type ZodTypeAny } from 'zod';
+import type {
+  JSONRPCNode,
+  JSONRPCParams,
+  JSONRPCSerializedData,
+  JSONRPCSerializer,
+} from '@walletmesh/jsonrpc';
+import { JSONRPCError } from '@walletmesh/jsonrpc';
+import { type ZodTypeAny, z } from 'zod';
+import type { AztecWalletMethodMap } from '../types.js';
 
 // These aren't exported by @aztec/stdlib/interfaces/client, we've copied them here
 const ContractMetadataSchema = z.object({
@@ -128,13 +122,17 @@ const DeployContractResultSchema = z.object({
 
 const logger = createLogger('aztec-rpc-wallet:serializers');
 
+async function jsonParseWithSchemaAsync<T>(json: string, schema: ZodTypeAny): Promise<T> {
+  return schema.parseAsync(JSON.parse(json));
+}
+
 function createResultSerializer<R>(resultSchema?: ZodTypeAny): Pick<JSONRPCSerializer<unknown, R>, 'result'> {
   return {
     result: {
       serialize: async (method: string, value: R) => ({ method, serialized: jsonStringify(value) }),
       deserialize: async (method: string, data: JSONRPCSerializedData) => {
         if (resultSchema) {
-          return await jsonParseWithSchema(data.serialized, resultSchema);
+          return await jsonParseWithSchemaAsync(data.serialized, resultSchema);
         }
         // If no schema is provided, parse as JSON
         logger.debug(`Deserializing result for method without schema: ${method}`);
@@ -383,13 +381,13 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
         case 'aztec_registerContract': {
           const instanceRaw = ensureParam<Record<string, unknown>>(dAppParams, 'instance');
           const artifactRaw = getOptionalParam<Record<string, unknown>>(dAppParams, 'artifact');
-          const instance = ContractInstanceWithAddressSchema.parse(instanceRaw);
-          const artifact = artifactRaw ? ContractArtifactSchema.parse(artifactRaw) : undefined;
+          const instance = await ContractInstanceWithAddressSchema.parseAsync(instanceRaw);
+          const artifact = artifactRaw ? await ContractArtifactSchema.parseAsync(artifactRaw) : undefined;
           return [instance, artifact];
         }
         case 'aztec_registerContractClass': {
           const artifactRaw = ensureParam<Record<string, unknown>>(dAppParams, 'artifact');
-          const artifact = ContractArtifactSchema.parse(artifactRaw);
+          const artifact = await ContractArtifactSchema.parseAsync(artifactRaw);
           return [artifact];
         }
         case 'aztec_proveTx': {
@@ -400,16 +398,16 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
             dAppParams,
             'privateExecutionResult',
           );
-          const txRequest = TxExecutionRequest.schema.parse(txRequestRaw);
+          const txRequest = await TxExecutionRequest.schema.parseAsync(txRequestRaw);
           // Conditionally parse if privateExecutionResultRaw is present
           const privateExecutionResult = privateExecutionResultRaw
-            ? PrivateExecutionResult.schema.parse(privateExecutionResultRaw)
+            ? await PrivateExecutionResult.schema.parseAsync(privateExecutionResultRaw)
             : undefined;
           return [txRequest, privateExecutionResult];
         }
         case 'aztec_sendTx': {
           const txRaw = ensureParam<Record<string, unknown>>(dAppParams, 'tx');
-          const tx = Tx.schema.parse(txRaw);
+          const tx = await Tx.schema.parseAsync(txRaw);
           return [tx];
         }
         case 'aztec_getTxReceipt': {
@@ -419,7 +417,7 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
         }
         case 'aztec_simulateTx': {
           const txRequestRaw = ensureParam<Record<string, unknown>>(dAppParams, 'txRequest');
-          const txRequest = TxExecutionRequest.schema.parse(txRequestRaw);
+          const txRequest = await TxExecutionRequest.schema.parseAsync(txRequestRaw);
           const simulatePublic = getOptionalParam<boolean>(dAppParams, 'simulatePublic', 'boolean');
           const msgSenderStr = getOptionalParam<string>(dAppParams, 'msgSender', 'string');
           const msgSender = msgSenderStr ? AztecAddress.fromString(msgSenderStr) : undefined;
@@ -431,7 +429,7 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
         }
         case 'aztec_profileTx': {
           const txRequestRaw = ensureParam<Record<string, unknown>>(dAppParams, 'txRequest');
-          const txRequest = TxExecutionRequest.schema.parse(txRequestRaw);
+          const txRequest = await TxExecutionRequest.schema.parseAsync(txRequestRaw);
           const profileMode = getOptionalParam<'gates' | 'execution-steps' | 'full'>(
             dAppParams,
             'profileMode',
@@ -448,7 +446,7 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
           const toStr = ensureParam<string>(dAppParams, 'to', 'string');
           const to = AztecAddress.fromString(toStr);
           const authWitsRaw = getOptionalParam<Record<string, unknown>[]>(dAppParams, 'authWits');
-          const authWits = authWitsRaw?.map((aw) => AuthWitness.schema.parse(aw)); // Use AuthWitness from @aztec/aztec.js
+          const authWits = await authWitsRaw?.map((aw) => AuthWitness.schema.parseAsync(aw)); // Use AuthWitness from @aztec/aztec.js
           const fromStr = getOptionalParam<string>(dAppParams, 'from', 'string');
           const from = fromStr ? AztecAddress.fromString(fromStr) : undefined;
           return [functionName, args, to, authWits, from];
@@ -457,7 +455,10 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
           const contractAddressStr = ensureParam<string>(dAppParams, 'contractAddress', 'string');
           const contractAddress = AztecAddress.fromString(contractAddressStr);
           const eventMetadataRaw = ensureParam<string>(dAppParams, 'eventMetadata');
-          const eventMetadata = jsonParseWithSchema(eventMetadataRaw, EventMetadataDefinitionSchema);
+          const eventMetadata = await jsonParseWithSchemaAsync(
+            eventMetadataRaw,
+            EventMetadataDefinitionSchema,
+          );
           const fromBlock = ensureParam<number>(dAppParams, 'from', 'number');
           const numBlocks = ensureParam<number>(dAppParams, 'numBlocks', 'number');
           const recipientsRaw = ensureParam<string[]>(dAppParams, 'recipients');
@@ -466,23 +467,26 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
         }
         case 'aztec_getPublicEvents': {
           const eventMetadataRaw = ensureParam<string>(dAppParams, 'eventMetadata');
-          const eventMetadata = jsonParseWithSchema(eventMetadataRaw, EventMetadataDefinitionSchema);
+          const eventMetadata = await jsonParseWithSchemaAsync(
+            eventMetadataRaw,
+            EventMetadataDefinitionSchema,
+          );
           const fromBlock = ensureParam<number>(dAppParams, 'from', 'number');
           const limit = ensureParam<number>(dAppParams, 'limit', 'number');
           return [eventMetadata, fromBlock, limit];
         }
         case 'aztec_wmExecuteTx': {
           const executionPayloadRaw = ensureParam<Record<string, unknown>>(dAppParams, 'executionPayload');
-          const executionPayload = ExecutionPayloadSchema.parse(executionPayloadRaw);
+          const executionPayload = await ExecutionPayloadSchema.parseAsync(executionPayloadRaw);
           return [executionPayload];
         }
         case 'aztec_wmSimulateTx': {
           const executionPayloadRaw = ensureParam<Record<string, unknown>>(dAppParams, 'executionPayload');
-          const executionPayload = ExecutionPayloadSchema.parse(executionPayloadRaw);
+          const executionPayload = await ExecutionPayloadSchema.parseAsync(executionPayloadRaw);
           return [executionPayload];
         }
         case 'aztec_wmDeployContract': {
-          const deployParams = DeployContractParamsSchema.parse(dAppParams);
+          const deployParams = await DeployContractParamsSchema.parseAsync(dAppParams);
           return [deployParams];
         }
         case 'wm_getSupportedMethods':

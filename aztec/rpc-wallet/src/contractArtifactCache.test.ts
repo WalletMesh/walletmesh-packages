@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach, type Mock } from 'vitest';
 import type { AztecAddress, ContractArtifact, Fr, Wallet } from '@aztec/aztec.js';
+import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { ContractArtifactCache } from './contractArtifactCache.js';
 import { AztecWalletError } from './errors.js';
 

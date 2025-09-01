@@ -1,8 +1,8 @@
+import { createLogger } from '@aztec/foundation/log';
 import type { AztecChainId } from '../types.js';
 import type { AztecDappWallet } from './aztec-dapp-wallet.js';
 import { createAztecWallet } from './aztec-dapp-wallet.js';
 import type { AztecRouterProvider } from './aztec-router-provider.js';
-import { createLogger } from '@aztec/foundation/log';
 
 const logger = createLogger('aztec-rpc-wallet:helpers');
 
@@ -88,4 +88,3 @@ export async function connectAztec(
 
   return { sessionId, wallet };
 }
-

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ALL_AZTEC_METHODS, connectAztec } from './helpers.js';
-import { createAztecWallet, type AztecDappWallet } from './aztec-dapp-wallet.js';
 import type { WalletRouterProvider } from '@walletmesh/router'; // Removed SessionData
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { type AztecDappWallet, createAztecWallet } from './aztec-dapp-wallet.js';
+import { ALL_AZTEC_METHODS, connectAztec } from './helpers.js';
 
 // Mock the aztec-dapp-wallet module
 vi.mock('./aztec-dapp-wallet.js', () => ({

@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach, beforeAll, type Mock } from 'vitest';
-import { AztecDappWallet, createAztecWallet } from './aztec-dapp-wallet.js';
-import { AztecAddress, TxHash, CompleteAddress, Fr } from '@aztec/aztec.js';
 import type { ContractArtifact, ContractInstanceWithAddress, Tx, TxExecutionRequest } from '@aztec/aztec.js';
-import type { ExecutionPayload } from '@aztec/entrypoints/payload';
+import { AztecAddress, CompleteAddress, Fr, TxHash } from '@aztec/aztec.js';
 import type { FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfaces';
+import type { ExecutionPayload } from '@aztec/entrypoints/payload';
 import type { WalletRouterProvider } from '@walletmesh/router';
+import { beforeAll, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
+import { AztecDappWallet, createAztecWallet } from './aztec-dapp-wallet.js';
 
 // Mock provider
 const createMockProvider = () => {
@@ -543,14 +543,16 @@ describe('AztecDappWallet', () => {
       const msgSender = await AztecAddress.random();
       provider.call.mockResolvedValue(simulatedTx);
 
-      const result = await wallet.simulateTx(txRequest, true, msgSender);
+      const result = await wallet.simulateTx(txRequest, true, false, false, { msgSender });
 
       expect(provider.call).toHaveBeenCalledWith(testChainId, {
         method: 'aztec_simulateTx',
         params: {
           txRequest,
           simulatePublic: true,
-          msgSender,
+          skipTxValidation: false,
+          skipFeeEnforcement: false,
+          overrides: { msgSender },
         },
       });
       expect(result).toEqual(simulatedTx);

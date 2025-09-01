@@ -1,12 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { AztecAddress, Fr, AuthWitness } from '@aztec/aztec.js';
 import type { ContractArtifact } from '@aztec/aztec.js';
-import { FunctionSelector } from '@aztec/stdlib/abi';
-import { FunctionType } from '@aztec/stdlib/abi';
-import { Capsule, HashedValues } from '@aztec/stdlib/tx';
+import { AuthWitness, AztecAddress, Fr } from '@aztec/aztec.js';
 import { ExecutionPayload } from '@aztec/entrypoints/payload';
+import { FunctionCall, FunctionSelector, FunctionType } from '@aztec/stdlib/abi';
+import { Capsule, HashedValues } from '@aztec/stdlib/tx';
+import { describe, expect, it } from 'vitest';
 import { AztecWalletSerializer } from './serializers.js';
-import { FunctionCall } from '@aztec/stdlib/abi';
 
 describe('ExecutionPayload Serialization', () => {
   it('should serialize and deserialize ExecutionPayload correctly', async () => {

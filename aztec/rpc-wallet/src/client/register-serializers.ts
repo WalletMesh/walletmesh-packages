@@ -1,6 +1,6 @@
 import type { WalletRouterProvider } from '@walletmesh/router';
-import { AztecWalletSerializer } from '../wallet/serializers.js';
 import type { AztecWalletMethodMap } from '../types.js';
+import { AztecWalletSerializer } from '../wallet/serializers.js';
 
 /**
  * Registers the {@link AztecWalletSerializer} for all relevant Aztec JSON-RPC methods

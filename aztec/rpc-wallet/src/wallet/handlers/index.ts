@@ -4,12 +4,12 @@ import type { ContractArtifactCache } from '../../contractArtifactCache.js';
 import type { AztecWalletMethodMap } from '../../types.js';
 
 import { createAccountHandlers } from './account.js';
-import { createTransactionHandlers } from './transaction.js';
 import { createContractHandlers } from './contract.js';
 import { createContractInteractionHandlers } from './contract-interaction.js';
 import { createEventHandlers } from './event.js';
 import { createNodeHandlers } from './node.js';
 import { createSenderHandlers } from './senders.js';
+import { createTransactionHandlers } from './transaction.js';
 
 /**
  * Defines the context object that is passed to all Aztec wallet JSON-RPC method handlers.

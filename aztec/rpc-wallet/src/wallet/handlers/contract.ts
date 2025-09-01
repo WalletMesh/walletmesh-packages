@@ -1,8 +1,8 @@
+import { createLogger } from '@aztec/foundation/log';
 import type { ContractArtifact } from '@aztec/stdlib/abi';
 import type { ContractInstanceWithAddress } from '@aztec/stdlib/contract';
 import type { AztecWalletMethodMap } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
-import { createLogger } from '@aztec/foundation/log';
 
 const logger = createLogger('aztec-rpc-wallet:contract');
 

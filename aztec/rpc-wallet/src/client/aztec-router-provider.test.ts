@@ -1,5 +1,3 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AztecRouterProvider } from './aztec-router-provider.js';
 import { AztecAddress, CompleteAddress } from '@aztec/aztec.js';
 // import { jsonStringify } from '@aztec/foundation/json-rpc'; // Unused
 import type {
@@ -8,6 +6,8 @@ import type {
   JSONRPCTransport,
   // JSONRPCMethodMap, // Unused
 } from '@walletmesh/jsonrpc';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AztecRouterProvider } from './aztec-router-provider.js';
 
 // Define a minimal method map for testing purposes
 // import type { JSONRPCParams } from '@walletmesh/jsonrpc'; // Unused

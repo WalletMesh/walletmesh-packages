@@ -1,6 +1,6 @@
-import type { AztecHandlerContext } from './index.js';
-import type { AztecWalletMethodMap } from '../../types.js';
 import { createLogger } from '@aztec/foundation/log';
+import type { AztecWalletMethodMap } from '../../types.js';
+import type { AztecHandlerContext } from './index.js';
 
 const logger = createLogger('aztec-rpc-wallet:transaction');
 
@@ -139,9 +139,10 @@ export function createTransactionHandlers() {
      *                      Defined by {@link AztecWalletMethodMap.aztec_simulateTx.params}.
      * @param paramsTuple.0 - The {@link TxExecutionRequest} to simulate.
      * @param paramsTuple.1 - Optional: Boolean indicating whether to simulate public parts of the transaction. Defaults to `false`.
-     * @param paramsTuple.2 - Optional: The {@link AztecAddress} of the message sender for simulation context.
-     * @param paramsTuple.3 - Optional: Boolean flag to skip transaction validation during simulation.
-     * @param paramsTuple.4 - Optional: Boolean flag to skip fee enforcement during simulation.
+     * @param paramsTuple.2 - Optional: Boolean flag to skip transaction validation during simulation.
+     * @param paramsTuple.3 - Optional: Boolean flag to skip fee enforcement during simulation.
+     * @param paramsTuple.4 - Optional: {@link SimulationOverrides} for simulation context (includes msgSender).
+     * @param paramsTuple.5 - Optional: Array of {@link AztecAddress} scopes for the simulation.
      * @returns A promise that resolves to the {@link TxSimulationResult}.
      *          Type defined by {@link AztecWalletMethodMap.aztec_simulateTx.result}.
      * @throws {Error} If the `txRequest` parameter is missing or invalid.
@@ -153,9 +154,9 @@ export function createTransactionHandlers() {
       const [
         txRequest,
         simulatePublicInput, // simulatePublic is optional in PXE interface
-        msgSender,
         skipTxValidation,
         skipFeeEnforcementInput, // skipFeeEnforcement is optional in PXE interface
+        overrides, // SimulationOverrides which may contain msgSender
       ] = paramsTuple;
       // Handle optional params with defaults if necessary, matching PXE behavior
       const simulatePublic = simulatePublicInput === undefined ? false : simulatePublicInput;
@@ -166,12 +167,14 @@ export function createTransactionHandlers() {
         // txRequest is mandatory
         throw new Error('Invalid txRequest parameter received in tuple');
       }
+
+      // Call with the parameters that the underlying wallet expects
       return await ctx.wallet.simulateTx(
         txRequest,
         simulatePublic,
-        msgSender,
         skipTxValidation,
         skipFeeEnforcement,
+        overrides,
       );
     },
 

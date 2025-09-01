@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createEventHandlers } from './event.js';
-import type { AccountWallet, PXE, AztecAddress } from '@aztec/aztec.js';
+import type { AccountWallet, AztecAddress, PXE } from '@aztec/aztec.js';
 import type { EventMetadataDefinition } from '@aztec/stdlib/interfaces/client';
-import type { AztecHandlerContext } from './index.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContractArtifactCache } from '../../contractArtifactCache.js';
+import { createEventHandlers } from './event.js';
+import type { AztecHandlerContext } from './index.js';
 
 // Mock dependencies
 const createMockWallet = () =>

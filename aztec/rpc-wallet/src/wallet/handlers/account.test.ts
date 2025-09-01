@@ -1,17 +1,17 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createAccountHandlers } from './account.js';
 import type {
   AccountWallet,
-  PXE,
+  AuthWitness,
   AztecAddress,
   CompleteAddress,
-  AuthWitness,
   FunctionSelector,
   FunctionType,
+  PXE,
 } from '@aztec/aztec.js';
-import type { AztecHandlerContext } from './index.js';
-import type { ContractArtifactCache } from '../../contractArtifactCache.js';
 import { Fr } from '@aztec/aztec.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ContractArtifactCache } from '../../contractArtifactCache.js';
+import { createAccountHandlers } from './account.js';
+import type { AztecHandlerContext } from './index.js';
 
 // Mock dependencies
 const createMockWallet = () =>
