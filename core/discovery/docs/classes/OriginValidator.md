@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: OriginValidator
 
-Defined in: [security/OriginValidator.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L66)
+Defined in: [security/OriginValidator.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L66)
 
 Origin validator implementing robust validation and anti-spoofing measures.
 
@@ -79,7 +79,7 @@ if (!result.valid) {
 
 > **new OriginValidator**(`policy`): `OriginValidator`
 
-Defined in: [security/OriginValidator.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L74)
+Defined in: [security/OriginValidator.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L74)
 
 #### Parameters
 
@@ -97,7 +97,7 @@ Defined in: [security/OriginValidator.ts:74](https://github.com/WalletMesh/walle
 
 > **allowOrigin**(`origin`): `void`
 
-Defined in: [security/OriginValidator.ts:415](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L415)
+Defined in: [security/OriginValidator.ts:415](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L415)
 
 Add an origin to the allowed list.
 
@@ -136,7 +136,7 @@ const result = validator.validateOrigin('https://new-partner.com');
 
 > **blockOrigin**(`origin`): `void`
 
-Defined in: [security/OriginValidator.ts:443](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L443)
+Defined in: [security/OriginValidator.ts:443](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L443)
 
 Add an origin to the blocked list.
 
@@ -176,7 +176,7 @@ const result = validator.validateOrigin('https://suspicious-site.com');
 
 > **getPolicy**(): [`SecurityPolicy`](../interfaces/SecurityPolicy.md)
 
-Defined in: [security/OriginValidator.ts:384](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L384)
+Defined in: [security/OriginValidator.ts:384](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L384)
 
 Get the current security policy configuration.
 
@@ -207,7 +207,7 @@ console.log('Allowed origins:', policy.allowedOrigins);
 
 > **updatePolicy**(`policy`): `void`
 
-Defined in: [security/OriginValidator.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L99)
+Defined in: [security/OriginValidator.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L99)
 
 Update the security policy configuration.
 
@@ -247,7 +247,7 @@ validator.updatePolicy({
 
 > **isAllowed**(`origin`): `boolean`
 
-Defined in: [security/OriginValidator.ts:465](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L465)
+Defined in: [security/OriginValidator.ts:465](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L465)
 
 Check if an origin is explicitly allowed.
 
@@ -267,7 +267,7 @@ Check if an origin is explicitly allowed.
 
 > **isBlocked**(`origin`): `boolean`
 
-Defined in: [security/OriginValidator.ts:475](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L475)
+Defined in: [security/OriginValidator.ts:475](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L475)
 
 Check if an origin is explicitly blocked.
 
@@ -287,7 +287,7 @@ Check if an origin is explicitly blocked.
 
 > **removeOrigin**(`origin`): `void`
 
-Defined in: [security/OriginValidator.ts:455](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L455)
+Defined in: [security/OriginValidator.ts:455](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L455)
 
 Remove an origin from both allowed and blocked lists.
 
@@ -307,7 +307,7 @@ Remove an origin from both allowed and blocked lists.
 
 > **validateEventOrigin**(`eventOrigin`, `claimedOrigin`): [`OriginValidationResult`](../interfaces/OriginValidationResult.md)
 
-Defined in: [security/OriginValidator.ts:260](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L260)
+Defined in: [security/OriginValidator.ts:260](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L260)
 
 Validate that event origin matches the claimed origin in the message.
 
@@ -375,7 +375,7 @@ const result = validator.validateEventOrigin(
 
 > **getStats**(): `object`
 
-Defined in: [security/OriginValidator.ts:498](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L498)
+Defined in: [security/OriginValidator.ts:498](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L498)
 
 Get statistics about current origin validation configuration.
 
@@ -431,7 +431,7 @@ console.log('HTTPS required:', stats.requireHttps);
 
 > **validateOrigin**(`origin`): [`OriginValidationResult`](../interfaces/OriginValidationResult.md)
 
-Defined in: [security/OriginValidator.ts:153](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/OriginValidator.ts#L153)
+Defined in: [security/OriginValidator.ts:153](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/OriginValidator.ts#L153)
 
 Validate an origin against the configured security policy.
 

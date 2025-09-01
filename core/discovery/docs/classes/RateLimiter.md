@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: RateLimiter
 
-Defined in: [security/RateLimiter.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L60)
+Defined in: [security/RateLimiter.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L60)
 
 Rate limiter implementing sliding window algorithm for abuse prevention.
 
@@ -65,7 +65,7 @@ const devLimiter = new RateLimiter({
 
 > **new RateLimiter**(`config`): `RateLimiter`
 
-Defined in: [security/RateLimiter.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L65)
+Defined in: [security/RateLimiter.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L65)
 
 #### Parameters
 
@@ -83,7 +83,7 @@ Defined in: [security/RateLimiter.ts:65](https://github.com/WalletMesh/walletmes
 
 > **dispose**(): `void`
 
-Defined in: [security/RateLimiter.ts:282](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L282)
+Defined in: [security/RateLimiter.ts:282](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L282)
 
 Dispose of the rate limiter and clean up resources.
 
@@ -97,7 +97,7 @@ Dispose of the rate limiter and clean up resources.
 
 > **getConfig**(): [`RateLimitConfig`](../interfaces/RateLimitConfig.md)
 
-Defined in: [security/RateLimiter.ts:196](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L196)
+Defined in: [security/RateLimiter.ts:196](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L196)
 
 Get current configuration.
 
@@ -111,7 +111,7 @@ Get current configuration.
 
 > **getCurrentCount**(`origin`, `timestamp`): `number`
 
-Defined in: [security/RateLimiter.ts:124](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L124)
+Defined in: [security/RateLimiter.ts:124](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L124)
 
 Get the current request count for an origin within the time window.
 
@@ -135,7 +135,7 @@ Get the current request count for an origin within the time window.
 
 > **getOriginInfo**(`origin`, `timestamp`): `object`
 
-Defined in: [security/RateLimiter.ts:248](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L248)
+Defined in: [security/RateLimiter.ts:248](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L248)
 
 Get detailed information about a specific origin.
 
@@ -183,7 +183,7 @@ Get detailed information about a specific origin.
 
 > **getRemainingRequests**(`origin`, `timestamp`): `number`
 
-Defined in: [security/RateLimiter.ts:141](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L141)
+Defined in: [security/RateLimiter.ts:141](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L141)
 
 Get the remaining requests allowed for an origin.
 
@@ -207,7 +207,7 @@ Get the remaining requests allowed for an origin.
 
 > **getStats**(`timestamp`): `object`
 
-Defined in: [security/RateLimiter.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L203)
+Defined in: [security/RateLimiter.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L203)
 
 Get comprehensive statistics about rate limiting activity.
 
@@ -259,7 +259,7 @@ Get comprehensive statistics about rate limiting activity.
 
 > **getTimeUntilReset**(`origin`, `timestamp`): `number`
 
-Defined in: [security/RateLimiter.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L149)
+Defined in: [security/RateLimiter.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L149)
 
 Get the time until the next request is allowed (in milliseconds).
 
@@ -283,7 +283,7 @@ Get the time until the next request is allowed (in milliseconds).
 
 > **isAllowed**(`origin`, `timestamp`): `boolean`
 
-Defined in: [security/RateLimiter.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L79)
+Defined in: [security/RateLimiter.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L79)
 
 Check if a request is allowed for the given origin.
 
@@ -307,7 +307,7 @@ Check if a request is allowed for the given origin.
 
 > **recordRequest**(`origin`, `timestamp`): `boolean`
 
-Defined in: [security/RateLimiter.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L102)
+Defined in: [security/RateLimiter.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L102)
 
 Record a request for the given origin.
 
@@ -331,7 +331,7 @@ Record a request for the given origin.
 
 > **reset**(`origin`): `void`
 
-Defined in: [security/RateLimiter.ts:172](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L172)
+Defined in: [security/RateLimiter.ts:172](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L172)
 
 Reset rate limit for a specific origin.
 
@@ -351,7 +351,7 @@ Reset rate limit for a specific origin.
 
 > **resetAll**(): `void`
 
-Defined in: [security/RateLimiter.ts:179](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L179)
+Defined in: [security/RateLimiter.ts:179](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L179)
 
 Reset all rate limits.
 
@@ -365,7 +365,7 @@ Reset all rate limits.
 
 > **updateConfig**(`config`): `void`
 
-Defined in: [security/RateLimiter.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/security/RateLimiter.ts#L186)
+Defined in: [security/RateLimiter.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L186)
 
 Update the rate limit configuration.
 

@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SecurityPolicy
 
-Defined in: [core/types.ts:1212](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1212)
+Defined in: [core/types.ts:1212](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1212)
 
 Security policy configuration for discovery protocol.
 
@@ -58,7 +58,7 @@ const devPolicy: SecurityPolicy = {
 
 > `optional` **allowedOrigins**: `string`[]
 
-Defined in: [core/types.ts:1213](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1213)
+Defined in: [core/types.ts:1213](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1213)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [core/types.ts:1213](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **allowLocalhost**: `boolean`
 
-Defined in: [core/types.ts:1216](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1216)
+Defined in: [core/types.ts:1216](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1216)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [core/types.ts:1216](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **blockedOrigins**: `string`[]
 
-Defined in: [core/types.ts:1214](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1214)
+Defined in: [core/types.ts:1214](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1214)
 
 ***
 
@@ -82,7 +82,7 @@ Defined in: [core/types.ts:1214](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **certificateValidation**: `boolean`
 
-Defined in: [core/types.ts:1217](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1217)
+Defined in: [core/types.ts:1217](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1217)
 
 ***
 
@@ -90,7 +90,7 @@ Defined in: [core/types.ts:1217](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **contentSecurityPolicy**: `string`
 
-Defined in: [core/types.ts:1218](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1218)
+Defined in: [core/types.ts:1218](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1218)
 
 ***
 
@@ -98,7 +98,7 @@ Defined in: [core/types.ts:1218](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **maxSessionAge**: `number`
 
-Defined in: [core/types.ts:1219](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1219)
+Defined in: [core/types.ts:1219](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1219)
 
 ***
 
@@ -106,7 +106,7 @@ Defined in: [core/types.ts:1219](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **rateLimit**: `object`
 
-Defined in: [core/types.ts:1220](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1220)
+Defined in: [core/types.ts:1220](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1220)
 
 #### enabled
 
@@ -126,4 +126,4 @@ Defined in: [core/types.ts:1220](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **requireHttps**: `boolean`
 
-Defined in: [core/types.ts:1215](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L1215)
+Defined in: [core/types.ts:1215](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1215)

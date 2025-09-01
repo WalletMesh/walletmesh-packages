@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: CapabilityMatcher
 
-Defined in: [responder/CapabilityMatcher.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/CapabilityMatcher.ts#L125)
+Defined in: [responder/CapabilityMatcher.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L125)
 
 Capability matcher implementing privacy-preserving intersection algorithm.
 
@@ -85,7 +85,7 @@ const result = matcher.matchCapabilities(request);
 
 > **new CapabilityMatcher**(`responderInfo`): `CapabilityMatcher`
 
-Defined in: [responder/CapabilityMatcher.ts:128](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/CapabilityMatcher.ts#L128)
+Defined in: [responder/CapabilityMatcher.ts:128](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L128)
 
 #### Parameters
 
@@ -103,7 +103,7 @@ Defined in: [responder/CapabilityMatcher.ts:128](https://github.com/WalletMesh/w
 
 > **matchCapabilities**(`request`): [`CapabilityMatchResult`](../interfaces/CapabilityMatchResult.md)
 
-Defined in: [responder/CapabilityMatcher.ts:179](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/CapabilityMatcher.ts#L179)
+Defined in: [responder/CapabilityMatcher.ts:179](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L179)
 
 Check if responder can fulfill initiator requirements and generate intersection.
 
@@ -170,7 +170,7 @@ if (result.canFulfill) {
 
 > **getCapabilityDetails**(): `object`
 
-Defined in: [responder/CapabilityMatcher.ts:262](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/CapabilityMatcher.ts#L262)
+Defined in: [responder/CapabilityMatcher.ts:262](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L262)
 
 Get detailed capability information for debugging.
 
@@ -208,7 +208,7 @@ Get detailed capability information for debugging.
 
 > **updateResponderInfo**(`responderInfo`): `void`
 
-Defined in: [responder/CapabilityMatcher.ts:255](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/CapabilityMatcher.ts#L255)
+Defined in: [responder/CapabilityMatcher.ts:255](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L255)
 
 Update the responder information.
 

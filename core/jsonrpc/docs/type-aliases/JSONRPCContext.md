@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.2**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **JSONRPCContext** = `Record`\<`string`, `unknown`\>
 
-Defined in: [core/jsonrpc/src/types.ts:432](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/types.ts#L432)
+Defined in: [core/jsonrpc/src/types.ts:432](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/types.ts#L432)
 
 Base type for context objects shared between middleware and method handlers.
 Extend this type to add custom context properties.

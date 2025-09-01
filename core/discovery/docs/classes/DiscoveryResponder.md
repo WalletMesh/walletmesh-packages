@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: DiscoveryResponder
 
-Defined in: [responder/DiscoveryResponder.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/DiscoveryResponder.ts#L80)
+Defined in: [responder/DiscoveryResponder.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/DiscoveryResponder.ts#L80)
 
 Discovery announcer for responders to listen for discovery requests and respond
 if they can fulfill the requirements.
@@ -77,7 +77,7 @@ const devAnnouncer = new DiscoveryResponder({
 
 > **new DiscoveryResponder**(`config`): `DiscoveryResponder`
 
-Defined in: [responder/DiscoveryResponder.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/DiscoveryResponder.ts#L93)
+Defined in: [responder/DiscoveryResponder.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/DiscoveryResponder.ts#L93)
 
 #### Parameters
 
@@ -95,7 +95,7 @@ Defined in: [responder/DiscoveryResponder.ts:93](https://github.com/WalletMesh/w
 
 > **updateConfig**(`config`): `void`
 
-Defined in: [responder/DiscoveryResponder.ts:267](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/DiscoveryResponder.ts#L267)
+Defined in: [responder/DiscoveryResponder.ts:267](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/DiscoveryResponder.ts#L267)
 
 Update announcer configuration without restarting.
 
@@ -142,7 +142,7 @@ announcer.updateConfig({
 
 > **updateResponderInfo**(`responderInfo`): `void`
 
-Defined in: [responder/DiscoveryResponder.ts:234](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/DiscoveryResponder.ts#L234)
+Defined in: [responder/DiscoveryResponder.ts:234](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/DiscoveryResponder.ts#L234)
 
 Update responder information while maintaining discovery state.
 
@@ -188,7 +188,7 @@ console.log('Responder now supports additional chains');
 
 > **isAnnouncerListening**(): `boolean`
 
-Defined in: [responder/DiscoveryResponder.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/DiscoveryResponder.ts#L203)
+Defined in: [responder/DiscoveryResponder.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/DiscoveryResponder.ts#L203)
 
 Check if the announcer is currently listening for requests.
 
@@ -222,7 +222,7 @@ if (announcer.isAnnouncerListening()) {
 
 > **startListening**(): `void`
 
-Defined in: [responder/DiscoveryResponder.ts:135](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/DiscoveryResponder.ts#L135)
+Defined in: [responder/DiscoveryResponder.ts:135](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/DiscoveryResponder.ts#L135)
 
 Start listening for discovery requests from dApps.
 
@@ -260,7 +260,7 @@ console.log('Wallet is now discoverable');
 
 > **stopListening**(): `void`
 
-Defined in: [responder/DiscoveryResponder.ts:167](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/DiscoveryResponder.ts#L167)
+Defined in: [responder/DiscoveryResponder.ts:167](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/DiscoveryResponder.ts#L167)
 
 Stop listening for discovery requests.
 
@@ -295,7 +295,7 @@ announcer.startListening();
 
 > **cleanup**(): `void`
 
-Defined in: [responder/DiscoveryResponder.ts:305](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/DiscoveryResponder.ts#L305)
+Defined in: [responder/DiscoveryResponder.ts:305](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/DiscoveryResponder.ts#L305)
 
 Cleanup resources and stop listening.
 
@@ -309,7 +309,7 @@ Cleanup resources and stop listening.
 
 > **getStats**(): `object`
 
-Defined in: [responder/DiscoveryResponder.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/DiscoveryResponder.ts#L283)
+Defined in: [responder/DiscoveryResponder.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/DiscoveryResponder.ts#L283)
 
 Get announcer statistics.
 

@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.2**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **JSONRPCID** = `undefined` \| `string` \| `number` \| `null`
 
-Defined in: [core/jsonrpc/src/types.ts:15](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/types.ts#L15)
+Defined in: [core/jsonrpc/src/types.ts:15](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/types.ts#L15)
 
 Represents a JSON-RPC message identifier.
 - `undefined` for notifications (messages that don't require a response)

@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createResponderDiscoverySetup**(`config`): `object`
 
-Defined in: [responder/factory.ts:175](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/responder/factory.ts#L175)
+Defined in: [responder/factory.ts:175](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/factory.ts#L175)
 
 Create a complete responder discovery setup with integrated announcer and matcher.
 

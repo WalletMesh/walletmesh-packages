@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: JSONRPCProxyConfig
 
-Defined in: [core/jsonrpc/src/proxy.ts:5](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/proxy.ts#L5)
+Defined in: [core/jsonrpc/src/proxy.ts:5](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/proxy.ts#L5)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [core/jsonrpc/src/proxy.ts:5](https://github.com/WalletMesh/walletme
 
 > `optional` **chainId**: `string`
 
-Defined in: [core/jsonrpc/src/proxy.ts:13](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/proxy.ts#L13)
+Defined in: [core/jsonrpc/src/proxy.ts:13](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/proxy.ts#L13)
 
 Chain ID for logging context
 
@@ -24,7 +24,7 @@ Chain ID for logging context
 
 > `optional` **debug**: `boolean`
 
-Defined in: [core/jsonrpc/src/proxy.ts:9](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/proxy.ts#L9)
+Defined in: [core/jsonrpc/src/proxy.ts:9](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/proxy.ts#L9)
 
 Enable debug logging
 
@@ -34,7 +34,7 @@ Enable debug logging
 
 > `optional` **logger**: (`message`, `data?`) => `void`
 
-Defined in: [core/jsonrpc/src/proxy.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/proxy.ts#L11)
+Defined in: [core/jsonrpc/src/proxy.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/proxy.ts#L11)
 
 Custom logger function
 
@@ -58,6 +58,6 @@ Custom logger function
 
 > `optional` **timeoutMs**: `number`
 
-Defined in: [core/jsonrpc/src/proxy.ts:7](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/proxy.ts#L7)
+Defined in: [core/jsonrpc/src/proxy.ts:7](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/proxy.ts#L7)
 
 Timeout for requests in milliseconds

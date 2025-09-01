@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ResponderFeature
 
-Defined in: [core/types.ts:817](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L817)
+Defined in: [core/types.ts:817](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L817)
 
 Responder feature definition for wallet-specific functionalities.
 
@@ -64,7 +64,7 @@ const batchFeature: ResponderFeature = {
 
 > `optional` **configuration**: `Record`\<`string`, `unknown`\>
 
-Defined in: [core/types.ts:843](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L843)
+Defined in: [core/types.ts:843](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L843)
 
 Feature-specific configuration and metadata.
 Structure varies by feature type.
@@ -75,7 +75,7 @@ Structure varies by feature type.
 
 > `optional` **description**: `string`
 
-Defined in: [core/types.ts:832](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L832)
+Defined in: [core/types.ts:832](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L832)
 
 Detailed description of what this feature provides.
 
@@ -85,7 +85,7 @@ Detailed description of what this feature provides.
 
 > **id**: `string`
 
-Defined in: [core/types.ts:822](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L822)
+Defined in: [core/types.ts:822](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L822)
 
 Unique identifier for the feature.
 Should match values in RESPONDER_FEATURES when using standard features.
@@ -96,7 +96,7 @@ Should match values in RESPONDER_FEATURES when using standard features.
 
 > **name**: `string`
 
-Defined in: [core/types.ts:827](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L827)
+Defined in: [core/types.ts:827](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L827)
 
 Human-readable name for the feature.
 
@@ -106,6 +106,6 @@ Human-readable name for the feature.
 
 > `optional` **version**: `string`
 
-Defined in: [core/types.ts:837](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L837)
+Defined in: [core/types.ts:837](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L837)
 
 Version of the feature implementation.

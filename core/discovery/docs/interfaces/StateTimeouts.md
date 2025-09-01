@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: StateTimeouts
 
-Defined in: [core/ProtocolStateMachine.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/ProtocolStateMachine.ts#L48)
+Defined in: [core/ProtocolStateMachine.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L48)
 
 State timeout configuration.
 
@@ -20,4 +20,4 @@ State timeout configuration.
 
 > **DISCOVERING**: `number`
 
-Defined in: [core/ProtocolStateMachine.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/ProtocolStateMachine.ts#L49)
+Defined in: [core/ProtocolStateMachine.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L49)

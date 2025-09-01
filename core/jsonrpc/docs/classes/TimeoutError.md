@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: TimeoutError
 
-Defined in: [core/jsonrpc/src/error.ts:153](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error.ts#L153)
+Defined in: [core/jsonrpc/src/error.ts:153](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error.ts#L153)
 
 Specialized error class for JSON-RPC request timeouts.
 Extends JSONRPCError with a fixed error code (-32000) and includes the request ID.
@@ -63,7 +63,7 @@ peer.registerMethod('longOperation', async (context, params) => {
 
 > **new TimeoutError**(`message`, `id`): `TimeoutError`
 
-Defined in: [core/jsonrpc/src/error.ts:174](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error.ts#L174)
+Defined in: [core/jsonrpc/src/error.ts:174](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error.ts#L174)
 
 Creates a new TimeoutError instance.
 
@@ -123,7 +123,7 @@ Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 > **code**: `number`
 
-Defined in: [core/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error.ts#L89)
+Defined in: [core/jsonrpc/src/error.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error.ts#L89)
 
 The error code (should follow JSON-RPC 2.0 error codes)
 
@@ -137,7 +137,7 @@ The error code (should follow JSON-RPC 2.0 error codes)
 
 > `optional` **data**: `string` \| `Record`\<`string`, `unknown`\>
 
-Defined in: [core/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error.ts#L91)
+Defined in: [core/jsonrpc/src/error.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error.ts#L91)
 
 Optional additional error data for debugging or client handling
 
@@ -151,7 +151,7 @@ Optional additional error data for debugging or client handling
 
 > **id**: [`JSONRPCID`](../type-aliases/JSONRPCID.md)
 
-Defined in: [core/jsonrpc/src/error.ts:176](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error.ts#L176)
+Defined in: [core/jsonrpc/src/error.ts:176](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error.ts#L176)
 
 The ID of the request that timed out (used for correlation with the original request)
 
@@ -175,7 +175,7 @@ The error message.
 
 > **name**: `string` = `'TimeoutError'`
 
-Defined in: [core/jsonrpc/src/error.ts:154](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error.ts#L154)
+Defined in: [core/jsonrpc/src/error.ts:154](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error.ts#L154)
 
 #### Overrides
 
@@ -221,7 +221,7 @@ not capture any frames.
 
 > **toString**(): `string`
 
-Defined in: [core/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error.ts#L96)
+Defined in: [core/jsonrpc/src/error.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error.ts#L96)
 
 Returns a string representation of an object.
 

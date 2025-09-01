@@ -1,6 +1,6 @@
 {
   "name": "@walletmesh/discovery",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generic Cross-Blockchain Wallet Discovery Protocol",
   "type": "module",
   "main": "dist/index.js",

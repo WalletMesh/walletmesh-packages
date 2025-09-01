@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.0**](../README.md)
+[**@walletmesh/jsonrpc v0.5.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ReceiveErrorEvent
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L44)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L44)
 
 Receive error event with detailed context
 
@@ -16,7 +16,7 @@ Receive error event with detailed context
 
 > **category**: [`ReceiveErrorCategory`](../enumerations/ReceiveErrorCategory.md)
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L46)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L46)
 
 Error category
 
@@ -26,7 +26,7 @@ Error category
 
 > `optional` **context**: `Record`\<`string`, `unknown`\>
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L56)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L56)
 
 Optional additional context
 
@@ -36,7 +36,7 @@ Optional additional context
 
 > **error**: `Error`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L50)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L50)
 
 Original error
 
@@ -46,7 +46,7 @@ Original error
 
 > **rawMessage**: `unknown`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L52)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L52)
 
 Raw message that caused the error
 
@@ -56,7 +56,7 @@ Raw message that caused the error
 
 > `optional` **recoveryAction**: `string`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L58)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L58)
 
 Suggested recovery action
 
@@ -66,7 +66,7 @@ Suggested recovery action
 
 > **severity**: [`ErrorSeverity`](../enumerations/ErrorSeverity.md)
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L48)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L48)
 
 Error severity
 
@@ -76,6 +76,6 @@ Error severity
 
 > **timestamp**: `number`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/1ba2b5f7f0a07efa447112a7f91ed78eba6c2cd7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L54)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L54)
 
 Timestamp of the error

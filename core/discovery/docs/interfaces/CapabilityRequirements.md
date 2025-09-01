@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.0**](../README.md)
+[**@walletmesh/discovery v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CapabilityRequirements
 
-Defined in: [core/types.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L100)
+Defined in: [core/types.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L100)
 
 Capability requirements specification for responder discovery.
 
@@ -53,7 +53,7 @@ const requirements: CapabilityRequirements = {
 
 > **chains**: `string`[]
 
-Defined in: [core/types.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L106)
+Defined in: [core/types.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L106)
 
 Blockchain networks that must be supported.
 Uses CAIP-2 chain identifiers (e.g., 'eip155:1' for Ethereum mainnet).
@@ -65,7 +65,7 @@ ALL specified chains must be supported by the wallet.
 
 > **features**: `string`[]
 
-Defined in: [core/types.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L114)
+Defined in: [core/types.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L114)
 
 Wallet features that must be available.
 These represent specific functionalities beyond basic blockchain support,
@@ -78,7 +78,7 @@ See RESPONDER_FEATURES for standard values.
 
 > **interfaces**: `string`[]
 
-Defined in: [core/types.ts:121](https://github.com/WalletMesh/walletmesh-packages/blob/fc3310ff0ec44933a1b4c165e68e42e82ba44c03/core/discovery/src/core/types.ts#L121)
+Defined in: [core/types.ts:121](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L121)
 
 API interfaces that must be implemented for wallet communication.
 These define how dApps can interact with the wallet programmatically.
