@@ -6,11 +6,10 @@
  */
 
 import type { AccountWallet, PXE } from '@aztec/aztec.js';
-import { JSONRPCNode, type JSONRPCTransport, type JSONRPCEventMap } from '@walletmesh/jsonrpc';
-
-import type { AztecWalletMethodMap } from '../types.js';
+import { type JSONRPCEventMap, JSONRPCNode, type JSONRPCTransport } from '@walletmesh/jsonrpc';
 import { ContractArtifactCache } from '../contractArtifactCache.js';
-import { createAztecHandlers, type AztecHandlerContext } from './handlers/index.js';
+import type { AztecWalletMethodMap } from '../types.js';
+import { type AztecHandlerContext, createAztecHandlers } from './handlers/index.js';
 import { registerAztecSerializers } from './serializers.js';
 
 /**

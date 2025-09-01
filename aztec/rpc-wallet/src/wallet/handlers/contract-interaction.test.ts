@@ -1,10 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { AztecAddress, FeeJuicePaymentMethod, Fr, TxHash, type TxReceipt } from '@aztec/aztec.js';
+import type { ExecutionPayload } from '@aztec/entrypoints/payload';
+import { GasFees } from '@aztec/stdlib/gas';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createContractInteractionHandlers } from './contract-interaction.js';
 import type { AztecHandlerContext } from './index.js';
-import { AztecAddress, Fr, type TxReceipt, TxHash } from '@aztec/aztec.js';
-import { GasFees } from '@aztec/stdlib/gas';
-import { FeeJuicePaymentMethod } from '@aztec/aztec.js';
-import type { ExecutionPayload } from '@aztec/entrypoints/payload';
 
 // Mock the aztec.js module
 vi.mock('@aztec/aztec.js', async () => {

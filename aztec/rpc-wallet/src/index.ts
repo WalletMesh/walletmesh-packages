@@ -5,27 +5,12 @@
  * This package provides both wallet-side and dApp-side implementations for Aztec integration.
  */
 
-// Wallet-side exports
-/**
- * Creates an Aztec wallet node that can be used with WalletRouter.
- * This is the wallet-side implementation that handles JSON-RPC requests.
- * @see {@link createAztecWalletNode}
- */
-export { createAztecWalletNode } from './wallet/create-node.js';
-
-/**
- * Context interface provided to all handler functions in the wallet implementation.
- * @see {@link AztecHandlerContext}
- */
-export type { AztecHandlerContext } from './wallet/handlers/index.js';
-
 // Client-side exports
 /**
  * DApp-side wallet class that implements the aztec.js Wallet interface.
  * @see {@link AztecDappWallet}
  */
 export { AztecDappWallet, createAztecWallet } from './client/aztec-dapp-wallet.js';
-
 /**
  * Extended WalletRouterProvider with built-in Aztec serialization support.
  * Use this instead of the base WalletRouterProvider for automatic serialization
@@ -33,7 +18,6 @@ export { AztecDappWallet, createAztecWallet } from './client/aztec-dapp-wallet.j
  * @see {@link AztecRouterProvider}
  */
 export { AztecRouterProvider } from './client/aztec-router-provider.js';
-
 /**
  * Helper constants and functions for connecting to Aztec wallets.
  * - ALL_AZTEC_METHODS: Complete list of all available Aztec methods
@@ -43,13 +27,25 @@ export {
   ALL_AZTEC_METHODS,
   connectAztec,
 } from './client/helpers.js';
-
 /**
  * Helper function to register Aztec serializers with a WalletRouterProvider.
  * This enables proper serialization of Aztec types when using the router.
  * @see {@link registerAztecSerializers}
  */
 export { registerAztecSerializers } from './client/register-serializers.js';
+// Utilities
+/**
+ * Cache utility for managing contract artifacts in wallet implementations.
+ * @see {@link ContractArtifactCache}
+ */
+export { ContractArtifactCache } from './contractArtifactCache.js';
+// Error utilities
+/**
+ * Error handling utilities for Aztec wallet operations.
+ * - AztecWalletError: Custom error class for Aztec wallet errors
+ * - AztecWalletErrorMap: Map of error codes to error messages
+ */
+export { AztecWalletError, AztecWalletErrorMap } from './errors.js';
 
 // Shared types
 /**
@@ -63,21 +59,18 @@ export type {
   AztecWalletContext,
   AztecWalletMethodMap,
 } from './types.js';
-
-// Utilities
+// Wallet-side exports
 /**
- * Cache utility for managing contract artifacts in wallet implementations.
- * @see {@link ContractArtifactCache}
+ * Creates an Aztec wallet node that can be used with WalletRouter.
+ * This is the wallet-side implementation that handles JSON-RPC requests.
+ * @see {@link createAztecWalletNode}
  */
-export { ContractArtifactCache } from './contractArtifactCache.js';
-
-// Error utilities
+export { createAztecWalletNode } from './wallet/create-node.js';
 /**
- * Error handling utilities for Aztec wallet operations.
- * - AztecWalletError: Custom error class for Aztec wallet errors
- * - AztecWalletErrorMap: Map of error codes to error messages
+ * Context interface provided to all handler functions in the wallet implementation.
+ * @see {@link AztecHandlerContext}
  */
-export { AztecWalletError, AztecWalletErrorMap } from './errors.js';
+export type { AztecHandlerContext } from './wallet/handlers/index.js';
 
 // Re-export serializers
 /**

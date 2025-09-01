@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createSenderHandlers } from './senders.js';
-import type { AccountWallet, PXE, AztecAddress } from '@aztec/aztec.js';
-import type { AztecHandlerContext } from './index.js';
+import type { AccountWallet, AztecAddress, PXE } from '@aztec/aztec.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContractArtifactCache } from '../../contractArtifactCache.js';
+import type { AztecHandlerContext } from './index.js';
+import { createSenderHandlers } from './senders.js';
 
 // Mock dependencies
 const createMockWallet = () =>

@@ -1,6 +1,6 @@
-import type { AztecHandlerContext } from './index.js';
-import type { AztecWalletMethodMap } from '../../types.js';
 import { createLogger } from '@aztec/foundation/log';
+import type { AztecWalletMethodMap } from '../../types.js';
+import type { AztecHandlerContext } from './index.js';
 
 const logger = createLogger('aztec-rpc-wallet:account');
 

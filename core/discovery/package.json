@@ -41,7 +41,7 @@
   "license": "Apache-2.0",
   "keywords": [
     "wallet",
-    "discovery", 
+    "discovery",
     "blockchain",
     "web3",
     "capability-first",
@@ -63,11 +63,11 @@
     "version": "pnpm clean && pnpm build && pnpm run docs"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.280",
-    "happy-dom": "^17.4.6",
-    "rimraf": "^5.0.5",
-    "typedoc": "^0.28.0",
-    "typedoc-plugin-markdown": "^4.0.0",
-    "typescript": "^5.4.0"
+    "@types/chrome": "^0.1.4",
+    "happy-dom": "^18.0.1",
+    "rimraf": "^6.0.1",
+    "typedoc": "^0.28.12",
+    "typedoc-plugin-markdown": "^4.8.1",
+    "typescript": "^5.9.2"
   }
 }

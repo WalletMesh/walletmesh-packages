@@ -30,17 +30,17 @@
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "typedoc": "^0.28.4",
-    "typedoc-plugin-markdown": "^4.6.3"
+    "typedoc": "^0.28.12",
+    "typedoc-plugin-markdown": "^4.8.1"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.87.8",
-    "@aztec/blob-lib": "0.87.8",
-    "@aztec/entrypoints": "0.87.8",
-    "@aztec/foundation": "0.87.8",
-    "@aztec/stdlib": "0.87.8",
+    "@aztec/aztec.js": "1.2.1",
+    "@aztec/blob-lib": "1.2.1",
+    "@aztec/entrypoints": "1.2.1",
+    "@aztec/foundation": "1.2.1",
+    "@aztec/stdlib": "1.2.1",
     "@walletmesh/jsonrpc": "workspace:^",
     "@walletmesh/router": "workspace:^",
-    "zod": "^3.25.67"
+    "zod": "^3.25.76"
   }
 }

@@ -1,5 +1,5 @@
-import { WalletRouterProvider } from '@walletmesh/router';
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
+import { WalletRouterProvider } from '@walletmesh/router';
 import { registerAztecSerializers } from './register-serializers.js';
 
 /**

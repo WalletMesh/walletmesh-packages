@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createAztecWalletNode } from './create-node.js';
-import { JSONRPCNode } from '@walletmesh/jsonrpc';
 import type { AccountWallet, PXE } from '@aztec/aztec.js';
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
+import { JSONRPCNode } from '@walletmesh/jsonrpc';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ContractArtifactCache } from '../contractArtifactCache.js';
+import { createAztecWalletNode } from './create-node.js';
 import type { AztecHandlerContext } from './handlers/index.js';
 
 // Mock dependencies

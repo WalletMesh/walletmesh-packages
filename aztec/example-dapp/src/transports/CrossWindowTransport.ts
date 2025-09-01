@@ -10,7 +10,7 @@ export type CrossWindowMessage = {
 export function createCrossWindowTransport(
   targetWindow: Window,
   targetOrigin: string,
-  messageId: string
+  messageId: string,
 ): JSONRPCTransport {
   const messageHandlers = new Set<(message: unknown) => void>();
 

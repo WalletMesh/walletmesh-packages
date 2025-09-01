@@ -15,25 +15,26 @@ import type {
 } from '@aztec/aztec.js';
 import { Contract, DeploySentTx, SentTx } from '@aztec/aztec.js';
 import type { IntentAction, IntentInnerHash } from '@aztec/aztec.js/utils';
-import type {
-  EventMetadataDefinition,
-  PXEInfo,
-  ContractMetadata,
-  ContractClassMetadata,
-} from '@aztec/stdlib/interfaces/client';
+import { DefaultAccountEntrypoint } from '@aztec/entrypoints/account';
+import type { AuthWitnessProvider, FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfaces';
+import type { ExecutionPayload } from '@aztec/entrypoints/payload';
+import { createLogger } from '@aztec/foundation/log';
 import type { NodeInfo } from '@aztec/stdlib/contract';
 import type { GasFees } from '@aztec/stdlib/gas';
 import type {
+  ContractClassMetadata,
+  ContractMetadata,
+  EventMetadataDefinition,
+  PXEInfo,
+} from '@aztec/stdlib/interfaces/client';
+import type {
   PrivateExecutionResult,
+  SimulationOverrides,
   TxProfileResult,
   TxProvingResult,
   TxSimulationResult,
   UtilitySimulationResult,
 } from '@aztec/stdlib/tx';
-import type { ExecutionPayload } from '@aztec/entrypoints/payload';
-import type { FeeOptions, TxExecutionOptions, AuthWitnessProvider } from '@aztec/entrypoints/interfaces';
-import { DefaultAccountEntrypoint } from '@aztec/entrypoints/account';
-import { createLogger } from '@aztec/foundation/log';
 
 import type { AztecChainId } from '../types.js';
 import type { AztecRouterProvider } from './aztec-router-provider.js';
@@ -515,9 +516,9 @@ export class AztecDappWallet implements Wallet {
    * Implements {@link Wallet.simulateTx}.
    * @param txRequest - The {@link TxExecutionRequest} to simulate.
    * @param simulatePublic - Whether to simulate public parts of the transaction.
-   * @param msgSender - Optional {@link AztecAddress} of the message sender for simulation context.
    * @param skipTxValidation - Optional flag to skip transaction validation during simulation.
    * @param skipFeeEnforcement - Optional flag to skip fee enforcement during simulation.
+   * @param overrides - Optional {@link SimulationOverrides} for simulation context (includes msgSender).
    * @param scopes - Optional array of {@link AztecAddress} scopes for the simulation.
    * @returns A promise that resolves to the {@link TxSimulationResult}.
    * @see {@link AztecWalletMethodMap.aztec_simulateTx}
@@ -525,25 +526,25 @@ export class AztecDappWallet implements Wallet {
   async simulateTx(
     txRequest: TxExecutionRequest,
     simulatePublic: boolean,
-    msgSender?: AztecAddress,
     skipTxValidation?: boolean,
     skipFeeEnforcement?: boolean,
+    overrides?: SimulationOverrides,
     scopes?: AztecAddress[],
   ): Promise<TxSimulationResult> {
     const params: {
       txRequest: TxExecutionRequest;
       simulatePublic?: boolean;
-      msgSender?: AztecAddress;
       skipTxValidation?: boolean;
       skipFeeEnforcement?: boolean;
+      overrides?: SimulationOverrides;
       scopes?: AztecAddress[];
     } = {
       txRequest,
     };
     if (simulatePublic !== undefined) params.simulatePublic = simulatePublic;
-    if (msgSender !== undefined) params.msgSender = msgSender;
     if (skipTxValidation !== undefined) params.skipTxValidation = skipTxValidation;
     if (skipFeeEnforcement !== undefined) params.skipFeeEnforcement = skipFeeEnforcement;
+    if (overrides !== undefined) params.overrides = overrides;
     if (scopes !== undefined) params.scopes = scopes;
 
     const result = await this.routerProvider.call(this.chainId, {
@@ -764,7 +765,7 @@ export class AztecDappWallet implements Wallet {
       },
     });
 
-    const txHashPromise = Promise.resolve(result as TxHash);
+    const txHashPromise = () => Promise.resolve(result as TxHash);
     return new SentTx(this, txHashPromise);
   }
 
@@ -828,7 +829,7 @@ export class AztecDappWallet implements Wallet {
     })) as { txHash: TxHash; contractAddress: AztecAddress };
 
     // Create a promise that resolves with the transaction hash
-    const txHashPromise = Promise.resolve(result.txHash);
+    const txHashPromise = () => Promise.resolve(result.txHash);
 
     // Create the post-deploy constructor function
     const postDeployCtor = async (address: AztecAddress, wallet: Wallet) => {

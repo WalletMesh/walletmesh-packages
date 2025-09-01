@@ -1,13 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createNodeHandlers } from './node.js';
-import type { AccountWallet, PXE } from '@aztec/aztec.js';
+import type { AccountWallet, L2Block, PXE } from '@aztec/aztec.js';
+import { Fr } from '@aztec/aztec.js';
 import type { NodeInfo } from '@aztec/stdlib/contract';
 import type { GasFees } from '@aztec/stdlib/gas';
 import type { PXEInfo } from '@aztec/stdlib/interfaces/client';
-import type { L2Block } from '@aztec/aztec.js';
-import type { AztecHandlerContext } from './index.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContractArtifactCache } from '../../contractArtifactCache.js';
-import { Fr } from '@aztec/aztec.js';
+import type { AztecHandlerContext } from './index.js';
+import { createNodeHandlers } from './node.js';
 
 // Mock dependencies
 const createMockWallet = () =>

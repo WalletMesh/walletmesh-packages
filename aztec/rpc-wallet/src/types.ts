@@ -1,15 +1,15 @@
 import type {
+  AccountWallet,
   AuthWitness,
   AztecAddress,
+  CompleteAddress,
   Fr,
+  L2Block,
   PXE,
+  Tx,
   TxExecutionRequest,
   TxHash,
   TxReceipt,
-  L2Block,
-  CompleteAddress,
-  AccountWallet,
-  Tx,
 } from '@aztec/aztec.js';
 import type { IntentAction, IntentInnerHash } from '@aztec/aztec.js/utils';
 import type { ExecutionPayload } from '@aztec/entrypoints/payload';
@@ -25,25 +25,23 @@ import type { ExecutionPayload } from '@aztec/entrypoints/payload';
  *   methods, their parameters, and return types. This is central to the typed RPC system.
  */
 
-import type {
-  PrivateExecutionResult,
-  TxProfileResult,
-  TxProvingResult,
-  TxSimulationResult,
-  UtilitySimulationResult,
-} from '@aztec/stdlib/tx';
-
 import type { ContractArtifact } from '@aztec/stdlib/abi';
-
+import type { ContractInstanceWithAddress, NodeInfo } from '@aztec/stdlib/contract';
+import type { GasFees } from '@aztec/stdlib/gas';
 import type {
   ContractClassMetadata,
   ContractMetadata,
   EventMetadataDefinition,
   PXEInfo,
 } from '@aztec/stdlib/interfaces/client';
-
-import type { GasFees } from '@aztec/stdlib/gas';
-import type { ContractInstanceWithAddress, NodeInfo } from '@aztec/stdlib/contract';
+import type {
+  PrivateExecutionResult,
+  SimulationOverrides,
+  TxProfileResult,
+  TxProvingResult,
+  TxSimulationResult,
+  UtilitySimulationResult,
+} from '@aztec/stdlib/tx';
 
 import type { WalletMethodMap } from '@walletmesh/router';
 import type { ContractArtifactCache } from './contractArtifactCache.js';
@@ -318,18 +316,20 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
    * @param params - A tuple containing the simulation parameters.
    * @param params.0 txRequest - The {@link TxExecutionRequest} to simulate.
    * @param params.1 simulatePublic - Optional: Whether to simulate public parts. Defaults to `false`.
-   * @param params.2 msgSender - Optional: {@link AztecAddress} for simulation context.
-   * @param params.3 skipTxValidation - Optional: Flag to skip validation. Defaults to `false`.
-   * @param params.4 skipFeeEnforcement - Optional: Flag to skip fee enforcement. Defaults to `false`.
+   * @param params.2 skipTxValidation - Optional: Flag to skip validation. Defaults to `false`.
+   * @param params.3 skipFeeEnforcement - Optional: Flag to skip fee enforcement. Defaults to `false`.
+   * @param params.4 overrides - Optional: {@link SimulationOverrides} for simulation context (includes msgSender).
+   * @param params.5 scopes - Optional: Array of {@link AztecAddress} scopes for the simulation.
    * @returns result - The {@link TxSimulationResult}.
    */
   aztec_simulateTx: {
     params: [
       TxExecutionRequest,
       (boolean | undefined)?, // simulatePublic
-      (AztecAddress | undefined)?, // msgSender
       (boolean | undefined)?, // skipTxValidation
       (boolean | undefined)?, // skipFeeEnforcement
+      (SimulationOverrides | undefined)?, // overrides (includes msgSender)
+      (AztecAddress[] | undefined)?, // scopes
     ];
     result: TxSimulationResult;
   };

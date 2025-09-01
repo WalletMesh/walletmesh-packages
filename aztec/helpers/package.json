@@ -27,7 +27,7 @@
     "version": "pnpm clean && pnpm build && pnpm run docs"
   },
   "dependencies": {
-    "@aztec/aztec.js": "0.87.8",
-    "@aztec/stdlib": "0.87.8"
+    "@aztec/aztec.js": "1.2.1",
+    "@aztec/stdlib": "1.2.1"
   }
 }

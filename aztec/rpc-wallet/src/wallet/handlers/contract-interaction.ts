@@ -1,11 +1,11 @@
-import type { AztecHandlerContext } from './index.js';
-import type { AztecWalletMethodMap } from '../../types.js';
-import { Contract, FeeJuicePaymentMethod, Fr, type DeployOptions, type TxHash } from '@aztec/aztec.js';
-import type { ExecutionPayload } from '@aztec/entrypoints/payload';
+import { Contract, type DeployOptions, FeeJuicePaymentMethod, Fr, type TxHash } from '@aztec/aztec.js';
 import type { FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfaces';
-import { GasSettings } from '@aztec/stdlib/gas';
+import type { ExecutionPayload } from '@aztec/entrypoints/payload';
 import { createLogger } from '@aztec/foundation/log';
+import { GasSettings } from '@aztec/stdlib/gas';
 import type { TxExecutionRequest, TxSimulationResult } from '@aztec/stdlib/tx';
+import type { AztecWalletMethodMap } from '../../types.js';
+import type { AztecHandlerContext } from './index.js';
 
 const logger = createLogger('aztec-rpc-wallet:contract-interaction:handler');
 
@@ -239,8 +239,8 @@ export function createContractInteractionHandlers() {
           contractAddressSalt,
           fee: await getFeeOptions(ctx),
         };
-        if (txOpts.nonce) {
-          opts.nonce = txOpts.nonce;
+        if (txOpts.txNonce) {
+          opts.txNonce = txOpts.txNonce;
         }
         if (txOpts.cancellable) {
           opts.cancellable = txOpts.cancellable;
