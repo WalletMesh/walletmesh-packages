@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.4.1**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.0**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: AztecWalletMethodMap
 
-Defined in: [aztec/rpc-wallet/src/types.ts:117](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L117)
+Defined in: [aztec/rpc-wallet/src/types.ts:115](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L115)
 
 Defines the complete map of all JSON-RPC methods supported by the Aztec RPC Wallet.
 This interface extends the base WalletMethodMap from `@walletmesh/router`
@@ -39,7 +39,7 @@ Methods are loosely grouped by functionality (Chain/Node, Account, Sender, etc.)
 
 > **aztec\_createAuthWit**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:201](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L201)
+Defined in: [aztec/rpc-wallet/src/types.ts:199](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L199)
 
 Creates an AuthWitness (authorization witness) for a given message hash or intent.
 Used for delegating actions.
@@ -70,7 +70,7 @@ result - The created AuthWitness.
 
 > **aztec\_getAddress**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:185](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L185)
+Defined in: [aztec/rpc-wallet/src/types.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L183)
 
 Retrieves the primary AztecAddress of the wallet's account.
 
@@ -96,7 +96,7 @@ result - The wallet's AztecAddress.
 
 > **aztec\_getBlock**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:135](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L135)
+Defined in: [aztec/rpc-wallet/src/types.ts:133](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L133)
 
 Retrieves a specific L2 block by its number.
 
@@ -126,7 +126,7 @@ result - The L2Block data, or null/undefined if not found (behavior depends on P
 
 > **aztec\_getBlockNumber**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:141](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L141)
+Defined in: [aztec/rpc-wallet/src/types.ts:139](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L139)
 
 Retrieves the current (latest) L2 block number.
 
@@ -152,7 +152,7 @@ result - The current block number.
 
 > **aztec\_getChainId**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:147](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L147)
+Defined in: [aztec/rpc-wallet/src/types.ts:145](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L145)
 
 Retrieves the chain ID of the connected Aztec network.
 
@@ -178,7 +178,7 @@ result - The chain ID as an Fr.
 
 > **aztec\_getCompleteAddress**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:191](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L191)
+Defined in: [aztec/rpc-wallet/src/types.ts:189](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L189)
 
 Retrieves the CompleteAddress of the wallet's account, including public keys.
 
@@ -204,7 +204,7 @@ result - The wallet's CompleteAddress.
 
 > **aztec\_getContractClassMetadata**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:258](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L258)
+Defined in: [aztec/rpc-wallet/src/types.ts:256](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L256)
 
 Retrieves ContractClassMetadata for a specific contract class.
 
@@ -238,7 +238,7 @@ result - The ContractClassMetadata.
 
 > **aztec\_getContractMetadata**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:247](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L247)
+Defined in: [aztec/rpc-wallet/src/types.ts:245](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L245)
 
 Retrieves ContractMetadata for a specific deployed contract.
 
@@ -268,7 +268,7 @@ result - The ContractMetadata for the specified contract.
 
 > **aztec\_getContracts**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:240](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L240)
+Defined in: [aztec/rpc-wallet/src/types.ts:238](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L238)
 
 Retrieves a list of all AztecAddresses of contracts known to the PXE/wallet.
 
@@ -294,7 +294,7 @@ result - An array of contract AztecAddresses.
 
 > **aztec\_getCurrentBaseFees**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:177](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L177)
+Defined in: [aztec/rpc-wallet/src/types.ts:175](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L175)
 
 Retrieves the current base gas fees on the network.
 
@@ -320,7 +320,7 @@ result - A GasFees object.
 
 > **aztec\_getNodeInfo**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:159](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L159)
+Defined in: [aztec/rpc-wallet/src/types.ts:157](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L157)
 
 Retrieves comprehensive information about the connected Aztec node.
 
@@ -346,7 +346,7 @@ result - A NodeInfo object.
 
 > **aztec\_getPrivateEvents**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:386](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L386)
+Defined in: [aztec/rpc-wallet/src/types.ts:386](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L386)
 
 Retrieves private (encrypted) events from the blockchain.
 
@@ -392,7 +392,7 @@ result - An array of decoded private event data (type `unknown[]`, actual type d
 
 > **aztec\_getProvenBlockNumber**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:165](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L165)
+Defined in: [aztec/rpc-wallet/src/types.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L163)
 
 Retrieves the latest L2 block number that has been proven.
 
@@ -418,7 +418,7 @@ result - The latest proven block number.
 
 > **aztec\_getPublicEvents**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:404](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L404)
+Defined in: [aztec/rpc-wallet/src/types.ts:404](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L404)
 
 Retrieves public (unencrypted) events from the blockchain.
 
@@ -456,7 +456,7 @@ result - An array of decoded public event data (type `unknown[]`, actual type de
 
 > **aztec\_getPXEInfo**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:171](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L171)
+Defined in: [aztec/rpc-wallet/src/types.ts:169](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L169)
 
 Retrieves information about the PXE service, including capabilities and version.
 
@@ -482,7 +482,7 @@ result - A PXEInfo object.
 
 > **aztec\_getSenders**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:222](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L222)
+Defined in: [aztec/rpc-wallet/src/types.ts:220](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L220)
 
 Retrieves a list of all currently authorized sender AztecAddresses.
 
@@ -508,7 +508,7 @@ result - An array of authorized AztecAddresses.
 
 > **aztec\_getTxReceipt**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:312](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L312)
+Defined in: [aztec/rpc-wallet/src/types.ts:310](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L310)
 
 Retrieves the TxReceipt for a transaction.
 
@@ -538,7 +538,7 @@ result - The TxReceipt.
 
 > **aztec\_getVersion**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:153](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L153)
+Defined in: [aztec/rpc-wallet/src/types.ts:151](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L151)
 
 Retrieves the version of the connected PXE (Private Execution Environment) or node.
 
@@ -564,7 +564,7 @@ result - The version as an Fr.
 
 > **aztec\_profileTx**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:345](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L345)
+Defined in: [aztec/rpc-wallet/src/types.ts:345](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L345)
 
 Profiles a TxExecutionRequest for performance analysis.
 
@@ -606,7 +606,7 @@ result - The TxProfileResult.
 
 > **aztec\_proveTx**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:292](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L292)
+Defined in: [aztec/rpc-wallet/src/types.ts:290](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L290)
 
 Generates proofs for a transaction execution request.
 
@@ -640,7 +640,7 @@ result - The TxProvingResult, including the proven transaction.
 
 > **aztec\_registerContract**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:269](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L269)
+Defined in: [aztec/rpc-wallet/src/types.ts:267](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L267)
 
 Registers a deployed contract instance with the wallet.
 
@@ -674,7 +674,7 @@ result - `true` if registration was successful.
 
 > **aztec\_registerContractClass**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:279](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L279)
+Defined in: [aztec/rpc-wallet/src/types.ts:277](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L277)
 
 Registers a contract class (bytecode and ABI) with the wallet.
 
@@ -704,7 +704,7 @@ result - `true` if registration was successful.
 
 > **aztec\_registerSender**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:213](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L213)
+Defined in: [aztec/rpc-wallet/src/types.ts:211](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L211)
 
 Registers a new authorized sender AztecAddress.
 
@@ -734,7 +734,7 @@ result - The registered AztecAddress.
 
 > **aztec\_removeSender**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:229](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L229)
+Defined in: [aztec/rpc-wallet/src/types.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L227)
 
 Removes an AztecAddress from the list of authorized senders.
 
@@ -764,7 +764,7 @@ result - `true` if removal was successful.
 
 > **aztec\_sendTx**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:302](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L302)
+Defined in: [aztec/rpc-wallet/src/types.ts:300](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L300)
 
 Sends a proven Tx (transaction) to the network.
 
@@ -794,13 +794,13 @@ result - The TxHash of the sent transaction.
 
 > **aztec\_simulateTx**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:326](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L326)
+Defined in: [aztec/rpc-wallet/src/types.ts:325](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L325)
 
 Simulates a TxExecutionRequest without sending it to the network.
 
 #### params
 
-> **params**: \[`TxExecutionRequest`, `boolean`?, `AztecAddress`?, `boolean`?, `boolean`?\]
+> **params**: \[`TxExecutionRequest`, `boolean`?, `boolean`?, `boolean`?, `SimulationOverrides`?, `AztecAddress`[]?\]
 
 #### result
 
@@ -820,15 +820,19 @@ simulatePublic - Optional: Whether to simulate public parts. Defaults to `false`
 
 #### Param
 
-msgSender - Optional: AztecAddress for simulation context.
-
-#### Param
-
 skipTxValidation - Optional: Flag to skip validation. Defaults to `false`.
 
 #### Param
 
 skipFeeEnforcement - Optional: Flag to skip fee enforcement. Defaults to `false`.
+
+#### Param
+
+overrides - Optional: SimulationOverrides for simulation context (includes msgSender).
+
+#### Param
+
+scopes - Optional: Array of AztecAddress scopes for the simulation.
 
 #### Returns
 
@@ -840,7 +844,7 @@ result - The TxSimulationResult.
 
 > **aztec\_simulateUtility**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:364](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L364)
+Defined in: [aztec/rpc-wallet/src/types.ts:364](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L364)
 
 Simulates a utility (view) function call.
 
@@ -886,7 +890,7 @@ result - The UtilitySimulationResult.
 
 > **aztec\_wmDeployContract**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:434](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L434)
+Defined in: [aztec/rpc-wallet/src/types.ts:434](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L434)
 
 WalletMesh specific: Deploys a new contract using its artifact and constructor arguments.
 The wallet handles address computation, proving, and sending the deployment transaction.
@@ -926,7 +930,7 @@ result - An object with `txHash` (TxHash) and `contractAddress` (AztecAddress).
 
 > **aztec\_wmExecuteTx**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:421](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L421)
+Defined in: [aztec/rpc-wallet/src/types.ts:421](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L421)
 
 WalletMesh specific: Executes a contract function interaction using a pre-constructed ExecutionPayload.
 The wallet handles simulation, proving, and sending.
@@ -957,7 +961,7 @@ result - The TxHash of the sent transaction.
 
 > **aztec\_wmSimulateTx**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:454](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L454)
+Defined in: [aztec/rpc-wallet/src/types.ts:454](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L454)
 
 WalletMesh specific: Simulates a contract function interaction using a pre-constructed ExecutionPayload.
 
@@ -987,7 +991,7 @@ result - The TxSimulationResult.
 
 > **wm\_getSupportedMethods**: `object`
 
-Defined in: [aztec/rpc-wallet/src/types.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/c22c9775e630bf48780e547c01c8f5442dc5b36c/aztec/rpc-wallet/src/types.ts#L126)
+Defined in: [aztec/rpc-wallet/src/types.ts:124](https://github.com/WalletMesh/walletmesh-packages/blob/fd734440d9c5e6ff3c77f868722c74b1be65d39d/aztec/rpc-wallet/src/types.ts#L124)
 
 Retrieves a list of all JSON-RPC methods supported by this wallet implementation.
 Allows clients to discover the capabilities of the wallet.
