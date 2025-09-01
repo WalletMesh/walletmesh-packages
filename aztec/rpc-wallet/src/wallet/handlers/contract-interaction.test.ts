@@ -38,7 +38,7 @@ describe('createContractInteractionHandlers', () => {
     mockContext = {
       wallet: {
         getAddress: vi.fn().mockReturnValue(mockAddress),
-        getCurrentBaseFees: vi.fn().mockResolvedValue(new GasFees(new Fr(100n), new Fr(100n))),
+        getCurrentBaseFees: vi.fn().mockResolvedValue(new GasFees(100n, 100n)),
         createTxExecutionRequest: vi.fn().mockResolvedValue({}),
         simulateTx: vi.fn().mockResolvedValue({ privateExecutionResult: {} }),
         proveTx: vi.fn().mockResolvedValue({ toTx: vi.fn().mockReturnValue({}) }),
@@ -224,7 +224,7 @@ describe('createContractInteractionHandlers', () => {
       const callOrder: string[] = [];
       vi.mocked(mockContext.wallet.getCurrentBaseFees).mockImplementation(async () => {
         callOrder.push('getCurrentBaseFees');
-        return new GasFees(new Fr(100n), new Fr(100n));
+        return new GasFees(100n, 100n);
       });
       vi.mocked(mockDeployMethod.prove).mockImplementation(async () => {
         callOrder.push('prove');
