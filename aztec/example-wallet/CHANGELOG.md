@@ -1,5 +1,11 @@
 # @walletmesh/aztec-example-wallet
 
+## 0.5.1
+
+### Patch Changes
+
+- d8ce2ea: Disable proving in the example wallet PXE
+
 ## 0.5.0
 
 ### Minor Changes
