@@ -125,6 +125,7 @@ export async function createPXE(node: AztecNode, showError: (msg: string) => voi
     l1ChainId: nodeInfo.l1ChainId,
     rollupVersion: nodeInfo.rollupVersion,
     dataDirectory: undefined,
+    proverEnabled: false, // TODO: Make this configurable by the user
   };
 
 
