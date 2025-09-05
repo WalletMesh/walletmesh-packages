@@ -71,11 +71,14 @@ function getDappOrigin(): string | undefined {
 }
 
 export const createHistoryMiddleware = (
-  setRequestHistory: React.Dispatch<React.SetStateAction<HistoryEntry[]>>,
+  onHistoryUpdate: (history: HistoryEntry[]) => void,
 ): JSONRPCMiddleware<
   AztecWalletMethodMap,
   AztecHandlerContext & { functionCallArgNames?: FunctionArgNames }
 > => {
+  // Maintain history internally
+  let history: HistoryEntry[] = [];
+
   return async (context, req, next) => {
     const timestamp = new Date().toLocaleString();
     const requestTimestamp = Date.now();
@@ -104,7 +107,8 @@ export const createHistoryMiddleware = (
 
     // Add new entry with processing status
     const newHistoryId = Date.now(); // Use timestamp as unique identifier
-    setRequestHistory((prev) => [...prev, { ...entry, id: newHistoryId }]);
+    history = [...history, { ...entry, id: newHistoryId }];
+    onHistoryUpdate(history);
 
     try {
       const result = await next();
@@ -112,20 +116,19 @@ export const createHistoryMiddleware = (
       const duration = responseTimestamp - requestTimestamp;
 
       // Update with success status
-      setRequestHistory((prev) =>
-        prev.map((item) =>
-          item.id === newHistoryId
-            ? {
-                ...item,
-                status: 'success',
-                approvalStatus: 'approved',
-                processingStatus: 'success',
-                responseTimestamp,
-                duration
-              }
-            : item
-        ),
+      history = history.map((item) =>
+        item.id === newHistoryId
+          ? {
+              ...item,
+              status: 'success',
+              approvalStatus: 'approved',
+              processingStatus: 'success',
+              responseTimestamp,
+              duration
+            }
+          : item
       );
+      onHistoryUpdate(history);
       return result;
     } catch (error) {
       const responseTimestamp = Date.now();
@@ -140,21 +143,20 @@ export const createHistoryMiddleware = (
 
       // Update with error status - but don't change approval status to 'denied'
       // The approval status should remain as it was (approved if user approved it)
-      setRequestHistory((prev) =>
-        prev.map((item) =>
-          item.id === newHistoryId
-            ? {
-                ...item,
-                status: 'error',
-                // Keep the existing approval status - don't override it
-                processingStatus: 'error',
-                responseTimestamp,
-                duration,
-                error: errorInfo
-              }
-            : item
-        ),
+      history = history.map((item) =>
+        item.id === newHistoryId
+          ? {
+              ...item,
+              status: 'error',
+              // Keep the existing approval status - don't override it
+              processingStatus: 'error',
+              responseTimestamp,
+              duration,
+              error: errorInfo
+            }
+          : item
       );
+      onHistoryUpdate(history);
       throw error;
     }
   };

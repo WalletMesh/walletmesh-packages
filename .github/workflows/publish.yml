@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       published: ${{ steps.changesets.outputs.published }}
+      example-wallet-changed: ${{ steps.check-versions.outputs.wallet-changed }}
+      example-dapp-changed: ${{ steps.check-versions.outputs.dapp-changed }}
     permissions:
       contents: write
       packages: write
@@ -43,6 +45,12 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      - name: Store pre-changeset versions
+        id: pre-versions
+        run: |
+          echo "wallet-version=$(node -p "require('./aztec/example-wallet/package.json').version")" >> $GITHUB_OUTPUT
+          echo "dapp-version=$(node -p "require('./aztec/example-dapp/package.json').version")" >> $GITHUB_OUTPUT
+
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
@@ -56,12 +64,37 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
           NPM_CONFIG_PROVENANCE: "true"
 
+      - name: Check for version changes in example packages
+        id: check-versions
+        run: |
+          # Get current versions after changesets
+          WALLET_VERSION=$(node -p "require('./aztec/example-wallet/package.json').version")
+          DAPP_VERSION=$(node -p "require('./aztec/example-dapp/package.json').version")
+
+          # Check if versions changed
+          if [ "$WALLET_VERSION" != "${{ steps.pre-versions.outputs.wallet-version }}" ]; then
+            echo "Wallet version changed from ${{ steps.pre-versions.outputs.wallet-version }} to $WALLET_VERSION"
+            echo "wallet-changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "Wallet version unchanged: $WALLET_VERSION"
+            echo "wallet-changed=false" >> $GITHUB_OUTPUT
+          fi
+
+          if [ "$DAPP_VERSION" != "${{ steps.pre-versions.outputs.dapp-version }}" ]; then
+            echo "DApp version changed from ${{ steps.pre-versions.outputs.dapp-version }} to $DAPP_VERSION"
+            echo "dapp-changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "DApp version unchanged: $DAPP_VERSION"
+            echo "dapp-changed=false" >> $GITHUB_OUTPUT
+          fi
+
   aztec-example-wallet-release:
     permissions:
       contents: read
       packages: write
     needs: release # Wait for publish to complete
-    if: needs.release.outputs.published == 'true' # Only run if packages were published
+    # Run if packages were published OR if the example wallet version changed
+    if: needs.release.outputs.published == 'true' || needs.release.outputs.example-wallet-changed == 'true'
     uses: ./.github/workflows/docker-aztec-example-wallet.yml
 
   aztec-example-dapp-release:
@@ -69,5 +102,6 @@ jobs:
       contents: read
       packages: write
     needs: release # Wait for publish to complete
-    if: needs.release.outputs.published == 'true' # Only run if packages were published
+    # Run if packages were published OR if the example dapp version changed
+    if: needs.release.outputs.published == 'true' || needs.release.outputs.example-dapp-changed == 'true'
     uses: ./.github/workflows/docker-aztec-example-dapp.yml

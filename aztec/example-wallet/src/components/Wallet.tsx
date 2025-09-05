@@ -28,6 +28,20 @@ import { createDappToWalletTransport } from '../transports/CrossWindowTransport.
 import { CustomPermissionManager } from './CustomPermissionManager.js';
 import { useToast } from '../contexts/ToastContext.js';
 
+// Statistics types
+interface MethodTimingStats {
+  count: number;
+  min: number;
+  max: number;
+  avg: number;
+  stdDev: number;
+  times: number[];
+}
+
+interface TimingStatistics {
+  [method: string]: MethodTimingStats;
+}
+
 import initNoircAbiWasm from '@aztec/noir-noirc_abi/web/noirc_abi_wasm.js';
 import initAcvmJs from '@aztec/noir-acvm_js/web/acvm_js.js';
 
@@ -198,6 +212,24 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
     error: true,
   });
 
+  /** State for tracking transaction statistics */
+  const [transactionStats, setTransactionStats] = useState({
+    pending: 0,
+    total: 0,
+    successful: 0,
+    errors: 0,
+  });
+
+  /** State for tracking timing statistics by method */
+  const [timingStats, setTimingStats] = useState<TimingStatistics>({});
+  /** State for controlling timing stats display */
+  const [showTimingStats, setShowTimingStats] = useState(false);
+  /** State for sorting timing statistics table */
+  const [timingSortConfig, setTimingSortConfig] = useState<{
+    column: 'method' | 'count' | 'min' | 'max' | 'avg' | 'stdDev';
+    direction: 'asc' | 'desc';
+  }>({ column: 'count', direction: 'desc' });
+
   /** Ref to ensure wallet setup runs only once. */
   const setupDoneRef = useRef(false);
   /** Ref to the WalletRouter instance. */
@@ -250,8 +282,62 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
                 aztecWalletNode.addMiddleware(createHistoryMiddleware((entries) => {
           setRequestHistory(entries as HistoryEntry[]);
 
-          // Show toast for errors
+          // Update transaction statistics
           const historyEntries = entries as HistoryEntry[];
+          const pendingCount = historyEntries.filter(e => e.processingStatus === 'processing').length;
+          const successCount = historyEntries.filter(e => e.processingStatus === 'success').length;
+          const errorCount = historyEntries.filter(e => e.processingStatus === 'error').length;
+          const totalCount = historyEntries.length;
+
+          setTransactionStats({
+            pending: pendingCount,
+            total: totalCount,
+            successful: successCount,
+            errors: errorCount,
+          });
+
+          // Calculate timing statistics
+          const newTimingStats: TimingStatistics = {};
+          historyEntries
+            .filter(entry => entry.processingStatus === 'success' && entry.duration !== undefined)
+            .forEach(entry => {
+              const method = entry.method;
+              const duration = entry.duration as number;
+              
+              if (!newTimingStats[method]) {
+                newTimingStats[method] = {
+                  count: 0,
+                  min: Infinity,
+                  max: -Infinity,
+                  avg: 0,
+                  stdDev: 0,
+                  times: [],
+                };
+              }
+              
+              newTimingStats[method].times.push(duration);
+            });
+
+          // Calculate statistics for each method
+          Object.keys(newTimingStats).forEach(method => {
+            const stats = newTimingStats[method];
+            const times = stats.times;
+            
+            stats.count = times.length;
+            stats.min = Math.min(...times);
+            stats.max = Math.max(...times);
+            stats.avg = times.reduce((a, b) => a + b, 0) / times.length;
+            
+            // Calculate standard deviation
+            const variance = times.reduce((acc, time) => {
+              return acc + Math.pow(time - stats.avg, 2);
+            }, 0) / times.length;
+            stats.stdDev = Math.sqrt(variance);
+          });
+
+          setTimingStats(newTimingStats);
+
+          // Show toast for errors
           const latestEntry = historyEntries[historyEntries.length - 1];
           if (latestEntry?.processingStatus === 'error' && latestEntry?.error) {
             showError(`Request failed: ${latestEntry.error.message}`);
@@ -471,6 +557,63 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
     req.processingStatus && statusFilters[req.processingStatus]
   );
 
+  /** Format time with appropriate unit */
+  const formatTime = (ms: number): string => {
+    if (ms >= 1000) {
+      return `${(ms / 1000).toFixed(2)}s`;
+    }
+    return `${Math.round(ms)}ms`;
+  };
+
+  /** Sort timing statistics based on current sort configuration */
+  const getSortedTimingStats = () => {
+    const entries = Object.entries(timingStats);
+    
+    return entries.sort((a, b) => {
+      const [methodA, statsA] = a;
+      const [methodB, statsB] = b;
+      
+      let comparison = 0;
+      
+      switch (timingSortConfig.column) {
+        case 'method':
+          comparison = methodA.localeCompare(methodB);
+          break;
+        case 'count':
+          comparison = statsA.count - statsB.count;
+          break;
+        case 'min':
+          comparison = statsA.min - statsB.min;
+          break;
+        case 'max':
+          comparison = statsA.max - statsB.max;
+          break;
+        case 'avg':
+          comparison = statsA.avg - statsB.avg;
+          break;
+        case 'stdDev':
+          comparison = statsA.stdDev - statsB.stdDev;
+          break;
+      }
+      
+      return timingSortConfig.direction === 'asc' ? comparison : -comparison;
+    });
+  };
+
+  /** Handle column header click for sorting */
+  const handleSort = (column: typeof timingSortConfig.column) => {
+    setTimingSortConfig(prev => ({
+      column,
+      direction: prev.column === column && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  /** Get sort indicator for column header */
+  const getSortIndicator = (column: typeof timingSortConfig.column) => {
+    if (timingSortConfig.column !== column) return '';
+    return timingSortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+  };
+
   return (
     <div className="wallet-server">
       {pendingApproval && onApprovalResponse && (
@@ -494,14 +637,111 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
           <p className="connection-status">
             <strong>Connected Account:</strong> {connectedAccount || 'Loading...'}
           </p>
-          {(() => {
-            const processingCount = requestHistory.filter(req => req.processingStatus === 'processing').length;
-            return processingCount > 0 ? (
-              <p className="processing-indicator">
-                <strong>⏳ {processingCount} request{processingCount !== 1 ? 's' : ''} currently processing</strong>
-              </p>
-            ) : null;
-          })()}
+          <div className="transaction-stats">
+            <div className="stat-item">
+              <div className="stat-label">Pending</div>
+              <div className={`stat-value ${transactionStats.pending > 0 ? 'pending' : 'total'}`}>
+                {transactionStats.pending}
+              </div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-label">Total</div>
+              <div className="stat-value total">
+                {transactionStats.total}
+              </div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-label">Successful</div>
+              <div className="stat-value success">
+                {transactionStats.successful}
+              </div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-label">Errors</div>
+              <div className={`stat-value error ${transactionStats.errors > 0 ? 'has-errors' : ''}`}>
+                {transactionStats.errors}
+              </div>
+            </div>
+          </div>
+          
+          {/* Timing Statistics Section */}
+          <div className="timing-stats-container">
+            <button 
+              className="timing-stats-toggle"
+              onClick={() => setShowTimingStats(!showTimingStats)}
+              aria-expanded={showTimingStats}
+            >
+              <span className="toggle-icon">{showTimingStats ? '▼' : '▶'}</span>
+              Processing Time Statistics
+              <span className="stats-count">({Object.keys(timingStats).length} methods)</span>
+            </button>
+            
+            {showTimingStats && (
+              <div className="timing-stats-content">
+                {Object.keys(timingStats).length === 0 ? (
+                  <p className="no-timing-data">No timing data available. Complete some successful requests to see statistics.</p>
+                ) : (
+                  <div className="timing-stats-table-container">
+                    <table className="timing-stats-table">
+                      <thead>
+                        <tr>
+                          <th 
+                            className="sortable-header"
+                            onClick={() => handleSort('method')}
+                          >
+                            Method{getSortIndicator('method')}
+                          </th>
+                          <th 
+                            className="sortable-header"
+                            onClick={() => handleSort('count')}
+                          >
+                            Count{getSortIndicator('count')}
+                          </th>
+                          <th 
+                            className="sortable-header"
+                            onClick={() => handleSort('min')}
+                          >
+                            Min{getSortIndicator('min')}
+                          </th>
+                          <th 
+                            className="sortable-header"
+                            onClick={() => handleSort('max')}
+                          >
+                            Max{getSortIndicator('max')}
+                          </th>
+                          <th 
+                            className="sortable-header"
+                            onClick={() => handleSort('avg')}
+                          >
+                            Avg{getSortIndicator('avg')}
+                          </th>
+                          <th 
+                            className="sortable-header"
+                            onClick={() => handleSort('stdDev')}
+                          >
+                            Std Dev{getSortIndicator('stdDev')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {getSortedTimingStats().map(([method, stats]) => (
+                          <tr key={method}>
+                            <td className="method-cell">{method}</td>
+                            <td className="count-cell">{stats.count}</td>
+                            <td className="time-cell min">{formatTime(stats.min)}</td>
+                            <td className="time-cell max">{formatTime(stats.max)}</td>
+                            <td className="time-cell avg">{formatTime(stats.avg)}</td>
+                            <td className="time-cell stddev">{formatTime(stats.stdDev)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <h3>Request History</h3>
           <div className="history-filters">
             <div className="filter-controls">
@@ -627,7 +867,10 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
                     </p>
                   ) : request.duration && (
                     <p className="request-details">
-                      <b>Duration:</b> {request.duration}ms
+                      <b>Duration:</b> {request.duration >= 1000
+                        ? `${(request.duration / 1000).toFixed(1)}s`
+                        : `${request.duration}ms`
+                      }
                     </p>
                   )}
                   <hr />
