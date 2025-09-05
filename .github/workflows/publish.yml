@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       published: ${{ steps.changesets.outputs.published }}
-      example-wallet-changed: ${{ steps.check-versions.outputs.wallet-changed }}
-      example-dapp-changed: ${{ steps.check-versions.outputs.dapp-changed }}
+      example-wallet-changed: ${{ steps.check-versions.outputs.wallet-changed || steps.set-defaults.outputs.wallet-changed }}
+      example-dapp-changed: ${{ steps.check-versions.outputs.dapp-changed || steps.set-defaults.outputs.dapp-changed }}
     permissions:
       contents: write
       packages: write
@@ -45,12 +45,6 @@ jobs:
       - name: Build packages
         run: pnpm build
 
-      - name: Store pre-changeset versions
-        id: pre-versions
-        run: |
-          echo "wallet-version=$(node -p "require('./aztec/example-wallet/package.json').version")" >> $GITHUB_OUTPUT
-          echo "dapp-version=$(node -p "require('./aztec/example-dapp/package.json').version")" >> $GITHUB_OUTPUT
-
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
@@ -66,27 +60,58 @@ jobs:
 
       - name: Check for version changes in example packages
         id: check-versions
+        if: steps.changesets.outputs.published == 'true'
         run: |
-          # Get current versions after changesets
-          WALLET_VERSION=$(node -p "require('./aztec/example-wallet/package.json').version")
-          DAPP_VERSION=$(node -p "require('./aztec/example-dapp/package.json').version")
+          # Only check for version changes when we're actually publishing (not creating PR)
+          # At this point, versions have already been bumped by a previous PR merge
 
-          # Check if versions changed
-          if [ "$WALLET_VERSION" != "${{ steps.pre-versions.outputs.wallet-version }}" ]; then
-            echo "Wallet version changed from ${{ steps.pre-versions.outputs.wallet-version }} to $WALLET_VERSION"
-            echo "wallet-changed=true" >> $GITHUB_OUTPUT
+          # Check if the version bump PR just merged included changes to example packages
+          # We look at the commit that merged the version PR (should be the previous commit)
+
+          echo "Checking for version changes in example packages..."
+
+          # Get the list of changed files in the last commit (which should be the version bump commit)
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+
+          # Check if wallet package.json was changed
+          if echo "$CHANGED_FILES" | grep -q "aztec/example-wallet/package.json"; then
+            # Verify it was a version change
+            if git diff HEAD~1 HEAD -- aztec/example-wallet/package.json | grep -q '"version":'; then
+              WALLET_VERSION=$(node -p "require('./aztec/example-wallet/package.json').version")
+              echo "Wallet version changed to $WALLET_VERSION in this release"
+              echo "wallet-changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "Wallet package.json changed but not the version"
+              echo "wallet-changed=false" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "Wallet version unchanged: $WALLET_VERSION"
+            echo "Wallet version unchanged in this release"
             echo "wallet-changed=false" >> $GITHUB_OUTPUT
           fi
 
-          if [ "$DAPP_VERSION" != "${{ steps.pre-versions.outputs.dapp-version }}" ]; then
-            echo "DApp version changed from ${{ steps.pre-versions.outputs.dapp-version }} to $DAPP_VERSION"
-            echo "dapp-changed=true" >> $GITHUB_OUTPUT
+          # Check if dapp package.json was changed
+          if echo "$CHANGED_FILES" | grep -q "aztec/example-dapp/package.json"; then
+            # Verify it was a version change
+            if git diff HEAD~1 HEAD -- aztec/example-dapp/package.json | grep -q '"version":'; then
+              DAPP_VERSION=$(node -p "require('./aztec/example-dapp/package.json').version")
+              echo "DApp version changed to $DAPP_VERSION in this release"
+              echo "dapp-changed=true" >> $GITHUB_OUTPUT
+            else
+              echo "DApp package.json changed but not the version"
+              echo "dapp-changed=false" >> $GITHUB_OUTPUT
+            fi
           else
-            echo "DApp version unchanged: $DAPP_VERSION"
+            echo "DApp version unchanged in this release"
             echo "dapp-changed=false" >> $GITHUB_OUTPUT
           fi
+
+      - name: Set default outputs when not publishing
+        id: set-defaults
+        if: steps.changesets.outputs.published != 'true'
+        run: |
+          # When we're not publishing (e.g., creating a PR), don't trigger Docker builds
+          echo "wallet-changed=false" >> $GITHUB_OUTPUT
+          echo "dapp-changed=false" >> $GITHUB_OUTPUT
 
   aztec-example-wallet-release:
     permissions:
