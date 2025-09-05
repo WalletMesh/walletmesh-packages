@@ -1,5 +1,11 @@
 # @walletmesh/aztec-example-wallet
 
+## 0.5.2
+
+### Patch Changes
+
+- 33ec5e3: add some stats to the wallet
+
 ## 0.5.1
 
 ### Patch Changes
