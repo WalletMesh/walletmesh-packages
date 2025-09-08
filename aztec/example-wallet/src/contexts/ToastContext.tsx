@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import Toast from '../components/Toast.js';
 
 interface ToastItem {
@@ -31,9 +31,10 @@ interface ToastProviderProps {
 
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const toastCounterRef = useRef(0);
 
   const showToast = useCallback((message: string, type: ToastItem['type'] = 'info') => {
-    const id = Date.now().toString();
+    const id = `toast-${Date.now()}-${++toastCounterRef.current}`;
     setToasts(prev => [...prev, { id, message, type }]);
   }, []);
 
