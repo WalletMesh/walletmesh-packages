@@ -124,9 +124,9 @@ export const createHistoryMiddleware = (
               approvalStatus: 'approved',
               processingStatus: 'success',
               responseTimestamp,
-              duration
+              duration,
             }
-          : item
+          : item,
       );
       onHistoryUpdate(history);
       return result;
@@ -138,7 +138,7 @@ export const createHistoryMiddleware = (
       const errorInfo = {
         message: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
-        details: error
+        details: error,
       };
 
       // Update with error status - but don't change approval status to 'denied'
@@ -152,9 +152,9 @@ export const createHistoryMiddleware = (
               processingStatus: 'error',
               responseTimestamp,
               duration,
-              error: errorInfo
+              error: errorInfo,
             }
-          : item
+          : item,
       );
       onHistoryUpdate(history);
       throw error;

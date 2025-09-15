@@ -38,7 +38,8 @@ export class CustomPermissionManager extends AllowAskDenyManager<RouterMethodMap
    */
   updatePermissionState(chainId: ChainId, method: string, state: AllowAskDenyState): void {
     // Access the private permissions map using bracket notation
-    const permissions = (this as unknown as { permissions: Map<ChainId, Map<string, AllowAskDenyState>> }).permissions;
+    const permissions = (this as unknown as { permissions: Map<ChainId, Map<string, AllowAskDenyState>> })
+      .permissions;
 
     if (!permissions.has(chainId)) {
       permissions.set(chainId, new Map());
@@ -58,7 +59,8 @@ export class CustomPermissionManager extends AllowAskDenyManager<RouterMethodMap
    * @returns The current permission state or undefined if not set
    */
   getPermissionState(chainId: ChainId, method: string): AllowAskDenyState | undefined {
-    const permissions = (this as unknown as { permissions: Map<ChainId, Map<string, AllowAskDenyState>> }).permissions;
+    const permissions = (this as unknown as { permissions: Map<ChainId, Map<string, AllowAskDenyState>> })
+      .permissions;
     return permissions.get(chainId)?.get(method);
   }
 

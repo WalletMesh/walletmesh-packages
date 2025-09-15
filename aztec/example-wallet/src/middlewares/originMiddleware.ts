@@ -52,7 +52,9 @@ function getDappOrigin(): string | undefined {
  * @param dappOrigin - Optional dApp origin that was already determined (e.g., from window.opener)
  * @returns Middleware function that sets the origin in context
  */
-export function createOriginMiddleware(dappOrigin?: string): JSONRPCMiddleware<RouterMethodMap, RouterContext> {
+export function createOriginMiddleware(
+  dappOrigin?: string,
+): JSONRPCMiddleware<RouterMethodMap, RouterContext> {
   return async (context, _request, next) => {
     // Use the provided dApp origin if available
     let origin = dappOrigin;

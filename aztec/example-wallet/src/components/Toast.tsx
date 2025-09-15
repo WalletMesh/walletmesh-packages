@@ -16,10 +16,10 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [id, onClose]);
+  }, [id]); // Only depend on id, not onClose to avoid stale closures
 
   return (
-    <div className={`toast toast-${type}`}>
+    <div id={id} className={`toast toast-${type}`} data-toast-id={id}>
       <div className="toast-content">
         <span className="toast-message">{message}</span>
         <button
