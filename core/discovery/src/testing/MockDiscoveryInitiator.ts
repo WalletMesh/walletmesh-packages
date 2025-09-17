@@ -1,9 +1,6 @@
-import type {
-  DiscoveryInitiatorConfig,
-  DiscoveryRequestEvent,
-  DiscoveryResponseEvent,
-  QualifiedResponder,
-} from '../core/types.js';
+import type { DiscoveryRequestEvent, DiscoveryResponseEvent } from '../types/core.js';
+import type { QualifiedResponder } from '../types/capabilities.js';
+import type { DiscoveryInitiatorConfig } from '../types/testing.js';
 import { MockEventTarget } from './MockEventTarget.js';
 import { createTestDiscoveryRequest } from './testUtils.js';
 
@@ -43,7 +40,7 @@ export class MockDiscoveryInitiator {
   private config: DiscoveryInitiatorConfig;
   private eventTarget: MockEventTarget;
   private qualifiedWallets: QualifiedResponder[] = [];
-  private isDiscovering = false;
+  private discovering = false;
   private sessionId: string | null = null;
   private lastRequest?: DiscoveryRequestEvent;
 
@@ -70,11 +67,11 @@ export class MockDiscoveryInitiator {
    * @since 1.0.0
    */
   async startDiscovery(): Promise<QualifiedResponder[]> {
-    if (this.isDiscovering) {
+    if (this.discovering) {
       throw new Error('Discovery already in progress');
     }
 
-    this.isDiscovering = true;
+    this.discovering = true;
     this.qualifiedWallets = [];
     this.sessionId = crypto.randomUUID();
 
@@ -108,7 +105,7 @@ export class MockDiscoveryInitiator {
    * @since 1.0.0
    */
   stopDiscovery(): void {
-    this.isDiscovering = false;
+    this.discovering = false;
     this.sessionId = null;
   }
 
@@ -142,10 +139,18 @@ export class MockDiscoveryInitiator {
       name: response.name,
       icon: response.icon,
       matched: response.matched,
-      metadata: {
-        version: response.version,
-        description: response.description,
-      },
+      // Include transport configuration if provided
+      ...(response.transportConfig && {
+        transportConfig: response.transportConfig,
+      }),
+      ...(response.responderVersion || response.description
+        ? {
+            metadata: {
+              ...(response.responderVersion && { version: response.responderVersion }),
+              ...(response.description && { description: response.description }),
+            },
+          }
+        : {}),
     };
 
     this.qualifiedWallets.push(qualifiedWallet);
@@ -174,14 +179,14 @@ export class MockDiscoveryInitiator {
   }
 
   /**
-   * Check if discovery is in progress.
+   * Check if discovery is currently active.
    *
    * Returns true if a discovery session is currently active, false otherwise.
    *
    * @returns Boolean indicating if discovery is active
    * @example
    * ```typescript
-   * if (listener.isDiscoveryInProgress()) {
+   * if (listener.isDiscovering()) {
    *   console.log('Discovery is running...');
    * } else {
    *   console.log('Discovery is not active');
@@ -190,8 +195,8 @@ export class MockDiscoveryInitiator {
    * @category Testing
    * @since 1.0.0
    */
-  isDiscoveryInProgress(): boolean {
-    return this.isDiscovering;
+  isDiscovering(): boolean {
+    return this.discovering;
   }
 
   /**
@@ -239,7 +244,7 @@ export class MockDiscoveryInitiator {
    */
   setSessionId(sessionId: string): void {
     this.sessionId = sessionId;
-    this.isDiscovering = true;
+    this.discovering = true;
   }
 
   /**
@@ -283,7 +288,7 @@ export class MockDiscoveryInitiator {
    */
   getStats() {
     return {
-      isDiscovering: this.isDiscovering,
+      isDiscovering: this.discovering,
       sessionId: this.sessionId,
       qualifiedWalletsCount: this.qualifiedWallets.length,
       qualifiedWallets: this.getQualifiedResponders(),
@@ -315,7 +320,7 @@ export class MockDiscoveryInitiator {
    * const request = listener.getLastRequest();
    * if (request) {
    *   console.log(`Request session: ${request.sessionId}`);
-   *   console.log(`Required chains: ${request.required.chains.join(', ')}`);
+   *   console.log(`Required technologies: ${request.required.technologies.map(t => t.type).join(', ')}`);
    * }
    * ```
    * @category Testing
@@ -349,7 +354,6 @@ export class MockDiscoveryInitiator {
     this.eventTarget.clearDispatchedEvents();
     this.eventTarget.clearAllListeners();
     // Use delete to properly remove the property with exactOptionalPropertyTypes
-    // biome-ignore lint/performance/noDelete: Required for exactOptionalPropertyTypes compliance
     delete (this as unknown as { lastRequest?: DiscoveryRequestEvent }).lastRequest;
   }
 }

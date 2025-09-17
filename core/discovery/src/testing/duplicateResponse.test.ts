@@ -7,26 +7,31 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { DiscoveryInitiator } from '../initiator/DiscoveryInitiator.js';
-import { DuplicateResponseError } from '../core/types.js';
+import { DuplicateResponseError } from '../types/core.js';
 import { MockEventTarget } from './MockEventTarget.js';
 import { createTestDiscoveryResponse, createTestDAppInfo } from './testUtils.js';
 import { setupFakeTimers, cleanupFakeTimers } from './timingHelpers.js';
+import { createConsoleSpy } from './consoleMocks.js';
 
 describe('Duplicate Response Detection', () => {
   let listener: DiscoveryInitiator;
   let mockEventTarget: MockEventTarget;
-  let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
+  let consoleSpy: ReturnType<typeof createConsoleSpy>;
 
   beforeEach(() => {
     setupFakeTimers();
     mockEventTarget = new MockEventTarget();
-    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
     listener = new DiscoveryInitiator({
       requirements: {
-        chains: ['eip155:1'],
+        technologies: [
+          {
+            type: 'evm' as const,
+            interfaces: ['eip-1193'],
+          },
+        ],
         features: ['account-management'],
-        interfaces: ['eip-1193'],
       },
       initiatorInfo: createTestDAppInfo(),
       timeout: 5000,
@@ -37,7 +42,7 @@ describe('Duplicate Response Detection', () => {
   afterEach(() => {
     cleanupFakeTimers();
     listener.dispose();
-    consoleWarnSpy.mockRestore();
+    consoleSpy.restore();
   });
 
   it('should detect duplicate responses from same responder', async () => {
@@ -100,13 +105,13 @@ describe('Duplicate Response Detection', () => {
         duplicateName: 'Example Wallet Clone',
       });
 
-      expect(duplicateError.code).toBe(2004);
+      expect(duplicateError.code).toBe(2008);
       expect(duplicateError.category).toBe('security');
       expect(duplicateError.retryable).toBe(false);
     }
 
     // Security violation should be logged
-    expect(consoleWarnSpy).toHaveBeenCalledWith(
+    expect(consoleSpy.warn).toHaveBeenCalledWith(
       '[WalletMesh] SECURITY VIOLATION: Duplicate response detected',
       expect.objectContaining({
         rdns: 'com.example.wallet',
@@ -167,7 +172,7 @@ describe('Duplicate Response Detection', () => {
     expect(responders).toHaveLength(2);
 
     // No duplicate warnings should be logged
-    expect(consoleWarnSpy).not.toHaveBeenCalledWith(
+    expect(consoleSpy.warn).not.toHaveBeenCalledWith(
       '[WalletMesh] Duplicate response detected from responder',
       expect.any(Object),
     );
@@ -234,7 +239,7 @@ describe('Duplicate Response Detection', () => {
     }
 
     // Should log security violation for the duplicate
-    expect(consoleWarnSpy).toHaveBeenCalledWith(
+    expect(consoleSpy.warn).toHaveBeenCalledWith(
       '[WalletMesh] SECURITY VIOLATION: Duplicate response detected',
       expect.objectContaining({
         rdns: 'com.suspicious.wallet',
@@ -271,9 +276,13 @@ describe('Duplicate Response Detection', () => {
     // Create new listener for second discovery session (single-use pattern)
     listener = new DiscoveryInitiator({
       requirements: {
-        chains: ['eip155:1'],
+        technologies: [
+          {
+            type: 'evm' as const,
+            interfaces: ['eip-1193'],
+          },
+        ],
         features: [],
-        interfaces: [],
       },
       initiatorInfo: {
         name: 'Test dApp',
@@ -305,7 +314,7 @@ describe('Duplicate Response Detection', () => {
 
     // Should not be considered a duplicate since it's a new session
     expect(responders).toHaveLength(1);
-    expect(consoleWarnSpy).not.toHaveBeenCalledWith(
+    expect(consoleSpy.warn).not.toHaveBeenCalledWith(
       '[WalletMesh] Duplicate response detected from responder',
       expect.any(Object),
     );
@@ -358,7 +367,7 @@ describe('Duplicate Response Detection', () => {
     expect(responders[0]?.responderId).toBe('wallet-1');
 
     // No duplicate should be detected since invalid response was ignored
-    expect(consoleWarnSpy).not.toHaveBeenCalledWith(
+    expect(consoleSpy.warn).not.toHaveBeenCalledWith(
       '[WalletMesh] Duplicate response detected from responder',
       expect.any(Object),
     );

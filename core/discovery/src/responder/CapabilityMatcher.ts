@@ -1,4 +1,10 @@
-import type { DiscoveryRequestEvent, CapabilityIntersection, ResponderInfo } from '../core/types.js';
+import type { DiscoveryRequestEvent } from '../types/core.js';
+import type {
+  CapabilityIntersection,
+  ResponderInfo,
+  TechnologyRequirement,
+  TechnologyMatch,
+} from '../types/capabilities.js';
 
 /**
  * Result of capability matching between responder and initiator requirements.
@@ -12,18 +18,17 @@ import type { DiscoveryRequestEvent, CapabilityIntersection, ResponderInfo } fro
  *   canFulfill: true,
  *   intersection: {
  *     required: {
- *       chains: ['eip155:1'],
- *       features: ['account-management'],
- *       interfaces: ['eip-1193']
- *     },
- *     optional: {
- *       features: ['hardware-wallet']
+ *       technologies: [{
+ *         type: 'evm',
+ *         interfaces: ['eip-1193'],
+ *         features: ['eip-712']
+ *       }],
+ *       features: ['account-management']
  *     }
  *   },
  *   missing: {
- *     chains: [],
- *     features: [],
- *     interfaces: []
+ *     technologies: [],
+ *     features: []
  *   }
  * };
  * ```
@@ -34,9 +39,11 @@ import type { DiscoveryRequestEvent, CapabilityIntersection, ResponderInfo } fro
  *   canFulfill: false,
  *   intersection: null,
  *   missing: {
- *     chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],  // Responder doesn't support Solana
- *     features: [],
- *     interfaces: []
+ *     technologies: [{
+ *       type: 'solana',
+ *       reason: 'Technology not supported'
+ *     }],
+ *     features: []
  *   }
  * };
  * ```
@@ -48,9 +55,11 @@ export interface CapabilityMatchResult {
   canFulfill: boolean;
   intersection: CapabilityIntersection | null;
   missing: {
-    chains: string[];
+    technologies: Array<{
+      type: string;
+      reason: string;
+    }>;
     features: string[];
-    interfaces: string[];
   };
 }
 
@@ -59,11 +68,10 @@ export interface CapabilityMatchResult {
  *
  * The CapabilityMatcher is responsible for determining if a wallet can fulfill
  * a dApp's requirements by comparing the wallet's capabilities against the
- * requested capabilities across all three categories:
+ * requested capabilities using technology-based matching:
  *
- * 1. **Chains**: Blockchain network compatibility
- * 2. **Features**: Wallet functionality matching
- * 3. **Interfaces**: API standard compatibility
+ * 1. **Technologies**: Blockchain technology support with interfaces/features
+ * 2. **Features**: Global wallet functionality matching
  *
  * The matcher implements a privacy-preserving approach that only reveals
  * capabilities that were explicitly requested, preventing enumeration attacks.
@@ -71,7 +79,7 @@ export interface CapabilityMatchResult {
  * Key principles:
  * - **All-or-nothing matching**: ALL required capabilities must be supported
  * - **Privacy preservation**: Never reveals unrequested capabilities
- * - **Three-part validation**: Chains, features, and interfaces are all checked
+ * - **Technology-based validation**: Technologies with interfaces and features are checked
  * - **Intersection calculation**: Returns only the overlap of requested vs supported
  *
  * @example Basic capability matching
@@ -80,9 +88,14 @@ export interface CapabilityMatchResult {
  *
  * const request = {
  *   required: {
- *     chains: ['eip155:1'],                    // Must support Ethereum
- *     features: ['account-management'],         // Must have account management
- *     interfaces: ['eip-1193']                 // Must implement EIP-1193
+ *     technologies: [
+ *       {
+ *         type: 'evm',
+ *         interfaces: ['eip-1193'],              // Must implement EIP-1193
+ *         features: ['eip-712']                  // Must support EIP-712
+ *       }
+ *     ],
+ *     features: ['account-management']           // Must have account management
  *   }
  * };
  *
@@ -93,9 +106,8 @@ export interface CapabilityMatchResult {
  *   console.log('Matched capabilities:', result.intersection);
  * } else {
  *   // Wallet missing some requirements
- *   console.log('Missing chains:', result.missing.chains);
+ *   console.log('Missing technologies:', result.missing.technologies);
  *   console.log('Missing features:', result.missing.features);
- *   console.log('Missing interfaces:', result.missing.interfaces);
  * }
  * ```
  *
@@ -103,9 +115,14 @@ export interface CapabilityMatchResult {
  * ```typescript
  * const request = {
  *   required: {
- *     chains: ['eip155:1'],
- *     features: ['account-management', 'transaction-signing'],
- *     interfaces: ['eip-1193']
+ *     technologies: [
+ *       {
+ *         type: 'evm',
+ *         interfaces: ['eip-6963', 'eip-1193'],  // Prefer EIP-6963
+ *         features: ['eip-712', 'personal-sign']
+ *       }
+ *     ],
+ *     features: ['account-management', 'transaction-signing']
  *   },
  *   optional: {
  *     features: ['hardware-wallet', 'batch-transactions']
@@ -138,9 +155,9 @@ export class CapabilityMatcher {
    *
    * Algorithm:
    * 1. Validate request structure and required fields
-   * 2. Check if ALL required capabilities are supported
-   * 3. If qualified, calculate intersection of requested vs. supported
-   * 4. Include optional capability intersections if present
+   * 2. Check if ALL required technologies are supported with matching interfaces
+   * 3. Check if ALL required global features are supported
+   * 4. If qualified, calculate intersection of requested vs. supported
    * 5. Return result with qualification status and intersection
    *
    * @param request - Capability request from initiator
@@ -149,14 +166,16 @@ export class CapabilityMatcher {
    * @example
    * ```typescript
    * const request: DiscoveryRequestEvent = {
-   *   type: 'wallet:discovery:capability-request',
+   *   type: 'discovery:wallet:request',
    *   version: '0.1.0',
    *   sessionId: 'session-uuid',
-   *   timestamp: Date.now(),
    *   required: {
-   *     chains: ['eip155:1'],
-   *     features: ['account-management'],
-   *     interfaces: ['eip-1193']
+   *     technologies: [{
+   *       type: 'evm',
+   *       interfaces: ['eip-6963', 'eip-1193'],
+   *       features: ['eip-712']
+   *     }],
+   *     features: ['account-management']
    *   },
    *   origin: 'https://initiator.com',
    *   initiatorInfo: { } // initiator metadata
@@ -183,58 +202,104 @@ export class CapabilityMatcher {
         canFulfill: false,
         intersection: null,
         missing: {
-          chains: [],
+          technologies: [],
           features: [],
-          interfaces: [],
         },
       };
     }
 
-    const { required, optional } = request;
+    const { required } = request;
 
     // Validate required capabilities exist
-    if (!required || !required.chains || !required.features || !required.interfaces) {
+    if (!required) {
       return {
         canFulfill: false,
         intersection: null,
         missing: {
-          chains: [],
+          technologies: [],
           features: [],
-          interfaces: [],
         },
       };
     }
 
-    // Check if we can fulfill all required capabilities
-    const requiredMatch = this.checkRequiredCapabilities(required);
-
-    if (!requiredMatch.canFulfill) {
+    // Only support technology-based format
+    if (!required.technologies) {
       return {
         canFulfill: false,
         intersection: null,
-        missing: requiredMatch.missing,
+        missing: {
+          technologies: [],
+          features: [],
+        },
       };
     }
 
-    // Generate intersection response (only what was requested)
+    return this.matchTechnologyBasedCapabilities(request);
+  }
+
+  /**
+   * Match capabilities using the new technology-based format.
+   */
+  private matchTechnologyBasedCapabilities(request: DiscoveryRequestEvent): CapabilityMatchResult {
+    const { required, optional } = request;
+
+    if (!required.technologies || !Array.isArray(required.technologies)) {
+      return {
+        canFulfill: false,
+        intersection: null,
+        missing: {
+          technologies: [],
+          features: [],
+        },
+      };
+    }
+
+    // Check technology support
+    const technologyMatches: TechnologyMatch[] = [];
+    const missingTechnologies: Array<{ type: string; reason: string }> = [];
+
+    for (const reqTech of required.technologies) {
+      const match = this.matchTechnology(reqTech);
+      if (match) {
+        technologyMatches.push(match);
+      } else {
+        missingTechnologies.push({
+          type: reqTech.type,
+          reason: `Technology '${reqTech.type}' not supported or missing required interfaces`,
+        });
+      }
+    }
+
+    // Check global features
+    const supportedFeatures = this.getSupportedFeatures();
+    const missingFeatures = (required.features || []).filter((f) => !supportedFeatures.includes(f));
+
+    const canFulfill = missingTechnologies.length === 0 && missingFeatures.length === 0;
+
+    if (!canFulfill) {
+      return {
+        canFulfill: false,
+        intersection: null,
+        missing: {
+          technologies: missingTechnologies,
+          features: missingFeatures,
+        },
+      };
+    }
+
+    // Generate intersection
     const intersection: CapabilityIntersection = {
       required: {
-        chains: this.intersectArrays(required.chains, this.getSupportedChains()),
-        features: this.intersectArrays(required.features, this.getSupportedFeatures()),
-        interfaces: this.intersectArrays(required.interfaces, this.getSupportedInterfaces()),
+        technologies: technologyMatches,
+        features: this.intersectArrays(required.features || [], supportedFeatures),
       },
     };
 
     // Add optional capabilities if requested
     if (optional) {
       intersection.optional = {};
-
-      if (optional.chains) {
-        intersection.optional.chains = this.intersectArrays(optional.chains, this.getSupportedChains());
-      }
-
       if (optional.features) {
-        intersection.optional.features = this.intersectArrays(optional.features, this.getSupportedFeatures());
+        intersection.optional.features = this.intersectArrays(optional.features, supportedFeatures);
       }
     }
 
@@ -242,11 +307,82 @@ export class CapabilityMatcher {
       canFulfill: true,
       intersection,
       missing: {
-        chains: [],
+        technologies: [],
         features: [],
-        interfaces: [],
       },
     };
+  }
+
+  /**
+   * Match a single technology requirement against wallet capabilities.
+   */
+  private matchTechnology(requirement: TechnologyRequirement): TechnologyMatch | null {
+    const supportedTech = this.getSupportedTechnology(requirement.type);
+    if (!supportedTech) {
+      return null;
+    }
+
+    // Find matching interfaces (at least one required)
+    const matchedInterfaces = requirement.interfaces.filter((iface) =>
+      supportedTech.interfaces.includes(iface),
+    );
+
+    if (matchedInterfaces.length === 0) {
+      return null;
+    }
+
+    // Match features if specified
+    if (requirement.features && requirement.features.length > 0) {
+      const supportedFeatures = supportedTech.features || [];
+      const matchedFeatures = this.intersectArrays(requirement.features, supportedFeatures);
+
+      // If required features are specified but none match, this technology doesn't match
+      if (matchedFeatures.length !== requirement.features.length) {
+        return null;
+      }
+
+      return {
+        type: requirement.type,
+        interfaces: matchedInterfaces,
+        features: matchedFeatures,
+      };
+    }
+
+    const result: TechnologyMatch = {
+      type: requirement.type,
+      interfaces: matchedInterfaces,
+      features: [],
+    };
+
+    if (requirement.features !== undefined && requirement.features.length > 0) {
+      result.features = requirement.features.filter(
+        (feature) => supportedTech.features?.includes(feature) ?? false,
+      );
+    }
+
+    return result;
+  }
+
+  /**
+   * Get supported technology information from wallet capabilities.
+   */
+  private getSupportedTechnology(techType: string): { interfaces: string[]; features?: string[] } | null {
+    // Find the technology directly in the responder's technologies array
+    const supportedTechnology = this.responderInfo.technologies.find((tech) => tech.type === techType);
+
+    if (!supportedTechnology) {
+      return null;
+    }
+
+    const result: { interfaces: string[]; features?: string[] } = {
+      interfaces: supportedTechnology.interfaces,
+    };
+
+    if (supportedTechnology.features !== undefined) {
+      result.features = supportedTechnology.features;
+    }
+
+    return result;
   }
 
   /**
@@ -261,41 +397,12 @@ export class CapabilityMatcher {
    */
   getCapabilityDetails() {
     return {
-      supportedChains: this.getSupportedChains(),
+      supportedTechnologies: this.getSupportedTechnologies(),
       supportedFeatures: this.getSupportedFeatures(),
       supportedInterfaces: this.getSupportedInterfaces(),
       responderType: this.responderInfo.type,
-      chainCount: this.responderInfo.chains.length,
+      technologyCount: this.responderInfo.technologies.length,
       featureCount: this.responderInfo.features.length,
-    };
-  }
-
-  /**
-   * Check if the responder can fulfill all required capabilities.
-   */
-  private checkRequiredCapabilities(required: {
-    chains: string[];
-    features: string[];
-    interfaces: string[];
-  }) {
-    const supportedChains = this.getSupportedChains();
-    const supportedFeatures = this.getSupportedFeatures();
-    const supportedInterfaces = this.getSupportedInterfaces();
-
-    const missingChains = required.chains.filter((chain) => !supportedChains.includes(chain));
-    const missingFeatures = required.features.filter((feature) => !supportedFeatures.includes(feature));
-    const missingInterfaces = required.interfaces.filter((iface) => !supportedInterfaces.includes(iface));
-
-    const canFulfill =
-      missingChains.length === 0 && missingFeatures.length === 0 && missingInterfaces.length === 0;
-
-    return {
-      canFulfill,
-      missing: {
-        chains: missingChains,
-        features: missingFeatures,
-        interfaces: missingInterfaces,
-      },
     };
   }
 
@@ -307,10 +414,10 @@ export class CapabilityMatcher {
   }
 
   /**
-   * Get supported chain IDs from responder info.
+   * Get supported technology types from responder info.
    */
-  private getSupportedChains(): string[] {
-    return this.responderInfo.chains.map((chain) => chain.chainId);
+  private getSupportedTechnologies(): string[] {
+    return this.responderInfo.technologies.map((tech) => tech.type);
   }
 
   /**
@@ -326,39 +433,14 @@ export class CapabilityMatcher {
   private getSupportedInterfaces(): string[] {
     const interfaces = new Set<string>();
 
-    // Add chain-specific standards as interfaces
-    for (const chain of this.responderInfo.chains) {
-      for (const standard of chain.standards) {
-        interfaces.add(standard);
+    // Add technology-specific interfaces
+    for (const technology of this.responderInfo.technologies) {
+      for (const interfaceId of technology.interfaces) {
+        interfaces.add(interfaceId);
       }
     }
 
-    // Add any explicitly defined interfaces from features
-    for (const feature of this.responderInfo.features) {
-      if (feature.configuration?.['interfaces']) {
-        const featureInterfaces = feature.configuration['interfaces'] as string[];
-        for (const iface of featureInterfaces) {
-          interfaces.add(iface);
-        }
-      }
-    }
-
-    // Add common interfaces based on chain types
-    for (const chain of this.responderInfo.chains) {
-      switch (chain.chainType) {
-        case 'evm':
-          interfaces.add('eip-1193');
-          break;
-        case 'account':
-          if (chain.chainId.includes('solana')) {
-            interfaces.add('solana-wallet-standard');
-            interfaces.add('solana-wallet-adapter');
-          } else if (chain.chainId.includes('aztec')) {
-            interfaces.add('aztec-wallet-api-v1');
-          }
-          break;
-      }
-    }
+    // Features don't have configuration property, so no additional interfaces to add
 
     return Array.from(interfaces);
   }

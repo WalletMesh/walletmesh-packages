@@ -8,7 +8,7 @@
 
 > `const` **createCapabilityRequirements**: `object`
 
-Defined in: [initiator/factory.ts:280](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/factory.ts#L280)
+Defined in: [core/discovery/src/initiator/factory.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/initiator/factory.ts#L283)
 
 Helper functions to create common capability requirements for different blockchain ecosystems.
 
@@ -16,7 +16,7 @@ Provides pre-configured capability requirements for popular blockchain networks
 with sensible defaults while allowing customization. Simplifies the setup
 process for common dApp scenarios.
 
-## Type declaration
+## Type Declaration
 
 ## Blockchain
 
@@ -34,10 +34,6 @@ support for private transactions and zero-knowledge proofs.
 ###### options
 
 Optional customization of default requirements
-
-###### chains?
-
-`string`[]
 
 ###### features?
 
@@ -86,10 +82,6 @@ EIP-1193 provider interface and basic account/transaction features.
 ###### options
 
 Optional customization of default requirements
-
-###### chains?
-
-`string`[]
 
 ###### features?
 
@@ -140,10 +132,6 @@ sensible defaults for features and interfaces.
 ###### options
 
 Multi-chain configuration with required chains
-
-###### chains
-
-`string`[]
 
 ###### features?
 
@@ -196,10 +184,6 @@ EIP-1193 provider interface and basic account/transaction features.
 
 Optional customization of default requirements
 
-###### chains?
-
-`string`[]
-
 ###### features?
 
 `string`[]
@@ -241,10 +225,6 @@ interface and account-based transaction model.
 ###### options
 
 Optional customization of default requirements
-
-###### chains?
-
-`string`[]
 
 ###### features?
 

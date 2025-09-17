@@ -12,7 +12,10 @@
  *
  * const event = createTestEvent('discovery:request', {
  *   sessionId: 'test-session',
- *   required: { chains: ['eip155:1'], features: [], interfaces: [] }
+ *   required: {
+ *     technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+ *     features: []
+ *   }
  * });
  *
  * eventTarget.dispatchEvent(event);
@@ -33,7 +36,7 @@
  * @since 1.0.0
  */
 
-import type { DiscoveryRequestEvent, DiscoveryResponseEvent, DiscoveryMessage } from '../core/types.js';
+import type { DiscoveryRequestEvent, DiscoveryResponseEvent, DiscoveryMessage } from '../types/core.js';
 import { DISCOVERY_EVENTS } from '../core/constants.js';
 import { vi, expect } from 'vitest';
 
@@ -112,7 +115,12 @@ export interface EventChainStep {
  *   sessionId: 'test-session-123',
  *   responderId: 'wallet-123',
  *   name: 'Test Wallet',
- *   matched: { required: { chains: ['eip155:1'], features: [], interfaces: [] } }
+ *   matched: {
+ *     required: {
+ *       technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+ *       features: []
+ *     }
+ *   }
  * });
  * ```
  * @category Testing
@@ -147,7 +155,10 @@ export function createTestEvent(type: string, detail: unknown, options: EventCon
  * @example
  * ```typescript
  * const request = createTestDiscoveryRequest({
- *   required: { chains: ['eip155:1'], features: ['account-management'], interfaces: ['eip-1193'] }
+ *   required: {
+ *     technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+ *     features: ['account-management']
+ *   }
  * });
  *
  * const event = createDiscoveryRequestEvent(request);
@@ -178,7 +189,12 @@ export function createDiscoveryRequestEvent(
  * const response = createTestDiscoveryResponse({
  *   sessionId: 'test-session',
  *   name: 'Test Wallet',
- *   matched: { required: { chains: ['eip155:1'], features: [], interfaces: [] } }
+ *   matched: {
+ *     required: {
+ *       technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+ *       features: []
+ *     }
+ *   }
  * });
  *
  * const event = createDiscoveryResponseEvent(response);

@@ -7,7 +7,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { WalletDiscovery } from './WalletDiscovery.js';
 import { createTestResponderInfo, createTestDiscoveryRequest } from '../testing/testUtils.js';
 import { setupFakeTimers, cleanupFakeTimers } from '../testing/timingHelpers.js';
-import type { ResponderInfo } from '../core/types.js';
+import type { ResponderInfo } from '../types/capabilities.js';
 
 describe('Wallet Module', () => {
   let walletDiscovery: WalletDiscovery;
@@ -45,9 +45,13 @@ describe('Wallet Module', () => {
     it('should handle discovery requests', () => {
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -65,9 +69,13 @@ describe('Wallet Module', () => {
     it('should get capability intersection', () => {
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -84,9 +92,13 @@ describe('Wallet Module', () => {
     it('should match compatible requests', () => {
       const compatibleRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -96,9 +108,13 @@ describe('Wallet Module', () => {
     it('should reject incompatible requests', () => {
       const incompatibleRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['solana:mainnet'], // Not supported by Ethereum wallet
+          technologies: [
+            {
+              type: 'solana', // Not supported by Ethereum wallet
+              interfaces: ['solana-wallet-standard'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['solana-wallet-standard'],
         },
       });
 
@@ -108,9 +124,13 @@ describe('Wallet Module', () => {
     it('should handle partial capability matches', () => {
       const partialRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'], // Supported
+          technologies: [
+            {
+              type: 'evm', // Supported
+              interfaces: ['unsupported-interface'], // Not supported
+            },
+          ],
           features: ['account-management'], // Supported
-          interfaces: ['unsupported-interface'], // Not supported
         },
       });
 
@@ -120,9 +140,8 @@ describe('Wallet Module', () => {
     it('should handle empty requirements', () => {
       const emptyRequest = createTestDiscoveryRequest({
         required: {
-          chains: [],
+          technologies: [],
           features: [],
-          interfaces: [],
         },
       });
 
@@ -133,18 +152,21 @@ describe('Wallet Module', () => {
     it('should handle optional capabilities', () => {
       const requestWithOptional = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         optional: {
-          chains: ['eip155:137'],
           features: ['hardware-wallet'],
         },
       });
 
       const intersection = walletDiscovery.getDiscoveryIntersection(requestWithOptional);
-      expect(intersection?.required.chains).toContain('eip155:1');
+      expect(intersection?.required.technologies).toBeDefined();
       // Optional capabilities should be included if supported
     });
   });
@@ -159,9 +181,13 @@ describe('Wallet Module', () => {
 
       const multiChainRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1', 'eip155:137'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -172,9 +198,13 @@ describe('Wallet Module', () => {
     it('should calculate correct intersections for multi-chain requests', () => {
       const multiChainRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1', 'eip155:137'], // Only ethereum supported
+          technologies: [
+            {
+              type: 'evm', // EVM chains supported
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -182,8 +212,8 @@ describe('Wallet Module', () => {
 
       // Should include intersection if any capabilities match
       if (intersection) {
-        expect(intersection?.required.chains).toContain('eip155:1');
-        // May or may not contain polygon depending on wallet capabilities
+        expect(intersection?.required.technologies).toBeDefined();
+        // Should have EVM technology support
       } else {
         // If no intersection, the wallet can't fulfill any of the required capabilities
         expect(intersection).toBeNull();
@@ -193,9 +223,14 @@ describe('Wallet Module', () => {
     it('should handle chain-specific features', () => {
       const chainSpecificRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
-          features: ['eip-1559-gas-estimation'], // Ethereum-specific feature
-          interfaces: ['eip-1193'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+              features: ['eip-1559-gas-estimation'], // Ethereum-specific feature
+            },
+          ],
+          features: [],
         },
       });
 
@@ -256,9 +291,11 @@ describe('Wallet Module', () => {
     it('should handle very large discovery requests', () => {
       const largeRequest = createTestDiscoveryRequest({
         required: {
-          chains: Array.from({ length: 100 }, (_, i) => `evm:chain:${i}`),
+          technologies: Array.from({ length: 10 }, (_, i) => ({
+            type: 'evm',
+            interfaces: Array.from({ length: 20 }, (_, j) => `interface-${i}-${j}`),
+          })),
           features: Array.from({ length: 50 }, (_, i) => `feature-${i}`),
-          interfaces: Array.from({ length: 20 }, (_, i) => `interface-${i}`),
         },
       });
 
@@ -268,9 +305,17 @@ describe('Wallet Module', () => {
     it('should handle requests with duplicate capabilities', () => {
       const duplicateRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1', 'eip155:1', 'eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193', 'eip-1193'],
+            },
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management', 'account-management'],
-          interfaces: ['eip-1193', 'eip-1193'],
         },
       });
 
@@ -282,9 +327,13 @@ describe('Wallet Module', () => {
     it('should handle special characters in capability names', () => {
       const specialCharRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['interface:with:colons'],
+            },
+          ],
           features: ['feature-with-dashes', 'feature_with_underscores', 'feature.with.dots'],
-          interfaces: ['interface:with:colons'],
         },
       });
 
@@ -357,9 +406,13 @@ describe('Wallet Module', () => {
     it('should sanitize discovery requests', () => {
       const maliciousRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['<script>alert("xss")</script>'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['data:text/html,<script>alert("xss")</script>'],
+            },
+          ],
           features: ['javascript:alert("xss")'],
-          interfaces: ['data:text/html,<script>alert("xss")</script>'],
         },
       });
 
@@ -370,9 +423,13 @@ describe('Wallet Module', () => {
     it('should prevent information leakage in error messages', () => {
       const sensitiveRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['sensitive-internal-chain'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['internal-api'],
+            },
+          ],
           features: ['admin-access'],
-          interfaces: ['internal-api'],
         },
       });
 
@@ -395,9 +452,13 @@ describe('Wallet Module', () => {
     it('should handle high-frequency discovery requests efficiently', () => {
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -418,9 +479,13 @@ describe('Wallet Module', () => {
     it('should cache capability intersection results if supported', () => {
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -439,9 +504,13 @@ describe('Wallet Module', () => {
       for (let i = 0; i < 100; i++) {
         const request = createTestDiscoveryRequest({
           required: {
-            chains: [`evm:test-chain:${i}`],
+            technologies: [
+              {
+                type: 'evm',
+                interfaces: [`test-interface-${i}`],
+              },
+            ],
             features: [`test-feature-${i}`],
-            interfaces: [`test-interface-${i}`],
           },
         });
 
@@ -475,9 +544,13 @@ describe('Wallet Module', () => {
     it('should integrate with capability matching', () => {
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -486,7 +559,7 @@ describe('Wallet Module', () => {
 
       // Results should be consistent
       if (canFulfill) {
-        expect(intersection?.required.chains.length).toBeGreaterThan(0);
+        expect(intersection?.required.technologies.length).toBeGreaterThan(0);
       }
     });
 

@@ -4,7 +4,7 @@
  * Tests for the ContentScriptRelay implementation.
  *
  * Type Suppression Usage:
- * - `@ts-ignore - Mock globals`: Used to mock global browser APIs (chrome, window, navigator)
+ * - `@ts-expect-error - Mock globals`: Used to mock global browser APIs (chrome, window, navigator)
  *   that are not available in the test environment. These suppressions are necessary to
  *   set up the proper test environment for browser extension content script functionality.
  *   The mocks replicate the structure of actual browser APIs for testing purposes.
@@ -13,33 +13,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ContentScriptRelay } from './ContentScriptRelay.js';
 import { setupFakeTimers, cleanupFakeTimers } from '../testing/timingHelpers.js';
+import { setupChromeEnvironment, createConsoleSpy, createContentScriptMock } from '../testing/index.js';
 
-// Mock Chrome API
-const mockChrome = {
-  runtime: {
-    sendMessage: vi.fn().mockImplementation(() => Promise.resolve(undefined)),
-    onMessage: {
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-    },
-  },
-};
-
-// Mock window object
-const mockWindow = {
-  addEventListener: vi.fn(),
-  dispatchEvent: vi.fn(),
-  location: {
-    origin: 'https://dapp.example.com',
-  },
-};
-
-// @ts-ignore - Mock globals
-global.chrome = mockChrome;
-// @ts-ignore - Mock globals
-global.window = mockWindow;
-// @ts-ignore - Mock globals
-global.navigator = { userAgent: 'Test Browser' };
+// Mock Chrome API and browser environment
+let mockChrome: ReturnType<typeof setupChromeEnvironment>['chrome'];
+let chromeCleanup: () => void;
+let contentScriptMock: ReturnType<typeof createContentScriptMock>;
 
 describe('ContentScriptRelay', () => {
   let relay: ContentScriptRelay;
@@ -49,8 +28,24 @@ describe('ContentScriptRelay', () => {
     setupFakeTimers();
     vi.clearAllMocks();
 
+    // Set up content script environment
+    contentScriptMock = createContentScriptMock({
+      origin: 'https://dapp.example.com',
+      userAgent: 'Test Browser',
+      mockFn: () => vi.fn(),
+    });
+
+    // Set up standardized Chrome environment
+    const chromeEnv = setupChromeEnvironment({
+      extensionId: 'test-extension-id',
+    });
+    mockChrome = chromeEnv.chrome;
+    chromeCleanup = chromeEnv.cleanup;
+
     // Reset chrome mock implementation for each test
-    mockChrome.runtime.sendMessage.mockImplementation(() => Promise.resolve(undefined));
+    (mockChrome.runtime.sendMessage as ReturnType<typeof vi.fn>).mockImplementation(() =>
+      Promise.resolve(undefined),
+    );
 
     mockDiscoveryRequest = {
       type: 'discovery:wallet:request',
@@ -75,6 +70,8 @@ describe('ContentScriptRelay', () => {
 
   afterEach(() => {
     cleanupFakeTimers();
+    chromeCleanup();
+    contentScriptMock.cleanup();
   });
 
   describe('initialization', () => {
@@ -84,7 +81,7 @@ describe('ContentScriptRelay', () => {
     });
 
     it('should set up page to background message forwarding', () => {
-      expect(mockWindow.addEventListener).toHaveBeenCalledWith(
+      expect(contentScriptMock.window.addEventListener).toHaveBeenCalledWith(
         'discovery:wallet:request',
         expect.any(Function),
       );
@@ -109,15 +106,15 @@ describe('ContentScriptRelay', () => {
       });
 
       // Get the event listener that was registered
-      const eventListener = mockWindow.addEventListener.mock.calls.find(
-        (call) => call[0] === 'discovery:wallet:request',
-      )?.[1];
+      const eventListener = (
+        contentScriptMock.window.addEventListener as ReturnType<typeof vi.fn>
+      ).mock?.calls.find((call) => call[0] === 'discovery:wallet:request')?.[1];
 
       expect(eventListener).toBeDefined();
 
       // Call the event listener
-      if (eventListener) {
-        eventListener(discoveryEvent);
+      if (eventListener && typeof eventListener === 'function') {
+        (eventListener as EventListener)(discoveryEvent);
       }
 
       expect(mockChrome.runtime.sendMessage).toHaveBeenCalledWith({
@@ -129,7 +126,7 @@ describe('ContentScriptRelay', () => {
     });
 
     it('should handle sendMessage failures gracefully', () => {
-      mockChrome.runtime.sendMessage.mockImplementation(() =>
+      (mockChrome.runtime.sendMessage as ReturnType<typeof vi.fn>).mockImplementation(() =>
         Promise.reject(new Error('Extension disabled')),
       );
 
@@ -137,9 +134,9 @@ describe('ContentScriptRelay', () => {
         detail: mockDiscoveryRequest,
       });
 
-      const eventListener = mockWindow.addEventListener.mock.calls.find(
-        (call) => call[0] === 'discovery:wallet:request',
-      )?.[1];
+      const eventListener = (
+        contentScriptMock.window.addEventListener as ReturnType<typeof vi.fn>
+      ).mock?.calls.find((call) => call[0] === 'discovery:wallet:request')?.[1];
 
       // Should not throw
       expect(() => {
@@ -154,9 +151,9 @@ describe('ContentScriptRelay', () => {
         detail: null,
       });
 
-      const eventListener = mockWindow.addEventListener.mock.calls.find(
-        (call) => call[0] === 'discovery:wallet:request',
-      )?.[1];
+      const eventListener = (
+        contentScriptMock.window.addEventListener as ReturnType<typeof vi.fn>
+      ).mock?.calls.find((call) => call[0] === 'discovery:wallet:request')?.[1];
 
       // Should not throw
       expect(() => {
@@ -190,13 +187,15 @@ describe('ContentScriptRelay', () => {
       };
 
       // Get the message listener that was registered
-      const messageListener = mockChrome.runtime.onMessage.addListener.mock.calls[0]?.[0];
+      const messageListener = (
+        mockChrome.runtime.onMessage.addListener as unknown as { mock?: { calls: unknown[][] } }
+      )?.mock?.calls[0]?.[0];
       expect(messageListener).toBeDefined();
 
       const mockSendResponse = vi.fn();
 
       // Simulate message from background
-      if (messageListener) {
+      if (messageListener && typeof messageListener === 'function') {
         messageListener(
           { type: 'discovery:wallet:response', data: mockAnnouncement },
           { tab: { id: 123 } },
@@ -204,7 +203,7 @@ describe('ContentScriptRelay', () => {
         );
       }
 
-      expect(mockWindow.dispatchEvent).toHaveBeenCalledWith(
+      expect(contentScriptMock.window.dispatchEvent).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'discovery:wallet:response',
           detail: mockAnnouncement,
@@ -215,30 +214,32 @@ describe('ContentScriptRelay', () => {
     });
 
     it('should ignore non-discovery messages', () => {
-      const messageListener = mockChrome.runtime.onMessage.addListener.mock.calls[0]?.[0];
+      const messageListener = (mockChrome.runtime.onMessage.addListener as ReturnType<typeof vi.fn>).mock
+        ?.calls[0]?.[0];
       const mockSendResponse = vi.fn();
 
       // Simulate non-discovery message
       let result: unknown;
-      if (messageListener) {
+      if (messageListener && typeof messageListener === 'function') {
         result = messageListener({ type: 'other:message', data: {} }, { tab: { id: 123 } }, mockSendResponse);
       }
 
-      expect(mockWindow.dispatchEvent).not.toHaveBeenCalled();
+      expect(contentScriptMock.window.dispatchEvent).not.toHaveBeenCalled();
       expect(result).toBe(false); // Should not keep message channel open
     });
 
     it('should handle dispatchEvent errors gracefully', () => {
-      mockWindow.dispatchEvent.mockImplementation(() => {
+      contentScriptMock.window.dispatchEvent.mockImplementation(() => {
         throw new Error('Dispatch failed');
       });
 
-      const messageListener = mockChrome.runtime.onMessage.addListener.mock.calls[0]?.[0];
+      const messageListener = (mockChrome.runtime.onMessage.addListener as ReturnType<typeof vi.fn>).mock
+        ?.calls[0]?.[0];
       const mockSendResponse = vi.fn();
 
       // Should not throw
       expect(() => {
-        if (messageListener) {
+        if (messageListener && typeof messageListener === 'function') {
           messageListener(
             { type: 'discovery:wallet:response', data: {} },
             { tab: { id: 123 } },
@@ -277,7 +278,7 @@ describe('ContentScriptRelay', () => {
     it('should retry initialization on failure (coverage: lines 105-112)', async () => {
       // Mock addEventListener to fail on first calls, succeed on third
       let attemptCount = 0;
-      mockWindow.addEventListener.mockImplementation(() => {
+      contentScriptMock.window.addEventListener.mockImplementation(() => {
         attemptCount++;
         if (attemptCount < 3) {
           throw new Error('Initialization failed');
@@ -285,21 +286,20 @@ describe('ContentScriptRelay', () => {
       });
 
       // Create relay which will fail initialization
-      const consoleSpy = vi.spyOn(console, 'warn');
-      const errorSpy = vi.spyOn(console, 'error');
+      const consoleSpy = createConsoleSpy({ silent: false });
 
       relay = new ContentScriptRelay();
 
       // Should have tried once and scheduled retry
       expect(attemptCount).toBe(1);
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh:ContentScript] Retrying initialization (attempt 1/3) in 1000ms',
       );
 
       // Advance timer for first retry
       await vi.advanceTimersByTimeAsync(1000);
       expect(attemptCount).toBe(2);
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh:ContentScript] Retrying initialization (attempt 2/3) in 1000ms',
       );
 
@@ -308,18 +308,16 @@ describe('ContentScriptRelay', () => {
       expect(attemptCount).toBe(3);
       expect(relay.isReady()).toBe(true);
 
-      consoleSpy.mockRestore();
-      errorSpy.mockRestore();
+      consoleSpy.restore();
     });
 
     it('should stop retrying after max attempts (coverage: lines 108-112)', async () => {
       // Mock addEventListener to always fail
-      mockWindow.addEventListener.mockImplementation(() => {
+      contentScriptMock.window.addEventListener.mockImplementation(() => {
         throw new Error('Permanent failure');
       });
 
-      const consoleSpy = vi.spyOn(console, 'warn');
-      const errorSpy = vi.spyOn(console, 'error');
+      const consoleSpy = createConsoleSpy({ silent: false });
 
       relay = new ContentScriptRelay();
 
@@ -329,21 +327,20 @@ describe('ContentScriptRelay', () => {
       await vi.advanceTimersByTimeAsync(1000); // Third retry
 
       // Should have logged final error
-      expect(errorSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.error).toHaveBeenCalledWith(
         '[WalletMesh:ContentScript] Maximum retry attempts reached. Content script relay initialization failed permanently:',
         expect.any(Error),
       );
 
       expect(relay.isReady()).toBe(false);
 
-      consoleSpy.mockRestore();
-      errorSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 
   describe('chrome API error handling', () => {
     it('should handle Extension context invalidated error (coverage: line 126)', () => {
-      const consoleSpy = vi.spyOn(console, 'warn');
+      const consoleSpy = createConsoleSpy({ silent: false });
       relay = new ContentScriptRelay();
 
       // Access private method for testing
@@ -353,15 +350,15 @@ describe('ContentScriptRelay', () => {
 
       privateRelay.handleChromeApiError('sendMessage', new Error('Extension context invalidated'));
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh:ContentScript] Extension context invalidated - extension was reloaded or disabled',
       );
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
 
     it('should handle message port closed error (coverage: line 128)', () => {
-      const consoleSpy = vi.spyOn(console, 'warn');
+      const consoleSpy = createConsoleSpy({ silent: false });
       relay = new ContentScriptRelay();
 
       const privateRelay = relay as unknown as {
@@ -373,15 +370,15 @@ describe('ContentScriptRelay', () => {
         new Error('The message port closed before a response was received'),
       );
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh:ContentScript] Background script not responding - may be starting up',
       );
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
 
     it('should handle chrome:// URL access error (coverage: line 130)', () => {
-      const consoleSpy = vi.spyOn(console, 'warn');
+      const consoleSpy = createConsoleSpy({ silent: false });
       relay = new ContentScriptRelay();
 
       const privateRelay = relay as unknown as {
@@ -390,15 +387,15 @@ describe('ContentScriptRelay', () => {
 
       privateRelay.handleChromeApiError('sendMessage', new Error('Cannot access a chrome:// URL'));
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh:ContentScript] Cannot access chrome:// URLs - expected behavior',
       );
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
 
     it('should handle non-Error objects in chrome API errors (coverage: line 122)', () => {
-      const consoleSpy = vi.spyOn(console, 'warn');
+      const consoleSpy = createConsoleSpy({ silent: false });
       relay = new ContentScriptRelay();
 
       const privateRelay = relay as unknown as {
@@ -408,19 +405,19 @@ describe('ContentScriptRelay', () => {
       // Test with non-Error object - this triggers String(error) on line 122
       privateRelay.handleChromeApiError('sendMessage', 'string error message');
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh:ContentScript] Chrome API sendMessage failed:',
         'string error message',
       );
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 
   describe('error handling', () => {
     it('should handle initialization errors gracefully', () => {
       // Mock addEventListener to throw
-      mockWindow.addEventListener.mockImplementation(() => {
+      contentScriptMock.window.addEventListener.mockImplementation(() => {
         throw new Error('addEventListener failed');
       });
 
@@ -433,7 +430,7 @@ describe('ContentScriptRelay', () => {
     it('should handle chrome API unavailability', () => {
       // Temporarily remove chrome
       const originalChrome = global.chrome;
-      // @ts-ignore
+      // @ts-expect-error
       global.chrome = undefined;
 
       // Should not throw
@@ -475,14 +472,14 @@ describe('ContentScriptRelay', () => {
 
       // Should handle missing chrome.runtime.sendMessage gracefully
       expect(() => {
-        const eventHandler = mockWindow.addEventListener.mock.calls[0]?.[1];
+        const eventHandler = contentScriptMock.window.addEventListener.mock.calls[0]?.[1];
         if (eventHandler) {
           eventHandler(event);
         }
       }).not.toThrow();
 
       // Restore original implementation
-      mockChrome.runtime['sendMessage'] = originalSendMessage;
+      (mockChrome.runtime as unknown as Record<string, unknown>)['sendMessage'] = originalSendMessage;
     });
 
     it('should handle event processing exceptions (coverage: lines 117-118)', () => {
@@ -490,7 +487,7 @@ describe('ContentScriptRelay', () => {
       expect(relay.isReady()).toBe(true);
 
       // Mock sendMessage to throw an error
-      mockChrome.runtime.sendMessage.mockImplementation(() => {
+      (mockChrome.runtime.sendMessage as ReturnType<typeof vi.fn>).mockImplementation(() => {
         throw new Error('Chrome API error');
       });
 
@@ -501,9 +498,10 @@ describe('ContentScriptRelay', () => {
 
       // Should handle exception gracefully and log warning
       expect(() => {
-        const eventHandler = mockWindow.addEventListener.mock.calls[0]?.[1];
-        if (eventHandler) {
-          eventHandler(event);
+        const eventHandler = (contentScriptMock.window.addEventListener as ReturnType<typeof vi.fn>).mock
+          ?.calls[0]?.[1];
+        if (eventHandler && typeof eventHandler === 'function') {
+          (eventHandler as EventListener)(event);
         }
       }).not.toThrow();
     });
@@ -529,8 +527,8 @@ describe('ContentScriptRelay', () => {
       const originalChrome = global.chrome;
 
       // Test condition where window and chrome are available
-      // @ts-ignore
-      global.window = { ...mockWindow };
+      // @ts-expect-error
+      global.window = { ...contentScriptMock.window };
       global.chrome = mockChrome as unknown as typeof chrome;
 
       // Mock the module to test auto-initialization
@@ -565,9 +563,9 @@ describe('ContentScriptRelay auto-initialization', () => {
       location: { origin: 'https://dapp.example.com' },
     };
 
-    // @ts-ignore
+    // @ts-expect-error
     global.window = mockWindow;
-    // @ts-ignore
+    // @ts-expect-error
     global.chrome = mockChrome;
 
     // Import module to trigger auto-initialization
@@ -579,55 +577,55 @@ describe('ContentScriptRelay auto-initialization', () => {
     expect(relay.isReady()).toBe(true);
 
     // Clean up
-    // @ts-ignore
+    // @ts-expect-error
     global.window = undefined;
-    // @ts-ignore
+    // @ts-expect-error
     global.chrome = undefined;
   });
 
   it('should not auto-initialize when window is undefined', async () => {
     // Ensure window is undefined
-    // @ts-ignore
+    // @ts-expect-error
     global.window = undefined;
 
-    // @ts-ignore
+    // @ts-expect-error
     global.chrome = { runtime: {} };
 
     // Import module
     await import('./ContentScriptRelay.js');
 
     // Clean up
-    // @ts-ignore
+    // @ts-expect-error
     global.chrome = undefined;
   });
 
   it('should not auto-initialize when chrome is undefined', async () => {
-    // @ts-ignore
+    // @ts-expect-error
     global.window = {};
-    // @ts-ignore
+    // @ts-expect-error
     global.chrome = undefined;
 
     // Import module
     await import('./ContentScriptRelay.js');
 
     // Clean up
-    // @ts-ignore
+    // @ts-expect-error
     global.window = undefined;
   });
 
   it('should not auto-initialize when chrome.runtime is undefined', async () => {
-    // @ts-ignore
+    // @ts-expect-error
     global.window = {};
-    // @ts-ignore
+    // @ts-expect-error
     global.chrome = {};
 
     // Import module
     await import('./ContentScriptRelay.js');
 
     // Clean up
-    // @ts-ignore
+    // @ts-expect-error
     global.window = undefined;
-    // @ts-ignore
+    // @ts-expect-error
     global.chrome = undefined;
   });
 });

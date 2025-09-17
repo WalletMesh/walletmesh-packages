@@ -168,7 +168,7 @@ export async function advanceTimeAndWait(ms: number): Promise<void> {
  *   () => listener.startDiscovery(),
  *   3000,
  *   () => {
- *     expect(listener.isDiscoveryInProgress()).toBe(false);
+ *     expect(listener.isDiscovering()).toBe(false);
  *     expect(listener.getQualifiedResponders()).toHaveLength(0);
  *   }
  * );
@@ -253,7 +253,6 @@ export async function waitForEventDispatch(
   advanceTime = true,
 ): Promise<Event> {
   return new Promise((resolve, reject) => {
-    // biome-ignore lint/style/useConst: timeoutId is used in event listener callback
     let timeoutId: ReturnType<typeof setTimeout>;
     let intervalId: ReturnType<typeof setInterval> | undefined;
 

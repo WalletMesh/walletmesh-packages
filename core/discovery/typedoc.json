@@ -9,5 +9,10 @@
   "out": "docs",
   "exclude": ["**/*.test.ts"],
   "includeVersion": true,
-  "excludePrivate": true
+  "excludePrivate": true,
+  "validation": {
+    "notDocumented": false,
+    "invalidLink": true,
+    "notExported": false
+  }
 }

@@ -6,28 +6,13 @@
 
 # Interface: DiscoveryErrorEvent
 
-Defined in: [core/types.ts:1820](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1820)
+Defined in: [core/discovery/src/types/core.ts:97](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L97)
 
-Event emitted when a discovery session encounters an error.
-
-This event is broadcast when a discovery session transitions to the ERROR state,
-indicating that the discovery process has failed due to a security violation
-or other error condition. The event provides error context for debugging.
-
-## Example
-
-```typescript
-// Listen for error events
-eventTarget.addEventListener(DISCOVERY_EVENTS.ERROR, (event) => {
-  const errorEvent = event as CustomEvent<DiscoveryErrorEvent>;
-  console.error(`Discovery session ${errorEvent.detail.sessionId} failed`);
-  console.error(`Error: ${errorEvent.detail.errorMessage}`);
-});
-```
+Discovery error event sent when discovery session fails.
 
 ## Since
 
-0.5.0
+0.1.0
 
 ## Extends
 
@@ -39,9 +24,7 @@ eventTarget.addEventListener(DISCOVERY_EVENTS.ERROR, (event) => {
 
 > **errorCategory**: [`ErrorCategory`](../type-aliases/ErrorCategory.md)
 
-Defined in: [core/types.ts:1830](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1830)
-
-Error category for handling
+Defined in: [core/discovery/src/types/core.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L101)
 
 ***
 
@@ -49,9 +32,7 @@ Error category for handling
 
 > **errorCode**: `number`
 
-Defined in: [core/types.ts:1824](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1824)
-
-Error code for categorization
+Defined in: [core/discovery/src/types/core.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L99)
 
 ***
 
@@ -59,9 +40,7 @@ Error code for categorization
 
 > **errorMessage**: `string`
 
-Defined in: [core/types.ts:1827](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1827)
-
-Human-readable error message
+Defined in: [core/discovery/src/types/core.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L100)
 
 ***
 
@@ -69,7 +48,7 @@ Human-readable error message
 
 > **sessionId**: `string`
 
-Defined in: [core/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L32)
+Defined in: [core/discovery/src/types/core.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L27)
 
 #### Inherited from
 
@@ -81,7 +60,7 @@ Defined in: [core/types.ts:32](https://github.com/WalletMesh/walletmesh-packages
 
 > **type**: `"discovery:wallet:error"`
 
-Defined in: [core/types.ts:1821](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1821)
+Defined in: [core/discovery/src/types/core.ts:98](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L98)
 
 #### Overrides
 
@@ -93,7 +72,7 @@ Defined in: [core/types.ts:1821](https://github.com/WalletMesh/walletmesh-packag
 
 > **version**: `"0.1.0"`
 
-Defined in: [core/types.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L31)
+Defined in: [core/discovery/src/types/core.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L26)
 
 #### Inherited from
 

@@ -6,9 +6,9 @@
 
 # Function: createDiscoveryResponder()
 
-> **createDiscoveryResponder**(`config`): [`DiscoveryResponder`](../classes/DiscoveryResponder.md)
+> **createDiscoveryResponder**(`config`): `DiscoveryResponder`
 
-Defined in: [responder/factory.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/factory.ts#L65)
+Defined in: [core/discovery/src/responder/factory.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/factory.ts#L64)
 
 Create a discovery announcer with comprehensive validation and configuration helpers.
 
@@ -36,7 +36,7 @@ Configuration object for the discovery announcer
 
 ## Returns
 
-[`DiscoveryResponder`](../classes/DiscoveryResponder.md)
+`DiscoveryResponder`
 
 Configured DiscoveryResponder instance ready for listening
 
@@ -56,7 +56,7 @@ const announcer = createDiscoveryResponder({
     type: 'extension',
     version: '1.0.0',
     protocolVersion: '0.1.0',
-    chains: [], // chain capabilities
+    technologies: [], // technology capabilities
     features: [] // wallet features
   },
   securityPolicy: {

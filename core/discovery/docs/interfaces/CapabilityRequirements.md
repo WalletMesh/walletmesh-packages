@@ -6,80 +6,38 @@
 
 # Interface: CapabilityRequirements
 
-Defined in: [core/types.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L100)
+Defined in: [core/discovery/src/types/capabilities.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L56)
 
 Capability requirements specification for responder discovery.
 
 Capabilities represent the complete set of functionalities a wallet can provide,
-organized into three distinct categories:
-
-- **chains**: Blockchain networks the wallet supports (e.g., 'eip155:1' for Ethereum mainnet)
-- **features**: Wallet-specific functionalities (e.g., 'hardware-wallet', 'batch-transactions')
-- **interfaces**: API standards the wallet implements (e.g., 'eip-1193' for EVM wallets)
-
-Together, these three categories form the wallet's complete capability profile.
-All requirements must be fulfilled for a responder to qualify for connection.
-
-## Examples
-
-```typescript
-const requirements: CapabilityRequirements = {
-  chains: ['eip155:1'],                              // Must support Ethereum mainnet
-  features: ['account-management'],                   // Must have account management
-  interfaces: ['eip-1193']                           // Must implement EIP-1193 standard
-};
-```
-
-```typescript
-const requirements: CapabilityRequirements = {
-  chains: ['eip155:1', 'eip155:137'],                // Ethereum AND Polygon
-  features: ['transaction-signing', 'hardware-wallet'], // Transaction signing AND hardware security
-  interfaces: ['eip-1193', 'eip-6963']               // Multiple interface standards
-};
-```
+organized into technology-based requirements and global features.
 
 ## Since
 
 0.1.0
 
-## See
-
- - [CapabilityPreferences](CapabilityPreferences.md) for optional preferences
- - [RESPONDER\_FEATURES](../variables/RESPONDER_FEATURES.md) in constants.ts for standard feature identifiers
-
 ## Properties
-
-### chains
-
-> **chains**: `string`[]
-
-Defined in: [core/types.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L106)
-
-Blockchain networks that must be supported.
-Uses CAIP-2 chain identifiers (e.g., 'eip155:1' for Ethereum mainnet).
-ALL specified chains must be supported by the wallet.
-
-***
 
 ### features
 
 > **features**: `string`[]
 
-Defined in: [core/types.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L114)
+Defined in: [core/discovery/src/types/capabilities.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L70)
 
-Wallet features that must be available.
-These represent specific functionalities beyond basic blockchain support,
-such as hardware security, batch transactions, or gasless operations.
+Global wallet features that must be available.
+These represent wallet-level functionalities beyond specific blockchain support,
+such as hardware security, multi-account support, or session management.
 See RESPONDER_FEATURES for standard values.
 
 ***
 
-### interfaces
+### technologies
 
-> **interfaces**: `string`[]
+> **technologies**: [`TechnologyRequirement`](TechnologyRequirement.md)[]
 
-Defined in: [core/types.ts:121](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L121)
+Defined in: [core/discovery/src/types/capabilities.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L62)
 
-API interfaces that must be implemented for wallet communication.
-These define how dApps can interact with the wallet programmatically.
-Examples: 'eip-1193' for Ethereum providers, 'solana-wallet-standard' for Solana.
+Blockchain technologies that must be supported.
+Each technology includes its required interfaces and features.
+Wallets must support at least the interfaces listed for each technology.

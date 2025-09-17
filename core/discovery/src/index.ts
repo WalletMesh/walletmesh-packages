@@ -15,7 +15,10 @@
  * @module @walletmesh/discovery
  */
 
-// Export core protocol types
+// ============================================================================
+// Core Protocol Types
+// ============================================================================
+
 export type {
   // Protocol messages
   BaseDiscoveryMessage,
@@ -24,55 +27,71 @@ export type {
   DiscoveryCompleteEvent,
   DiscoveryErrorEvent,
   DiscoveryMessage,
-  // Initiator types
+  // Core types
   InitiatorInfo,
+  TransportConfig,
+  DiscoveryRequestEventHandler,
+  DiscoveryResponseEventHandler,
+  DuplicateResponseDetails,
+  ErrorCategory,
+  DiscoveryError,
+} from './types/core.js';
+
+export type {
+  // Capability types
   CapabilityRequirements,
   CapabilityPreferences,
-  DiscoveryInitiatorConfig,
-  // Responder types
   ResponderInfo,
   BaseResponderInfo,
   ExtensionResponderInfo,
   WebResponderInfo,
   ResponderType,
-  QualifiedResponder,
-  DiscoveryResponderConfig,
-  // Capability types
-  CapabilityIntersection,
-  ChainCapability,
   ResponderFeature,
+  TechnologyCapability,
+  TechnologyRequirement,
+  TechnologyMatch,
+  QualifiedResponder,
+  CapabilityIntersection,
+  // Chain-related types
+  ChainCapability,
   ChainType,
   ChainFeature,
-  // Transport types
-  TransportConfig,
+  NetworkInfo,
+  TransactionType,
+  ParameterSpec,
+  ValidationRule,
+  // Additional responder types
+  PermissionModel,
+  ResponderPlatform,
+  VerificationInfo,
+} from './types/capabilities.js';
+
+export type {
   // Security types
   SecurityPolicy,
   OriginValidationResult,
   SessionOptions,
   SessionTrackingState,
   RateLimitConfig,
-  // Error types
-  DiscoveryError,
-  ProtocolError,
-  ErrorCategory,
-  // Other types
-  Account,
-  NetworkInfo,
-  TransactionType,
-  ResponderPlatform,
-  VerificationInfo,
-  PermissionModel,
-  ParameterSpec,
-  ValidationRule,
-  ConnectionManagerConfig,
-  DiscoveryRequestEventHandler,
-  DiscoveryResponseEventHandler,
-} from './core/types.js';
+} from './types/security.js';
 
-// Export constants
+export type {
+  // Testing and config types (for advanced use)
+  DiscoveryInitiatorConfig,
+  DiscoveryResponderConfig,
+} from './types/testing.js';
+
+// ============================================================================
+// Constants and Configuration
+// ============================================================================
+
 export * from './core/constants.js';
 
-// Export state machine types
+// ============================================================================
+// Core Components
+// ============================================================================
+
+// Export state machine
 export { ProtocolStateMachine, createProtocolStateMachine } from './core/ProtocolStateMachine.js';
 export type { ProtocolState, StateTimeouts, StateTransitionEvent } from './core/ProtocolStateMachine.js';
 
@@ -80,35 +99,72 @@ export type { ProtocolState, StateTimeouts, StateTransitionEvent } from './core/
 export { ConsoleLogger, createLogger, defaultLogger } from './core/logger.js';
 export type { Logger } from './core/logger.js';
 
-// Export initiator-side functionality
+// ============================================================================
+// Discovery Components (Simplified API)
+// ============================================================================
+
+// Export initiator functionality
+export { DiscoveryInitiator, type DiscoveryInitiatorOptions } from './initiator.js';
+export { InitiatorStateMachine, createInitiatorStateMachine } from './initiator/InitiatorStateMachine.js';
+export type { InitiatorStateMachineConfig } from './initiator/InitiatorStateMachine.js';
+
+// Export responder functionality
+export { DiscoveryResponder, type DiscoveryResponderOptions } from './responder.js';
+export { CapabilityMatcher } from './responder/CapabilityMatcher.js';
+export type { CapabilityMatchResult } from './responder/CapabilityMatcher.js';
+
+// Export factory functions
 export {
-  DiscoveryInitiator,
-  InitiatorStateMachine,
-  createDiscoveryInitiator,
-  createInitiatorStateMachine,
   createInitiatorDiscoverySetup,
   createCapabilityRequirements,
-} from './initiator/index.js';
-
-export type { InitiatorStateMachineConfig } from './initiator/index.js';
-
-// Export responder-side functionality
+} from './initiator/factory.js';
 export {
-  DiscoveryResponder,
-  CapabilityMatcher,
-  type CapabilityMatchResult,
-  createDiscoveryResponder,
-  createCapabilityMatcher,
   createResponderDiscoverySetup,
   createResponderInfo,
-} from './responder/index.js';
+  createCapabilityMatcher,
+  createDiscoveryResponder,
+} from './responder/factory.js';
 
-// Export security functionality
+// ============================================================================
+// Presets and Helpers
+// ============================================================================
+
+// Export presets for simplified configuration
+export { CAPABILITY_PRESETS, FEATURE_PRESETS, RESPONDER_PRESETS } from './presets/index.js';
+export { SECURITY_PRESETS } from './presets/security.js';
+
+// ============================================================================
+// Security Components
+// ============================================================================
+
 export {
-  SessionTracker,
+  // Core security classes
   OriginValidator,
+  SessionTracker,
   RateLimiter,
+  SecurityManager,
+  // Utility functions
   validateOrigin,
   validateEventOrigin,
   createSecurityPolicy,
-} from './security/index.js';
+} from './security.js';
+
+// ============================================================================
+// Validation and Utilities
+// ============================================================================
+
+export {
+  ValidationError,
+  ProtocolError,
+  validateInitiatorInfo,
+  validateCapabilityRequirements,
+  validateCapabilityPreferences,
+  validateResponderInfo,
+  validateSecurityPolicy,
+  validateTransportConfig,
+  isValidTransportConfig,
+  validateTimeout,
+  validateSessionId,
+} from './utils/validation.js';
+
+export { EventEmitter } from './utils/EventEmitter.js';

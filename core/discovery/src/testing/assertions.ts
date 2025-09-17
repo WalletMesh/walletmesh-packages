@@ -1,11 +1,5 @@
-import type {
-  DiscoveryRequestEvent,
-  DiscoveryResponseEvent,
-  ResponderInfo,
-  InitiatorInfo,
-  CapabilityIntersection,
-  QualifiedResponder,
-} from '../core/types.js';
+import type { DiscoveryRequestEvent, DiscoveryResponseEvent, InitiatorInfo } from '../types/core.js';
+import type { ResponderInfo, CapabilityIntersection, QualifiedResponder } from '../types/capabilities.js';
 import { DISCOVERY_PROTOCOL_VERSION } from '../core/constants.js';
 
 /**
@@ -174,17 +168,29 @@ export function expectValidResponderInfo(walletInfo: unknown): asserts walletInf
     throw new Error('ResponderInfo must have a valid type');
   }
 
-  if (!Array.isArray(wallet['chains']) || wallet['chains'].length === 0) {
-    throw new Error('ResponderInfo must have at least one chain');
+  if (!Array.isArray(wallet['technologies']) || wallet['technologies'].length === 0) {
+    throw new Error('ResponderInfo must have at least one technology');
   }
 
   if (!Array.isArray(wallet['features'])) {
     throw new Error('ResponderInfo must have features as an array');
   }
 
-  // Validate each chain
-  for (const chain of wallet['chains']) {
-    expectValidChainCapability(chain);
+  // Validate each technology
+  for (const tech of wallet['technologies']) {
+    if (!tech || typeof tech !== 'object') {
+      throw new Error('Technology must be an object');
+    }
+    const t = tech as Record<string, unknown>;
+    if (!t['type'] || typeof t['type'] !== 'string') {
+      throw new Error('Technology must have a type');
+    }
+    if (!Array.isArray(t['interfaces'])) {
+      throw new Error('Technology must have interfaces as an array');
+    }
+    if (t['features'] && !Array.isArray(t['features'])) {
+      throw new Error('Technology features must be an array');
+    }
   }
 
   // Validate each feature
@@ -261,8 +267,11 @@ export function expectValidInitiatorInfo(initiatorInfo: unknown): asserts initia
  *   name: 'Example Wallet',
  *   icon: 'data:image/png;base64,...',
  *   matched: {
- *     required: { chains: ['eip155:1'], features: [], interfaces: [] },
- *     optional: { chains: [], features: [] }
+ *     required: {
+ *       technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+ *       features: []
+ *     },
+ *     optional: { features: [] }
  *   }
  * };
  *
@@ -321,16 +330,29 @@ function expectValidCapabilityRequirements(requirements: unknown): void {
 
   const reqs = requirements as Record<string, unknown>;
 
-  if (!Array.isArray(reqs['chains'])) {
-    throw new Error('Capability requirements must have chains as an array');
+  if (!Array.isArray(reqs['technologies'])) {
+    throw new Error('Capability requirements must have technologies as an array');
+  }
+
+  // Validate each technology
+  for (const tech of reqs['technologies'] as unknown[]) {
+    if (!tech || typeof tech !== 'object') {
+      throw new Error('Technology must be an object');
+    }
+    const t = tech as Record<string, unknown>;
+    if (!t['type'] || typeof t['type'] !== 'string') {
+      throw new Error('Technology must have a type');
+    }
+    if (!Array.isArray(t['interfaces'])) {
+      throw new Error('Technology must have interfaces as an array');
+    }
+    if (t['features'] && !Array.isArray(t['features'])) {
+      throw new Error('Technology features must be an array');
+    }
   }
 
   if (!Array.isArray(reqs['features'])) {
     throw new Error('Capability requirements must have features as an array');
-  }
-
-  if (!Array.isArray(reqs['interfaces'])) {
-    throw new Error('Capability requirements must have interfaces as an array');
   }
 }
 
@@ -352,10 +374,6 @@ function expectValidCapabilityPreferences(preferences: unknown): void {
   }
 
   const prefs = preferences as Record<string, unknown>;
-
-  if (prefs['chains'] && !Array.isArray(prefs['chains'])) {
-    throw new Error('Capability preferences chains must be an array if provided');
-  }
 
   if (prefs['features'] && !Array.isArray(prefs['features'])) {
     throw new Error('Capability preferences features must be an array if provided');
@@ -391,46 +409,6 @@ function expectValidCapabilityIntersection(
 
   if (inter['optional']) {
     expectValidCapabilityPreferences(inter['optional']);
-  }
-}
-
-/**
- * Expect valid chain capability.
- *
- * Internal helper that validates the structure of a chain capability
- * including chainId, chainType, standards, and network information.
- *
- * @param chain - The value to validate as chain capability
- * @throws Error if any required field is missing or invalid
- * @internal
- * @category Testing
- * @since 1.0.0
- */
-function expectValidChainCapability(chain: unknown): void {
-  if (!chain || typeof chain !== 'object') {
-    throw new Error('Chain capability must be an object');
-  }
-
-  const ch = chain as Record<string, unknown>;
-
-  if (!ch['chainId'] || typeof ch['chainId'] !== 'string') {
-    throw new Error('Chain capability must have a valid chainId');
-  }
-
-  if (!['evm', 'account', 'utxo'].includes(ch['chainType'] as string)) {
-    throw new Error('Chain capability must have a valid chainType');
-  }
-
-  if (!Array.isArray(ch['standards'])) {
-    throw new Error('Chain capability must have standards as an array');
-  }
-
-  // isTestnet is now part of the network property, not directly on ChainCapability
-  if (ch['network'] && typeof ch['network'] === 'object') {
-    const network = ch['network'] as Record<string, unknown>;
-    if (typeof network['testnet'] !== 'boolean') {
-      throw new Error('Chain capability network must have testnet as a boolean');
-    }
   }
 }
 

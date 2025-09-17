@@ -127,15 +127,19 @@ describe('eventHelpers', () => {
     it('should handle custom request data', () => {
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1', 'eip155:137'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management', 'transaction-signing'],
-          interfaces: ['eip-1193'],
         },
       });
 
       const event = createDiscoveryRequestEvent(request);
 
-      expect(event.detail.required.chains).toEqual(['eip155:1', 'eip155:137']);
+      expect(event.detail.required.technologies).toBeDefined();
       expect(event.detail.required.features).toEqual(['account-management', 'transaction-signing']);
     });
   });
@@ -232,9 +236,13 @@ describe('eventHelpers', () => {
         type: 'discovery:request',
         sessionId: 'test-session',
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         nested: {
           array: [1, 2, 3],
@@ -854,7 +862,7 @@ describe('eventHelpers', () => {
         expect(() => simulateMessageEvent({ test: true }, testConfig as MessageEventConfig)).not.toThrow();
       } else {
         // Remove undefined ports from config
-        const { ports, ...configWithoutPorts } = testConfig;
+        const { ...configWithoutPorts } = testConfig;
         expect(() =>
           simulateMessageEvent({ test: true }, configWithoutPorts as MessageEventConfig),
         ).not.toThrow();

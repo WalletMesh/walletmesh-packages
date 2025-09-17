@@ -6,7 +6,7 @@
 
 # Interface: Logger
 
-Defined in: [core/logger.ts:8](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/logger.ts#L8)
+Defined in: [core/discovery/src/core/logger.ts:8](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/logger.ts#L8)
 
 Logger interface for the discovery package.
 Compatible with modal-core's Logger interface.
@@ -21,7 +21,7 @@ Compatible with modal-core's Logger interface.
 
 > **debug**(`message`, `data?`): `void`
 
-Defined in: [core/logger.ts:14](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/logger.ts#L14)
+Defined in: [core/discovery/src/core/logger.ts:14](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/logger.ts#L14)
 
 Log debug message (only when debug is enabled)
 
@@ -49,7 +49,7 @@ Optional data to include with the message
 
 > **error**(`message`, `error?`): `void`
 
-Defined in: [core/logger.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/logger.ts#L35)
+Defined in: [core/discovery/src/core/logger.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/logger.ts#L35)
 
 Log error message
 
@@ -77,7 +77,7 @@ Optional error object or data to include
 
 > **info**(`message`, `data?`): `void`
 
-Defined in: [core/logger.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/logger.ts#L21)
+Defined in: [core/discovery/src/core/logger.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/logger.ts#L21)
 
 Log info message
 
@@ -105,7 +105,7 @@ Optional data to include with the message
 
 > **warn**(`message`, `data?`): `void`
 
-Defined in: [core/logger.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/logger.ts#L28)
+Defined in: [core/discovery/src/core/logger.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/logger.ts#L28)
 
 Log warning message
 

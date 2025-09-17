@@ -1,12 +1,11 @@
 import type {
   InitiatorInfo,
-  CapabilityRequirements,
-  CapabilityPreferences,
   DiscoveryRequestEvent,
   DiscoveryCompleteEvent,
   DiscoveryErrorEvent,
-  Logger,
-} from '../core/types.js';
+} from '../types/core.js';
+import type { CapabilityRequirements, CapabilityPreferences } from '../types/capabilities.js';
+import type { Logger } from '../core/logger.js';
 import { DISCOVERY_EVENTS, DISCOVERY_PROTOCOL_VERSION } from '../core/constants.js';
 import {
   ProtocolStateMachine,

@@ -197,10 +197,10 @@ describe('Testing Module', () => {
 
         expect(responderInfo.rdns).toContain('ethereum');
         expect(responderInfo.name).toContain('Ethereum');
-        expect(responderInfo.chains.some((chain) => chain.chainId === 'eip155:1')).toBe(true);
+        expect(responderInfo.technologies.some((tech) => tech.type === 'evm')).toBe(true);
         expect(responderInfo.features.some((feature) => feature.id === 'account-management')).toBe(true);
-        // ResponderInfo doesn't have interfaces property - chains have standards instead
-        expect(responderInfo.chains.some((chain) => chain.standards.includes('eip-1193'))).toBe(true);
+        // ResponderInfo doesn't have interfaces property - technologies have interfaces instead
+        expect(responderInfo.technologies.some((tech) => tech.interfaces.includes('eip-1193'))).toBe(true);
       });
 
       it('should create Solana responder info', () => {
@@ -208,7 +208,7 @@ describe('Testing Module', () => {
 
         expect(responderInfo.rdns).toContain('solana');
         expect(responderInfo.name).toContain('Solana');
-        expect(responderInfo.chains.some((chain) => chain.chainId.includes('solana'))).toBe(true);
+        expect(responderInfo.technologies.some((tech) => tech.type === 'solana')).toBe(true);
         expect(responderInfo.features.some((feature) => feature.id === 'account-management')).toBe(true);
       });
 
@@ -217,14 +217,14 @@ describe('Testing Module', () => {
 
         expect(responderInfo.rdns).toContain('aztec');
         expect(responderInfo.name).toContain('Aztec');
-        expect(responderInfo.chains.some((chain) => chain.chainId.includes('aztec'))).toBe(true);
+        expect(responderInfo.technologies.some((tech) => tech.type === 'aztec')).toBe(true);
       });
 
       it('should create multi-chain responder info', () => {
         const responderInfo = createTestResponderInfo.multiChain();
 
-        expect(responderInfo.chains.length).toBeGreaterThan(1);
-        expect(responderInfo.chains.some((chain) => chain.chainType === 'evm')).toBe(true);
+        expect(responderInfo.technologies.length).toBeGreaterThan(1);
+        expect(responderInfo.technologies.some((tech) => tech.type === 'evm')).toBe(true);
         expect(responderInfo.features.length).toBeGreaterThan(1);
       });
 
@@ -237,7 +237,7 @@ describe('Testing Module', () => {
 
         expect(responderInfo.name).toBe(customName);
         expect(responderInfo.rdns).toBe('com.custom.test');
-        expect(responderInfo.chains.some((chain) => chain.chainId === 'eip155:1')).toBe(true);
+        expect(responderInfo.technologies.some((tech) => tech.type === 'evm')).toBe(true);
       });
     });
 
@@ -248,32 +248,39 @@ describe('Testing Module', () => {
         expect(request.type).toBe('discovery:wallet:request');
         expect(request.sessionId).toBeDefined();
         expect(request.required).toBeDefined();
-        expect(request.required.chains).toBeInstanceOf(Array);
+        expect(request.required.technologies).toBeInstanceOf(Array);
         expect(request.required.features).toBeInstanceOf(Array);
-        expect(request.required.interfaces).toBeInstanceOf(Array);
         expect(request.origin).toBeDefined();
         expect(request.initiatorInfo).toBeDefined();
       });
 
       it('should accept custom requirements', () => {
         const customRequirements = {
-          chains: ['eip155:137'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['transaction-signing'],
-          interfaces: ['solana-wallet-standard'],
         };
 
         const request = createTestDiscoveryRequest({
           required: customRequirements,
         });
 
-        expect(request.required.chains).toEqual(customRequirements.chains);
+        expect(request.required.technologies).toEqual(customRequirements.technologies);
         expect(request.required.features).toEqual(customRequirements.features);
-        expect(request.required.interfaces).toEqual(customRequirements.interfaces);
       });
 
       it('should include optional requirements when provided', () => {
         const optionalRequirements = {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['hardware-wallet'],
         };
 
@@ -363,7 +370,6 @@ describe('Testing Module', () => {
 
       it('should execute scenario successfully', async () => {
         const scenario = createBasicDiscoveryScenario({
-          chains: ['eip155:1'],
           expectedResponders: 1,
         });
 
@@ -383,9 +389,13 @@ describe('Testing Module', () => {
         const request = createTestDiscoveryRequest({
           sessionId: sessionId ?? 'fallback-session-id',
           required: {
-            chains: ['eip155:1'],
+            technologies: [
+              {
+                type: 'evm' as const,
+                interfaces: ['eip-1193'],
+              },
+            ],
             features: ['account-management'],
-            interfaces: ['eip-1193'],
           },
         });
         const response = context.announcer.simulateDiscoveryRequest(request);
@@ -421,7 +431,7 @@ describe('Testing Module', () => {
         const discoveryPromise = context.listener.startDiscovery();
 
         // Verify discovery started
-        expect(context.listener.isDiscoveryInProgress()).toBe(true);
+        expect(context.listener.isDiscovering()).toBe(true);
 
         // Advance time to trigger timeout and manually stop discovery
         await vi.advanceTimersByTimeAsync(1500);
@@ -429,7 +439,7 @@ describe('Testing Module', () => {
 
         const result = await discoveryPromise;
         expect(result.length).toBe(0);
-        expect(context.listener.isDiscoveryInProgress()).toBe(false);
+        expect(context.listener.isDiscovering()).toBe(false);
 
         await scenario.cleanup(context);
       });
@@ -508,9 +518,8 @@ describe('Testing Module', () => {
           type: 'discovery:wallet:request',
           sessionId: 'test-session',
           required: {
-            chains: 'not-an-array', // Should be array
+            technologies: 'not-an-array', // Should be array
             features: ['valid-feature'],
-            interfaces: ['valid-interface'],
           },
           origin: 'https://example.com',
           initiatorInfo: { name: 'Test', url: 'https://example.com', icon: 'icon' },
@@ -533,9 +542,13 @@ describe('Testing Module', () => {
           responderVersion: '1.0.0',
           matched: {
             required: {
-              chains: ['eip155:1'],
+              technologies: [
+                {
+                  type: 'evm' as const,
+                  interfaces: ['eip-1193'],
+                },
+              ],
               features: ['account-management'],
-              interfaces: ['eip-1193'],
             },
           },
         };
@@ -605,9 +618,13 @@ describe('Testing Module', () => {
       const responderInfo = createTestResponderInfo.ethereum();
       const capabilityRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
       const securityPolicy = createTestSecurityPolicy({
@@ -622,7 +639,6 @@ describe('Testing Module', () => {
       const scenario = createBasicDiscoveryScenario({
         responderInfo,
         securityPolicy,
-        chains: ['eip155:1'],
         expectedResponders: 1,
       });
 
@@ -662,9 +678,11 @@ describe('Testing Module', () => {
 
       const multiChainRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1', 'solana:mainnet'],
+          technologies: [
+            { type: 'evm' as const, interfaces: ['eip-1193'] },
+            { type: 'solana' as const, interfaces: ['solana-wallet-standard'] },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193', 'solana-wallet-standard'],
         },
       });
 
@@ -672,8 +690,8 @@ describe('Testing Module', () => {
       assertValidDiscoveryRequestEvent(multiChainRequest);
 
       // Each responder should only respond if they support required capabilities
-      expect(ethereumResponder.chains.some((c) => c.chainId === 'eip155:1')).toBe(true);
-      expect(solanaResponder.chains.some((c) => c.chainId.includes('solana'))).toBe(true);
+      expect(ethereumResponder.technologies.some((t) => t.type === 'evm')).toBe(true);
+      expect(solanaResponder.technologies.some((t) => t.type === 'solana')).toBe(true);
     });
   });
 
@@ -687,7 +705,7 @@ describe('Testing Module', () => {
         undefined,
         'string-instead-of-object',
         { incomplete: 'data' },
-        { chains: 'not-an-array' },
+        { technologies: 'not-an-array' },
       ];
 
       for (const input of malformedInputs) {
@@ -722,7 +740,7 @@ describe('Testing Module', () => {
       // Simulate error during execution
       try {
         throw new Error('Simulated error');
-      } catch (error) {
+      } catch {
         // Cleanup should still work
         await expect(scenario.cleanup(context)).resolves.not.toThrow();
       }

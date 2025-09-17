@@ -16,7 +16,7 @@ describe('Package Exports', () => {
     const initiatorModule = await import('./initiator/index.js');
 
     expect(initiatorModule.DiscoveryInitiator).toBeDefined();
-    expect(initiatorModule.createDiscoveryInitiator).toBeDefined();
+    // createDiscoveryInitiator is deprecated and removed
     expect(initiatorModule.createInitiatorDiscoverySetup).toBeDefined();
     expect(initiatorModule.createCapabilityRequirements).toBeDefined();
   });
@@ -26,14 +26,14 @@ describe('Package Exports', () => {
 
     expect(responderModule.DiscoveryResponder).toBeDefined();
     expect(responderModule.CapabilityMatcher).toBeDefined();
-    expect(responderModule.createDiscoveryResponder).toBeDefined();
+    // createDiscoveryResponder is deprecated and removed
     expect(responderModule.createCapabilityMatcher).toBeDefined();
     expect(responderModule.createResponderDiscoverySetup).toBeDefined();
     expect(responderModule.createResponderInfo).toBeDefined();
   });
 
   it('should export security utilities', async () => {
-    const securityModule = await import('./security/index.js');
+    const securityModule = await import('./security.js');
 
     expect(securityModule.SessionTracker).toBeDefined();
     expect(securityModule.OriginValidator).toBeDefined();
@@ -58,9 +58,8 @@ describe('Package Exports', () => {
     expect(mainExports.DiscoveryResponder).toBeDefined();
     expect(mainExports.CapabilityMatcher).toBeDefined();
 
-    // Factory functions
-    expect(mainExports.createDiscoveryInitiator).toBeDefined();
-    expect(mainExports.createDiscoveryResponder).toBeDefined();
+    // Factory functions (deprecated ones removed)
+    // createDiscoveryInitiator and createDiscoveryResponder are deprecated and removed
     expect(mainExports.createCapabilityMatcher).toBeDefined();
     expect(mainExports.createInitiatorDiscoverySetup).toBeDefined();
     expect(mainExports.createResponderDiscoverySetup).toBeDefined();

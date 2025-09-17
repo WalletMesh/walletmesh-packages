@@ -9,11 +9,10 @@ import { createTestDAppInfo, createTestDiscoveryResponse } from '../testing/test
 import { MockEventTarget } from '../testing/MockEventTarget.js';
 import { setupFakeTimers, cleanupFakeTimers, advanceTimeAndWait } from '../testing/timingHelpers.js';
 import { createDiscoveryResponseEvent } from '../testing/eventHelpers.js';
-import type {
-  DiscoveryInitiatorConfig,
-  DiscoveryResponseEvent,
-  CapabilityRequirements,
-} from '../core/types.js';
+import { createConsoleSpy } from '../testing/consoleMocks.js';
+import type { DiscoveryResponseEvent } from '../types/core.js';
+import type { CapabilityRequirements } from '../types/capabilities.js';
+import type { DiscoveryInitiatorConfig } from '../types/testing.js';
 import { DISCOVERY_EVENTS, DISCOVERY_PROTOCOL_VERSION } from '../core/constants.js';
 import type { InitiatorStateMachine } from './InitiatorStateMachine.js';
 
@@ -31,9 +30,13 @@ describe('DiscoveryInitiator', () => {
     defaultConfig = {
       initiatorInfo: createTestDAppInfo(),
       requirements: {
-        chains: ['eip155:1'],
+        technologies: [
+          {
+            type: 'evm' as const,
+            interfaces: ['eip-1193'],
+          },
+        ],
         features: ['account-management'],
-        interfaces: ['eip-1193'],
       },
       eventTarget: mockEventTarget,
       timeout: 1000,
@@ -54,7 +57,7 @@ describe('DiscoveryInitiator', () => {
   describe('Basic Functionality', () => {
     it('should initialize with correct default state', () => {
       expect(listener.getState()).toBe('IDLE');
-      expect(listener.isDiscoveryInProgress()).toBe(false);
+      expect(listener.isDiscovering()).toBe(false);
       expect(listener.getQualifiedResponders()).toEqual([]);
     });
 
@@ -62,7 +65,7 @@ describe('DiscoveryInitiator', () => {
       const discoveryPromise = listener.startDiscovery();
       await advanceTimeAndWait(10);
 
-      expect(listener.isDiscoveryInProgress()).toBe(true);
+      expect(listener.isDiscovering()).toBe(true);
       expect(listener.getState()).toBe('DISCOVERING');
 
       await advanceTimeAndWait(1000);
@@ -83,13 +86,13 @@ describe('DiscoveryInitiator', () => {
       const discoveryPromise = listener.startDiscovery();
       await vi.advanceTimersByTimeAsync(10);
 
-      expect(listener.isDiscoveryInProgress()).toBe(true);
+      expect(listener.isDiscovering()).toBe(true);
       listener.stopDiscovery();
 
       await vi.advanceTimersByTimeAsync(100);
       const wallets = await discoveryPromise;
       expect(wallets).toEqual([]);
-      expect(listener.isDiscoveryInProgress()).toBe(false);
+      expect(listener.isDiscovering()).toBe(false);
     });
 
     it('should collect valid wallet responses', async () => {
@@ -119,7 +122,7 @@ describe('DiscoveryInitiator', () => {
   describe('State Management', () => {
     it('should handle state queries when not discovering', () => {
       expect(listener.getState()).toBe('IDLE');
-      expect(listener.isDiscoveryInProgress()).toBe(false);
+      expect(listener.isDiscovering()).toBe(false);
     });
 
     it('should handle getQualifiedResponders when in wrong state', () => {
@@ -193,7 +196,12 @@ describe('DiscoveryInitiator', () => {
       const newConfig: Partial<DiscoveryInitiatorConfig> = {
         timeout: 5000,
         preferences: {
-          chains: ['eip155:137'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['hardware-wallet'],
         },
       };
@@ -202,7 +210,7 @@ describe('DiscoveryInitiator', () => {
 
       const stats = listener.getStats();
       expect(stats.config.timeout).toBe(5000);
-      expect(stats.config.preferencesCount?.chains).toBe(1);
+      expect(stats.config.preferencesCount?.technologies).toBe(1);
       expect(stats.config.preferencesCount?.features).toBe(1);
     });
 
@@ -211,31 +219,28 @@ describe('DiscoveryInitiator', () => {
 
       const stats = listener.getStats();
       expect(stats.config.timeout).toBe(8000);
-      expect(stats.config.requirementsCount.chains).toBe(1);
+      expect(stats.config.requirementsCount.technologies).toBe(1);
     });
 
     it('should update requirements in configuration', () => {
       const newRequirements: CapabilityRequirements = {
-        chains: ['eip155:1', 'eip155:137'],
+        technologies: [{ type: 'evm' as const, interfaces: ['eip-1193', 'eip-6963'] }],
         features: ['account-management', 'transaction-signing'],
-        interfaces: ['eip-1193', 'eip-6963'],
       };
 
       listener.updateConfig({ requirements: newRequirements });
 
       const stats = listener.getStats();
-      expect(stats.config.requirementsCount.chains).toBe(2);
+      expect(stats.config.requirementsCount.technologies).toBe(1);
       expect(stats.config.requirementsCount.features).toBe(2);
-      expect(stats.config.requirementsCount.interfaces).toBe(2);
     });
 
     it('should handle configuration with empty requirements', () => {
       const emptyRequirementsConfig: DiscoveryInitiatorConfig = {
         initiatorInfo: createTestDAppInfo(),
         requirements: {
-          chains: [],
+          technologies: [],
           features: [],
-          interfaces: [],
         },
         eventTarget: mockEventTarget,
         timeout: 1000,
@@ -252,9 +257,8 @@ describe('DiscoveryInitiator', () => {
       const duplicateRequirementsConfig: DiscoveryInitiatorConfig = {
         initiatorInfo: createTestDAppInfo(),
         requirements: {
-          chains: ['eip155:1', 'eip155:1', 'eip155:1'],
-          features: ['account-management', 'account-management'],
-          interfaces: ['eip-1193', 'eip-1193'],
+          technologies: [{ type: 'evm' as const, interfaces: ['eip-1193'] }],
+          features: ['account-management'],
         },
         eventTarget: mockEventTarget,
         timeout: 1000,
@@ -276,14 +280,14 @@ describe('DiscoveryInitiator', () => {
     it('should calculate preferences count correctly when preferences are set', () => {
       listener.updateConfig({
         preferences: {
-          chains: ['eip155:137', 'eip155:42161'],
+          technologies: [{ type: 'evm' as const, interfaces: ['eip-1193'] }],
           features: ['hardware-wallet'],
         },
       });
 
       const stats = listener.getStats();
       expect(stats.config.preferencesCount).toEqual({
-        chains: 2,
+        technologies: 1,
         features: 1,
       });
     });
@@ -291,13 +295,13 @@ describe('DiscoveryInitiator', () => {
     it('should handle partial preferences in count calculation', () => {
       listener.updateConfig({
         preferences: {
-          chains: ['eip155:137'],
+          technologies: [{ type: 'evm' as const, interfaces: ['eip-1193'] }],
         },
       });
 
       const stats = listener.getStats();
       expect(stats.config.preferencesCount).toEqual({
-        chains: 1,
+        technologies: 1,
         features: 0,
       });
     });
@@ -305,14 +309,14 @@ describe('DiscoveryInitiator', () => {
     it('should handle empty arrays in preferences count', () => {
       listener.updateConfig({
         preferences: {
-          chains: [],
+          technologies: [],
           features: [],
         },
       });
 
       const stats = listener.getStats();
       expect(stats.config.preferencesCount).toEqual({
-        chains: 0,
+        technologies: 0,
         features: 0,
       });
     });
@@ -341,7 +345,7 @@ describe('DiscoveryInitiator', () => {
       };
 
       listener = new DiscoveryInitiator(configWithPolicy);
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const discoveryPromise = listener.startDiscovery();
       await vi.advanceTimersByTimeAsync(10);
@@ -362,11 +366,11 @@ describe('DiscoveryInitiator', () => {
       const wallets = await discoveryPromise;
 
       expect(wallets).toHaveLength(0);
-      expect(warnSpy).toHaveBeenCalledWith(
+      expect(warnSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Discovery response from invalid origin:',
         'http://invalid.com',
       );
-      warnSpy.mockRestore();
+      warnSpy.restore();
     });
 
     it('should handle event dispatch errors gracefully', async () => {
@@ -483,7 +487,7 @@ describe('DiscoveryInitiator', () => {
     });
 
     it('should warn about protocol version mismatch', async () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const discoveryPromise = listener.startDiscovery();
       await vi.advanceTimersByTimeAsync(10);
@@ -505,9 +509,9 @@ describe('DiscoveryInitiator', () => {
       const wallets = await discoveryPromise;
 
       expect(wallets).toHaveLength(0);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('Protocol version mismatch'));
+      expect(consoleWarnSpy.warn).toHaveBeenCalledWith(expect.stringContaining('Protocol version mismatch'));
 
-      consoleWarnSpy.mockRestore();
+      consoleWarnSpy.restore();
     });
 
     it('should reject responses with invalid RDNS format', async () => {
@@ -587,7 +591,7 @@ describe('DiscoveryInitiator', () => {
   // ===============================================
   describe('Event Processing Edge Cases', () => {
     it('should handle event without detail property', async () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const discoveryPromise = listener.startDiscovery();
       await vi.advanceTimersByTimeAsync(10);
@@ -599,16 +603,16 @@ describe('DiscoveryInitiator', () => {
       const wallets = await discoveryPromise;
 
       expect(wallets).toHaveLength(0);
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(consoleWarnSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Error processing discovery response:',
         expect.any(Error),
       );
 
-      consoleWarnSpy.mockRestore();
+      consoleWarnSpy.restore();
     });
 
     it('should handle responses with circular reference data', async () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const discoveryPromise = listener.startDiscovery();
       await vi.advanceTimersByTimeAsync(10);
@@ -629,7 +633,7 @@ describe('DiscoveryInitiator', () => {
       const wallets = await discoveryPromise;
 
       expect(wallets).toHaveLength(1);
-      consoleWarnSpy.mockRestore();
+      consoleWarnSpy.restore();
     });
 
     it('should handle responses that arrive exactly at timeout', async () => {
@@ -640,7 +644,7 @@ describe('DiscoveryInitiator', () => {
       if (!sessionId) throw new Error('No session ID');
 
       await vi.advanceTimersByTimeAsync(989);
-      expect(listener.isDiscoveryInProgress()).toBe(true);
+      expect(listener.isDiscovering()).toBe(true);
 
       const response = createTestDiscoveryResponse({ sessionId });
       const event = new CustomEvent(DISCOVERY_EVENTS.RESPONSE, {
@@ -797,7 +801,7 @@ describe('DiscoveryInitiator', () => {
       });
 
       // Spy on console.warn
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const warnSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       // Dispatch the event
       mockEventTarget.dispatchEvent(untrustedEvent);
@@ -807,12 +811,12 @@ describe('DiscoveryInitiator', () => {
 
       // Should have rejected the response due to origin validation
       expect(wallets).toHaveLength(0);
-      expect(warnSpy).toHaveBeenCalledWith(
+      expect(warnSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Discovery response from invalid origin:',
         'https://untrusted-dapp.com',
       );
 
-      warnSpy.mockRestore();
+      warnSpy.restore();
 
       // Restore window
       if (originalWindow) {
@@ -928,7 +932,7 @@ describe('DiscoveryInitiator', () => {
     it('should properly dispose resources including state machine', () => {
       // Start discovery first to initialize state machine
       listener.startDiscovery();
-      expect(listener.isDiscoveryInProgress()).toBe(true);
+      expect(listener.isDiscovering()).toBe(true);
 
       // Now spy on the dispose method
       const disposeSpy = vi.spyOn(listener['stateMachine'] as InitiatorStateMachine, 'dispose');
@@ -937,7 +941,7 @@ describe('DiscoveryInitiator', () => {
       listener.dispose();
 
       // Should have stopped discovery and disposed state machine
-      expect(listener.isDiscoveryInProgress()).toBe(false);
+      expect(listener.isDiscovering()).toBe(false);
       expect(disposeSpy).toHaveBeenCalled();
     });
 
@@ -945,13 +949,13 @@ describe('DiscoveryInitiator', () => {
       const discoveryPromise = listener.startDiscovery();
       await vi.advanceTimersByTimeAsync(10);
 
-      expect(listener.isDiscoveryInProgress()).toBe(true);
+      expect(listener.isDiscovering()).toBe(true);
 
       // Dispose while discovery is active
       listener.dispose();
 
       // Should have stopped discovery
-      expect(listener.isDiscoveryInProgress()).toBe(false);
+      expect(listener.isDiscovering()).toBe(false);
 
       // Complete the timer
       await vi.advanceTimersByTimeAsync(1000);

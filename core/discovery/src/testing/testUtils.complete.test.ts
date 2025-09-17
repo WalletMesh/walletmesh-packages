@@ -16,9 +16,13 @@ describe('testUtils - Complete Coverage', () => {
         const requirements = createTestCapabilityRequirements.ethereum();
 
         expect(requirements).toEqual({
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management', 'transaction-signing'],
-          interfaces: ['eip-1193'],
         });
       });
     });
@@ -28,9 +32,13 @@ describe('testUtils - Complete Coverage', () => {
         const requirements = createTestCapabilityRequirements.solana();
 
         expect(requirements).toEqual({
-          chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+          technologies: [
+            {
+              type: 'solana',
+              interfaces: ['solana-wallet-standard'],
+            },
+          ],
           features: ['account-management', 'transaction-signing'],
-          interfaces: ['solana-wallet-standard'],
         });
       });
     });
@@ -40,9 +48,13 @@ describe('testUtils - Complete Coverage', () => {
         const requirements = createTestCapabilityRequirements.aztec();
 
         expect(requirements).toEqual({
-          chains: ['aztec:mainnet'],
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
           features: ['private-transactions', 'transaction-signing'],
-          interfaces: ['aztec-wallet-api-v1'],
         });
       });
     });
@@ -52,9 +64,17 @@ describe('testUtils - Complete Coverage', () => {
         const requirements = createTestCapabilityRequirements.multiChain();
 
         expect(requirements).toEqual({
-          chains: ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+            {
+              type: 'solana',
+              interfaces: ['solana-wallet-standard'],
+            },
+          ],
           features: ['account-management', 'transaction-signing'],
-          interfaces: ['eip-1193', 'solana-wallet-standard'],
         });
       });
     });

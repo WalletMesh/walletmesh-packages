@@ -24,7 +24,12 @@ import {
 } from '../testing/testUtils.js';
 import { setupFakeTimers, cleanupFakeTimers } from '../testing/timingHelpers.js';
 import { createTestEvent } from '../testing/eventHelpers.js';
-import type { DiscoveryRequestEvent } from '../core/types.js';
+import { createConsoleSpy } from '../testing/consoleMocks.js';
+import type { DiscoveryRequestEvent } from '../types/core.js';
+import type { TechnologyRequirement } from '../types/capabilities.js';
+import type { Logger } from '../core/logger.js';
+import { ProtocolError } from '../utils/protocolError.js';
+import { ERROR_CODES } from '../core/constants.js';
 
 describe('DiscoveryResponder Edge Cases', () => {
   let announcer: DiscoveryResponder;
@@ -337,56 +342,79 @@ describe('DiscoveryResponder Edge Cases', () => {
 
   describe('error handling edge cases', () => {
     it('should handle session replay detection errors (coverage: lines 480-482)', () => {
+      const mockLogger: Logger = {
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      };
+
       const announcer = new DiscoveryResponder({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: createTestSecurityPolicy(),
+        logger: mockLogger,
       });
-
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       const request = createTestDiscoveryRequest();
       const privateAnnouncer = announcer as unknown as {
-        handleRequestProcessingError(error: Error, request?: DiscoveryRequestEvent): void;
+        handleRequestProcessingError(error: unknown, request?: DiscoveryRequestEvent): void;
       };
 
-      privateAnnouncer.handleRequestProcessingError(new Error('Session replay detected'), request);
-
-      expect(consoleSpy).toHaveBeenCalledWith(
-        `[WalletMesh] Blocked replay attempt for session: ${request.sessionId}`,
+      // Use ProtocolError with SESSION_REPLAY_DETECTED code
+      const error = new ProtocolError(
+        ERROR_CODES.SESSION_REPLAY_DETECTED,
+        { sessionId: request.sessionId },
+        'Session replay detected',
       );
+      privateAnnouncer.handleRequestProcessingError(error, request);
 
-      consoleSpy.mockRestore();
+      // SESSION_REPLAY_DETECTED is a silent failure code, so it logs at debug level
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        `[Silent Failure] Session replay detected for session: ${request.sessionId}`,
+        { errorCode: ERROR_CODES.SESSION_REPLAY_DETECTED },
+      );
     });
 
     it('should handle capability not supported errors (coverage: lines 482-487)', () => {
+      const mockLogger: Logger = {
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      };
+
       const announcer = new DiscoveryResponder({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: createTestSecurityPolicy(),
+        logger: mockLogger,
       });
-
-      const consoleSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
 
       const request = createTestDiscoveryRequest();
       const privateAnnouncer = announcer as unknown as {
-        handleRequestProcessingError(error: Error, request?: DiscoveryRequestEvent): void;
+        handleRequestProcessingError(error: unknown, request?: DiscoveryRequestEvent): void;
       };
 
-      privateAnnouncer.handleRequestProcessingError(new Error('Capability not supported'), request);
+      // Use ProtocolError with CAPABILITY_NOT_SUPPORTED code
+      const error = new ProtocolError(ERROR_CODES.CAPABILITY_NOT_SUPPORTED, {}, 'Capability not supported');
+      privateAnnouncer.handleRequestProcessingError(error, request);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        `[WalletMesh] No capability match for request from: ${request.origin}`,
+      // CAPABILITY_NOT_SUPPORTED is a silent failure code, so it logs at debug level
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        `No capability match for request from: ${request.origin}`,
+        { errorCode: ERROR_CODES.CAPABILITY_NOT_SUPPORTED },
       );
 
       // Test chain not supported as well
-      privateAnnouncer.handleRequestProcessingError(new Error('Chain not supported'), request);
+      const chainError = new ProtocolError(ERROR_CODES.CHAIN_NOT_SUPPORTED, {}, 'Chain not supported');
+      privateAnnouncer.handleRequestProcessingError(chainError, request);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        `[WalletMesh] No capability match for request from: ${request.origin}`,
+      // CHAIN_NOT_SUPPORTED is also a silent failure code
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        `No capability match for request from: ${request.origin}`,
+        { errorCode: ERROR_CODES.CHAIN_NOT_SUPPORTED },
       );
-
-      consoleSpy.mockRestore();
     });
 
     it('should handle response sending errors (coverage: lines 507-511)', () => {
@@ -396,7 +424,7 @@ describe('DiscoveryResponder Edge Cases', () => {
         securityPolicy: createTestSecurityPolicy(),
       });
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['error'], mockFn: () => vi.fn() });
 
       const request = createTestDiscoveryRequest();
       const privateAnnouncer = announcer as unknown as {
@@ -406,7 +434,7 @@ describe('DiscoveryResponder Edge Cases', () => {
       // Test dispatchEvent error
       privateAnnouncer.handleResponseSendingError(new Error('dispatchEvent failed'), request);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.error).toHaveBeenCalledWith(
         `[WalletMesh] Failed to dispatch response event for ${request.origin}:`,
         'dispatchEvent failed',
       );
@@ -414,12 +442,12 @@ describe('DiscoveryResponder Edge Cases', () => {
       // Test general response error
       privateAnnouncer.handleResponseSendingError(new Error('General response error'), request);
 
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.error).toHaveBeenCalledWith(
         `[WalletMesh] Failed to send discovery response to ${request.origin}:`,
         'General response error',
       );
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 
@@ -431,7 +459,7 @@ describe('DiscoveryResponder Edge Cases', () => {
         securityPolicy: createTestSecurityPolicy(),
       });
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const invalidVersionRequest = {
         ...createTestDiscoveryRequest(),
@@ -445,11 +473,11 @@ describe('DiscoveryResponder Edge Cases', () => {
       const result = privateAnnouncer.isValidRequest(invalidVersionRequest);
 
       expect(result).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Protocol version mismatch: expected 0.1.0, got 999.0.0',
       );
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
 
     it('should handle invalid required capabilities structure (coverage: lines 563-580)', () => {
@@ -459,7 +487,7 @@ describe('DiscoveryResponder Edge Cases', () => {
         securityPolicy: createTestSecurityPolicy(),
       });
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const privateAnnouncer = announcer as unknown as {
         isValidRequest(request: DiscoveryRequestEvent): boolean;
@@ -472,23 +500,22 @@ describe('DiscoveryResponder Edge Cases', () => {
       } as DiscoveryRequestEvent;
 
       expect(privateAnnouncer.isValidRequest(missingRequiredRequest)).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Invalid discovery request: malformed requirements',
       );
 
-      // Test invalid chains type
-      const invalidChainsRequest = {
+      // Test invalid technologies type
+      const invalidTechnologiesRequest = {
         ...createTestDiscoveryRequest(),
         required: {
-          chains: 'not-an-array' as unknown as string[],
+          technologies: 'not-an-array' as unknown as TechnologyRequirement[],
           features: [],
-          interfaces: [],
         },
       } as DiscoveryRequestEvent;
 
-      expect(privateAnnouncer.isValidRequest(invalidChainsRequest)).toBe(false);
+      expect(privateAnnouncer.isValidRequest(invalidTechnologiesRequest)).toBe(false);
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 });

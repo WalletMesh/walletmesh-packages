@@ -1,0 +1,50 @@
+[**@walletmesh/discovery v0.1.1**](../README.md)
+
+***
+
+[@walletmesh/discovery](../globals.md) / TechnologyMatch
+
+# Interface: TechnologyMatch
+
+Defined in: [core/discovery/src/types/capabilities.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L106)
+
+Technology capability match for discovery response.
+
+Represents a matched technology with the specific interface and features
+that the wallet supports for that technology.
+
+## Since
+
+0.3.0
+
+## Properties
+
+### features
+
+> **features**: `string`[]
+
+Defined in: [core/discovery/src/types/capabilities.ts:122](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L122)
+
+Supported features for this technology.
+Subset of what the wallet supports that matches the requirement.
+
+***
+
+### interfaces
+
+> **interfaces**: `string`[]
+
+Defined in: [core/discovery/src/types/capabilities.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L116)
+
+Supported interfaces for this technology.
+Subset of what the wallet supports that matches the requirement.
+
+***
+
+### type
+
+> **type**: `"evm"` \| `"solana"` \| `"aztec"`
+
+Defined in: [core/discovery/src/types/capabilities.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L110)
+
+Blockchain technology type.

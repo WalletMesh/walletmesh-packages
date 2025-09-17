@@ -6,69 +6,45 @@
 
 # Interface: DiscoveryError
 
-Defined in: [core/types.ts:1304](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1304)
+Defined in: [core/discovery/src/types/core.ts:262](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L262)
 
-Discovery error information for error tracking and debugging.
-
-Provides structured error information for discovery protocol failures,
-including origin tracking for security analysis and detailed context
-for debugging.
-
-## Examples
-
-```typescript
-const error: DiscoveryError = {
-  code: 'ORIGIN_BLOCKED',
-  message: 'Origin is not in allowlist',
-  origin: 'https://malicious-site.com',
-  sessionId: 'session-123',
-  timestamp: Date.now(),
-  details: {
-    allowedOrigins: ['https://trusted-app.com'],
-    attemptedOrigin: 'https://malicious-site.com'
-  }
-};
-```
-
-```typescript
-const capabilityError: DiscoveryError = {
-  code: 'CAPABILITY_NOT_SUPPORTED',
-  message: 'Required chain not supported',
-  sessionId: 'session-456',
-  timestamp: Date.now(),
-  details: {
-    requested: ['eip155:1'],
-    supported: ['eip155:137']
-  }
-};
-```
+Base discovery error class.
 
 ## Since
 
 0.1.0
 
-## See
+## Extends
 
- - [DiscoveryErrorEvent](DiscoveryErrorEvent.md) for protocol error events
- - [DiscoveryErrorEvent](DiscoveryErrorEvent.md) for error event handling
- - [ERROR\_CODES](../variables/ERROR_CODES.md) in constants.ts for standard error codes
- - [SecurityPolicy](SecurityPolicy.md) for origin validation configuration
+- `Error`
 
 ## Properties
 
-### code
+### category?
 
-> **code**: `string`
+> `optional` **category**: [`ErrorCategory`](../type-aliases/ErrorCategory.md)
 
-Defined in: [core/types.ts:1305](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1305)
+Defined in: [core/discovery/src/types/core.ts:264](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L264)
 
 ***
 
-### details?
+### cause?
 
-> `optional` **details**: `Record`\<`string`, `unknown`\>
+> `optional` **cause**: `unknown`
 
-Defined in: [core/types.ts:1310](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1310)
+Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
+
+#### Inherited from
+
+`Error.cause`
+
+***
+
+### code?
+
+> `optional` **code**: `number`
+
+Defined in: [core/discovery/src/types/core.ts:263](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L263)
 
 ***
 
@@ -76,28 +52,32 @@ Defined in: [core/types.ts:1310](https://github.com/WalletMesh/walletmesh-packag
 
 > **message**: `string`
 
-Defined in: [core/types.ts:1306](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1306)
+Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1077
+
+#### Inherited from
+
+`Error.message`
 
 ***
 
-### origin?
+### name
 
-> `optional` **origin**: `string`
+> **name**: `string`
 
-Defined in: [core/types.ts:1307](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1307)
+Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
 
-***
+#### Inherited from
 
-### sessionId?
-
-> `optional` **sessionId**: `string`
-
-Defined in: [core/types.ts:1308](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1308)
+`Error.name`
 
 ***
 
-### timestamp
+### stack?
 
-> **timestamp**: `number`
+> `optional` **stack**: `string`
 
-Defined in: [core/types.ts:1309](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1309)
+Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
+
+#### Inherited from
+
+`Error.stack`

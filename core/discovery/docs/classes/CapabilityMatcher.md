@@ -6,17 +6,16 @@
 
 # Class: CapabilityMatcher
 
-Defined in: [responder/CapabilityMatcher.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L125)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:142](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/CapabilityMatcher.ts#L142)
 
 Capability matcher implementing privacy-preserving intersection algorithm.
 
 The CapabilityMatcher is responsible for determining if a wallet can fulfill
 a dApp's requirements by comparing the wallet's capabilities against the
-requested capabilities across all three categories:
+requested capabilities using technology-based matching:
 
-1. **Chains**: Blockchain network compatibility
-2. **Features**: Wallet functionality matching
-3. **Interfaces**: API standard compatibility
+1. **Technologies**: Blockchain technology support with interfaces/features
+2. **Features**: Global wallet functionality matching
 
 The matcher implements a privacy-preserving approach that only reveals
 capabilities that were explicitly requested, preventing enumeration attacks.
@@ -24,7 +23,7 @@ capabilities that were explicitly requested, preventing enumeration attacks.
 Key principles:
 - **All-or-nothing matching**: ALL required capabilities must be supported
 - **Privacy preservation**: Never reveals unrequested capabilities
-- **Three-part validation**: Chains, features, and interfaces are all checked
+- **Technology-based validation**: Technologies with interfaces and features are checked
 - **Intersection calculation**: Returns only the overlap of requested vs supported
 
 ## Examples
@@ -34,9 +33,14 @@ const matcher = new CapabilityMatcher(myWalletInfo);
 
 const request = {
   required: {
-    chains: ['eip155:1'],                    // Must support Ethereum
-    features: ['account-management'],         // Must have account management
-    interfaces: ['eip-1193']                 // Must implement EIP-1193
+    technologies: [
+      {
+        type: 'evm',
+        interfaces: ['eip-1193'],              // Must implement EIP-1193
+        features: ['eip-712']                  // Must support EIP-712
+      }
+    ],
+    features: ['account-management']           // Must have account management
   }
 };
 
@@ -47,18 +51,22 @@ if (result.canFulfill) {
   console.log('Matched capabilities:', result.intersection);
 } else {
   // Wallet missing some requirements
-  console.log('Missing chains:', result.missing.chains);
+  console.log('Missing technologies:', result.missing.technologies);
   console.log('Missing features:', result.missing.features);
-  console.log('Missing interfaces:', result.missing.interfaces);
 }
 ```
 
 ```typescript
 const request = {
   required: {
-    chains: ['eip155:1'],
-    features: ['account-management', 'transaction-signing'],
-    interfaces: ['eip-1193']
+    technologies: [
+      {
+        type: 'evm',
+        interfaces: ['eip-6963', 'eip-1193'],  // Prefer EIP-6963
+        features: ['eip-712', 'personal-sign']
+      }
+    ],
+    features: ['account-management', 'transaction-signing']
   },
   optional: {
     features: ['hardware-wallet', 'batch-transactions']
@@ -85,7 +93,7 @@ const result = matcher.matchCapabilities(request);
 
 > **new CapabilityMatcher**(`responderInfo`): `CapabilityMatcher`
 
-Defined in: [responder/CapabilityMatcher.ts:128](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L128)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:145](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/CapabilityMatcher.ts#L145)
 
 #### Parameters
 
@@ -103,7 +111,7 @@ Defined in: [responder/CapabilityMatcher.ts:128](https://github.com/WalletMesh/w
 
 > **matchCapabilities**(`request`): [`CapabilityMatchResult`](../interfaces/CapabilityMatchResult.md)
 
-Defined in: [responder/CapabilityMatcher.ts:179](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L179)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:198](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/CapabilityMatcher.ts#L198)
 
 Check if responder can fulfill initiator requirements and generate intersection.
 
@@ -113,9 +121,9 @@ privacy-preserving intersection response.
 
 Algorithm:
 1. Validate request structure and required fields
-2. Check if ALL required capabilities are supported
-3. If qualified, calculate intersection of requested vs. supported
-4. Include optional capability intersections if present
+2. Check if ALL required technologies are supported with matching interfaces
+3. Check if ALL required global features are supported
+4. If qualified, calculate intersection of requested vs. supported
 5. Return result with qualification status and intersection
 
 #### Parameters
@@ -136,14 +144,16 @@ Matching result with qualification and intersection
 
 ```typescript
 const request: DiscoveryRequestEvent = {
-  type: 'wallet:discovery:capability-request',
+  type: 'discovery:wallet:request',
   version: '0.1.0',
   sessionId: 'session-uuid',
-  timestamp: Date.now(),
   required: {
-    chains: ['eip155:1'],
-    features: ['account-management'],
-    interfaces: ['eip-1193']
+    technologies: [{
+      type: 'evm',
+      interfaces: ['eip-6963', 'eip-1193'],
+      features: ['eip-712']
+    }],
+    features: ['account-management']
   },
   origin: 'https://initiator.com',
   initiatorInfo: { } // initiator metadata
@@ -170,17 +180,13 @@ if (result.canFulfill) {
 
 > **getCapabilityDetails**(): `object`
 
-Defined in: [responder/CapabilityMatcher.ts:262](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L262)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:398](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/CapabilityMatcher.ts#L398)
 
 Get detailed capability information for debugging.
 
 #### Returns
 
 `object`
-
-##### chainCount
-
-> **chainCount**: `number`
 
 ##### featureCount
 
@@ -190,10 +196,6 @@ Get detailed capability information for debugging.
 
 > **responderType**: [`ResponderType`](../type-aliases/ResponderType.md)
 
-##### supportedChains
-
-> **supportedChains**: `string`[]
-
 ##### supportedFeatures
 
 > **supportedFeatures**: `string`[]
@@ -202,13 +204,21 @@ Get detailed capability information for debugging.
 
 > **supportedInterfaces**: `string`[]
 
+##### supportedTechnologies
+
+> **supportedTechnologies**: `string`[]
+
+##### technologyCount
+
+> **technologyCount**: `number`
+
 ***
 
 ### updateResponderInfo()
 
 > **updateResponderInfo**(`responderInfo`): `void`
 
-Defined in: [responder/CapabilityMatcher.ts:255](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L255)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:391](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/CapabilityMatcher.ts#L391)
 
 Update the responder information.
 

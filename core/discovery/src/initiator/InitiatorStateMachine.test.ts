@@ -1,13 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { InitiatorStateMachine, createInitiatorStateMachine } from './InitiatorStateMachine.js';
 import { DISCOVERY_EVENTS, DISCOVERY_PROTOCOL_VERSION } from '../core/constants.js';
+import { createConsoleSpy } from '../testing/consoleMocks.js';
 import type {
   DiscoveryRequestEvent,
   DiscoveryCompleteEvent,
   DiscoveryErrorEvent,
   InitiatorInfo,
-  CapabilityRequirements,
-} from '../core/types.js';
+} from '../types/core.js';
+import type { CapabilityRequirements } from '../types/capabilities.js';
 
 describe('InitiatorStateMachine', () => {
   let mockEventTarget: EventTarget;
@@ -21,9 +22,13 @@ describe('InitiatorStateMachine', () => {
   };
 
   const testRequirements: CapabilityRequirements = {
-    chains: ['eip155:1'],
+    technologies: [
+      {
+        type: 'evm' as const,
+        interfaces: ['eip-1193'],
+      },
+    ],
     features: ['account-management'],
-    interfaces: ['eip-1193'],
   };
 
   beforeEach(() => {
@@ -117,7 +122,12 @@ describe('InitiatorStateMachine', () => {
         initiatorInfo: testInitiatorInfo,
         requirements: testRequirements,
         preferences: {
-          chains: ['eip155:137'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['hardware-wallet'],
         },
       });
@@ -128,7 +138,12 @@ describe('InitiatorStateMachine', () => {
       expect(event).toBeDefined();
       const request = event?.detail as DiscoveryRequestEvent;
       expect(request.optional).toEqual({
-        chains: ['eip155:137'],
+        technologies: [
+          {
+            type: 'evm' as const,
+            interfaces: ['eip-1193'],
+          },
+        ],
         features: ['hardware-wallet'],
       });
 
@@ -267,7 +282,7 @@ describe('InitiatorStateMachine', () => {
     });
 
     it('should log error to console if dispatch fails', () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['error'], mockFn: () => vi.fn() });
 
       mockEventTarget.dispatchEvent = vi.fn(() => {
         throw new Error('Dispatch failed');
@@ -275,12 +290,12 @@ describe('InitiatorStateMachine', () => {
 
       stateMachine.transition('DISCOVERING');
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.error).toHaveBeenCalledWith(
         '[WalletMesh] Failed to dispatch discovery message:',
         expect.any(Error),
       );
 
-      consoleErrorSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 

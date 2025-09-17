@@ -6,47 +6,13 @@
 
 # Interface: DiscoveryResponderConfig
 
-Defined in: [core/types.ts:1518](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1518)
+Defined in: [core/discovery/src/types/testing.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/testing.ts#L39)
 
-Configuration for responder-side discovery announcer.
-
-Defines responder information, security policies, and session management
-settings for responding to discovery requests from initiators.
-
-## Example
-
-```typescript
-const config: DiscoveryResponderConfig = {
-  responderInfo: {
-    name: 'My Wallet',
-    rdns: 'com.example.wallet',
-    uuid: crypto.randomUUID(),
-    version: '1.0.0',
-    protocolVersion: '0.1.0',
-    type: 'extension',
-    icon: 'data:image/svg+xml;base64,...',
-    chains: [], // chain capabilities
-    features: [] // responder features
-  },
-  securityPolicy: {
-    allowedOrigins: ['https://trusted-dapp.com'],
-    requireHttps: true,
-    rateLimit: {
-      enabled: true,
-      maxRequests: 5,
-      windowMs: 60000
-    }
-  }
-};
-```
+Configuration for responder-side discovery.
 
 ## Since
 
 0.1.0
-
-## See
-
-[DiscoveryResponder](../classes/DiscoveryResponder.md) for implementation
 
 ## Properties
 
@@ -54,7 +20,7 @@ const config: DiscoveryResponderConfig = {
 
 > `optional` **eventTarget**: `EventTarget`
 
-Defined in: [core/types.ts:1522](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1522)
+Defined in: [core/discovery/src/types/testing.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/testing.ts#L43)
 
 ***
 
@@ -62,7 +28,7 @@ Defined in: [core/types.ts:1522](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **logger**: [`Logger`](Logger.md)
 
-Defined in: [core/types.ts:1523](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1523)
+Defined in: [core/discovery/src/types/testing.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/testing.ts#L44)
 
 ***
 
@@ -70,7 +36,7 @@ Defined in: [core/types.ts:1523](https://github.com/WalletMesh/walletmesh-packag
 
 > **responderInfo**: [`ResponderInfo`](../type-aliases/ResponderInfo.md)
 
-Defined in: [core/types.ts:1519](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1519)
+Defined in: [core/discovery/src/types/testing.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/testing.ts#L40)
 
 ***
 
@@ -78,7 +44,7 @@ Defined in: [core/types.ts:1519](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **securityPolicy**: [`SecurityPolicy`](SecurityPolicy.md)
 
-Defined in: [core/types.ts:1520](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1520)
+Defined in: [core/discovery/src/types/testing.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/testing.ts#L41)
 
 ***
 
@@ -86,4 +52,4 @@ Defined in: [core/types.ts:1520](https://github.com/WalletMesh/walletmesh-packag
 
 > `optional` **sessionOptions**: [`SessionOptions`](SessionOptions.md)
 
-Defined in: [core/types.ts:1521](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1521)
+Defined in: [core/discovery/src/types/testing.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/testing.ts#L42)

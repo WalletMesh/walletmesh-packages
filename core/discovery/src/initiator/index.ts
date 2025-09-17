@@ -17,9 +17,11 @@
  * const setup = createInitiatorDiscoverySetup({
  *   discovery: {
  *     requirements: {
- *       chains: ['eip155:1'],
- *       features: ['account-management', 'transaction-signing'],
- *       interfaces: ['eip-1193']
+ *       technologies: [{
+ *         type: 'evm',
+ *         interfaces: ['eip-1193']
+ *       }],
+ *       features: ['account-management', 'transaction-signing']
  *     },
  *     initiatorInfo: {
  *       name: 'My DApp',
@@ -40,7 +42,10 @@
  * import { createDiscoveryInitiator } from '@walletmesh/discovery/initiator';
  *
  * const listener = createDiscoveryInitiator({
- *   requirements: { chains: ['eip155:1'], features: ['account-management'], interfaces: ['eip-1193'] },
+ *   requirements: {
+ *     technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+ *     features: ['account-management']
+ *   },
  *   initiatorInfo: { name: 'My DApp', url: 'https://mydapp.com', icon: '...' }
  * });
  *
@@ -60,9 +65,8 @@
 export { DiscoveryInitiator } from './DiscoveryInitiator.js';
 export { InitiatorStateMachine, createInitiatorStateMachine } from './InitiatorStateMachine.js';
 
-// Export factory functions and helpers
+// Export factory functions and helpers (only keeping the non-deprecated ones)
 export {
-  createDiscoveryInitiator,
   createInitiatorDiscoverySetup,
   createCapabilityRequirements,
 } from './factory.js';
@@ -71,15 +75,19 @@ export {
 export type {
   DiscoveryRequestEvent,
   DiscoveryResponseEvent,
+  InitiatorInfo,
+} from '../types/core.js';
+
+export type {
   QualifiedResponder,
-  DiscoveryInitiatorConfig,
   CapabilityRequirements,
   CapabilityPreferences,
-  InitiatorInfo,
-} from '../core/types.js';
+} from '../types/capabilities.js';
+
+export type { DiscoveryInitiatorConfig } from '../types/testing.js';
 
 // Export InitiatorStateMachine types
 export type { InitiatorStateMachineConfig } from './InitiatorStateMachine.js';
 
 // Re-export relevant security utilities
-export { validateOrigin, createSecurityPolicy } from '../security/index.js';
+export { validateOrigin, createSecurityPolicy } from '../security.js';

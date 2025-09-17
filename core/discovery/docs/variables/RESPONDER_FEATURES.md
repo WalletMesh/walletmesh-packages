@@ -8,7 +8,7 @@
 
 > `const` `readonly` **RESPONDER\_FEATURES**: `object`
 
-Defined in: [core/constants.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/constants.ts#L227)
+Defined in: [core/discovery/src/core/constants.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/constants.ts#L227)
 
 Standard responder feature identifiers for capability matching.
 
@@ -22,7 +22,7 @@ They are one of three components that make up a wallet's complete capabilities:
 Features focus on user-facing functionality and security characteristics,
 helping dApps select wallets based on their specific needs.
 
-## Type declaration
+## Type Declaration
 
 ### ACCOUNT\_MANAGEMENT
 

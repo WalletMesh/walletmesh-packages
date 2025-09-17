@@ -7,14 +7,8 @@ import {
   expectValidInitiatorInfo,
   expectValidQualifiedResponder,
 } from './assertions.js';
-import type {
-  DiscoveryRequestEvent,
-  DiscoveryResponseEvent,
-  ResponderInfo,
-  InitiatorInfo,
-  QualifiedResponder,
-  ChainType,
-} from '../core/types.js';
+import type { DiscoveryRequestEvent, DiscoveryResponseEvent, InitiatorInfo } from '../types/core.js';
+import type { ResponderInfo, QualifiedResponder } from '../types/capabilities.js';
 
 describe('Testing Assertions', () => {
   describe('expectValidDiscoveryRequestEvent', () => {
@@ -29,9 +23,13 @@ describe('Testing Assertions', () => {
         icon: 'data:image/png;base64,test',
       },
       required: {
-        chains: ['eip155:1'],
+        technologies: [
+          {
+            type: 'evm' as const,
+            interfaces: ['eip-1193'],
+          },
+        ],
         features: ['account-management'],
-        interfaces: ['eip-1193'],
       },
     };
 
@@ -90,12 +88,15 @@ describe('Testing Assertions', () => {
     });
 
     it('should validate required capabilities', () => {
-      const noChains = {
+      const noTechnologies = {
         ...validRequest,
-        required: { ...validRequest.required, chains: undefined },
+        required: {
+          technologies: undefined,
+          features: ['account-management'],
+        },
       };
-      expect(() => expectValidDiscoveryRequestEvent(noChains)).toThrow(
-        'Capability requirements must have chains as an array',
+      expect(() => expectValidDiscoveryRequestEvent(noTechnologies)).toThrow(
+        'Capability requirements must have technologies as an array',
       );
     });
 
@@ -103,7 +104,6 @@ describe('Testing Assertions', () => {
       const withOptional = {
         ...validRequest,
         optional: {
-          chains: ['eip155:137'],
           features: ['hardware-wallet'],
         },
       };
@@ -114,11 +114,11 @@ describe('Testing Assertions', () => {
       const invalidOptional = {
         ...validRequest,
         optional: {
-          chains: 'not-an-array',
+          features: 'not-an-array',
         },
       };
       expect(() => expectValidDiscoveryRequestEvent(invalidOptional)).toThrow(
-        'Capability preferences chains must be an array if provided',
+        'Capability preferences features must be an array if provided',
       );
     });
   });
@@ -135,9 +135,14 @@ describe('Testing Assertions', () => {
       responderVersion: '1.0.0',
       matched: {
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+              features: [],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       },
     };
@@ -208,24 +213,10 @@ describe('Testing Assertions', () => {
       type: 'extension',
       version: '1.0.0',
       protocolVersion: DISCOVERY_PROTOCOL_VERSION,
-      chains: [
+      technologies: [
         {
-          chainId: 'eip155:1',
-          chainType: 'evm',
-          standards: ['eip-1193'],
-          network: {
-            name: 'Ethereum Mainnet',
-            chainId: '1',
-            nativeCurrency: {
-              name: 'Ether',
-              symbol: 'ETH',
-              decimals: 18,
-            },
-            testnet: false,
-          },
-          rpcMethods: [],
-          transactionTypes: [],
-          signatureSchemes: [],
+          type: 'evm' as const,
+          interfaces: ['eip-1193'],
           features: [],
         },
       ],
@@ -274,13 +265,15 @@ describe('Testing Assertions', () => {
       }
     });
 
-    it('should throw if chains is not an array or empty', () => {
-      const noChains = { ...validResponderInfo, chains: undefined };
-      expect(() => expectValidResponderInfo(noChains)).toThrow('ResponderInfo must have at least one chain');
+    it('should throw if technologies is not an array or empty', () => {
+      const noTechnologies = { ...validResponderInfo, technologies: undefined };
+      expect(() => expectValidResponderInfo(noTechnologies)).toThrow(
+        'ResponderInfo must have at least one technology',
+      );
 
-      const emptyChains = { ...validResponderInfo, chains: [] };
-      expect(() => expectValidResponderInfo(emptyChains)).toThrow(
-        'ResponderInfo must have at least one chain',
+      const emptyTechnologies = { ...validResponderInfo, technologies: [] };
+      expect(() => expectValidResponderInfo(emptyTechnologies)).toThrow(
+        'ResponderInfo must have at least one technology',
       );
     });
 
@@ -291,20 +284,17 @@ describe('Testing Assertions', () => {
       );
     });
 
-    it('should validate each chain', () => {
-      const invalidChain = {
+    it('should validate each technology', () => {
+      const invalidTechnology = {
         ...validResponderInfo,
-        chains: [
+        technologies: [
           {
-            chainId: 'eip155:1',
-            chainType: 'invalid-type',
-            standards: ['eip-1193'],
+            type: 123, // Invalid type
+            interfaces: ['eip-1193'],
           },
         ],
       };
-      expect(() => expectValidResponderInfo(invalidChain)).toThrow(
-        'Chain capability must have a valid chainType',
-      );
+      expect(() => expectValidResponderInfo(invalidTechnology)).toThrow('Technology must have a type');
     });
 
     it('should validate each feature', () => {
@@ -370,9 +360,14 @@ describe('Testing Assertions', () => {
       icon: 'data:image/png;base64,test',
       matched: {
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+              features: [],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       },
     };
@@ -440,9 +435,13 @@ describe('Testing Assertions', () => {
           url: 'invalid-url',
         },
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       };
 
@@ -452,7 +451,7 @@ describe('Testing Assertions', () => {
     });
 
     it('should handle complex nested validation', () => {
-      const walletWithInvalidChain: ResponderInfo = {
+      const walletWithInvalidTechnology: ResponderInfo = {
         uuid: 'test-wallet',
         rdns: 'com.test.wallet',
         name: 'Test Wallet',
@@ -460,37 +459,23 @@ describe('Testing Assertions', () => {
         type: 'extension',
         version: '1.0.0',
         protocolVersion: DISCOVERY_PROTOCOL_VERSION,
-        chains: [
+        technologies: [
           {
-            chainId: 'eip155:1',
-            chainType: 'evm',
-            standards: null as unknown as string[], // Invalid standards
-            network: {
-              name: 'Ethereum Mainnet',
-              chainId: '1',
-              nativeCurrency: {
-                name: 'Ether',
-                symbol: 'ETH',
-                decimals: 18,
-              },
-              testnet: false,
-            },
-            rpcMethods: [],
-            transactionTypes: [],
-            signatureSchemes: [],
-            features: [],
+            type: 'evm',
+            interfaces: null as unknown as string[], // Invalid interfaces
+            features: ['eip-712'],
           },
         ],
         features: [],
       };
 
-      expect(() => expectValidResponderInfo(walletWithInvalidChain)).toThrow(
-        'Chain capability must have standards as an array',
+      expect(() => expectValidResponderInfo(walletWithInvalidTechnology)).toThrow(
+        'Technology must have interfaces as an array',
       );
     });
 
     it('should validate network testnet property correctly', () => {
-      const walletWithNetwork: ResponderInfo = {
+      const walletWithInvalidFeatures: ResponderInfo = {
         uuid: 'test-wallet',
         rdns: 'com.test.wallet',
         name: 'Test Wallet',
@@ -498,38 +483,24 @@ describe('Testing Assertions', () => {
         type: 'extension',
         version: '1.0.0',
         protocolVersion: DISCOVERY_PROTOCOL_VERSION,
-        chains: [
+        technologies: [
           {
-            chainId: 'eip155:1',
-            chainType: 'evm',
-            standards: ['eip-1193'],
-            network: {
-              name: 'Ethereum Mainnet',
-              chainId: '1',
-              nativeCurrency: {
-                name: 'Ether',
-                symbol: 'ETH',
-                decimals: 18,
-              },
-              testnet: 'not-boolean' as unknown as boolean,
-            },
-            rpcMethods: [],
-            transactionTypes: [],
-            signatureSchemes: [],
-            features: [],
+            type: 'evm',
+            interfaces: ['eip-1193'],
+            features: 'not-an-array' as unknown as string[],
           },
         ],
         features: [],
       };
 
-      expect(() => expectValidResponderInfo(walletWithNetwork)).toThrow(
-        'Chain capability network must have testnet as a boolean',
+      expect(() => expectValidResponderInfo(walletWithInvalidFeatures)).toThrow(
+        'Technology features must be an array',
       );
     });
 
-    it('should handle all chain types', () => {
-      const chainTypes = ['evm', 'account', 'utxo'];
-      for (const chainType of chainTypes) {
+    it('should handle all technology types', () => {
+      const technologyTypes = ['evm', 'account'] as const;
+      for (const techType of technologyTypes) {
         const responder: ResponderInfo = {
           uuid: 'test-wallet',
           rdns: 'com.test.wallet',
@@ -538,25 +509,11 @@ describe('Testing Assertions', () => {
           type: 'extension',
           version: '1.0.0',
           protocolVersion: DISCOVERY_PROTOCOL_VERSION,
-          chains: [
+          technologies: [
             {
-              chainId: `${chainType}:test:1`,
-              chainType: chainType as unknown as ChainType,
-              standards: ['standard-1'],
-              network: {
-                name: 'Test Network',
-                chainId: '1',
-                nativeCurrency: {
-                  name: 'Test Token',
-                  symbol: 'TEST',
-                  decimals: 18,
-                },
-                testnet: false,
-              },
-              rpcMethods: [],
-              transactionTypes: [],
-              signatureSchemes: [],
-              features: [],
+              type: techType,
+              interfaces: ['standard-interface'],
+              features: ['feature-1'],
             },
           ],
           features: [],

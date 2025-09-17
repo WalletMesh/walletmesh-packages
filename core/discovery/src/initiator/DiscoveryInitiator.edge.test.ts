@@ -3,8 +3,9 @@ import { DiscoveryInitiator } from './DiscoveryInitiator.js';
 import { MockEventTarget } from '../testing/MockEventTarget.js';
 import { createTestDiscoveryResponse, createTestDAppInfo } from '../testing/testUtils.js';
 import { setupFakeTimers, cleanupFakeTimers } from '../testing/timingHelpers.js';
+import { createConsoleSpy } from '../testing/consoleMocks.js';
 import type { ProtocolStateMachine } from '../core/ProtocolStateMachine.js';
-import type { InitiatorInfo } from '../core/types.js';
+import type { InitiatorInfo } from '../types/core.js';
 
 describe('DiscoveryInitiator Edge Cases', () => {
   let listener: DiscoveryInitiator;
@@ -23,9 +24,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should handle missing session ID gracefully', async () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -46,9 +51,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should enhance "No active session" error (coverage: lines 413-416)', () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -69,9 +78,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should enhance "Cannot start discovery from state" error (coverage: lines 419-422)', () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -92,9 +105,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should enhance timeout error (coverage: lines 425-428)', () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -116,9 +133,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should enhance timeout error with default timeout', () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -143,9 +164,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo,
         eventTarget: mockEventTarget,
@@ -164,7 +189,7 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should fallback to localhost in non-browser environment (coverage: line 579)', () => {
       // Mock window to be undefined (non-browser environment)
       const originalWindow = global.window;
-      // @ts-ignore
+      // @ts-expect-error
       global.window = undefined;
 
       const initiatorInfo = createTestDAppInfo();
@@ -173,9 +198,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: modifiedInitiatorInfo,
         eventTarget: mockEventTarget,
@@ -207,9 +236,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: modifiedInitiatorInfo2,
         eventTarget: mockEventTarget,
@@ -231,9 +264,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should handle state machine creation successfully', async () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -253,9 +290,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should handle session management correctly', async () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -282,9 +323,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should handle concurrent startDiscovery calls gracefully', async () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -312,9 +357,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should return undefined for non-existent responderId (coverage: lines 248-249)', async () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -328,9 +377,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should return responder after discovery (coverage: lines 248-249)', async () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -346,9 +399,14 @@ describe('DiscoveryInitiator Edge Cases', () => {
         responderId: 'test-responder-id',
         matched: {
           required: {
-            chains: ['eip155:1'],
+            technologies: [
+              {
+                type: 'evm' as const,
+                interfaces: ['eip-1193'],
+                features: [],
+              },
+            ],
             features: [],
-            interfaces: [],
           },
         },
       });
@@ -378,9 +436,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should handle state machine already reset during cleanup (coverage: line 170)', async () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
@@ -413,16 +475,20 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should handle state machine transition errors during completion (coverage: lines 216-219)', async () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
         timeout: 1000,
       });
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       // Start discovery
       const discoveryPromise = listener.startDiscovery();
@@ -445,28 +511,32 @@ describe('DiscoveryInitiator Edge Cases', () => {
       await vi.advanceTimersByTimeAsync(900);
 
       // Should log warning but not throw
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Failed to transition to COMPLETED state:',
         expect.any(Error),
       );
 
       await expect(discoveryPromise).resolves.toEqual([]);
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
 
     it('should handle state machine transition errors during stop (coverage: lines 266-268)', async () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
         timeout: 2000,
       });
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       // Start discovery
       const discoveryPromise = listener.startDiscovery();
@@ -493,13 +563,13 @@ describe('DiscoveryInitiator Edge Cases', () => {
       listener.stopDiscovery();
 
       // Should log warning but not throw
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Failed to transition to COMPLETED state on stop:',
         expect.any(Error),
       );
 
       await expect(discoveryPromise).resolves.toEqual([]);
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 
@@ -507,16 +577,20 @@ describe('DiscoveryInitiator Edge Cases', () => {
     it('should handle missing first response during duplicate detection (coverage: lines 542-544)', async () => {
       listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: [],
-          interfaces: [],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget: mockEventTarget,
         timeout: 2000,
       });
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['error'], mockFn: () => vi.fn() });
 
       // Start discovery
       const discoveryPromise = listener.startDiscovery();
@@ -558,7 +632,7 @@ describe('DiscoveryInitiator Edge Cases', () => {
       mockEventTarget.dispatchEvent(duplicateEvent);
 
       // Should log internal error
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.error).toHaveBeenCalledWith(
         '[WalletMesh] Internal error: First response not tracked for duplicate detection',
       );
 
@@ -571,7 +645,7 @@ describe('DiscoveryInitiator Edge Cases', () => {
       expect(result[0]?.rdns).toBe('com.test.wallet');
       expect(result[0]?.responderId).toBe('first-responder');
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 });

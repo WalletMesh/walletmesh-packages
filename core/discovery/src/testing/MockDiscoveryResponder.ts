@@ -1,13 +1,10 @@
-import type {
-  DiscoveryResponderConfig,
-  DiscoveryRequestEvent,
-  DiscoveryResponseEvent,
-  ResponderInfo,
-} from '../core/types.js';
+import type { DiscoveryRequestEvent, DiscoveryResponseEvent } from '../types/core.js';
+import type { ResponderInfo } from '../types/capabilities.js';
+import type { DiscoveryResponderConfig } from '../types/testing.js';
 import { MockEventTarget } from './MockEventTarget.js';
 import { CapabilityMatcher } from '../responder/CapabilityMatcher.js';
 import { createTestDiscoveryResponse } from './testUtils.js';
-import { validateOrigin } from '../security/OriginValidator.js';
+import { validateOrigin } from '../security.js';
 
 /**
  * Mock discovery announcer for testing wallet-side discovery functionality
@@ -169,8 +166,8 @@ export class MockDiscoveryResponder {
       icon: this.responderInfo.icon,
       responderVersion: this.responderInfo.version,
       matched: matchResult.intersection || {
-        required: { chains: [], features: [], interfaces: [] },
-        optional: { chains: [], features: [] },
+        required: { technologies: [], features: [] },
+        optional: { features: [] },
       },
     });
 
@@ -187,17 +184,16 @@ export class MockDiscoveryResponder {
    * @param responderInfo - The new wallet information
    * @example
    * ```typescript
-   * // Update to support additional chains
+   * // Update to support additional technologies
    * const updatedInfo = {
    *   ...announcer.responderInfo,
-   *   chains: [
-   *     ...announcer.responderInfo.chains,
-   *     createTestChainCapability({
-   *       chainId: 'evm:polygon:137',
-   *       chainType: 'evm',
-   *       standards: ['eip-1193'],
-   *       isTestnet: false
-   *     })
+   *   technologies: [
+   *     ...announcer.responderInfo.technologies,
+   *     {
+   *       type: 'solana',
+   *       interfaces: ['solana-wallet-standard'],
+   *       features: ['sign-message', 'sign-transaction']
+   *     }
    *   ]
    * };
    * announcer.updateResponderInfo(updatedInfo);
@@ -262,7 +258,7 @@ export class MockDiscoveryResponder {
    * const requests = announcer.getReceivedRequests();
    * console.log(`Received ${requests.length} requests`);
    * requests.forEach((req, i) => {
-   *   console.log(`Request ${i}: ${req.required.chains.join(', ')}`);
+   *   console.log(`Request ${i}: ${req.required.technologies.map(t => t.type).join(', ')}`);
    * });
    * ```
    * @category Testing
@@ -366,7 +362,7 @@ export class MockDiscoveryResponder {
         rdns: this.responderInfo.rdns,
         name: this.responderInfo.name,
         type: this.responderInfo.type,
-        chainCount: this.responderInfo.chains.length,
+        technologyCount: this.responderInfo.technologies.length,
         featureCount: this.responderInfo.features.length,
       },
       receivedRequestsCount: this.receivedRequests.length,
@@ -391,7 +387,7 @@ export class MockDiscoveryResponder {
    *
    * if (matchResult.canFulfill) {
    *   console.log('Wallet can fulfill request');
-   *   console.log('Matched chains:', matchResult.intersection.required.chains);
+   *   console.log('Matched technologies:', matchResult.intersection.required.technologies);
    * } else {
    *   console.log('Cannot fulfill:', matchResult.missingRequirements);
    * }

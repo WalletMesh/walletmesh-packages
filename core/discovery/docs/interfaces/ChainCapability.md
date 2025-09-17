@@ -6,50 +6,13 @@
 
 # Interface: ChainCapability
 
-Defined in: [core/types.ts:751](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L751)
+Defined in: [core/discovery/src/types/capabilities.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L283)
 
-Comprehensive blockchain capability information.
-
-Defines all capabilities a wallet supports for a specific blockchain,
-including transaction types, signature schemes, and advanced features.
-This enables precise capability matching during discovery.
-
-## Example
-
-```typescript
-const capability: ChainCapability = {
-  chainId: 'eip155:1',
-  chainType: 'evm',
-  network: {
-    name: 'Ethereum Mainnet',
-    chainId: 'eip155:1',
-    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-    testnet: false
-  },
-  standards: ['eip-1193', 'eip-6963'], // Provider interfaces
-  rpcMethods: ['eth_accounts', 'eth_sendTransaction'],
-  transactionTypes: [{
-    id: 'transfer',
-    name: 'Token Transfer',
-    chainTypes: ['evm'],
-    parameters: []
-  }],
-  signatureSchemes: ['secp256k1'],
-  features: [{
-    id: 'smart-contracts',
-    name: 'Smart Contract Interaction'
-  }]
-};
-```
+Complete chain capability declaration.
 
 ## Since
 
 0.1.0
-
-## See
-
- - [ResponderInfo](../type-aliases/ResponderInfo.md) for responder-level capabilities
- - [CapabilityMatcher](../classes/CapabilityMatcher.md) for matching logic
 
 ## Properties
 
@@ -57,7 +20,7 @@ const capability: ChainCapability = {
 
 > **chainId**: `string`
 
-Defined in: [core/types.ts:753](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L753)
+Defined in: [core/discovery/src/types/capabilities.ts:284](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L284)
 
 ***
 
@@ -65,15 +28,7 @@ Defined in: [core/types.ts:753](https://github.com/WalletMesh/walletmesh-package
 
 > **chainType**: [`ChainType`](../type-aliases/ChainType.md)
 
-Defined in: [core/types.ts:754](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L754)
-
-***
-
-### extensions?
-
-> `optional` **extensions**: `Record`\<`string`, `unknown`\>
-
-Defined in: [core/types.ts:767](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L767)
+Defined in: [core/discovery/src/types/capabilities.ts:285](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L285)
 
 ***
 
@@ -81,7 +36,7 @@ Defined in: [core/types.ts:767](https://github.com/WalletMesh/walletmesh-package
 
 > **features**: [`ChainFeature`](ChainFeature.md)[]
 
-Defined in: [core/types.ts:766](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L766)
+Defined in: [core/discovery/src/types/capabilities.ts:291](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L291)
 
 ***
 
@@ -89,7 +44,7 @@ Defined in: [core/types.ts:766](https://github.com/WalletMesh/walletmesh-package
 
 > **network**: [`NetworkInfo`](NetworkInfo.md)
 
-Defined in: [core/types.ts:755](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L755)
+Defined in: [core/discovery/src/types/capabilities.ts:286](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L286)
 
 ***
 
@@ -97,7 +52,7 @@ Defined in: [core/types.ts:755](https://github.com/WalletMesh/walletmesh-package
 
 > **rpcMethods**: `string`[]
 
-Defined in: [core/types.ts:759](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L759)
+Defined in: [core/discovery/src/types/capabilities.ts:288](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L288)
 
 ***
 
@@ -105,7 +60,7 @@ Defined in: [core/types.ts:759](https://github.com/WalletMesh/walletmesh-package
 
 > **signatureSchemes**: `string`[]
 
-Defined in: [core/types.ts:763](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L763)
+Defined in: [core/discovery/src/types/capabilities.ts:290](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L290)
 
 ***
 
@@ -113,7 +68,7 @@ Defined in: [core/types.ts:763](https://github.com/WalletMesh/walletmesh-package
 
 > **standards**: `string`[]
 
-Defined in: [core/types.ts:758](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L758)
+Defined in: [core/discovery/src/types/capabilities.ts:287](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L287)
 
 ***
 
@@ -121,4 +76,4 @@ Defined in: [core/types.ts:758](https://github.com/WalletMesh/walletmesh-package
 
 > **transactionTypes**: [`TransactionType`](TransactionType.md)[]
 
-Defined in: [core/types.ts:762](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L762)
+Defined in: [core/discovery/src/types/capabilities.ts:289](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L289)

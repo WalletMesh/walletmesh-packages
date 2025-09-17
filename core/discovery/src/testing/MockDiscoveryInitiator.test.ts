@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { MockDiscoveryInitiator } from './MockDiscoveryInitiator.js';
 import { createTestDAppInfo, createTestDiscoveryResponse } from './testUtils.js';
-import type { DiscoveryInitiatorConfig, DiscoveryResponseEvent, QualifiedResponder } from '../core/types.js';
+import type { DiscoveryResponseEvent } from '../types/core.js';
+import type { QualifiedResponder } from '../types/capabilities.js';
+import type { DiscoveryInitiatorConfig } from '../types/testing.js';
 import { DISCOVERY_PROTOCOL_VERSION } from '../core/constants.js';
 
 describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
@@ -12,9 +14,13 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
     defaultConfig = {
       initiatorInfo: createTestDAppInfo(),
       requirements: {
-        chains: ['eip155:1'],
+        technologies: [
+          {
+            type: 'evm',
+            interfaces: ['eip-1193'],
+          },
+        ],
         features: ['account-management'],
-        interfaces: ['eip-1193'],
       },
     };
     listener = new MockDiscoveryInitiator(defaultConfig);
@@ -32,7 +38,7 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
     it('should start discovery process correctly', async () => {
       const wallets = await listener.startDiscovery();
 
-      expect(listener.isDiscoveryInProgress()).toBe(true);
+      expect(listener.isDiscovering()).toBe(true);
       expect(listener.getCurrentSessionId()).toBeTruthy();
       expect(wallets).toHaveLength(0); // No wallets added yet
 
@@ -44,10 +50,10 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
 
     it('should stop discovery process correctly', async () => {
       await listener.startDiscovery();
-      expect(listener.isDiscoveryInProgress()).toBe(true);
+      expect(listener.isDiscovering()).toBe(true);
 
       listener.stopDiscovery();
-      expect(listener.isDiscoveryInProgress()).toBe(false);
+      expect(listener.isDiscovering()).toBe(false);
       expect(listener.getCurrentSessionId()).toBeNull();
     });
   });
@@ -59,7 +65,7 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
       // Try to start another discovery while one is in progress
       await expect(listener.startDiscovery()).rejects.toThrow('Discovery already in progress');
 
-      expect(listener.isDiscoveryInProgress()).toBe(true);
+      expect(listener.isDiscovering()).toBe(true);
     });
 
     it('should create unique session IDs for each discovery', async () => {
@@ -168,8 +174,8 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
       expect(wallets).toHaveLength(1);
       const wallet = wallets[0];
       if (!wallet || !wallet.metadata) throw new Error('No wallet or metadata');
-      // Note: responderVersion is not stored in metadata, only protocol version is stored as 'version'
-      expect(wallet.metadata['version']).toBe(DISCOVERY_PROTOCOL_VERSION);
+      // Note: responderVersion from the response is stored as 'version' in metadata
+      expect(wallet.metadata['version']).toBe('2.0.0');
       expect(wallet.metadata['description']).toBe('A test wallet');
     });
   });
@@ -180,7 +186,7 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
       listener.setSessionId(customSessionId);
 
       expect(listener.getCurrentSessionId()).toBe(customSessionId);
-      expect(listener.isDiscoveryInProgress()).toBe(true);
+      expect(listener.isDiscovering()).toBe(true);
     });
 
     it('should clear session on stop', async () => {
@@ -219,7 +225,7 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
       // Reset
       listener.reset();
 
-      expect(listener.isDiscoveryInProgress()).toBe(false);
+      expect(listener.isDiscovering()).toBe(false);
       expect(listener.getCurrentSessionId()).toBeNull();
       expect(listener.getQualifiedResponders()).toHaveLength(0);
       expect(listener.getLastRequest()).toBeUndefined();
@@ -322,7 +328,7 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
         listener.stopDiscovery();
       }
 
-      expect(listener.isDiscoveryInProgress()).toBe(false);
+      expect(listener.isDiscovering()).toBe(false);
       expect(listener.getCurrentSessionId()).toBeNull();
     });
 
@@ -330,9 +336,8 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
       const emptyConfig: DiscoveryInitiatorConfig = {
         initiatorInfo: createTestDAppInfo(),
         requirements: {
-          chains: [],
+          technologies: [],
           features: [],
-          interfaces: [],
         },
       };
 
@@ -340,9 +345,8 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
       await listener.startDiscovery();
 
       const lastRequest = listener.getLastRequest();
-      expect(lastRequest?.required.chains).toHaveLength(0);
+      expect(lastRequest?.required.technologies).toHaveLength(0);
       expect(lastRequest?.required.features).toHaveLength(0);
-      expect(lastRequest?.required.interfaces).toHaveLength(0);
     });
 
     it('should handle very large number of wallet responses', async () => {
@@ -406,7 +410,7 @@ describe('MockDiscoveryInitiator - Error Simulation and Edge Cases', () => {
         () => listener.addMockWalletResponse(createTestDiscoveryResponse({ sessionId })),
         () => listener.getQualifiedResponders(),
         () => listener.getStats(),
-        () => listener.isDiscoveryInProgress(),
+        () => listener.isDiscovering(),
         () => listener.getCurrentSessionId(),
       ];
 

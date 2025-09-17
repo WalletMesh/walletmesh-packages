@@ -6,7 +6,7 @@
 
 # Interface: CapabilityMatchResult
 
-Defined in: [responder/CapabilityMatcher.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L47)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/CapabilityMatcher.ts#L54)
 
 Result of capability matching between responder and initiator requirements.
 
@@ -20,18 +20,17 @@ const result: CapabilityMatchResult = {
   canFulfill: true,
   intersection: {
     required: {
-      chains: ['eip155:1'],
-      features: ['account-management'],
-      interfaces: ['eip-1193']
-    },
-    optional: {
-      features: ['hardware-wallet']
+      technologies: [{
+        type: 'evm',
+        interfaces: ['eip-1193'],
+        features: ['eip-712']
+      }],
+      features: ['account-management']
     }
   },
   missing: {
-    chains: [],
-    features: [],
-    interfaces: []
+    technologies: [],
+    features: []
   }
 };
 ```
@@ -41,9 +40,11 @@ const result: CapabilityMatchResult = {
   canFulfill: false,
   intersection: null,
   missing: {
-    chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],  // Responder doesn't support Solana
-    features: [],
-    interfaces: []
+    technologies: [{
+      type: 'solana',
+      reason: 'Technology not supported'
+    }],
+    features: []
   }
 };
 ```
@@ -58,7 +59,7 @@ const result: CapabilityMatchResult = {
 
 > **canFulfill**: `boolean`
 
-Defined in: [responder/CapabilityMatcher.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L48)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/CapabilityMatcher.ts#L55)
 
 ***
 
@@ -66,7 +67,7 @@ Defined in: [responder/CapabilityMatcher.ts:48](https://github.com/WalletMesh/wa
 
 > **intersection**: `null` \| [`CapabilityIntersection`](CapabilityIntersection.md)
 
-Defined in: [responder/CapabilityMatcher.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L49)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/CapabilityMatcher.ts#L56)
 
 ***
 
@@ -74,16 +75,12 @@ Defined in: [responder/CapabilityMatcher.ts:49](https://github.com/WalletMesh/wa
 
 > **missing**: `object`
 
-Defined in: [responder/CapabilityMatcher.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/CapabilityMatcher.ts#L50)
-
-#### chains
-
-> **chains**: `string`[]
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/CapabilityMatcher.ts#L57)
 
 #### features
 
 > **features**: `string`[]
 
-#### interfaces
+#### technologies
 
-> **interfaces**: `string`[]
+> **technologies**: `object`[]

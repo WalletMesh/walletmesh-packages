@@ -8,12 +8,9 @@
 
 > **ResponderInfo** = [`ExtensionResponderInfo`](../interfaces/ExtensionResponderInfo.md) \| [`WebResponderInfo`](../interfaces/WebResponderInfo.md) \| [`BaseResponderInfo`](../interfaces/BaseResponderInfo.md)
 
-Defined in: [core/types.ts:1120](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1120)
+Defined in: [core/discovery/src/types/capabilities.ts:410](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L410)
 
-Union type for all responder information types.
-
-Discriminated union that includes all supported responder deployment
-types with their specific properties and constraints.
+Union type of all responder information types.
 
 ## Since
 

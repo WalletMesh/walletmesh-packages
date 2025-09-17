@@ -1,4 +1,6 @@
-import type { DiscoveryResponseEvent, ResponderInfo, InitiatorInfo, SecurityPolicy } from '../core/types.js';
+import type { DiscoveryResponseEvent, InitiatorInfo } from '../types/core.js';
+import type { ResponderInfo, CapabilityRequirements } from '../types/capabilities.js';
+import type { SecurityPolicy } from '../types/security.js';
 import { MockDiscoveryInitiator } from './MockDiscoveryInitiator.js';
 import { MockDiscoveryResponder } from './MockDiscoveryResponder.js';
 import { MockEventTarget } from './MockEventTarget.js';
@@ -50,7 +52,6 @@ export interface TestContext {
  */
 export function createBasicDiscoveryScenario(
   options: {
-    chains?: string[];
     expectedResponders?: number;
     responderInfo?: ResponderInfo;
     securityPolicy?: SecurityPolicy;
@@ -67,9 +68,13 @@ export function createBasicDiscoveryScenario(
 
       const listener = new MockDiscoveryInitiator({
         requirements: {
-          chains: options.chains || ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget,
@@ -98,11 +103,7 @@ export function createBasicDiscoveryScenario(
 /**
  * Create a timeout scenario for testing discovery timeouts.
  */
-export function createTimeoutScenario(
-  options: {
-    timeout?: number;
-  } = {},
-): TestScenario {
+export function createTimeoutScenario(options: { timeout?: number } = {}): TestScenario {
   return {
     name: 'Discovery Timeout Scenario',
     description: 'Test discovery timeout when no wallets respond',
@@ -112,9 +113,13 @@ export function createTimeoutScenario(
 
       const listener = new MockDiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget,
@@ -145,11 +150,7 @@ export function createTimeoutScenario(
 /**
  * Create a security rejection scenario for testing security validation.
  */
-export function createSecurityRejectionScenario(
-  options: {
-    maliciousOrigin?: string;
-  } = {},
-): TestScenario {
+export function createSecurityRejectionScenario(options: { maliciousOrigin?: string } = {}): TestScenario {
   return {
     name: 'Security Rejection Scenario',
     description: 'Test security policy rejection of malicious requests',
@@ -159,9 +160,13 @@ export function createSecurityRejectionScenario(
 
       const listener = new MockDiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         initiatorInfo: createTestDAppInfo(),
         eventTarget,
@@ -215,8 +220,8 @@ export function createSecurityRejectionScenario(
  *
  * // Test different requirement combinations
  * const results = await scenario.testRequirementVariations([
- *   { chains: ['eip155:1'], features: ['account-management'], interfaces: ['eip-1193'] },
- *   { chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'], features: ['transaction-signing'], interfaces: ['solana-wallet-standard'] }
+ *   { technologies: [{ type: 'evm', interfaces: ['eip-1193'] }], features: ['account-management'] },
+ *   { technologies: [{ type: 'solana', interfaces: ['solana-wallet-standard'] }], features: ['transaction-signing'] }
  * ]);
  *
  * // Clean up when done
@@ -230,12 +235,10 @@ export function createDiscoveryTestScenario(
     initiatorInfo?: InitiatorInfo;
     wallets?: ResponderInfo[];
     requirements?: {
-      chains: string[];
+      technologies: { type: 'evm' | 'solana' | 'aztec'; interfaces: string[] }[];
       features: string[];
-      interfaces: string[];
     };
     preferences?: {
-      chains?: string[];
       features?: string[];
     };
     securityPolicy?: SecurityPolicy;
@@ -243,9 +246,13 @@ export function createDiscoveryTestScenario(
 ) {
   const initiatorInfo = options.initiatorInfo ?? createTestDAppInfo();
   const requirements = options.requirements ?? {
-    chains: ['eip155:1'],
+    technologies: [
+      {
+        type: 'evm' as const,
+        interfaces: ['eip-1193'],
+      },
+    ],
     features: ['account-management', 'transaction-signing'],
-    interfaces: ['eip-1193'],
   };
 
   const wallets = options.wallets ?? [
@@ -323,13 +330,7 @@ export function createDiscoveryTestScenario(
     /**
      * Test different requirement combinations.
      */
-    async testRequirementVariations(
-      variations: Array<{
-        chains: string[];
-        features: string[];
-        interfaces: string[];
-      }>,
-    ) {
+    async testRequirementVariations(variations: CapabilityRequirements[]) {
       const results = [];
 
       for (const variation of variations) {
@@ -494,10 +495,7 @@ export function createDiscoveryTestScenario(
  * @since 1.0.0
  */
 export function createSecurityTestScenario(
-  options: {
-    securityPolicy?: SecurityPolicy;
-    testOrigins?: string[];
-  } = {},
+  options: { securityPolicy?: SecurityPolicy; testOrigins?: string[] } = {},
 ) {
   const securityPolicy = options.securityPolicy ?? createTestSecurityPolicy();
   const testOrigins =

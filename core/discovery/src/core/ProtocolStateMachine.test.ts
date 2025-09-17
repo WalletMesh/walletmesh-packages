@@ -299,7 +299,7 @@ describe('ProtocolStateMachine', () => {
       // Should throw when trying to transition from terminal state
       expect(() => {
         stateMachine.transition('DISCOVERING');
-      }).toThrow('Invalid state transition from COMPLETED to DISCOVERING');
+      }).toThrow('Cannot transition from terminal state COMPLETED');
 
       expect(stateMachine.getState()).toBe('COMPLETED');
     });

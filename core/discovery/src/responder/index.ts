@@ -81,9 +81,8 @@ export { DiscoveryResponder } from './DiscoveryResponder.js';
 export { CapabilityMatcher } from './CapabilityMatcher.js';
 export type { CapabilityMatchResult } from './CapabilityMatcher.js';
 
-// Export factory functions and helpers
+// Export factory functions and helpers (only keeping the non-deprecated ones)
 export {
-  createDiscoveryResponder,
   createCapabilityMatcher,
   createResponderDiscoverySetup,
   createResponderInfo,
@@ -93,14 +92,19 @@ export {
 export type {
   DiscoveryRequestEvent,
   DiscoveryResponseEvent,
+} from '../types/core.js';
+
+export type {
   ResponderInfo,
-  DiscoveryResponderConfig,
   CapabilityIntersection,
   ChainCapability,
   ResponderFeature,
   ResponderType,
-  SecurityPolicy,
-} from '../core/types.js';
+} from '../types/capabilities.js';
+
+export type { SecurityPolicy } from '../types/security.js';
+
+export type { DiscoveryResponderConfig } from '../types/testing.js';
 
 // Re-export relevant security utilities
-export { validateOrigin, createSecurityPolicy } from '../security/index.js';
+export { validateOrigin, createSecurityPolicy } from '../security.js';

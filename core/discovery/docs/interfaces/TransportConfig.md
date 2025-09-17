@@ -6,36 +6,13 @@
 
 # Interface: TransportConfig
 
-Defined in: [core/types.ts:308](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L308)
+Defined in: [core/discovery/src/types/core.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L110)
 
-Transport configuration for wallet connections.
-
-Specifies how dApps should connect to the wallet, including
-transport type and necessary configuration parameters.
-
-## Examples
-
-```typescript
-const extensionTransport: TransportConfig = {
-  type: 'extension',
-  extensionId: 'abcdefghijklmnop',
-  walletAdapter: 'MetaMaskAdapter'
-};
-```
-
-```typescript
-const popupTransport: TransportConfig = {
-  type: 'popup',
-  popupUrl: 'https://wallet.example.com/connect',
-  adapterConfig: {
-    windowFeatures: 'width=400,height=600'
-  }
-};
-```
+Transport configuration for establishing connections.
 
 ## Since
 
-0.2.0
+0.1.0
 
 ## Properties
 
@@ -43,9 +20,7 @@ const popupTransport: TransportConfig = {
 
 > `optional` **adapterConfig**: `Record`\<`string`, `unknown`\>
 
-Defined in: [core/types.ts:338](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L338)
-
-Additional adapter-specific configuration
+Defined in: [core/discovery/src/types/core.ts:120](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L120)
 
 ***
 
@@ -53,9 +28,23 @@ Additional adapter-specific configuration
 
 > `optional` **extensionId**: `string`
 
-Defined in: [core/types.ts:317](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L317)
+Defined in: [core/discovery/src/types/core.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L114)
 
-Chrome extension ID (required for extension transport)
+***
+
+### metadata?
+
+> `optional` **metadata**: `Record`\<`string`, `unknown`\>
+
+Defined in: [core/discovery/src/types/core.ts:121](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L121)
+
+***
+
+### origin?
+
+> `optional` **origin**: `string`
+
+Defined in: [core/discovery/src/types/core.ts:113](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L113)
 
 ***
 
@@ -63,19 +52,31 @@ Chrome extension ID (required for extension transport)
 
 > `optional` **popupUrl**: `string`
 
-Defined in: [core/types.ts:322](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L322)
+Defined in: [core/discovery/src/types/core.ts:117](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L117)
 
-Popup window URL (required for popup transport)
+***
+
+### targetOrigin?
+
+> `optional` **targetOrigin**: `string`
+
+Defined in: [core/discovery/src/types/core.ts:115](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L115)
 
 ***
 
 ### type
 
-> **type**: `"extension"` \| `"popup"` \| `"websocket"` \| `"injected"`
+> **type**: `"popup"` \| `"iframe"` \| `"extension"` \| `"websocket"` \| `"postmessage"` \| `"injected"`
 
-Defined in: [core/types.ts:312](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L312)
+Defined in: [core/discovery/src/types/core.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L111)
 
-Type of transport to use for wallet connection
+***
+
+### url?
+
+> `optional` **url**: `string`
+
+Defined in: [core/discovery/src/types/core.ts:112](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L112)
 
 ***
 
@@ -83,10 +84,7 @@ Type of transport to use for wallet connection
 
 > `optional` **walletAdapter**: `string`
 
-Defined in: [core/types.ts:333](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L333)
-
-Wallet adapter class name to use (e.g., 'MetaMaskAdapter', 'PhantomAdapter')
-This helps dApps select the appropriate adapter implementation
+Defined in: [core/discovery/src/types/core.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L119)
 
 ***
 
@@ -94,6 +92,12 @@ This helps dApps select the appropriate adapter implementation
 
 > `optional` **websocketUrl**: `string`
 
-Defined in: [core/types.ts:327](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L327)
+Defined in: [core/discovery/src/types/core.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L118)
 
-WebSocket endpoint URL (required for websocket transport)
+***
+
+### windowFeatures?
+
+> `optional` **windowFeatures**: `string`
+
+Defined in: [core/discovery/src/types/core.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L116)

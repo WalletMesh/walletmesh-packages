@@ -12,6 +12,8 @@ Cross-origin discovery protocol implementation for WalletMesh. This package impl
 
 > ⚠️ **Development Release**: Version 0.1.0 indicates this package is still in active development. APIs may change between releases until version 1.0.0.
 
+> 🚨 **Breaking Change in v0.7.0**: The discovery protocol now exclusively uses technology-based discovery. The deprecated `chains[]` and `interfaces[]` fields have been removed from `CapabilityRequirements`. All capability matching must now use the `technologies` array format. See the migration guide in [CLAUDE.md](_media/CLAUDE.md#version-070---technology-based-discovery-current) for details.
+
 ## Features
 
 - **Capability-First Discovery**: Initiators request specific capabilities, responders self-qualify and respond
@@ -26,21 +28,17 @@ Cross-origin discovery protocol implementation for WalletMesh. This package impl
 Understanding the discovery protocol requires familiarity with these key concepts:
 
 ### Capabilities
-The complete set of functionalities a wallet can provide, organized into three distinct categories:
+The complete set of functionalities a wallet can provide, organized into two main categories:
 
-1. **Chains**: Blockchain networks the wallet supports
-   - Examples: `'eip155:1'` (Ethereum mainnet), `'eip155:137'` (Polygon)
-   - Uses CAIP-2 chain identifiers for standardization
+1. **Technologies**: Blockchain technology support with associated interfaces and features
+   - Technology types: `'evm'`, `'solana'`, `'aztec'`
+   - Each technology specifies supported interfaces (e.g., `'eip-1193'` for EVM)
+   - Can include technology-specific features (e.g., `'eip-712'` for EVM signing)
 
-2. **Features**: Specific wallet functionalities beyond basic blockchain support
-   - Examples: `'hardware-wallet'`, `'batch-transactions'`, `'gasless-transactions'`
-   - Describes WHAT the wallet can do (security features, transaction capabilities, etc.)
+2. **Features**: Global wallet functionalities independent of specific technologies
+   - Examples: `'hardware-wallet'`, `'account-management'`, `'transaction-signing'`
+   - Describes cross-technology capabilities of the wallet
    - See [RESPONDER_FEATURES](_media/constants.ts) constant for standard identifiers
-
-3. **Interfaces**: API standards the wallet implements for programmatic communication
-   - Examples: `'eip-1193'` (Ethereum provider), `'solana-wallet-standard'` (Solana)
-   - Describes HOW dApps can interact with the wallet
-   - See [RESPONDER_INTERFACES](_media/constants.ts) constant for standard identifiers
 
 ### Key Concepts
 
@@ -55,9 +53,12 @@ The complete set of functionalities a wallet can provide, organized into three d
 ```typescript
 // A dApp's capability requirements
 const requirements: CapabilityRequirements = {
-  chains: ['eip155:1'],                    // Must support Ethereum mainnet
-  features: ['account-management'],         // Must have account viewing
-  interfaces: ['eip-1193']                 // Must implement EIP-1193 API
+  technologies: [{
+    type: 'evm',
+    interfaces: ['eip-1193'],              // Must implement EIP-1193 API
+    features: ['eip-712']                  // Must support EIP-712 signing
+  }],
+  features: ['account-management']         // Must have account viewing
 };
 
 // Optional preferences for better UX
@@ -86,9 +87,11 @@ import type { CapabilityRequirements } from '@walletmesh/discovery/types';
 
 // Define what your initiator needs
 const requirements: CapabilityRequirements = {
-  chains: ['eip155:1'], // Ethereum mainnet
-  features: ['account-management', 'transaction-signing'],
-  interfaces: ['eip-1193']
+  technologies: [{
+    type: 'evm',
+    interfaces: ['eip-1193']
+  }],
+  features: ['account-management', 'transaction-signing']
 };
 
 // Create discovery initiator
@@ -100,7 +103,6 @@ const initiator = createDiscoveryInitiator({
   },
   requirements,
   preferences: {
-    chains: ['eip155:11155111'], // Also prefer Sepolia testnet support
     features: ['hardware-wallet']
   }
 });
@@ -251,7 +253,7 @@ State transitions:
 The discovery protocol uses four message types:
 
 1. **DiscoveryRequestEvent** (`discovery:wallet:request`): Initiator broadcasts capability requirements
-   - `required`: Required capabilities (chains, features, interfaces)
+   - `required`: Required capabilities (technologies with interfaces/features, global features)
    - `optional`: Preferred capabilities  
    - `initiatorInfo`: Information about the requesting application
    - `origin`: Request origin for security validation
@@ -314,10 +316,12 @@ const initiator = createDiscoveryInitiator({
     icon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='
   },
   requirements: {
-    // Require at least one of these chains
-    chains: ['eip155:1', 'eip155:137', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
-    features: ['account-management', 'transaction-signing'],
-    interfaces: ['eip-1193', 'solana-wallet-standard']
+    // Support for multiple blockchain technologies
+    technologies: [
+      { type: 'evm', interfaces: ['eip-1193'] },
+      { type: 'solana', interfaces: ['solana-wallet-standard'] }
+    ],
+    features: ['account-management', 'transaction-signing']
   },
   preferences: {
     // Prefer wallets that support multiple chains
@@ -325,7 +329,7 @@ const initiator = createDiscoveryInitiator({
   }
 });
 
-const responders = await listener.startDiscovery();
+const responders = await initiator.startDiscovery();
 
 // User selects from qualified responders
 console.log('Available responders:', responders);
@@ -397,9 +401,8 @@ const scenario = createDiscoveryTestScenario({
     createTestResponderInfo.multiChain()
   ],
   requirements: {
-    chains: ['eip155:1'],
-    features: ['account-management'],
-    interfaces: ['eip-1193']
+    technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+    features: ['account-management']
   }
 });
 
@@ -407,7 +410,7 @@ const scenario = createDiscoveryTestScenario({
 const result = await scenario.runDiscovery();
 
 expect(result.qualifiedResponders.length).toBeGreaterThan(0);
-expect(result.qualifiedResponders[0].matched.required.chains).toContain('eip155:1');
+expect(result.qualifiedResponders[0].matched.required.technologies[0].type).toBe('evm');
 
 scenario.cleanup();
 ```
@@ -438,13 +441,13 @@ scenario.cleanup();
 
 ### Initiator Functions
 
-- **createDiscoveryInitiator(config)**: Create discovery listener for initiators
+- **createDiscoveryInitiator(config)**: Create discovery initiator
 - **createInitiatorDiscoverySetup(config)**: Complete initiator setup helper
 - **createCapabilityRequirements(chains, features?, interfaces?)**: Helper to create requirements
 
 ### Responder Functions
 
-- **createDiscoveryResponder(config)**: Create discovery announcer for responders
+- **createDiscoveryResponder(config)**: Create discovery responder
 - **createCapabilityMatcher(walletInfo)**: Create capability matching engine
 - **createResponderInfo.{ethereum|solana|aztec|multiChain}()**: Helper functions to create responder info
 

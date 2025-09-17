@@ -15,7 +15,8 @@ import {
   createTestDiscoveryRequest,
 } from './testUtils.js';
 import { mockBrowserEnvironment, restoreBrowserEnvironment } from './browserMocks.js';
-import type { DiscoveryRequestEvent } from '../core/types.js';
+import type { DiscoveryRequestEvent } from '../types/core.js';
+import type { Logger } from '../core/logger.js';
 import { setupFakeTimers, cleanupFakeTimers } from './timingHelpers.js';
 
 describe('Attack Scenario Tests', () => {
@@ -352,9 +353,13 @@ describe('Attack Scenario Tests', () => {
         origin: 'https://enumeration-attacker.com',
         sessionId: 'enumeration-session-123',
         required: {
-          chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'], // Solana mainnet
+          technologies: [
+            {
+              type: 'solana' as const,
+              interfaces: ['solana-wallet-standard'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['solana-wallet-standard'],
         },
       });
 
@@ -428,8 +433,13 @@ describe('Attack Scenario Tests', () => {
 
   describe('Security Event Integration', () => {
     it('should provide comprehensive security tracking', () => {
-      // Spy on console.warn to verify security events are logged
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      // Create mock logger to verify security events are logged
+      const mockLogger: Logger = {
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      };
 
       const securityPolicy = createTestSecurityPolicy({
         allowedOrigins: ['https://trusted-app.com'],
@@ -445,6 +455,7 @@ describe('Attack Scenario Tests', () => {
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy,
+        logger: mockLogger,
       });
 
       announcer.startListening();
@@ -462,9 +473,9 @@ describe('Attack Scenario Tests', () => {
         }),
       );
 
-      // Verify origin was blocked
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[WalletMesh] Origin blocked'),
+      // Verify origin was blocked (should be logged at debug level for silent failure)
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        expect.stringContaining('[Silent Failure] Origin validation failed'),
         expect.any(Object),
       );
 
@@ -482,9 +493,9 @@ describe('Attack Scenario Tests', () => {
         );
       }
 
-      // Verify rate limit was exceeded
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[WalletMesh] Rate limit exceeded'),
+      // Verify rate limit was exceeded (should be logged at debug level for silent failure)
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        expect.stringContaining('[Silent Failure] Rate limit exceeded'),
         expect.any(Object),
       );
 
@@ -497,6 +508,7 @@ describe('Attack Scenario Tests', () => {
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy,
+        logger: mockLogger, // Pass the mock logger to track logs
       });
       announcer.startListening();
 
@@ -515,9 +527,9 @@ describe('Attack Scenario Tests', () => {
         // Replay the same request - should be blocked and logged
         mockEventTarget.dispatchEvent(new CustomEvent('discovery:wallet:request', { detail: replayRequest }));
 
-        // Verify session replay was detected
-        expect(consoleWarnSpy).toHaveBeenCalledWith(
-          expect.stringContaining('[WalletMesh] Session replay detected'),
+        // Verify session replay was detected (should be logged at debug level for silent failure)
+        expect(mockLogger.debug).toHaveBeenCalledWith(
+          expect.stringContaining('[Silent Failure] Session replay detected'),
           expect.any(Object),
         );
       }
@@ -527,8 +539,7 @@ describe('Attack Scenario Tests', () => {
       expect(stats.securityStats).toBeDefined();
       expect(stats.securityStats.usedSessionsCount).toBeDefined();
 
-      // Cleanup spy
-      consoleWarnSpy.mockRestore();
+      // Test completed successfully
     });
   });
 });

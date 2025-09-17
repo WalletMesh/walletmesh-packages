@@ -30,9 +30,13 @@ describe('integrationHelpers', () => {
         initiatorOrigin: 'https://dapp.example.com',
         responderInfo: createTestResponderInfo.ethereum(),
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       };
 
@@ -78,9 +82,8 @@ describe('integrationHelpers', () => {
       const config: DiscoveryFlowConfig = {
         responders: [createTestResponderInfo.ethereum()],
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
           features: [],
-          interfaces: [],
         },
         timeout: 1000,
       };
@@ -224,7 +227,10 @@ describe('integrationHelpers', () => {
           name: 'Ethereum Discovery',
           config: {
             responders: [createTestResponderInfo.ethereum()],
-            requirements: { chains: ['eip155:1'], features: [], interfaces: [] },
+            requirements: {
+              technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+              features: [],
+            },
           },
           expectedResult: {
             success: true,
@@ -235,9 +241,8 @@ describe('integrationHelpers', () => {
           config: {
             responders: [createTestResponderInfo.solana()],
             requirements: {
-              chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+              technologies: [{ type: 'solana', interfaces: ['solana-wallet-standard'] }],
               features: [],
-              interfaces: [],
             },
           },
           expectedResult: {
@@ -323,7 +328,10 @@ describe('integrationHelpers', () => {
           name: 'Wallet Count Test',
           config: {
             responders: [createTestResponderInfo.ethereum(), createTestResponderInfo.solana()],
-            requirements: { chains: ['eip155:1'], features: [], interfaces: [] },
+            requirements: {
+              technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+              features: [],
+            },
           },
           expectedResult: {
             success: true,
@@ -342,7 +350,10 @@ describe('integrationHelpers', () => {
           name: 'Wallet Count Mismatch',
           config: {
             responders: [createTestResponderInfo.ethereum()],
-            requirements: { chains: ['eip155:1'], features: [], interfaces: [] },
+            requirements: {
+              technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+              features: [],
+            },
           },
           expectedResult: {
             success: true,
@@ -382,7 +393,10 @@ describe('integrationHelpers', () => {
           name: 'Timeout Not Occurred',
           config: {
             responders: [createTestResponderInfo.ethereum()],
-            requirements: { chains: ['eip155:1'], features: [], interfaces: [] },
+            requirements: {
+              technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+              features: [],
+            },
           },
           expectedResult: {
             success: true,
@@ -426,7 +440,10 @@ describe('integrationHelpers', () => {
           name: 'Security Not Rejected',
           config: {
             responders: [createTestResponderInfo.ethereum()],
-            requirements: { chains: ['eip155:1'], features: [], interfaces: [] },
+            requirements: {
+              technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+              features: [],
+            },
           },
           expectedResult: {
             success: true,
@@ -454,9 +471,13 @@ describe('integrationHelpers', () => {
           config: {
             responders: [createTestResponderInfo.solana()],
             requirements: {
-              chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+              technologies: [
+                {
+                  type: 'solana' as const,
+                  interfaces: ['solana-wallet-standard'],
+                },
+              ],
               features: ['account-management'],
-              interfaces: ['solana-wallet-standard'],
             },
           },
           expectedResult: { success: true },

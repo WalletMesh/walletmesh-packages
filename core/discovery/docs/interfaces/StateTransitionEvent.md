@@ -6,7 +6,7 @@
 
 # Interface: StateTransitionEvent
 
-Defined in: [core/ProtocolStateMachine.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L23)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L23)
 
 State transition events.
 
@@ -20,7 +20,7 @@ State transition events.
 
 > **fromState**: [`ProtocolState`](../type-aliases/ProtocolState.md)
 
-Defined in: [core/ProtocolStateMachine.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L24)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L24)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [core/ProtocolStateMachine.ts:24](https://github.com/WalletMesh/wall
 
 > `optional` **metadata**: `Record`\<`string`, `unknown`\>
 
-Defined in: [core/ProtocolStateMachine.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L27)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L27)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [core/ProtocolStateMachine.ts:27](https://github.com/WalletMesh/wall
 
 > **timestamp**: `number`
 
-Defined in: [core/ProtocolStateMachine.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L26)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L26)
 
 ***
 
@@ -44,4 +44,4 @@ Defined in: [core/ProtocolStateMachine.ts:26](https://github.com/WalletMesh/wall
 
 > **toState**: [`ProtocolState`](../type-aliases/ProtocolState.md)
 
-Defined in: [core/ProtocolStateMachine.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L25)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L25)

@@ -8,7 +8,7 @@
 
 > **createResponderDiscoverySetup**(`config`): `object`
 
-Defined in: [responder/factory.ts:175](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/factory.ts#L175)
+Defined in: [core/discovery/src/responder/factory.ts:174](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/factory.ts#L174)
 
 Create a complete responder discovery setup with integrated announcer and matcher.
 
@@ -44,7 +44,7 @@ Object with discovery components and convenience methods
 
 ### discoveryAnnouncer
 
-> **discoveryAnnouncer**: [`DiscoveryResponder`](../classes/DiscoveryResponder.md)
+> **discoveryAnnouncer**: `DiscoveryResponder`
 
 ### cleanup()
 
@@ -74,10 +74,6 @@ Get combined statistics from both components.
 
 > **capabilityDetails**: `object`
 
-###### announcer.capabilityDetails.chainCount
-
-> **chainCount**: `number`
-
 ###### announcer.capabilityDetails.featureCount
 
 > **featureCount**: `number`
@@ -85,10 +81,6 @@ Get combined statistics from both components.
 ###### announcer.capabilityDetails.responderType
 
 > **responderType**: [`ResponderType`](../type-aliases/ResponderType.md)
-
-###### announcer.capabilityDetails.supportedChains
-
-> **supportedChains**: `string`[]
 
 ###### announcer.capabilityDetails.supportedFeatures
 
@@ -98,6 +90,14 @@ Get combined statistics from both components.
 
 > **supportedInterfaces**: `string`[]
 
+###### announcer.capabilityDetails.supportedTechnologies
+
+> **supportedTechnologies**: `string`[]
+
+###### announcer.capabilityDetails.technologyCount
+
+> **technologyCount**: `number`
+
 ###### announcer.isListening
 
 > **isListening**: `boolean`
@@ -105,10 +105,6 @@ Get combined statistics from both components.
 ###### announcer.responderInfo
 
 > **responderInfo**: `object`
-
-###### announcer.responderInfo.chainCount
-
-> **chainCount**: `number`
 
 ###### announcer.responderInfo.featureCount
 
@@ -125,6 +121,10 @@ Get combined statistics from both components.
 ###### announcer.responderInfo.rdns
 
 > **rdns**: `string`
+
+###### announcer.responderInfo.technologyCount
+
+> **technologyCount**: `number`
 
 ###### announcer.responderInfo.type
 
@@ -174,10 +174,6 @@ Get combined statistics from both components.
 
 > **matcher**: `object`
 
-###### matcher.chainCount
-
-> **chainCount**: `number`
-
 ###### matcher.featureCount
 
 > **featureCount**: `number`
@@ -186,10 +182,6 @@ Get combined statistics from both components.
 
 > **responderType**: [`ResponderType`](../type-aliases/ResponderType.md)
 
-###### matcher.supportedChains
-
-> **supportedChains**: `string`[]
-
 ###### matcher.supportedFeatures
 
 > **supportedFeatures**: `string`[]
@@ -197,6 +189,14 @@ Get combined statistics from both components.
 ###### matcher.supportedInterfaces
 
 > **supportedInterfaces**: `string`[]
+
+###### matcher.supportedTechnologies
+
+> **supportedTechnologies**: `string`[]
+
+###### matcher.technologyCount
+
+> **technologyCount**: `number`
 
 ### startListening()
 
@@ -246,7 +246,7 @@ const setup = createResponderDiscoverySetup({
     type: 'extension',
     version: '1.0.0',
     protocolVersion: '0.1.0',
-    chains: [], // supported chains
+    technologies: [], // supported technologies
     features: [] // wallet features
   },
   securityPolicy: {

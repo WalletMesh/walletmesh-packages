@@ -9,14 +9,13 @@ import { MockEventTarget } from '../testing/MockEventTarget.js';
 import { createTestResponderInfo, createTestDiscoveryRequest } from '../testing/testUtils.js';
 import { setupFakeTimers, cleanupFakeTimers, advanceTimeAndWait } from '../testing/timingHelpers.js';
 import { createDiscoveryRequestEvent, createTestEvent } from '../testing/eventHelpers.js';
+import { createConsoleSpy } from '../testing/consoleMocks.js';
 import { DISCOVERY_EVENTS } from '../core/constants.js';
-import type {
-  ResponderInfo,
-  SecurityPolicy,
-  DiscoveryResponseEvent,
-  WebResponderInfo,
-  DiscoveryResponderConfig,
-} from '../core/types.js';
+import type { DiscoveryResponseEvent } from '../types/core.js';
+import type { ResponderInfo, WebResponderInfo, TechnologyRequirement } from '../types/capabilities.js';
+import type { SecurityPolicy } from '../types/security.js';
+import type { DiscoveryResponderConfig } from '../types/testing.js';
+import type { Logger } from '../core/logger.js';
 import type { ProtocolStateMachine } from '../core/ProtocolStateMachine.js';
 
 describe('DiscoveryResponder', () => {
@@ -92,8 +91,24 @@ describe('DiscoveryResponder', () => {
     });
 
     it('should create announcer with minimal wallet info', () => {
+      const minimalResponderInfo: ResponderInfo = {
+        uuid: crypto.randomUUID(),
+        rdns: 'com.minimal.wallet',
+        name: 'Minimal Wallet',
+        icon: 'data:image/svg+xml;base64,test',
+        type: 'extension',
+        version: '1.0.0',
+        protocolVersion: '1.0.0',
+        technologies: [
+          {
+            type: 'evm',
+            interfaces: ['eip-1193'],
+          },
+        ],
+        features: [],
+      };
       const minimalAnnouncer = new DiscoveryResponder({
-        responderInfo: {} as ResponderInfo,
+        responderInfo: minimalResponderInfo,
         eventTarget,
       });
       expect(minimalAnnouncer).toBeDefined();
@@ -139,21 +154,10 @@ describe('DiscoveryResponder', () => {
         icon: 'data:image/svg+xml;base64,dGVzdA==',
         version: '1.0.0',
         protocolVersion: '0.1.0',
-        chains: [
+        technologies: [
           {
-            chainId: 'eip155:1',
-            chainType: 'evm',
-            network: {
-              name: 'Ethereum',
-              chainId: 'eip155:1',
-              nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-              testnet: false,
-            },
-            standards: ['eip-1193'],
-            rpcMethods: ['eth_accounts'],
-            transactionTypes: [],
-            signatureSchemes: ['secp256k1'],
-            features: [],
+            type: 'evm' as const,
+            interfaces: ['eip-1193'],
           },
         ],
         features: [],
@@ -198,7 +202,7 @@ describe('DiscoveryResponder', () => {
     });
 
     it('should handle error when removing event listener', () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       announcer.startListening();
       expect(announcer.isAnnouncerListening()).toBe(true);
@@ -214,14 +218,14 @@ describe('DiscoveryResponder', () => {
       expect(announcer.isAnnouncerListening()).toBe(false);
 
       // Should have logged the warning
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Error removing event listener:',
         expect.any(Error),
       );
 
       // Restore original function
       eventTarget.removeEventListener = originalRemoveEventListener;
-      consoleWarnSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 
@@ -239,9 +243,13 @@ describe('DiscoveryResponder', () => {
 
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -264,9 +272,13 @@ describe('DiscoveryResponder', () => {
 
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'], // Wallet doesn't support Solana
+          technologies: [
+            {
+              type: 'solana', // Wallet doesn't support Solana
+              interfaces: ['solana-wallet-standard'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['solana-wallet-standard'],
         },
       });
 
@@ -424,7 +436,7 @@ describe('DiscoveryResponder', () => {
     });
 
     it('should handle discovery requests with invalid version gracefully', async () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       announcer.startListening();
 
@@ -440,17 +452,34 @@ describe('DiscoveryResponder', () => {
       await advanceTimeAndWait(10);
 
       // Should have logged warning for protocol version mismatch
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Protocol version mismatch: expected 0.1.0, got 999.0.0',
       );
 
-      consoleWarnSpy.mockRestore();
+      consoleSpy.restore();
     });
 
     it('should handle event without detail property', async () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      // Create a mock logger to capture log calls
+      const mockLogger: Logger = {
+        debug: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
+        error: vi.fn(),
+      };
 
-      announcer.startListening();
+      // Create announcer with mock logger
+      const testAnnouncer = new DiscoveryResponder({
+        responderInfo,
+        eventTarget: mockEventTarget,
+        securityPolicy: {
+          requireHttps: false,
+          allowLocalhost: true,
+        },
+        logger: mockLogger,
+      });
+
+      testAnnouncer.startListening();
 
       // Create event without detail
       const eventWithoutDetail = new CustomEvent(DISCOVERY_EVENTS.REQUEST, {
@@ -461,16 +490,18 @@ describe('DiscoveryResponder', () => {
 
       await advanceTimeAndWait(10);
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
-        '[WalletMesh] Error processing discovery request from unknown:',
+      // The implementation throws an error when trying to access properties of undefined
+      // and logs a warning through handleRequestProcessingError
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Unexpected error processing discovery request from unknown:',
         expect.any(String),
       );
 
-      consoleWarnSpy.mockRestore();
+      testAnnouncer.cleanup();
     });
 
     it('should handle discovery request with malformed requirements', async () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       // Test with malformed discovery request
       const malformedRequest = {
@@ -487,9 +518,9 @@ describe('DiscoveryResponder', () => {
       await advanceTimeAndWait(10);
 
       // Should handle gracefully and warn
-      expect(consoleWarnSpy).toHaveBeenCalled();
+      expect(consoleSpy.warn).toHaveBeenCalled();
 
-      consoleWarnSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 
@@ -956,15 +987,13 @@ describe('DiscoveryResponder', () => {
       ];
 
       for (const info of invalidResponderInfos) {
-        if (info !== null && info !== undefined) {
-          expect(
-            () =>
-              new DiscoveryResponder({
-                responderInfo: info as unknown as ResponderInfo,
-                eventTarget: mockEventTarget,
-              }),
-          ).not.toThrow(); // Constructor should be defensive
-        }
+        expect(
+          () =>
+            new DiscoveryResponder({
+              responderInfo: info as unknown as ResponderInfo,
+              eventTarget: mockEventTarget,
+            }),
+        ).toThrow(); // Constructor now validates and throws for invalid info
       }
     });
 
@@ -1046,9 +1075,8 @@ describe('DiscoveryResponder', () => {
       const requestWithNullCapabilities = {
         ...createTestDiscoveryRequest(),
         required: {
-          chains: null as unknown as string[],
+          technologies: null as unknown as TechnologyRequirement[],
           features: undefined as unknown as string[],
-          interfaces: [],
         },
       };
 
@@ -1062,9 +1090,11 @@ describe('DiscoveryResponder', () => {
     it('should handle very large capability lists', () => {
       const largeRequest = createTestDiscoveryRequest({
         required: {
-          chains: Array.from({ length: 1000 }, (_, i) => `eip155:${i}`),
+          technologies: Array.from({ length: 100 }, (_, i) => ({
+            type: 'evm' as const,
+            interfaces: [`interface-${i}`],
+          })),
           features: Array.from({ length: 100 }, (_, i) => `feature-${i}`),
-          interfaces: Array.from({ length: 50 }, (_, i) => `interface-${i}`),
         },
       });
 

@@ -1,74 +1,7 @@
-import type {
-  ResponderInfo,
-  DiscoveryRequestEvent,
-  DiscoveryResponseEvent,
-  InitiatorInfo,
-  SecurityPolicy,
-  ChainCapability,
-  CapabilityRequirements,
-  CapabilityPreferences,
-  ChainType,
-} from '../core/types.js';
+import type { DiscoveryRequestEvent, DiscoveryResponseEvent, InitiatorInfo } from '../types/core.js';
+import type { ResponderInfo, CapabilityRequirements, CapabilityPreferences } from '../types/capabilities.js';
+import type { SecurityPolicy } from '../types/security.js';
 import { DISCOVERY_PROTOCOL_VERSION } from '../core/constants.js';
-
-/**
- * Create a test chain capability with all required fields.
- *
- * This helper function creates a complete ChainCapability object with all
- * required fields populated with sensible defaults based on the chain type.
- *
- * @param simple - Simplified chain configuration
- * @param simple.chainId - The unique identifier for the chain (e.g., 'eip155:1')
- * @param simple.chainType - The type of blockchain ('evm', 'account', or 'utxo')
- * @param simple.standards - Array of standards supported by this chain
- * @param simple.isTestnet - Whether this is a testnet chain
- * @returns A complete ChainCapability object suitable for testing
- * @example
- * ```typescript
- * const ethMainnet = createTestChainCapability({
- *   chainId: 'eip155:1',
- *   chainType: 'evm',
- *   standards: ['eip-1193', 'eip-1102'],
- *   isTestnet: false
- * });
- * ```
- * @category Testing
- * @since 1.0.0
- */
-function createTestChainCapability(simple: {
-  chainId: string;
-  chainType: ChainType;
-  standards: string[];
-  isTestnet: boolean;
-}): ChainCapability {
-  const nativeCurrency =
-    simple.chainType === 'account' && simple.chainId.includes('solana')
-      ? { name: 'SOL', symbol: 'SOL', decimals: 9 }
-      : simple.chainType === 'account' && simple.chainId.includes('aztec')
-        ? { name: 'ETH', symbol: 'ETH', decimals: 18 }
-        : { name: 'Ether', symbol: 'ETH', decimals: 18 };
-
-  const rpcMethods =
-    simple.chainType === 'account'
-      ? ['getAccounts', 'signTransaction', 'signMessage']
-      : ['eth_accounts', 'eth_sendTransaction', 'eth_sign'];
-
-  return {
-    chainId: simple.chainId,
-    chainType: simple.chainType,
-    network: {
-      name: simple.isTestnet ? 'Testnet' : 'Mainnet',
-      chainId: simple.chainId,
-      nativeCurrency,
-      testnet: simple.isTestnet,
-    },
-    standards: simple.standards,
-    rpcMethods,
-    transactionTypes: [],
-    signatureSchemes: ['ecdsa-secp256k1'],
-    features: [],
-  };
-}
 
 /**
  * Create test wallet information for various blockchain types.
@@ -122,19 +55,12 @@ export const createTestResponderInfo = {
       type: 'extension' as const,
       version: '1.0.0',
       protocolVersion: '0.1.0',
-      chains: [
-        createTestChainCapability({
-          chainId: 'eip155:1',
-          chainType: 'evm',
-          standards: ['eip-1193', 'eip-1102'],
-          isTestnet: false,
-        }),
-        createTestChainCapability({
-          chainId: 'eip155:5',
-          chainType: 'evm',
-          standards: ['eip-1193', 'eip-1102'],
-          isTestnet: true,
-        }),
+      technologies: [
+        {
+          type: 'evm',
+          interfaces: ['eip-1193', 'eip-1102'],
+          features: ['eip-712', 'personal-sign'],
+        },
       ],
       features: [
         {
@@ -180,19 +106,12 @@ export const createTestResponderInfo = {
       url: 'https://example-solana-wallet.com',
       version: '1.0.0',
       protocolVersion: '0.1.0',
-      chains: [
-        createTestChainCapability({
-          chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-          chainType: 'account',
-          standards: ['solana-wallet-standard'],
-          isTestnet: false,
-        }),
-        createTestChainCapability({
-          chainId: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
-          chainType: 'account',
-          standards: ['solana-wallet-standard'],
-          isTestnet: true,
-        }),
+      technologies: [
+        {
+          type: 'solana',
+          interfaces: ['solana-wallet-standard'],
+          features: ['sign-message', 'sign-transaction'],
+        },
       ],
       features: [
         {
@@ -241,19 +160,12 @@ export const createTestResponderInfo = {
       version: '1.0.0',
       protocolVersion: '0.1.0',
       description: 'A test Aztec wallet for development',
-      chains: [
-        createTestChainCapability({
-          chainId: 'aztec:mainnet',
-          chainType: 'account',
-          standards: ['aztec-wallet-api-v1'],
-          isTestnet: false,
-        }),
-        createTestChainCapability({
-          chainId: 'aztec:testnet',
-          chainType: 'account',
-          standards: ['aztec-wallet-api-v1'],
-          isTestnet: true,
-        }),
+      technologies: [
+        {
+          type: 'aztec',
+          interfaces: ['aztec-wallet-api-v1'],
+          features: ['private-transactions', 'encrypted-notes'],
+        },
       ],
       features: [
         {
@@ -282,14 +194,9 @@ export const createTestResponderInfo = {
    * @example
    * ```typescript
    * const wallet = createTestResponderInfo.multiChain({
-   *   chains: [
-   *     ...defaultChains,
-   *     createTestChainCapability({
-   *       chainId: 'eip155:137',
-   *       chainType: 'evm',
-   *       standards: ['eip-1193'],
-   *       isTestnet: false
-   *     })
+   *   technologies: [
+   *     { type: 'evm', interfaces: ['eip-1193'] },
+   *     { type: 'solana', interfaces: ['solana-wallet-standard'] }
    *   ]
    * });
    * ```
@@ -306,25 +213,22 @@ export const createTestResponderInfo = {
       version: '1.0.0',
       protocolVersion: '0.1.0',
       description: 'A test multi-chain wallet for development',
-      chains: [
-        createTestChainCapability({
-          chainId: 'eip155:1',
-          chainType: 'evm',
-          standards: ['eip-1193', 'eip-1102'],
-          isTestnet: false,
-        }),
-        createTestChainCapability({
-          chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-          chainType: 'account',
-          standards: ['solana-wallet-standard'],
-          isTestnet: false,
-        }),
-        createTestChainCapability({
-          chainId: 'aztec:mainnet',
-          chainType: 'account',
-          standards: ['aztec-wallet-api-v1'],
-          isTestnet: false,
-        }),
+      technologies: [
+        {
+          type: 'evm',
+          interfaces: ['eip-1193', 'eip-1102'],
+          features: ['eip-712', 'personal-sign'],
+        },
+        {
+          type: 'solana',
+          interfaces: ['solana-wallet-standard'],
+          features: ['sign-message', 'sign-transaction'],
+        },
+        {
+          type: 'aztec',
+          interfaces: ['aztec-wallet-api-v1'],
+          features: ['private-transactions', 'encrypted-notes'],
+        },
       ],
       features: [
         {
@@ -396,9 +300,11 @@ export function createTestDAppInfo(overrides: Partial<InitiatorInfo> = {}): Init
  * // Create a request for Solana wallets
  * const solanaRequest = createTestDiscoveryRequest({
  *   required: {
- *     chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
- *     features: ['account-management'],
- *     interfaces: ['solana-wallet-standard']
+ *     technologies: [{
+ *       type: 'solana',
+ *       interfaces: ['solana-wallet-standard']
+ *     }],
+ *     features: ['account-management']
  *   }
  * });
  * ```
@@ -415,12 +321,16 @@ export function createTestDiscoveryRequest(
     origin: 'http://localhost:3000',
     initiatorInfo: createTestDAppInfo(),
     required: {
-      chains: ['eip155:1'],
+      technologies: [
+        {
+          type: 'evm',
+          interfaces: ['eip-1193'],
+          features: ['eip-712'],
+        },
+      ],
       features: ['account-management', 'transaction-signing'],
-      interfaces: ['eip-1193'],
     },
     optional: {
-      chains: ['eip155:5'],
       features: ['hardware-wallet'],
     },
     ...overrides,
@@ -446,12 +356,14 @@ export function createTestDiscoveryRequest(
  *   sessionId: request.sessionId,
  *   matched: {
  *     required: {
- *       chains: ['eip155:1'],
- *       features: ['account-management'],
- *       interfaces: ['eip-1193']
+ *       technologies: [{
+ *         type: 'evm',
+ *         interfaces: ['eip-1193'],
+ *         features: ['eip-712']
+ *       }],
+ *       features: ['account-management']
  *     },
  *     optional: {
- *       chains: [],
  *       features: ['hardware-wallet'],
  *     }
  *   }
@@ -476,13 +388,17 @@ export function createTestDiscoveryResponse(
     responderVersion: responderInfo.version,
     matched: {
       required: {
-        chains: ['eip155:1'],
+        technologies: [
+          {
+            type: 'evm',
+            interfaces: ['eip-1193'],
+            features: ['eip-712'],
+          },
+        ],
         features: ['account-management', 'transaction-signing'],
-        interfaces: ['eip-1193'],
       },
       optional: {
-        chains: ['eip155:5'],
-        features: [],
+        features: ['hardware-wallet'],
       },
     },
   };
@@ -545,11 +461,7 @@ export function createTestSecurityPolicy(overrides: Partial<SecurityPolicy> = {}
  * @returns Complete discovery configuration for testing
  */
 export function createTestDiscoveryConfig(
-  overrides: {
-    timeout?: number;
-    maxResponders?: number;
-    eventTarget?: EventTarget;
-  } = {},
+  overrides: { timeout?: number; maxResponders?: number; eventTarget?: EventTarget } = {},
 ): {
   timeout: number;
   maxResponders: number;
@@ -599,9 +511,13 @@ export const createTestCapabilityRequirements = {
    */
   ethereum(): CapabilityRequirements {
     return {
-      chains: ['eip155:1'],
+      technologies: [
+        {
+          type: 'evm',
+          interfaces: ['eip-1193'],
+        },
+      ],
       features: ['account-management', 'transaction-signing'],
-      interfaces: ['eip-1193'],
     };
   },
 
@@ -617,9 +533,13 @@ export const createTestCapabilityRequirements = {
    */
   solana(): CapabilityRequirements {
     return {
-      chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+      technologies: [
+        {
+          type: 'solana',
+          interfaces: ['solana-wallet-standard'],
+        },
+      ],
       features: ['account-management', 'transaction-signing'],
-      interfaces: ['solana-wallet-standard'],
     };
   },
 
@@ -635,9 +555,13 @@ export const createTestCapabilityRequirements = {
    */
   aztec(): CapabilityRequirements {
     return {
-      chains: ['aztec:mainnet'],
+      technologies: [
+        {
+          type: 'aztec',
+          interfaces: ['aztec-wallet-api-v1'],
+        },
+      ],
       features: ['private-transactions', 'transaction-signing'],
-      interfaces: ['aztec-wallet-api-v1'],
     };
   },
 
@@ -653,9 +577,17 @@ export const createTestCapabilityRequirements = {
    */
   multiChain(): CapabilityRequirements {
     return {
-      chains: ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+      technologies: [
+        {
+          type: 'evm',
+          interfaces: ['eip-1193'],
+        },
+        {
+          type: 'solana',
+          interfaces: ['solana-wallet-standard'],
+        },
+      ],
       features: ['account-management', 'transaction-signing'],
-      interfaces: ['eip-1193', 'solana-wallet-standard'],
     };
   },
 };
@@ -697,7 +629,6 @@ export const createTestCapabilityPreferences = {
    */
   basic(): CapabilityPreferences {
     return {
-      chains: ['eip155:5'],
       features: ['hardware-wallet'],
     };
   },
@@ -714,7 +645,6 @@ export const createTestCapabilityPreferences = {
    */
   advanced(): CapabilityPreferences {
     return {
-      chains: ['eip155:137', 'eip155:42161'],
       features: ['multi-signature', 'social-recovery'],
     };
   },

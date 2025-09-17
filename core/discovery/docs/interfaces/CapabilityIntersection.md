@@ -6,79 +6,60 @@
 
 # Interface: CapabilityIntersection
 
-Defined in: [core/types.ts:265](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L265)
+Defined in: [core/discovery/src/types/capabilities.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L163)
 
-Capability intersection between responder and initiator requirements.
+Result of capability intersection between requirements and responder capabilities.
 
-This represents the exact overlap between what the dApp requested and
-what the wallet can provide. It contains only capabilities that are
-both requested by the initiator AND supported by the responder.
-
-This privacy-preserving approach ensures wallets never reveal capabilities
-that weren't specifically requested, preventing capability enumeration attacks.
-
-The intersection maintains the same three-category structure:
-- chains: Blockchains both requested and supported
-- features: Functionalities both requested and available
-- interfaces: API standards both requested and implemented
-
-## Examples
-
-```typescript
-// If dApp requests: ['eip155:1', 'eip155:137']
-// And wallet supports: ['eip155:1', 'eip155:137', 'eip155:42161']
-// Intersection will be: ['eip155:1', 'eip155:137'] (not revealing Arbitrum)
-
-const intersection: CapabilityIntersection = {
-  required: {
-    chains: ['eip155:1', 'eip155:137'],
-    features: ['account-management'],
-    interfaces: ['eip-1193']
-  }
-};
-```
-
-```typescript
-const intersection: CapabilityIntersection = {
-  required: {
-    chains: ['eip155:1'],
-    features: ['account-management', 'transaction-signing'],
-    interfaces: ['eip-1193']
-  },
-  optional: {
-    features: ['hardware-wallet']  // Wallet has this preferred feature
-  }
-};
-```
+Contains the overlapping capabilities between what the initiator requested
+and what the responder supports. Only includes capabilities that match both
+requirements and responder capabilities.
 
 ## Since
 
 0.1.0
 
-## See
-
- - [CapabilityMatcher](../classes/CapabilityMatcher.md) for intersection calculation
- - [CapabilityRequirements](CapabilityRequirements.md) for requirement structure
- - [CapabilityPreferences](CapabilityPreferences.md) for preference structure
-
 ## Properties
 
 ### optional?
 
-> `optional` **optional**: `Partial`\<[`CapabilityPreferences`](CapabilityPreferences.md)\>
+> `optional` **optional**: `object`
 
-Defined in: [core/types.ts:276](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L276)
+Defined in: [core/discovery/src/types/capabilities.ts:184](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L184)
 
-The intersection of optional preferences.
-These were requested as "nice to have" and are supported by the wallet.
+The intersection of optional/preferred capabilities.
+These were requested as nice-to-have and are supported by the wallet.
+
+#### features?
+
+> `optional` **features**: `string`[]
+
+Optional features that are supported.
+
+#### technologies?
+
+> `optional` **technologies**: [`TechnologyMatch`](TechnologyMatch.md)[]
+
+Optional technology matches.
 
 ***
 
 ### required
 
-> **required**: [`CapabilityRequirements`](CapabilityRequirements.md)
+> **required**: `object`
 
-Defined in: [core/types.ts:270](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L270)
+Defined in: [core/discovery/src/types/capabilities.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L168)
 
 The intersection of required capabilities.
 All of these were requested as mandatory and are supported by the wallet.
+
+#### features
+
+> **features**: `string`[]
+
+Global features that overlap between requirements and responder support.
+
+#### technologies
+
+> **technologies**: [`TechnologyMatch`](TechnologyMatch.md)[]
+
+Matched blockchain technologies with their supported interfaces/features.

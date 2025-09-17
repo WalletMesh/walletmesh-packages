@@ -8,7 +8,7 @@
 
 > `const` `readonly` **CHAIN\_TYPES**: `object`
 
-Defined in: [core/constants.ts:162](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/constants.ts#L162)
+Defined in: [core/discovery/src/core/constants.ts:162](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/constants.ts#L162)
 
 Standard chain type identifiers for blockchain classification.
 
@@ -16,7 +16,7 @@ Categorizes blockchain networks by their fundamental architecture
 and transaction models. Used for capability matching and wallet
 integration pattern selection.
 
-## Type declaration
+## Type Declaration
 
 ### ACCOUNT
 

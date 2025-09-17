@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import type { ResponderInfo, SecurityPolicy } from './core/types.js';
+import type { ResponderInfo } from './types/capabilities.js';
+import type { SecurityPolicy } from './types/security.js';
 import { setupFakeTimers, cleanupFakeTimers } from './testing/timingHelpers.js';
 
 describe('extension module exports', () => {
@@ -32,7 +33,7 @@ describe('extension module exports', () => {
   it('should export createSecurityPolicy from security module', async () => {
     const { createSecurityPolicy } = await import('./extension.js');
     expect(createSecurityPolicy).toBeDefined();
-    expect(createSecurityPolicy).toBeTypeOf('object');
+    expect(createSecurityPolicy).toBeTypeOf('function');
     expect(createSecurityPolicy.strict).toBeTypeOf('function');
     expect(createSecurityPolicy.development).toBeTypeOf('function');
   });
@@ -74,21 +75,11 @@ describe('extension module exports', () => {
       type: 'extension',
       version: '1.0.0',
       protocolVersion: '0.1.0',
-      chains: [
+      technologies: [
         {
-          chainId: 'evm:ethereum:1',
-          chainType: 'evm',
-          network: {
-            name: 'Ethereum',
-            chainId: 'evm:ethereum:1',
-            nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-            testnet: false,
-          },
-          standards: ['eip-1193'],
-          rpcMethods: ['eth_accounts', 'eth_sendTransaction'],
-          transactionTypes: [],
-          signatureSchemes: ['ecdsa-secp256k1'],
-          features: [],
+          type: 'evm',
+          interfaces: ['eip-1193'],
+          features: ['eth_accounts', 'eth_sendTransaction'],
         },
       ],
       features: [
@@ -149,21 +140,11 @@ describe('extension module exports', () => {
       type: 'extension',
       version: '1.0.0',
       protocolVersion: '0.1.0',
-      chains: [
+      technologies: [
         {
-          chainId: 'evm:ethereum:1',
-          chainType: 'evm',
-          network: {
-            name: 'Ethereum',
-            chainId: 'evm:ethereum:1',
-            nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-            testnet: false,
-          },
-          standards: ['eip-1193'],
-          rpcMethods: ['eth_accounts', 'eth_sendTransaction'],
-          transactionTypes: [],
-          signatureSchemes: ['ecdsa-secp256k1'],
-          features: [],
+          type: 'evm',
+          interfaces: ['eip-1193'],
+          features: ['eth_accounts', 'eth_sendTransaction'],
         },
       ],
       features: [
