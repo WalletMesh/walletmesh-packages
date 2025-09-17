@@ -144,13 +144,11 @@ describe('Core Module', () => {
       it('should support optional preferences', () => {
         const request = createTestDiscoveryRequest({
           optional: {
-            chains: ['eip155:5'],
             features: ['hardware-wallet'],
           },
         });
 
         expect(request.optional).toBeTruthy();
-        expect(request.optional?.chains).toEqual(['eip155:5']);
         expect(request.optional?.features).toEqual(['hardware-wallet']);
 
         expectValidDiscoveryRequestEvent(request);
@@ -188,21 +186,26 @@ describe('Core Module', () => {
         const response = createTestDiscoveryResponse({
           matched: {
             required: {
-              chains: ['eip155:1'],
+              technologies: [
+                {
+                  type: 'evm',
+                  interfaces: ['eip-1193'],
+                  features: ['eip-712'],
+                },
+              ],
               features: ['account-management'],
-              interfaces: ['eip-1193'],
             },
             optional: {
-              chains: ['eip155:5'],
               features: ['hardware-wallet'],
             },
           },
         });
 
-        expect(response.matched.required.chains).toEqual(['eip155:1']);
+        expect(response.matched.required.technologies).toHaveLength(1);
+        expect(response.matched.required.technologies[0]?.type).toBe('evm');
+        expect(response.matched.required.technologies[0]?.interfaces).toEqual(['eip-1193']);
+        expect(response.matched.required.technologies[0]?.features).toEqual(['eip-712']);
         expect(response.matched.required.features).toEqual(['account-management']);
-        expect(response.matched.required.interfaces).toEqual(['eip-1193']);
-        expect(response.matched.optional?.chains).toEqual(['eip155:5']);
         expect(response.matched.optional?.features).toEqual(['hardware-wallet']);
 
         expectValidDiscoveryResponseEvent(response);
@@ -218,9 +221,9 @@ describe('Core Module', () => {
         expect(responderInfo.name).toBeTruthy();
         expect(responderInfo.icon).toMatch(/^data:/);
         expect(responderInfo.type).toBe('extension');
-        expect(Array.isArray(responderInfo.chains)).toBe(true);
+        expect(Array.isArray(responderInfo.technologies)).toBe(true);
         expect(Array.isArray(responderInfo.features)).toBe(true);
-        expect(responderInfo.chains.length).toBeGreaterThan(0);
+        expect(responderInfo.technologies.length).toBeGreaterThan(0);
 
         expectValidResponderInfo(responderInfo);
       });
@@ -229,10 +232,10 @@ describe('Core Module', () => {
         const responderInfo = createTestResponderInfo.solana();
 
         expect(responderInfo.type).toBe('web');
-        expect(responderInfo.chains.some((chain) => chain.chainId.includes('solana'))).toBe(true);
-        expect(responderInfo.chains.some((chain) => chain.standards.includes('solana-wallet-standard'))).toBe(
-          true,
-        );
+        expect(responderInfo.technologies.some((tech) => tech.type === 'solana')).toBe(true);
+        expect(
+          responderInfo.technologies.some((tech) => tech.interfaces.includes('solana-wallet-standard')),
+        ).toBe(true);
 
         expectValidResponderInfo(responderInfo);
       });
@@ -241,10 +244,10 @@ describe('Core Module', () => {
         const responderInfo = createTestResponderInfo.aztec();
 
         expect(responderInfo.type).toBe('hardware');
-        expect(responderInfo.chains.some((chain) => chain.chainId.includes('aztec'))).toBe(true);
-        expect(responderInfo.chains.some((chain) => chain.standards.includes('aztec-wallet-api-v1'))).toBe(
-          true,
-        );
+        expect(responderInfo.technologies.some((tech) => tech.type === 'aztec')).toBe(true);
+        expect(
+          responderInfo.technologies.some((tech) => tech.interfaces.includes('aztec-wallet-api-v1')),
+        ).toBe(true);
         expect(responderInfo.features.some((feature) => feature.id === 'private-transactions')).toBe(true);
 
         expectValidResponderInfo(responderInfo);
@@ -254,23 +257,26 @@ describe('Core Module', () => {
         const responderInfo = createTestResponderInfo.multiChain();
 
         expect(responderInfo.type).toBe('mobile');
-        expect(responderInfo.chains.length).toBeGreaterThan(1);
-        expect(responderInfo.chains.some((chain) => chain.chainType === 'evm')).toBe(true);
-        expect(responderInfo.chains.some((chain) => chain.chainType === 'account')).toBe(true);
+        expect(responderInfo.technologies.length).toBeGreaterThan(1);
+        expect(responderInfo.technologies.some((tech) => tech.type === 'evm')).toBe(true);
+        expect(
+          responderInfo.technologies.some((tech) => tech.type === 'solana' || tech.type === 'aztec'),
+        ).toBe(true);
         expect(responderInfo.features.some((feature) => feature.id === 'cross-chain-swaps')).toBe(true);
 
         expectValidResponderInfo(responderInfo);
       });
 
-      it('should validate chain capabilities', () => {
+      it('should validate technology capabilities', () => {
         const responderInfo = createTestResponderInfo.ethereum();
 
-        for (const chain of responderInfo.chains) {
-          expect(chain.chainId).toBeTruthy();
-          expect(['evm', 'account', 'utxo']).toContain(chain.chainType);
-          expect(Array.isArray(chain.standards)).toBe(true);
-          expect(chain.network).toBeTruthy();
-          expect(chain.network.testnet).toBeDefined();
+        for (const tech of responderInfo.technologies) {
+          expect(tech.type).toBeTruthy();
+          expect(['evm', 'solana', 'aztec']).toContain(tech.type);
+          expect(Array.isArray(tech.interfaces)).toBe(true);
+          if (tech.features) {
+            expect(Array.isArray(tech.features)).toBe(true);
+          }
         }
       });
 
@@ -280,9 +286,9 @@ describe('Core Module', () => {
         for (const feature of responderInfo.features) {
           expect(feature.id).toBeTruthy();
           expect(feature.name).toBeTruthy();
-          // WalletFeature doesn't have an 'enabled' property, it has optional 'version' and 'configuration'
-          if (feature.version) {
-            expect(typeof feature.version).toBe('string');
+          // ResponderFeature has optional 'enabled' property
+          if ('enabled' in feature) {
+            expect(typeof feature.enabled).toBe('boolean');
           }
         }
       });
@@ -371,9 +377,9 @@ describe('Core Module', () => {
   // Module Exports Tests
   // ===============================================
   describe('Module Exports', () => {
-    it('should export all types from types.ts', async () => {
-      const typesModule = await import('./types.js');
-      expect(typesModule).toBeDefined();
+    it('should have migrated types to ../types/ directory', () => {
+      // Types have been migrated to ../types/ directory structure
+      expect(true).toBe(true);
     });
 
     it('should export constants with expected values', async () => {

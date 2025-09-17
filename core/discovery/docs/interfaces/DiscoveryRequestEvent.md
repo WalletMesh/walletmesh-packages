@@ -6,43 +6,13 @@
 
 # Interface: DiscoveryRequestEvent
 
-Defined in: [core/types.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L203)
+Defined in: [core/discovery/src/types/core.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L53)
 
-Discovery request event sent by initiators to discover qualified responders.
-
-Initiates the capability-first discovery process where initiators broadcast
-their requirements and only qualified responders respond. This preserves
-responder privacy by avoiding enumeration of all available responders.
-
-## Example
-
-```typescript
-const request: DiscoveryRequestEvent = {
-  type: 'discovery:wallet:request',
-  version: '0.1.0',
-  sessionId: crypto.randomUUID(),
-  required: {
-    chains: ['eip155:1'],
-    features: ['account-management'],
-    interfaces: ['eip-1193']
-  },
-  origin: 'https://mydapp.com',
-  initiatorInfo: {
-    name: 'My dApp',
-    url: 'https://mydapp.com',
-    icon: 'data:image/svg+xml;base64,...'
-  }
-};
-```
+Discovery request event sent by initiators to find responders.
 
 ## Since
 
 0.1.0
-
-## See
-
- - [DiscoveryResponseEvent](DiscoveryResponseEvent.md) for responder responses
- - [DiscoveryInitiator](../classes/DiscoveryInitiator.md) for initiator-side implementation
 
 ## Extends
 
@@ -54,7 +24,7 @@ const request: DiscoveryRequestEvent = {
 
 > **initiatorInfo**: [`InitiatorInfo`](InitiatorInfo.md)
 
-Defined in: [core/types.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L212)
+Defined in: [core/discovery/src/types/core.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L55)
 
 ***
 
@@ -62,7 +32,7 @@ Defined in: [core/types.ts:212](https://github.com/WalletMesh/walletmesh-package
 
 > `optional` **optional**: [`CapabilityPreferences`](CapabilityPreferences.md)
 
-Defined in: [core/types.ts:208](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L208)
+Defined in: [core/discovery/src/types/core.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L57)
 
 ***
 
@@ -70,7 +40,7 @@ Defined in: [core/types.ts:208](https://github.com/WalletMesh/walletmesh-package
 
 > **origin**: `string`
 
-Defined in: [core/types.ts:211](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L211)
+Defined in: [core/discovery/src/types/core.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L58)
 
 ***
 
@@ -78,7 +48,7 @@ Defined in: [core/types.ts:211](https://github.com/WalletMesh/walletmesh-package
 
 > **required**: [`CapabilityRequirements`](CapabilityRequirements.md)
 
-Defined in: [core/types.ts:207](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L207)
+Defined in: [core/discovery/src/types/core.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L56)
 
 ***
 
@@ -86,7 +56,7 @@ Defined in: [core/types.ts:207](https://github.com/WalletMesh/walletmesh-package
 
 > **sessionId**: `string`
 
-Defined in: [core/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L32)
+Defined in: [core/discovery/src/types/core.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L27)
 
 #### Inherited from
 
@@ -98,7 +68,7 @@ Defined in: [core/types.ts:32](https://github.com/WalletMesh/walletmesh-packages
 
 > **type**: `"discovery:wallet:request"`
 
-Defined in: [core/types.ts:204](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L204)
+Defined in: [core/discovery/src/types/core.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L54)
 
 #### Overrides
 
@@ -110,7 +80,7 @@ Defined in: [core/types.ts:204](https://github.com/WalletMesh/walletmesh-package
 
 > **version**: `"0.1.0"`
 
-Defined in: [core/types.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L31)
+Defined in: [core/discovery/src/types/core.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L26)
 
 #### Inherited from
 

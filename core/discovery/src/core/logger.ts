@@ -103,10 +103,7 @@ export class ConsoleLogger implements Logger {
  * @category Core
  * @since 0.1.0
  */
-export function createLogger(options?: {
-  prefix?: string;
-  logger?: Logger;
-}): Logger {
+export function createLogger(options?: { prefix?: string; logger?: Logger }): Logger {
   if (options?.logger) {
     return options.logger;
   }

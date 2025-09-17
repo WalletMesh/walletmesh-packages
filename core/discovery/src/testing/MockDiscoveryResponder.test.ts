@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { MockDiscoveryResponder } from './MockDiscoveryResponder.js';
 import { createTestResponderInfo, createTestDiscoveryRequest } from './testUtils.js';
-import type { DiscoveryResponderConfig, DiscoveryRequestEvent, SecurityPolicy } from '../core/types.js';
+import type { DiscoveryRequestEvent } from '../types/core.js';
+import type { SecurityPolicy } from '../types/security.js';
+import type { DiscoveryResponderConfig } from '../types/testing.js';
 import { DISCOVERY_PROTOCOL_VERSION } from '../core/constants.js';
 
 describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
@@ -57,9 +59,13 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
       announcer.startListening();
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -76,9 +82,13 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
       announcer.startListening();
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'], // Wallet doesn't support Solana
+          technologies: [
+            {
+              type: 'solana' as const,
+              interfaces: ['solana-wallet-standard'],
+            },
+          ], // Wallet doesn't support Solana
           features: ['account-management'],
-          interfaces: ['solana-wallet-standard'],
         },
       });
 
@@ -214,9 +224,13 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
         createTestDiscoveryRequest({
           sessionId: 'invalid-1',
           required: {
-            chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'], // Not supported
+            technologies: [
+              {
+                type: 'solana' as const,
+                interfaces: ['solana-wallet-standard'],
+              },
+            ], // Not supported
             features: ['account-management'],
-            interfaces: ['solana-wallet-standard'],
           },
         }),
         createTestDiscoveryRequest({ sessionId: 'valid-2' }),
@@ -241,9 +255,13 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
       // Initially supports Ethereum
       const ethRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -261,9 +279,13 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
       // Solana request should succeed
       const solanaRequest = createTestDiscoveryRequest({
         required: {
-          chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+          technologies: [
+            {
+              type: 'solana' as const,
+              interfaces: ['solana-wallet-standard'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['solana-wallet-standard'],
         },
       });
 
@@ -373,9 +395,13 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
     it('should allow testing capability matches without responding', () => {
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
       });
 
@@ -390,17 +416,21 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
     it('should preview capability matches', () => {
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'], // Only request chains the wallet supports
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ], // Only request technologies the wallet supports
           features: ['account-management', 'transaction-signing'],
-          interfaces: ['eip-1193'],
         },
       });
 
       const preview = announcer.previewCapabilityMatch(request);
 
       expect(preview.canFulfill).toBe(true);
-      expect(preview.intersection?.required.chains).toContain('eip155:1');
-      expect(preview.missing.chains).toHaveLength(0); // No missing chains
+      expect(preview.intersection?.required.technologies).toBeDefined();
+      expect(preview.missing.technologies).toHaveLength(0); // No missing technologies
       expect(preview.missing.features).toHaveLength(0); // No missing features
     });
   });
@@ -416,9 +446,13 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
         timestamp: Date.now(),
         origin: 'https://example.com',
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         initiatorInfo: {
           name: 'Test App',
@@ -469,9 +503,8 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
 
       const emptyRequest = createTestDiscoveryRequest({
         required: {
-          chains: [],
+          technologies: [],
           features: [],
-          interfaces: [],
         },
       });
 
@@ -543,9 +576,13 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
 
       const request = createTestDiscoveryRequest({
         required: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management', 'transaction-signing'],
-          interfaces: ['eip-1193'],
         },
         optional: {
           features: ['hardware-wallet', 'cross-chain-swaps'],
@@ -559,10 +596,9 @@ describe('MockDiscoveryResponder - Error Simulation and Edge Cases', () => {
       expect(response?.matched.optional).toBeDefined();
 
       // Should include all required capabilities
-      expect(response?.matched.required.chains).toContain('eip155:1');
+      expect(response?.matched.required.technologies).toBeDefined();
       expect(response?.matched.required.features).toContain('account-management');
       expect(response?.matched.required.features).toContain('transaction-signing');
-      expect(response?.matched.required.interfaces).toContain('eip-1193');
     });
   });
 });

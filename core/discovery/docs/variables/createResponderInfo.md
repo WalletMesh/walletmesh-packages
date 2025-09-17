@@ -8,7 +8,7 @@
 
 > `const` **createResponderInfo**: `object`
 
-Defined in: [responder/factory.ts:432](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/factory.ts#L432)
+Defined in: [core/discovery/src/responder/factory.ts:439](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/factory.ts#L439)
 
 Helper functions to create common responder information for different blockchain ecosystems.
 
@@ -16,7 +16,7 @@ Provides pre-configured responder information templates for popular blockchain n
 with appropriate defaults for chains, features, and interfaces. Simplifies responder
 setup while ensuring compatibility with the discovery protocol.
 
-## Type declaration
+## Type Declaration
 
 ## Blockchain
 
@@ -35,10 +35,6 @@ zero-knowledge proofs and private transactions.
 ###### options
 
 Responder configuration options
-
-###### chains?
-
-`string`[]
 
 ###### description?
 
@@ -94,7 +90,7 @@ const responderInfo = createResponderInfo.aztec({
   name: 'Aztec Testnet Responder',
   icon: 'data:image/svg+xml;base64,...',
   type: 'extension',
-  chains: ['aztec:mainnet', 'aztec:testnet']
+  technologies: [{ type: 'aztec', interfaces: ['aztec-wallet-api-v1'] }]
 });
 ```
 
@@ -117,10 +113,6 @@ mainnet and common testnets.
 ###### options
 
 Responder configuration options
-
-###### chains?
-
-`string`[]
 
 ###### description?
 
@@ -176,7 +168,7 @@ const responderInfo = createResponderInfo.ethereum({
   name: 'Multi-Network Responder',
   icon: 'data:image/svg+xml;base64,...',
   type: 'extension',
-  chains: ['eip155:1', 'eip155:137', 'eip155:42161'],
+  technologies: [{ type: 'evm', interfaces: ['eip-1193'], features: ['eip-712'] }],
   features: ['account-management', 'transaction-signing', 'message-signing']
 });
 ```
@@ -200,10 +192,6 @@ defaults for cross-chain features and interfaces.
 ###### options
 
 Multi-chain responder configuration
-
-###### chains?
-
-`string`[]
 
 ###### description?
 
@@ -294,10 +282,6 @@ and devnet environments.
 
 Responder configuration options
 
-###### chains?
-
-`string`[]
-
 ###### description?
 
 `string`
@@ -352,7 +336,7 @@ const responderInfo = createResponderInfo.solana({
   name: 'Solana Dev Wallet',
   icon: 'data:image/svg+xml;base64,...',
   type: 'extension',
-  chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp', 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1']
+  technologies: [{ type: 'solana', interfaces: ['solana-wallet-standard'] }]
 });
 ```
 
@@ -380,10 +364,10 @@ const responderInfo = createResponderInfo.multiChain({
   name: 'Multi-Chain Responder',
   icon: 'data:image/svg+xml;base64,...',
   type: 'extension',
-  chains: [
-    // Custom chain configurations
-    { chainId: 'eip155:1', chainType: 'evm' }, // evm config
-    { chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp', chainType: 'account' } // solana config
+  technologies: [
+    // Custom technology configurations
+    { type: 'evm', interfaces: ['eip-1193'], features: ['eip-712'] }, // evm config
+    { type: 'solana', interfaces: ['solana-wallet-standard'] } // solana config
   ]
 });
 ```

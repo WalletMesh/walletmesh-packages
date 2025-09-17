@@ -6,28 +6,13 @@
 
 # Interface: DiscoveryCompleteEvent
 
-Defined in: [core/types.ts:1790](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1790)
+Defined in: [core/discovery/src/types/core.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L85)
 
-Event emitted when a discovery session completes successfully.
-
-This event is broadcast when a discovery session transitions to the COMPLETED state,
-indicating that the discovery process has finished and responders have been collected.
-The event provides basic session information without exposing sensitive details.
-
-## Example
-
-```typescript
-// Listen for completion events
-eventTarget.addEventListener(DISCOVERY_EVENTS.COMPLETE, (event) => {
-  const completionEvent = event as CustomEvent<DiscoveryCompleteEvent>;
-  console.log(`Discovery session ${completionEvent.detail.sessionId} completed`);
-  console.log(`Found ${completionEvent.detail.respondersFound} responders`);
-});
-```
+Discovery completion event sent when discovery session ends.
 
 ## Since
 
-0.5.0
+0.1.0
 
 ## Extends
 
@@ -39,9 +24,7 @@ eventTarget.addEventListener(DISCOVERY_EVENTS.COMPLETE, (event) => {
 
 > **reason**: `"timeout"` \| `"manual-stop"` \| `"max-responders"`
 
-Defined in: [core/types.ts:1794](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1794)
-
-Reason for completion
+Defined in: [core/discovery/src/types/core.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L87)
 
 ***
 
@@ -49,9 +32,7 @@ Reason for completion
 
 > **respondersFound**: `number`
 
-Defined in: [core/types.ts:1797](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1797)
-
-Number of qualified responders found
+Defined in: [core/discovery/src/types/core.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L88)
 
 ***
 
@@ -59,7 +40,7 @@ Number of qualified responders found
 
 > **sessionId**: `string`
 
-Defined in: [core/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L32)
+Defined in: [core/discovery/src/types/core.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L27)
 
 #### Inherited from
 
@@ -71,7 +52,7 @@ Defined in: [core/types.ts:32](https://github.com/WalletMesh/walletmesh-packages
 
 > **type**: `"discovery:wallet:complete"`
 
-Defined in: [core/types.ts:1791](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1791)
+Defined in: [core/discovery/src/types/core.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L86)
 
 #### Overrides
 
@@ -83,7 +64,7 @@ Defined in: [core/types.ts:1791](https://github.com/WalletMesh/walletmesh-packag
 
 > **version**: `"0.1.0"`
 
-Defined in: [core/types.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L31)
+Defined in: [core/discovery/src/types/core.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L26)
 
 #### Inherited from
 

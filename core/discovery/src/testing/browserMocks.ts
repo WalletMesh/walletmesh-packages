@@ -55,6 +55,18 @@ export interface MockWindowConfig {
 }
 
 /**
+ * Configuration options for mocking a content script environment.
+ */
+export interface ContentScriptMockConfig {
+  /** The origin to use for window.location.origin */
+  origin?: string;
+  /** The user agent string for navigator.userAgent */
+  userAgent?: string;
+  /** Mock function factory for dependency injection */
+  mockFn?: () => ReturnType<typeof import('vitest').vi.fn>;
+}
+
+/**
  * Stored reference to the original window object for restoration.
  */
 let originalWindow: Window | undefined;
@@ -363,4 +375,116 @@ export function isMockBrowserEnvironment(): boolean {
  */
 export function createMultipleMockWindows(origins: string[]): Window[] {
   return origins.map((origin) => createMockWindow({ origin }));
+}
+
+/**
+ * Create a mock content script environment with spyable window and navigator objects.
+ *
+ * This function creates a mock environment specifically designed for testing content scripts
+ * that need to interact with window events and navigation APIs. It provides spyable
+ * addEventListener, dispatchEvent, and other content script specific functionality.
+ *
+ * @param config - Configuration options for the content script mock
+ * @returns Mock objects for window and navigator with cleanup function
+ * @example
+ * ```typescript
+ * import { createContentScriptMock } from '@walletmesh/discovery/testing';
+ * import { vi } from 'vitest';
+ *
+ * describe('ContentScriptRelay', () => {
+ *   let mockEnv: ReturnType<typeof createContentScriptMock>;
+ *
+ *   beforeEach(() => {
+ *     mockEnv = createContentScriptMock({
+ *       origin: 'https://dapp.example.com',
+ *       mockFn: () => vi.fn()
+ *     });
+ *   });
+ *
+ *   afterEach(() => {
+ *     mockEnv.cleanup();
+ *   });
+ *
+ *   it('should handle page events', () => {
+ *     // mockEnv.window.addEventListener is a spy
+ *     expect(mockEnv.window.addEventListener).toHaveBeenCalledWith(
+ *       'discovery:wallet:request',
+ *       expect.any(Function)
+ *     );
+ *   });
+ * });
+ * ```
+ * @category Testing
+ * @since 1.0.0
+ */
+export function createContentScriptMock(config: ContentScriptMockConfig = {}) {
+  const {
+    origin = 'https://dapp.example.com',
+    userAgent = 'Test Browser',
+    mockFn = () => {
+      const globalWithVi = globalThis as unknown as {
+        vi?: { fn: () => ReturnType<typeof import('vitest').vi.fn> };
+      };
+      if (globalWithVi.vi?.fn) {
+        return globalWithVi.vi.fn();
+      }
+      throw new Error(
+        'Vitest is required for createContentScriptMock. Ensure tests are running in vitest environment and pass mockFn option.',
+      );
+    },
+  } = config;
+
+  // Store original globals for cleanup
+  const originalWindow = globalThis.window;
+  const originalNavigator = globalThis.navigator;
+
+  // Create mock window with spyable methods
+  const mockWindow = {
+    addEventListener: mockFn(),
+    removeEventListener: mockFn(),
+    dispatchEvent: mockFn().mockReturnValue(true),
+    location: {
+      origin,
+      href: origin,
+      hostname: new URL(origin).hostname,
+      protocol: new URL(origin).protocol,
+      port: new URL(origin).port,
+      pathname: new URL(origin).pathname,
+      search: '',
+      hash: '',
+      host: new URL(origin).host,
+    },
+  };
+
+  // Create mock navigator
+  const mockNavigator = {
+    userAgent,
+  };
+
+  // Set up global mocks
+  // @ts-expect-error - Intentionally mocking globals
+  globalThis.window = mockWindow;
+  // @ts-expect-error - Intentionally mocking globals
+  globalThis.navigator = mockNavigator;
+
+  return {
+    window: mockWindow,
+    navigator: mockNavigator,
+    cleanup: () => {
+      // Restore original globals
+      if (originalWindow) {
+        globalThis.window = originalWindow;
+      } else {
+        // @ts-expect-error - Remove window if it didn't exist originally
+        globalThis.window = undefined;
+      }
+
+      if (originalNavigator) {
+        globalThis.navigator = originalNavigator;
+      } else {
+        // @ts-expect-error - Remove navigator if it didn't exist originally
+        globalThis.navigator = undefined;
+      }
+    },
+  };
 }

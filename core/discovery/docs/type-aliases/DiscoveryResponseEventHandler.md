@@ -8,7 +8,9 @@
 
 > **DiscoveryResponseEventHandler** = (`event`) => `void`
 
-Defined in: [core/types.ts:1630](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1630)
+Defined in: [core/discovery/src/types/core.ts:204](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L204)
+
+Discovery response event handler type.
 
 ## Parameters
 
@@ -19,3 +21,7 @@ Defined in: [core/types.ts:1630](https://github.com/WalletMesh/walletmesh-packag
 ## Returns
 
 `void`
+
+## Since
+
+0.1.0

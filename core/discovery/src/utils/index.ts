@@ -8,3 +8,5 @@
 
 export { EventEmitter } from './EventEmitter.js';
 export * from './errorUtils.js';
+export * from './protocolError.js';
+export * from './transportValidator.js';

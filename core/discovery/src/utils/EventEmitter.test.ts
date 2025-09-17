@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { EventEmitter } from './EventEmitter.js';
+import { createConsoleSpy } from '../testing/consoleMocks.js';
 
 describe('EventEmitter', () => {
   let emitter: EventEmitter;
@@ -36,20 +37,22 @@ describe('EventEmitter', () => {
     });
 
     it('should warn when max listeners exceeded', () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
       emitter.setMaxListeners(2);
 
       emitter.on('test', vi.fn());
       emitter.on('test', vi.fn());
       emitter.on('test', vi.fn()); // This should trigger warning
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         expect.stringContaining('Possible EventEmitter memory leak detected'),
       );
+
+      consoleSpy.restore();
     });
 
     it('should not warn when maxListeners is 0', () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
       emitter.setMaxListeners(0);
 
       // Add many listeners
@@ -57,7 +60,9 @@ describe('EventEmitter', () => {
         emitter.on('test', vi.fn());
       }
 
-      expect(consoleWarnSpy).not.toHaveBeenCalled();
+      expect(consoleSpy.warn).not.toHaveBeenCalled();
+
+      consoleSpy.restore();
     });
 
     it('should support symbol events', () => {
@@ -214,7 +219,7 @@ describe('EventEmitter', () => {
     });
 
     it('should handle listener errors gracefully', () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['error'], mockFn: () => vi.fn() });
       const error = new Error('Listener error');
       const badListener = vi.fn().mockImplementation(() => {
         throw error;
@@ -229,7 +234,9 @@ describe('EventEmitter', () => {
       expect(result).toBe(true);
       expect(badListener).toHaveBeenCalled();
       expect(goodListener).toHaveBeenCalled();
-      expect(consoleErrorSpy).toHaveBeenCalledWith('[WalletMesh] Error in event listener:', error);
+      expect(consoleSpy.error).toHaveBeenCalledWith('[WalletMesh] Error in event listener:', error);
+
+      consoleSpy.restore();
     });
 
     it('should work with symbol events', () => {
@@ -337,15 +344,17 @@ describe('EventEmitter', () => {
     });
 
     it('should warn when max listeners exceeded', () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
       emitter.setMaxListeners(1);
 
       emitter.on('test', vi.fn());
       emitter.prependListener('test', vi.fn()); // This should trigger warning
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         expect.stringContaining('Possible EventEmitter memory leak detected'),
       );
+
+      consoleSpy.restore();
     });
 
     it('should return this for chaining', () => {

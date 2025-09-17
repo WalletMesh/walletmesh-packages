@@ -8,7 +8,7 @@
 
 > `const` `readonly` **DISCOVERY\_PROTOCOL\_VERSION**: `"0.1.0"` = `'0.1.0'`
 
-Defined in: [core/constants.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/constants.ts#L22)
+Defined in: [core/discovery/src/core/constants.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/constants.ts#L22)
 
 Current version of the WalletMesh discovery protocol.
 

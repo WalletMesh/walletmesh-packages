@@ -4,7 +4,9 @@
  * Type definitions for the secure wallet discovery implementation.
  */
 
-import type { DiscoveryResponseEvent, ResponderInfo, SecurityPolicy } from '../core/types.js';
+import type { DiscoveryResponseEvent } from '../types/core.js';
+import type { ResponderInfo } from '../types/capabilities.js';
+import type { SecurityPolicy } from '../types/security.js';
 
 /**
  * Configuration for WalletDiscovery initialization.

@@ -8,12 +8,9 @@
 
 > **DiscoveryRequestEventHandler** = (`event`) => `void`
 
-Defined in: [core/types.ts:1629](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1629)
+Defined in: [core/discovery/src/types/core.ts:196](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L196)
 
-Event handler function types for discovery protocol events.
-
-Type-safe event handlers for processing discovery protocol messages
-with proper event payload typing.
+Discovery request event handler type.
 
 ## Parameters
 
@@ -25,25 +22,6 @@ with proper event payload typing.
 
 `void`
 
-## Example
-
-```typescript
-const requestHandler: CapabilityRequestHandler = (event) => {
-  const request = event.detail;
-  console.log('Received request from:', request.origin);
-};
-
-const responseHandler: CapabilityResponseHandler = (event) => {
-  const response = event.detail;
-  console.log('Responder responded:', response.name);
-};
-```
-
 ## Since
 
 0.1.0
-
-## See
-
- - [DiscoveryInitiator](../classes/DiscoveryInitiator.md) for response handling
- - [DiscoveryResponder](../classes/DiscoveryResponder.md) for request handling

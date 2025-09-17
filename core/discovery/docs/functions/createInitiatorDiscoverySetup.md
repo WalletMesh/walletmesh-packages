@@ -8,7 +8,7 @@
 
 > **createInitiatorDiscoverySetup**(`config`): `object`
 
-Defined in: [initiator/factory.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/initiator/factory.ts#L126)
+Defined in: [core/discovery/src/initiator/factory.ts:123](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/initiator/factory.ts#L123)
 
 Create a simplified discovery setup focused only on discovery (no connection management).
 
@@ -61,7 +61,7 @@ Object containing listener, config, requirements, and security policy
 
 ### listener
 
-> **listener**: [`DiscoveryInitiator`](../classes/DiscoveryInitiator.md)
+> **listener**: `DiscoveryInitiator`
 
 ### requirements
 

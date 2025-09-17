@@ -2,11 +2,13 @@
  * Standardized error utilities for the Discovery package.
  *
  * Provides consistent error formatting, categorization, and context
- * across all discovery protocol components.
+ * across all discovery protocol components. These utilities are
+ * primarily for internal use within the discovery package.
  *
  * @module errorUtils
  * @category Utils
  * @since 0.1.0
+ * @internal
  */
 
 /**
@@ -84,6 +86,10 @@ export class DiscoveryError extends Error {
 
   /**
    * Format error message with context information.
+   *
+   * @internal
+   * @category Utilities
+   * @since 0.1.0
    */
   private static formatMessage(message: string, context: ErrorContext): string {
     const parts: string[] = [];

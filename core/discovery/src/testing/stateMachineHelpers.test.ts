@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+import { createConsoleSpy } from './consoleMocks.js';
 import {
   testStateTransitions,
   testStateTimeouts,
@@ -623,7 +624,7 @@ describe('stateMachineHelpers', () => {
     });
 
     it('should handle invariant warnings', async () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const suite = createStateMachineTestSuite(stateMachine, {
         states: ['IDLE'],
@@ -632,8 +633,8 @@ describe('stateMachineHelpers', () => {
 
       await suite.testInvariants();
 
-      expect(consoleWarnSpy).toHaveBeenCalled();
-      consoleWarnSpy.mockRestore();
+      expect(consoleSpy.warn).toHaveBeenCalled();
+      consoleSpy.restore();
     });
 
     it('should test invalid transitions', async () => {

@@ -33,7 +33,7 @@
  * @since 1.0.0
  */
 
-import type { SecurityPolicy, OriginValidationResult } from '../core/types.js';
+import type { SecurityPolicy, OriginValidationResult } from '../types/security.js';
 import { createTestSecurityPolicy } from './testUtils.js';
 import { expect, vi } from 'vitest';
 
@@ -203,7 +203,7 @@ export async function testOriginValidation(
         validationResult = await validator.validateOrigin(testCase.origin);
       } else {
         // Use built-in validation logic
-        const { validateOrigin } = await import('../security/OriginValidator.js');
+        const { validateOrigin } = await import('../security.js');
         validationResult = validateOrigin(testCase.origin, policy);
       }
 
@@ -417,7 +417,7 @@ export async function testSessionTracking(
       } else {
         failed++;
       }
-    } catch (error) {
+    } catch {
       results.push({
         scenario: scenario.name,
         origin: scenario.origin,
@@ -482,7 +482,7 @@ export function createMalformedTestData(
         {
           type: 'discovery:wallet:request',
           sessionId: 'valid',
-          required: { chains: [], features: [], interfaces: [] },
+          required: { technologies: [], features: [] },
           // Missing initiatorInfo
         },
       ];

@@ -6,7 +6,7 @@
 
 # Class: ProtocolStateMachine
 
-Defined in: [core/ProtocolStateMachine.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L163)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L163)
 
 Formal protocol state machine implementation.
 
@@ -97,7 +97,7 @@ try {
 
 ## Extends
 
-- `EventEmitter`
+- [`EventEmitter`](EventEmitter.md)
 
 ## Extended by
 
@@ -109,7 +109,7 @@ try {
 
 > **new ProtocolStateMachine**(`timeouts`): `ProtocolStateMachine`
 
-Defined in: [core/ProtocolStateMachine.ts:187](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L187)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:187](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L187)
 
 Creates a new protocol state machine instance.
 
@@ -139,7 +139,7 @@ const stateMachine = new ProtocolStateMachine({
 
 #### Overrides
 
-`EventEmitter.constructor`
+[`EventEmitter`](EventEmitter.md).[`constructor`](EventEmitter.md#constructor)
 
 ## Methods
 
@@ -147,7 +147,7 @@ const stateMachine = new ProtocolStateMachine({
 
 > **canTransition**(`toState`): `boolean`
 
-Defined in: [core/ProtocolStateMachine.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L227)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L227)
 
 Check if a transition to the target state is valid from the current state.
 
@@ -188,14 +188,19 @@ Valid transitions: IDLE→DISCOVERING, DISCOVERING→COMPLETED/ERROR
 
 > **checkMemoryLeaks**(): `object`
 
-Defined in: [utils/EventEmitter.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L163)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:453](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L453)
 
 Check for potential memory leaks by analyzing listener counts.
-Returns information about events that may have memory leaks.
+
+Analyzes all events and identifies those that have more listeners than
+the configured maximum. Returns detailed information about potential
+memory leaks for debugging and monitoring purposes.
 
 #### Returns
 
 `object`
+
+Object containing leak detection results
 
 ##### hasLeaks
 
@@ -205,9 +210,30 @@ Returns information about events that may have memory leaks.
 
 > **suspiciousEvents**: `object`[]
 
+#### Example
+
+```typescript
+emitter.setMaxListeners(3);
+
+// Add many listeners
+for (let i = 0; i < 5; i++) {
+  emitter.on('data', () => {});
+}
+
+const leakCheck = emitter.checkMemoryLeaks();
+if (leakCheck.hasLeaks) {
+  console.log('Suspicious events:', leakCheck.suspiciousEvents);
+  // Output: [{ event: 'data', count: 5, maxAllowed: 3 }]
+}
+```
+
+#### See
+
+[setMaxListeners](EventEmitter.md#setmaxlisteners) to configure leak detection threshold
+
 #### Inherited from
 
-`EventEmitter.checkMemoryLeaks`
+[`EventEmitter`](EventEmitter.md).[`checkMemoryLeaks`](EventEmitter.md#checkmemoryleaks)
 
 ***
 
@@ -215,7 +241,7 @@ Returns information about events that may have memory leaks.
 
 > **dispose**(): `void`
 
-Defined in: [core/ProtocolStateMachine.ts:415](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L415)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:442](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L442)
 
 Dispose of the state machine and cleanup all resources.
 
@@ -248,13 +274,19 @@ async function cleanup() {
 
 > **emit**(`event`, ...`args`): `boolean`
 
-Defined in: [utils/EventEmitter.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L102)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:282](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L282)
 
 Emit an event with the specified arguments.
+
+Synchronously calls all listeners registered for the specified event,
+passing the provided arguments to each listener. Errors in individual
+listeners are caught and logged but don't affect other listeners.
 
 #### Parameters
 
 ##### event
+
+The event name to emit
 
 `string` | `symbol`
 
@@ -262,13 +294,38 @@ Emit an event with the specified arguments.
 
 ...`unknown`[]
 
+Arguments to pass to the listeners
+
 #### Returns
 
 `boolean`
 
+`true` if there were listeners for the event, `false` otherwise
+
+#### Examples
+
+```typescript
+// Emit with no arguments
+const hasListeners = emitter.emit('ready');
+
+// Emit with arguments
+emitter.emit('data', { id: 1, message: 'Hello' });
+
+// Emit with multiple arguments
+emitter.emit('error', error, context, timestamp);
+```
+
+```typescript
+emitter.on('test', () => {
+  throw new Error('Listener error');
+});
+
+emitter.emit('test'); // Error is logged but doesn't throw
+```
+
 #### Inherited from
 
-`EventEmitter.emit`
+[`EventEmitter`](EventEmitter.md).[`emit`](EventEmitter.md#emit)
 
 ***
 
@@ -276,17 +333,33 @@ Emit an event with the specified arguments.
 
 > **eventNames**(): (`string` \| `symbol`)[]
 
-Defined in: [utils/EventEmitter.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L140)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:373](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L373)
 
 Get all event names.
+
+Returns an array containing all event names (strings and symbols) that
+currently have listeners attached. Useful for introspection and debugging.
 
 #### Returns
 
 (`string` \| `symbol`)[]
 
+Array of event names that have listeners
+
+#### Example
+
+```typescript
+emitter.on('connect', () => {});
+emitter.on('disconnect', () => {});
+emitter.on(Symbol('secret'), () => {});
+
+const events = emitter.eventNames();
+console.log(events); // ['connect', 'disconnect', Symbol(secret)]
+```
+
 #### Inherited from
 
-`EventEmitter.eventNames`
+[`EventEmitter`](EventEmitter.md).[`eventNames`](EventEmitter.md#eventnames)
 
 ***
 
@@ -294,17 +367,34 @@ Get all event names.
 
 > **getMaxListeners**(): `number`
 
-Defined in: [utils/EventEmitter.ts:155](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L155)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:420](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L420)
 
 Get the maximum number of listeners.
+
+Returns the current maximum listener limit configured for this emitter.
+This is the threshold above which memory leak warnings are issued.
 
 #### Returns
 
 `number`
 
+Current maximum listener limit (0 means warnings disabled)
+
+#### Example
+
+```typescript
+console.log(emitter.getMaxListeners()); // 10 (default)
+emitter.setMaxListeners(20);
+console.log(emitter.getMaxListeners()); // 20
+```
+
+#### See
+
+[setMaxListeners](EventEmitter.md#setmaxlisteners) to change the limit
+
 #### Inherited from
 
-`EventEmitter.getMaxListeners`
+[`EventEmitter`](EventEmitter.md).[`getMaxListeners`](EventEmitter.md#getmaxlisteners)
 
 ***
 
@@ -312,7 +402,7 @@ Get the maximum number of listeners.
 
 > **getState**(): [`ProtocolState`](../type-aliases/ProtocolState.md)
 
-Defined in: [core/ProtocolStateMachine.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L203)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L203)
 
 Get the current state of the state machine.
 
@@ -335,7 +425,7 @@ console.log(`Current state: ${currentState}`);
 
 > **getStateMetadata**(): `undefined` \| `Record`\<`string`, `unknown`\>
 
-Defined in: [core/ProtocolStateMachine.ts:366](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L366)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:373](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L373)
 
 Get metadata associated with the current state.
 
@@ -365,7 +455,7 @@ console.log('Connecting to:', metadata?.responderId);
 
 > **isInState**(`state`): `boolean`
 
-Defined in: [core/ProtocolStateMachine.ts:390](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L390)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:397](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L397)
 
 Check if the state machine is currently in a specific state.
 
@@ -400,17 +490,50 @@ const isActive = stateMachine.isInState('DISCOVERING') ||
 
 ***
 
+### isTerminalState()
+
+> **isTerminalState**(): `boolean`
+
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:417](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L417)
+
+Check if the current state is a terminal state.
+
+Terminal states (COMPLETED and ERROR) cannot transition to any other state.
+A new state machine instance must be created for subsequent discovery sessions.
+
+#### Returns
+
+`boolean`
+
+`true` if the current state is terminal, `false` otherwise
+
+#### Example
+
+```typescript
+if (stateMachine.isTerminalState()) {
+  // Create new instance for next discovery
+  stateMachine = createProtocolStateMachine();
+}
+```
+
+***
+
 ### listenerCount()
 
 > **listenerCount**(`event`): `number`
 
-Defined in: [utils/EventEmitter.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L126)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:323](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L323)
 
 Get the listener count for the specified event.
+
+Returns the number of listeners currently registered for the specified event.
+Useful for debugging and monitoring event usage patterns.
 
 #### Parameters
 
 ##### event
+
+The event name to count listeners for
 
 `string` | `symbol`
 
@@ -418,9 +541,25 @@ Get the listener count for the specified event.
 
 `number`
 
+The number of listeners for the event (0 if none)
+
+#### Example
+
+```typescript
+emitter.on('data', handler1);
+emitter.on('data', handler2);
+
+console.log(emitter.listenerCount('data')); // 2
+console.log(emitter.listenerCount('unknown')); // 0
+```
+
+#### See
+
+[listeners](EventEmitter.md#listeners) to get the actual listener functions
+
 #### Inherited from
 
-`EventEmitter.listenerCount`
+[`EventEmitter`](EventEmitter.md).[`listenerCount`](EventEmitter.md#listenercount)
 
 ***
 
@@ -428,13 +567,19 @@ Get the listener count for the specified event.
 
 > **listeners**(`event`): (...`args`) => `void`[]
 
-Defined in: [utils/EventEmitter.ts:133](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L133)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:351](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L351)
 
 Get all listeners for the specified event.
+
+Returns a copy of the array of listeners for the specified event.
+The returned array is a defensive copy and can be safely modified
+without affecting the original listeners.
 
 #### Parameters
 
 ##### event
+
+The event name to get listeners for
 
 `string` | `symbol`
 
@@ -442,9 +587,28 @@ Get all listeners for the specified event.
 
 (...`args`) => `void`[]
 
+Array of listener functions (empty array if none)
+
+#### Example
+
+```typescript
+const handler1 = () => console.log('Handler 1');
+const handler2 = () => console.log('Handler 2');
+
+emitter.on('test', handler1);
+emitter.on('test', handler2);
+
+const listeners = emitter.listeners('test');
+console.log(listeners.length); // 2
+```
+
+#### See
+
+[listenerCount](EventEmitter.md#listenercount) to just get the count
+
 #### Inherited from
 
-`EventEmitter.listeners`
+[`EventEmitter`](EventEmitter.md).[`listeners`](EventEmitter.md#listeners)
 
 ***
 
@@ -452,13 +616,18 @@ Get all listeners for the specified event.
 
 > **off**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L82)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:215](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L215)
 
 Alias for removeListener.
+
+Convenience method that provides the same functionality as removeListener
+with a shorter name, following Node.js EventEmitter convention.
 
 #### Parameters
 
 ##### event
+
+The event name to remove the listener from
 
 `string` | `symbol`
 
@@ -466,13 +635,29 @@ Alias for removeListener.
 
 (...`args`) => `void`
 
+The exact function reference to remove
+
 #### Returns
 
 `this`
 
+This EventEmitter instance for method chaining
+
+#### Example
+
+```typescript
+const handler = () => {};
+emitter.on('event', handler);
+emitter.off('event', handler); // Same as removeListener
+```
+
+#### See
+
+[removeListener](EventEmitter.md#removelistener) for full documentation
+
 #### Inherited from
 
-`EventEmitter.off`
+[`EventEmitter`](EventEmitter.md).[`off`](EventEmitter.md#off)
 
 ***
 
@@ -480,13 +665,19 @@ Alias for removeListener.
 
 > **on**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L17)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:95](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L95)
 
 Add a listener for the specified event.
+
+Registers a function to be called whenever the specified event is emitted.
+Automatically prevents duplicate listeners and provides memory leak warnings
+when the listener count exceeds the configured maximum.
 
 #### Parameters
 
 ##### event
+
+The event name to listen for (string or symbol)
 
 `string` | `symbol`
 
@@ -494,13 +685,35 @@ Add a listener for the specified event.
 
 (...`args`) => `void`
 
+The function to call when the event is emitted
+
 #### Returns
 
 `this`
 
+This EventEmitter instance for method chaining
+
+#### Example
+
+```typescript
+emitter.on('stateChange', (newState) => {
+  console.log('State changed to:', newState);
+});
+
+// Method chaining
+emitter
+  .on('connect', handleConnect)
+  .on('disconnect', handleDisconnect);
+```
+
+#### See
+
+ - [once](EventEmitter.md#once) for one-time listeners
+ - [removeListener](EventEmitter.md#removelistener) to remove listeners
+
 #### Inherited from
 
-`EventEmitter.on`
+[`EventEmitter`](EventEmitter.md).[`on`](EventEmitter.md#on)
 
 ***
 
@@ -508,13 +721,18 @@ Add a listener for the specified event.
 
 > **once**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L45)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:142](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L142)
 
 Add a one-time listener for the specified event.
+
+Registers a function to be called only the first time the specified event
+is emitted. The listener is automatically removed after being called once.
 
 #### Parameters
 
 ##### event
+
+The event name to listen for (string or symbol)
 
 `string` | `symbol`
 
@@ -522,13 +740,32 @@ Add a one-time listener for the specified event.
 
 (...`args`) => `void`
 
+The function to call when the event is emitted
+
 #### Returns
 
 `this`
 
+This EventEmitter instance for method chaining
+
+#### Example
+
+```typescript
+emitter.once('ready', () => {
+  console.log('System is ready');
+});
+
+emitter.emit('ready'); // Logs message
+emitter.emit('ready'); // No output - listener was removed
+```
+
+#### See
+
+[on](EventEmitter.md#on) for persistent listeners
+
 #### Inherited from
 
-`EventEmitter.once`
+[`EventEmitter`](EventEmitter.md).[`once`](EventEmitter.md#once)
 
 ***
 
@@ -536,13 +773,19 @@ Add a one-time listener for the specified event.
 
 > **prependListener**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:188](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L188)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:500](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L500)
 
 Prepend a listener to the beginning of the listeners array.
+
+Adds a listener that will be called before any existing listeners for
+the specified event. This is useful when you need to ensure a listener
+runs first, such as for logging or validation.
 
 #### Parameters
 
 ##### event
+
+The event name to listen for
 
 `string` | `symbol`
 
@@ -550,13 +793,34 @@ Prepend a listener to the beginning of the listeners array.
 
 (...`args`) => `void`
 
+The function to call when the event is emitted
+
 #### Returns
 
 `this`
 
+This EventEmitter instance for method chaining
+
+#### Example
+
+```typescript
+emitter.on('data', () => console.log('Second'));
+emitter.prependListener('data', () => console.log('First'));
+
+emitter.emit('data');
+// Output:
+// First
+// Second
+```
+
+#### See
+
+ - [on](EventEmitter.md#on) for normal listener addition
+ - [prependOnceListener](EventEmitter.md#prependoncelistener) for one-time prepended listeners
+
 #### Inherited from
 
-`EventEmitter.prependListener`
+[`EventEmitter`](EventEmitter.md).[`prependListener`](EventEmitter.md#prependlistener)
 
 ***
 
@@ -564,13 +828,19 @@ Prepend a listener to the beginning of the listeners array.
 
 > **prependOnceListener**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L212)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:550](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L550)
 
 Prepend a one-time listener to the beginning of the listeners array.
+
+Adds a listener that will be called before any existing listeners and
+automatically removed after being called once. Combines the behavior
+of prependListener and once.
 
 #### Parameters
 
 ##### event
+
+The event name to listen for
 
 `string` | `symbol`
 
@@ -578,13 +848,38 @@ Prepend a one-time listener to the beginning of the listeners array.
 
 (...`args`) => `void`
 
+The function to call when the event is emitted
+
 #### Returns
 
 `this`
 
+This EventEmitter instance for method chaining
+
+#### Example
+
+```typescript
+emitter.on('startup', () => console.log('Normal startup'));
+emitter.prependOnceListener('startup', () => console.log('Pre-startup'));
+
+emitter.emit('startup');
+// Output:
+// Pre-startup
+// Normal startup
+
+emitter.emit('startup');
+// Output:
+// Normal startup (prepended listener was removed)
+```
+
+#### See
+
+ - [prependListener](EventEmitter.md#prependlistener) for persistent prepended listeners
+ - [once](EventEmitter.md#once) for one-time listeners at the end
+
 #### Inherited from
 
-`EventEmitter.prependOnceListener`
+[`EventEmitter`](EventEmitter.md).[`prependOnceListener`](EventEmitter.md#prependoncelistener)
 
 ***
 
@@ -592,13 +887,18 @@ Prepend a one-time listener to the beginning of the listeners array.
 
 > **removeAllListeners**(`event?`): `this`
 
-Defined in: [utils/EventEmitter.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L89)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:240](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L240)
 
 Remove all listeners for the specified event, or all events if no event is specified.
+
+Efficiently removes all listeners for a specific event or clears all listeners
+for all events. Useful for cleanup operations and preventing memory leaks.
 
 #### Parameters
 
 ##### event?
+
+Optional event name. If not provided, removes all listeners for all events
 
 `string` | `symbol`
 
@@ -606,9 +906,25 @@ Remove all listeners for the specified event, or all events if no event is speci
 
 `this`
 
+This EventEmitter instance for method chaining
+
+#### Examples
+
+```typescript
+emitter.removeAllListeners('data');
+```
+
+```typescript
+emitter.removeAllListeners(); // Clears everything
+```
+
+#### See
+
+[removeListener](EventEmitter.md#removelistener) to remove specific listeners
+
 #### Inherited from
 
-`EventEmitter.removeAllListeners`
+[`EventEmitter`](EventEmitter.md).[`removeAllListeners`](EventEmitter.md#removealllisteners)
 
 ***
 
@@ -616,13 +932,19 @@ Remove all listeners for the specified event, or all events if no event is speci
 
 > **removeListener**(`event`, `listener`): `this`
 
-Defined in: [utils/EventEmitter.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L57)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:174](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L174)
 
 Remove a listener from the specified event.
+
+Removes the first occurrence of the specified listener from the event.
+If the listener was added multiple times, only one instance is removed.
+Automatically cleans up the event entry if no listeners remain.
 
 #### Parameters
 
 ##### event
+
+The event name to remove the listener from
 
 `string` | `symbol`
 
@@ -630,13 +952,32 @@ Remove a listener from the specified event.
 
 (...`args`) => `void`
 
+The exact function reference to remove
+
 #### Returns
 
 `this`
 
+This EventEmitter instance for method chaining
+
+#### Example
+
+```typescript
+const handler = (data) => console.log(data);
+emitter.on('data', handler);
+
+// Remove the specific listener
+emitter.removeListener('data', handler);
+```
+
+#### See
+
+ - [off](EventEmitter.md#off) for alias
+ - [removeAllListeners](EventEmitter.md#removealllisteners) to remove all listeners
+
 #### Inherited from
 
-`EventEmitter.removeListener`
+[`EventEmitter`](EventEmitter.md).[`removeListener`](EventEmitter.md#removelistener)
 
 ***
 
@@ -644,9 +985,12 @@ Remove a listener from the specified event.
 
 > **setMaxListeners**(`n`): `this`
 
-Defined in: [utils/EventEmitter.ts:147](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/utils/EventEmitter.ts#L147)
+Defined in: [core/discovery/src/utils/EventEmitter.ts:398](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/EventEmitter.ts#L398)
 
 Set the maximum number of listeners.
+
+Configures the maximum number of listeners that can be added to any single
+event before a memory leak warning is issued. Set to 0 to disable warnings.
 
 #### Parameters
 
@@ -654,13 +998,32 @@ Set the maximum number of listeners.
 
 `number`
 
+Maximum number of listeners (0 to disable warnings)
+
 #### Returns
 
 `this`
 
+This EventEmitter instance for method chaining
+
+#### Example
+
+```typescript
+// Set higher limit for events that legitimately need many listeners
+emitter.setMaxListeners(50);
+
+// Disable memory leak warnings
+emitter.setMaxListeners(0);
+```
+
+#### See
+
+ - [getMaxListeners](EventEmitter.md#getmaxlisteners) to get current limit
+ - [checkMemoryLeaks](EventEmitter.md#checkmemoryleaks) for leak detection
+
 #### Inherited from
 
-`EventEmitter.setMaxListeners`
+[`EventEmitter`](EventEmitter.md).[`setMaxListeners`](EventEmitter.md#setmaxlisteners)
 
 ***
 
@@ -668,7 +1031,7 @@ Set the maximum number of listeners.
 
 > **transition**(`toState`, `metadata?`): `void`
 
-Defined in: [core/ProtocolStateMachine.ts:280](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/ProtocolStateMachine.ts#L280)
+Defined in: [core/discovery/src/core/ProtocolStateMachine.ts:280](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/ProtocolStateMachine.ts#L280)
 
 Transition to a new state with optional metadata.
 

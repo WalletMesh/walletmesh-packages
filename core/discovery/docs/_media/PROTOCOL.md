@@ -1,5 +1,7 @@
 # WalletMesh Discovery Protocol
 
+> 🚨 **Breaking Change in v0.7.0**: The discovery protocol now exclusively uses technology-based discovery. The deprecated `chains[]` and `interfaces[]` fields have been removed from `CapabilityRequirements`. All capability matching must now use the `technologies` array format. See the [Migration Guide](#from-chain-based-to-technology-based-format-v070) for details.
+
 ## Abstract
 
 This document specifies the WalletMesh discovery protocol that enables initiators (dApps) to discover and connect to responders (wallets) across any blockchain network. The protocol provides a secure, capability-first discovery mechanism that prioritizes **security through simplicity** while maintaining universal compatibility across all blockchain technologies.
@@ -97,15 +99,17 @@ interface DiscoveryRequestEvent {
   
   // Required capabilities
   required: {
-    chains: string[];     // ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp']
-    features: string[];   // ['account-management', 'transaction-signing']
-    interfaces: string[]; // ['eip-1193', 'eip-6963']
+    technologies: Array<{
+      type: string;       // 'evm' | 'solana' | 'aztec'
+      interfaces: string[]; // ['eip-1193', 'eip-6963']
+      features?: string[];  // ['eip-712'] - technology-specific features
+    }>;
+    features: string[];   // ['account-management', 'transaction-signing'] - global features
   };
   
   // Optional preferences
   optional?: {
-    chains?: string[];
-    features?: string[];
+    features?: string[];  // Additional preferred features
   };
   
   // Request context
@@ -138,13 +142,15 @@ interface DiscoveryResponseEvent {
   // Capability intersection (only what was requested AND supported)
   matched: {
     required: {
-      chains: string[];
-      features: string[];
-      interfaces: string[];
+      technologies: Array<{
+        type: string;         // Technology that was matched
+        interfaces: string[]; // Interfaces supported for this technology
+        features?: string[];  // Technology-specific features supported
+      }>;
+      features: string[];     // Global features supported
     };
     optional?: {
-      chains?: string[];
-      features?: string[];
+      features?: string[];    // Optional features supported
     };
   };
   
@@ -298,9 +304,11 @@ import { DiscoveryInitiator } from '@walletmesh/discovery';
 // Create initiator with requirements
 const initiator = new DiscoveryInitiator({
   requirements: {
-    chains: ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
-    features: ['account-management', 'transaction-signing'],
-    interfaces: ['eip-1193']
+    technologies: [
+      { type: 'evm', interfaces: ['eip-1193'] },
+      { type: 'solana', interfaces: ['solana-wallet-standard'] }
+    ],
+    features: ['account-management', 'transaction-signing']
   },
   initiatorInfo: {
     name: 'My DApp',
@@ -334,8 +342,11 @@ const responder = new DiscoveryResponder({
     version: '1.0.0',
     protocolVersion: '0.1.0',
     type: 'extension',
-    chains: [/* chain capabilities */],
-    features: [/* wallet features */],
+    technologies: [
+      { type: 'evm', interfaces: ['eip-1193'], features: ['eip-712'] },
+      { type: 'solana', interfaces: ['solana-wallet-standard'] }
+    ],
+    features: ['account-management', 'transaction-signing', 'hardware-wallet'],
     transportConfig: {
       type: 'extension',
       extensionId: 'abcdefghijklmnopqrstuvwxyz'
@@ -420,9 +431,11 @@ const request: DiscoveryRequestEvent = {
   version: '0.1.0',
   sessionId: crypto.randomUUID(),
   required: {
-    chains: ['eip155:1'],
-    features: ['account-management', 'transaction-signing'],
-    interfaces: ['eip-1193']
+    technologies: [{
+      type: 'evm',
+      interfaces: ['eip-1193']
+    }],
+    features: ['account-management', 'transaction-signing']
   },
   origin: 'https://mydapp.com',
   initiatorInfo: {
@@ -443,9 +456,11 @@ const response: DiscoveryResponseEvent = {
   icon: 'data:image/png;base64,...',
   matched: {
     required: {
-      chains: ['eip155:1'],
-      features: ['account-management', 'transaction-signing'],
-      interfaces: ['eip-1193']
+      technologies: [{
+        type: 'evm',
+        interfaces: ['eip-1193']
+      }],
+      features: ['account-management', 'transaction-signing']
     }
   },
   transportConfig: {
@@ -468,14 +483,22 @@ const complete: DiscoveryCompleteEvent = {
 
 ```typescript
 const requirements = {
-  chains: [
-    'eip155:1',                                    // Ethereum mainnet
-    'eip155:137',                                  // Polygon
-    'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',   // Solana mainnet
-    'aztec:sandbox'                                // Aztec sandbox
+  technologies: [
+    { 
+      type: 'evm', 
+      interfaces: ['eip-1193'],
+      features: ['eip-712']  // EVM-specific features
+    },
+    { 
+      type: 'solana', 
+      interfaces: ['solana-wallet-standard']
+    },
+    { 
+      type: 'aztec', 
+      interfaces: ['aztec-wallet-api-v1']
+    }
   ],
-  features: ['account-management', 'cross-chain-swaps'],
-  interfaces: ['eip-1193', 'solana-wallet-standard']
+  features: ['account-management', 'cross-chain-swaps']  // Global features
 };
 ```
 
@@ -539,10 +562,41 @@ const requirements = {
 ### From Legacy Protocols
 
 1. **Update event names**: Use `discovery:wallet:*` format
-2. **Add capability structure**: Use nested `required`/`optional`
+2. **Use technology-based capabilities**: Replace chains/interfaces arrays with technologies
 3. **Include transport config**: Specify connection method
 4. **Implement state machine**: Use 4-state model
 5. **Add security policy**: Configure origin validation
+
+### From Chain-Based to Technology-Based Format (v0.7.0)
+
+The discovery protocol now exclusively uses technology-based discovery:
+
+```typescript
+// OLD FORMAT (no longer supported)
+const requirements = {
+  chains: ['eip155:1', 'eip155:137'],
+  interfaces: ['eip-1193'],
+  features: ['account-management']
+};
+
+// NEW FORMAT (required)
+const requirements = {
+  technologies: [
+    {
+      type: 'evm',
+      interfaces: ['eip-1193'],
+      features: ['eip-712']  // Technology-specific features
+    }
+  ],
+  features: ['account-management']  // Global features
+};
+```
+
+Key changes:
+- `chains` and `interfaces` fields removed from `CapabilityRequirements`
+- `technologies` field is now required (not optional)
+- Each technology specifies its own interfaces and features
+- Better support for wallets implementing multiple interfaces
 
 ### Version Compatibility
 

@@ -1,13 +1,12 @@
 import type {
-  DiscoveryResponderConfig,
   ResponderInfo,
   BaseResponderInfo,
-  WebResponderInfo,
-  ChainCapability,
   ResponderFeature,
   ResponderType,
-  SecurityPolicy,
-} from '../core/types.js';
+} from '../types/capabilities.js';
+import type { SecurityPolicy } from '../types/security.js';
+import type { DiscoveryResponderConfig } from '../types/testing.js';
+
 import { DiscoveryResponder } from './DiscoveryResponder.js';
 import { CapabilityMatcher } from './CapabilityMatcher.js';
 
@@ -33,7 +32,7 @@ import { CapabilityMatcher } from './CapabilityMatcher.js';
  *     type: 'extension',
  *     version: '1.0.0',
  *     protocolVersion: '0.1.0',
- *     chains: [], // chain capabilities
+ *     technologies: [], // technology capabilities
  *     features: [] // wallet features
  *   },
  *   securityPolicy: {
@@ -102,7 +101,7 @@ export function createDiscoveryResponder(config: {
  *   rdns: 'com.mycompany.wallet',
  *   name: 'My Wallet',
  *   // ... other wallet info
- *   chains: [{ chainId: 'eip155:1' }], // chain config
+ *   technologies: [{ type: 'evm', interfaces: ['eip-1193'] }], // technology config
  *   features: [{ id: 'account-management' }] // feature config
  * });
  *
@@ -143,7 +142,7 @@ export function createCapabilityMatcher(responderInfo: ResponderInfo): Capabilit
  *     type: 'extension',
  *     version: '1.0.0',
  *     protocolVersion: '0.1.0',
- *     chains: [], // supported chains
+ *     technologies: [], // supported technologies
  *     features: [] // wallet features
  *   },
  *   securityPolicy: {
@@ -277,17 +276,17 @@ function validateResponderInfo(responderInfo: ResponderInfo): void {
     throw new Error('Responder type must be one of: web, extension, hardware, mobile');
   }
 
-  if (!Array.isArray(responderInfo.chains) || responderInfo.chains.length === 0) {
-    throw new Error('Responder must support at least one chain');
+  if (!Array.isArray(responderInfo.technologies) || responderInfo.technologies.length === 0) {
+    throw new Error('Responder must support at least one technology');
   }
 
   if (!Array.isArray(responderInfo.features)) {
     throw new Error('Responder features must be an array');
   }
 
-  // Validate each chain
-  for (const chain of responderInfo.chains) {
-    validateChainCapability(chain);
+  // Validate each technology
+  for (const tech of responderInfo.technologies) {
+    validateTechnologyCapability(tech);
   }
 
   // Validate each feature
@@ -297,22 +296,30 @@ function validateResponderInfo(responderInfo: ResponderInfo): void {
 }
 
 /**
- * Validate chain capability.
+ * Validate technology capability.
  */
-function validateChainCapability(chain: ChainCapability): void {
-  if (!chain.chainId || typeof chain.chainId !== 'string') {
-    throw new Error('Chain ID is required and must be a string');
+function validateTechnologyCapability(tech: unknown): void {
+  if (!tech || typeof tech !== 'object') {
+    throw new Error('Technology must be an object');
   }
 
-  if (!chain.chainType || !['evm', 'account', 'utxo'].includes(chain.chainType)) {
-    throw new Error('Chain type must be one of: evm, account, utxo');
+  const techObj = tech as Record<string, unknown>;
+
+  if (!techObj['type'] || typeof techObj['type'] !== 'string') {
+    throw new Error('Technology type is required and must be a string');
   }
 
-  if (!Array.isArray(chain.standards)) {
-    throw new Error('Chain standards must be an array');
+  if (!['evm', 'solana', 'aztec'].includes(techObj['type'] as string)) {
+    throw new Error('Technology type must be one of: evm, solana, aztec');
   }
 
-  // isTestnet is part of network configuration, not chain capability
+  if (!Array.isArray(techObj['interfaces'])) {
+    throw new Error('Technology interfaces must be an array');
+  }
+
+  if (techObj['features'] && !Array.isArray(techObj['features'])) {
+    throw new Error('Technology features must be an array if provided');
+  }
 }
 
 /**
@@ -417,10 +424,10 @@ function validateSecurityPolicy(policy: SecurityPolicy): SecurityPolicy {
  *   name: 'Multi-Chain Responder',
  *   icon: 'data:image/svg+xml;base64,...',
  *   type: 'extension',
- *   chains: [
- *     // Custom chain configurations
- *     { chainId: 'eip155:1', chainType: 'evm' }, // evm config
- *     { chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp', chainType: 'account' } // solana config
+ *   technologies: [
+ *     // Custom technology configurations
+ *     { type: 'evm', interfaces: ['eip-1193'], features: ['eip-712'] }, // evm config
+ *     { type: 'solana', interfaces: ['solana-wallet-standard'] } // solana config
  *   ]
  * });
  * ```
@@ -460,7 +467,7 @@ export const createResponderInfo = {
    *   name: 'Multi-Network Responder',
    *   icon: 'data:image/svg+xml;base64,...',
    *   type: 'extension',
-   *   chains: ['eip155:1', 'eip155:137', 'eip155:42161'],
+   *   technologies: [{ type: 'evm', interfaces: ['eip-1193'], features: ['eip-712'] }],
    *   features: ['account-management', 'transaction-signing', 'message-signing']
    * });
    * ```
@@ -475,7 +482,6 @@ export const createResponderInfo = {
     icon: string;
     type: ResponderType;
     description?: string;
-    chains?: string[];
     features?: string[];
   }): ResponderInfo {
     const baseResponder: BaseResponderInfo = {
@@ -486,24 +492,13 @@ export const createResponderInfo = {
       type: options.type,
       version: '1.0.0',
       protocolVersion: '0.1.0',
-      chains: (options.chains ?? ['eip155:1']).map((chainId) => ({
-        chainId,
-        chainType: 'evm' as const,
-        network: {
-          name:
-            chainId.includes('goerli') || chainId.includes('sepolia') || chainId === 'eip155:5'
-              ? 'Testnet'
-              : 'Mainnet',
-          chainId,
-          nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-          testnet: chainId.includes('goerli') || chainId.includes('sepolia') || chainId === 'eip155:5',
+      technologies: [
+        {
+          type: 'evm',
+          interfaces: ['eip-1193', 'eip-1102'],
+          features: ['eip-712', 'personal-sign'],
         },
-        standards: ['eip-1193', 'eip-1102'], // Provider interfaces this responder supports
-        rpcMethods: ['eth_accounts', 'eth_sendTransaction', 'eth_sign'],
-        transactionTypes: [],
-        signatureSchemes: ['ecdsa-secp256k1'],
-        features: [],
-      })),
+      ],
       features: (options.features ?? ['account-management', 'transaction-signing']).map((featureId) => ({
         id: featureId,
         name: featureId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
@@ -511,9 +506,9 @@ export const createResponderInfo = {
     };
 
     if (options.type === 'web') {
-      const webResponder: WebResponderInfo = {
+      const webResponder = {
         ...baseResponder,
-        type: 'web',
+        type: 'web' as const,
         url: 'https://responder.example.com',
       };
       return webResponder;
@@ -552,7 +547,7 @@ export const createResponderInfo = {
    *   name: 'Solana Dev Wallet',
    *   icon: 'data:image/svg+xml;base64,...',
    *   type: 'extension',
-   *   chains: ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp', 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1']
+   *   technologies: [{ type: 'solana', interfaces: ['solana-wallet-standard'] }]
    * });
    * ```
    *
@@ -566,7 +561,6 @@ export const createResponderInfo = {
     icon: string;
     type: ResponderType;
     description?: string;
-    chains?: string[];
     features?: string[];
   }): ResponderInfo {
     const baseResponder: BaseResponderInfo = {
@@ -577,21 +571,13 @@ export const createResponderInfo = {
       type: options.type,
       version: '1.0.0',
       protocolVersion: '0.1.0',
-      chains: (options.chains ?? ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp']).map((chainId) => ({
-        chainId,
-        chainType: 'account' as const,
-        network: {
-          name: chainId.includes('devnet') || chainId.includes('testnet') ? 'Testnet' : 'Mainnet',
-          chainId,
-          nativeCurrency: { name: 'SOL', symbol: 'SOL', decimals: 9 },
-          testnet: chainId.includes('devnet') || chainId.includes('testnet'),
+      technologies: [
+        {
+          type: 'solana',
+          interfaces: ['solana-wallet-standard'],
+          features: ['sign-message', 'sign-transaction'],
         },
-        standards: ['solana-wallet-standard'],
-        rpcMethods: ['getAccounts', 'signTransaction', 'signMessage'],
-        transactionTypes: [],
-        signatureSchemes: ['ed25519'],
-        features: [],
-      })),
+      ],
       features: (options.features ?? ['account-management', 'transaction-signing']).map((featureId) => ({
         id: featureId,
         name: featureId.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
@@ -599,9 +585,9 @@ export const createResponderInfo = {
     };
 
     if (options.type === 'web') {
-      const webResponder: WebResponderInfo = {
+      const webResponder = {
         ...baseResponder,
-        type: 'web',
+        type: 'web' as const,
         url: 'https://responder.solana.com',
       };
       return webResponder;
@@ -640,7 +626,7 @@ export const createResponderInfo = {
    *   name: 'Aztec Testnet Responder',
    *   icon: 'data:image/svg+xml;base64,...',
    *   type: 'extension',
-   *   chains: ['aztec:mainnet', 'aztec:testnet']
+   *   technologies: [{ type: 'aztec', interfaces: ['aztec-wallet-api-v1'] }]
    * });
    * ```
    *
@@ -654,7 +640,6 @@ export const createResponderInfo = {
     icon: string;
     type: ResponderType;
     description?: string;
-    chains?: string[];
     features?: string[];
   }): ResponderInfo {
     const baseResponder: BaseResponderInfo = {
@@ -665,21 +650,13 @@ export const createResponderInfo = {
       type: options.type,
       version: '1.0.0',
       protocolVersion: '0.1.0',
-      chains: (options.chains ?? ['aztec:mainnet']).map((chainId) => ({
-        chainId,
-        chainType: 'account' as const,
-        network: {
-          name: chainId.includes('testnet') || chainId.includes('sandbox') ? 'Testnet' : 'Mainnet',
-          chainId,
-          nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-          testnet: chainId.includes('testnet') || chainId.includes('sandbox'),
+      technologies: [
+        {
+          type: 'aztec',
+          interfaces: ['aztec-wallet-api-v1'],
+          features: ['private-transactions', 'encrypted-notes'],
         },
-        standards: ['aztec-wallet-api-v1'],
-        rpcMethods: ['getAccounts', 'signTransaction', 'createAuthWitness'],
-        transactionTypes: [],
-        signatureSchemes: ['schnorr'],
-        features: [],
-      })),
+      ],
       features: (options.features ?? ['private-transactions', 'contract-deployment', 'token-management']).map(
         (featureId) => ({
           id: featureId,
@@ -689,9 +666,9 @@ export const createResponderInfo = {
     };
 
     if (options.type === 'web') {
-      const webResponder: WebResponderInfo = {
+      const webResponder = {
         ...baseResponder,
-        type: 'web',
+        type: 'web' as const,
         url: 'https://responder.aztec.network',
       };
       return webResponder;
@@ -754,7 +731,6 @@ export const createResponderInfo = {
     icon: string;
     type: ResponderType;
     description?: string;
-    chains?: string[];
     features?: string[];
   }): ResponderInfo {
     const baseResponder: BaseResponderInfo = {
@@ -765,35 +741,23 @@ export const createResponderInfo = {
       type: options.type,
       version: '1.0.0',
       protocolVersion: '0.1.0',
-      chains: (options.chains ?? ['eip155:1', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp']).map((chainId) => ({
-        chainId,
-        chainType: chainId.startsWith('eip155:') ? ('evm' as const) : ('account' as const),
-        network: {
-          name:
-            chainId.includes('testnet') ||
-            chainId.includes('devnet') ||
-            chainId.includes('goerli') ||
-            chainId.includes('sepolia')
-              ? 'Testnet'
-              : 'Mainnet',
-          chainId,
-          nativeCurrency: chainId.startsWith('eip155:')
-            ? { name: 'ETH', symbol: 'ETH', decimals: 18 }
-            : { name: 'SOL', symbol: 'SOL', decimals: 9 },
-          testnet:
-            chainId.includes('testnet') ||
-            chainId.includes('devnet') ||
-            chainId.includes('goerli') ||
-            chainId.includes('sepolia'),
+      technologies: [
+        {
+          type: 'evm',
+          interfaces: ['eip-1193', 'eip-1102'],
+          features: ['eip-712', 'personal-sign'],
         },
-        standards: chainId.startsWith('eip155:') ? ['eip-1193'] : ['solana-wallet-standard'],
-        rpcMethods: chainId.startsWith('eip155:')
-          ? ['eth_getBalance', 'eth_sendTransaction', 'eth_signTransaction']
-          : ['getAccounts', 'signTransaction', 'signMessage'],
-        transactionTypes: [],
-        signatureSchemes: chainId.startsWith('eip155:') ? ['secp256k1'] : ['ed25519'],
-        features: [],
-      })),
+        {
+          type: 'solana',
+          interfaces: ['solana-wallet-standard'],
+          features: ['sign-message', 'sign-transaction'],
+        },
+        {
+          type: 'aztec',
+          interfaces: ['aztec-wallet-api-v1'],
+          features: ['private-transactions', 'encrypted-notes'],
+        },
+      ],
       features: (options.features ?? ['account-management', 'transaction-signing', 'cross-chain-swaps']).map(
         (featureId) => ({
           id: featureId,
@@ -803,9 +767,9 @@ export const createResponderInfo = {
     };
 
     if (options.type === 'web') {
-      const webResponder: WebResponderInfo = {
+      const webResponder = {
         ...baseResponder,
-        type: 'web',
+        type: 'web' as const,
         url: 'https://multi-responder.com',
       };
       return webResponder;

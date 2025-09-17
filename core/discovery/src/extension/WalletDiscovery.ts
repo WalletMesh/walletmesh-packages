@@ -6,12 +6,9 @@
  * and security validation away from the page context for maximum security.
  */
 
-import type {
-  DiscoveryRequestEvent,
-  DiscoveryResponseEvent,
-  ResponderInfo,
-  SecurityPolicy,
-} from '../core/types.js';
+import type { DiscoveryRequestEvent, DiscoveryResponseEvent } from '../types/core.js';
+import type { ResponderInfo } from '../types/capabilities.js';
+import type { SecurityPolicy } from '../types/security.js';
 import { DiscoveryResponder } from '../responder/DiscoveryResponder.js';
 import { CapabilityMatcher } from '../responder/CapabilityMatcher.js';
 import { type Logger, defaultLogger } from '../core/logger.js';
@@ -337,8 +334,8 @@ export class WalletDiscovery {
     if (!responderInfo.icon || typeof responderInfo.icon !== 'string') {
       throw new Error('Invalid responder info: icon is required and must be a string');
     }
-    if (!Array.isArray(responderInfo.chains)) {
-      throw new Error('Invalid responder info: chains must be an array');
+    if (!Array.isArray(responderInfo.technologies)) {
+      throw new Error('Invalid responder info: technologies must be an array');
     }
 
     this.responderInfo = responderInfo;

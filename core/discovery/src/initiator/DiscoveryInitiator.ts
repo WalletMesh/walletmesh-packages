@@ -1,13 +1,13 @@
 import type {
-  DiscoveryInitiatorConfig,
   DiscoveryResponseEvent,
-  QualifiedResponder,
   DiscoveryResponseEventHandler,
   DuplicateResponseDetails,
-} from '../core/types.js';
-import { DuplicateResponseError } from '../core/types.js';
+} from '../types/core.js';
+import { DuplicateResponseError } from '../types/core.js';
+import type { QualifiedResponder } from '../types/capabilities.js';
+import type { DiscoveryInitiatorConfig } from '../types/testing.js';
 import { DISCOVERY_EVENTS, DISCOVERY_CONFIG, DISCOVERY_PROTOCOL_VERSION } from '../core/constants.js';
-import { validateOrigin } from '../security/OriginValidator.js';
+import { validateOrigin } from '../security.js';
 import type { StateTransitionEvent } from '../core/ProtocolStateMachine.js';
 import { type Logger, defaultLogger } from '../core/logger.js';
 import { createInitiatorStateMachine, type InitiatorStateMachine } from './InitiatorStateMachine.js';
@@ -278,7 +278,7 @@ export class DiscoveryInitiator {
    *
    * const wallets = listener.getQualifiedResponders();
    * wallets.forEach(wallet => {
-   *   logger.info(`${wallet.name}: ${wallet.matched.required.chains}`);
+   *   logger.info(`${wallet.name}: ${wallet.matched.required.technologies.map(t => t.type).join(', ')}`);
    * });
    * ```
    *
@@ -312,7 +312,7 @@ export class DiscoveryInitiator {
    *
    * @example
    * ```typescript
-   * if (!listener.isDiscoveryInProgress()) {
+   * if (!listener.isDiscovering()) {
    *   await listener.startDiscovery();
    * } else {
    *   logger.info('Discovery already in progress...');
@@ -322,7 +322,7 @@ export class DiscoveryInitiator {
    * @category Discovery
    * @since 0.1.0
    */
-  isDiscoveryInProgress(): boolean {
+  isDiscovering(): boolean {
     return this.stateMachine?.isInState('DISCOVERING') ?? false;
   }
 
@@ -358,13 +358,12 @@ export class DiscoveryInitiator {
       config: {
         timeout: this.config.timeout ?? DISCOVERY_CONFIG.DISCOVERY_TIMEOUT_MS,
         requirementsCount: {
-          chains: this.config.requirements.chains.length,
+          technologies: this.config.requirements.technologies.length,
           features: this.config.requirements.features.length,
-          interfaces: this.config.requirements.interfaces.length,
         },
         preferencesCount: this.config.preferences
           ? {
-              chains: this.config.preferences.chains?.length ?? 0,
+              technologies: this.config.preferences.technologies?.length ?? 0,
               features: this.config.preferences.features?.length ?? 0,
             }
           : null,
@@ -598,7 +597,28 @@ export class DiscoveryInitiator {
   }
 
   /**
-   * Validate a discovery response.
+   * Validate a discovery response message.
+   *
+   * Performs comprehensive validation of incoming discovery responses to ensure
+   * they meet protocol requirements and security standards. This validation
+   * prevents malformed or malicious responses from being processed.
+   *
+   * @param response - The discovery response to validate
+   * @returns `true` if response is valid, `false` otherwise
+   *
+   * @remarks
+   * Validation checks include:
+   * - Required field presence (type, version, sessionId, etc.)
+   * - Message type correctness
+   * - Protocol version compatibility
+   * - RDNS format validation
+   * - Icon data URI format
+   *
+   * Invalid responses are silently discarded to prevent protocol pollution.
+   *
+   * @internal
+   * @category Validation
+   * @since 0.1.0
    */
   private isValidResponse(response: DiscoveryResponseEvent): boolean {
     // Check required fields
@@ -642,7 +662,39 @@ export class DiscoveryInitiator {
   }
 
   /**
-   * Validate RDNS format.
+   * Validate RDNS (Reverse Domain Name System) format.
+   *
+   * Ensures that responder RDNS identifiers follow the correct reverse
+   * domain notation format (e.g., 'com.example.wallet'). This validation
+   * helps prevent impersonation and ensures consistent identifier format.
+   *
+   * @param rdns - The RDNS string to validate
+   * @returns `true` if RDNS format is valid, `false` otherwise
+   *
+   * @remarks
+   * Validation rules:
+   * - Must follow reverse domain notation (letters, numbers, dots, hyphens)
+   * - Each component must start and end with alphanumeric characters
+   * - Total length must be 1-253 characters
+   * - Must contain at least one dot separator
+   *
+   * @example Valid RDNS formats
+   * ```
+   * "com.example.wallet"     // ✓ Valid
+   * "org.ethereum.metamask"  // ✓ Valid
+   * "co.phantom"             // ✓ Valid
+   * ```
+   *
+   * @example Invalid RDNS formats
+   * ```
+   * "wallet"                 // ✗ No domain
+   * "com..example"           // ✗ Double dot
+   * "-com.example"           // ✗ Starts with hyphen
+   * ```
+   *
+   * @internal
+   * @category Validation
+   * @since 0.1.0
    */
   private isValidRDNS(rdns: string): boolean {
     // Basic RDNS validation: should be reverse domain notation

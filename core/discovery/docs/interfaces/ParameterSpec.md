@@ -6,59 +6,21 @@
 
 # Interface: ParameterSpec
 
-Defined in: [core/types.ts:609](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L609)
+Defined in: [core/discovery/src/types/capabilities.ts:243](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L243)
 
-Parameter specification for transaction and method arguments.
-
-Defines the structure, type, and validation rules for parameters
-used in blockchain transactions and RPC methods. Enables type-safe
-and validated parameter handling.
-
-## Examples
-
-```typescript
-const addressParam: ParameterSpec = {
-  name: 'recipient',
-  type: 'address',
-  required: true,
-  description: 'Recipient wallet address',
-  validation: [{
-    type: 'pattern',
-    value: /^0x[a-fA-F0-9]{40}$/,
-    message: 'Invalid Ethereum address format'
-  }]
-};
-```
-
-```typescript
-const amountParam: ParameterSpec = {
-  name: 'amount',
-  type: 'uint256',
-  required: true,
-  description: 'Transfer amount in wei',
-  validation: [
-    { type: 'min', value: 1, message: 'Amount must be positive' },
-    { type: 'max', value: '1000000000000000000000', message: 'Amount exceeds limit' }
-  ]
-};
-```
+Parameter specification for transaction types.
 
 ## Since
 
 0.1.0
 
-## See
-
- - [ValidationRule](ValidationRule.md) for validation options
- - [TransactionType](TransactionType.md) for usage in transactions
-
 ## Properties
 
-### description?
+### description
 
-> `optional` **description**: `string`
+> **description**: `string`
 
-Defined in: [core/types.ts:613](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L613)
+Defined in: [core/discovery/src/types/capabilities.ts:247](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L247)
 
 ***
 
@@ -66,7 +28,7 @@ Defined in: [core/types.ts:613](https://github.com/WalletMesh/walletmesh-package
 
 > **name**: `string`
 
-Defined in: [core/types.ts:610](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L610)
+Defined in: [core/discovery/src/types/capabilities.ts:244](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L244)
 
 ***
 
@@ -74,7 +36,7 @@ Defined in: [core/types.ts:610](https://github.com/WalletMesh/walletmesh-package
 
 > **required**: `boolean`
 
-Defined in: [core/types.ts:612](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L612)
+Defined in: [core/discovery/src/types/capabilities.ts:246](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L246)
 
 ***
 
@@ -82,7 +44,7 @@ Defined in: [core/types.ts:612](https://github.com/WalletMesh/walletmesh-package
 
 > **type**: `string`
 
-Defined in: [core/types.ts:611](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L611)
+Defined in: [core/discovery/src/types/capabilities.ts:245](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L245)
 
 ***
 
@@ -90,4 +52,4 @@ Defined in: [core/types.ts:611](https://github.com/WalletMesh/walletmesh-package
 
 > `optional` **validation**: [`ValidationRule`](ValidationRule.md)[]
 
-Defined in: [core/types.ts:614](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L614)
+Defined in: [core/discovery/src/types/capabilities.ts:248](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L248)

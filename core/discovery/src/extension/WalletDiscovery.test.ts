@@ -8,24 +8,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { WalletDiscovery } from './WalletDiscovery.js';
 import { createResponderInfo } from '../responder/factory.js';
 import { setupFakeTimers, cleanupFakeTimers } from '../testing/timingHelpers.js';
-import type { DiscoveryRequestEvent, ResponderInfo, ChainCapability } from '../core/types.js';
+import { setupChromeEnvironment, createConsoleSpy } from '../testing/index.js';
+import type { DiscoveryRequestEvent } from '../types/core.js';
+import type { ResponderInfo, TechnologyCapability } from '../types/capabilities.js';
 
-// Mock Chrome API
-const mockChrome = {
-  runtime: {
-    id: 'test-extension-id',
-    onMessage: {
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-    },
-  },
-  tabs: {
-    sendMessage: vi.fn(() => Promise.resolve()),
-  },
-};
-
-// @ts-ignore - Mock global chrome
-global.chrome = mockChrome;
+// Mock Chrome API using standardized utility
+let mockChrome: ReturnType<typeof setupChromeEnvironment>['chrome'];
+let chromeCleanup: () => void;
 
 describe('WalletDiscovery', () => {
   let walletDiscovery: WalletDiscovery;
@@ -35,13 +24,23 @@ describe('WalletDiscovery', () => {
     setupFakeTimers();
     vi.clearAllMocks();
 
+    // Set up standardized Chrome environment
+    const chromeEnv = setupChromeEnvironment({
+      extensionId: 'test-extension-id',
+    });
+    mockChrome = chromeEnv.chrome;
+    chromeCleanup = chromeEnv.cleanup;
+
+    // Ensure tabs.sendMessage returns a Promise
+    // biome-ignore lint/suspicious/noExplicitAny: Mock function setup requires any for test utilities
+    (mockChrome.tabs.sendMessage as any) = vi.fn().mockResolvedValue(undefined);
+
     mockResponderInfo = createResponderInfo.aztec({
       uuid: 'test-wallet-uuid',
       rdns: 'com.test.wallet',
       name: 'Test Aztec Wallet',
       icon: 'data:image/svg+xml;base64,dGVzdA==',
       type: 'extension',
-      chains: ['aztec:mainnet', 'aztec:testnet'],
       features: ['private-transactions', 'contract-deployment'],
     });
 
@@ -57,6 +56,7 @@ describe('WalletDiscovery', () => {
 
   afterEach(() => {
     cleanupFakeTimers();
+    chromeCleanup();
   });
 
   describe('initialization', () => {
@@ -108,9 +108,14 @@ describe('WalletDiscovery', () => {
       version: '0.1.0',
       sessionId: 'test-session-123',
       required: {
-        chains: ['aztec:mainnet'],
-        features: ['private-transactions'],
-        interfaces: ['aztec-wallet-api-v1'],
+        technologies: [
+          {
+            type: 'aztec',
+            interfaces: ['aztec-wallet-api-v1'],
+            features: ['private-transactions'],
+          },
+        ],
+        features: [],
       },
       origin: 'https://trusted-dapp.com',
       initiatorInfo: {
@@ -157,9 +162,13 @@ describe('WalletDiscovery', () => {
       const unsupportedRequest = {
         ...mockRequest,
         required: {
-          chains: ['ethereum:mainnet'], // Not supported by Aztec wallet
+          technologies: [
+            {
+              type: 'evm' as const, // Not supported by Aztec wallet
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['private-transactions'],
-          interfaces: ['eip-1193'],
         },
       };
 
@@ -171,7 +180,9 @@ describe('WalletDiscovery', () => {
     });
 
     it('should handle Chrome tabs.sendMessage failures gracefully', () => {
-      mockChrome.tabs.sendMessage.mockImplementation(() => Promise.reject(new Error('Tab closed')));
+      (
+        mockChrome.tabs.sendMessage as { mockImplementation: (fn: () => Promise<never>) => void }
+      ).mockImplementation(() => Promise.reject(new Error('Tab closed')));
 
       walletDiscovery.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
 
@@ -196,7 +207,15 @@ describe('WalletDiscovery', () => {
         type: 'discovery:wallet:request',
         version: '0.1.0',
         sessionId: 'test-session',
-        required: { chains: ['aztec:mainnet'], features: [], interfaces: [] },
+        required: {
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
+          features: [],
+        },
         origin: 'https://any-https-site.com',
         initiatorInfo: { name: 'Test', url: 'https://any-https-site.com' },
       };
@@ -211,7 +230,15 @@ describe('WalletDiscovery', () => {
         type: 'discovery:wallet:request',
         version: '0.1.0',
         sessionId: 'test-session',
-        required: { chains: ['aztec:mainnet'], features: [], interfaces: [] },
+        required: {
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
+          features: [],
+        },
         origin: 'http://insecure-site.com',
         initiatorInfo: { name: 'Test', url: 'http://insecure-site.com' },
       };
@@ -234,7 +261,15 @@ describe('WalletDiscovery', () => {
         type: 'discovery:wallet:request',
         version: '0.1.0',
         sessionId: 'test-session',
-        required: { chains: ['aztec:mainnet'], features: [], interfaces: [] },
+        required: {
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
+          features: [],
+        },
         origin: 'http://localhost:3000',
         initiatorInfo: { name: 'Test', url: 'http://localhost:3000' },
       };
@@ -251,7 +286,15 @@ describe('WalletDiscovery', () => {
         type: 'discovery:wallet:request',
         version: '0.1.0',
         sessionId: 'test-session',
-        required: { chains: ['aztec:mainnet'], features: [], interfaces: [] },
+        required: {
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
+          features: [],
+        },
         origin: 'https://trusted-dapp.com',
         initiatorInfo: { name: 'Test', url: 'https://trusted-dapp.com' },
       };
@@ -282,7 +325,6 @@ describe('WalletDiscovery', () => {
         name: 'Updated Aztec Wallet',
         icon: 'data:image/svg+xml;base64,dXBkYXRlZA==',
         type: 'extension',
-        chains: ['aztec:mainnet'],
         features: ['private-transactions'],
       });
 
@@ -371,20 +413,20 @@ describe('WalletDiscovery', () => {
         });
       }).toThrow('Invalid responder info: icon is required and must be a string');
 
-      // Test invalid chains
+      // Test invalid technologies
       expect(() => {
         walletDiscovery.updateResponderInfo({
           ...mockResponderInfo,
-          chains: 'not an array' as unknown as ChainCapability[],
+          technologies: 'not an array' as unknown as TechnologyCapability[],
         });
-      }).toThrow('Invalid responder info: chains must be an array');
+      }).toThrow('Invalid responder info: technologies must be an array');
 
       expect(() => {
         walletDiscovery.updateResponderInfo({
           ...mockResponderInfo,
-          chains: undefined as unknown as ChainCapability[],
+          technologies: undefined as unknown as TechnologyCapability[],
         });
-      }).toThrow('Invalid responder info: chains must be an array');
+      }).toThrow('Invalid responder info: technologies must be an array');
     });
   });
 
@@ -430,13 +472,21 @@ describe('WalletDiscovery', () => {
         throw new Error('Capability matching failed');
       });
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ silent: false });
 
       const mockRequest: DiscoveryRequestEvent = {
         type: 'discovery:wallet:request',
         version: '0.1.0',
         sessionId: 'test-session',
-        required: { chains: ['aztec:mainnet'], features: [], interfaces: [] },
+        required: {
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
+          features: [],
+        },
         origin: 'https://example.com',
         initiatorInfo: { name: 'Test', url: 'https://example.com' },
       };
@@ -444,12 +494,12 @@ describe('WalletDiscovery', () => {
       const result = wallet.canFulfillRequest(mockRequest);
 
       expect(result).toBe(false);
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Error checking capability fulfillment:',
         expect.any(Error),
       );
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
 
     it('should handle errors in getDiscoveryIntersection gracefully (coverage: lines 380-382)', () => {
@@ -471,13 +521,21 @@ describe('WalletDiscovery', () => {
         throw new Error('Intersection calculation failed');
       });
 
-      const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ silent: false });
 
       const mockRequest: DiscoveryRequestEvent = {
         type: 'discovery:wallet:request',
         version: '0.1.0',
         sessionId: 'test-session',
-        required: { chains: ['aztec:mainnet'], features: [], interfaces: [] },
+        required: {
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
+          features: [],
+        },
         origin: 'https://example.com',
         initiatorInfo: { name: 'Test', url: 'https://example.com' },
       };
@@ -485,12 +543,12 @@ describe('WalletDiscovery', () => {
       const result = wallet.getDiscoveryIntersection(mockRequest);
 
       expect(result).toBe(null);
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh] Error calculating capability intersection:',
         expect.any(Error),
       );
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 
@@ -505,7 +563,15 @@ describe('WalletDiscovery', () => {
         type: 'discovery:wallet:request',
         version: '0.1.0',
         sessionId: 'test-session',
-        required: { chains: ['aztec:mainnet'], features: [], interfaces: [] },
+        required: {
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
+          features: [],
+        },
         origin: 'invalid-url-format',
         initiatorInfo: { name: 'Test', url: 'invalid-url-format' },
       };
@@ -528,7 +594,15 @@ describe('WalletDiscovery', () => {
         type: 'discovery:wallet:request',
         version: '0.1.0',
         sessionId: 'test-session',
-        required: { chains: ['aztec:mainnet'], features: [], interfaces: [] },
+        required: {
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
+          features: [],
+        },
         origin: 'https://blocked-site.com',
         initiatorInfo: { name: 'Test', url: 'https://blocked-site.com' },
       };

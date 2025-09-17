@@ -1,0 +1,36 @@
+[**@walletmesh/discovery v0.1.1**](../README.md)
+
+***
+
+[@walletmesh/discovery](../globals.md) / CAPABILITY\_PRESETS
+
+# Variable: CAPABILITY\_PRESETS
+
+> `const` **CAPABILITY\_PRESETS**: `Record`\<`string`, [`CapabilityRequirements`](../interfaces/CapabilityRequirements.md)\>
+
+Defined in: [core/discovery/src/presets/index.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/presets/index.ts#L44)
+
+Pre-configured capability requirements for popular blockchain ecosystems.
+
+Use these presets as starting points for common integration scenarios.
+They can be customized by spreading and overriding specific properties.
+
+## Examples
+
+```typescript
+const initiator = new DiscoveryInitiator(
+  CAPABILITY_PRESETS.ethereum,
+  { name: 'My App', url: 'https://myapp.com' }
+);
+```
+
+```typescript
+const customRequirements = {
+  ...CAPABILITY_PRESETS.ethereum,
+  features: [...CAPABILITY_PRESETS.ethereum.features, 'hardware-wallet']
+};
+```
+
+## Since
+
+0.1.0

@@ -1,12 +1,9 @@
-import type {
-  DiscoveryInitiatorConfig,
-  CapabilityRequirements,
-  CapabilityPreferences,
-  InitiatorInfo,
-  SecurityPolicy,
-} from '../core/types.js';
+import type { InitiatorInfo } from '../types/core.js';
+import type { CapabilityRequirements, CapabilityPreferences } from '../types/capabilities.js';
+import type { SecurityPolicy } from '../types/security.js';
+import type { DiscoveryInitiatorConfig } from '../types/testing.js';
 import { DiscoveryInitiator } from './DiscoveryInitiator.js';
-import { createSecurityPolicy } from '../security/createSecurityPolicy.js';
+import { createSecurityPolicy } from '../security.js';
 
 /**
  * Create a discovery listener with comprehensive validation and configuration helpers.
@@ -146,9 +143,13 @@ export function createInitiatorDiscoverySetup(config: {
 
   // Create requirements from chains
   const requirements: CapabilityRequirements = {
-    chains: config.chains,
+    technologies: [
+      {
+        type: 'evm' as const,
+        interfaces: ['eip-1193'],
+      },
+    ],
     features: ['account-management', 'transaction-signing'],
-    interfaces: ['eip-1193'],
   };
 
   // Create security policy
@@ -193,16 +194,19 @@ function validateDiscoveryInitiatorConfig(config: {
     throw new Error('Requirements are required');
   }
 
-  if (!Array.isArray(config.requirements.chains)) {
-    throw new Error('Required chains must be an array');
+  if (!Array.isArray(config.requirements.technologies)) {
+    throw new Error('Required technologies must be an array');
+  }
+
+  // Validate each technology requirement
+  for (const tech of config.requirements.technologies) {
+    if (!Array.isArray(tech.interfaces)) {
+      throw new Error('Technology interfaces must be an array');
+    }
   }
 
   if (!Array.isArray(config.requirements.features)) {
     throw new Error('Required features must be an array');
-  }
-
-  if (!Array.isArray(config.requirements.interfaces)) {
-    throw new Error('Required interfaces must be an array');
   }
 
   // Validate initiator info
@@ -237,10 +241,9 @@ function validateDiscoveryInitiatorConfig(config: {
 
   // Validate preferences if provided
   if (config.preferences) {
-    if (config.preferences.chains && !Array.isArray(config.preferences.chains)) {
-      throw new Error('Preference chains must be an array');
+    if (config.preferences.technologies && !Array.isArray(config.preferences.technologies)) {
+      throw new Error('Preference technologies must be an array');
     }
-
     if (config.preferences.features && !Array.isArray(config.preferences.features)) {
       throw new Error('Preference features must be an array');
     }
@@ -306,17 +309,15 @@ export const createCapabilityRequirements = {
    * @category Blockchain
    * @since 0.1.0
    */
-  ethereum(
-    options: {
-      chains?: string[];
-      features?: string[];
-      interfaces?: string[];
-    } = {},
-  ): CapabilityRequirements {
+  ethereum(options: { features?: string[]; interfaces?: string[] } = {}): CapabilityRequirements {
     return {
-      chains: options.chains ?? ['eip155:1'],
+      technologies: [
+        {
+          type: 'evm' as const,
+          interfaces: options.interfaces ?? ['eip-1193'],
+        },
+      ],
       features: options.features ?? ['account-management', 'transaction-signing'],
-      interfaces: options.interfaces ?? ['eip-1193'],
     };
   },
 
@@ -340,17 +341,15 @@ export const createCapabilityRequirements = {
    * @category Blockchain
    * @since 0.1.0
    */
-  polygon(
-    options: {
-      chains?: string[];
-      features?: string[];
-      interfaces?: string[];
-    } = {},
-  ): CapabilityRequirements {
+  polygon(options: { features?: string[]; interfaces?: string[] } = {}): CapabilityRequirements {
     return {
-      chains: options.chains ?? ['eip155:137'],
+      technologies: [
+        {
+          type: 'evm' as const,
+          interfaces: options.interfaces ?? ['eip-1193'],
+        },
+      ],
       features: options.features ?? ['account-management', 'transaction-signing'],
-      interfaces: options.interfaces ?? ['eip-1193'],
     };
   },
 
@@ -382,17 +381,15 @@ export const createCapabilityRequirements = {
    * @category Blockchain
    * @since 0.1.0
    */
-  solana(
-    options: {
-      chains?: string[];
-      features?: string[];
-      interfaces?: string[];
-    } = {},
-  ): CapabilityRequirements {
+  solana(options: { features?: string[]; interfaces?: string[] } = {}): CapabilityRequirements {
     return {
-      chains: options.chains ?? ['solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
+      technologies: [
+        {
+          type: 'solana' as const,
+          interfaces: options.interfaces ?? ['solana-wallet-standard'],
+        },
+      ],
       features: options.features ?? ['account-management', 'transaction-signing'],
-      interfaces: options.interfaces ?? ['solana-wallet-standard'],
     };
   },
 
@@ -423,17 +420,15 @@ export const createCapabilityRequirements = {
    * @category Blockchain
    * @since 0.1.0
    */
-  aztec(
-    options: {
-      chains?: string[];
-      features?: string[];
-      interfaces?: string[];
-    } = {},
-  ): CapabilityRequirements {
+  aztec(options: { features?: string[]; interfaces?: string[] } = {}): CapabilityRequirements {
     return {
-      chains: options.chains ?? ['aztec:mainnet'],
+      technologies: [
+        {
+          type: 'aztec' as const,
+          interfaces: options.interfaces ?? ['aztec-wallet-api-v1'],
+        },
+      ],
       features: options.features ?? ['private-transactions', 'transaction-signing'],
-      interfaces: options.interfaces ?? ['aztec-wallet-api-v1'],
     };
   },
 
@@ -468,15 +463,19 @@ export const createCapabilityRequirements = {
    * @category Blockchain
    * @since 0.1.0
    */
-  multiChain(options: {
-    chains: string[];
-    features?: string[];
-    interfaces?: string[];
-  }): CapabilityRequirements {
+  multiChain(options: { features?: string[]; interfaces?: string[] } = {}): CapabilityRequirements {
     return {
-      chains: options.chains,
+      technologies: [
+        {
+          type: 'evm' as const,
+          interfaces: ['eip-1193'],
+        },
+        {
+          type: 'solana' as const,
+          interfaces: ['solana-wallet-standard'],
+        },
+      ],
       features: options.features ?? ['account-management', 'transaction-signing'],
-      interfaces: options.interfaces ?? ['eip-1193', 'solana-wallet-standard'],
     };
   },
 };

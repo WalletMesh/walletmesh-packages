@@ -6,61 +6,21 @@
 
 # Interface: TransactionType
 
-Defined in: [core/types.ts:559](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L559)
+Defined in: [core/discovery/src/types/capabilities.ts:228](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L228)
 
-Transaction type specification for blockchain operations.
-
-Defines a standardized transaction type that can be supported across
-different blockchain architectures. This enables wallets to declare
-their transaction capabilities precisely.
-
-## Example
-
-```typescript
-const evmTransfer: TransactionType = {
-  id: 'evm-transfer',
-  name: 'Token Transfer',
-  chainTypes: ['evm'],
-  parameters: [{
-    name: 'to',
-    type: 'address',
-    required: true,
-    description: 'Recipient address'
-  }, {
-    name: 'value',
-    type: 'uint256',
-    required: true,
-    description: 'Amount to transfer'
-  }],
-  validator: 'evm-transfer-validator',
-  estimator: 'evm-gas-estimator'
-};
-```
+Transaction type classification.
 
 ## Since
 
 0.1.0
 
-## See
-
- - [ParameterSpec](ParameterSpec.md) for parameter definitions
- - [ChainCapability](ChainCapability.md) for transaction type usage
-
 ## Properties
 
-### chainTypes
+### description
 
-> **chainTypes**: [`ChainType`](../type-aliases/ChainType.md)[]
+> **description**: `string`
 
-Defined in: [core/types.ts:562](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L562)
-
-***
-
-### estimator?
-
-> `optional` **estimator**: `string`
-
-Defined in: [core/types.ts:565](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L565)
+Defined in: [core/discovery/src/types/capabilities.ts:231](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L231)
 
 ***
 
@@ -68,7 +28,7 @@ Defined in: [core/types.ts:565](https://github.com/WalletMesh/walletmesh-package
 
 > **id**: `string`
 
-Defined in: [core/types.ts:560](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L560)
+Defined in: [core/discovery/src/types/capabilities.ts:229](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L229)
 
 ***
 
@@ -76,7 +36,7 @@ Defined in: [core/types.ts:560](https://github.com/WalletMesh/walletmesh-package
 
 > **name**: `string`
 
-Defined in: [core/types.ts:561](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L561)
+Defined in: [core/discovery/src/types/capabilities.ts:230](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L230)
 
 ***
 
@@ -84,12 +44,20 @@ Defined in: [core/types.ts:561](https://github.com/WalletMesh/walletmesh-package
 
 > **parameters**: [`ParameterSpec`](ParameterSpec.md)[]
 
-Defined in: [core/types.ts:563](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L563)
+Defined in: [core/discovery/src/types/capabilities.ts:232](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L232)
 
 ***
 
-### validator?
+### requiresUserApproval
 
-> `optional` **validator**: `string`
+> **requiresUserApproval**: `boolean`
 
-Defined in: [core/types.ts:564](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L564)
+Defined in: [core/discovery/src/types/capabilities.ts:234](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L234)
+
+***
+
+### supportsGasEstimation
+
+> **supportsGasEstimation**: `boolean`
+
+Defined in: [core/discovery/src/types/capabilities.ts:233](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L233)

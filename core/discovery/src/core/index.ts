@@ -5,8 +5,7 @@
  * @version 0.1.0
  */
 
-// Export all types
-export type * from './types.js';
+// Types are now in ../types/ directory
 
 // Export all constants
 export * from './constants.js';

@@ -288,9 +288,16 @@ export class ProtocolStateMachine extends EventEmitter {
     }
 
     if (!this.canTransition(toState)) {
+      // Check if current state is terminal
+      if (this.currentState === 'COMPLETED' || this.currentState === 'ERROR') {
+        throw new Error(
+          `Cannot transition from terminal state ${this.currentState}. Terminal states require creating a new state machine instance for a new discovery session.`,
+        );
+      }
+
       throw new Error(
         `Invalid state transition from ${this.currentState} to ${toState}. ` +
-          `Valid transitions: ${VALID_TRANSITIONS[this.currentState].join(', ')}`,
+          `Valid transitions: ${VALID_TRANSITIONS[this.currentState].join(', ') || 'none'}`,
       );
     }
 
@@ -389,6 +396,26 @@ export class ProtocolStateMachine extends EventEmitter {
    */
   isInState(state: ProtocolState): boolean {
     return this.currentState === state;
+  }
+
+  /**
+   * Check if the current state is a terminal state.
+   *
+   * Terminal states (COMPLETED and ERROR) cannot transition to any other state.
+   * A new state machine instance must be created for subsequent discovery sessions.
+   *
+   * @returns `true` if the current state is terminal, `false` otherwise
+   *
+   * @example
+   * ```typescript
+   * if (stateMachine.isTerminalState()) {
+   *   // Create new instance for next discovery
+   *   stateMachine = createProtocolStateMachine();
+   * }
+   * ```
+   */
+  isTerminalState(): boolean {
+    return this.currentState === 'COMPLETED' || this.currentState === 'ERROR';
   }
 
   /**

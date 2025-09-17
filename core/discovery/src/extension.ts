@@ -30,11 +30,11 @@ export type { WalletDiscoveryConfig, WalletDiscoveryStats } from './extension/in
 
 // Re-export commonly needed types for extensions
 export type {
-  ResponderInfo,
-  SecurityPolicy,
   DiscoveryRequestEvent,
   DiscoveryResponseEvent,
-} from './core/types.js';
+} from './types/core.js';
+export type { ResponderInfo } from './types/capabilities.js';
+export type { SecurityPolicy } from './types/security.js';
 
 // Re-export security utilities commonly used in extensions
-export { createSecurityPolicy, validateOrigin } from './security/index.js';
+export { createSecurityPolicy, validateOrigin } from './security.js';

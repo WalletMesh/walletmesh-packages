@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { createConsoleSpy } from './consoleMocks.js';
 import {
   testOriginValidation,
   simulateRateLimiting,
@@ -17,7 +18,7 @@ import {
   type SessionTracker,
 } from './securityHelpers.js';
 import { createTestSecurityPolicy } from './testUtils.js';
-import { RateLimiter as SecurityRateLimiter } from '../security/RateLimiter.js';
+import { RateLimiter as SecurityRateLimiter } from '../security.js';
 import { setupFakeTimers, cleanupFakeTimers } from './timingHelpers.js';
 
 describe('securityHelpers - additional coverage', () => {
@@ -45,13 +46,15 @@ describe('securityHelpers - additional coverage', () => {
 
     it('should skip origin security test when component does not support it', async () => {
       const mockComponent = {}; // No validateOrigin method
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const suite = createSecurityTestSuite(mockComponent);
       await suite.testOriginSecurity();
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Component does not support origin validation testing');
-      consoleWarnSpy.mockRestore();
+      expect(consoleWarnSpy.warn).toHaveBeenCalledWith(
+        'Component does not support origin validation testing',
+      );
+      consoleWarnSpy.restore();
     });
 
     it('should run rate limiting security test with component that supports it', async () => {
@@ -77,13 +80,13 @@ describe('securityHelpers - additional coverage', () => {
 
     it('should skip rate limiting test when component does not support it', async () => {
       const mockComponent = {}; // No recordRequest method
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const suite = createSecurityTestSuite(mockComponent);
       await suite.testRateLimitingSecurity();
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Component does not support rate limiting testing');
-      consoleWarnSpy.mockRestore();
+      expect(consoleWarnSpy.warn).toHaveBeenCalledWith('Component does not support rate limiting testing');
+      consoleWarnSpy.restore();
     });
 
     it('should run session tracking security test with component that supports it', async () => {
@@ -105,13 +108,13 @@ describe('securityHelpers - additional coverage', () => {
 
     it('should skip session tracking test when component does not support it', async () => {
       const mockComponent = {}; // No trackSession method
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const suite = createSecurityTestSuite(mockComponent);
       await suite.testSessionTrackingSecurity();
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('Component does not support session tracking testing');
-      consoleWarnSpy.mockRestore();
+      expect(consoleWarnSpy.warn).toHaveBeenCalledWith('Component does not support session tracking testing');
+      consoleWarnSpy.restore();
     });
 
     it('should run input validation security test', async () => {
@@ -485,7 +488,8 @@ describe('securityHelpers - additional coverage', () => {
 
   describe('rate limiting with fake timers', () => {
     it('should handle spread requests with fake timer simulation', async () => {
-      const rateLimiter = new SecurityRateLimiter({
+      const rateLimiter: SecurityRateLimiter = new SecurityRateLimiter({
+        enabled: true,
         maxRequests: 3,
         windowMs: 100, // Short window for testing
       });
@@ -498,7 +502,28 @@ describe('securityHelpers - additional coverage', () => {
         timeWindow: 150,
       };
 
-      const results = await simulateRateLimiting(rateLimiter, config);
+      // Create an adapter to match the test interface
+      const rateLimiterAdapter = {
+        recordRequest: (origin: string) => {
+          // biome-ignore lint/suspicious/noExplicitAny: Need to cast due to type conflict
+          const allowed = (rateLimiter as any).isAllowed(origin);
+          if (allowed) {
+            // biome-ignore lint/suspicious/noExplicitAny: Need to cast due to type conflict
+            (rateLimiter as any).recordRequest(origin);
+          }
+          return allowed;
+        },
+        isRateLimited: (origin: string) => {
+          // biome-ignore lint/suspicious/noExplicitAny: Need to cast due to type conflict
+          return !(rateLimiter as any).isAllowed(origin);
+        },
+        reset: (origin?: string) => {
+          // biome-ignore lint/suspicious/noExplicitAny: Need to cast due to type conflict
+          (rateLimiter as any).reset(origin);
+        },
+      };
+
+      const results = await simulateRateLimiting(rateLimiterAdapter, config);
 
       // With spreading, more requests should be allowed
       expect(results.allowedRequests).toBe(4);

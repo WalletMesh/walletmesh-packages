@@ -13,7 +13,10 @@
  * const flow = createFullDiscoveryFlow({
  *   initiatorOrigin: 'https://my-dapp.com',
  *   responderInfo: createTestResponderInfo.ethereum(),
- *   requirements: { chains: ['eip155:1'], features: ['account-management'] }
+ *   requirements: {
+ *     technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+ *     features: ['account-management']
+ *   }
  * });
  *
  * const result = await flow.runComplete();
@@ -35,14 +38,9 @@
  * @since 1.0.0
  */
 
-import type {
-  DiscoveryRequestEvent,
-  DiscoveryResponseEvent,
-  ResponderInfo,
-  InitiatorInfo,
-  SecurityPolicy,
-  QualifiedResponder,
-} from '../core/types.js';
+import type { DiscoveryRequestEvent, DiscoveryResponseEvent, InitiatorInfo } from '../types/core.js';
+import type { ResponderInfo, QualifiedResponder } from '../types/capabilities.js';
+import type { SecurityPolicy } from '../types/security.js';
 import { MockDiscoveryInitiator } from './MockDiscoveryInitiator.js';
 import { MockDiscoveryResponder } from './MockDiscoveryResponder.js';
 import { MockEventTarget } from './MockEventTarget.js';
@@ -69,9 +67,12 @@ export interface DiscoveryFlowConfig {
   responders?: ResponderInfo[];
   /** Capability requirements */
   requirements?: {
-    chains: string[];
+    technologies: Array<{
+      type: 'evm' | 'solana' | 'aztec';
+      interfaces: string[];
+      features?: string[];
+    }>;
     features: string[];
-    interfaces: string[];
   };
   /** Security policy for testing */
   securityPolicy?: SecurityPolicy;
@@ -170,9 +171,11 @@ export interface ComplianceTestConfig {
  *     })]
  *   }),
  *   requirements: {
- *     chains: ['eip155:1'],
- *     features: ['account-management', 'transaction-signing'],
- *     interfaces: ['eip-1193']
+ *     technologies: [{
+ *       type: 'evm',
+ *       interfaces: ['eip-1193']
+ *     }],
+ *     features: ['account-management', 'transaction-signing']
  *   }
  * });
  *
@@ -190,9 +193,13 @@ export function createFullDiscoveryFlow(config: DiscoveryFlowConfig = {}) {
     responderInfo,
     responders = responderInfo ? [responderInfo] : [createTestResponderInfo.ethereum()],
     requirements = {
-      chains: ['eip155:1'],
+      technologies: [
+        {
+          type: 'evm' as const,
+          interfaces: ['eip-1193'],
+        },
+      ],
       features: ['account-management', 'transaction-signing'],
-      interfaces: ['eip-1193'],
     },
     securityPolicy = createTestSecurityPolicy({
       allowedOrigins: [initiatorOrigin],
@@ -503,7 +510,7 @@ export async function testCrossOriginCommunication(
             }),
             securityPolicy: {
               ...securityPolicy,
-              allowedOrigins: testAllowedPairs ? [fromOrigin] : [],
+              allowedOrigins: testAllowedPairs ? [fromOrigin] : securityPolicy.allowedOrigins || [],
             },
             timeout,
             useFakeTimers: false, // We're managing timers at this level
@@ -764,7 +771,10 @@ export async function validateDiscoveryCompliance(config: ComplianceTestConfig):
  *     name: 'Basic Ethereum wallet discovery',
  *     config: {
  *       responderInfo: createTestResponderInfo.ethereum(),
- *       requirements: { chains: ['eip155:1'], features: ['account-management'] }
+ *       requirements: {
+ *         technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+ *         features: ['account-management']
+ *       }
  *     },
  *     expectedResult: { success: true, walletCount: 1 }
  *   },
@@ -772,7 +782,13 @@ export async function validateDiscoveryCompliance(config: ComplianceTestConfig):
  *     name: 'Multi-chain wallet support',
  *     config: {
  *       responderInfo: createTestResponderInfo.multiChain(),
- *       requirements: { chains: ['eip155:1', 'solana:mainnet'], features: ['account-management'] }
+ *       requirements: {
+ *         technologies: [
+ *           { type: 'evm', interfaces: ['eip-1193'] },
+ *           { type: 'solana', interfaces: ['solana-wallet-standard'] }
+ *         ],
+ *         features: ['account-management']
+ *       }
  *     },
  *     expectedResult: { success: true, walletCount: 1 }
  *   }

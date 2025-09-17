@@ -6,68 +6,29 @@
 
 # Interface: ValidationRule
 
-Defined in: [core/types.ts:660](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L660)
+Defined in: [core/discovery/src/types/capabilities.ts:257](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L257)
 
-Validation rule for parameter values.
-
-Provides flexible validation options for transaction and method parameters,
-supporting both built-in and custom validation logic.
-
-## Examples
-
-```typescript
-const minRule: ValidationRule = {
-  type: 'min',
-  value: 0,
-  message: 'Value cannot be negative'
-};
-
-const maxRule: ValidationRule = {
-  type: 'max',
-  value: 1000000,
-  message: 'Value exceeds maximum allowed'
-};
-```
-
-```typescript
-const hexRule: ValidationRule = {
-  type: 'pattern',
-  value: /^0x[a-fA-F0-9]+$/,
-  message: 'Value must be a valid hex string'
-};
-```
-
-```typescript
-const customRule: ValidationRule = {
-  type: 'custom',
-  value: 'checksum-validator',
-  message: 'Invalid checksum'
-};
-```
+Validation rule for parameters.
 
 ## Since
 
 0.1.0
 
-## See
-
-[ParameterSpec](ParameterSpec.md) for usage in parameter definitions
-
 ## Properties
 
-### message?
+### message
 
-> `optional` **message**: `string`
+> **message**: `string`
 
-Defined in: [core/types.ts:663](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L663)
+Defined in: [core/discovery/src/types/capabilities.ts:260](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L260)
 
 ***
 
 ### type
 
-> **type**: `"custom"` \| `"min"` \| `"max"` \| `"pattern"`
+> **type**: `"custom"` \| `"min"` \| `"max"` \| `"regex"` \| `"enum"`
 
-Defined in: [core/types.ts:661](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L661)
+Defined in: [core/discovery/src/types/capabilities.ts:258](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L258)
 
 ***
 
@@ -75,4 +36,4 @@ Defined in: [core/types.ts:661](https://github.com/WalletMesh/walletmesh-package
 
 > **value**: `unknown`
 
-Defined in: [core/types.ts:662](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L662)
+Defined in: [core/discovery/src/types/capabilities.ts:259](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L259)

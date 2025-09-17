@@ -8,7 +8,7 @@
 
 > `const` `readonly` **ERROR\_CODES**: `object`
 
-Defined in: [core/constants.ts:438](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/constants.ts#L438)
+Defined in: [core/discovery/src/core/constants.ts:438](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/constants.ts#L438)
 
 Standardized numeric error codes for the discovery protocol.
 
@@ -16,7 +16,7 @@ Error codes follow a 4-digit numeric format with category-based ranges.
 These codes ensure consistent error handling across implementations
 while maintaining security and privacy principles.
 
-## Type declaration
+## Type Declaration
 
 ### CAPABILITY\_NOT\_SUPPORTED
 
@@ -45,6 +45,10 @@ while maintaining security and privacy principles.
 ### CONNECTION\_TIMEOUT
 
 > `readonly` **CONNECTION\_TIMEOUT**: `4001` = `4001`
+
+### DUPLICATE\_RESPONSE\_DETECTED
+
+> `readonly` **DUPLICATE\_RESPONSE\_DETECTED**: `2008` = `2008`
 
 ### ENCODING\_ERROR
 

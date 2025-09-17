@@ -6,46 +6,16 @@
 
 # Interface: RateLimitConfig
 
-Defined in: [core/types.ts:1350](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1350)
+Defined in: [core/discovery/src/types/security.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/security.ts#L60)
 
 Rate limiting configuration for request throttling.
 
 Prevents abuse and denial-of-service attacks by limiting the number
 of requests from a single origin within a time window.
 
-## Examples
-
-```typescript
-const rateLimit: RateLimitConfig = {
-  enabled: true,
-  maxRequests: 10,
-  windowMs: 60000  // 10 requests per minute
-};
-```
-
-```typescript
-const strictRateLimit: RateLimitConfig = {
-  enabled: true,
-  maxRequests: 5,
-  windowMs: 60000  // 5 requests per minute
-};
-```
-
-```typescript
-const devRateLimit: RateLimitConfig = {
-  enabled: false,
-  maxRequests: 1000,
-  windowMs: 60000
-};
-```
-
 ## Since
 
 0.1.0
-
-## See
-
-[SecurityPolicy](SecurityPolicy.md) for rate limit integration
 
 ## Properties
 
@@ -53,7 +23,7 @@ const devRateLimit: RateLimitConfig = {
 
 > **enabled**: `boolean`
 
-Defined in: [core/types.ts:1353](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1353)
+Defined in: [core/discovery/src/types/security.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/security.ts#L63)
 
 ***
 
@@ -61,7 +31,7 @@ Defined in: [core/types.ts:1353](https://github.com/WalletMesh/walletmesh-packag
 
 > **maxRequests**: `number`
 
-Defined in: [core/types.ts:1351](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1351)
+Defined in: [core/discovery/src/types/security.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/security.ts#L61)
 
 ***
 
@@ -69,4 +39,4 @@ Defined in: [core/types.ts:1351](https://github.com/WalletMesh/walletmesh-packag
 
 > **windowMs**: `number`
 
-Defined in: [core/types.ts:1352](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L1352)
+Defined in: [core/discovery/src/types/security.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/security.ts#L62)

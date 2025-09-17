@@ -8,28 +8,10 @@
 
 > **ResponderType** = `"extension"` \| `"web"` \| `"mobile"` \| `"desktop"` \| `"hardware"`
 
-Defined in: [core/types.ts:866](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L866)
+Defined in: [core/discovery/src/types/capabilities.ts:313](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L313)
 
-Responder deployment type classification.
-
-Categorizes responders by their deployment model, which affects
-integration patterns, security considerations, and user experience.
-
-## Example
-
-```typescript
-const browserExtension: ResponderType = 'extension';
-const webResponder: ResponderType = 'web';
-const mobileApp: ResponderType = 'mobile';
-const hardwareDevice: ResponderType = 'hardware';
-```
+Responder type classification.
 
 ## Since
 
 0.1.0
-
-## See
-
- - [ResponderInfo](ResponderInfo.md) for usage context
- - [ResponderPlatform](../interfaces/ResponderPlatform.md) for platform-specific requirements
- - [TransportConfig](../interfaces/TransportConfig.md) for connection configuration by type

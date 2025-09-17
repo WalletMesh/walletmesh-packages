@@ -1,4 +1,4 @@
-import type { ErrorCategory } from './types.js';
+import type { ErrorCategory } from '../types/core.js';
 
 /**
  * Current version of the WalletMesh discovery protocol.
@@ -453,6 +453,7 @@ export const ERROR_CODES = {
   HTTPS_REQUIRED: 2005,
   SIGNATURE_VERIFICATION_FAILED: 2006,
   UNAUTHORIZED_ACCESS: 2007,
+  DUPLICATE_RESPONSE_DETECTED: 2008,
 
   // Capability Errors (3000-3999)
   CAPABILITY_NOT_SUPPORTED: 3001,
@@ -507,6 +508,7 @@ export const ERROR_MESSAGES: Record<number, string> = {
   [ERROR_CODES.HTTPS_REQUIRED]: 'HTTPS is required but not used',
   [ERROR_CODES.SIGNATURE_VERIFICATION_FAILED]: 'Message signature invalid',
   [ERROR_CODES.UNAUTHORIZED_ACCESS]: 'Access denied due to permissions',
+  [ERROR_CODES.DUPLICATE_RESPONSE_DETECTED]: 'Duplicate response from same responder detected',
 
   // Capability Errors
   [ERROR_CODES.CAPABILITY_NOT_SUPPORTED]: 'Required capability not supported',
@@ -684,3 +686,7 @@ export function getErrorCategory(code: number): ErrorCategory | 'unknown' {
   if (code >= 5000 && code < 6000) return 'internal';
   return 'unknown';
 }
+
+// Re-export presets for convenience
+export { CAPABILITY_PRESETS, RESPONDER_PRESETS, FEATURE_PRESETS } from '../presets/index.js';
+export { SECURITY_PRESETS } from '../presets/security.js';

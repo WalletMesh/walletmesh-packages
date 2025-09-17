@@ -6,72 +6,31 @@
 
 # Class: RateLimiter
 
-Defined in: [security/RateLimiter.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L60)
+Defined in: [core/discovery/src/security.ts:364](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/security.ts#L364)
 
-Rate limiter implementing sliding window algorithm for abuse prevention.
-
-Prevents discovery request abuse by limiting the number of requests per
-origin within configurable time windows. Uses a sliding window algorithm
-for accurate rate limiting without burst allowance issues common in
-fixed window approaches.
-
-Features:
-- Per-origin rate limiting with independent windows
-- Sliding window algorithm for precise request tracking
-- Automatic cleanup of expired request records
-- Configurable limits and time windows
-- Real-time statistics and monitoring
-- Memory-efficient with automatic garbage collection
-
-## Examples
-
-```typescript
-const rateLimiter = new RateLimiter({
-  maxRequests: 10,        // 10 requests max
-  windowMs: 60000,        // per 60 seconds
-  enabled: true           // enforce limits
-});
-
-// Check if request is allowed
-if (rateLimiter.isAllowed('https://example.com')) {
-  // Record the request
-  rateLimiter.recordRequest('https://example.com');
-  // Process the request...
-} else {
-  console.log('Rate limited');
-}
-```
-
-```typescript
-const devLimiter = new RateLimiter({
-  enabled: false    // Disable for development
-});
-
-// All requests allowed in development
-```
+Rate limiter using sliding window algorithm.
 
 ## Since
 
 0.1.0
 
-## See
-
- - [RateLimitConfig](../interfaces/RateLimitConfig.md) for configuration options
- - [OriginValidator](OriginValidator.md) for origin validation
-
 ## Constructors
 
 ### Constructor
 
-> **new RateLimiter**(`config`): `RateLimiter`
+> **new RateLimiter**(`config?`, `_logger?`): `RateLimiter`
 
-Defined in: [security/RateLimiter.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L65)
+Defined in: [core/discovery/src/security.ts:368](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/security.ts#L368)
 
 #### Parameters
 
-##### config
+##### config?
 
-`Partial`\<[`RateLimitConfig`](../interfaces/RateLimitConfig.md)\> = `{}`
+[`RateLimitConfig`](../interfaces/RateLimitConfig.md)
+
+##### \_logger?
+
+[`Logger`](../interfaces/Logger.md) = `defaultLogger`
 
 #### Returns
 
@@ -79,123 +38,19 @@ Defined in: [security/RateLimiter.ts:65](https://github.com/WalletMesh/walletmes
 
 ## Methods
 
-### dispose()
+### getRequestCount()
 
-> **dispose**(): `void`
+> **getRequestCount**(`origin`): `number`
 
-Defined in: [security/RateLimiter.ts:282](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L282)
+Defined in: [core/discovery/src/security.ts:421](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/security.ts#L421)
 
-Dispose of the rate limiter and clean up resources.
-
-#### Returns
-
-`void`
-
-***
-
-### getConfig()
-
-> **getConfig**(): [`RateLimitConfig`](../interfaces/RateLimitConfig.md)
-
-Defined in: [security/RateLimiter.ts:196](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L196)
-
-Get current configuration.
-
-#### Returns
-
-[`RateLimitConfig`](../interfaces/RateLimitConfig.md)
-
-***
-
-### getCurrentCount()
-
-> **getCurrentCount**(`origin`, `timestamp`): `number`
-
-Defined in: [security/RateLimiter.ts:124](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L124)
-
-Get the current request count for an origin within the time window.
+Get current request count for an origin.
 
 #### Parameters
 
 ##### origin
 
 `string`
-
-##### timestamp
-
-`number` = `...`
-
-#### Returns
-
-`number`
-
-***
-
-### getOriginInfo()
-
-> **getOriginInfo**(`origin`, `timestamp`): `object`
-
-Defined in: [security/RateLimiter.ts:248](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L248)
-
-Get detailed information about a specific origin.
-
-#### Parameters
-
-##### origin
-
-`string`
-
-##### timestamp
-
-`number` = `...`
-
-#### Returns
-
-`object`
-
-##### currentCount
-
-> **currentCount**: `number`
-
-##### isRateLimited
-
-> **isRateLimited**: `boolean`
-
-##### origin
-
-> **origin**: `string`
-
-##### remainingRequests
-
-> **remainingRequests**: `number`
-
-##### requestHistory
-
-> **requestHistory**: `object`[]
-
-##### timeUntilReset
-
-> **timeUntilReset**: `number`
-
-***
-
-### getRemainingRequests()
-
-> **getRemainingRequests**(`origin`, `timestamp`): `number`
-
-Defined in: [security/RateLimiter.ts:141](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L141)
-
-Get the remaining requests allowed for an origin.
-
-#### Parameters
-
-##### origin
-
-`string`
-
-##### timestamp
-
-`number` = `...`
 
 #### Returns
 
@@ -207,9 +62,9 @@ Get the remaining requests allowed for an origin.
 
 > **getStats**(`timestamp`): `object`
 
-Defined in: [security/RateLimiter.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L203)
+Defined in: [core/discovery/src/security.ts:449](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/security.ts#L449)
 
-Get comprehensive statistics about rate limiting activity.
+Get statistics about rate limiting.
 
 #### Parameters
 
@@ -255,47 +110,19 @@ Get comprehensive statistics about rate limiting activity.
 
 ***
 
-### getTimeUntilReset()
-
-> **getTimeUntilReset**(`origin`, `timestamp`): `number`
-
-Defined in: [security/RateLimiter.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L149)
-
-Get the time until the next request is allowed (in milliseconds).
-
-#### Parameters
-
-##### origin
-
-`string`
-
-##### timestamp
-
-`number` = `...`
-
-#### Returns
-
-`number`
-
-***
-
 ### isAllowed()
 
-> **isAllowed**(`origin`, `timestamp`): `boolean`
+> **isAllowed**(`origin`): `boolean`
 
-Defined in: [security/RateLimiter.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L79)
+Defined in: [core/discovery/src/security.ts:379](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/security.ts#L379)
 
-Check if a request is allowed for the given origin.
+Check if an origin is allowed to make a request.
 
 #### Parameters
 
 ##### origin
 
 `string`
-
-##### timestamp
-
-`number` = `...`
 
 #### Returns
 
@@ -305,35 +132,11 @@ Check if a request is allowed for the given origin.
 
 ### recordRequest()
 
-> **recordRequest**(`origin`, `timestamp`): `boolean`
+> **recordRequest**(`origin`): `void`
 
-Defined in: [security/RateLimiter.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L102)
+Defined in: [core/discovery/src/security.ts:407](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/security.ts#L407)
 
-Record a request for the given origin.
-
-#### Parameters
-
-##### origin
-
-`string`
-
-##### timestamp
-
-`number` = `...`
-
-#### Returns
-
-`boolean`
-
-***
-
-### reset()
-
-> **reset**(`origin`): `void`
-
-Defined in: [security/RateLimiter.ts:172](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L172)
-
-Reset rate limit for a specific origin.
+Record a request from an origin.
 
 #### Parameters
 
@@ -347,13 +150,19 @@ Reset rate limit for a specific origin.
 
 ***
 
-### resetAll()
+### reset()
 
-> **resetAll**(): `void`
+> **reset**(`origin?`): `void`
 
-Defined in: [security/RateLimiter.ts:179](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L179)
+Defined in: [core/discovery/src/security.ts:431](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/security.ts#L431)
 
-Reset all rate limits.
+Reset rate limit for an origin.
+
+#### Parameters
+
+##### origin?
+
+`string`
 
 #### Returns
 
@@ -365,15 +174,15 @@ Reset all rate limits.
 
 > **updateConfig**(`config`): `void`
 
-Defined in: [security/RateLimiter.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/security/RateLimiter.ts#L186)
+Defined in: [core/discovery/src/security.ts:442](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/security.ts#L442)
 
-Update the rate limit configuration.
+Update configuration.
 
 #### Parameters
 
 ##### config
 
-`Partial`\<[`RateLimitConfig`](../interfaces/RateLimitConfig.md)\>
+[`RateLimitConfig`](../interfaces/RateLimitConfig.md)
 
 #### Returns
 

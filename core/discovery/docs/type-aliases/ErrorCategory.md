@@ -8,12 +8,9 @@
 
 > **ErrorCategory** = `"protocol"` \| `"security"` \| `"capability"` \| `"connection"` \| `"internal"`
 
-Defined in: [core/types.ts:437](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/types.ts#L437)
+Defined in: [core/discovery/src/types/core.ts:157](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/core.ts#L157)
 
-Error categories for standardized error codes.
-
-Groups error codes by type for easier identification and handling.
-Each category represents a different aspect of protocol operation.
+Error category classification.
 
 ## Since
 

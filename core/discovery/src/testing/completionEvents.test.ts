@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DiscoveryInitiator } from '../initiator/DiscoveryInitiator.js';
 import { DISCOVERY_EVENTS } from '../core/constants.js';
-import type { DiscoveryCompleteEvent, DiscoveryErrorEvent } from '../core/types.js';
+import { createConsoleSpy } from './consoleMocks.js';
+import type { DiscoveryCompleteEvent, DiscoveryErrorEvent } from '../types/core.js';
 
 describe('Discovery Completion Events', () => {
   let mockEventTarget: EventTarget;
@@ -34,9 +35,13 @@ describe('Discovery Completion Events', () => {
     it('should broadcast discovery completed event on timeout', async () => {
       const listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         initiatorInfo: {
           name: 'Test DApp',
@@ -73,9 +78,13 @@ describe('Discovery Completion Events', () => {
     it('should broadcast discovery completed event on manual stop', async () => {
       const listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         initiatorInfo: {
           name: 'Test DApp',
@@ -116,9 +125,13 @@ describe('Discovery Completion Events', () => {
     it('should broadcast discovery error event on duplicate response', async () => {
       const listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         initiatorInfo: {
           name: 'Test DApp',
@@ -146,9 +159,13 @@ describe('Discovery Completion Events', () => {
         responderVersion: '1.0.0',
         matched: {
           required: {
-            chains: ['eip155:1'],
+            technologies: [
+              {
+                type: 'evm' as const,
+                interfaces: ['eip-1193'],
+              },
+            ],
             features: ['account-management'],
-            interfaces: ['eip-1193'],
           },
         },
       };
@@ -178,7 +195,7 @@ describe('Discovery Completion Events', () => {
       expect(errorEvent.detail).toMatchObject({
         type: DISCOVERY_EVENTS.ERROR,
         version: '0.1.0',
-        errorCode: 2004,
+        errorCode: 2008,
         errorCategory: 'security',
       });
       expect(errorEvent.detail.errorMessage).toContain('Duplicate response detected');
@@ -188,9 +205,13 @@ describe('Discovery Completion Events', () => {
     it('should not broadcast completion events when session ID is null', async () => {
       const listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         initiatorInfo: {
           name: 'Test DApp',
@@ -233,9 +254,13 @@ describe('Discovery Completion Events', () => {
 
       const listener = new DiscoveryInitiator({
         requirements: {
-          chains: ['eip155:1'],
+          technologies: [
+            {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            },
+          ],
           features: ['account-management'],
-          interfaces: ['eip-1193'],
         },
         initiatorInfo: {
           name: 'Test DApp',
@@ -246,7 +271,7 @@ describe('Discovery Completion Events', () => {
       });
 
       // Console.error should be called for event dispatch error, but discovery should still work
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = createConsoleSpy({ methods: ['error'], mockFn: () => vi.fn() });
 
       // Start discovery
       const discoveryPromise = listener.startDiscovery();
@@ -259,12 +284,12 @@ describe('Discovery Completion Events', () => {
       expect(responders).toEqual([]);
 
       // Should have logged the event dispatch error
-      expect(consoleSpy).toHaveBeenCalledWith(
+      expect(consoleSpy.error).toHaveBeenCalledWith(
         '[WalletMesh] Failed to dispatch discovery message:',
         expect.any(Error),
       );
 
-      consoleSpy.mockRestore();
+      consoleSpy.restore();
     });
   });
 });

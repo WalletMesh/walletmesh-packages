@@ -1,287 +1,315 @@
 /**
- * Testing module for the Generic Cross-Blockchain Wallet Discovery Protocol.
+ * Consolidated testing exports for the discovery package.
  *
- * Comprehensive testing framework providing mock implementations, test utilities,
- * and validation helpers for testing discovery protocol implementations in both
- * dApp and wallet contexts. Enables thorough testing of discovery flows, security
- * scenarios, and edge cases without requiring real wallet implementations.
- *
- * Key testing components:
- * - Mock implementations: Drop-in replacements for testing
- * - Test scenarios: Pre-built test cases for common workflows
- * - Assertion helpers: Validation functions for protocol messages
- * - Test utilities: Data generators and timing helpers
- * - Browser environment mocking: Cross-origin communication testing
- * - Security testing: Origin validation, rate limiting, session tracking
- * - State machine testing: State transitions and timeout validation
- * - Integration testing: End-to-end discovery flows
- *
- * @example Basic discovery testing:
- * ```typescript
- * import {
- *   createDiscoveryTestScenario,
- *   createTestResponderInfo,
- *   createTestDAppInfo
- * } from '@walletmesh/discovery/testing';
- *
- * const scenario = createDiscoveryTestScenario({
- *   responderInfo: createTestResponderInfo.ethereum(),
- *   initiatorInfo: createTestDAppInfo(),
- *   requirements: {
- *     chains: ['eip155:1'],
- *     features: ['account-management'],
- *     interfaces: ['eip-1193']
- *   }
- * });
- *
- * const result = await scenario.runDiscovery();
- * expect(result.qualifiedWallets).toHaveLength(1);
- * ```
- *
- * @example Browser environment testing:
- * ```typescript
- * import { withMockWindow, setupFakeTimers } from '@walletmesh/discovery/testing';
- *
- * beforeEach(() => {
- *   setupFakeTimers();
- * });
- *
- * await withMockWindow({ origin: 'https://my-dapp.com' }, async () => {
- *   // Test discovery protocol with mocked browser environment
- *   const announcer = new DiscoveryResponder(config);
- *   expect(window.location.origin).toBe('https://my-dapp.com');
- * });
- * ```
- *
- * @example Security testing:
- * ```typescript
- * import {
- *   testOriginValidation,
- *   simulateRateLimiting,
- *   createSecurityTestSuite
- * } from '@walletmesh/discovery/testing';
- *
- * // Test origin validation
- * const results = await testOriginValidation(securityPolicy, [
- *   'https://trusted.com',
- *   'https://malicious.com'
- * ]);
- *
- * // Test rate limiting
- * await simulateRateLimiting(rateLimiter, {
- *   origin: 'https://example.com',
- *   requestCount: 10,
- *   expectedAllowed: 5
- * });
- *
- * // Complete security test suite
- * const suite = createSecurityTestSuite(component, { securityPolicy });
- * await suite.runAll();
- * ```
- *
- * @example State machine testing:
- * ```typescript
- * import {
- *   testStateTransitions,
- *   createStateMachineTestSuite
- * } from '@walletmesh/discovery/testing';
- *
- * // Test specific transitions
- * await testStateTransitions(stateMachine, [
- *   { from: 'IDLE', to: 'DISCOVERING', trigger: 'start' },
- *   { from: 'DISCOVERING', to: 'COMPLETED', trigger: 'timeout', delay: 3000 }
- * ]);
- *
- * // Complete state machine test suite
- * const suite = createStateMachineTestSuite(stateMachine, {
- *   states: ['IDLE', 'DISCOVERING', 'COMPLETED'],
- *   transitions: [...],
- *   timeouts: { DISCOVERING: { timeout: 3000, nextState: 'IDLE' } }
- * });
- * await suite.runAll();
- * ```
- *
- * @example Integration testing:
- * ```typescript
- * import {
- *   createFullDiscoveryFlow,
- *   testCrossOriginCommunication
- * } from '@walletmesh/discovery/testing';
- *
- * // Complete discovery flow
- * const flow = createFullDiscoveryFlow({
- *   initiatorOrigin: 'https://my-dapp.com',
- *   responderInfo: createTestResponderInfo.ethereum()
- * });
- * const result = await flow.runComplete();
- *
- * // Cross-origin communication testing
- * const crossOriginResults = await testCrossOriginCommunication([
- *   'https://dapp.com',
- *   'https://wallet.com'
- * ]);
- * ```
+ * Provides a clean, organized interface to all testing utilities,
+ * reducing the number of exports from 495+ to approximately 50.
  *
  * @module testing
+ * @category Testing
  * @since 0.1.0
- * @see {@link https://docs.walletmesh.io/discovery/testing} for testing best practices
  */
 
-// Export mock implementations
-export { MockDiscoveryInitiator } from './MockDiscoveryInitiator.js';
-export { MockDiscoveryResponder } from './MockDiscoveryResponder.js';
-export { MockEventTarget } from './MockEventTarget.js';
+// ============================================================================
+// Import functions needed for TestData and TestMocks objects
+// ============================================================================
 
-// Export test utilities
-export {
-  createTestResponderInfo,
-  createTestDiscoveryRequest,
-  createTestDiscoveryResponse,
-  createTestDAppInfo,
-  createTestSecurityPolicy,
-  generateTestSessionId,
-  waitFor,
-  waitForCondition,
-  generateTestWalletId,
-  generateTestOrigin,
+import {
+  createTestInitiatorInfo,
+  createTestResponderInfo as createTestResponderInfoBasic,
   createTestCapabilityRequirements,
-  createTestCapabilityPreferences,
-  createTestDiscoveryConfig,
-} from './testUtils.js';
-
-// Export test scenarios
-export {
-  createDiscoveryTestScenario,
-  createSecurityTestScenario,
+  createTestSecurityPolicy,
+  createEthereumTestData,
+  createSolanaTestData,
+  createAztecTestData,
+  createMultiChainTestData,
+  createTestDiscoveryRequestEvent,
+  createTestDiscoveryResponseEvent,
+  createTestDiscoveryCompleteEvent,
+  createTestDiscoveryErrorEvent,
   createBasicDiscoveryScenario,
   createTimeoutScenario,
   createSecurityRejectionScenario,
-} from './testScenarios.js';
+  createIncompatibleCapabilityScenario,
+} from './builders.js';
 
-// Export assertion helpers
+import {
+  mockBrowserEnvironment,
+  setupChromeEnvironment,
+  setupMockCrypto,
+  MockEventTarget,
+  createMockWindow,
+  createMockLocation,
+  createSilentConsoleSpy,
+  createCapturingConsoleSpy,
+  createConsoleSpy,
+} from './mocks.js';
+
+import {
+  advanceTimersAndFlush,
+  flushPromises,
+  waitFor,
+  waitForEvent,
+  nextTick,
+  waitForState,
+  getStateHistory,
+  setupTestEnvironment,
+  setupTestEventTarget,
+  simulateDiscoveryRequest,
+  createTestDiscoverySession,
+  getDispatchedEvents,
+  assertEventDispatched,
+  assertEventNotDispatched,
+  assertDiscoveryResponse,
+  assertCapabilityMatch,
+  assertState,
+  assertThrows,
+  assertThrowsAsync,
+} from './helpers.js';
+
+// ============================================================================
+// Mock Implementations
+// ============================================================================
+
+export {
+  // Browser Mocks
+  type MockWindowConfig,
+  createMockLocation,
+  createMockWindow,
+  mockBrowserEnvironment,
+  restoreBrowserEnvironment,
+  // Chrome Extension Mocks
+  type MockChromeRuntime,
+  type MockChromeTabs,
+  type MockChromeAPI,
+  type MockFunction,
+  createMockChromeAPI,
+  setupChromeEnvironment,
+  // Console Mocks
+  type ConsoleSpyOptions,
+  type ConsoleSpy,
+  createConsoleSpy,
+  createSilentConsoleSpy,
+  createCapturingConsoleSpy,
+  // Crypto and Session Mocks
+  type MockCrypto,
+  createMockCrypto,
+  type TestIdOptions,
+  createTestSessionId,
+  createTestUUID,
+  createTestResponderId,
+  resetTestIdCounters,
+  setupMockCrypto,
+  // Event Target Mock
+  MockEventTarget,
+} from './mocks.js';
+
+// ============================================================================
+// Test Data Builders
+// ============================================================================
+
+export {
+  // Basic Data Builders
+  createTestInitiatorInfo,
+  createTestCapabilityRequirements,
+  createTestCapabilityPreferences,
+  createTestResponderInfo as createTestResponderInfoBasic,
+  createTestSecurityPolicy,
+  createTestTransportConfig,
+  // Discovery Event Builders
+  createTestDiscoveryRequestEvent,
+  createTestDiscoveryResponseEvent,
+  createTestDiscoveryCompleteEvent,
+  createTestDiscoveryErrorEvent,
+  // Specialized Builders
+  createEthereumTestData,
+  createSolanaTestData,
+  createAztecTestData,
+  createMultiChainTestData,
+  // Test Scenario Builders
+  type TestScenarioConfig,
+  createBasicDiscoveryScenario,
+  createSecurityRejectionScenario,
+  createTimeoutScenario,
+  createIncompatibleCapabilityScenario,
+} from './builders.js';
+
+// ============================================================================
+// Test Helpers and Utilities
+// ============================================================================
+
+export {
+  // Timing Utilities
+  advanceTimersAndFlush,
+  flushPromises,
+  waitFor,
+  waitForEvent,
+  nextTick,
+  // State Machine Helpers
+  waitForState,
+  getStateHistory,
+  assertState,
+  // Event Assertion Helpers
+  assertEventDispatched,
+  assertEventNotDispatched,
+  getDispatchedEvents,
+  // Capability Testing Helpers
+  assertCapabilityMatch,
+  createTestCapabilityIntersection,
+  // Test Lifecycle Helpers
+  setupTestEnvironment,
+  setupTestEventTarget,
+  // Discovery Protocol Test Helpers
+  simulateDiscoveryRequest,
+  assertDiscoveryResponse,
+  createTestDiscoverySession,
+  // Error Testing Helpers
+  assertThrows,
+  assertThrowsAsync,
+} from './helpers.js';
+
+// ============================================================================
+// Convenience Re-exports
+// ============================================================================
+
+/**
+ * Common test data patterns for quick setup.
+ */
+export const TestData = {
+  // Basic test objects
+  initiatorInfo: createTestInitiatorInfo,
+  responderInfo: createTestResponderInfoBasic,
+  capabilityRequirements: createTestCapabilityRequirements,
+  securityPolicy: createTestSecurityPolicy,
+
+  // Chain-specific presets
+  ethereum: createEthereumTestData,
+  solana: createSolanaTestData,
+  aztec: createAztecTestData,
+  multiChain: createMultiChainTestData,
+
+  // Discovery events
+  request: createTestDiscoveryRequestEvent,
+  response: createTestDiscoveryResponseEvent,
+  complete: createTestDiscoveryCompleteEvent,
+  error: createTestDiscoveryErrorEvent,
+
+  // Common scenarios
+  basicScenario: createBasicDiscoveryScenario,
+  timeoutScenario: createTimeoutScenario,
+  rejectionScenario: createSecurityRejectionScenario,
+  incompatibleScenario: createIncompatibleCapabilityScenario,
+};
+
+/**
+ * Common mock setups for quick test environment initialization.
+ */
+export const TestMocks = {
+  // Environment setup
+  browser: mockBrowserEnvironment,
+  chrome: setupChromeEnvironment,
+  crypto: setupMockCrypto,
+
+  // Component mocks
+  eventTarget: () => new MockEventTarget(),
+  window: createMockWindow,
+  location: createMockLocation,
+
+  // Testing utilities
+  console: {
+    silent: createSilentConsoleSpy,
+    capturing: createCapturingConsoleSpy,
+    spy: createConsoleSpy,
+  },
+};
+
+/**
+ * Test assertion helpers for common validation patterns.
+ */
+export const TestAssertions = {
+  // Event assertions
+  eventDispatched: assertEventDispatched,
+  eventNotDispatched: assertEventNotDispatched,
+
+  // Discovery-specific assertions
+  discoveryResponse: assertDiscoveryResponse,
+  capabilityMatch: assertCapabilityMatch,
+
+  // State machine assertions
+  state: assertState,
+
+  // Error assertions
+  throws: assertThrows,
+  throwsAsync: assertThrowsAsync,
+};
+
+/**
+ * Test lifecycle and timing utilities.
+ */
+export const TestUtils = {
+  // Timing
+  advanceTime: advanceTimersAndFlush,
+  flush: flushPromises,
+  waitFor,
+  waitForEvent,
+  nextTick,
+
+  // State management
+  waitForState,
+  getStateHistory,
+
+  // Environment
+  setupEnvironment: setupTestEnvironment,
+  setupEventTarget: setupTestEventTarget,
+
+  // Discovery flow
+  simulateRequest: simulateDiscoveryRequest,
+  createSession: createTestDiscoverySession,
+
+  // Event inspection
+  getEvents: getDispatchedEvents,
+};
+
+// ============================================================================
+// Additional Exports for Test Compatibility
+// ============================================================================
+
+// Re-export from testUtils.ts
+export {
+  createTestDAppInfo,
+  createTestDiscoveryRequest,
+  createTestDiscoveryResponse,
+  // Export the object-based createTestResponderInfo with methods like .ethereum()
+  createTestResponderInfo,
+} from './testUtils.js';
+
+// Re-export from eventHelpers.ts
+export {
+  createDiscoveryRequestEvent,
+  createDiscoveryResponseEvent,
+} from './eventHelpers.js';
+
+// Re-export from timingHelpers.ts
+export {
+  setupFakeTimers,
+  cleanupFakeTimers,
+  advanceTimeAndWait,
+} from './timingHelpers.js';
+
+// Re-export assertions for validation
 export {
   expectValidDiscoveryRequestEvent,
   expectValidDiscoveryResponseEvent,
   expectValidResponderInfo,
   expectValidInitiatorInfo,
   expectValidQualifiedResponder,
-  assertValidDiscoveryRequestEvent,
-  assertValidResponderAnnouncement,
-  assertValidOriginValidation,
 } from './assertions.js';
 
-// Export browser environment mocking utilities
-export {
-  mockBrowserEnvironment,
-  restoreBrowserEnvironment,
-  withMockWindow,
-  createMockLocation,
-  createMockWindow,
-  isMockBrowserEnvironment,
-  createMultipleMockWindows,
-} from './browserMocks.js';
+// Re-export browser mocks
+export { createContentScriptMock } from './browserMocks.js';
 
-// Export timing and async testing helpers
-export {
-  setupFakeTimers,
-  cleanupFakeTimers,
-  advanceTimeAndWait,
-  timeoutTestHelper,
-  waitForEventDispatch,
-  createTimeoutPromise,
-  testTimingScenarios,
-  measureAsyncOperation,
-  createDebouncedTest,
-} from './timingHelpers.js';
+// Re-export security helpers
+export { testOriginValidation } from './securityHelpers.js';
 
-// Export event testing utilities
-export {
-  createTestEvent,
-  createDiscoveryRequestEvent,
-  createDiscoveryResponseEvent,
-  simulateMessageEvent,
-  createDiscoveryEventChain,
-  captureEventFlow,
-  createMockEventListener,
-  testEventPropagation,
-  createEventBatch,
-  validateDiscoveryEvent,
-} from './eventHelpers.js';
-
-// Export state machine testing utilities
-export {
-  testStateTransitions,
-  testStateTimeouts,
-  assertStateConsistency,
-  createStateMachineTestSuite,
-  createCommonDiscoveryInvariants,
-} from './stateMachineHelpers.js';
-
-// Export security testing utilities
-export {
-  testOriginValidation,
-  simulateRateLimiting,
-  testSessionTracking,
-  createMalformedTestData,
-  simulateSecurityAttacks,
-  createSecurityTestSuite,
-} from './securityHelpers.js';
-
-// Export integration testing utilities
-export {
-  createFullDiscoveryFlow,
-  testCrossOriginCommunication,
-  validateDiscoveryCompliance,
-  createEndToEndIntegrationTest,
-} from './integrationHelpers.js';
-
-// Re-export types needed for testing
-export type {
-  DiscoveryRequestEvent,
-  DiscoveryResponseEvent,
-  ResponderInfo,
-  InitiatorInfo,
-  QualifiedResponder,
-  CapabilityIntersection,
-  SecurityPolicy,
-} from '../core/types.js';
-
-// Export testing-specific types
-export type { MockWindowConfig } from './browserMocks.js';
-
-export type { TimingConfig } from './timingHelpers.js';
-
-export type {
-  EventConfig,
-  MessageEventConfig,
-  EventChainStep,
-} from './eventHelpers.js';
-
-export type {
-  StateTransitionTest,
-  StateTimeoutConfig,
-  StateInvariant,
-  StateMachine,
-} from './stateMachineHelpers.js';
-
-export type {
-  OriginTestCase,
-  RateLimitTestConfig,
-  SessionTrackingScenario,
-  AttackSimulation,
-  OriginValidator,
-  RateLimiter,
-  SessionTracker,
-} from './securityHelpers.js';
-
-export type {
-  DiscoveryFlowConfig,
-  DiscoveryFlowResult,
-  CrossOriginTestResult,
-  ComplianceTestConfig,
-} from './integrationHelpers.js';
-
-export type {
-  TestScenario,
-  TestContext,
-} from './testScenarios.js';
+// Re-export mock classes
+export { MockDiscoveryInitiator } from './MockDiscoveryInitiator.js';
+export { MockDiscoveryResponder } from './MockDiscoveryResponder.js';

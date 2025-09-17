@@ -8,7 +8,7 @@
 
 > **createCapabilityMatcher**(`responderInfo`): [`CapabilityMatcher`](../classes/CapabilityMatcher.md)
 
-Defined in: [responder/factory.ts:120](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/responder/factory.ts#L120)
+Defined in: [core/discovery/src/responder/factory.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/responder/factory.ts#L119)
 
 Create a capability matcher for evaluating dApp capability requirements.
 
@@ -42,7 +42,7 @@ const matcher = createCapabilityMatcher({
   rdns: 'com.mycompany.wallet',
   name: 'My Wallet',
   // ... other wallet info
-  chains: [{ chainId: 'eip155:1' }], // chain config
+  technologies: [{ type: 'evm', interfaces: ['eip-1193'] }], // technology config
   features: [{ id: 'account-management' }] // feature config
 });
 

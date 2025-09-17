@@ -530,7 +530,7 @@ export function createStateMachineTestSuite(
         try {
           await stateMachine.transition(invalidState);
           throw new Error(`Transition to invalid state '${invalidState}' should have failed`);
-        } catch (error) {
+        } catch {
           // Expected to fail - verify we're still in the original state
           expect(stateMachine.getState()).toBe(currentState);
         }
@@ -701,4 +701,345 @@ export function createCommonDiscoveryInvariants(): StateInvariant[] {
       critical: false,
     },
   ];
+}
+
+/**
+ * State machine operation test configuration.
+ */
+export interface StateOperationTest {
+  /** Name of the operation for error reporting */
+  name: string;
+  /** Function that performs the operation */
+  operation: (stateMachine: StateMachine) => void | Promise<void>;
+  /** Expected outcome of the operation */
+  expectedOutcome: {
+    /** Expected state after operation */
+    state?: string;
+    /** Whether operation should throw */
+    shouldThrow?: boolean;
+    /** Expected error message if should throw */
+    expectedError?: string;
+  };
+  /** Setup function to run before operation */
+  setup?: (stateMachine: StateMachine) => void | Promise<void>;
+  /** Validation function to run after operation */
+  validation?: (stateMachine: StateMachine) => void | Promise<void>;
+}
+
+/**
+ * Test a series of state machine operations to ensure correct behavior.
+ *
+ * This utility helps test complex state machine interactions that go beyond
+ * simple transitions, such as method calls, property access, and edge cases.
+ *
+ * @param stateMachine - The state machine to test
+ * @param operations - Array of operation tests to execute
+ * @param options - Additional testing options
+ * @returns Promise that resolves when all operations are tested
+ * @throws Error if any operation test fails unexpectedly
+ * @example
+ * ```typescript
+ * await testStateOperations(stateMachine, [
+ *   {
+ *     name: 'Reset from DISCOVERING state',
+ *     setup: (sm) => sm.transition('DISCOVERING'),
+ *     operation: (sm) => sm.reset(),
+ *     expectedOutcome: { state: 'IDLE' },
+ *     validation: (sm) => expect(sm.getSessionId()).toBeNull()
+ *   },
+ *   {
+ *     name: 'Invalid operation in IDLE',
+ *     operation: (sm) => sm.performInvalidOperation(),
+ *     expectedOutcome: { shouldThrow: true, expectedError: 'Invalid operation' }
+ *   }
+ * ]);
+ * ```
+ * @category Testing
+ * @since 1.0.0
+ */
+export async function testStateOperations(
+  stateMachine: StateMachine,
+  operations: StateOperationTest[],
+  options: {
+    /** Whether to reset state machine before each operation */
+    resetBefore?: boolean;
+    /** Whether to reset state machine after all operations */
+    resetAfter?: boolean;
+  } = {},
+): Promise<void> {
+  const { resetBefore = false, resetAfter = false } = options;
+
+  for (let i = 0; i < operations.length; i++) {
+    const operation = operations[i];
+    if (!operation) {
+      throw new Error(`Operation ${i}: Operation definition is undefined`);
+    }
+
+    try {
+      // Reset before operation if requested
+      if (resetBefore && stateMachine.reset) {
+        stateMachine.reset();
+      }
+
+      // Run setup if provided
+      if (operation.setup) {
+        await operation.setup(stateMachine);
+      }
+
+      // Perform the operation
+      if (operation.expectedOutcome.shouldThrow) {
+        // Expect this operation to throw
+        try {
+          await operation.operation(stateMachine);
+          throw new Error(`Operation '${operation.name}': Expected operation to throw but it succeeded`);
+        } catch (error) {
+          // Verify error message if specified
+          if (
+            operation.expectedOutcome.expectedError &&
+            !(error instanceof Error && error.message.includes(operation.expectedOutcome.expectedError))
+          ) {
+            throw new Error(
+              `Operation '${operation.name}': Expected error containing '${operation.expectedOutcome.expectedError}', got '${error instanceof Error ? error.message : String(error)}'`,
+            );
+          }
+          // Operation threw as expected, continue to next
+          continue;
+        }
+      } else {
+        await operation.operation(stateMachine);
+      }
+
+      // Verify expected state if specified
+      if (operation.expectedOutcome.state) {
+        const currentState = stateMachine.getState();
+        if (currentState !== operation.expectedOutcome.state) {
+          throw new Error(
+            `Operation '${operation.name}': Expected state '${operation.expectedOutcome.state}', got '${currentState}'`,
+          );
+        }
+      }
+
+      // Run custom validation if provided
+      if (operation.validation) {
+        await operation.validation(stateMachine);
+      }
+    } catch (error) {
+      throw new Error(
+        `State operation test failed at operation ${i} (${operation.name}): ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  if (resetAfter && stateMachine.reset) {
+    stateMachine.reset();
+  }
+}
+
+/**
+ * Mock configuration for simulating state machine failures.
+ */
+export interface StateMachineFailureSimulation {
+  /** Method name to mock for failure */
+  methodName: keyof StateMachine;
+  /** Number of calls before failure occurs (0 = immediate failure) */
+  failAfterCalls?: number;
+  /** Error to throw when failure occurs */
+  failureError?: Error;
+  /** Whether to restore the original method after test */
+  restore?: boolean;
+}
+
+/**
+ * Simulate failures in state machine methods for robustness testing.
+ *
+ * This utility helps test how state machine code handles failures in
+ * underlying operations like transitions, state checks, or resets.
+ *
+ * @param stateMachine - The state machine to test
+ * @param failures - Array of failure simulations to apply
+ * @param testFunction - Function to run while failures are active
+ * @returns Promise that resolves when test completes and failures are cleaned up
+ * @example
+ * ```typescript
+ * await testWithFailureSimulation(stateMachine, [
+ *   {
+ *     methodName: 'transition',
+ *     failAfterCalls: 2,
+ *     failureError: new Error('Network timeout'),
+ *     restore: true
+ *   }
+ * ], async (sm) => {
+ *   // First two transitions work
+ *   await sm.transition('DISCOVERING');
+ *   await sm.transition('CONNECTING');
+ *
+ *   // Third transition fails
+ *   await expect(sm.transition('CONNECTED')).rejects.toThrow('Network timeout');
+ * });
+ * ```
+ * @category Testing
+ * @since 1.0.0
+ */
+export async function testWithFailureSimulation<T>(
+  stateMachine: StateMachine,
+  failures: StateMachineFailureSimulation[],
+  testFunction: (stateMachine: StateMachine) => T | Promise<T>,
+): Promise<T> {
+  const originalMethods: Array<{ methodName: keyof StateMachine; originalMethod: unknown }> = [];
+
+  try {
+    // Setup failure simulations
+    for (const failure of failures) {
+      const originalMethod = stateMachine[failure.methodName];
+      originalMethods.push({ methodName: failure.methodName, originalMethod });
+
+      if (typeof originalMethod === 'function') {
+        let callCount = 0;
+        const failAfterCalls = failure.failAfterCalls ?? 0;
+        const failureError =
+          failure.failureError ?? new Error(`Simulated failure in ${String(failure.methodName)}`);
+
+        // Create mock function
+        const mockMethod = (...args: unknown[]) => {
+          callCount++;
+          if (callCount > failAfterCalls) {
+            throw failureError;
+          }
+          return (originalMethod as (...args: unknown[]) => unknown).apply(stateMachine, args);
+        };
+
+        // Replace method
+        (stateMachine as unknown as Record<string, unknown>)[String(failure.methodName)] = mockMethod;
+      }
+    }
+
+    // Run test function
+    return await testFunction(stateMachine);
+  } finally {
+    // Restore original methods if requested
+    for (const failure of failures) {
+      if (failure.restore !== false) {
+        const original = originalMethods.find((om) => om.methodName === failure.methodName);
+        if (original) {
+          (stateMachine as unknown as Record<string, unknown>)[String(failure.methodName)] =
+            original.originalMethod;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Configuration for state machine stress testing.
+ */
+export interface StressTestConfig {
+  /** Number of iterations to run */
+  iterations?: number;
+  /** Array of states to randomly transition between */
+  states?: string[];
+  /** Array of operations to randomly perform */
+  operations?: Array<(stateMachine: StateMachine) => void | Promise<void>>;
+  /** Whether to reset between iterations */
+  resetBetweenIterations?: boolean;
+  /** Maximum time to run stress test (ms) */
+  maxTime?: number;
+  /** Function to validate state machine after each iteration */
+  validate?: (stateMachine: StateMachine) => void | Promise<void>;
+}
+
+/**
+ * Perform stress testing on a state machine with random operations.
+ *
+ * This utility helps identify race conditions, memory leaks, and other
+ * issues that may only appear under heavy or random usage.
+ *
+ * @param stateMachine - The state machine to stress test
+ * @param config - Configuration for stress testing
+ * @returns Promise that resolves when stress test completes
+ * @example
+ * ```typescript
+ * await stressTestStateMachine(stateMachine, {
+ *   iterations: 1000,
+ *   states: ['IDLE', 'DISCOVERING', 'CONNECTING', 'CONNECTED'],
+ *   operations: [
+ *     (sm) => sm.transition('DISCOVERING'),
+ *     (sm) => sm.reset(),
+ *     (sm) => sm.getState()
+ *   ],
+ *   validate: (sm) => expect(sm.getState()).toBeDefined(),
+ *   resetBetweenIterations: true
+ * });
+ * ```
+ * @category Testing
+ * @since 1.0.0
+ */
+export async function stressTestStateMachine(
+  stateMachine: StateMachine,
+  config: StressTestConfig = {},
+): Promise<{ iterations: number; timeElapsed: number; errors: Error[] }> {
+  const {
+    iterations = 100,
+    states = ['IDLE', 'DISCOVERING', 'CONNECTING', 'CONNECTED'],
+    operations = [],
+    resetBetweenIterations = true,
+    maxTime = 30000, // 30 seconds
+    validate,
+  } = config;
+
+  const startTime = Date.now();
+  const errors: Error[] = [];
+  let completedIterations = 0;
+
+  for (let i = 0; i < iterations; i++) {
+    // Check time limit
+    if (Date.now() - startTime > maxTime) {
+      break;
+    }
+
+    try {
+      // Reset if requested
+      if (resetBetweenIterations && stateMachine.reset) {
+        stateMachine.reset();
+      }
+
+      // Perform random operations
+      const numOperations = Math.floor(Math.random() * 5) + 1; // 1-5 operations
+      for (let j = 0; j < numOperations; j++) {
+        if (operations.length > 0) {
+          // Use provided operations
+          const randomOperation = operations[Math.floor(Math.random() * operations.length)];
+          if (randomOperation) {
+            await randomOperation(stateMachine);
+          }
+        } else if (stateMachine.transition) {
+          // Default: random state transitions
+          const randomState = states[Math.floor(Math.random() * states.length)];
+          if (randomState) {
+            try {
+              await stateMachine.transition(randomState);
+            } catch {
+              // Ignore transition failures during stress test
+            }
+          }
+        }
+      }
+
+      // Validate if function provided
+      if (validate) {
+        await validate(stateMachine);
+      }
+
+      completedIterations++;
+    } catch (error) {
+      if (error instanceof Error) {
+        errors.push(error);
+      }
+    }
+  }
+
+  return {
+    iterations: completedIterations,
+    timeElapsed: Date.now() - startTime,
+    errors,
+  };
 }

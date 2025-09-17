@@ -8,7 +8,7 @@
 
 > `const` `readonly` **DISCOVERY\_EVENTS**: `object`
 
-Defined in: [core/constants.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/constants.ts#L47)
+Defined in: [core/discovery/src/core/constants.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/constants.ts#L47)
 
 Event types for the Generic Cross-Blockchain Discovery Protocol.
 
@@ -16,7 +16,7 @@ Defines the standardized event types used throughout the capability-first
 discovery process. These events enable secure cross-origin
 communication between initiators and responders.
 
-## Type declaration
+## Type Declaration
 
 ### COMPLETE
 

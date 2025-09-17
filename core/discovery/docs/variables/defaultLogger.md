@@ -8,7 +8,7 @@
 
 > `const` **defaultLogger**: [`ConsoleLogger`](../classes/ConsoleLogger.md)
 
-Defined in: [core/logger.ts:120](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/discovery/src/core/logger.ts#L120)
+Defined in: [core/discovery/src/core/logger.ts:117](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/core/logger.ts#L117)
 
 Default logger instance for the discovery package.
 Can be overridden by providing a custom logger in component configuration.
