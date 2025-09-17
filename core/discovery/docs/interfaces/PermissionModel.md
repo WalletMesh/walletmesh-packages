@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.1**](../README.md)
+[**@walletmesh/discovery v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: PermissionModel
 
-Defined in: [core/discovery/src/types/capabilities.ts:347](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L347)
+Defined in: [core/discovery/src/types/capabilities.ts:347](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L347)
 
 Permission model for responders.
 
@@ -20,7 +20,7 @@ Permission model for responders.
 
 > `optional` **optional**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:349](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L349)
+Defined in: [core/discovery/src/types/capabilities.ts:349](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L349)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [core/discovery/src/types/capabilities.ts:349](https://github.com/Wa
 
 > **required**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:348](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L348)
+Defined in: [core/discovery/src/types/capabilities.ts:348](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L348)
 
 ***
 
@@ -36,4 +36,4 @@ Defined in: [core/discovery/src/types/capabilities.ts:348](https://github.com/Wa
 
 > `optional` **scopes**: `Record`\<`string`, `string`[]\>
 
-Defined in: [core/discovery/src/types/capabilities.ts:350](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L350)
+Defined in: [core/discovery/src/types/capabilities.ts:350](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L350)

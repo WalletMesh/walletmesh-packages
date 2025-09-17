@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.1**](../README.md)
+[**@walletmesh/discovery v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: TechnologyMatch
 
-Defined in: [core/discovery/src/types/capabilities.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L106)
+Defined in: [core/discovery/src/types/capabilities.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L106)
 
 Technology capability match for discovery response.
 
@@ -23,7 +23,7 @@ that the wallet supports for that technology.
 
 > **features**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:122](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L122)
+Defined in: [core/discovery/src/types/capabilities.ts:122](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L122)
 
 Supported features for this technology.
 Subset of what the wallet supports that matches the requirement.
@@ -34,7 +34,7 @@ Subset of what the wallet supports that matches the requirement.
 
 > **interfaces**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L116)
+Defined in: [core/discovery/src/types/capabilities.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L116)
 
 Supported interfaces for this technology.
 Subset of what the wallet supports that matches the requirement.
@@ -45,6 +45,6 @@ Subset of what the wallet supports that matches the requirement.
 
 > **type**: `"evm"` \| `"solana"` \| `"aztec"`
 
-Defined in: [core/discovery/src/types/capabilities.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L110)
+Defined in: [core/discovery/src/types/capabilities.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L110)
 
 Blockchain technology type.

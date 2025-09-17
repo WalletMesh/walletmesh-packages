@@ -1,5 +1,11 @@
 # @walletmesh/discovery
 
+## 0.1.2
+
+### Patch Changes
+
+- 8e10c90: refactor(discovery): reorganize package structure with improved modularity
+
 ## 0.1.1
 
 ### Patch Changes

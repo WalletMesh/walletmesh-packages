@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.1**](../README.md)
+[**@walletmesh/discovery v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: NetworkInfo
 
-Defined in: [core/discovery/src/types/capabilities.ts:211](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L211)
+Defined in: [core/discovery/src/types/capabilities.ts:211](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L211)
 
 Network information for blockchain networks.
 
@@ -20,7 +20,7 @@ Network information for blockchain networks.
 
 > **chainId**: `string`
 
-Defined in: [core/discovery/src/types/capabilities.ts:213](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L213)
+Defined in: [core/discovery/src/types/capabilities.ts:213](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L213)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [core/discovery/src/types/capabilities.ts:213](https://github.com/Wa
 
 > **name**: `string`
 
-Defined in: [core/discovery/src/types/capabilities.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L212)
+Defined in: [core/discovery/src/types/capabilities.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L212)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [core/discovery/src/types/capabilities.ts:212](https://github.com/Wa
 
 > **nativeCurrency**: `object`
 
-Defined in: [core/discovery/src/types/capabilities.ts:214](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L214)
+Defined in: [core/discovery/src/types/capabilities.ts:214](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L214)
 
 #### decimals
 
@@ -56,4 +56,4 @@ Defined in: [core/discovery/src/types/capabilities.ts:214](https://github.com/Wa
 
 > **testnet**: `boolean`
 
-Defined in: [core/discovery/src/types/capabilities.ts:219](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L219)
+Defined in: [core/discovery/src/types/capabilities.ts:219](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L219)

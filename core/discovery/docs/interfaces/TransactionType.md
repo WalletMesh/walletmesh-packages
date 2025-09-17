@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.1**](../README.md)
+[**@walletmesh/discovery v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: TransactionType
 
-Defined in: [core/discovery/src/types/capabilities.ts:228](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L228)
+Defined in: [core/discovery/src/types/capabilities.ts:228](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L228)
 
 Transaction type classification.
 
@@ -20,7 +20,7 @@ Transaction type classification.
 
 > **description**: `string`
 
-Defined in: [core/discovery/src/types/capabilities.ts:231](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L231)
+Defined in: [core/discovery/src/types/capabilities.ts:231](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L231)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [core/discovery/src/types/capabilities.ts:231](https://github.com/Wa
 
 > **id**: `string`
 
-Defined in: [core/discovery/src/types/capabilities.ts:229](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L229)
+Defined in: [core/discovery/src/types/capabilities.ts:229](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L229)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [core/discovery/src/types/capabilities.ts:229](https://github.com/Wa
 
 > **name**: `string`
 
-Defined in: [core/discovery/src/types/capabilities.ts:230](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L230)
+Defined in: [core/discovery/src/types/capabilities.ts:230](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L230)
 
 ***
 
@@ -44,7 +44,7 @@ Defined in: [core/discovery/src/types/capabilities.ts:230](https://github.com/Wa
 
 > **parameters**: [`ParameterSpec`](ParameterSpec.md)[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:232](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L232)
+Defined in: [core/discovery/src/types/capabilities.ts:232](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L232)
 
 ***
 
@@ -52,7 +52,7 @@ Defined in: [core/discovery/src/types/capabilities.ts:232](https://github.com/Wa
 
 > **requiresUserApproval**: `boolean`
 
-Defined in: [core/discovery/src/types/capabilities.ts:234](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L234)
+Defined in: [core/discovery/src/types/capabilities.ts:234](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L234)
 
 ***
 
@@ -60,4 +60,4 @@ Defined in: [core/discovery/src/types/capabilities.ts:234](https://github.com/Wa
 
 > **supportsGasEstimation**: `boolean`
 
-Defined in: [core/discovery/src/types/capabilities.ts:233](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L233)
+Defined in: [core/discovery/src/types/capabilities.ts:233](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L233)

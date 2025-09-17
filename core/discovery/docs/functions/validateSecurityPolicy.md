@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.1**](../README.md)
+[**@walletmesh/discovery v0.1.2**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **validateSecurityPolicy**(`policy`): [`SecurityPolicy`](../interfaces/SecurityPolicy.md)
 
-Defined in: [core/discovery/src/utils/validation.ts:374](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/validation.ts#L374)
+Defined in: [core/discovery/src/utils/validation.ts:374](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/utils/validation.ts#L374)
 
 Validate SecurityPolicy structure and content.
 
