@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.1**](../README.md)
+[**@walletmesh/discovery v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CapabilityIntersection
 
-Defined in: [core/discovery/src/types/capabilities.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L163)
+Defined in: [core/discovery/src/types/capabilities.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L163)
 
 Result of capability intersection between requirements and responder capabilities.
 
@@ -24,7 +24,7 @@ requirements and responder capabilities.
 
 > `optional` **optional**: `object`
 
-Defined in: [core/discovery/src/types/capabilities.ts:184](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L184)
+Defined in: [core/discovery/src/types/capabilities.ts:184](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L184)
 
 The intersection of optional/preferred capabilities.
 These were requested as nice-to-have and are supported by the wallet.
@@ -47,7 +47,7 @@ Optional technology matches.
 
 > **required**: `object`
 
-Defined in: [core/discovery/src/types/capabilities.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L168)
+Defined in: [core/discovery/src/types/capabilities.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L168)
 
 The intersection of required capabilities.
 All of these were requested as mandatory and are supported by the wallet.

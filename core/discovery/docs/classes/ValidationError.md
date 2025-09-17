@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.1**](../README.md)
+[**@walletmesh/discovery v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ValidationError
 
-Defined in: [core/discovery/src/utils/validation.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/validation.ts#L30)
+Defined in: [core/discovery/src/utils/validation.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/utils/validation.ts#L30)
 
 Validation error class for structured error reporting.
 
@@ -20,7 +20,7 @@ Validation error class for structured error reporting.
 
 > **new ValidationError**(`message`, `field`, `value`): `ValidationError`
 
-Defined in: [core/discovery/src/utils/validation.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/validation.ts#L31)
+Defined in: [core/discovery/src/utils/validation.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/utils/validation.ts#L31)
 
 #### Parameters
 
@@ -62,7 +62,7 @@ Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 > `readonly` **field**: `string`
 
-Defined in: [core/discovery/src/utils/validation.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/validation.ts#L33)
+Defined in: [core/discovery/src/utils/validation.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/utils/validation.ts#L33)
 
 ***
 
@@ -106,7 +106,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
 
 > `readonly` **value**: `unknown`
 
-Defined in: [core/discovery/src/utils/validation.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/utils/validation.ts#L34)
+Defined in: [core/discovery/src/utils/validation.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/utils/validation.ts#L34)
 
 ***
 

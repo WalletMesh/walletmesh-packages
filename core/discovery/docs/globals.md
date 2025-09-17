@@ -1,8 +1,8 @@
-[**@walletmesh/discovery v0.1.1**](README.md)
+[**@walletmesh/discovery v0.1.2**](README.md)
 
 ***
 
-# @walletmesh/discovery v0.1.1
+# @walletmesh/discovery v0.1.2
 
 Generic Cross-Blockchain Discovery Protocol
 

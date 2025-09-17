@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.1**](../README.md)
+[**@walletmesh/discovery v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ResponderFeature
 
-Defined in: [core/discovery/src/types/capabilities.ts:300](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L300)
+Defined in: [core/discovery/src/types/capabilities.ts:300](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L300)
 
 Individual responder feature declaration.
 
@@ -20,7 +20,7 @@ Individual responder feature declaration.
 
 > `optional` **description**: `string`
 
-Defined in: [core/discovery/src/types/capabilities.ts:303](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L303)
+Defined in: [core/discovery/src/types/capabilities.ts:303](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L303)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [core/discovery/src/types/capabilities.ts:303](https://github.com/Wa
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [core/discovery/src/types/capabilities.ts:304](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L304)
+Defined in: [core/discovery/src/types/capabilities.ts:304](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L304)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [core/discovery/src/types/capabilities.ts:304](https://github.com/Wa
 
 > **id**: `string`
 
-Defined in: [core/discovery/src/types/capabilities.ts:301](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L301)
+Defined in: [core/discovery/src/types/capabilities.ts:301](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L301)
 
 ***
 
@@ -44,4 +44,4 @@ Defined in: [core/discovery/src/types/capabilities.ts:301](https://github.com/Wa
 
 > **name**: `string`
 
-Defined in: [core/discovery/src/types/capabilities.ts:302](https://github.com/WalletMesh/walletmesh-packages/blob/844d707e640904b18c79eae02c3d132c85900a84/core/discovery/src/types/capabilities.ts#L302)
+Defined in: [core/discovery/src/types/capabilities.ts:302](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L302)
