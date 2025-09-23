@@ -1,0 +1,357 @@
+[**@walletmesh/modal-react v0.1.0**](../README.md)
+
+***
+
+[@walletmesh/modal-react](../globals.md) / SessionManager
+
+# Interface: SessionManager
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:207
+
+Session manager interface for unified session operations
+
+## Methods
+
+### addAccount()
+
+> **addAccount**(`sessionId`, `account`): `Promise`\<[`SessionState`](SessionState.md)\>
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:243
+
+Add a new account to a session
+
+#### Parameters
+
+##### sessionId
+
+`string`
+
+##### account
+
+`AccountInfo`
+
+#### Returns
+
+`Promise`\<[`SessionState`](SessionState.md)\>
+
+***
+
+### cleanupExpiredSessions()
+
+> **cleanupExpiredSessions**(): `Promise`\<`void`\>
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:267
+
+Clean up expired sessions
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### compareSessions()
+
+> **compareSessions**(`sessionId1`, `sessionId2`): `null` \| [`SessionComparison`](SessionComparison.md)
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:263
+
+Compare two sessions
+
+#### Parameters
+
+##### sessionId1
+
+`string`
+
+##### sessionId2
+
+`string`
+
+#### Returns
+
+`null` \| [`SessionComparison`](SessionComparison.md)
+
+***
+
+### createSession()
+
+> **createSession**(`params`): `Promise`\<[`SessionState`](SessionState.md)\>
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:211
+
+Create a new session
+
+#### Parameters
+
+##### params
+
+[`CreateSessionParams`](CreateSessionParams.md)
+
+#### Returns
+
+`Promise`\<[`SessionState`](SessionState.md)\>
+
+***
+
+### discoverAccounts()
+
+> **discoverAccounts**(`sessionId`, `options?`): `Promise`\<`AccountInfo`[]\>
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:239
+
+Discover additional accounts for a session
+
+#### Parameters
+
+##### sessionId
+
+`string`
+
+##### options?
+
+[`AccountDiscoveryOptions`](AccountDiscoveryOptions.md)
+
+#### Returns
+
+`Promise`\<`AccountInfo`[]\>
+
+***
+
+### endSession()
+
+> **endSession**(`sessionId`): `Promise`\<`void`\>
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:259
+
+End a session
+
+#### Parameters
+
+##### sessionId
+
+`string`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### getActiveAccount()
+
+> **getActiveAccount**(`sessionId`): `null` \| `AccountInfo`
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:255
+
+Get active account for a session
+
+#### Parameters
+
+##### sessionId
+
+`string`
+
+#### Returns
+
+`null` \| `AccountInfo`
+
+***
+
+### getActiveSession()
+
+> **getActiveSession**(): `null` \| [`SessionState`](SessionState.md)
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:219
+
+Get active session
+
+#### Returns
+
+`null` \| [`SessionState`](SessionState.md)
+
+***
+
+### getSession()
+
+> **getSession**(`sessionId`): `null` \| [`SessionState`](SessionState.md)
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:215
+
+Get session by ID
+
+#### Parameters
+
+##### sessionId
+
+`string`
+
+#### Returns
+
+`null` \| [`SessionState`](SessionState.md)
+
+***
+
+### getSessionAccounts()
+
+> **getSessionAccounts**(`sessionId`): `AccountInfo`[]
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:251
+
+Get all accounts for a session
+
+#### Parameters
+
+##### sessionId
+
+`string`
+
+#### Returns
+
+`AccountInfo`[]
+
+***
+
+### getWalletSessions()
+
+> **getWalletSessions**(`walletId`): [`SessionState`](SessionState.md)[]
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:223
+
+Get all sessions for a wallet
+
+#### Parameters
+
+##### walletId
+
+`string`
+
+#### Returns
+
+[`SessionState`](SessionState.md)[]
+
+***
+
+### removeAccount()
+
+> **removeAccount**(`sessionId`, `accountAddress`): `Promise`\<[`SessionState`](SessionState.md)\>
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:247
+
+Remove an account from a session
+
+#### Parameters
+
+##### sessionId
+
+`string`
+
+##### accountAddress
+
+`string`
+
+#### Returns
+
+`Promise`\<[`SessionState`](SessionState.md)\>
+
+***
+
+### switchAccount()
+
+> **switchAccount**(`sessionId`, `accountAddress`): `Promise`\<[`SessionState`](SessionState.md)\>
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:235
+
+Switch active account within a session
+
+#### Parameters
+
+##### sessionId
+
+`string`
+
+##### accountAddress
+
+`string`
+
+#### Returns
+
+`Promise`\<[`SessionState`](SessionState.md)\>
+
+***
+
+### switchChain()
+
+> **switchChain**(`sessionId`, `chain`): `Promise`\<[`SessionState`](SessionState.md)\>
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:231
+
+Switch chain within a session (creates new session if needed)
+
+#### Parameters
+
+##### sessionId
+
+`string`
+
+##### chain
+
+###### chainId
+
+`string`
+
+###### chainType
+
+[`ChainType`](../enumerations/ChainType.md)
+
+###### group?
+
+`string`
+
+###### icon?
+
+`string`
+
+###### interfaces?
+
+`string`[]
+
+###### label?
+
+`string`
+
+###### name
+
+`string`
+
+###### required
+
+`boolean`
+
+#### Returns
+
+`Promise`\<[`SessionState`](SessionState.md)\>
+
+***
+
+### updateSessionStatus()
+
+> **updateSessionStatus**(`sessionId`, `status`): `void`
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:227
+
+Update session status
+
+#### Parameters
+
+##### sessionId
+
+`string`
+
+##### status
+
+[`SessionStatus`](../type-aliases/SessionStatus.md)
+
+#### Returns
+
+`void`

@@ -1,0 +1,362 @@
+.errorContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.errorCard {
+  background: var(--wm-error-bg, white);
+  color: var(--wm-error-text, #1a1a1a);
+  border-radius: var(--wm-border-radius-lg, 12px);
+  padding: 32px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: var(--wm-shadow-xl, 0 10px 40px rgba(0, 0, 0, 0.2));
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.errorIcon {
+  font-size: 48px;
+  text-align: center;
+  margin-bottom: 16px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.errorTitle {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  text-align: center;
+  color: var(--wm-error-title, #1a1a1a);
+}
+
+.errorDescription {
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+  text-align: center;
+  color: var(--wm-error-description, #666);
+}
+
+.retryInfo {
+  font-size: 14px;
+  text-align: center;
+  color: var(--wm-error-retry-info, #999);
+  margin: -12px 0 12px 0;
+}
+
+.errorActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.actionButton {
+  padding: 10px 20px;
+  border-radius: var(--wm-border-radius, 8px);
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 100px;
+  justify-content: center;
+}
+
+.actionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.actionButton:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.actionButton:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* Button variants */
+.actionButton.primary {
+  background-color: var(--wm-primary, #4f46e5);
+  color: var(--wm-primary-text, white);
+}
+
+.actionButton.primary:not(:disabled):hover {
+  background-color: var(--wm-primary-hover, #4338ca);
+}
+
+.actionButton.secondary {
+  background-color: var(--wm-secondary, #e5e7eb);
+  color: var(--wm-secondary-text, #1f2937);
+}
+
+.actionButton.secondary:not(:disabled):hover {
+  background-color: var(--wm-secondary-hover, #d1d5db);
+}
+
+.actionButton.danger {
+  background-color: var(--wm-danger, #ef4444);
+  color: var(--wm-danger-text, white);
+}
+
+.actionButton.danger:not(:disabled):hover {
+  background-color: var(--wm-danger-hover, #dc2626);
+}
+
+.actionIcon {
+  font-size: 18px;
+}
+
+.errorDetails {
+  border-top: 1px solid var(--wm-border, #e5e7eb);
+  padding-top: 16px;
+}
+
+.errorDetails summary {
+  cursor: pointer;
+  color: var(--wm-muted, #6b7280);
+  font-size: 14px;
+  font-weight: 500;
+  user-select: none;
+  padding: 4px 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.errorDetails summary::after {
+  content: "▼";
+  font-size: 12px;
+  transition: transform 0.2s;
+}
+
+.errorDetails[open] summary::after {
+  transform: rotate(180deg);
+}
+
+.errorDetails summary:hover {
+  color: var(--wm-muted-hover, #4b5563);
+}
+
+.technicalInfo {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: var(--wm-code-bg, #f9fafb);
+  border-radius: var(--wm-border-radius-sm, 6px);
+  font-size: 14px;
+}
+
+.technicalInfo p {
+  margin: 4px 0;
+  color: var(--wm-code-text, #4b5563);
+}
+
+.technicalInfo strong {
+  color: var(--wm-code-label, #1f2937);
+}
+
+.errorStack {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: var(--wm-stack-bg, #f3f4f6);
+  border-radius: var(--wm-border-radius-sm, 6px);
+  font-family: "Monaco", "Courier New", monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--wm-stack-text, #4b5563);
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Dark theme */
+.dark {
+  --wm-error-bg: #1f2937;
+  --wm-error-text: #f3f4f6;
+  --wm-error-title: #f3f4f6;
+  --wm-error-description: #9ca3af;
+  --wm-error-retry-info: #6b7280;
+  --wm-primary: #6366f1;
+  --wm-primary-text: white;
+  --wm-primary-hover: #4f46e5;
+  --wm-secondary: #374151;
+  --wm-secondary-text: #f3f4f6;
+  --wm-secondary-hover: #4b5563;
+  --wm-danger: #ef4444;
+  --wm-danger-text: white;
+  --wm-danger-hover: #dc2626;
+  --wm-border: #374151;
+  --wm-muted: #9ca3af;
+  --wm-muted-hover: #d1d5db;
+  --wm-code-bg: #111827;
+  --wm-code-text: #9ca3af;
+  --wm-code-label: #d1d5db;
+  --wm-stack-bg: #0f172a;
+  --wm-stack-text: #94a3b8;
+}
+
+/* Light theme (explicit) */
+.light {
+  --wm-error-bg: white;
+  --wm-error-text: #1a1a1a;
+  --wm-error-title: #1a1a1a;
+  --wm-error-description: #666;
+  --wm-error-retry-info: #999;
+  --wm-primary: #4f46e5;
+  --wm-primary-text: white;
+  --wm-primary-hover: #4338ca;
+  --wm-secondary: #e5e7eb;
+  --wm-secondary-text: #1f2937;
+  --wm-secondary-hover: #d1d5db;
+  --wm-danger: #ef4444;
+  --wm-danger-text: white;
+  --wm-danger-hover: #dc2626;
+  --wm-border: #e5e7eb;
+  --wm-muted: #6b7280;
+  --wm-muted-hover: #4b5563;
+  --wm-code-bg: #f9fafb;
+  --wm-code-text: #4b5563;
+  --wm-code-label: #1f2937;
+  --wm-stack-bg: #f3f4f6;
+  --wm-stack-text: #4b5563;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .errorCard {
+    padding: 24px;
+    margin: 0 16px;
+  }
+
+  .errorIcon {
+    font-size: 36px;
+  }
+
+  .errorTitle {
+    font-size: 20px;
+  }
+
+  .errorDescription {
+    font-size: 14px;
+  }
+
+  .actionButton {
+    font-size: 14px;
+    padding: 8px 16px;
+    min-width: 80px;
+  }
+
+  .errorActions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .actionButton {
+    width: 100%;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .errorContainer,
+  .errorCard,
+  .errorIcon {
+    animation: none;
+  }
+
+  .actionButton {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .errorCard {
+    border: 2px solid currentColor;
+  }
+
+  .actionButton {
+    border: 2px solid currentColor;
+  }
+
+  .errorDetails {
+    border-top-width: 2px;
+  }
+}
+
+/* Automatically use dark theme based on system preference */
+@media (prefers-color-scheme: dark) {
+  .errorContainer:not(.light) {
+    --wm-error-bg: #1f2937;
+    --wm-error-text: #f3f4f6;
+    --wm-error-title: #f3f4f6;
+    --wm-error-description: #9ca3af;
+    --wm-error-retry-info: #6b7280;
+    --wm-primary: #6366f1;
+    --wm-primary-text: white;
+    --wm-primary-hover: #4f46e5;
+    --wm-secondary: #374151;
+    --wm-secondary-text: #f3f4f6;
+    --wm-secondary-hover: #4b5563;
+    --wm-danger: #ef4444;
+    --wm-danger-text: white;
+    --wm-danger-hover: #dc2626;
+    --wm-border: #374151;
+    --wm-muted: #9ca3af;
+    --wm-muted-hover: #d1d5db;
+    --wm-code-bg: #111827;
+    --wm-code-text: #9ca3af;
+    --wm-code-label: #d1d5db;
+    --wm-stack-bg: #0f172a;
+    --wm-stack-text: #94a3b8;
+  }
+}

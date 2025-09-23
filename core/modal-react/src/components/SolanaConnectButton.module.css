@@ -1,0 +1,154 @@
+/* Solana Connect Button Styles */
+
+.solanaButtonContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.solanaButton {
+  position: relative;
+  background: linear-gradient(135deg, #9945ff 0%, #14f195 100%);
+  border: none;
+  color: white;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.solanaButton:hover {
+  background: linear-gradient(135deg, #8a3fff 0%, #00d084 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(153, 69, 255, 0.3);
+}
+
+.solanaButton:active {
+  transform: translateY(0);
+}
+
+.solanaButton.transacting {
+  background: linear-gradient(135deg, #6b46c1 0%, #059669 100%);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.solanaButton.confirming {
+  background: linear-gradient(135deg, #7c3aed 0%, #0d9488 100%);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Cluster indicator badge */
+.clusterBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 10;
+  min-width: 50px;
+  text-align: center;
+}
+
+.clusterBadge.mainnet {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: white;
+}
+
+.clusterBadge.devnet {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.clusterBadge.testnet {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.clusterBadge.localnet {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+/* Transaction status overlay */
+.transactionBadge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 20;
+  backdrop-filter: blur(4px);
+}
+
+.transactionIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.transactionText {
+  font-size: 11px;
+}
+
+/* Balance badge */
+.balanceBadge {
+  position: absolute;
+  bottom: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #14f195 0%, #9945ff 100%);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  z-index: 10;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .clusterBadge {
+    font-size: 9px;
+    padding: 1px 4px;
+    min-width: 40px;
+  }
+
+  .transactionBadge {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+
+  .balanceBadge {
+    font-size: 9px;
+    padding: 1px 4px;
+    min-width: 35px;
+  }
+}
