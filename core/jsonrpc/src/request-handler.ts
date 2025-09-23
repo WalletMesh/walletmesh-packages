@@ -1,13 +1,13 @@
+import { JSONRPCError } from './error.js';
+import { MessageValidator } from './message-validator.js';
+import type { MethodManager } from './method-manager.js';
 import type {
-  JSONRPCMethodMap,
   JSONRPCContext,
+  JSONRPCMethodMap,
   JSONRPCRequest,
   JSONRPCResponse,
   MethodResponse,
 } from './types.js';
-import { JSONRPCError } from './error.js';
-import { MessageValidator } from './message-validator.js';
-import type { MethodManager } from './method-manager.js';
 
 /**
  * Handles processing and validation of JSON-RPC requests.

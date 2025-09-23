@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
-import { ProviderSerializerRegistry } from './provider-serialization.js';
 import type { JSONRPCSerializer } from '@walletmesh/jsonrpc';
+import { describe, expect, it, vi } from 'vitest';
+import { ProviderSerializerRegistry } from './provider-serialization.js';
 import type { MethodCall } from './types.js';
 
 describe('ProviderSerializerRegistry', () => {

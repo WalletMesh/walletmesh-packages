@@ -6,7 +6,7 @@
 
 # Class: DiscoveryResponder
 
-Defined in: [core/discovery/src/responder.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder.ts#L81)
+Defined in: [core/discovery/src/responder.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L81)
 
 Discovery responder for wallets to participate in discovery protocol.
 
@@ -50,7 +50,7 @@ const responder = new DiscoveryResponder(
 
 > **new DiscoveryResponder**(`responderInfo`, `options`): `DiscoveryResponder`
 
-Defined in: [core/discovery/src/responder.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder.ts#L100)
+Defined in: [core/discovery/src/responder.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L100)
 
 Create a new DiscoveryResponder instance.
 
@@ -78,7 +78,7 @@ Optional configuration (security, sessions, etc.)
 
 > **cleanup**(): `void`
 
-Defined in: [core/discovery/src/responder.ts:249](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder.ts#L249)
+Defined in: [core/discovery/src/responder.ts:249](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L249)
 
 Cleanup resources and stop listening.
 
@@ -92,7 +92,7 @@ Cleanup resources and stop listening.
 
 > **getStats**(): `object`
 
-Defined in: [core/discovery/src/responder.ts:237](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder.ts#L237)
+Defined in: [core/discovery/src/responder.ts:237](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L237)
 
 Get responder statistics.
 
@@ -146,7 +146,7 @@ Get responder statistics.
 
 > **isAnnouncerListening**(): `boolean`
 
-Defined in: [core/discovery/src/responder.ts:199](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder.ts#L199)
+Defined in: [core/discovery/src/responder.ts:199](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L199)
 
 Check if the responder is currently listening for requests.
 
@@ -160,7 +160,7 @@ Check if the responder is currently listening for requests.
 
 > **startListening**(): `void`
 
-Defined in: [core/discovery/src/responder.ts:156](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder.ts#L156)
+Defined in: [core/discovery/src/responder.ts:156](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L156)
 
 Start listening for discovery requests.
 
@@ -178,7 +178,7 @@ multiple times (idempotent).
 
 > **stopListening**(): `void`
 
-Defined in: [core/discovery/src/responder.ts:177](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder.ts#L177)
+Defined in: [core/discovery/src/responder.ts:177](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L177)
 
 Stop listening for discovery requests.
 
@@ -196,7 +196,7 @@ Safe to call multiple times (idempotent).
 
 > **updateConfig**(`updates`): `void`
 
-Defined in: [core/discovery/src/responder.ts:219](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder.ts#L219)
+Defined in: [core/discovery/src/responder.ts:219](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L219)
 
 Update responder configuration without restarting.
 
@@ -216,7 +216,7 @@ Update responder configuration without restarting.
 
 > **updateResponderInfo**(`responderInfo`): `void`
 
-Defined in: [core/discovery/src/responder.ts:206](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder.ts#L206)
+Defined in: [core/discovery/src/responder.ts:206](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L206)
 
 Update responder information while maintaining discovery state.
 

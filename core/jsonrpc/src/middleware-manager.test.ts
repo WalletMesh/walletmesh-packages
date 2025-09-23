@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { MiddlewareManager } from './middleware-manager.js';
-import type { JSONRPCMethodMap, JSONRPCContext, JSONRPCRequest, JSONRPCResponse } from './types.js';
+import type { JSONRPCContext, JSONRPCMethodMap, JSONRPCRequest, JSONRPCResponse } from './types.js';
 
 interface TestMethodMap extends JSONRPCMethodMap {
   add: { params: { a: number; b: number }; result: number };
@@ -404,13 +404,13 @@ describe('MiddlewareManager', () => {
 
     // Test undefined
     await expect(async () => {
-      // @ts-ignore - Testing runtime behavior
+      // @ts-expect-error - Testing runtime behavior
       manager.addMiddleware(undefined);
     }).rejects.toThrow('Middleware must be a function');
 
     // Test null
     await expect(async () => {
-      // @ts-ignore - Testing runtime behavior
+      // @ts-expect-error - Testing runtime behavior
       manager.addMiddleware(null);
     }).rejects.toThrow('Middleware must be a function');
   });

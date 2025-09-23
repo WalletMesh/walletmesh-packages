@@ -1,4 +1,4 @@
-import type { JSONRPCEventMap, JSONRPCEventHandler } from './types.js';
+import type { JSONRPCEventHandler, JSONRPCEventMap } from './types.js';
 
 /**
  * Represents an event handler entry with optional pattern matching support.

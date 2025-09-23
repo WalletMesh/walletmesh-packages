@@ -1,7 +1,7 @@
 import type { JSONRPCMiddleware, JSONRPCRequest, JSONRPCResponse } from '@walletmesh/jsonrpc';
 import { RouterError } from './errors.js';
-import type { RouterContext, PermissionCheckCallback, RouterMethodMap } from './types.js';
 import type { SessionStore } from './session-store.js';
+import type { PermissionCheckCallback, RouterContext, RouterMethodMap } from './types.js';
 
 /**
  * Creates middleware for session validation and management.
@@ -78,58 +78,22 @@ export function createSessionMiddleware(
       throw new RouterError('invalidRequest', 'No session ID provided');
     }
 
-    // Try to find the session with proper origin handling
-    let session = null;
-    let actualOrigin = context?.origin;
-
+    // Use simplified session lookup - sessionId only
     console.debug('Session middleware: Looking for session:', {
       sessionId,
-      origin: actualOrigin,
+      origin: context?.origin,
       method: request.method,
     });
 
-    if (actualOrigin) {
-      // Try with the provided origin first
-      const sessionKey = `${actualOrigin}_${sessionId}`;
-      console.debug('Session middleware: Trying session key:', sessionKey);
-      session = await sessionStore.validateAndRefresh(sessionKey);
-      if (session) {
-        console.debug('Session middleware: Found session with origin:', actualOrigin);
-      }
-    }
-
-    if (!session) {
-      // If that failed, try to find the session by checking all sessions
-      // This handles cases where origin extraction failed but session exists
-      console.debug('Session middleware: Checking all sessions for sessionId:', sessionId);
-      const allSessions = await sessionStore.getAll();
-      console.debug('Session middleware: Available sessions:', Array.from(allSessions.keys()));
-      for (const [sessionKey] of allSessions) {
-        if (sessionKey.endsWith(`_${sessionId}`)) {
-          // Found a session with matching session ID
-          const originFromKey = sessionKey.substring(0, sessionKey.length - sessionId.length - 1);
-          console.debug(
-            'Session middleware: Found matching session key:',
-            sessionKey,
-            'origin:',
-            originFromKey,
-          );
-          session = await sessionStore.validateAndRefresh(sessionKey);
-          if (session) {
-            actualOrigin = originFromKey;
-            // Update context with the correct origin
-            context.origin = actualOrigin;
-            console.debug('Session middleware: Session validated, updated context origin to:', actualOrigin);
-            break;
-          }
-        }
-      }
-    }
+    // Direct lookup using sessionId only (simplified storage)
+    const session = await sessionStore.validateAndRefresh(sessionId);
 
     if (!session) {
       console.error('Session middleware: No valid session found for sessionId:', sessionId);
       throw new RouterError('invalidSession');
     }
+
+    console.debug('Session middleware: Found and validated session:', sessionId);
 
     // Store session in context for use by method handlers
     context.session = session;

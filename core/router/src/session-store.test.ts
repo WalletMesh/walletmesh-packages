@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { MemorySessionStore, LocalStorageSessionStore } from './session-store.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LocalStorageSessionStore, MemorySessionStore } from './session-store.js';
 import type { SessionData } from './types.js';
 
 const mockSession: SessionData = {

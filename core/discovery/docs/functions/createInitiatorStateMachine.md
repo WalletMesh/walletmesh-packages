@@ -8,7 +8,7 @@
 
 > **createInitiatorStateMachine**(`config`): [`InitiatorStateMachine`](../classes/InitiatorStateMachine.md)
 
-Defined in: [core/discovery/src/initiator/InitiatorStateMachine.ts:312](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/initiator/InitiatorStateMachine.ts#L312)
+Defined in: [core/discovery/src/initiator/InitiatorStateMachine.ts:312](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator/InitiatorStateMachine.ts#L312)
 
 Create an initiator state machine with automatic message dispatch.
 

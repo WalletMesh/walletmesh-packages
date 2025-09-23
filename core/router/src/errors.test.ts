@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { RouterError, RouterErrorMap } from './errors.js';
 import { JSONRPCError } from '@walletmesh/jsonrpc';
+import { describe, expect, it } from 'vitest';
+import { RouterError, RouterErrorMap } from './errors.js';
 
 describe('RouterErrorMap', () => {
   it('should contain all error codes and messages', () => {

@@ -117,12 +117,16 @@ describe('ContentScriptRelay', () => {
         (eventListener as EventListener)(discoveryEvent);
       }
 
-      expect(mockChrome.runtime.sendMessage).toHaveBeenCalledWith({
-        type: 'discovery:wallet:request',
-        data: mockDiscoveryRequest,
-        origin: 'https://dapp.example.com',
-        timestamp: expect.any(Number),
-      });
+      // Check that sendMessage was called with correct data and a callback (due to Promise conversion)
+      expect(mockChrome.runtime.sendMessage).toHaveBeenCalledWith(
+        {
+          type: 'discovery:wallet:request',
+          data: mockDiscoveryRequest,
+          origin: 'https://dapp.example.com',
+          timestamp: expect.any(Number),
+        },
+        expect.any(Function), // Callback added by browser API abstraction for Promise conversion
+      );
     });
 
     it('should handle sendMessage failures gracefully', () => {
@@ -263,7 +267,8 @@ describe('ContentScriptRelay', () => {
         initialized: true,
         origin: 'https://dapp.example.com',
         userAgent: 'Test Browser',
-        chromeRuntimeAvailable: true,
+        browserAPIAvailable: true,
+        browserAPIType: 'chrome',
         retryAttempts: 0,
         maxRetryAttempts: 3,
       });
@@ -338,17 +343,17 @@ describe('ContentScriptRelay', () => {
     });
   });
 
-  describe('chrome API error handling', () => {
+  describe('browser API error handling', () => {
     it('should handle Extension context invalidated error (coverage: line 126)', () => {
       const consoleSpy = createConsoleSpy({ silent: false });
       relay = new ContentScriptRelay();
 
       // Access private method for testing
       const privateRelay = relay as unknown as {
-        handleChromeApiError(operation: string, error: unknown): void;
+        handleBrowserApiError(operation: string, error: unknown): void;
       };
 
-      privateRelay.handleChromeApiError('sendMessage', new Error('Extension context invalidated'));
+      privateRelay.handleBrowserApiError('sendMessage', new Error('Extension context invalidated'));
 
       expect(consoleSpy.warn).toHaveBeenCalledWith(
         '[WalletMesh:ContentScript] Extension context invalidated - extension was reloaded or disabled',
@@ -362,10 +367,10 @@ describe('ContentScriptRelay', () => {
       relay = new ContentScriptRelay();
 
       const privateRelay = relay as unknown as {
-        handleChromeApiError(operation: string, error: unknown): void;
+        handleBrowserApiError(operation: string, error: unknown): void;
       };
 
-      privateRelay.handleChromeApiError(
+      privateRelay.handleBrowserApiError(
         'sendMessage',
         new Error('The message port closed before a response was received'),
       );
@@ -382,31 +387,31 @@ describe('ContentScriptRelay', () => {
       relay = new ContentScriptRelay();
 
       const privateRelay = relay as unknown as {
-        handleChromeApiError(operation: string, error: unknown): void;
+        handleBrowserApiError(operation: string, error: unknown): void;
       };
 
-      privateRelay.handleChromeApiError('sendMessage', new Error('Cannot access a chrome:// URL'));
+      privateRelay.handleBrowserApiError('sendMessage', new Error('Cannot access a chrome:// URL'));
 
       expect(consoleSpy.warn).toHaveBeenCalledWith(
-        '[WalletMesh:ContentScript] Cannot access chrome:// URLs - expected behavior',
+        '[WalletMesh:ContentScript] Cannot access browser internal URLs - expected behavior',
       );
 
       consoleSpy.restore();
     });
 
-    it('should handle non-Error objects in chrome API errors (coverage: line 122)', () => {
+    it('should handle non-Error objects in browser API errors (coverage: line 122)', () => {
       const consoleSpy = createConsoleSpy({ silent: false });
       relay = new ContentScriptRelay();
 
       const privateRelay = relay as unknown as {
-        handleChromeApiError(operation: string, error: unknown): void;
+        handleBrowserApiError(operation: string, error: unknown): void;
       };
 
       // Test with non-Error object - this triggers String(error) on line 122
-      privateRelay.handleChromeApiError('sendMessage', 'string error message');
+      privateRelay.handleBrowserApiError('sendMessage', 'string error message');
 
       expect(consoleSpy.warn).toHaveBeenCalledWith(
-        '[WalletMesh:ContentScript] Chrome API sendMessage failed:',
+        '[WalletMesh:ContentScript] Browser API sendMessage failed:',
         'string error message',
       );
 

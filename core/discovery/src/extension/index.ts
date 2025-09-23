@@ -1,10 +1,10 @@
 /**
  * @module discovery/extension
  *
- * Chrome extension components for WalletMesh discovery integration.
+ * Browser extension components for WalletMesh discovery integration.
  *
  * This module provides both content script and background script components
- * for implementing the discovery protocol in Chrome extensions.
+ * for implementing the discovery protocol in browser extensions (Chrome, Firefox, Edge, etc.).
  *
  * @example Basic content script usage:
  * ```typescript
@@ -14,14 +14,21 @@
  * console.log('Relay ready:', relay.isReady());
  * ```
  *
- * @example Basic background script usage:
+ * @example Basic background script usage with cross-browser support:
  * ```typescript
- * import { WalletDiscovery } from '@walletmesh/discovery/extension';
+ * import { WalletDiscovery, getBrowserAPI } from '@walletmesh/discovery/extension';
  *
+ * const api = getBrowserAPI();
  * const walletDiscovery = new WalletDiscovery({
  *   responderInfo: myWalletInfo,
  *   securityPolicy: mySecurityPolicy
  * });
+ *
+ * // Listen for messages using the appropriate API
+ * api.runtime.onMessage.addListener((message, sender) => {
+ *   // Handle discovery requests
+ * });
+ *
  * await walletDiscovery.enable();
  * ```
  */
@@ -31,6 +38,17 @@ export { ContentScriptRelay, getContentScriptRelay } from './ContentScriptRelay.
 
 // Export background script components
 export { WalletDiscovery } from './WalletDiscovery.js';
+
+// Export browser API abstraction
+export {
+  getBrowserAPI,
+  isExtensionEnvironment,
+  getExtensionId,
+  type BrowserAPI,
+  type BrowserRuntime,
+  type BrowserTabs,
+  type MessageSender,
+} from './browserApi.js';
 
 // Export extension-specific types
 export type { WalletDiscoveryConfig, WalletDiscoveryStats } from './types.js';

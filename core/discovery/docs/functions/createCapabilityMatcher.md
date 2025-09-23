@@ -8,7 +8,7 @@
 
 > **createCapabilityMatcher**(`responderInfo`): [`CapabilityMatcher`](../classes/CapabilityMatcher.md)
 
-Defined in: [core/discovery/src/responder/factory.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder/factory.ts#L119)
+Defined in: [core/discovery/src/responder/factory.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder/factory.ts#L119)
 
 Create a capability matcher for evaluating dApp capability requirements.
 

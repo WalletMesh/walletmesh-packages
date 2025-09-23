@@ -1,6 +1,6 @@
 import { JSONRPCError, TimeoutError } from './error.js';
+import type { JSONRPCID, JSONRPCTransport } from './types.js';
 import { isJSONRPCID } from './utils.js';
-import type { JSONRPCTransport, JSONRPCID } from './types.js';
 
 export interface JSONRPCProxyConfig {
   /** Timeout for requests in milliseconds */
@@ -43,7 +43,7 @@ export class JSONRPCProxy {
     private transport: JSONRPCTransport,
     private config: JSONRPCProxyConfig = {},
   ) {
-    const { timeoutMs = 30000, debug = false } = config;
+    const { timeoutMs = 120000, debug = false } = config;
 
     this.log('Proxy initialized', {
       timeoutMs,
@@ -84,7 +84,7 @@ export class JSONRPCProxy {
 
     // Request - wait for response
     return new Promise((resolve, reject) => {
-      const timeoutMs = this.config.timeoutMs ?? 30000;
+      const timeoutMs = this.config.timeoutMs ?? 120000;
 
       // Set up timeout
       const timeout = setTimeout(() => {

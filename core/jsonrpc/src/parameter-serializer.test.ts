@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
-import { ParameterSerializer } from './parameter-serializer.js';
+import { describe, expect, it } from 'vitest';
 import { JSONRPCError } from './error.js';
-import type { JSONRPCSerializer, JSONRPCSerializedData } from './types.js';
+import { ParameterSerializer } from './parameter-serializer.js';
+import type { JSONRPCSerializedData, JSONRPCSerializer } from './types.js';
 
 describe('ParameterSerializer', () => {
   const serializer = new ParameterSerializer();

@@ -8,7 +8,7 @@
 
 > `const` **createCapabilityRequirements**: `object`
 
-Defined in: [core/discovery/src/initiator/factory.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/initiator/factory.ts#L283)
+Defined in: [core/discovery/src/initiator/factory.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator/factory.ts#L283)
 
 Helper functions to create common capability requirements for different blockchain ecosystems.
 

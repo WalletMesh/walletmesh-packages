@@ -9,6 +9,7 @@
 
 import type { Logger } from '../core/logger.js';
 import { ConsoleLogger } from '../core/logger.js';
+import { getBrowserAPI, type BrowserAPI } from './browserApi.js';
 
 /**
  * Ultra-thin message relay for content scripts.
@@ -57,6 +58,7 @@ export class ContentScriptRelay {
   private maxRetryAttempts = 3;
   private retryDelay = 1000; // 1 second
   private logger: Logger = new ConsoleLogger('[WalletMesh:ContentScript]');
+  private browserAPI: BrowserAPI;
 
   /**
    * Creates and initializes the content script relay.
@@ -65,6 +67,7 @@ export class ContentScriptRelay {
    * the page and the secure background script.
    */
   constructor() {
+    this.browserAPI = getBrowserAPI();
     this.initialize();
   }
 
@@ -117,23 +120,26 @@ export class ContentScriptRelay {
   }
 
   /**
-   * Handle Chrome API errors with detailed error analysis.
+   * Handle browser API errors with detailed error analysis.
    *
-   * @param operation - The Chrome API operation that failed
+   * @param operation - The browser API operation that failed
    * @param error - The error that occurred
    */
-  private handleChromeApiError(operation: string, error: unknown): void {
+  private handleBrowserApiError(operation: string, error: unknown): void {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    // Categorize common Chrome extension errors
+    // Categorize common browser extension errors
     if (errorMessage.includes('Extension context invalidated')) {
       this.logger.warn('Extension context invalidated - extension was reloaded or disabled');
     } else if (errorMessage.includes('The message port closed before a response was received')) {
       this.logger.warn('Background script not responding - may be starting up');
-    } else if (errorMessage.includes('Cannot access a chrome://')) {
-      this.logger.warn('Cannot access chrome:// URLs - expected behavior');
+    } else if (
+      errorMessage.includes('Cannot access a chrome://') ||
+      errorMessage.includes('Cannot access a moz-extension://')
+    ) {
+      this.logger.warn('Cannot access browser internal URLs - expected behavior');
     } else {
-      this.logger.warn(`Chrome API ${operation} failed:`, errorMessage);
+      this.logger.warn(`Browser API ${operation} failed:`, errorMessage);
     }
   }
 
@@ -147,24 +153,27 @@ export class ContentScriptRelay {
     window.addEventListener('discovery:wallet:request', (event: Event) => {
       const customEvent = event as CustomEvent;
       try {
-        // Check if chrome runtime is available
-        if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) {
-          this.logger.warn('Chrome runtime not available');
+        // Check if browser runtime is available
+        if (!this.browserAPI.isAvailable) {
+          this.logger.warn('Browser extension API not available');
           return;
         }
 
         // Forward discovery request to secure background
         // Include origin for security validation
-        chrome.runtime
+        this.browserAPI.runtime
           .sendMessage({
             type: 'discovery:wallet:request',
             data: customEvent.detail,
             origin: window.location.origin,
             timestamp: Date.now(),
           })
+          .then(() => {
+            // Message sent successfully
+          })
           .catch((error: unknown) => {
             // Extension might be disabled or background script not ready
-            this.handleChromeApiError('sendMessage', error);
+            this.handleBrowserApiError('sendMessage', error);
           });
       } catch (error) {
         this.logger.warn('Error processing discovery request:', error);
@@ -179,16 +188,16 @@ export class ContentScriptRelay {
    * discovery announcements to the page as browser events.
    */
   private setupBackgroundToPage(): void {
-    // Check if chrome runtime is available
-    if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
-      this.logger.warn('Chrome runtime not available');
+    // Check if browser runtime is available
+    if (!this.browserAPI.isAvailable) {
+      this.logger.warn('Browser extension API not available');
       return;
     }
 
-    chrome.runtime.onMessage.addListener(
+    this.browserAPI.runtime.onMessage.addListener(
       (
         message: unknown,
-        _sender: chrome.runtime.MessageSender,
+        _sender: import('./browserApi.js').MessageSender,
         sendResponse: (response?: unknown) => void,
       ) => {
         try {
@@ -237,7 +246,8 @@ export class ContentScriptRelay {
     initialized: boolean;
     origin: string;
     userAgent: string;
-    chromeRuntimeAvailable: boolean;
+    browserAPIAvailable: boolean;
+    browserAPIType: 'chrome' | 'browser' | 'none';
     retryAttempts: number;
     maxRetryAttempts: number;
   } {
@@ -245,7 +255,8 @@ export class ContentScriptRelay {
       initialized: this.isInitialized,
       origin: window.location.origin,
       userAgent: navigator.userAgent,
-      chromeRuntimeAvailable: typeof chrome !== 'undefined' && !!chrome.runtime,
+      browserAPIAvailable: this.browserAPI.isAvailable,
+      browserAPIType: this.browserAPI.apiType,
       retryAttempts: this.retryAttempts,
       maxRetryAttempts: this.maxRetryAttempts,
     };
@@ -273,7 +284,10 @@ export function getContentScriptRelay(): ContentScriptRelay {
   return globalRelay;
 }
 
-// Auto-initialize when running in a browser environment
-if (typeof window !== 'undefined' && typeof chrome !== 'undefined' && chrome.runtime) {
-  getContentScriptRelay();
+// Auto-initialize when running in a browser extension environment
+if (typeof window !== 'undefined') {
+  const api = getBrowserAPI();
+  if (api.isAvailable) {
+    getContentScriptRelay();
+  }
 }

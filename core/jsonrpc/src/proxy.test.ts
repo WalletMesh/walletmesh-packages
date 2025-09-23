@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { JSONRPCProxy } from './proxy.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSONRPCError, TimeoutError } from './error.js';
+import { JSONRPCProxy } from './proxy.js';
 import type { JSONRPCTransport } from './types.js';
 
 describe('JSONRPCProxy', () => {

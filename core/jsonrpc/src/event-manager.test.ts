@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { EventManager } from './event-manager.js';
 import type { JSONRPCEventMap } from './types.js';
 

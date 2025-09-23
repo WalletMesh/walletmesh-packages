@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { RequestManager } from './request-manager.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TimeoutError } from './error.js';
+import { RequestManager } from './request-manager.js';
 import type { JSONRPCSerializer } from './types.js';
 
 describe('RequestManager', () => {

@@ -1,7 +1,7 @@
 import { JSONRPCError } from './error.js';
-import type { JSONRPCSerializer, JSONRPCSerializedData } from './types.js';
-import { isJSONRPCSerializedData } from './utils.js';
 import { MessageValidator } from './message-validator.js';
+import type { JSONRPCSerializedData, JSONRPCSerializer } from './types.js';
+import { isJSONRPCSerializedData } from './utils.js';
 
 /**
  * Handles serialization and deserialization of JSON-RPC method parameters and results.
@@ -67,12 +67,14 @@ export class ParameterSerializer {
       return params as P;
     }
 
-    const serializedData = this.validateSerializedData(params, 'params');
-
     try {
+      const serializedData = this.validateSerializedData(params, 'params');
       const deserializedParams = await serializer.params.deserialize(method, serializedData);
       return deserializedParams as P;
     } catch (error) {
+      if (error instanceof JSONRPCError) {
+        throw error;
+      }
       throw new JSONRPCError(-32000, error instanceof Error ? error.message : 'Unknown error');
     }
   }

@@ -8,7 +8,7 @@
 
 > `const` `readonly` **RETRYABLE\_ERROR\_CODES**: `Set`\<`1006` \| `2002` \| `3005` \| `4001` \| `4006` \| `5001` \| `5002` \| `5003` \| `5005`\>
 
-Defined in: [core/discovery/src/core/constants.ts:582](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/core/constants.ts#L582)
+Defined in: [core/discovery/src/core/constants.ts:582](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/core/constants.ts#L582)
 
 Retryable error codes indicating transient failures.
 

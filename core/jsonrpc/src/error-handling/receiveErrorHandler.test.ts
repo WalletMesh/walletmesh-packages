@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { JSONRPCError } from '../error.js';
 import {
-  ReceiveErrorHandler,
-  ReceiveErrorCategory,
   ErrorSeverity,
+  ReceiveErrorCategory,
+  ReceiveErrorHandler,
   type ReceiveErrorHandlerConfig,
 } from './receiveErrorHandler.js';
-import { JSONRPCError } from '../error.js';
 
 describe('ReceiveErrorHandler', () => {
   let errorHandler: ReceiveErrorHandler;

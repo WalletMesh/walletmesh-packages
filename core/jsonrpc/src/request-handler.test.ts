@@ -1,14 +1,14 @@
-import { describe, it, expect, vi, type Mock } from 'vitest';
-import { RequestHandler } from './request-handler.js';
+import { describe, expect, it, type Mock, vi } from 'vitest';
 import { JSONRPCError } from './error.js';
 import type { MethodManager } from './method-manager.js';
+import { RequestHandler } from './request-handler.js';
 import type {
+  FallbackMethodHandler,
   JSONRPCContext,
-  MethodResponse,
   JSONRPCMethodDef,
   JSONRPCParams,
-  FallbackMethodHandler,
   JSONRPCRequest,
+  MethodResponse,
 } from './types.js';
 
 describe('RequestHandler', () => {

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MethodManager } from './method-manager.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSONRPCError } from './error.js';
-import type { JSONRPCSerializer, JSONRPCContext, MethodResponse } from './types.js';
+import { MethodManager } from './method-manager.js';
+import type { JSONRPCContext, JSONRPCSerializer, MethodResponse } from './types.js';
 
 describe('MethodManager', () => {
   type TestMethodMap = {

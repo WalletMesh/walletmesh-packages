@@ -8,7 +8,7 @@
 
 > **JSONRPCSerializedData** = `object`
 
-Defined in: [core/jsonrpc/src/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/types.ts#L48)
+Defined in: [core/jsonrpc/src/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/types.ts#L48)
 
 Represents serialized data in a JSON-RPC message.
 Used by serializers to convert complex types to/from JSON-compatible format.
@@ -27,7 +27,7 @@ const serialized: JSONRPCSerializedData = {
 
 > **method**: `string`
 
-Defined in: [core/jsonrpc/src/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/types.ts#L50)
+Defined in: [core/jsonrpc/src/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/types.ts#L50)
 
 ***
 
@@ -35,4 +35,4 @@ Defined in: [core/jsonrpc/src/types.ts:50](https://github.com/WalletMesh/walletm
 
 > **serialized**: `string`
 
-Defined in: [core/jsonrpc/src/types.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/types.ts#L49)
+Defined in: [core/jsonrpc/src/types.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/types.ts#L49)
