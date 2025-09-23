@@ -4,7 +4,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode }: any) => {
   const env = loadEnv(mode, process.cwd());
   return {
     cacheDir: '/tmp/.vite',
@@ -19,7 +19,11 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       nodePolyfills({
-        include: ['buffer', 'path', 'process'],
+        include: ['buffer', 'path', 'process', 'tty', 'net'],
+        globals: {
+          process: true,
+          Buffer: true,
+        },
       }),
       viteStaticCopy({
         targets: [
@@ -49,6 +53,31 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: true,
+      // Increase chunk size warning limit for Aztec libraries
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          // Manual chunk splitting for large dependencies
+          manualChunks(id: string) {
+            // React libraries in separate chunk
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react';
+            }
+            // WalletMesh libraries
+            if (id.includes('@walletmesh/')) {
+              return 'walletmesh';
+            }
+            // All other node_modules into vendor chunk (except barretenberg)
+            if (id.includes('node_modules') && !id.includes('barretenberg')) {
+              return 'vendor';
+            }
+            // Keep barretenberg separate for better caching
+            if (id.includes('barretenberg')) {
+              return 'barretenberg';
+            }
+          },
+        },
+      },
     },
-  };
+  } as any;
 });

@@ -1,0 +1,361 @@
+/* Advanced Wallet Management Component Styles */
+
+.container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.connectionBanner {
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid;
+}
+
+.connectionBannerConnected {
+  composes: connectionBanner;
+  background-color: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.connectionBannerDisconnected {
+  composes: connectionBanner;
+  background-color: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.bannerTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bannerDetails {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.bannerDetail {
+  margin: 4px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cardActions {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cardContent {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.cardDetail {
+  margin: 4px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardDetailLabel {
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Button Styles */
+.button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.buttonPrimary {
+  composes: button;
+  background-color: #007bff;
+  color: white;
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.buttonSuccess {
+  composes: button;
+  background-color: #28a745;
+  color: white;
+}
+
+.buttonSuccess:hover:not(:disabled) {
+  background-color: #1e7e34;
+}
+
+.buttonWarning {
+  composes: button;
+  background-color: #ffc107;
+  color: #000;
+}
+
+.buttonWarning:hover:not(:disabled) {
+  background-color: #e0a800;
+}
+
+.buttonDanger {
+  composes: button;
+  background-color: #dc3545;
+  color: white;
+}
+
+.buttonDanger:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.buttonSmall {
+  composes: button;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.buttonTiny {
+  composes: button;
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Status Badges */
+.statusBadge {
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+  display: inline-block;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.statusHealthy {
+  composes: statusBadge;
+  background-color: #28a745;
+}
+
+.statusWarning {
+  composes: statusBadge;
+  background-color: #ffc107;
+  color: #000;
+}
+
+.statusCritical {
+  composes: statusBadge;
+  background-color: #dc3545;
+}
+
+.statusUnknown {
+  composes: statusBadge;
+  background-color: #6c757d;
+}
+
+/* Recovery Strategy Badges */
+.recoveryBadge {
+  padding: 4px 8px;
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.recoveryReconnect {
+  composes: recoveryBadge;
+  background-color: #007bff;
+}
+
+.recoverySwitchWallet {
+  composes: recoveryBadge;
+  background-color: #17a2b8;
+}
+
+.recoveryRefreshPage {
+  composes: recoveryBadge;
+  background-color: #ffc107;
+  color: #000;
+}
+
+.recoveryManualAction {
+  composes: recoveryBadge;
+  background-color: #dc3545;
+}
+
+.recoveryWaitAndRetry {
+  composes: recoveryBadge;
+  background-color: #28a745;
+}
+
+.recoveryNone {
+  composes: recoveryBadge;
+  background-color: #6c757d;
+}
+
+/* Issues List */
+.issuesList {
+  margin-top: 8px;
+}
+
+.issue {
+  color: #dc3545;
+  font-size: 11px;
+  margin: 2px 0;
+}
+
+.issue::before {
+  content: "• ";
+  font-weight: bold;
+}
+
+/* Session Items */
+.sessionItem {
+  font-size: 10px;
+  padding: 4px;
+  margin: 2px 0;
+  border-radius: 2px;
+}
+
+.sessionItemActive {
+  composes: sessionItem;
+  background-color: #d4edda;
+}
+
+.sessionItemInactive {
+  composes: sessionItem;
+  background-color: #e9ecef;
+}
+
+/* Wallet Items */
+.walletItem {
+  font-size: 10px;
+  padding: 2px 4px;
+  margin: 1px 0;
+  border-radius: 2px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.walletItemAvailable {
+  composes: walletItem;
+  background-color: #d4edda;
+}
+
+.walletItemUnavailable {
+  composes: walletItem;
+  background-color: #f8d7da;
+}
+
+/* Event Log */
+.eventLogContainer {
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.eventLogTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #374151;
+}
+
+.eventLog {
+  max-height: 200px;
+  overflow: auto;
+  background-color: #000;
+  color: #0f0;
+  padding: 8px;
+  border-radius: 4px;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+}
+
+.eventLogEmpty {
+  composes: eventLog;
+  color: #666;
+}
+
+.eventLogEntry {
+  margin-bottom: 2px;
+  word-break: break-word;
+}
+
+.clearLogButton {
+  composes: buttonDanger buttonSmall;
+  margin-top: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cardActions {
+    flex-direction: column;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+}

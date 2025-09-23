@@ -1,0 +1,60 @@
+{
+  "name": "@walletmesh/modal-react-example",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WalletMesh/walletmesh-packages.git"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @walletmesh/jsonrpc build && pnpm --filter @walletmesh/discovery build && pnpm --filter @walletmesh/modal-core build && pnpm --filter @walletmesh/modal-react build && vite",
+    "dev:clean": "pnpm --filter @walletmesh/jsonrpc clean && pnpm --filter @walletmesh/jsonrpc build && pnpm --filter @walletmesh/discovery clean && pnpm --filter @walletmesh/discovery build && pnpm --filter @walletmesh/modal-core clean:build && pnpm --filter @walletmesh/modal-core build && pnpm --filter @walletmesh/modal-react clean && pnpm --filter @walletmesh/modal-react build && vite",
+    "build": "pnpm --filter @walletmesh/jsonrpc build && pnpm --filter @walletmesh/discovery build && pnpm --filter @walletmesh/modal-core build && pnpm --filter @walletmesh/modal-react build && vite build",
+    "preview": "vite preview",
+    "clean": "rimraf dist node_modules",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage --passWithNoTests",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
+    "format": "biome format",
+    "format:fix": "biome format --write",
+    "docs": "typedoc",
+    "preversion": "pnpm lint && pnpm type-check && pnpm test",
+    "version": "pnpm clean && pnpm build && pnpm run docs && git add docs/"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^4.3.4",
+    "buffer": "^6.0.3",
+    "esbuild": "^0.25.4",
+    "path-browserify": "^1.0.1",
+    "stream-browserify": "^3.0.0",
+    "happy-dom": "^15.11.7",
+    "process": "^0.11.10",
+    "rimraf": "^6.0.1",
+    "typedoc": "^0.27.5",
+    "typescript": "^5.7.2",
+    "util": "^0.12.5",
+    "vite": "^6.0.7",
+    "vite-plugin-node-polyfills": "^0.23.0",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "@walletmesh/discovery": "workspace:^",
+    "@walletmesh/modal-core": "workspace:^",
+    "@walletmesh/modal-react": "workspace:^",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  }
+}

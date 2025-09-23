@@ -24,7 +24,7 @@ This is an example wallet implementation that demonstrates how to create a stand
    pnpm preview
    ```
 
-   The wallet will be available at http://localhost:5174
+   The wallet will be available at http://127.0.0.1:5174
 
 ## Usage
 

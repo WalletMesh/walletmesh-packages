@@ -1,6 +1,6 @@
 # Aztec Example DApp
 
-This is an example decentralized application (dApp) that demonstrates how to connect to an Aztec wallet using WalletMesh's cross-window communication.
+This is an example decentralized application (dApp) that demonstrates how to connect to an Aztec wallet using WalletMesh's modal-react library. It features comprehensive error handling, developer documentation, and best practices for building zero-knowledge proof applications.
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@ This is an example decentralized application (dApp) that demonstrates how to con
 
 The dApp can be configured using environment variables:
 
-- `VITE_WALLET_URL` - URL of the wallet application (default: `http://localhost:5174` for development)
+- `VITE_WALLET_URL` - URL of the wallet application (default: `http://127.0.0.1:5174` for development)
 - `VITE_NODE_URL` - URL of the Aztec sandbox node (default: `https://sandbox.aztec.walletmesh.com/api/v1/public`)
 - `LOG_LEVEL` - Logging level (default: `debug`)
 
@@ -81,5 +81,31 @@ The dApp uses a cross-window transport (`CrossWindowTransport`) to communicate w
 ## Key Components
 
 - `DApp.tsx` - Main dApp component with contract interaction logic
-- `CrossWindowTransport.ts` - Transport implementation for cross-window communication
-- Uses `AztecRouterProvider` from `@walletmesh/aztec-rpc-wallet` for wallet integration
+- `ErrorRecovery.tsx` - Error boundary fallback component with recovery options
+- `AztecWalletMeshProvider` - Simplified provider for Aztec dApps
+- `useAztecWallet()` - Consolidated hook for wallet and account management
+- `docs/DEVELOPER_GUIDE.md` - Comprehensive developer documentation
+
+## New Features
+
+### Error Handling
+The app now includes robust error handling with:
+- `WalletMeshErrorBoundary` wrapper for catching and recovering from errors
+- User-friendly error messages with specific recovery actions
+- Automatic retry logic for transient failures
+- Technical details available for developers
+
+### Developer Documentation
+Check out `docs/DEVELOPER_GUIDE.md` for:
+- Quick start guide
+- Hook usage patterns
+- Contract interaction examples
+- Testing strategies
+- Performance optimization tips
+- Common troubleshooting solutions
+
+### Improved Developer Experience
+- Simplified connection flow with `AztecWalletMeshProvider`
+- Consolidated hooks reduce boilerplate
+- Type-safe contract interactions
+- Progress indicators for proof generation

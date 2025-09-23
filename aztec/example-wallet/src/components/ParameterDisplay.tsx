@@ -1,5 +1,5 @@
-import { useState, type FC } from 'react';
 import { jsonStringify } from '@aztec/foundation/json-rpc';
+import { type FC, useState } from 'react';
 import './ParameterDisplay.css';
 
 /**
@@ -18,10 +18,10 @@ interface ParameterDisplayProps {
  * Component to display RPC parameters with expand/collapse functionality
  * and copy-to-clipboard feature.
  */
-export const ParameterDisplay: FC<ParameterDisplayProps> = ({ 
-  params, 
+export const ParameterDisplay: FC<ParameterDisplayProps> = ({
+  params,
   title = 'Parameters',
-  maxLength = 200 
+  maxLength = 200,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -36,14 +36,14 @@ export const ParameterDisplay: FC<ParameterDisplayProps> = ({
 
   // Check if this is a wrapped RPC parameter with serialized content
   if (typeof params === 'object' && params !== null && 'serialized' in params) {
-    const serialized = (params as any).serialized;
+    const serialized = (params as { serialized: unknown }).serialized;
     if (typeof serialized === 'string') {
       try {
         // Parse the serialized JSON string
         displayParams = JSON.parse(serialized);
         // Pretty print the parsed object
         paramString = JSON.stringify(displayParams, null, 2);
-      } catch (e) {
+      } catch (_e) {
         // If parsing fails, use the original serialized string
         paramString = serialized;
       }
@@ -55,17 +55,14 @@ export const ParameterDisplay: FC<ParameterDisplayProps> = ({
   }
 
   const isLarge = paramString.length > maxLength;
-  const displayString = isLarge && !isExpanded
-    ? paramString.slice(0, maxLength) + '...'
-    : paramString;
+  const displayString = isLarge && !isExpanded ? `${paramString.slice(0, maxLength)}...` : paramString;
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(paramString);
       setIsCopied(true);
       setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-    }
+    } catch (_err) {}
   };
 
   return (
@@ -74,17 +71,11 @@ export const ParameterDisplay: FC<ParameterDisplayProps> = ({
         <b>{title}:</b>
         <span className="params-actions">
           {isLarge && (
-            <button
-              className="params-button"
-              onClick={() => setIsExpanded(!isExpanded)}
-            >
+            <button type="button" className="params-button" onClick={() => setIsExpanded(!isExpanded)}>
               {isExpanded ? 'Collapse' : 'Expand'}
             </button>
           )}
-          <button
-            className="params-button"
-            onClick={handleCopy}
-          >
+          <button type="button" className="params-button" onClick={handleCopy}>
             {isCopied ? 'Copied!' : 'Copy'}
           </button>
         </span>

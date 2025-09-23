@@ -1,5 +1,5 @@
+import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCMiddleware } from '@walletmesh/jsonrpc';
-import type { AztecWalletMethodMap, AztecHandlerContext } from '@walletmesh/aztec-rpc-wallet';
 import type { FunctionArgNames } from './functionArgNamesMiddleware';
 
 export type RequestStatus = 'processing' | 'approved' | 'denied' | 'success' | 'error';
@@ -32,7 +32,7 @@ export type HistoryEntry = {
  */
 function getDappOrigin(): string | undefined {
   // Method 1: Use document.referrer (most reliable for cross-origin scenarios)
-  if (typeof document !== 'undefined' && document.referrer) {
+  if (document?.referrer) {
     try {
       const referrerUrl = new URL(document.referrer);
       console.log('History middleware: Detected dApp origin from document.referrer:', referrerUrl.origin);
@@ -43,12 +43,12 @@ function getDappOrigin(): string | undefined {
   }
 
   // Method 2: Try to access window.opener.location.origin (only for same-origin scenarios)
-  if (typeof window !== 'undefined' && window.opener) {
+  if (window?.opener) {
     try {
       const origin = window.opener.location.origin;
       console.log('History middleware: Successfully detected dApp origin from window.opener:', origin);
       return origin;
-    } catch (e) {
+    } catch (_e) {
       // CORS error - this is expected in cross-origin scenarios
       console.log('History middleware: Cross-origin context detected, window.opener access blocked by CORS');
     }
@@ -60,7 +60,7 @@ function getDappOrigin(): string | undefined {
       const origin = window.parent.location.origin;
       console.log('History middleware: Detected dApp origin from window.parent:', origin);
       return origin;
-    } catch (e) {
+    } catch (_e) {
       // CORS error - this is expected in cross-origin scenarios
       console.log('History middleware: Cross-origin context detected, window.parent access blocked by CORS');
     }

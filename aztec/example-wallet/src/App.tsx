@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -6,6 +7,12 @@ import { CustomPermissionManager } from './components/CustomPermissionManager.js
 import { AllowAskDenyState } from '@walletmesh/router/permissions';
 import { ToastProvider, useToast } from './contexts/ToastContext.js';
 import type { HumanReadableChainPermissions } from '@walletmesh/router';
+=======
+import { useState } from 'react';
+import './App.css';
+import Wallet from './components/Wallet.js';
+import { ToastProvider } from './contexts/ToastContext.js';
+>>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 
 interface ApprovalRequest {
   origin: string;
@@ -18,7 +25,10 @@ interface ApprovalRequest {
 function App() {
   const [pendingApproval, setPendingApproval] = useState<ApprovalRequest | null>(null);
   const [autoApprove, setAutoApprove] = useState(false);
+<<<<<<< HEAD
   const { showError } = useToast();
+=======
+>>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 
   const handleApprovalRequest = async (request: {
     origin: string;
@@ -26,12 +36,10 @@ function App() {
     method: string;
     params?: unknown;
   }): Promise<boolean> => {
-    // If auto-approve is enabled, automatically approve all requests
-    if (autoApprove) {
-      return true;
-    }
+    // Note: Auto-approve is handled in the Wallet component's permission manager
+    // This handler is only called when user interaction is needed
 
-    // Otherwise, show the approval UI
+    // Show the approval UI
     return new Promise((resolve) => {
       setPendingApproval({
         ...request,
@@ -153,6 +161,7 @@ function App() {
     }
   };
 
+<<<<<<< HEAD
   const handleAlwaysAllow = () => {
     if (pendingApproval) {
       permissionManager.current.updatePermissionState(
@@ -164,6 +173,8 @@ function App() {
     }
   };
 
+=======
+>>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
   const handleEnableAutoApprove = () => {
     setAutoApprove(true);
     if (pendingApproval) {
@@ -175,6 +186,7 @@ function App() {
     <div className="App">
       <h1>WalletMesh Aztec Wallet</h1>
 
+<<<<<<< HEAD
       <div className="auto-approve-toggle">
         <label>
           <input type="checkbox" checked={autoApprove} onChange={(e) => setAutoApprove(e.target.checked)} />
@@ -185,6 +197,27 @@ function App() {
             ⚠️ Warning: All requests will be automatically approved without user confirmation.
           </p>
         )}
+=======
+        <div className="auto-approve-toggle">
+          <label>
+            <input type="checkbox" checked={autoApprove} onChange={(e) => setAutoApprove(e.target.checked)} />
+            Auto Approve All Requests
+          </label>
+          {autoApprove && (
+            <p className="auto-approve-warning">
+              ⚠️ Warning: All requests will be automatically approved without user confirmation.
+            </p>
+          )}
+        </div>
+
+        <Wallet
+          pendingApproval={pendingApproval}
+          onApprovalResponse={handleApprovalResponse}
+          onApprovalRequest={handleApprovalRequest}
+          onEnableAutoApprove={handleEnableAutoApprove}
+          autoApprove={autoApprove}
+        />
+>>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
       </div>
 
       <Wallet
