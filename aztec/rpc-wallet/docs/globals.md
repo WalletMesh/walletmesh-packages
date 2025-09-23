@@ -20,11 +20,13 @@
 ## Type Aliases
 
 - [AztecChainId](type-aliases/AztecChainId.md)
+- [AztecWalletErrorType](type-aliases/AztecWalletErrorType.md)
 
 ## Variables
 
 - [ALL\_AZTEC\_METHODS](variables/ALL_AZTEC_METHODS.md)
 - [AztecWalletErrorMap](variables/AztecWalletErrorMap.md)
+- [AztecWalletErrorType](variables/AztecWalletErrorType.md)
 - [AztecWalletSerializer](variables/AztecWalletSerializer.md)
 
 ## Functions

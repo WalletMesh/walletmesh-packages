@@ -20,9 +20,9 @@
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "lint": "biome lint",
-    "lint:fix": "biome lint --fix",
+    "lint:fix": "biome lint --write",
     "format": "biome format",
-    "format:fix": "biome format --fix",
+    "format:fix": "biome format --write",
     "docs": "typedoc",
     "version": "pnpm clean && pnpm build && pnpm run docs"
   },

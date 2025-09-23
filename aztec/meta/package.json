@@ -29,9 +29,10 @@
     "build": "tsc --build tsconfig.build.json",
     "clean": "rimraf dist node_modules",
     "lint": "biome lint",
-    "lint:fix": "biome lint --fix",
+    "lint:fix": "biome lint --write",
     "format": "biome format",
-    "format:fix": "biome format --fix",
+    "format:fix": "biome format --write",
+    "type-check": "tsc --noEmit",
     "version": "pnpm build"
   },
   "keywords": [],

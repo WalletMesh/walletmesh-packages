@@ -1,9 +1,19 @@
-import { Contract, type DeployOptions, FeeJuicePaymentMethod, Fr, type TxHash } from '@aztec/aztec.js';
+import {
+  type AztecAddress,
+  Contract,
+  type DeployOptions,
+  FeeJuicePaymentMethod,
+  Fr,
+  type ProvenTx,
+  type SentTx,
+  type TxHash,
+} from '@aztec/aztec.js';
 import type { FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfaces';
 import type { ExecutionPayload } from '@aztec/entrypoints/payload';
 import { createLogger } from '@aztec/foundation/log';
 import { GasSettings } from '@aztec/stdlib/gas';
 import type { TxExecutionRequest, TxSimulationResult } from '@aztec/stdlib/tx';
+import { JSONRPCError } from '@walletmesh/jsonrpc';
 import type { AztecWalletMethodMap } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
 
@@ -248,22 +258,104 @@ export function createContractInteractionHandlers() {
         }
 
         // Compute the contract address
-        const { address: contractAddress } = await deployMethod.getInstance(opts);
-        logger.debug(`Computed contract address: ${contractAddress.toString()}`);
+        let contractAddress: AztecAddress | undefined;
+        try {
+          const instance = await deployMethod.getInstance(opts);
+          contractAddress = instance.address;
+          logger.debug(`Computed contract address: ${contractAddress.toString()}`);
+        } catch (error) {
+          logger.error(`Failed to compute contract address for ${artifact.name}:`, error);
+          throw new JSONRPCError(-32603, `Failed to compute contract address for ${artifact.name}`, {
+            stage: 'address_computation',
+            contractName: artifact.name,
+            error:
+              error instanceof Error
+                ? {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name,
+                  }
+                : String(error),
+          });
+        }
 
-        const deployProvenTx = await deployMethod.prove(opts);
+        // Prove the deployment transaction
+        let deployProvenTx: ProvenTx | undefined;
+        try {
+          deployProvenTx = await deployMethod.prove(opts);
+        } catch (error) {
+          logger.error(`Failed to prove deployment for ${artifact.name}:`, error);
+          throw new JSONRPCError(-32603, `Failed to prove contract deployment for ${artifact.name}`, {
+            stage: 'proof_generation',
+            contractName: artifact.name,
+            contractAddress: contractAddress?.toString(),
+            error:
+              error instanceof Error
+                ? {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name,
+                  }
+                : String(error),
+          });
+        }
 
-        const deploySentTx = await deployProvenTx.send();
-        const txHash = await deploySentTx.getTxHash();
-        logger.debug(`Contract deployed, hash: ${txHash.toString()}`);
+        // Send the deployment transaction
+        let deploySentTx: SentTx | undefined;
+        let txHash: TxHash | undefined;
+        try {
+          deploySentTx = await deployProvenTx.send();
+          txHash = await deploySentTx.getTxHash();
+          logger.debug(`Contract deployed, hash: ${txHash.toString()}`);
+        } catch (error) {
+          logger.error(`Failed to send deployment transaction for ${artifact.name}:`, error);
+          throw new JSONRPCError(-32603, `Failed to send deployment transaction for ${artifact.name}`, {
+            stage: 'transaction_send',
+            contractName: artifact.name,
+            contractAddress: contractAddress?.toString(),
+            error:
+              error instanceof Error
+                ? {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name,
+                  }
+                : String(error),
+          });
+        }
+
+        if (!txHash) {
+          throw new JSONRPCError(-32603, 'Failed to get transaction hash after deployment', {
+            stage: 'transaction_hash',
+            contractName: artifact.name,
+            contractAddress: contractAddress?.toString(),
+          });
+        }
 
         return {
           txHash,
           contractAddress,
         };
       } catch (error) {
+        // If error is already a JSONRPCError, re-throw it
+        if (error instanceof JSONRPCError) {
+          throw error;
+        }
+
+        // Otherwise wrap it with general deployment error
         logger.error(`Contract deployment failed for ${artifact.name}:`, error);
-        throw error;
+        throw new JSONRPCError(-32603, `Contract deployment failed for ${artifact.name}`, {
+          stage: 'general',
+          contractName: artifact.name,
+          error:
+            error instanceof Error
+              ? {
+                  message: error.message,
+                  stack: error.stack,
+                  name: error.name,
+                }
+              : String(error),
+        });
       }
     },
   };

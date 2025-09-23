@@ -8,7 +8,7 @@
 
 Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L85)
 
-Aztec DApp Wallet that implements the aztec.js Wallet interface.
+Aztec DApp Wallet that implements the aztec.js [Wallet](https://docs.aztec.network/reference/aztec.js/interfaces/Wallet) interface.
 This class provides a client-side representation of an Aztec wallet,
 interacting with a remote wallet implementation (typically an AccountWallet
 managed by a JSONRPCNode created via `createAztecWalletNode`)
@@ -32,7 +32,7 @@ const txHash = await wallet.sendTx(someTx);
 
 ## Implements
 
-- `Wallet`
+- [`Wallet`](https://docs.aztec.network/reference/aztec.js/interfaces/Wallet)
 
 ## Constructors
 
@@ -81,6 +81,8 @@ Implements Wallet.createAuthWit.
 
 ###### messageHash
 
+The message hash (Fr or Buffer) to authorize.
+
 `Fr` | `Buffer`\<`ArrayBufferLike`\>
 
 ##### Returns
@@ -103,16 +105,16 @@ A promise that resolves to the AuthWitness.
 
 Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:439](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L439)
 
-Creates an authorization witness for a given message hash or intent by making an RPC call to the remote wallet.
+Creates an authorization witness for a given intent by making an RPC call to the remote wallet.
 Implements Wallet.createAuthWit.
 
 ##### Parameters
 
 ###### intent
 
-The message hash (Fr or Buffer) or intent object (IntentInnerHash or IntentAction) to authorize.
+The intent object ([IntentInnerHash](https://docs.aztec.network/reference/aztec.js/interfaces/IntentInnerHash) or [IntentAction](https://docs.aztec.network/reference/aztec.js/interfaces/IntentAction)) to authorize.
 
-`IntentAction` | `IntentInnerHash`
+[`IntentAction`](https://docs.aztec.network/reference/aztec.js/interfaces/IntentAction) | [`IntentInnerHash`](https://docs.aztec.network/reference/aztec.js/interfaces/IntentInnerHash)
 
 ##### Returns
 
@@ -177,7 +179,7 @@ If the wallet or its entrypoint is not initialized.
 
 ### deployContract()
 
-> **deployContract**(`artifact`, `args`, `constructorName?`): `Promise`\<`DeploySentTx`\<`Contract`\>\>
+> **deployContract**(`artifact`, `args`, `constructorName?`): `Promise`\<[`DeploySentTx`](https://docs.aztec.network/reference/aztec.js/classes/DeploySentTx)\<`Contract`\>\>
 
 Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:816](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L816)
 
@@ -207,9 +209,9 @@ Optional name of the constructor function if the artifact has multiple.
 
 #### Returns
 
-`Promise`\<`DeploySentTx`\<`Contract`\>\>
+`Promise`\<[`DeploySentTx`](https://docs.aztec.network/reference/aztec.js/classes/DeploySentTx)\<`Contract`\>\>
 
-A DeploySentTx object that can be used to track the deployment transaction
+A [DeploySentTx](https://docs.aztec.network/reference/aztec.js/classes/DeploySentTx) object that can be used to track the deployment transaction
          and get the deployed contract instance.
 
 #### See
@@ -389,12 +391,20 @@ If the wallet is not initialized.
 
 ### getCompleteAddressAsync()
 
-> **getCompleteAddressAsync**(): `Promise`\<`CompleteAddress`\>
+> **getCompleteAddressAsync**(`abortSignal?`): `Promise`\<`CompleteAddress`\>
 
 Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:213](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L213)
 
 Asynchronously fetches the complete address (including public keys) from the remote wallet via an RPC call.
 This method directly queries the connected wallet node.
+
+#### Parameters
+
+##### abortSignal?
+
+`AbortSignal`
+
+Optional AbortSignal to cancel the operation
 
 #### Returns
 
@@ -1237,11 +1247,11 @@ A promise that resolves when the update is complete on the remote wallet.
 
 ### wmExecuteTx()
 
-> **wmExecuteTx**(`interaction`): `Promise`\<`SentTx`\>
+> **wmExecuteTx**(`interaction`): `Promise`\<[`SentTx`](https://docs.aztec.network/reference/aztec.js/classes/SentTx)\>
 
 Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:753](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L753)
 
-Executes a transaction based on a ContractFunctionInteraction.
+Executes a transaction based on a [ContractFunctionInteraction](https://docs.aztec.network/reference/aztec.js/classes/ContractFunctionInteraction).
 This WalletMesh-specific helper method simplifies sending a transaction by deriving
 the necessary ExecutionPayload from the interaction and making an RPC call
 to the `aztec_wmExecuteTx` method on the remote wallet.
@@ -1251,15 +1261,15 @@ The remote wallet is expected to handle fee configuration, proof generation, and
 
 ##### interaction
 
-`ContractFunctionInteraction`
+[`ContractFunctionInteraction`](https://docs.aztec.network/reference/aztec.js/classes/ContractFunctionInteraction)
 
-The ContractFunctionInteraction representing the desired contract call.
+The [ContractFunctionInteraction](https://docs.aztec.network/reference/aztec.js/classes/ContractFunctionInteraction) representing the desired contract call.
 
 #### Returns
 
-`Promise`\<`SentTx`\>
+`Promise`\<[`SentTx`](https://docs.aztec.network/reference/aztec.js/classes/SentTx)\>
 
-A SentTx object that can be used to track the transaction.
+A [SentTx](https://docs.aztec.network/reference/aztec.js/classes/SentTx) object that can be used to track the transaction.
 
 #### See
 
@@ -1273,7 +1283,7 @@ A SentTx object that can be used to track the transaction.
 
 Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:786](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L786)
 
-Simulates a transaction based on a ContractFunctionInteraction.
+Simulates a transaction based on a [ContractFunctionInteraction](https://docs.aztec.network/reference/aztec.js/classes/ContractFunctionInteraction).
 This WalletMesh-specific helper method simplifies simulating a transaction by deriving
 the necessary ExecutionPayload from the interaction and making an RPC call
 to the `aztec_wmSimulateTx` method on the remote wallet.
@@ -1282,9 +1292,9 @@ to the `aztec_wmSimulateTx` method on the remote wallet.
 
 ##### interaction
 
-`ContractFunctionInteraction`
+[`ContractFunctionInteraction`](https://docs.aztec.network/reference/aztec.js/classes/ContractFunctionInteraction)
 
-The ContractFunctionInteraction representing the desired contract call.
+The [ContractFunctionInteraction](https://docs.aztec.network/reference/aztec.js/classes/ContractFunctionInteraction) representing the desired contract call.
 
 #### Returns
 

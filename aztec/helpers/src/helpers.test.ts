@@ -1,21 +1,21 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { Buffer } from 'node:buffer';
 import {
   AztecAddress,
-  Fr,
-  FunctionSelector,
-  type PXE,
   type ContractArtifact,
-  type FunctionArtifact,
   type ContractInstanceWithAddress,
+  Fr,
+  type FunctionArtifact,
+  FunctionSelector,
   PublicKeys,
+  type PXE,
 } from '@aztec/aztec.js';
 import { FunctionType } from '@aztec/stdlib/abi'; // Corrected import path
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getContractArtifactFromContractAddress,
   getFunctionArtifactFromContractAddress,
   getFunctionParameterInfoFromContractAddress,
 } from './helpers.js';
-import { Buffer } from 'node:buffer';
 
 describe('aztec helpers', () => {
   let mockPXE: PXE;

@@ -46,7 +46,7 @@ Used for delegating actions.
 
 #### params
 
-> **params**: \[`Fr` \| `Buffer`\<`ArrayBufferLike`\> \| `IntentAction` \| `IntentInnerHash`\]
+> **params**: \[`Fr` \| `Buffer`\<`ArrayBufferLike`\> \| [`IntentAction`](https://docs.aztec.network/reference/aztec.js/interfaces/IntentAction) \| [`IntentInnerHash`](https://docs.aztec.network/reference/aztec.js/interfaces/IntentInnerHash)\]
 
 #### result
 
@@ -58,7 +58,7 @@ A tuple containing the intent to authorize.
 
 #### Param
 
-intent - The message hash (Fr or `Buffer`), IntentInnerHash, or IntentAction to authorize.
+intent - The message hash (Fr or `Buffer`), [IntentInnerHash](https://docs.aztec.network/reference/aztec.js/interfaces/IntentInnerHash), or [IntentAction](https://docs.aztec.network/reference/aztec.js/interfaces/IntentAction) to authorize.
 
 #### Returns
 
