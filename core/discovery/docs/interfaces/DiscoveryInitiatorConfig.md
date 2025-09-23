@@ -6,7 +6,7 @@
 
 # Interface: DiscoveryInitiatorConfig
 
-Defined in: [core/discovery/src/types/testing.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/testing.ts#L23)
+Defined in: [core/discovery/src/types/testing.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/testing.ts#L23)
 
 Configuration for initiator-side discovery.
 
@@ -20,7 +20,7 @@ Configuration for initiator-side discovery.
 
 > `optional` **eventTarget**: `EventTarget`
 
-Defined in: [core/discovery/src/types/testing.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/testing.ts#L29)
+Defined in: [core/discovery/src/types/testing.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/testing.ts#L29)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [core/discovery/src/types/testing.ts:29](https://github.com/WalletMe
 
 > **initiatorInfo**: [`InitiatorInfo`](InitiatorInfo.md)
 
-Defined in: [core/discovery/src/types/testing.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/testing.ts#L26)
+Defined in: [core/discovery/src/types/testing.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/testing.ts#L26)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [core/discovery/src/types/testing.ts:26](https://github.com/WalletMe
 
 > `optional` **logger**: [`Logger`](Logger.md)
 
-Defined in: [core/discovery/src/types/testing.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/testing.ts#L30)
+Defined in: [core/discovery/src/types/testing.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/testing.ts#L30)
 
 ***
 
@@ -44,7 +44,7 @@ Defined in: [core/discovery/src/types/testing.ts:30](https://github.com/WalletMe
 
 > `optional` **preferences**: [`CapabilityPreferences`](CapabilityPreferences.md)
 
-Defined in: [core/discovery/src/types/testing.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/testing.ts#L25)
+Defined in: [core/discovery/src/types/testing.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/testing.ts#L25)
 
 ***
 
@@ -52,7 +52,7 @@ Defined in: [core/discovery/src/types/testing.ts:25](https://github.com/WalletMe
 
 > **requirements**: [`CapabilityRequirements`](CapabilityRequirements.md)
 
-Defined in: [core/discovery/src/types/testing.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/testing.ts#L24)
+Defined in: [core/discovery/src/types/testing.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/testing.ts#L24)
 
 ***
 
@@ -60,7 +60,7 @@ Defined in: [core/discovery/src/types/testing.ts:24](https://github.com/WalletMe
 
 > `optional` **securityPolicy**: [`SecurityPolicy`](SecurityPolicy.md)
 
-Defined in: [core/discovery/src/types/testing.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/testing.ts#L27)
+Defined in: [core/discovery/src/types/testing.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/testing.ts#L27)
 
 ***
 
@@ -68,4 +68,4 @@ Defined in: [core/discovery/src/types/testing.ts:27](https://github.com/WalletMe
 
 > `optional` **timeout**: `number`
 
-Defined in: [core/discovery/src/types/testing.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/testing.ts#L28)
+Defined in: [core/discovery/src/types/testing.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/testing.ts#L28)

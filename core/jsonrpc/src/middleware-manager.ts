@@ -1,9 +1,9 @@
 import type {
-  JSONRPCMethodMap,
   JSONRPCContext,
+  JSONRPCMethodMap,
+  JSONRPCMiddleware,
   JSONRPCRequest,
   JSONRPCResponse,
-  JSONRPCMiddleware,
 } from './types.js';
 
 /**

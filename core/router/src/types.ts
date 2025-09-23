@@ -1,8 +1,8 @@
 import type {
-  JSONRPCMethodMap,
   JSONRPCEventMap,
-  JSONRPCRequest,
+  JSONRPCMethodMap,
   JSONRPCParams,
+  JSONRPCRequest,
   JSONRPCTransport,
 } from '@walletmesh/jsonrpc';
 

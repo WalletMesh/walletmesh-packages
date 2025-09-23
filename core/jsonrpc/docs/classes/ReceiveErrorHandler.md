@@ -6,7 +6,7 @@
 
 # Class: ReceiveErrorHandler
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:122](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L122)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:122](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L122)
 
 Enhanced receive error handler for JSONRPCNode
 
@@ -16,7 +16,7 @@ Enhanced receive error handler for JSONRPCNode
 
 > **new ReceiveErrorHandler**(`config`): `ReceiveErrorHandler`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:130](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L130)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:130](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L130)
 
 #### Parameters
 
@@ -34,7 +34,7 @@ Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:130](https:/
 
 > **clearHistory**(): `void`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:427](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L427)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:427](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L427)
 
 Clear error history
 
@@ -48,7 +48,7 @@ Clear error history
 
 > **getErrorStats**(): `object`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:371](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L371)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:371](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L371)
 
 Get error statistics
 
@@ -82,7 +82,7 @@ Get error statistics
 
 > **handleError**(`error`, `rawMessage`, `context?`): `Promise`\<`void`\>
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:281](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L281)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:281](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L281)
 
 Handle a receive error
 
@@ -110,7 +110,7 @@ Handle a receive error
 
 > **registerHandler**(`category`, `handler`): () => `void`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:406](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L406)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:406](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L406)
 
 Register an error handler for a specific category
 
@@ -138,7 +138,7 @@ Register an error handler for a specific category
 
 > `static` **enhanceNode**(`node`, `config?`): `object`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:436](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L436)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:436](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L436)
 
 Create an enhanced JSONRPCNode with improved error handling
 

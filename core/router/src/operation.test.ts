@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import type { JSONRPCParams, JSONRPCMethodDef } from '@walletmesh/jsonrpc';
+import type { JSONRPCMethodDef, JSONRPCParams } from '@walletmesh/jsonrpc';
+import { describe, expect, it } from 'vitest';
 import { OperationBuilder } from './operation.js';
-import type { RouterMethodMap, MethodCall } from './types.js';
 import { WalletRouterProvider } from './provider.js';
+import type { MethodCall, RouterMethodMap } from './types.js';
 
 // Mock transaction types to match real types
 interface TransactionParams {

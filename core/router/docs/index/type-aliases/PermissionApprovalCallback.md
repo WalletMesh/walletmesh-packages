@@ -8,7 +8,7 @@
 
 > **PermissionApprovalCallback**\<`C`\> = (`context`, `permissionRequest`) => `Promise`\<[`HumanReadableChainPermissions`](HumanReadableChainPermissions.md)\>
 
-Defined in: [core/router/src/types.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/types.ts#L82)
+Defined in: [core/router/src/types.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L82)
 
 Callback for handling permission approval requests.
 Called when a client requests new permissions or updates existing ones.

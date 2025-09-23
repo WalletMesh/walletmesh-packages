@@ -1,19 +1,17 @@
-import { JSONRPCNode, type JSONRPCSerializer } from '@walletmesh/jsonrpc';
-
+import { JSONRPCNode, type JSONRPCSerializer, type JSONRPCTransport } from '@walletmesh/jsonrpc';
+import { RouterError, RouterErrorMap } from './errors.js';
+import { OperationBuilder } from './operation.js';
+import { ProviderSerializerRegistry } from './provider-serialization.js';
 import type {
   ChainId,
   ChainPermissions,
   HumanReadableChainPermissions,
   MethodCall,
   MethodResults,
-  RouterMethodMap,
-  RouterEventMap,
   RouterContext,
+  RouterEventMap,
+  RouterMethodMap,
 } from './types.js';
-
-import { RouterError } from './errors.js';
-import { OperationBuilder } from './operation.js';
-import { ProviderSerializerRegistry } from './provider-serialization.js';
 
 /**
  * Client-side provider for interacting with the multi-chain router.
@@ -62,6 +60,20 @@ import { ProviderSerializerRegistry } from './provider-serialization.js';
 export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext> {
   private _sessionId: string | undefined;
   private serializerRegistry = new ProviderSerializerRegistry();
+
+  /**
+   * Creates a new WalletRouterProvider instance.
+   *
+   * @param transport - The JSON-RPC transport for communication
+   * @param context - Optional context object for the JSON-RPC node
+   * @param sessionId - Optional pre-existing session ID to use without calling connect
+   */
+  constructor(transport: JSONRPCTransport, context?: RouterContext, sessionId?: string) {
+    super(transport, context);
+    if (sessionId) {
+      this._sessionId = sessionId;
+    }
+  }
 
   /**
    * Gets the current session ID if connected, undefined otherwise.
@@ -238,23 +250,121 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
       throw new RouterError('invalidSession');
     }
 
+    const startTime = Date.now();
+    console.log('🚀 WalletRouterProvider.call starting', {
+      chainId,
+      method: call.method,
+      sessionId: this._sessionId,
+      timeout,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Transport state check removed (transport is private in JSONRPCNode)
+
     // Serialize the method call parameters if a serializer is registered
     const serializedCall = await this.serializerRegistry.serializeCall(call as MethodCall<string>);
 
-    const result = await this.callMethod(
-      'wm_call',
-      {
+    try {
+      console.log('📤 WalletRouterProvider.call sending wm_call request', {
         chainId,
-        call: serializedCall as MethodCall,
+        method: call.method,
         sessionId: this._sessionId,
-      },
-      timeout,
-    );
+        timeout,
+        serializedCallMethod: serializedCall?.method,
+        hasParams: !!serializedCall?.params,
+        paramsType: typeof serializedCall?.params,
+      });
 
-    // Deserialize the result if a serializer is registered
-    const deserializedResult = await this.serializerRegistry.deserializeResult(call.method as string, result);
+      const result = await this.callMethod(
+        'wm_call',
+        {
+          chainId,
+          call: serializedCall as MethodCall,
+          sessionId: this._sessionId,
+        },
+        timeout,
+      );
 
-    return deserializedResult as RouterMethodMap[M]['result'];
+      const elapsed = Date.now() - startTime;
+      console.log(`✅ WalletRouterProvider.call succeeded after ${elapsed}ms`, {
+        chainId,
+        method: call.method,
+        sessionId: this._sessionId,
+        elapsed,
+        hasResult: !!result,
+        resultType: typeof result,
+        result: result,
+      });
+
+      // Deserialize the result if a serializer is registered
+      const deserializedResult = await this.serializerRegistry.deserializeResult(
+        call.method as string,
+        result,
+      );
+
+      return deserializedResult as RouterMethodMap[M]['result'];
+    } catch (error) {
+      const elapsed = Date.now() - startTime;
+
+      // Enhanced error logging with transport state
+      console.error(`❌ WalletRouterProvider.call failed after ${elapsed}ms`, {
+        chainId,
+        method: call.method,
+        sessionId: this._sessionId,
+        elapsed,
+        timeout,
+        error: error instanceof Error ? error.message : error,
+        errorType: typeof error,
+        errorName: error instanceof Error ? error.constructor.name : 'Unknown',
+        errorStack: error instanceof Error ? error.stack : undefined,
+        // Transport state logging removed (transport is private)
+      });
+
+      // Enhanced permission violation logging
+      if (error instanceof RouterError && error.code === RouterErrorMap.insufficientPermissions.code) {
+        console.error('🚫 PERMISSION VIOLATION DETECTED', {
+          chainId,
+          method: call.method,
+          sessionId: this._sessionId,
+          message: '❌ dApp tried to use a permission it does not have',
+          actionRequired: 'Add this method to your dApp permission declaration',
+          howToFix: `Include '${call.method}' in your connection options permissions array`,
+          example: `
+// In your dApp configuration:
+permissions: [
+  // ... other permissions
+  '${call.method}',  // <-- Add this method
+]`,
+          troubleshooting: {
+            '1_checkDappConfig': 'Verify your dApp declares this permission in connection options',
+            '2_checkWalletState': 'Check if wallet has this method in ALLOW or ASK state',
+            '3_reconnect': 'Try disconnecting and reconnecting to refresh permissions',
+            '4_updatePermissions': 'Use provider.updatePermissions() to request this permission dynamically',
+          },
+          docs: 'See WalletMesh permission system documentation for more details',
+        });
+
+        // Also log to console with clear formatting for developers
+        console.group('🚫 dApp Permission Violation');
+        console.error(`Method "${call.method}" was denied by wallet`);
+        console.info('💡 To fix this issue:');
+        console.info(`   1. Add "${call.method}" to your dApp's permissions configuration`);
+        console.info(`   2. Or use provider.updatePermissions() to request it dynamically`);
+        console.info(`   3. Or check if the wallet has this method in ALLOW state`);
+        console.groupEnd();
+      }
+
+      // Additional logging for transport-related errors
+      if (error instanceof Error && error.message.includes('Transport')) {
+        console.error('🔴 Transport-specific error details', {
+          message: error.message,
+          stack: error.stack,
+          // Transport details removed (transport is private in JSONRPCNode)
+        });
+      }
+
+      throw error;
+    }
   }
 
   /**

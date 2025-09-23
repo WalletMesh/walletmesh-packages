@@ -6,7 +6,7 @@
 
 # Class: SessionTracker
 
-Defined in: [core/discovery/src/security.ts:196](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/security.ts#L196)
+Defined in: [core/discovery/src/security.ts:196](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/security.ts#L196)
 
 Session tracker for preventing replay attacks.
 
@@ -20,7 +20,7 @@ Session tracker for preventing replay attacks.
 
 > **new SessionTracker**(`options?`, `logger?`): `SessionTracker`
 
-Defined in: [core/discovery/src/security.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/security.ts#L203)
+Defined in: [core/discovery/src/security.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/security.ts#L203)
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Defined in: [core/discovery/src/security.ts:203](https://github.com/WalletMesh/w
 
 > **clear**(): `void`
 
-Defined in: [core/discovery/src/security.ts:297](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/security.ts#L297)
+Defined in: [core/discovery/src/security.ts:297](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/security.ts#L297)
 
 Clear all sessions.
 
@@ -56,7 +56,7 @@ Clear all sessions.
 
 > **dispose**(): `void`
 
-Defined in: [core/discovery/src/security.ts:345](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/security.ts#L345)
+Defined in: [core/discovery/src/security.ts:345](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/security.ts#L345)
 
 Dispose of the tracker and cleanup resources.
 
@@ -70,7 +70,7 @@ Dispose of the tracker and cleanup resources.
 
 > **getState**(): [`SessionTrackingState`](../interfaces/SessionTrackingState.md)
 
-Defined in: [core/discovery/src/security.ts:259](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/security.ts#L259)
+Defined in: [core/discovery/src/security.ts:259](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/security.ts#L259)
 
 Get tracking state.
 
@@ -84,7 +84,7 @@ Get tracking state.
 
 > **hasSession**(`origin`, `sessionId`): `boolean`
 
-Defined in: [core/discovery/src/security.ts:251](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/security.ts#L251)
+Defined in: [core/discovery/src/security.ts:251](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/security.ts#L251)
 
 Check if a session exists.
 
@@ -108,7 +108,7 @@ Check if a session exists.
 
 > **trackSession**(`origin`, `sessionId`): `boolean`
 
-Defined in: [core/discovery/src/security.ts:220](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/security.ts#L220)
+Defined in: [core/discovery/src/security.ts:220](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/security.ts#L220)
 
 Track a new session, returns false if it's a replay.
 

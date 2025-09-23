@@ -6,7 +6,7 @@
 
 # Interface: RouterContext
 
-Defined in: [core/router/src/types.ts:537](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/types.ts#L537)
+Defined in: [core/router/src/types.ts:537](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L537)
 
 Context object passed to router operations.
 Contains information about the current request context
@@ -24,7 +24,7 @@ Additional context properties
 
 > `optional` **origin**: `string`
 
-Defined in: [core/router/src/types.ts:539](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/types.ts#L539)
+Defined in: [core/router/src/types.ts:539](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L539)
 
 Origin of the request (e.g., "https://app.example.com")
 
@@ -34,6 +34,6 @@ Origin of the request (e.g., "https://app.example.com")
 
 > `optional` **session**: [`SessionData`](SessionData.md)
 
-Defined in: [core/router/src/types.ts:541](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/types.ts#L541)
+Defined in: [core/router/src/types.ts:541](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L541)
 
 Current session data if authenticated

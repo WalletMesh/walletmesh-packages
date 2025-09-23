@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { PermissivePermissionsManager } from './permissive.js';
+import { describe, expect, it } from 'vitest';
 import type { RouterContext } from '../types.js';
+import { PermissivePermissionsManager } from './permissive.js';
 
 describe('PermissivePermissionsManager', () => {
   const manager = new PermissivePermissionsManager();

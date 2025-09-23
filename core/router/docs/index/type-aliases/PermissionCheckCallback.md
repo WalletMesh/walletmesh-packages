@@ -8,7 +8,7 @@
 
 > **PermissionCheckCallback**\<`T`, `C`\> = (`context`, `request`) => `Promise`\<`boolean`\>
 
-Defined in: [core/router/src/types.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/types.ts#L103)
+Defined in: [core/router/src/types.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L103)
 
 Callback for checking if a specific method call is permitted.
 Called before each method invocation to verify permissions.

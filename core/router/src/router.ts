@@ -1,22 +1,22 @@
 import {
+  JSONRPCError,
   JSONRPCNode,
   JSONRPCProxy,
-  type JSONRPCTransport,
   type JSONRPCProxyConfig,
-  JSONRPCError,
+  type JSONRPCTransport,
 } from '@walletmesh/jsonrpc';
 
 import { RouterError } from './errors.js';
+import { createPermissionsMiddleware, createSessionMiddleware } from './middleware.js';
 import { defaultStore, type SessionStore } from './session-store.js';
-import { createSessionMiddleware, createPermissionsMiddleware } from './middleware.js';
 import type {
   ChainId,
   ChainPermissions,
   MethodCall,
   PermissionManager,
   RouterContext,
-  RouterMethodMap,
   RouterEventMap,
+  RouterMethodMap,
   SessionData,
   Wallets,
 } from './types.js';
@@ -82,6 +82,69 @@ export interface WalletRouterConfig {
  * // - Event forwarding
  * ```
  */
+
+/**
+ * Defensive utility functions for permission validation
+ */
+
+/**
+ * Sanitizes a ChainPermissions object by removing invalid entries
+ * @param permissions - The permissions object to sanitize
+ * @returns A clean ChainPermissions object with only valid entries
+ */
+function sanitizeChainPermissions(permissions: unknown): ChainPermissions {
+  if (!permissions || typeof permissions !== 'object' || Array.isArray(permissions)) {
+    return {};
+  }
+
+  const permissionsObj = permissions as Record<string, unknown>;
+  const sanitized: ChainPermissions = {};
+
+  for (const [chainId, methods] of Object.entries(permissionsObj)) {
+    // Skip if chainId is invalid
+    if (typeof chainId !== 'string' || !chainId.trim()) {
+      continue;
+    }
+
+    // Skip if methods is not an array
+    if (!Array.isArray(methods)) {
+      continue;
+    }
+
+    // Filter out invalid method entries
+    const validMethods = methods.filter(
+      (method) => typeof method === 'string' && method.trim().length > 0,
+    ) as string[];
+
+    // Only add chainId if it has at least one valid method
+    if (validMethods.length > 0) {
+      sanitized[chainId] = validMethods;
+    }
+  }
+
+  return sanitized;
+}
+
+/**
+ * Validates and sanitizes permissions with defensive fallbacks
+ * @param permissions - The permissions to validate
+ * @returns Sanitized permissions object (empty if invalid input)
+ */
+function validateAndSanitizePermissions(permissions: unknown): ChainPermissions {
+  // Return empty permissions for null/undefined input (defensive behavior)
+  if (!permissions || typeof permissions !== 'object') {
+    return {};
+  }
+
+  // Return empty permissions for array input (defensive behavior)
+  if (Array.isArray(permissions)) {
+    return {};
+  }
+
+  // Sanitize the permissions and return result (even if empty)
+  return sanitizeChainPermissions(permissions);
+}
+
 export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext> {
   /**
    * Store for managing session data persistence and lifecycle
@@ -272,7 +335,10 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     }
 
     const { permissions } = params;
-    const chainIds = Object.keys(permissions);
+
+    // Defensive validation and sanitization of permissions
+    const sanitizedPermissions = validateAndSanitizePermissions(permissions);
+    const chainIds = Object.keys(sanitizedPermissions);
 
     if (chainIds.length === 0) {
       throw new RouterError('invalidRequest', 'No chains specified');
@@ -286,10 +352,13 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
 
     context.session = session;
 
-    const approvedPermissions = await this.permissionManager.approvePermissions(context, permissions);
+    const approvedPermissions = await this.permissionManager.approvePermissions(
+      context,
+      sanitizedPermissions,
+    );
 
     // Store session data
-    await this.sessionStore.set(`${origin}_${sessionId}`, session);
+    await this.sessionStore.set(sessionId, session);
 
     return { sessionId, permissions: approvedPermissions };
   }
@@ -316,7 +385,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     }
 
     const { sessionId } = params;
-    const session = await this.sessionStore.validateAndRefresh(`${origin}_${sessionId}`);
+    const session = await this.sessionStore.validateAndRefresh(sessionId);
 
     if (!session) {
       return { status: false, permissions: {} };
@@ -343,7 +412,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     params: RouterMethodMap['wm_disconnect']['params'],
   ): Promise<RouterMethodMap['wm_disconnect']['result']> {
     const { sessionId } = params;
-    const { origin, session } = context;
+    const { session } = context;
 
     if (!session) {
       throw new RouterError('invalidSession');
@@ -353,7 +422,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       await this.permissionManager.cleanup(context, session.id);
     }
 
-    await this.sessionStore.delete(`${origin}_${sessionId}`);
+    await this.sessionStore.delete(sessionId);
 
     // Emit session terminated event
     this.emit('wm_sessionTerminated', {
@@ -406,7 +475,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     params: RouterMethodMap['wm_updatePermissions']['params'],
   ): Promise<RouterMethodMap['wm_updatePermissions']['result']> {
     const { sessionId, permissions } = params;
-    const { origin, session } = context;
+    const { session } = context;
 
     if (!session) {
       throw new RouterError('invalidSession');
@@ -415,7 +484,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     // Update session with new permissions
     const approvedPermissions = await this.permissionManager.approvePermissions(context, permissions);
 
-    await this.sessionStore.set(`${origin}_${sessionId}`, session);
+    await this.sessionStore.set(sessionId, session);
 
     return approvedPermissions;
   }

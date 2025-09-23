@@ -1,8 +1,8 @@
-import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { WalletRouterProvider } from './provider.js';
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RouterError } from './errors.js';
 import { OperationBuilder } from './operation.js';
+import { WalletRouterProvider } from './provider.js';
 
 describe('WalletRouterProvider', () => {
   const mockCallMethod = vi.fn();
@@ -20,7 +20,6 @@ describe('WalletRouterProvider', () => {
       onMessage: vi.fn(),
     };
     provider = new WalletRouterProvider(mockTransport);
-    // @ts-ignore - mock private method
     provider.callMethod = mockCallMethod;
   });
 

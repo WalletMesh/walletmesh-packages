@@ -17,9 +17,9 @@
  */
 export * from './errors.js';
 export * from './localTransport.js';
+export { type ExecuteResult, OperationBuilder } from './operation.js';
 export * from './provider.js';
+export { ProviderSerializerRegistry, type SerializedMethodCall } from './provider-serialization.js';
 export * from './router.js';
 export * from './session-store.js';
 export * from './types.js';
-export { OperationBuilder, type ExecuteResult } from './operation.js';
-export { ProviderSerializerRegistry, type SerializedMethodCall } from './provider-serialization.js';

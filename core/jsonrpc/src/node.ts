@@ -1,22 +1,22 @@
+import { JSONRPCError } from './error.js';
+import { EventManager } from './event-manager.js';
+import { MessageValidator } from './message-validator.js';
+import { MethodManager } from './method-manager.js';
+import { MiddlewareManager } from './middleware-manager.js';
+import { RequestHandler } from './request-handler.js';
 import type {
-  JSONRPCMethodMap,
-  JSONRPCEventMap,
   JSONRPCContext,
+  JSONRPCEvent,
+  JSONRPCEventMap,
+  JSONRPCID,
+  JSONRPCMethodMap,
+  JSONRPCMiddleware,
+  JSONRPCParams,
   JSONRPCRequest,
   JSONRPCResponse,
-  JSONRPCEvent,
   JSONRPCSerializer,
-  JSONRPCMiddleware,
-  JSONRPCID,
-  JSONRPCParams,
   JSONRPCTransport,
 } from './types.js';
-import { EventManager } from './event-manager.js';
-import { MiddlewareManager } from './middleware-manager.js';
-import { MethodManager } from './method-manager.js';
-import { JSONRPCError } from './error.js';
-import { MessageValidator } from './message-validator.js';
-import { RequestHandler } from './request-handler.js';
 import { wrapHandler } from './utils.js';
 
 /**
@@ -166,8 +166,29 @@ export class JSONRPCNode<
             params: serializedParams as JSONRPCParams,
             id,
           };
+
+          // Debug logging removed (transport is private)
+
+          const transportSendStartTime = Date.now();
           await this.transport.send(request);
+          const transportSendElapsed = Date.now() - transportSendStartTime;
+
+          console.log(`✅ JSONRPCNode.callMethod transport.send completed after ${transportSendElapsed}ms`, {
+            method,
+            id,
+            elapsed: transportSendElapsed,
+          });
         } catch (error) {
+          console.error('❌ JSONRPCNode.callMethod transport.send failed', {
+            method,
+            id,
+            error: error instanceof Error ? error.message : error,
+            errorType: typeof error,
+            errorName: error instanceof Error ? error.constructor.name : 'Unknown',
+            errorStack: error instanceof Error ? error.stack : undefined,
+            // Transport state removed (transport is private)
+          });
+
           reject(error);
           this.methodManager.rejectAllRequests(error instanceof Error ? error : new Error(String(error)));
         }
@@ -288,7 +309,12 @@ export class JSONRPCNode<
           jsonrpc: '2.0',
           error:
             error instanceof JSONRPCError
-              ? { code: error.code, message: error.message, data: error.data }
+              ? {
+                  code: error.code,
+                  message: error.message,
+                  // Ensure data is either undefined or a proper value, never null
+                  data: error.data === null ? undefined : error.data,
+                }
               : { code: -32000, message: error instanceof Error ? error.message : 'Unknown error' },
           id: request.id,
         };
@@ -298,7 +324,9 @@ export class JSONRPCNode<
   }
 
   private async handleResponse(response: JSONRPCResponse<T>): Promise<void> {
-    await this.methodManager.handleResponse(response.id, response.result, response.error);
+    // Ensure error is undefined if it's null to prevent downstream issues
+    const error = response.error === null ? undefined : response.error;
+    await this.methodManager.handleResponse(response.id, response.result, error);
   }
 
   private handleEvent(event: JSONRPCEvent<E, keyof E>): void {
@@ -319,6 +347,16 @@ export class JSONRPCNode<
     handler: (context: C, method: string, params: JSONRPCParams) => Promise<unknown>,
   ): void {
     this.methodManager.setFallbackHandler(wrapHandler(handler));
+  }
+
+  /**
+   * Gets the list of registered method names.
+   * Used for capability discovery following the wm_getSupportedMethods pattern.
+   *
+   * @returns Array of registered method names as strings.
+   */
+  public getRegisteredMethods(): string[] {
+    return this.methodManager.getRegisteredMethods();
   }
 
   /**

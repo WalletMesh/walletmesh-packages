@@ -60,10 +60,15 @@
 
 export {
   /**
-   * Callback type for handling permission prompts.
-   * Used to get user approval for methods in ASK state.
+   * Type representing permission states for methods across chains.
+   * Maps chain IDs to their method permissions.
    */
-  AskCallback,
+  type AllowAskDenyChainPermissions,
+  /**
+   * Production-ready permission manager with granular control.
+   * Implements a three-state model for method permissions.
+   */
+  AllowAskDenyManager,
   /**
    * Enum defining the three possible permission states:
    * - ALLOW: Method calls are automatically permitted
@@ -72,15 +77,10 @@ export {
    */
   AllowAskDenyState,
   /**
-   * Production-ready permission manager with granular control.
-   * Implements a three-state model for method permissions.
+   * Callback type for handling permission prompts.
+   * Used to get user approval for methods in ASK state.
    */
-  AllowAskDenyManager,
-  /**
-   * Type representing permission states for methods across chains.
-   * Maps chain IDs to their method permissions.
-   */
-  type AllowAskDenyChainPermissions,
+  AskCallback,
 } from './allowAskDeny.js';
 
 export {

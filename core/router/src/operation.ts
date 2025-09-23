@@ -1,3 +1,5 @@
+import { RouterError } from './errors.js';
+import type { WalletRouterProvider } from './provider.js';
 import type {
   ChainId,
   MethodCall,
@@ -6,8 +8,6 @@ import type {
   MethodResults,
   RouterMethodMap,
 } from './types.js';
-import type { WalletRouterProvider } from './provider.js';
-import { RouterError } from './errors.js';
 
 /**
  * @internal

@@ -8,7 +8,7 @@
 
 > **AskCallback**\<`T`, `C`\> = (`context`, `request`) => `Promise`\<`boolean`\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/permissions/allowAskDeny.ts#L29)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/permissions/allowAskDeny.ts#L29)
 
 Callback for handling permission prompts when a method is in ASK state.
 This callback is invoked to determine if a method call should be allowed.

@@ -4,13 +4,13 @@
  * Tests for the secure WalletDiscovery implementation.
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { WalletDiscovery } from './WalletDiscovery.js';
-import { createResponderInfo } from '../responder/factory.js';
-import { setupFakeTimers, cleanupFakeTimers } from '../testing/timingHelpers.js';
-import { setupChromeEnvironment, createConsoleSpy } from '../testing/index.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DiscoveryRequestEvent } from '../types/core.js';
 import type { ResponderInfo, TechnologyCapability } from '../types/capabilities.js';
+import { createResponderInfo } from '../responder/factory.js';
+import { createConsoleSpy, setupChromeEnvironment } from '../testing/index.js';
+import { cleanupFakeTimers, setupFakeTimers } from '../testing/timingHelpers.js';
+import { WalletDiscovery } from './WalletDiscovery.js';
 
 // Mock Chrome API using standardized utility
 let mockChrome: ReturnType<typeof setupChromeEnvironment>['chrome'];
@@ -134,19 +134,23 @@ describe('WalletDiscovery', () => {
 
       expect(walletDiscovery.getStats().requestsProcessed).toBe(1);
       expect(walletDiscovery.getStats().announcementsSent).toBe(1);
-      expect(mockChrome.tabs.sendMessage).toHaveBeenCalledWith(123, {
-        type: 'discovery:announce',
-        data: expect.objectContaining({
-          type: 'discovery:wallet:response',
-          sessionId: 'test-session-123',
-          rdns: 'com.test.wallet',
-          name: 'Test Aztec Wallet',
-          transportConfig: {
-            type: 'extension',
-            extensionId: 'test-extension-id',
-          },
-        }),
-      });
+      expect(mockChrome.tabs.sendMessage).toHaveBeenCalledWith(
+        123,
+        {
+          type: 'discovery:announce',
+          data: expect.objectContaining({
+            type: 'discovery:wallet:response',
+            sessionId: 'test-session-123',
+            rdns: 'com.test.wallet',
+            name: 'Test Aztec Wallet',
+            transportConfig: {
+              type: 'extension',
+              extensionId: 'test-extension-id',
+            },
+          }),
+        },
+        expect.any(Function), // Callback added by browser API abstraction
+      );
     });
 
     it('should reject requests from unauthorized origins', () => {

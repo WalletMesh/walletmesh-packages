@@ -6,7 +6,7 @@
 
 # Interface: CapabilityRequirements
 
-Defined in: [core/discovery/src/types/capabilities.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L56)
+Defined in: [core/discovery/src/types/capabilities.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/capabilities.ts#L56)
 
 Capability requirements specification for responder discovery.
 
@@ -23,7 +23,7 @@ organized into technology-based requirements and global features.
 
 > **features**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L70)
+Defined in: [core/discovery/src/types/capabilities.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/capabilities.ts#L70)
 
 Global wallet features that must be available.
 These represent wallet-level functionalities beyond specific blockchain support,
@@ -36,7 +36,7 @@ See RESPONDER_FEATURES for standard values.
 
 > **technologies**: [`TechnologyRequirement`](TechnologyRequirement.md)[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/capabilities.ts#L62)
+Defined in: [core/discovery/src/types/capabilities.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/capabilities.ts#L62)
 
 Blockchain technologies that must be supported.
 Each technology includes its required interfaces and features.

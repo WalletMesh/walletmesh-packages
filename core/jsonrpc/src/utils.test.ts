@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { JSONRPCContext, JSONRPCRequest, JSONRPCResponse } from './types.js';
 import {
   applyToMethods,
   isJSONRPCID,
-  isJSONRPCVersion,
   isJSONRPCSerializedData,
+  isJSONRPCVersion,
   wrapHandler,
 } from './utils.js';
-import type { JSONRPCContext, JSONRPCRequest, JSONRPCResponse } from './types.js';
 
 describe('Utils', () => {
   describe('applyToMethods', () => {

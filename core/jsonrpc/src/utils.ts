@@ -1,11 +1,11 @@
 import { JSONRPCError } from './error.js';
 import type {
-  JSONRPCMethodMap,
   JSONRPCContext,
-  MethodHandler,
-  JSONRPCMiddleware,
   JSONRPCID,
+  JSONRPCMethodMap,
+  JSONRPCMiddleware,
   JSONRPCSerializedData,
+  MethodHandler,
 } from './types.js';
 
 /**

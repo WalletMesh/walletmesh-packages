@@ -12,6 +12,7 @@ import type { SecurityPolicy } from '../types/security.js';
 import { DiscoveryResponder } from '../responder/DiscoveryResponder.js';
 import { CapabilityMatcher } from '../responder/CapabilityMatcher.js';
 import { type Logger, defaultLogger } from '../core/logger.js';
+import { getBrowserAPI, getExtensionId, type BrowserAPI } from './browserApi.js';
 
 /**
  * Configuration for WalletDiscovery initialization.
@@ -67,12 +68,15 @@ export interface WalletDiscoveryStats {
 }
 
 /**
- * Secure wallet discovery implementation for Chrome extensions.
+ * Secure wallet discovery implementation for browser extensions.
  *
  * This class handles all discovery protocol business logic in the secure
  * background context, including capability matching, security validation,
  * and announcement generation. The content script acts as a pure message
  * relay, ensuring no sensitive wallet data is exposed to the page context.
+ *
+ * Works with both Chrome and Firefox extensions by auto-detecting the
+ * available browser API namespace (chrome.* or browser.*).
  *
  * Key security features:
  * - All business logic runs in secure background context
@@ -81,10 +85,11 @@ export interface WalletDiscoveryStats {
  * - Privacy-preserving silent rejection for unmatched capabilities
  * - Rate limiting and DOS protection
  *
- * @example Basic usage in Chrome extension background script:
+ * @example Basic usage in browser extension background script:
  * ```typescript
- * import { WalletDiscovery, createResponderInfo } from '@walletmesh/discovery';
+ * import { WalletDiscovery, createResponderInfo, getBrowserAPI } from '@walletmesh/discovery';
  *
+ * const api = getBrowserAPI();
  * const walletDiscovery = new WalletDiscovery({
  *   responderInfo: createResponderInfo.aztec({
  *     uuid: crypto.randomUUID(),
@@ -101,8 +106,8 @@ export interface WalletDiscoveryStats {
  *   }
  * });
  *
- * // Handle discovery requests from content script
- * chrome.runtime.onMessage.addListener((message, sender) => {
+ * // Handle discovery requests from content script (works with both chrome.* and browser.*)
+ * api.runtime.onMessage.addListener((message, sender) => {
  *   if (message.type === 'discovery:request' && sender.tab?.id) {
  *     walletDiscovery.handleDiscoveryRequest(
  *       message.data,
@@ -127,6 +132,7 @@ export class WalletDiscovery {
   private isEnabled = false;
   private connectedOrigins = new Set<string>();
   private logger: Logger;
+  private browserAPI: BrowserAPI;
 
   /**
    * Creates a new WalletDiscovery instance.
@@ -134,6 +140,9 @@ export class WalletDiscovery {
    * @param configOrResponderInfo - Configuration object or just the responder info
    */
   constructor(configOrResponderInfo: WalletDiscoveryConfig | ResponderInfo) {
+    // Get browser API instance
+    this.browserAPI = getBrowserAPI();
+
     // Support both the full config object and just passing responder info directly
     if ('responderInfo' in configOrResponderInfo) {
       // Full config object
@@ -254,7 +263,7 @@ export class WalletDiscovery {
    *
    * @param request - The discovery request from the dApp
    * @param origin - The origin of the requesting dApp
-   * @param tabId - The Chrome tab ID for sending responses
+   * @param tabId - The browser tab ID for sending responses
    */
   handleDiscoveryRequest(request: DiscoveryRequestEvent, origin: string, tabId: number): void {
     this.stats.requestsProcessed++;
@@ -277,6 +286,13 @@ export class WalletDiscovery {
     });
 
     if (matchResult.canFulfill && matchResult.intersection) {
+      // Get extension ID from browser API
+      const extensionId = getExtensionId();
+      if (!extensionId) {
+        this.logger.warn('Unable to get extension ID');
+        return;
+      }
+
       // Create filtered announcement (only intersection data)
       const announcement: DiscoveryResponseEvent = {
         type: 'discovery:wallet:response',
@@ -289,20 +305,27 @@ export class WalletDiscovery {
         matched: matchResult.intersection, // Only what dApp should see
         transportConfig: {
           type: 'extension',
-          extensionId: chrome.runtime.id,
+          extensionId,
         },
       };
 
       // Send to content script for relay to dApp
-      chrome.tabs
-        .sendMessage(tabId, {
-          type: 'discovery:announce',
-          data: announcement,
-        })
-        .catch(() => {
-          // Tab might not have content script or be closed
-          this.logger.warn(`Failed to send announcement to tab ${tabId}`);
-        });
+      if (this.browserAPI.tabs) {
+        this.browserAPI.tabs
+          .sendMessage(tabId, {
+            type: 'discovery:announce',
+            data: announcement,
+          })
+          .then(() => {
+            // Message sent successfully
+          })
+          .catch(() => {
+            // Tab might not have content script or be closed
+            this.logger.warn(`Failed to send announcement to tab ${tabId}`);
+          });
+      } else {
+        this.logger.warn('Browser tabs API not available');
+      }
 
       this.stats.announcementsSent++;
       this.logger.info(`Discovery announcement sent to ${origin}`);

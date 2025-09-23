@@ -1,12 +1,12 @@
 import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 import type {
+  ChainId,
   HumanReadableChainPermissions,
   PermissionApprovalCallback,
   PermissionManager,
   RouterContext,
   RouterMethodMap,
 } from '../types.js';
-import type { ChainId } from '../types.js';
 
 /**
  * Callback for handling permission prompts when a method is in ASK state.
