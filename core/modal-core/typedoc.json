@@ -1,0 +1,32 @@
+{
+  "$schema": "https://typedoc-plugin-markdown.org/schema.json",
+  "plugin": ["typedoc-plugin-markdown"],
+  "entryPoints": ["src/index.ts", "src/internal/types/typedocExports.ts"],
+  "entryPointStrategy": "resolve",
+  "out": "docs",
+  "exclude": ["**/*.test.ts", "**/*.test.tsx", "**/test-utils/**", "**/testing/**"],
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeExternals": false,
+  "disableSources": true,
+  "excludeNotDocumented": false,
+  "excludeInternal": true,
+  "categorizeByGroup": true,
+  "validation": {
+    "invalidLink": true,
+    "notExported": true
+  },
+  "externalSymbolLinkMappings": {
+    "typescript": {
+      "Array": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
+      "Promise": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
+      "Map": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map",
+      "Set": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set",
+      "String": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String",
+      "Number": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number",
+      "Boolean": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean",
+      "Object": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
+      "Function": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function"
+    }
+  }
+}
