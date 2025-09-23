@@ -1,0 +1,20 @@
+{
+  "$schema": "https://typedoc-plugin-markdown.org/schema.json",
+  "plugin": ["typedoc-plugin-markdown"],
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "exclude": ["**/*.test.ts"],
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "skipErrorChecking": false,
+  "validation": {
+    "invalidLink": false
+  },
+  "readme": "README.md",
+  "navigationLinks": {
+    "Aztec Developer Guide": "./AZTEC_DEVELOPER_GUIDE.md",
+    "Migration Guide": "./MIGRATION_GUIDE.md"
+  }
+}

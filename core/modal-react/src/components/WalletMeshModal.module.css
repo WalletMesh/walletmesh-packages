@@ -1,0 +1,583 @@
+/* WalletMesh Modal Styles with Theme Support */
+
+/* CSS Custom Properties - Default (Light) Theme */
+:root {
+  /* Colors */
+  --wm-color-background: #ffffff;
+  --wm-color-surface: #f8fafc;
+  --wm-color-surface-elevated: #ffffff;
+  --wm-color-overlay: rgba(0, 0, 0, 0.5);
+  --wm-color-primary: #4f46e5;
+  --wm-color-primary-hover: #4338ca;
+  --wm-color-secondary: #6b7280;
+  --wm-color-secondary-hover: #4b5563;
+  --wm-color-success: #10b981;
+  --wm-color-warning: #f59e0b;
+  --wm-color-error: #ef4444;
+  --wm-color-error-hover: #dc2626;
+  --wm-color-text-primary: #1f2937;
+  --wm-color-text-secondary: #6b7280;
+  --wm-color-text-on-primary: #ffffff;
+  --wm-color-border: #e5e7eb;
+  --wm-color-border-hover: #d1d5db;
+  --wm-color-focus-ring: rgba(79, 70, 229, 0.2);
+  --wm-color-disabled: #f3f4f6;
+
+  /* Shadows */
+  --wm-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --wm-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --wm-shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.1);
+
+  /* Spacing */
+  --wm-space-xs: 0.25rem;
+  --wm-space-sm: 0.5rem;
+  --wm-space-md: 1rem;
+  --wm-space-lg: 1.5rem;
+  --wm-space-xl: 2rem;
+
+  /* Border radius */
+  --wm-radius-sm: 0.25rem;
+  --wm-radius-md: 0.5rem;
+  --wm-radius-lg: 0.75rem;
+
+  /* Animation */
+  --wm-duration-normal: 200ms;
+  --wm-easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --wm-text-base: 1rem;
+  --wm-text-lg: 1.125rem;
+  --wm-weight-medium: 500;
+}
+
+/* Dark Theme Overrides */
+[data-wm-theme="dark"] {
+  --wm-color-background: #0f172a;
+  --wm-color-surface: #1e293b;
+  --wm-color-surface-elevated: #334155;
+  --wm-color-overlay: rgba(0, 0, 0, 0.7);
+  --wm-color-primary: #6366f1;
+  --wm-color-primary-hover: #7c3aed;
+  --wm-color-secondary: #64748b;
+  --wm-color-secondary-hover: #475569;
+  --wm-color-success: #22c55e;
+  --wm-color-warning: #eab308;
+  --wm-color-error: #f87171;
+  --wm-color-error-hover: #ef4444;
+  --wm-color-text-primary: #f1f5f9;
+  --wm-color-text-secondary: #cbd5e1;
+  --wm-color-text-on-primary: #ffffff;
+  --wm-color-border: #334155;
+  --wm-color-border-hover: #475569;
+  --wm-color-focus-ring: rgba(99, 102, 241, 0.3);
+  --wm-color-disabled: #1e293b;
+
+  /* Darker shadows for dark theme */
+  --wm-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --wm-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --wm-shadow-focus: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Modal Components */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--wm-color-overlay);
+  z-index: 1000;
+  transition: opacity var(--wm-duration-normal) var(--wm-easing-default);
+}
+
+.modalContent {
+  background: var(--wm-color-surface-elevated);
+  border-radius: var(--wm-radius-lg);
+  padding: var(--wm-space-xl);
+  max-width: 400px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--wm-shadow-lg);
+  border: 1px solid var(--wm-color-border);
+  color: var(--wm-color-text-primary);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--wm-space-lg);
+}
+
+.modalTitle {
+  font-size: var(--wm-text-lg);
+  font-weight: var(--wm-weight-medium);
+  color: var(--wm-color-text-primary);
+  margin: 0;
+}
+
+.walletList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wm-space-sm);
+}
+
+.walletOption {
+  display: flex;
+  align-items: center;
+  padding: var(--wm-space-md);
+  border: 1px solid var(--wm-color-border);
+  border-radius: var(--wm-radius-md);
+  cursor: pointer;
+  transition: all var(--wm-duration-normal) var(--wm-easing-default);
+  background-color: var(--wm-color-surface);
+  color: var(--wm-color-text-primary);
+}
+
+.walletOption:hover {
+  background-color: var(--wm-color-surface-elevated);
+  border-color: var(--wm-color-border-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--wm-shadow-md);
+}
+
+.walletOption:focus {
+  outline: none;
+  box-shadow: var(--wm-shadow-focus);
+  border-color: var(--wm-color-primary);
+}
+
+.walletOption:active {
+  transform: translateY(0);
+}
+
+.walletIcon {
+  width: 32px;
+  height: 32px;
+  margin-right: var(--wm-space-md);
+  border-radius: var(--wm-radius-sm);
+}
+
+.walletName {
+  font-size: var(--wm-text-base);
+  font-weight: var(--wm-weight-medium);
+  color: var(--wm-color-text-primary);
+  flex: 1;
+}
+
+.walletStatus {
+  font-size: 0.875rem;
+  color: var(--wm-color-text-secondary);
+  margin-left: auto;
+}
+
+.button {
+  padding: var(--wm-space-sm) var(--wm-space-md);
+  border: none;
+  border-radius: var(--wm-radius-md);
+  cursor: pointer;
+  font-weight: var(--wm-weight-medium);
+  transition: all var(--wm-duration-normal) var(--wm-easing-default);
+  font-size: 0.875rem;
+}
+
+.buttonPrimary {
+  background-color: var(--wm-color-primary);
+  color: var(--wm-color-text-on-primary);
+}
+
+.buttonPrimary:hover {
+  background-color: var(--wm-color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--wm-shadow-md);
+}
+
+.buttonSecondary {
+  background-color: var(--wm-color-secondary);
+  color: var(--wm-color-text-on-primary);
+}
+
+.buttonSecondary:hover {
+  background-color: var(--wm-color-secondary-hover);
+}
+
+.buttonDanger {
+  background-color: var(--wm-color-error);
+  color: var(--wm-color-text-on-primary);
+}
+
+.buttonDanger:hover {
+  background-color: var(--wm-color-error-hover);
+}
+
+.closeButton {
+  composes: button buttonSecondary;
+  margin-top: var(--wm-space-md);
+}
+
+.disconnectButton {
+  composes: button buttonDanger;
+}
+
+.connectingContainer {
+  text-align: center;
+  padding: var(--wm-space-xl);
+}
+
+.connectingTitle {
+  font-size: var(--wm-text-lg);
+  font-weight: var(--wm-weight-medium);
+  color: var(--wm-color-text-primary);
+  margin-bottom: var(--wm-space-md);
+}
+
+.connectingMessage {
+  color: var(--wm-color-text-secondary);
+  margin-bottom: var(--wm-space-lg);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto var(--wm-space-lg);
+  border: 3px solid var(--wm-color-disabled);
+  border-radius: 50%;
+  border-top-color: var(--wm-color-primary);
+  animation: spin 1s linear infinite;
+}
+
+.errorContainer {
+  text-align: center;
+  padding: var(--wm-space-lg);
+}
+
+.errorTitle {
+  font-size: var(--wm-text-lg);
+  font-weight: var(--wm-weight-medium);
+  color: var(--wm-color-error);
+  margin-bottom: var(--wm-space-md);
+}
+
+.errorMessage {
+  color: var(--wm-color-text-secondary);
+  margin-bottom: var(--wm-space-lg);
+  line-height: 1.5;
+}
+
+.connectedContainer {
+  text-align: center;
+  padding: var(--wm-space-lg);
+}
+
+.connectedTitle {
+  font-size: var(--wm-text-lg);
+  font-weight: var(--wm-weight-medium);
+  color: var(--wm-color-success);
+  margin-bottom: var(--wm-space-md);
+}
+
+.accountInfo {
+  background-color: var(--wm-color-surface);
+  border: 1px solid var(--wm-color-border);
+  border-radius: var(--wm-radius-md);
+  padding: var(--wm-space-md);
+  margin-bottom: var(--wm-space-lg);
+}
+
+.accountLabel {
+  font-size: 0.875rem;
+  color: var(--wm-color-text-secondary);
+  margin-bottom: var(--wm-space-xs);
+}
+
+.accountValue {
+  font-family: var(--wm-font-mono, monospace);
+  font-size: 0.875rem;
+  color: var(--wm-color-text-primary);
+  word-break: break-all;
+}
+
+/* Chain Switching Styles */
+.switchingChainContainer {
+  text-align: center;
+  padding: var(--wm-space-xl);
+  animation: fadeIn var(--wm-duration-normal) var(--wm-easing-default);
+}
+
+.switchingChainTitle {
+  font-size: var(--wm-text-lg);
+  font-weight: var(--wm-weight-medium);
+  color: var(--wm-color-primary);
+  margin-bottom: var(--wm-space-lg);
+}
+
+.chainTransition {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--wm-space-lg);
+  margin: var(--wm-space-xl) 0;
+  animation: slideIn var(--wm-duration-normal) var(--wm-easing-default);
+}
+
+.chainInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--wm-space-md);
+  background: var(--wm-color-surface);
+  border: 1px solid var(--wm-color-border);
+  border-radius: var(--wm-radius-md);
+  min-width: 120px;
+}
+
+.chainLabel {
+  font-size: 0.75rem;
+  color: var(--wm-color-text-secondary);
+  margin-bottom: var(--wm-space-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.chainName {
+  font-size: var(--wm-text-base);
+  font-weight: var(--wm-weight-medium);
+  color: var(--wm-color-text-primary);
+}
+
+.chainArrow {
+  font-size: 1.5rem;
+  color: var(--wm-color-primary);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.switchingChainMessage {
+  color: var(--wm-color-text-secondary);
+  margin-top: var(--wm-space-lg);
+  animation: fadeIn calc(var(--wm-duration-normal) * 2) var(--wm-easing-default);
+}
+
+.chainSwitchSpinner {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--wm-space-lg);
+  border: 4px solid var(--wm-color-disabled);
+  border-radius: 50%;
+  border-top-color: var(--wm-color-primary);
+  border-right-color: var(--wm-color-primary);
+  animation: chainSpin 1s linear infinite;
+}
+
+/* Proving State Styles (Aztec ZK Proof Generation) */
+.provingContainer {
+  text-align: center;
+  padding: var(--wm-space-xl);
+  animation: fadeIn var(--wm-duration-normal) var(--wm-easing-default);
+}
+
+.provingTitle {
+  font-size: var(--wm-text-lg);
+  font-weight: var(--wm-weight-medium);
+  color: var(--wm-color-primary);
+  margin-bottom: var(--wm-space-lg);
+}
+
+.provingMessage {
+  color: var(--wm-color-text-primary);
+  margin-bottom: var(--wm-space-md);
+  font-weight: var(--wm-weight-medium);
+}
+
+.provingHint {
+  color: var(--wm-color-text-secondary);
+  font-size: 0.875rem;
+  margin-top: var(--wm-space-md);
+}
+
+.provingSpinner {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto var(--wm-space-lg);
+  border: 5px solid var(--wm-color-disabled);
+  border-radius: 50%;
+  border-top-color: var(--wm-color-primary);
+  border-right-color: var(--wm-color-secondary);
+  border-bottom-color: var(--wm-color-primary);
+  animation: provingSpin 2s linear infinite;
+}
+
+@keyframes provingSpin {
+  to {
+    transform: rotate(720deg);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes chainSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .modalContent {
+    padding: var(--wm-space-lg);
+    width: 95%;
+  }
+
+  .walletOption {
+    padding: var(--wm-space-sm) var(--wm-space-md);
+  }
+
+  .walletIcon {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .walletOption {
+    border-width: 2px;
+  }
+
+  .button {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .walletOption,
+  .button,
+  .spinner {
+    transition: none;
+    animation: none;
+  }
+
+  .spinner {
+    border: 3px solid var(--wm-color-primary);
+    border-radius: 50%;
+  }
+}
+
+/* Empty state styles */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--wm-space-xl) var(--wm-space-lg);
+  text-align: center;
+  min-height: 300px;
+  justify-content: center;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: var(--wm-space-lg);
+  opacity: 0.7;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.emptyTitle {
+  font-size: var(--wm-text-lg);
+  font-weight: var(--wm-weight-semibold);
+  color: var(--wm-color-text-primary);
+  margin: 0 0 var(--wm-space-sm) 0;
+}
+
+.emptyMessage {
+  color: var(--wm-color-text-secondary);
+  margin: 0 0 var(--wm-space-lg) 0;
+  line-height: 1.5;
+  max-width: 300px;
+}
+
+.emptyHint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wm-space-sm);
+  padding: var(--wm-space-md);
+  background: var(--wm-color-surface);
+  border-radius: var(--wm-radius-md);
+  text-align: left;
+  max-width: 350px;
+  color: var(--wm-color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.hintIcon {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+/* Discovery status styles */
+.discoveryStatus {
+  display: flex;
+  align-items: center;
+  gap: var(--wm-space-sm);
+  padding: var(--wm-space-sm) var(--wm-space-md);
+  background: var(--wm-color-surface);
+  border-radius: var(--wm-radius-md);
+  margin-top: var(--wm-space-sm);
+  font-size: 0.875rem;
+  color: var(--wm-color-text-secondary);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.discoverySpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--wm-color-disabled);
+  border-radius: 50%;
+  border-top-color: var(--wm-color-primary);
+  animation: spin 1s linear infinite;
+}
+
+.discoveryText {
+  color: var(--wm-color-text-secondary);
+}

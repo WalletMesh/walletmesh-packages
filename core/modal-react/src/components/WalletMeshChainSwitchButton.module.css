@@ -1,0 +1,200 @@
+/* ChainSwitchButton Component Styles */
+
+.chainSwitchButton {
+  display: flex;
+  align-items: center;
+  gap: var(--wm-space-sm);
+  padding: var(--wm-space-sm) var(--wm-space-md);
+  border: 2px solid var(--wm-color-border);
+  border-radius: var(--wm-radius-md);
+  background: var(--wm-color-background);
+  color: var(--wm-color-text-primary);
+  cursor: pointer;
+  transition: all var(--wm-duration-normal) var(--wm-easing-default);
+  font-weight: var(--wm-weight-medium);
+  font-size: var(--wm-text-base);
+  min-height: 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.chainSwitchButton:hover:not(:disabled) {
+  border-color: var(--wm-color-primary);
+  background: var(--wm-color-surface);
+  transform: translateY(-1px);
+  box-shadow: var(--wm-shadow-md);
+}
+
+.chainSwitchButton:focus {
+  outline: none;
+  box-shadow: var(--wm-shadow-focus);
+  border-color: var(--wm-color-primary);
+}
+
+.chainSwitchButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.chainSwitchButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Current chain state */
+.chainSwitchButton.current {
+  border-color: var(--wm-color-success);
+  background: var(--wm-color-surface);
+  position: relative;
+}
+
+.chainSwitchButton.current::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--wm-color-success);
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* Switching state */
+.chainSwitchButton.switching {
+  border-color: var(--wm-color-warning);
+  animation: pulse 1.5s ease-in-out infinite;
+  position: relative;
+}
+
+.chainSwitchButton.switching::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--wm-color-warning);
+  opacity: 0.1;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* Chain icon */
+.chainIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Chain name */
+.chainName {
+  flex: 1;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Current indicator */
+.currentIndicator {
+  color: var(--wm-color-success);
+  font-weight: 600;
+  font-size: 1.2em;
+  margin-left: var(--wm-space-xs);
+  flex-shrink: 0;
+}
+
+/* Switching spinner */
+.switchingSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--wm-color-disabled);
+  border-top: 2px solid var(--wm-color-warning);
+  border-right: 2px solid var(--wm-color-warning);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+  margin-left: var(--wm-space-xs);
+}
+
+/* Animations */
+@keyframes pulse {
+  0%,
+  100% {
+    background: var(--wm-color-background);
+    transform: scale(1);
+  }
+  50% {
+    background: var(--wm-color-surface);
+    transform: scale(1.02);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    opacity: 0.1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0.1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 480px) {
+  .chainSwitchButton {
+    padding: var(--wm-space-xs) var(--wm-space-sm);
+    min-height: 40px;
+    font-size: 0.875rem;
+  }
+
+  .chainIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .switchingSpinner {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .chainSwitchButton {
+    border-width: 3px;
+  }
+
+  .chainSwitchButton.current::before,
+  .chainSwitchButton.switching::before {
+    opacity: 0.2;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .chainSwitchButton,
+  .chainSwitchButton.switching {
+    animation: none;
+    transition: none;
+  }
+
+  .switchingSpinner {
+    animation: none;
+    border: 2px solid var(--wm-color-warning);
+  }
+
+  .chainSwitchButton.switching::before {
+    animation: none;
+    opacity: 0.15;
+  }
+}
