@@ -1,0 +1,155 @@
+[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+
+***
+
+[@walletmesh/modal-core](../../../modules.md) / [@walletmesh/modal-core](../README.md) / EvmWalletProvider
+
+# Interface: EvmWalletProvider
+
+EVM-specific wallet provider following EIP-1193 standard
+
+## Extends
+
+- [`IBaseWalletProvider`](IBaseWalletProvider.md)
+
+## Methods
+
+### disconnect()
+
+> **disconnect**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+
+Disconnect from wallet
+
+#### Returns
+
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+
+#### Inherited from
+
+[`IBaseWalletProvider`](IBaseWalletProvider.md).[`disconnect`](IBaseWalletProvider.md#disconnect)
+
+***
+
+### getAccounts()
+
+> **getAccounts**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string`[]\>
+
+Get connected accounts
+
+#### Returns
+
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string`[]\>
+
+#### Inherited from
+
+[`IBaseWalletProvider`](IBaseWalletProvider.md).[`getAccounts`](IBaseWalletProvider.md#getaccounts)
+
+***
+
+### getChainId()
+
+> **getChainId**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string`\>
+
+Get current chain ID
+
+#### Returns
+
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string`\>
+
+#### Inherited from
+
+[`IBaseWalletProvider`](IBaseWalletProvider.md).[`getChainId`](IBaseWalletProvider.md#getchainid)
+
+***
+
+### isConnected()?
+
+> `optional` **isConnected**(): `boolean`
+
+Check if the provider is connected (EIP-1193)
+
+#### Returns
+
+`boolean`
+
+***
+
+### off()
+
+> **off**(`event`, `listener`): `void`
+
+Remove event listener
+
+#### Parameters
+
+##### event
+
+`string`
+
+##### listener
+
+(...`args`) => `void`
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+[`IBaseWalletProvider`](IBaseWalletProvider.md).[`off`](IBaseWalletProvider.md#off)
+
+***
+
+### on()
+
+> **on**(`event`, `listener`): `void`
+
+Add event listener
+
+#### Parameters
+
+##### event
+
+`string`
+
+##### listener
+
+(...`args`) => `void`
+
+#### Returns
+
+`void`
+
+#### Inherited from
+
+[`IBaseWalletProvider`](IBaseWalletProvider.md).[`on`](IBaseWalletProvider.md#on)
+
+***
+
+### request()
+
+> **request**\<`T`\>(`args`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`T`\>
+
+Make an EIP-1193 compliant JSON-RPC request
+
+#### Type Parameters
+
+##### T
+
+`T` = `unknown`
+
+#### Parameters
+
+##### args
+
+###### method
+
+`string`
+
+###### params?
+
+`unknown`[] \| `Record`\<`string`, `unknown`\>
+
+#### Returns
+
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`T`\>
