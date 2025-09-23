@@ -3,10 +3,7 @@
   "changelog": "@changesets/cli/changelog",
   "commit": false,
   "fixed": [],
-  "linked": [
-    ["@walletmesh/router", "@walletmesh/jsonrpc"],
-    ["@walletmesh/aztec-*"]
-  ],
+  "linked": [["@walletmesh/router", "@walletmesh/jsonrpc"], ["@walletmesh/aztec-*"]],
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch"
