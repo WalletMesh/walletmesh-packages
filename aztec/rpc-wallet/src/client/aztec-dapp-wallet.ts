@@ -5,7 +5,6 @@ import type {
   ContractArtifact,
   ContractFunctionInteraction,
   ContractInstanceWithAddress,
-  Fr,
   L2Block,
   Tx,
   TxExecutionRequest,
@@ -13,7 +12,7 @@ import type {
   TxReceipt,
   Wallet,
 } from '@aztec/aztec.js';
-import { Contract, DeploySentTx, SentTx } from '@aztec/aztec.js';
+import { Contract, DeploySentTx, type Fr, SentTx } from '@aztec/aztec.js';
 import type { IntentAction, IntentInnerHash } from '@aztec/aztec.js/utils';
 import { DefaultAccountEntrypoint } from '@aztec/entrypoints/account';
 import type { AuthWitnessProvider, FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfaces';
@@ -126,9 +125,13 @@ export class AztecDappWallet implements Wallet {
    * @see {@link AztecWalletMethodMap.aztec_getChainId}
    */
   async getChainIdAsync(): Promise<Fr> {
-    const chainId = await this.routerProvider.call(this.chainId, {
-      method: 'aztec_getChainId',
-    });
+    const chainId = await this.routerProvider.call(
+      this.chainId,
+      {
+        method: 'aztec_getChainId',
+      },
+      5000,
+    ); // 5 second timeout
     return chainId as unknown as Fr;
   }
 
@@ -155,9 +158,13 @@ export class AztecDappWallet implements Wallet {
    * @see {@link AztecWalletMethodMap.aztec_getVersion}
    */
   async getVersionAsync(): Promise<Fr> {
-    const version = await this.routerProvider.call(this.chainId, {
-      method: 'aztec_getVersion',
-    });
+    const version = await this.routerProvider.call(
+      this.chainId,
+      {
+        method: 'aztec_getVersion',
+      },
+      5000,
+    ); // 5 second timeout
     return version as unknown as Fr;
   }
 
@@ -207,13 +214,48 @@ export class AztecDappWallet implements Wallet {
    * Asynchronously fetches the complete address (including public keys) from the remote wallet via an RPC call.
    * This method directly queries the connected wallet node.
    *
+   * @param abortSignal - Optional AbortSignal to cancel the operation
    * @returns A promise that resolves to the wallet's {@link CompleteAddress}.
    * @see {@link AztecWalletMethodMap.aztec_getCompleteAddress}
    */
-  async getCompleteAddressAsync(): Promise<CompleteAddress> {
-    const result = await this.routerProvider.call(this.chainId, {
-      method: 'aztec_getCompleteAddress',
-    });
+  async getCompleteAddressAsync(abortSignal?: AbortSignal): Promise<CompleteAddress> {
+    const startTime = Date.now();
+    logger.info(
+      '[getCompleteAddressAsync] 🚀 Starting aztec_getCompleteAddress call with sessionId:',
+      this.routerProvider.sessionId,
+    );
+
+    // Check if already aborted
+    if (abortSignal?.aborted) {
+      throw new Error('Operation was cancelled');
+    }
+
+    // Optimized timeout protection with Promise.race - reduced to 10 seconds
+    const result = await Promise.race([
+      this.routerProvider.call(
+        this.chainId,
+        {
+          method: 'aztec_getCompleteAddress',
+        },
+        10000,
+      ), // Reduced to 10 second timeout
+      new Promise<CompleteAddress>((_, reject) => {
+        const timeoutId = setTimeout(() => {
+          const elapsed = Date.now() - startTime;
+          logger.error(`[getCompleteAddressAsync] ⏰ TIMEOUT after ${elapsed}ms (10s limit)`);
+          reject(new Error(`getCompleteAddress timed out after ${elapsed}ms (10s limit)`));
+        }, 10000);
+
+        // Cancel timeout if aborted
+        abortSignal?.addEventListener('abort', () => {
+          clearTimeout(timeoutId);
+          reject(new Error('Operation was cancelled'));
+        });
+      }),
+    ]);
+
+    const elapsed = Date.now() - startTime;
+    logger.info(`[getCompleteAddressAsync] ✅ SUCCESS after ${elapsed}ms:`, result);
     return result as CompleteAddress;
   }
 
@@ -222,12 +264,132 @@ export class AztecDappWallet implements Wallet {
    * @internal
    */
   private async fetchCachedValues(): Promise<void> {
-    const completeAddress = await this.getCompleteAddressAsync();
+    logger.debug('[fetchCachedValues] Starting to fetch cached values for wallet initialization');
 
-    this.cachedCompleteAddress = completeAddress;
-    this.cachedAddress = completeAddress.address;
-    this.cachedChainId = await this.getChainIdAsync();
-    this.cachedVersion = await this.getVersionAsync();
+    try {
+      // Step 1: Fetch complete address (required, with exponential backoff retry mechanism)
+      logger.debug('[fetchCachedValues] Step 1: Fetching complete address with retry...');
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      while (retryCount < maxRetries) {
+        try {
+          logger.debug(`[fetchCachedValues] Address fetch attempt ${retryCount + 1}/${maxRetries}`);
+          const completeAddress = await this.getCompleteAddressAsync();
+          this.cachedCompleteAddress = completeAddress;
+          this.cachedAddress = completeAddress.address;
+          logger.debug(
+            `[fetchCachedValues] ✓ Complete address fetched successfully on attempt ${retryCount + 1}: ${completeAddress.address.toString()}`,
+          );
+          break; // Success - exit retry loop
+        } catch (error) {
+          retryCount++;
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          logger.warn(`[fetchCachedValues] ⚠ Address fetch attempt ${retryCount} failed: ${errorMsg}`);
+
+          if (retryCount >= maxRetries) {
+            logger.error('[fetchCachedValues] ✗ Failed to fetch complete address after all retries:', error);
+            throw new Error(
+              `❌ Wallet Connection Failed: Unable to fetch wallet address after ${maxRetries} attempts.
+   Last error: ${errorMsg}
+   
+   💡 Troubleshooting steps:
+   1. Ensure the wallet popup is not blocked by your browser
+   2. Check that the wallet is properly configured and accessible
+   3. Verify network connectivity between dApp and wallet
+   4. Try refreshing both the dApp and wallet pages`,
+            );
+          }
+
+          // Wait before retry with exponential backoff (1s, 2s, 4s)
+          const delayMs = 1000 * 2 ** (retryCount - 1);
+          logger.debug(`[fetchCachedValues] Waiting ${delayMs}ms before retry ${retryCount + 1}`);
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+      }
+
+      // Step 2: Fetch chain ID (with fallback)
+      logger.debug('[fetchCachedValues] Step 2: Fetching chain ID with 3s timeout...');
+      try {
+        this.cachedChainId = await Promise.race([
+          this.getChainIdAsync(),
+          new Promise<Fr>((_, reject) =>
+            setTimeout(() => reject(new Error('getChainId timed out after 3s')), 3000),
+          ),
+        ]);
+        logger.debug('[fetchCachedValues] ✓ Chain ID fetched successfully:', this.cachedChainId);
+        logger.info('[fetchCachedValues] Chain ID value:', this.cachedChainId?.toString());
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        logger.warn(`[fetchCachedValues] ⚠ Chain ID fetch failed (${errorMsg}), using default=31337`);
+        // Use a default Fr value for chainId (31337 for local sandbox)
+        this.cachedChainId = { value: 31337n } as Fr;
+        logger.debug('[fetchCachedValues] Using fallback chainId:', this.cachedChainId);
+      }
+
+      // Step 3: Fetch version (with fallback)
+      logger.debug('[fetchCachedValues] Step 3: Fetching version with 3s timeout...');
+      try {
+        this.cachedVersion = await Promise.race([
+          this.getVersionAsync(),
+          new Promise<Fr>((_, reject) =>
+            setTimeout(() => reject(new Error('getVersion timed out after 3s')), 3000),
+          ),
+        ]);
+        logger.debug('[fetchCachedValues] ✓ Version fetched successfully:', this.cachedVersion);
+        logger.info('[fetchCachedValues] Version value:', this.cachedVersion?.toString());
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        logger.warn(`[fetchCachedValues] ⚠ Version fetch failed (${errorMsg}), using default=1`);
+        // Use a default Fr value for version (1)
+        this.cachedVersion = { value: 1n } as Fr;
+        logger.debug('[fetchCachedValues] Using fallback version:', this.cachedVersion);
+      }
+
+      // Summary
+      logger.info('[fetchCachedValues] ✓ All cached values processed successfully');
+      logger.debug('[fetchCachedValues] Final cached values:', {
+        address: this.cachedAddress?.toString(),
+        chainId: this.cachedChainId,
+        version: this.cachedVersion,
+      });
+    } catch (error) {
+      logger.error('[fetchCachedValues] ✗ Failed to fetch cached values:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Safely converts an Fr-like object or number to a number.
+   * Handles both proper Fr objects and plain values from RPC deserialization.
+   * @private
+   */
+  private safeToNumber(value: Fr | { value?: bigint } | number | bigint | unknown): number {
+    if (typeof value === 'number') {
+      return value;
+    }
+    if (typeof value === 'bigint') {
+      return Number(value);
+    }
+    if (value && typeof value === 'object') {
+      // Handle Fr objects with toNumber() method
+      if ('toNumber' in value && typeof value.toNumber === 'function') {
+        return value.toNumber();
+      }
+      // Handle plain objects with value property (from RPC deserialization)
+      if ('value' in value && typeof value.value === 'bigint') {
+        return Number(value.value);
+      }
+      if ('value' in value && typeof value.value === 'number') {
+        return value.value;
+      }
+    }
+    // Default fallback - try to convert to number
+    const num = Number(value);
+    if (!Number.isNaN(num)) {
+      return num;
+    }
+    throw new Error(`Cannot convert value to number: ${JSON.stringify(value)}`);
   }
 
   /**
@@ -237,23 +399,70 @@ export class AztecDappWallet implements Wallet {
    */
   async initialize(): Promise<void> {
     try {
+      logger.debug('[AztecDappWallet.initialize] Starting wallet initialization...');
       await this.fetchCachedValues();
 
       // Initialize the auth provider and entrypoint
       if (!this.cachedAddress || !this.cachedChainId || !this.cachedVersion) {
-        throw new Error('Failed to initialize wallet: missing required cached values');
+        const missing = [];
+        if (!this.cachedAddress) missing.push('address');
+        if (!this.cachedChainId) missing.push('chainId');
+        if (!this.cachedVersion) missing.push('version');
+        throw new Error(
+          `❌ Wallet Initialization Failed: Missing critical wallet information.
+   Missing values: ${missing.join(', ')}
+   
+   💡 This usually indicates:
+   1. The wallet connection was interrupted during setup
+   2. The wallet is not properly configured for this chain
+   3. Network issues between dApp and wallet
+   
+   🔄 Please try connecting again or contact support if the issue persists.`,
+        );
       }
+
+      logger.debug('[AztecDappWallet.initialize] Converting chainId and version to numbers...');
+
+      // Safely convert chainId and version to numbers
+      let chainIdNumber: number;
+      let versionNumber: number;
+
+      try {
+        chainIdNumber = this.safeToNumber(this.cachedChainId);
+        logger.debug('[AztecDappWallet.initialize] ChainId converted to:', chainIdNumber);
+      } catch (error) {
+        logger.error('[AztecDappWallet.initialize] Failed to convert chainId to number:', error);
+        logger.debug('[AztecDappWallet.initialize] ChainId value:', this.cachedChainId);
+        throw new Error(
+          `Failed to convert chainId to number: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
+
+      try {
+        versionNumber = this.safeToNumber(this.cachedVersion);
+        logger.debug('[AztecDappWallet.initialize] Version converted to:', versionNumber);
+      } catch (error) {
+        logger.error('[AztecDappWallet.initialize] Failed to convert version to number:', error);
+        logger.debug('[AztecDappWallet.initialize] Version value:', this.cachedVersion);
+        throw new Error(
+          `Failed to convert version to number: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
+
+      logger.debug('[AztecDappWallet.initialize] Creating auth provider and entrypoint...');
       this.authProvider = new RPCAuthWitnessProvider(this);
       this.entrypoint = new DefaultAccountEntrypoint(
         this.cachedAddress,
         this.authProvider,
-        this.cachedChainId.toNumber(),
-        this.cachedVersion.toNumber(),
+        chainIdNumber,
+        versionNumber,
       );
 
-      logger.debug(`AztecDappWallet initialized: ${this.cachedAddress?.toString()}`);
+      logger.info(
+        `[AztecDappWallet.initialize] AztecDappWallet initialized successfully: ${this.cachedAddress?.toString()}`,
+      );
     } catch (error) {
-      logger.warn('AztecDappWallet.initialize: Failed to initialize wallet addresses:', error);
+      logger.error('[AztecDappWallet.initialize] Failed to initialize wallet:', error);
       throw error;
     }
   }
@@ -430,12 +639,18 @@ export class AztecDappWallet implements Wallet {
   /**
    * Creates an authorization witness for a given message hash or intent by making an RPC call to the remote wallet.
    * Implements {@link Wallet.createAuthWit}.
-   * @param intent - The message hash ({@link Fr} or {@link Buffer}) or intent object ({@link IntentInnerHash} or {@link IntentAction}) to authorize.
+   * @param messageHash - The message hash ({@link Fr} or {@link Buffer}) to authorize.
    * @returns A promise that resolves to the {@link AuthWitness}.
    * @see {@link AztecWalletMethodMap.aztec_createAuthWit}
    */
-  // Overloaded createAuthWit methods to match Wallet interface
   async createAuthWit(messageHash: Fr | Buffer): Promise<AuthWitness>;
+  /**
+   * Creates an authorization witness for a given intent by making an RPC call to the remote wallet.
+   * Implements {@link Wallet.createAuthWit}.
+   * @param intent - The intent object ({@link IntentInnerHash} or {@link IntentAction}) to authorize.
+   * @returns A promise that resolves to the {@link AuthWitness}.
+   * @see {@link AztecWalletMethodMap.aztec_createAuthWit}
+   */
   async createAuthWit(intent: IntentInnerHash | IntentAction): Promise<AuthWitness>;
   async createAuthWit(intent: Fr | Buffer | IntentInnerHash | IntentAction): Promise<AuthWitness> {
     const result = await this.routerProvider.call(this.chainId, {
@@ -874,7 +1089,17 @@ export async function createAztecWallet(
   provider: AztecRouterProvider,
   chainId: AztecChainId = 'aztec:mainnet',
 ): Promise<AztecDappWallet> {
+  logger.info(`Creating AztecDappWallet for chain ${chainId}`);
   const wallet = new AztecDappWallet(provider, chainId);
-  await wallet.initialize();
+
+  logger.info('Initializing AztecDappWallet...');
+  try {
+    await wallet.initialize();
+    logger.info('AztecDappWallet initialized successfully');
+  } catch (error) {
+    logger.error('Failed to initialize AztecDappWallet', error);
+    throw error;
+  }
+
   return wallet;
 }

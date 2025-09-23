@@ -548,24 +548,14 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
  * @see {@link AztecWalletSerializer} which provides the serialization logic.
  */
 export function registerAztecSerializers(node: JSONRPCNode<AztecWalletMethodMap>) {
-  // This list should ideally cover all methods in AztecWalletMethodMap that require
-  // specific Aztec type serialization.
-  const aztecMethods: (keyof AztecWalletMethodMap)[] = [
+  // Methods that need full serialization (both params and results)
+  // Methods with no params or simple params (like aztec_getAddress) are NOT included
+  // because they don't need param deserialization on the wallet side
+  const fullSerializationMethods: (keyof AztecWalletMethodMap)[] = [
     'aztec_getBlock',
-    'aztec_getBlockNumber',
-    'aztec_getChainId',
-    'aztec_getVersion',
-    'aztec_getNodeInfo',
-    'aztec_getProvenBlockNumber',
-    'aztec_getPXEInfo',
-    'aztec_getCurrentBaseFees',
-    'aztec_getAddress',
-    'aztec_getCompleteAddress',
     'aztec_createAuthWit',
     'aztec_registerSender',
-    'aztec_getSenders',
     'aztec_removeSender',
-    'aztec_getContracts',
     'aztec_getContractMetadata',
     'aztec_getContractClassMetadata',
     'aztec_registerContract',
@@ -580,9 +570,35 @@ export function registerAztecSerializers(node: JSONRPCNode<AztecWalletMethodMap>
     'aztec_getPublicEvents',
     'aztec_wmExecuteTx',
     'aztec_wmDeployContract',
-    'wm_getSupportedMethods',
   ];
-  for (const method of aztecMethods) {
+
+  // Methods that only need result serialization (no params or simple params)
+  // These methods return complex Aztec types that must be serialized before sending
+  const resultOnlyMethods: (keyof AztecWalletMethodMap)[] = [
+    'aztec_getChainId', // Returns Fr - needs serialization
+    'aztec_getVersion', // Returns Fr - needs serialization
+    'aztec_getAddress', // Returns AztecAddress - needs serialization
+    'aztec_getCompleteAddress', // Returns CompleteAddress - needs serialization
+    'aztec_getBlockNumber', // Returns number
+    'aztec_getProvenBlockNumber', // Returns number
+    'aztec_getSenders', // Returns AztecAddress[] - needs serialization
+    'aztec_getContracts', // Returns AztecAddress[] - needs serialization
+    'aztec_getNodeInfo', // Returns NodeInfo - needs serialization
+    'aztec_getPXEInfo', // Returns PXEInfo - needs serialization
+    'aztec_getCurrentBaseFees', // Returns GasFees - needs serialization
+    'wm_getSupportedMethods', // Returns string[]
+  ];
+
+  // Register full serializers for methods that need both param and result serialization
+  for (const method of fullSerializationMethods) {
+    node.registerSerializer(method, AztecWalletSerializer);
+  }
+
+  // Register result-only serializers for methods that have no params but return complex types
+  for (const method of resultOnlyMethods) {
+    // These methods need result serialization but have no params or simple params
+    // We can reuse the full AztecWalletSerializer since its params handler
+    // already includes a fallback that handles empty params correctly
     node.registerSerializer(method, AztecWalletSerializer);
   }
 }

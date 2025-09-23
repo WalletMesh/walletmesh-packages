@@ -59,7 +59,7 @@ const address = await wallet.getAddress(); // AztecAddress instance
 
 ### Constructor
 
-> **new AztecRouterProvider**(`transport`, `context?`): `AztecRouterProvider`
+> **new AztecRouterProvider**(`transport`, `context?`, `sessionId?`): `AztecRouterProvider`
 
 Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L58)
 
@@ -83,6 +83,12 @@ The [JSONRPCTransport](https://github.com/WalletMesh/walletmesh-packages/tree/ma
 
 Optional context object that can be passed to the
                  `WalletRouterProvider` constructor.
+
+##### sessionId?
+
+`string`
+
+Optional pre-existing session ID to use without calling connect.
 
 #### Returns
 
@@ -112,7 +118,7 @@ Defined in: core/jsonrpc/dist/node.d.ts:51
 
 > **get** **sessionId**(): `undefined` \| `string`
 
-Defined in: core/router/dist/provider.d.ts:60
+Defined in: core/router/dist/provider.d.ts:68
 
 Gets the current session ID if connected, undefined otherwise.
 The session ID is required for most operations and is set after
@@ -172,7 +178,7 @@ A function that, when called, will remove this middleware.
 
 > **bulkCall**\<`T`\>(`chainId`, `calls`, `timeout?`): `Promise`\<[`MethodResults`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/MethodResults.md)\<`T`\>\>
 
-Defined in: core/router/dist/provider.d.ts:201
+Defined in: core/router/dist/provider.d.ts:209
 
 Executes multiple method calls in sequence on the same chain.
 More efficient than multiple individual calls for related operations.
@@ -257,7 +263,7 @@ const [accounts, balance] = await provider.bulkCall('eip155:1', [
 
 > **call**\<`M`\>(`chainId`, `call`, `timeout?`): `Promise`\<[`RouterMethodMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md)\[`M`\]\[`"result"`\]\>
 
-Defined in: core/router/dist/provider.d.ts:172
+Defined in: core/router/dist/provider.d.ts:180
 
 Invokes a method on the connected wallet.
 Routes the call to the appropriate wallet client based on chain ID.
@@ -405,7 +411,7 @@ If sending the request fails.
 
 > **chain**(`chainId`): [`OperationBuilder`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/classes/OperationBuilder.md)\<readonly \[\]\>
 
-Defined in: core/router/dist/provider.d.ts:244
+Defined in: core/router/dist/provider.d.ts:252
 
 Creates a new operation builder for chaining method calls.
 Enables fluent method call chaining with proper type inference.
@@ -444,7 +450,11 @@ const [balance, code] = await provider
 
 > **close**(): `Promise`\<`void`\>
 
+<<<<<<< HEAD
 Defined in: core/jsonrpc/dist/node.d.ts:167
+=======
+Defined in: core/jsonrpc/dist/node.d.ts:174
+>>>>>>> 8d4fac14 (feat(modal-core): add comprehensive modal-core package with documentation)
 
 Closes the JSON-RPC node, cleaning up resources.
 This includes removing all event handlers, middleware, and rejecting any pending requests.
@@ -464,7 +474,7 @@ The underlying transport is not closed by this method and should be managed sepa
 
 > **connect**(`permissions`, `timeout?`): `Promise`\<\{ `permissions`: [`HumanReadableChainPermissions`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md); `sessionId`: `string`; \}\>
 
-Defined in: core/router/dist/provider.d.ts:88
+Defined in: core/router/dist/provider.d.ts:96
 
 Connects to multiple chains with specified permissions.
 Establishes a session and requests method permissions for each chain.
@@ -531,7 +541,7 @@ const { sessionId, permissions } = await provider.connect({
 
 > **disconnect**(`timeout?`): `Promise`\<`void`\>
 
-Defined in: core/router/dist/provider.d.ts:102
+Defined in: core/router/dist/provider.d.ts:110
 
 Disconnects the current session if one exists.
 Cleans up session state and notifies the router to terminate the session.
@@ -609,7 +619,7 @@ The payload for the event.
 
 > **getPermissions**(`chainIds?`, `timeout?`): `Promise`\<[`HumanReadableChainPermissions`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md)\>
 
-Defined in: core/router/dist/provider.d.ts:116
+Defined in: core/router/dist/provider.d.ts:124
 
 Gets current session permissions.
 Returns a human-readable format suitable for displaying to users.
@@ -654,11 +664,32 @@ If the request times out
 
 ***
 
+### getRegisteredMethods()
+
+> **getRegisteredMethods**(): `string`[]
+
+Defined in: core/jsonrpc/dist/node.d.ts:151
+
+Gets the list of registered method names.
+Used for capability discovery following the wm_getSupportedMethods pattern.
+
+#### Returns
+
+`string`[]
+
+Array of registered method names as strings.
+
+#### Inherited from
+
+`WalletRouterProvider.getRegisteredMethods`
+
+***
+
 ### getSupportedMethods()
 
 > **getSupportedMethods**(`chainIds?`, `timeout?`): `Promise`\<`Record`\<`string`, `string`[]\>\>
 
-Defined in: core/router/dist/provider.d.ts:227
+Defined in: core/router/dist/provider.d.ts:235
 
 Gets supported methods for one or more chains.
 Used for capability discovery and feature detection.
@@ -872,7 +903,7 @@ The asynchronous function to handle requests for this method.
 
 > **registerMethodSerializer**\<`P`, `R`\>(`method`, `serializer`): `void`
 
-Defined in: core/router/dist/provider.d.ts:270
+Defined in: core/router/dist/provider.d.ts:278
 
 Registers a serializer for a specific wallet method.
 This allows the provider to properly serialize parameters and deserialize results
@@ -1003,7 +1034,7 @@ The asynchronous function to handle fallback requests.
 
 > **updatePermissions**(`permissions`, `timeout?`): `Promise`\<[`HumanReadableChainPermissions`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/HumanReadableChainPermissions.md)\>
 
-Defined in: core/router/dist/provider.d.ts:138
+Defined in: core/router/dist/provider.d.ts:146
 
 Updates session permissions.
 Requests additional permissions or modifies existing ones.

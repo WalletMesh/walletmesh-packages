@@ -11,7 +11,7 @@
 Defined in: [aztec/rpc-wallet/src/wallet/serializers.ts:550](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/wallet/serializers.ts#L550)
 
 Registers the [AztecWalletSerializer](../variables/AztecWalletSerializer.md) for all relevant Aztec JSON-RPC methods
-on a given JSONRPCNode instance.
+on a given [JSONRPCNode](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md) instance.
 
 This function is typically called on the wallet-side (e.g., within
 `createAztecWalletNode`) to equip the node with the necessary serialization
@@ -24,9 +24,9 @@ with the `AztecWalletSerializer`.
 
 ### node
 
-`JSONRPCNode`\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)\>
+[`JSONRPCNode`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md)\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md)\>
 
-The JSONRPCNode instance on which to register the serializers.
+The [JSONRPCNode](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md) instance on which to register the serializers.
               This node should be typed with [AztecWalletMethodMap](../interfaces/AztecWalletMethodMap.md).
 
 ## Returns

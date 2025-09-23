@@ -29,7 +29,7 @@ async function createMockObjects() {
   // Create a CompleteAddress first, then extract its address
   mockCompleteAddress = await CompleteAddress.random();
   mockAddress = mockCompleteAddress.address;
-  mockTxHash = await TxHash.random();
+  mockTxHash = TxHash.random();
 }
 
 describe('AztecDappWallet', () => {
@@ -116,16 +116,16 @@ describe('AztecDappWallet', () => {
 
       await wallet.initialize();
 
-      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getCompleteAddress' });
-      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getChainId' });
-      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getVersion' });
+      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getCompleteAddress' }, 10000);
+      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getChainId' }, 5000);
+      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getVersion' }, 5000);
     });
 
     it('should handle initialization errors', async () => {
       provider.call.mockRejectedValue(new Error('Provider error'));
 
-      await expect(wallet.initialize()).rejects.toThrow('Provider error');
-    });
+      await expect(wallet.initialize()).rejects.toThrow('❌ Wallet Connection Failed');
+    }, 10000);
   });
 
   describe('Account methods', () => {
@@ -164,12 +164,12 @@ describe('AztecDappWallet', () => {
 
       const result = await wallet.getCompleteAddressAsync();
 
-      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getCompleteAddress' });
+      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getCompleteAddress' }, 10000);
       expect(result).toEqual(mockCompleteAddress);
     });
 
     it('should call aztec_createAuthWit with Fr', async () => {
-      const messageHash = await Fr.random();
+      const messageHash = Fr.random();
       const authWitness = { messageHash };
       provider.call.mockResolvedValue(authWitness);
 
@@ -184,7 +184,7 @@ describe('AztecDappWallet', () => {
 
     it('should call aztec_createAuthWit with Buffer', async () => {
       const buffer = Buffer.from('test');
-      const authWitness = { messageHash: await Fr.random() };
+      const authWitness = { messageHash: Fr.random() };
       provider.call.mockResolvedValue(authWitness);
 
       const result = await wallet.createAuthWit(buffer);
@@ -432,9 +432,13 @@ describe('AztecDappWallet', () => {
 
       const result = await wallet.getChainIdAsync();
 
-      expect(provider.call).toHaveBeenCalledWith(testChainId, {
-        method: 'aztec_getChainId',
-      });
+      expect(provider.call).toHaveBeenCalledWith(
+        testChainId,
+        {
+          method: 'aztec_getChainId',
+        },
+        5000,
+      );
       expect(result).toEqual(mockChainIdFr);
     });
 
@@ -450,9 +454,13 @@ describe('AztecDappWallet', () => {
 
       const result = await wallet.getVersionAsync();
 
-      expect(provider.call).toHaveBeenCalledWith(testChainId, {
-        method: 'aztec_getVersion',
-      });
+      expect(provider.call).toHaveBeenCalledWith(
+        testChainId,
+        {
+          method: 'aztec_getVersion',
+        },
+        5000,
+      );
       expect(result).toEqual(mockVersionFr);
     });
   });

@@ -54,9 +54,10 @@ export class AztecRouterProvider extends WalletRouterProvider {
    *                    communication between the dApp and the WalletRouter.
    * @param context - Optional context object that can be passed to the
    *                  `WalletRouterProvider` constructor.
+   * @param sessionId - Optional pre-existing session ID to use without calling connect.
    */
-  constructor(transport: JSONRPCTransport, context?: Record<string, unknown>) {
-    super(transport, context);
+  constructor(transport: JSONRPCTransport, context?: Record<string, unknown>, sessionId?: string) {
+    super(transport, context, sessionId);
 
     // Register all Aztec serializers on this provider instance
     registerAztecSerializers(this);

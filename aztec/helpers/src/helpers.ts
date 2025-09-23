@@ -1,6 +1,6 @@
 import type { ContractArtifact, FunctionArtifact, FunctionSelector, PXE } from '@aztec/aztec.js';
-import { getFunctionArtifact } from '@aztec/stdlib/abi';
 import { AztecAddress } from '@aztec/aztec.js';
+import { getFunctionArtifact } from '@aztec/stdlib/abi';
 
 /**
  * @internal
