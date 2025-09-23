@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import React, { createContext, type ReactNode, useCallback, useContext, useState } from 'react';
 import Toast from '../components/Toast.js';
 
 /**
@@ -82,8 +82,8 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
    * @param type - The type of toast ('info', 'success', 'error', 'warning'). Defaults to 'info'.
    */
   const showToast = useCallback((message: string, type: ToastItem['type'] = 'info') => {
-    const id = Date.now().toString() + Math.random().toString(36).substring(2,7); // More unique ID
-    setToasts(prev => [...prev, { id, message, type }]);
+    const id = Date.now().toString() + Math.random().toString(36).substring(2, 7); // More unique ID
+    setToasts((prev) => [...prev, { id, message, type }]);
   }, []);
 
   /** Displays an error toast. */
@@ -100,14 +100,14 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
    * @param id - The ID of the toast to remove.
    */
   const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
 
   return (
     <ToastContext.Provider value={{ showToast, showError, showSuccess, showInfo, showWarning }}>
       {children}
       <div className="toast-container">
-        {toasts.map(toast => (
+        {toasts.map((toast) => (
           <Toast
             key={toast.id}
             id={toast.id}

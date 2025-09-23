@@ -1,12 +1,12 @@
+import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 import type {
-  PermissionManager,
   ChainId,
   ChainPermissions,
+  HumanReadableChainPermissions,
+  PermissionManager,
   RouterContext,
   RouterMethodMap,
-  HumanReadableChainPermissions,
 } from '@walletmesh/router';
-import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 
 /**
  * Options for configuring the {@link ApprovalPermissionManager}.
@@ -59,7 +59,18 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
   constructor(options: ApprovalPermissionManagerOptions) {
     this.onApprovalRequest = options.onApprovalRequest;
     this.methodsRequiringApproval = new Set(
-      options.methodsRequiringApproval || ['aztec_getAddress', 'aztec_getCompleteAddress', 'aztec_proveTx', 'aztec_sendTx', 'aztec_simulateUtility', 'aztec_contractInteraction', 'aztec_wmDeployContract', 'aztec_getPrivateEvents', 'aztec_registerContract', 'aztec_registerContractClass']
+      options.methodsRequiringApproval || [
+        'aztec_getAddress',
+        'aztec_getCompleteAddress',
+        'aztec_proveTx',
+        'aztec_sendTx',
+        'aztec_simulateUtility',
+        'aztec_contractInteraction',
+        'aztec_wmDeployContract',
+        'aztec_getPrivateEvents',
+        'aztec_registerContract',
+        'aztec_registerContractClass',
+      ],
     );
   }
 
@@ -75,18 +86,23 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
    */
   async approvePermissions(
     context: RouterContext,
-    permissions: ChainPermissions
+    permissions: ChainPermissions,
   ): Promise<HumanReadableChainPermissions> {
     const sessionId = context.session?.id;
     const origin = context.origin || 'unknown';
 
+    // Add defensive check for null/undefined permissions
+    if (!permissions || typeof permissions !== 'object') {
+      console.warn('Invalid permissions received in ApprovalPermissionManager:', permissions);
+      return {};
+    }
 
     // For initial connection, prompt user for approval
     const userApproved = await this.onApprovalRequest({
       origin,
       chainId: Object.keys(permissions).join(', '),
       method: 'wm_connect',
-      params: permissions
+      params: permissions,
     });
 
     if (!userApproved || !sessionId) {
@@ -95,20 +111,51 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
 
     const approvedPermissions: HumanReadableChainPermissions = {};
 
+    // Use composite key for session storage
+    const sessionKey = `${origin}_${sessionId}`;
+
+    console.log('[ApprovalPermissionManager] approvePermissions STORING session:', {
+      sessionId,
+      sessionKey,
+      permissions,
+      origin,
+      existingKeys: Array.from(this.approvedSessions.keys()),
+    });
+
     for (const [chainId, methods] of Object.entries(permissions)) {
-      // Store approved permissions
-      if (!this.approvedSessions.has(sessionId)) {
-        this.approvedSessions.set(sessionId, new Map());
+      // Ensure methods is an array before processing
+      if (!Array.isArray(methods)) {
+        console.warn(`Invalid methods for chain ${chainId}:`, methods);
+        continue;
       }
-      const sessionChains = this.approvedSessions.get(sessionId)!;
+
+      // Store approved permissions with composite key
+      if (!this.approvedSessions.has(sessionKey)) {
+        this.approvedSessions.set(sessionKey, new Map());
+      }
+      const sessionChains = this.approvedSessions.get(sessionKey);
+      if (!sessionChains) {
+        throw new Error(`Session chains not found for key: ${sessionKey}`);
+      }
 
       if (!sessionChains.has(chainId as ChainId)) {
         sessionChains.set(chainId as ChainId, new Set());
       }
 
-      const chainMethods = sessionChains.get(chainId as ChainId)!;
-      methods.forEach(method => chainMethods.add(method));
+      const chainMethods = sessionChains.get(chainId as ChainId);
+      if (!chainMethods) {
+        throw new Error(`Chain methods not found for chainId: ${chainId}`);
+      }
+      methods.forEach((method) => {
+        chainMethods.add(method);
+      });
 
+      console.log('[ApprovalPermissionManager] Stored permissions for chain:', {
+        sessionKey,
+        chainId,
+        methods: Array.from(chainMethods),
+        totalMethods: chainMethods.size,
+      });
 
       // Build human-readable permissions
       approvedPermissions[chainId as ChainId] = {};
@@ -119,7 +166,6 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
         };
       }
     }
-
 
     return approvedPermissions;
   }
@@ -136,7 +182,7 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
    */
   async checkPermissions(
     context: RouterContext,
-    request: JSONRPCRequest<RouterMethodMap, keyof RouterMethodMap>
+    request: JSONRPCRequest<RouterMethodMap, keyof RouterMethodMap>,
   ): Promise<boolean> {
     // Allow wm_connect through - it will be handled by approvePermissions
     if (request.method === 'wm_connect') {
@@ -144,7 +190,19 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
     }
 
     const sessionId = context.session?.id;
+    const origin = context.origin || 'unknown';
+
+    console.log('[ApprovalPermissionManager] checkPermissions ENTRY:', {
+      method: request.method,
+      sessionId,
+      hasSession: !!context.session,
+      origin: context.origin,
+      expectedKey: sessionId ? `${origin}_${sessionId}` : 'N/A',
+      approvedSessions: Array.from(this.approvedSessions.keys()),
+    });
+
     if (!sessionId) {
+      console.warn('[ApprovalPermissionManager] No session ID in context');
       return false;
     }
 
@@ -154,24 +212,25 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
     let params: unknown;
 
     if (request.method === 'wm_call' && request.params) {
-      const callParams = request.params as any;
+      const callParams = request.params as { chainId: string; call?: { method?: string; params?: unknown } };
       chainId = callParams.chainId;
       method = callParams.call?.method;
       params = callParams.call?.params;
     } else if (request.method === 'wm_bulkCall' && request.params) {
       // For bulk calls, we need to check all methods
-      const bulkParams = request.params as any;
+      const bulkParams = request.params as { chainId: string; calls?: unknown[] };
       chainId = bulkParams.chainId;
       const calls = bulkParams.calls || [];
 
       // Check permissions for each method in the bulk call
       for (const call of calls) {
+        const callObj = call as { method?: string; params?: unknown };
         const hasPermission = await this.checkSingleMethod(
           sessionId,
-          context.origin || '',
+          context.origin || 'unknown',
           chainId || '',
-          call.method,
-          call.params
+          callObj.method || '',
+          callObj.params,
         );
         if (!hasPermission) {
           return false;
@@ -187,7 +246,7 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
       return false;
     }
 
-    return this.checkSingleMethod(sessionId, context.origin || '', chainId, method, params);
+    return this.checkSingleMethod(sessionId, context.origin || 'unknown', chainId, method, params);
   }
 
   /**
@@ -206,20 +265,57 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
     origin: string,
     chainId: ChainId,
     method: string,
-    params?: unknown
+    params?: unknown,
   ): Promise<boolean> {
+    // Use composite key for session lookup
+    const sessionKey = `${origin}_${sessionId}`;
+
+    console.log('[ApprovalPermissionManager] checkSingleMethod LOOKING UP:', {
+      sessionId,
+      sessionKey,
+      chainId,
+      method,
+      origin,
+      approvedSessionsKeys: Array.from(this.approvedSessions.keys()),
+      keyMatch: this.approvedSessions.has(sessionKey),
+    });
 
     // Check if session has permission for this chain and method
-    const sessionChains = this.approvedSessions.get(sessionId);
+    const sessionChains = this.approvedSessions.get(sessionKey);
     if (!sessionChains) {
+      console.error('[ApprovalPermissionManager] SESSION NOT FOUND!', {
+        lookingForKey: sessionKey,
+        availableKeys: Array.from(this.approvedSessions.keys()),
+        sessionId,
+        origin,
+        method,
+      });
       return false;
     }
+
+    console.log('[ApprovalPermissionManager] Session found, checking chain permissions:', {
+      sessionKey,
+      availableChains: Array.from(sessionChains.keys()),
+      lookingForChain: chainId,
+    });
 
     const chainMethods = sessionChains.get(chainId);
     if (!chainMethods) {
+      console.error('[ApprovalPermissionManager] CHAIN NOT FOUND!', {
+        lookingForChain: chainId,
+        availableChains: Array.from(sessionChains.keys()),
+        sessionKey,
+      });
       return false;
     }
 
+    console.log('[ApprovalPermissionManager] Chain found, checking method permissions:', {
+      chainId,
+      availableMethods: Array.from(chainMethods),
+      lookingForMethod: method,
+      hasWildcard: chainMethods.has('*'),
+      hasMethod: chainMethods.has(method),
+    });
 
     // If wildcard permission, allow all methods
     if (chainMethods.has('*')) {
@@ -250,16 +346,16 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
    * @param chainIds - Optional array of chain IDs to filter permissions for.
    * @returns A promise that resolves to the human-readable permissions.
    */
-  async getPermissions(
-    context: RouterContext,
-    chainIds?: ChainId[]
-  ): Promise<HumanReadableChainPermissions> {
+  async getPermissions(context: RouterContext, chainIds?: ChainId[]): Promise<HumanReadableChainPermissions> {
     const sessionId = context.session?.id;
+    const origin = context.origin || 'unknown';
     if (!sessionId) {
       return {};
     }
 
-    const sessionChains = this.approvedSessions.get(sessionId);
+    // Use composite key for session lookup
+    const sessionKey = `${origin}_${sessionId}`;
+    const sessionChains = this.approvedSessions.get(sessionKey);
     if (!sessionChains) {
       return {};
     }
@@ -289,8 +385,11 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
    */
   async cleanup(context: RouterContext): Promise<void> {
     const sessionId = context.session?.id;
+    const origin = context.origin || 'unknown';
     if (sessionId) {
-      this.approvedSessions.delete(sessionId);
+      // Use composite key for session cleanup
+      const sessionKey = `${origin}_${sessionId}`;
+      this.approvedSessions.delete(sessionKey);
     }
   }
 }

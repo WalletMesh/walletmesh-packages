@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import './Toast.css';
 
 export interface ToastProps {
@@ -16,17 +17,13 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [id]); // Only depend on id, not onClose to avoid stale closures
+  }, [id, onClose]); // Only depend on id, not onClose to avoid stale closures
 
   return (
     <div id={id} className={`toast toast-${type}`} data-toast-id={id}>
       <div className="toast-content">
         <span className="toast-message">{message}</span>
-        <button
-          className="toast-close"
-          onClick={() => onClose(id)}
-          aria-label="Close"
-        >
+        <button type="button" className="toast-close" onClick={() => onClose(id)} aria-label="Close">
           ×
         </button>
       </div>

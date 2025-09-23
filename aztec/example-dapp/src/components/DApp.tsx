@@ -1,19 +1,38 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { connectAztec, type AztecDappWallet, AztecRouterProvider } from '@walletmesh/aztec-rpc-wallet';
-import { AztecAddress, Contract, TxStatus } from '@aztec/aztec.js';
+import { getInitialTestAccounts } from '@aztec/accounts/testing';
 import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';
 import { CounterContractArtifact } from '@aztec/noir-test-contracts.js/Counter';
-import { getInitialTestAccounts } from '@aztec/accounts/testing';
+import {
+  AztecConnectButton,
+  AztecWalletReady,
+  useAztecBatch,
+  useAztecContract,
+  useAztecDeploy,
+  useAztecTransaction,
+  useAztecWallet,
+} from '@walletmesh/modal-react/aztec';
+import type React from 'react';
 import { useToast } from '../contexts/ToastContext.js';
-import { createDappToWalletTransport } from '../transports/CrossWindowTransport.js';
+
+// Type definitions for contract methods
+interface TokenContract {
+  methods: {
+    mint_to_public: (address: unknown, amount: bigint) => Promise<unknown>;
+    transfer_in_public: (from: unknown, to: string, amount: bigint, nonce: bigint) => Promise<unknown>;
+    balance_of_public: (address: unknown) => Promise<unknown>;
+  };
+}
+
+interface CounterContract {
+  methods: {
+    increment: (address: unknown, by: unknown) => any;
+    get_counter: (address: unknown) => any;
+  };
+}
+
 
 /**
- * DApp component for the Aztec example application.
- * This component demonstrates how a decentralized application can:
- * - Connect to an Aztec wallet in a separate window using WalletMesh
- * - Deploy Aztec smart contracts (Token and Counter)
- * - Interact with deployed contracts (mint, transfer, check balance, increment counter, get counter value)
- * It uses a cross-window postMessage transport for communication with the Wallet window.
+ * DApp component for the Aztec example application demonstrating
+ * the improved developer experience with new hooks and components.
  */
 const DApp: React.FC = () => {
   const { showError, showSuccess, showInfo } = useToast();
@@ -348,95 +367,166 @@ const DApp: React.FC = () => {
     }
   };
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      transportCleanupRef.current?.();
-      walletWindowRef.current?.close();
-    };
-  }, []);
-
-  // Check if wallet window is closed
-  useEffect(() => {
-    const checkWalletWindow = setInterval(() => {
-      if (isConnected && walletWindowRef.current?.closed) {
-        disconnectWallet();
-      }
-    }, 1000);
-
-    return () => clearInterval(checkWalletWindow);
-  }, [isConnected]);
+  // Helper to get status message for deployments
+  const getDeploymentStatus = (stage: string) => {
+    switch (stage) {
+      case 'preparing':
+        return '📝 Preparing...';
+      case 'computing':
+        return '🔢 Computing address...';
+      case 'proving':
+        return '🔐 Generating proof...';
+      case 'sending':
+        return '📤 Sending...';
+      case 'confirming':
+        return '⏳ Confirming...';
+      case 'success':
+        return '✅ Deployed!';
+      case 'error':
+        return '❌ Failed';
+      default:
+        return '';
+    }
+  };
 
   return (
     <div>
-      {!isConnected ? (
-        <button onClick={connectWallet} disabled={isConnecting}>
-          {isConnecting ? '⏳ Connecting...' : 'Connect Wallet'}
-        </button>
-      ) : (
+      <div style={{ marginBottom: '20px' }}>
+        <AztecConnectButton showProvingStatus={true} size="lg" variant="primary" />
+      </div>
+
+      {/* Use AztecWalletReady to handle wallet connection states */}
+      <AztecWalletReady
+        fallback={<p>Please connect your Aztec wallet to interact with contracts</p>}
+        connectingFallback={<p>🔄 Initializing Aztec wallet...</p>}
+        errorFallback={(error: any) => <p style={{ color: 'red' }}>Error: {error.message}</p>}
+      >
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <p>Connected Account: {account}</p>
-            <button onClick={disconnectWallet} style={{ marginLeft: '10px' }}>
-              Disconnect
-            </button>
-          </div>
+          {/* Show proving progress when transaction is in progress */}
+          {txStatus === 'proving' && (
+            <div
+              style={{ marginBottom: '20px', padding: '10px', background: '#f0f0f0', borderRadius: '5px' }}
+            >
+              <p>🔐 Generating zero-knowledge proof...</p>
+              <progress value={provingProgress} max={100} style={{ width: '100%' }} />
+            </div>
+          )}
+
+          {/* Show batch progress when batch is executing */}
+          {isBatchExecuting && (
+            <div
+              style={{ marginBottom: '20px', padding: '10px', background: '#e0f7fa', borderRadius: '5px' }}
+            >
+              <p>⚡ Executing batch transactions...</p>
+              <progress value={batchProgress} max={100} style={{ width: '100%' }} />
+              <p style={{ fontSize: '0.9em', marginTop: '5px' }}>{batchProgress}% complete</p>
+            </div>
+          )}
 
           {/* Token Contract Section */}
-          <div style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
+          <div
+            style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}
+          >
             <h3>Token Contract</h3>
-            <button onClick={deployToken} disabled={isDeployingToken}>
-              {isDeployingToken ? '⏳ Deploying...' : 'Deploy Token Contract'}
-            </button>
-            {tokenAddress && (
+
+            {!tokenAddress ? (
+              <button type="button" onClick={handleDeployToken} disabled={isDeployingToken}>
+                {isDeployingToken ? getDeploymentStatus(tokenStage) : 'Deploy Token Contract'}
+              </button>
+            ) : (
               <>
                 <p>Contract Address: {tokenAddress.toString()}</p>
+
+
                 <div style={{ marginTop: '10px' }}>
-                  <button onClick={mintTokens} disabled={isMinting}>
-                    {isMinting ? '⏳ Minting...' : 'Mint Tokens'}
+                  <button
+                    type="button"
+                    onClick={handleMintTokens}
+                    disabled={txStatus !== 'idle' && txStatus !== 'success' && txStatus !== 'error'}
+                  >
+                    Mint Tokens
                   </button>
-                  <button onClick={transferTokens} style={{ marginLeft: '5px' }} disabled={isTransferring}>
-                    {isTransferring ? '⏳ Transferring...' : 'Transfer Tokens'}
+                  <button
+                    type="button"
+                    onClick={handleTransferTokens}
+                    style={{ marginLeft: '5px' }}
+                    disabled={txStatus !== 'idle' && txStatus !== 'success' && txStatus !== 'error'}
+                  >
+                    Transfer Tokens
                   </button>
-                  <button onClick={checkTokenBalance} style={{ marginLeft: '5px' }} disabled={isCheckingBalance}>
-                    {isCheckingBalance ? '⏳ Checking...' : 'Check Balance'}
+                  <button
+                    type="button"
+                    onClick={handleGetTokenBalance}
+                    style={{ marginLeft: '5px' }}
+                    disabled={tokenContract.isLoading}
+                  >
+                    Get Token Balance
                   </button>
                 </div>
-                {tokenBalance && <p>Token Balance: {tokenBalance}</p>}
               </>
             )}
-            {!tokenAddress && !isDeployingToken && <p style={{ color: '#666', fontStyle: 'italic' }}>Deploy contract to enable interactions</p>}
-            {isDeployingToken && <p style={{ color: '#666', fontStyle: 'italic' }}>⏳ Deploying token contract... This may take couple minutes.</p>}
           </div>
 
           {/* Counter Contract Section */}
           <div style={{ padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
             <h3>Counter Contract</h3>
-            <button onClick={deployCounter} disabled={isDeployingCounter}>
-              {isDeployingCounter ? '⏳ Deploying...' : 'Deploy Counter Contract'}
-            </button>
-            {counterAddress && (
+
+            {!counterAddress ? (
+              <button type="button" onClick={handleDeployCounter} disabled={isDeployingCounter}>
+                {isDeployingCounter ? getDeploymentStatus(counterStage) : 'Deploy Counter Contract'}
+              </button>
+            ) : (
               <>
                 <p>Contract Address: {counterAddress.toString()}</p>
                 <div style={{ marginTop: '10px' }}>
-                  <button onClick={incrementCounter} disabled={isIncrementing}>
-                    {isIncrementing ? '⏳ Incrementing...' : 'Increment Counter'}
+                  <button
+                    type="button"
+                    onClick={handleIncrementCounter}
+                    style={{
+                      marginRight: '5px',
+                      padding: '8px 12px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                    disabled={txStatus !== 'idle' && txStatus !== 'success' && txStatus !== 'error' || isBatchExecuting}
+                  >
+                    Increment Counter
                   </button>
-                  <button onClick={incrementCounterTwice} style={{ marginLeft: '5px' }} disabled={isIncrementingTwice}>
-                    {isIncrementingTwice ? '⏳ Incrementing...' : 'Increment Twice'}
+                  <button
+                    type="button"
+                    onClick={handleIncrementCounterTwice}
+                    style={{
+                      marginRight: '5px',
+                      padding: '8px 12px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                    disabled={txStatus !== 'idle' && txStatus !== 'success' && txStatus !== 'error' || isBatchExecuting}
+                  >
+                    Increment Twice
                   </button>
-                  <button onClick={getCounter} style={{ marginLeft: '5px' }} disabled={isGettingCounter}>
-                    {isGettingCounter ? '⏳ Getting...' : 'Get Counter Value'}
+                  <button
+                    type="button"
+                    onClick={handleGetCounter}
+                    style={{
+                      padding: '8px 12px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                    disabled={counterContract.isLoading}
+                  >
+                    Get Counter Value
                   </button>
                 </div>
-                {counterValue && <p>Counter Value: {counterValue}</p>}
               </>
             )}
-            {!counterAddress && !isDeployingCounter && <p style={{ color: '#666', fontStyle: 'italic' }}>Deploy contract to enable interactions</p>}
-            {isDeployingCounter && <p style={{ color: '#666', fontStyle: 'italic' }}>⏳ Deploying counter contract... This may take a couple minutes.</p>}
           </div>
+
         </div>
-      )}
+      </AztecWalletReady>
     </div>
   );
 };

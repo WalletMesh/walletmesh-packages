@@ -4,7 +4,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode }: any) => {
   const env = loadEnv(mode, process.cwd());
   return {
     cacheDir: '/tmp/.vite',
@@ -14,12 +14,19 @@ export default defineConfig(({ mode }) => {
         // Handle lodash modules
         'lodash.chunk': 'lodash/chunk',
         'lodash.isequal': 'lodash/isEqual',
+        // Deduplicate React to prevent multiple instances
+        react: `${nodeModulesPath}/react`,
+        'react-dom': `${nodeModulesPath}/react-dom`,
       },
     },
     plugins: [
       react(),
       nodePolyfills({
-        include: ['buffer', 'path', 'process'],
+        include: ['buffer', 'path', 'process', 'util', 'stream', 'events', 'tty'],
+        globals: {
+          Buffer: true,
+          process: true,
+        },
       }),
       viteStaticCopy({
         targets: [
@@ -30,6 +37,10 @@ export default defineConfig(({ mode }) => {
         ],
       }),
     ],
+    optimizeDeps: {
+      exclude: [],
+      include: ['react', 'react-dom', 'react/jsx-runtime'],
+    },
     server: {
       headers: {
         'Cross-Origin-Embedder-Policy': 'require-corp',
@@ -47,6 +58,20 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: true,
+      rollupOptions: {
+        external: [
+          // Externalize Node.js modules that shouldn't be bundled for browser
+          'node:fs',
+          'node:os',
+          'node:crypto',
+          // Externalize Solana dependencies (not needed for Aztec-only dApp)
+          '@solana/web3.js',
+          '@solana/wallet-adapter-base',
+          // Externalize other problematic server-side modules
+          'fs',
+          'os',
+        ],
+      },
     },
-  };
+  } as any;
 });

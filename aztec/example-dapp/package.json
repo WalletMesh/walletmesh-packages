@@ -12,9 +12,10 @@
     "preview": "vite preview --port 5173",
     "clean": "rimraf dist node_modules",
     "lint": "biome lint",
-    "lint:fix": "biome lint --fix",
+    "lint:fix": "biome lint --write",
     "format": "biome format",
-    "format:fix": "biome format --fix"
+    "format:fix": "biome format --write",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@aztec/accounts": "2.0.3",
@@ -24,6 +25,7 @@
     "@aztec/noir-acvm_js": "2.0.3",
     "@walletmesh/aztec-rpc-wallet": "workspace:^",
     "@walletmesh/jsonrpc": "workspace:^",
+    "@walletmesh/modal-react": "workspace:^",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

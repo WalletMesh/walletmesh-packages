@@ -10,7 +10,8 @@ export type CrossWindowMessage = {
 export function createCrossWindowTransport(
   targetWindow: Window,
   targetOrigin: string,
-  messageId: string,
+  sendMessageId: string,
+  receiveMessageId: string,
 ): JSONRPCTransport {
   const messageHandlers = new Set<(message: unknown) => void>();
 
@@ -20,7 +21,7 @@ export function createCrossWindowTransport(
         type: 'walletmesh_message',
         origin: window.location.origin,
         data: message,
-        id: messageId,
+        id: sendMessageId,
       };
       targetWindow.postMessage(wrappedMessage, targetOrigin);
     },
@@ -43,8 +44,8 @@ export function createCrossWindowTransport(
       return;
     }
 
-    // Check if it's for our message ID
-    if (event.data?.id !== messageId) {
+    // Check if it's for our receive message ID
+    if (event.data?.id !== receiveMessageId) {
       return;
     }
 
@@ -66,5 +67,11 @@ export function createCrossWindowTransport(
 }
 
 export function createDappToWalletTransport(walletWindow: Window, walletOrigin: string): JSONRPCTransport {
-  return createCrossWindowTransport(walletWindow, walletOrigin, 'dapp_to_wallet');
+  // DApp sends with 'dapp_to_wallet', receives with 'wallet_to_dapp'
+  return createCrossWindowTransport(walletWindow, walletOrigin, 'dapp_to_wallet', 'wallet_to_dapp');
+}
+
+export function createWalletSideTransport(dappWindow: Window, dappOrigin: string): JSONRPCTransport {
+  // Wallet sends with 'wallet_to_dapp', receives with 'dapp_to_wallet'
+  return createCrossWindowTransport(dappWindow, dappOrigin, 'wallet_to_dapp', 'dapp_to_wallet');
 }

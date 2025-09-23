@@ -1,8 +1,8 @@
-import React from 'react';
+import type React from 'react';
 import './Approve.css';
+import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware';
 import FunctionCallDisplay from './FunctionCallDisplay.js';
 import ParameterDisplay from './ParameterDisplay.js';
-import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware';
 
 type ApproveProps = {
   method: string;
@@ -17,9 +17,7 @@ type ApproveProps = {
   functionArgNames?: FunctionArgNames;
   onApprove: () => void;
   onDeny: () => void;
-  onAlwaysAllow: () => void;
   onEnableAutoApprove: () => void;
-  showAlwaysAllow?: boolean;
   showAutoApprove?: boolean;
 };
 
@@ -30,9 +28,7 @@ const Approve: React.FC<ApproveProps> = ({
   functionArgNames,
   onApprove,
   onDeny,
-  onAlwaysAllow,
   onEnableAutoApprove,
-  showAlwaysAllow = true,
   showAutoApprove = true,
 }) => {
   return (
@@ -44,8 +40,8 @@ const Approve: React.FC<ApproveProps> = ({
       <p className="approve-details">
         <b>Method:</b> {method}
       </p>
-      {params && (
-        params.functionCalls ? (
+      {params &&
+        (params.functionCalls ? (
           params.functionCalls.map((call, index) => (
             <FunctionCallDisplay
               key={`${call.contractAddress}-${index}`}
@@ -55,8 +51,7 @@ const Approve: React.FC<ApproveProps> = ({
           ))
         ) : (
           <ParameterDisplay params={params} />
-        )
-      )}
+        ))}
 
       {showAutoApprove && (
         <div className="auto-approve-option">
@@ -77,28 +72,13 @@ const Approve: React.FC<ApproveProps> = ({
         </div>
       )}
 
-      {showAlwaysAllow && (
-        <div className="always-allow-option">
-          <label className="always-allow-checkbox">
-            <input
-              type="checkbox"
-              onChange={(event) => {
-                if (event.target.checked) {
-                  onAlwaysAllow();
-                }
-              }}
-            />
-            Always allow {method} requests
-          </label>
-          <p className="always-allow-hint">
-            Enable this to automatically approve this specific method without prompting in the future
-          </p>
-        </div>
-      )}
-
       <div className="approve-buttons">
-        <button onClick={onApprove} className="approve-button">Approve</button>
-        <button onClick={onDeny} className="deny-button">Deny</button>
+        <button type="button" onClick={onApprove} className="approve-button">
+          Approve
+        </button>
+        <button type="button" onClick={onDeny} className="deny-button">
+          Deny
+        </button>
       </div>
     </div>
   );

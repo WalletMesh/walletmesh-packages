@@ -16,6 +16,63 @@
   color: #f44336;
 }
 
+.error {
+  color: #f44336;
+  font-size: 1.2em;
+}
+
+.error-container {
+  padding: 20px;
+  background-color: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.error-details {
+  margin-top: 15px;
+}
+
+.error-message {
+  color: #d32f2f;
+  margin: 10px 0;
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.retry-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.retry-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Simple initializing state */
+.initializing-simple {
+  padding: 20px;
+  text-align: center;
+}
+
+.initializing-simple .connection-status {
+  color: #666;
+  font-size: 1.1em;
+}
+
+.retry-info {
+  color: #666;
+  font-size: 0.85em;
+  margin: 5px 0;
+}
+
 .request-history {
   list-style-type: none;
   padding: 0;
@@ -59,6 +116,114 @@
   font-weight: bold;
 }
 
+/* Connection Header Styles */
+.connection-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+/* Node Badge - Subtle inline indicator */
+.node-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 500;
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #666;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.node-badge:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.node-badge.node-connecting {
+  color: #856404;
+  background-color: rgba(255, 193, 7, 0.1);
+  animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+.node-badge.node-connected {
+  color: #155724;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.node-badge.node-error {
+  color: #721c24;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+.node-badge-text {
+  margin-left: 2px;
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Node info text - subtle inline text */
+.node-info {
+  color: #888;
+  font-size: 0.85em;
+  font-weight: normal;
+  margin-left: 8px;
+  cursor: help;
+}
+
+/* Account info styling */
+.account-info {
+  margin-top: 4px;
+}
+
+.account-address {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.9em;
+  color: #495057;
+  background-color: rgba(0, 0, 0, 0.03);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+/* Node status in stats grid */
+.stat-value.node-stat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.node-indicator {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.node-indicator.idle {
+  color: #6c757d;
+}
+
+.node-indicator.connecting {
+  color: #ffc107;
+  animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+.node-indicator.connected {
+  color: #4caf50;
+}
+
+.node-indicator.error {
+  color: #f44336;
+}
+
 .processing-indicator {
   color: #ff9800;
   font-weight: bold;
@@ -76,7 +241,7 @@
   border-radius: 6px;
   margin-bottom: 16px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 12px;
   text-align: center;
   border: 1px solid var(--stats-border, #e0e0e0);
@@ -224,6 +389,39 @@
     --stat-label-color: #aaa;
     --stat-total: #e0e0e0;
     --stat-error: #e0e0e0;
+  }
+
+  .node-badge {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #aaa;
+  }
+
+  .node-badge:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .node-badge.node-connecting {
+    color: #ffd54f;
+    background-color: rgba(255, 193, 7, 0.15);
+  }
+
+  .node-badge.node-connected {
+    color: #81c784;
+    background-color: rgba(76, 175, 80, 0.15);
+  }
+
+  .node-badge.node-error {
+    color: #ef5350;
+    background-color: rgba(244, 67, 54, 0.15);
+  }
+
+  .node-info {
+    color: #999;
+  }
+
+  .account-address {
+    color: #b0b0b0;
+    background-color: rgba(255, 255, 255, 0.05);
   }
 
   .error-details {
@@ -441,4 +639,3 @@
     --table-count-text: #e0e0e0;
   }
 }
-

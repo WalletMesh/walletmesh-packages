@@ -1,8 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import './App.css';
 import Wallet from './components/Wallet.js';
-import { CustomPermissionManager } from './components/CustomPermissionManager.js';
-import { AllowAskDenyState } from '@walletmesh/router/permissions';
 import { ToastProvider } from './contexts/ToastContext.js';
 
 interface ApprovalRequest {
@@ -16,14 +14,6 @@ interface ApprovalRequest {
 function App() {
   const [pendingApproval, setPendingApproval] = useState<ApprovalRequest | null>(null);
   const [autoApprove, setAutoApprove] = useState(false);
-  const permissionManagerRef = useRef<CustomPermissionManager | null>(null);
-
-  // Update the permission manager when auto-approve state changes
-  useEffect(() => {
-    if (permissionManagerRef.current) {
-      permissionManagerRef.current.setAutoApprove(autoApprove);
-    }
-  }, [autoApprove]);
 
   const handleApprovalRequest = async (request: {
     origin: string;
@@ -31,12 +21,10 @@ function App() {
     method: string;
     params?: unknown;
   }): Promise<boolean> => {
-    // If auto-approve is enabled, automatically approve all requests
-    if (autoApprove) {
-      return true;
-    }
+    // Note: Auto-approve is handled in the Wallet component's permission manager
+    // This handler is only called when user interaction is needed
 
-    // Otherwise, show the approval UI
+    // Show the approval UI
     return new Promise((resolve) => {
       setPendingApproval({
         ...request,
@@ -51,20 +39,6 @@ function App() {
   const handleApprovalResponse = (approved: boolean) => {
     if (pendingApproval) {
       pendingApproval.resolve(approved);
-    }
-  };
-
-  const handleAlwaysAllow = () => {
-    if (pendingApproval && permissionManagerRef.current) {
-      // Update the permission state to ALLOW
-      permissionManagerRef.current.updatePermissionState(
-        pendingApproval.chainId as any,
-        pendingApproval.method,
-        AllowAskDenyState.ALLOW
-      );
-
-      // Resolve the approval as true
-      pendingApproval.resolve(true);
     }
   };
 
@@ -85,11 +59,7 @@ function App() {
 
         <div className="auto-approve-toggle">
           <label>
-            <input
-              type="checkbox"
-              checked={autoApprove}
-              onChange={(e) => setAutoApprove(e.target.checked)}
-            />
+            <input type="checkbox" checked={autoApprove} onChange={(e) => setAutoApprove(e.target.checked)} />
             Auto Approve All Requests
           </label>
           {autoApprove && (
@@ -103,9 +73,8 @@ function App() {
           pendingApproval={pendingApproval}
           onApprovalResponse={handleApprovalResponse}
           onApprovalRequest={handleApprovalRequest}
-          onAlwaysAllow={handleAlwaysAllow}
           onEnableAutoApprove={handleEnableAutoApprove}
-          permissionManagerRef={permissionManagerRef}
+          autoApprove={autoApprove}
         />
       </div>
     </ToastProvider>
