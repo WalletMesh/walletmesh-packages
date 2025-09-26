@@ -21,6 +21,7 @@
     "@aztec/aztec.js": "2.0.3",
     "@aztec/noir-contracts.js": "2.0.3",
     "@aztec/noir-test-contracts.js": "2.0.3",
+    "@aztec/noir-acvm_js": "2.0.3",
     "@walletmesh/aztec-rpc-wallet": "workspace:^",
     "@walletmesh/jsonrpc": "workspace:^",
     "react": "^19.1.1",

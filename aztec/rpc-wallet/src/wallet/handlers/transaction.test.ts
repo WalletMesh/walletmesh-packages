@@ -185,8 +185,6 @@ describe('Transaction Handlers', () => {
       const simulatePublic = true;
       const skipTxValidation = true;
       const skipFeeEnforcement = true;
-      const msgSender = '0x1234567890abcdef' as unknown as AztecAddress;
-      const overrides = { msgSender };
 
       const expectedSimulation = {
         txRequest,
@@ -201,7 +199,6 @@ describe('Transaction Handlers', () => {
         simulatePublic,
         skipTxValidation,
         skipFeeEnforcement,
-        overrides,
       ]);
 
       expect(mockWallet.simulateTx).toHaveBeenCalledWith(
@@ -209,7 +206,6 @@ describe('Transaction Handlers', () => {
         simulatePublic,
         skipTxValidation,
         skipFeeEnforcement,
-        overrides,
       );
       expect(result).toBe(expectedSimulation);
     });

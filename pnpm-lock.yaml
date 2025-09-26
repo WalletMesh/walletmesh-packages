@@ -29,8 +29,6 @@ overrides:
   lodash.chunk: npm:lodash@4.17.21
   lodash.omit: npm:lodash@4.17.21
 
-pnpmfileChecksum: sha256-JN2Km4GKq2Db8Lqeit8nmTO/zyxeXM82ZXgkg+lBlfc=
-
 importers:
 
   .:
@@ -87,6 +85,9 @@ importers:
       '@aztec/aztec.js':
         specifier: 2.0.3
         version: 2.0.3(encoding@0.1.13)(typescript@5.9.2)(zod@3.25.76)
+      '@aztec/noir-acvm_js':
+        specifier: 2.0.3
+        version: 2.0.3
       '@aztec/noir-contracts.js':
         specifier: 2.0.3
         version: 2.0.3(typescript@5.9.2)(zod@3.25.76)
@@ -145,6 +146,9 @@ importers:
       '@aztec/bb-prover':
         specifier: 2.0.3
         version: 2.0.3(typescript@5.9.2)(zod@3.25.76)
+      '@aztec/foundation':
+        specifier: 2.0.3
+        version: 2.0.3
       '@aztec/noir-acvm_js':
         specifier: 2.0.3
         version: 2.0.3
@@ -3629,7 +3633,7 @@ packages:
     resolution: {integrity: sha512-fWMp40J+PEh9uXrYUD5Afqn4nrAFSYFfZeu+7XqyuCsFhwpTSJ4ZlnTz7JBED0Rht6dyKujVXWe8E/ns/Sqjng==}
     hasBin: true
     peerDependencies:
-      vite: '>=6.0.15'
+      vite: '>=6.1.6'
 
   vite-plugin-node-polyfills@0.24.0:
     resolution: {integrity: sha512-GA9QKLH+vIM8NPaGA+o2t8PDfFUl32J8rUp1zQfMKVJQiNkOX4unE51tR6ppl6iKw5yOrDAdSH7r/UIFLCVhLw==}
