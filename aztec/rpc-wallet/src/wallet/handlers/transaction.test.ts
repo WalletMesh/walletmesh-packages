@@ -206,6 +206,7 @@ describe('Transaction Handlers', () => {
         simulatePublic,
         skipTxValidation,
         skipFeeEnforcement,
+        undefined
       );
       expect(result).toBe(expectedSimulation);
     });

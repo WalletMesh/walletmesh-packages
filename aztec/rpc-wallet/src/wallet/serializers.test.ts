@@ -1,7 +1,7 @@
 import type { ContractArtifact } from '@aztec/aztec.js';
 import { AuthWitness, AztecAddress, Fr } from '@aztec/aztec.js';
 import { ExecutionPayload } from '@aztec/entrypoints/payload';
-import { FunctionCall, FunctionSelector, FunctionType } from '@aztec/stdlib/abi';
+import { emptyFunctionArtifact, FunctionCall, FunctionSelector, FunctionType } from '@aztec/stdlib/abi';
 import { randomContractArtifact } from '@aztec/stdlib/testing';
 import { Capsule, HashedValues } from '@aztec/stdlib/tx';
 import { describe, expect, it } from 'vitest';
@@ -100,6 +100,11 @@ describe('DeployContract Serialization', () => {
 
     const args = [AztecAddress.random().toString(), '12345'];
     const constructorName = 'constructor';
+    const functionArtifact = emptyFunctionArtifact();
+    functionArtifact.name = constructorName;
+    functionArtifact.functionType = FunctionType.PUBLIC;
+    functionArtifact.isInitializer = true;
+    artifact.functions.push(functionArtifact);
 
     // Test params serialization
     const params = { artifact, args, constructorName };
@@ -122,9 +127,10 @@ describe('DeployContract Serialization', () => {
       constructorName?: string;
     };
 
+
     // Verify the artifact structure
     expect(result.artifact).toBeDefined();
-    expect(result.artifact.name).toBe('TestContract');
+    expect(result.artifact.name).toBe(artifact.name);
     expect(result.artifact.functions).toHaveLength(1);
     expect(result.artifact.functions[0]?.name).toBe('constructor');
     expect(result.artifact.functions[0]?.isInitializer).toBe(true);
