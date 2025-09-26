@@ -143,7 +143,7 @@ export function createContractInteractionHandlers() {
       logger.debug('Proving result:', provingResult);
 
       logger.debug('Creating transaction from proving result...');
-      const tx = provingResult.toTx();
+      const tx = await provingResult.toTx();
       logger.debug('Transaction created:', tx);
 
       logger.debug('Sending transaction to network...');
@@ -236,6 +236,7 @@ export function createContractInteractionHandlers() {
         const contractAddressSalt = Fr.random();
         const txOpts = await getTxOptions(ctx);
         const opts: DeployOptions = {
+          from: ctx.wallet.getAddress(),
           contractAddressSalt,
           fee: await getFeeOptions(ctx),
         };

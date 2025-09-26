@@ -34,11 +34,11 @@
     "typedoc-plugin-markdown": "^4.8.1"
   },
   "dependencies": {
-    "@aztec/aztec.js": "1.2.1",
-    "@aztec/blob-lib": "1.2.1",
-    "@aztec/entrypoints": "1.2.1",
-    "@aztec/foundation": "1.2.1",
-    "@aztec/stdlib": "1.2.1",
+    "@aztec/aztec.js": "2.0.3",
+    "@aztec/blob-lib": "2.0.3",
+    "@aztec/entrypoints": "2.0.3",
+    "@aztec/foundation": "2.0.3",
+    "@aztec/stdlib": "2.0.3",
     "@walletmesh/jsonrpc": "workspace:^",
     "@walletmesh/router": "workspace:^",
     "zod": "^3.25.76"

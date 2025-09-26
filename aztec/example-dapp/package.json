@@ -17,10 +17,10 @@
     "format:fix": "biome format --fix"
   },
   "dependencies": {
-    "@aztec/accounts": "1.2.1",
-    "@aztec/aztec.js": "1.2.1",
-    "@aztec/noir-contracts.js": "1.2.1",
-    "@aztec/noir-test-contracts.js": "1.2.1",
+    "@aztec/accounts": "2.0.3",
+    "@aztec/aztec.js": "2.0.3",
+    "@aztec/noir-contracts.js": "2.0.3",
+    "@aztec/noir-test-contracts.js": "2.0.3",
     "@walletmesh/aztec-rpc-wallet": "workspace:^",
     "@walletmesh/jsonrpc": "workspace:^",
     "react": "^19.1.1",

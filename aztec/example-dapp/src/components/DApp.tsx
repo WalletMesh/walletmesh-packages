@@ -192,7 +192,7 @@ const DApp: React.FC = () => {
       setIsDeployingCounter(true);
       try {
         const ownerAddress = await wallet.getAddress();
-        const deploySentTx = await Contract.deploy(wallet, CounterContractArtifact, [0, ownerAddress]).send();
+        const deploySentTx = await Contract.deploy(wallet, CounterContractArtifact, [0, ownerAddress]).send({ from: ownerAddress });
         const counter = await deploySentTx.deployed();
         setCounterAddress(counter.address);
         showSuccess(`Counter deployed at ${counter.address.toString()}`);
@@ -269,7 +269,7 @@ const DApp: React.FC = () => {
       try {
         const tokenContract = await Contract.at(tokenAddress, TokenContractArtifact, wallet);
         // TODO(twt): Switch to using `wallet.wmSimulateTx` once it returns a higher-level result
-        const balance = await tokenContract.methods.balance_of_public(account).simulate();
+        const balance = await tokenContract.methods.balance_of_public(account).simulate({ from: wallet.getAddress() });
         setTokenBalance(balance.toString());
         showInfo(`Token balance: ${balance.toString()}`);
       } catch (error: any) {
@@ -290,7 +290,7 @@ const DApp: React.FC = () => {
       setIsIncrementing(true);
       try {
         const counterContract = await Contract.at(counterAddress, CounterContractArtifact, wallet);
-        const tx = await counterContract.methods.increment(account, account).send();
+        const tx = await counterContract.methods.increment(account, account).send({ from: wallet.getAddress() });
         await tx.wait();
         showSuccess('Counter incremented');
       } catch (error: any) {
@@ -312,9 +312,9 @@ const DApp: React.FC = () => {
       try {
         const counterContract = await Contract.at(counterAddress, CounterContractArtifact, wallet);
         // Execute two increments in sequence
-        const tx1 = await counterContract.methods.increment(account, account).send();
+        const tx1 = await counterContract.methods.increment(account, account).send({ from: wallet.getAddress() });
         await tx1.wait();
-        const tx2 = await counterContract.methods.increment(account, account).send();
+        const tx2 = await counterContract.methods.increment(account, account).send({ from: wallet.getAddress() });
         await tx2.wait();
         showSuccess('Counter incremented twice');
       } catch (error: any) {
@@ -335,7 +335,7 @@ const DApp: React.FC = () => {
       setIsGettingCounter(true);
       try {
         const counterContract = await Contract.at(counterAddress, CounterContractArtifact, wallet);
-        const value = await counterContract.methods.get_counter(account).simulate();
+        const value = await counterContract.methods.get_counter(account).simulate({ from: wallet.getAddress() });
         setCounterValue(value.toString());
         showInfo(`Counter value: ${value.toString()}`);
       } catch (error: any) {
