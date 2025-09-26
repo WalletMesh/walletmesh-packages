@@ -8,7 +8,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 WORKDIR /app
 
 # Copy package files from root
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .pnpmfile.cjs tsconfig.json .npmrc ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 COPY create-package.sh ./
 
 # Copy all packages
