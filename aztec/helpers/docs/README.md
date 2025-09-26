@@ -1,4 +1,4 @@
-**@walletmesh/aztec-helpers v0.5.0**
+**@walletmesh/aztec-helpers v0.5.4**
 
 ***
 

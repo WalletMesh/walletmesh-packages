@@ -1,5 +1,11 @@
 # @walletmesh/aztec-helpers
 
+## 0.5.4
+
+### Patch Changes
+
+- 1dd69e8: Update aztec packages to 2.0.3
+
 ## 0.5.0
 
 ### Minor Changes

@@ -1,5 +1,17 @@
 # @walletmesh/aztec-example-wallet
 
+## 0.5.4
+
+### Patch Changes
+
+- 441c37c: fix build/tests
+- 1dd69e8: Update aztec packages to 2.0.3
+- Updated dependencies [441c37c]
+- Updated dependencies [1dd69e8]
+  - @walletmesh/aztec-rpc-wallet@0.5.4
+  - @walletmesh/aztec-helpers@0.5.4
+  - @walletmesh/aztec@0.5.1
+
 ## 0.5.3
 
 ### Patch Changes
