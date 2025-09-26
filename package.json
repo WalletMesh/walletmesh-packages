@@ -11,17 +11,6 @@
     "type": "git",
     "url": "https://github.com/WalletMesh/walletmesh-packages.git"
   },
-  "pnpm": {
-    "overrides": {
-      "@aztec/**": "1.2.1"
-    },
-    "neverBuiltDependencies": [
-      "@cypress/request"
-    ]
-  },
-  "resolutions": {
-    "@aztec/**": "0.87.2"
-  },
   "scripts": {
     "build": "pnpm -r run build",
     "rebuild:c-kzg": "node scripts/rebuild-c-kzg.cjs",

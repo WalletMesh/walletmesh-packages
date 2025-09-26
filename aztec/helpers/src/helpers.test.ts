@@ -60,7 +60,7 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
-        isContractPubliclyDeployed: true,
+        isContractPublished: true,
       });
       vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
         artifact: mockArtifact,
@@ -84,7 +84,7 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
         contractInstance: undefined,
         isContractInitialized: false,
-        isContractPubliclyDeployed: false,
+        isContractPublished: false,
       });
 
       await expect(
@@ -106,7 +106,7 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
-        isContractPubliclyDeployed: true,
+        isContractPublished: true,
       });
       vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
         artifact: undefined,
@@ -147,7 +147,7 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
-        isContractPubliclyDeployed: true,
+        isContractPublished: true,
       });
       vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
         artifact: {
@@ -204,7 +204,7 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
-        isContractPubliclyDeployed: true,
+        isContractPublished: true,
       });
       vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
         artifact: mockArtifact,
@@ -238,7 +238,7 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
-        isContractPubliclyDeployed: true,
+        isContractPublished: true,
       });
       vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
         artifact: {
@@ -290,7 +290,7 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
-        isContractPubliclyDeployed: true,
+        isContractPublished: true,
       });
       vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
         artifact: {
@@ -354,7 +354,7 @@ describe('aztec helpers', () => {
       vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
-        isContractPubliclyDeployed: true,
+        isContractPublished: true,
       });
       vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
         artifact: {

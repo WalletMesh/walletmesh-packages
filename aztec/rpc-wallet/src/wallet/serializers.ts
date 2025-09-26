@@ -69,7 +69,7 @@ import type { AztecWalletMethodMap } from '../types.js';
 const ContractMetadataSchema = z.object({
   contractInstance: z.union([ContractInstanceWithAddressSchema, z.undefined()]),
   isContractInitialized: z.boolean(),
-  isContractPubliclyDeployed: z.boolean(),
+  isContractPublished: z.boolean(),
 }) satisfies ZodFor<ContractMetadata>;
 
 const ContractClassMetadataSchema = z.object({
