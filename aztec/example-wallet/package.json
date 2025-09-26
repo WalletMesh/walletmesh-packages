@@ -19,6 +19,7 @@
   "dependencies": {
     "@aztec/accounts": "2.0.3",
     "@aztec/aztec.js": "2.0.3",
+    "@aztec/bb.js": "2.0.3",
     "@aztec/bb-prover": "2.0.3",
     "@aztec/foundation": "2.0.3",
     "@aztec/noir-acvm_js": "2.0.3",

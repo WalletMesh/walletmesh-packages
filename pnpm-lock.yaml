@@ -146,6 +146,9 @@ importers:
       '@aztec/bb-prover':
         specifier: 2.0.3
         version: 2.0.3(typescript@5.9.2)(zod@3.25.76)
+      '@aztec/bb.js':
+        specifier: 2.0.3
+        version: 2.0.3
       '@aztec/foundation':
         specifier: 2.0.3
         version: 2.0.3

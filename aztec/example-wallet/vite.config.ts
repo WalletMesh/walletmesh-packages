@@ -27,6 +27,10 @@ export default defineConfig(({ mode }) => {
             src: `./node_modules/@aztec/noir-acvm_js/web/acvm_js_bg.wasm`,
             dest: 'assets',
           },
+          {
+            src: `./node_modules/@aztec/noir-noirc_abi/web/noirc_abi_wasm_bg.wasm`,
+            dest: 'assets',
+          },
         ],
       }),
     ],
