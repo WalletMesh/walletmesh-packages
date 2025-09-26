@@ -1,6 +1,13 @@
 packages:
   - core/*
   - aztec/*
+
+linkWorkspacePackages: true
+preferWorkspacePackages: true
+
+onlyBuiltDependencies:
+  - c-kzg
+
 overrides:
   # Security overrides for lodash
   lodash@<4.17.21: '>=4.17.21'
@@ -34,6 +41,3 @@ overrides:
   lodash.isequal: 'npm:lodash@4.17.21'
   lodash.chunk: 'npm:lodash@4.17.21'
   lodash.omit: 'npm:lodash@4.17.21'
-
-onlyBuiltDependencies:
-  - c-kzg

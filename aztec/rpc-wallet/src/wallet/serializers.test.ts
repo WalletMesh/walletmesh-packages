@@ -1,7 +1,8 @@
 import type { ContractArtifact } from '@aztec/aztec.js';
 import { AuthWitness, AztecAddress, Fr } from '@aztec/aztec.js';
 import { ExecutionPayload } from '@aztec/entrypoints/payload';
-import { FunctionCall, FunctionSelector, FunctionType } from '@aztec/stdlib/abi';
+import { emptyFunctionArtifact, FunctionCall, FunctionSelector, FunctionType } from '@aztec/stdlib/abi';
+import { randomContractArtifact } from '@aztec/stdlib/testing';
 import { Capsule, HashedValues } from '@aztec/stdlib/tx';
 import { describe, expect, it } from 'vitest';
 import { AztecWalletSerializer } from './serializers.js';
@@ -95,40 +96,15 @@ describe('ExecutionPayload Serialization', () => {
 describe('DeployContract Serialization', () => {
   it('should serialize and deserialize aztec_wmDeployContract params correctly', async () => {
     // Create a minimal valid ContractArtifact
-    const artifact: ContractArtifact = {
-      name: 'TestContract',
-      functions: [
-        {
-          name: 'constructor',
-          functionType: FunctionType.PRIVATE,
-          isInternal: false,
-          isStatic: false,
-          isInitializer: true,
-          parameters: [
-            {
-              name: 'owner',
-              type: { kind: 'field' },
-              visibility: 'private',
-            },
-          ],
-          returnTypes: [],
-          errorTypes: {},
-          bytecode: Buffer.from('test'),
-          debugSymbols: '',
-        },
-      ],
-      nonDispatchPublicFunctions: [],
-      outputs: {
-        structs: {},
-        globals: {},
-      },
-      storageLayout: {},
-      notes: {},
-      fileMap: {},
-    };
+    const artifact: ContractArtifact = await randomContractArtifact();
 
     const args = [AztecAddress.random().toString(), '12345'];
     const constructorName = 'constructor';
+    const functionArtifact = emptyFunctionArtifact();
+    functionArtifact.name = constructorName;
+    functionArtifact.functionType = FunctionType.PUBLIC;
+    functionArtifact.isInitializer = true;
+    artifact.functions.push(functionArtifact);
 
     // Test params serialization
     const params = { artifact, args, constructorName };
@@ -151,9 +127,10 @@ describe('DeployContract Serialization', () => {
       constructorName?: string;
     };
 
+
     // Verify the artifact structure
     expect(result.artifact).toBeDefined();
-    expect(result.artifact.name).toBe('TestContract');
+    expect(result.artifact.name).toBe(artifact.name);
     expect(result.artifact.functions).toHaveLength(1);
     expect(result.artifact.functions[0]?.name).toBe('constructor');
     expect(result.artifact.functions[0]?.isInitializer).toBe(true);
@@ -166,18 +143,7 @@ describe('DeployContract Serialization', () => {
   });
 
   it('should handle aztec_wmDeployContract without constructorName', async () => {
-    const artifact: ContractArtifact = {
-      name: 'TestContract',
-      functions: [],
-      nonDispatchPublicFunctions: [],
-      outputs: {
-        structs: {},
-        globals: {},
-      },
-      storageLayout: {},
-      notes: {},
-      fileMap: {},
-    };
+    const artifact: ContractArtifact = await randomContractArtifact();
 
     const args: unknown[] = [];
 
@@ -218,18 +184,7 @@ describe('DeployContract Serialization', () => {
   });
 
   it('should validate args array in aztec_wmDeployContract', async () => {
-    const artifact: ContractArtifact = {
-      name: 'TestContract',
-      functions: [],
-      nonDispatchPublicFunctions: [],
-      outputs: {
-        structs: {},
-        globals: {},
-      },
-      storageLayout: {},
-      notes: {},
-      fileMap: {},
-    };
+    const artifact: ContractArtifact = await randomContractArtifact();
 
     // Test with various types in args array
     const args = ['string value', 123, true, { nested: 'object' }, ['array', 'of', 'values'], null];

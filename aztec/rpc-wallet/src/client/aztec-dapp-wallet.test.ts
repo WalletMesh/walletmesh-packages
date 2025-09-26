@@ -540,10 +540,9 @@ describe('AztecDappWallet', () => {
     it('should call aztec_simulateTx', async () => {
       const txRequest = { request: {} } as unknown as TxExecutionRequest;
       const simulatedTx = { tx: txRequest, privateReturnValues: [] };
-      const msgSender = await AztecAddress.random();
       provider.call.mockResolvedValue(simulatedTx);
 
-      const result = await wallet.simulateTx(txRequest, true, false, false, { msgSender });
+      const result = await wallet.simulateTx(txRequest, true, false, false );
 
       expect(provider.call).toHaveBeenCalledWith(testChainId, {
         method: 'aztec_simulateTx',
@@ -552,7 +551,6 @@ describe('AztecDappWallet', () => {
           simulatePublic: true,
           skipTxValidation: false,
           skipFeeEnforcement: false,
-          overrides: { msgSender },
         },
       });
       expect(result).toEqual(simulatedTx);

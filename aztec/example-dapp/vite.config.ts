@@ -1,9 +1,7 @@
 import react from '@vitejs/plugin-react';
-import { defineConfig, loadEnv, searchForWorkspaceRoot } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
-
-const nodeModulesPath = `${searchForWorkspaceRoot(process.cwd())}/node_modules`;
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -26,13 +24,9 @@ export default defineConfig(({ mode }) => {
       viteStaticCopy({
         targets: [
           {
-            src: `${nodeModulesPath}/@aztec/noir-acvm_js/web/acvm_js_bg.wasm`,
+            src: './node_modules/@aztec/noir-acvm_js/web/acvm_js_bg.wasm',
             dest: 'assets',
-          },
-          {
-            src: `${nodeModulesPath}/@aztec/noir-noirc_abi/web/noirc_abi_wasm_bg.wasm`,
-            dest: 'assets',
-          },
+          }
         ],
       }),
     ],
