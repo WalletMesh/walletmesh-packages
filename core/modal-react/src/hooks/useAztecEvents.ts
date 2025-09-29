@@ -57,12 +57,16 @@ export interface UseAztecEventsReturn {
  * @param contractAddress - The contract address to watch (optional)
  * @param artifact - The contract artifact containing event definitions (optional)
  * @param eventName - Name of the event to subscribe to (optional)
- * @param autoSubscribe - Whether to automatically start subscription (default: true)
+ * @param autoSubscribe - Whether to automatically start subscription (default: false)
  * @returns Event subscription functions and state
  *
  * @since 1.0.0
  *
  * @remarks
+ * **IMPORTANT:** Event subscriptions are now opt-in by default (autoSubscribe: false).
+ * Call `subscribe()` manually or set autoSubscribe to true to enable automatic subscription.
+ * This prevents unnecessary event polling when subscriptions aren't needed.
+ *
  * The hook provides:
  * - Real-time event subscriptions with automatic polling
  * - Historical event queries with block range filtering
@@ -73,11 +77,15 @@ export interface UseAztecEventsReturn {
  * Events are accumulated in the events array, with new events
  * appended as they arrive. Use clearEvents() to reset.
  *
+ * **Migration Note:** If you were relying on automatic subscription (v1 behavior),
+ * either call `subscribe()` in useEffect or pass `autoSubscribe: true`.
+ *
  * @example
  * ```tsx
  * import { useAztecEvents } from '@walletmesh/modal-react';
  * import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';
  *
+ * // Opt-in subscription (recommended)
  * function TokenEvents({ tokenAddress }) {
  *   const {
  *     events,
@@ -89,11 +97,14 @@ export interface UseAztecEventsReturn {
  *     tokenAddress,
  *     TokenContractArtifact,
  *     'Transfer'
+ *     // autoSubscribe defaults to false - call subscribe() manually
  *   );
  *
- *   // Query last 100 blocks on mount
+ *   // Query last 100 blocks and optionally start subscription
  *   useEffect(() => {
  *     queryHistorical({ fromBlock: -100 });
+ *     // Manually subscribe when needed
+ *     // subscribe();
  *   }, []);
  *
  *   return (
@@ -110,6 +121,21 @@ export interface UseAztecEventsReturn {
  *       ))}
  *     </div>
  *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Auto-subscribe (legacy v1 behavior)
+ * function AutoSubscribeExample({ tokenAddress }) {
+ *   const { events, isListening } = useAztecEvents(
+ *     tokenAddress,
+ *     TokenContractArtifact,
+ *     'Transfer',
+ *     true  // Pass true to auto-subscribe on mount
+ *   );
+ *
+ *   return <div>Events: {events.length} (auto-subscribed: {isListening})</div>;
  * }
  * ```
  *
@@ -149,7 +175,7 @@ export function useAztecEvents(
   contractAddress?: unknown | null,
   artifact?: ContractArtifact | null,
   eventName?: string | null,
-  autoSubscribe = true,
+  autoSubscribe = false,
 ): UseAztecEventsReturn {
   const { aztecWallet, isAvailable } = useAztecWallet();
   const [events, setEvents] = useState<unknown[]>([]);
@@ -163,7 +189,8 @@ export function useAztecEvents(
   // Subscribe to events
   const subscribe = useCallback(async () => {
     if (!aztecWallet || !contractAddress || !artifact || !eventName || !isAvailable) {
-      setError(new Error('Missing required parameters for event subscription'));
+      const error = ErrorFactory.invalidParams('Missing required parameters for event subscription');
+      setError(error);
       return;
     }
 
@@ -188,7 +215,7 @@ export function useAztecEvents(
 
       unsubscribeRef.current = unsubscribeFn;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err : new Error('Failed to subscribe to events');
+      const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to subscribe to events');
       setError(errorMessage);
       setIsListening(false);
       console.error('Failed to subscribe to events:', err);
@@ -222,7 +249,7 @@ export function useAztecEvents(
 
         return historicalEvents;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err : new Error('Failed to query events');
+        const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to query events');
         setError(errorMessage);
         throw errorMessage;
       } finally {
@@ -257,7 +284,7 @@ export function useAztecEvents(
 
         return privateEvents;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err : new Error('Failed to query private events');
+        const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to query private events');
         setError(errorMessage);
         throw errorMessage;
       } finally {

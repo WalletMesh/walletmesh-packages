@@ -233,7 +233,7 @@ export function useAztecAuth(): UseAztecAuthReturn {
         const authWit = await createAuthWitForInteraction(wallet, interaction, description);
         return authWit;
       } catch (err) {
-        const authError = err instanceof Error ? err : new Error('Failed to create auth witness');
+        const authError = err instanceof Error ? err : ErrorFactory.unknownError('Failed to create auth witness');
         setError(authError);
         throw authError;
       } finally {
@@ -257,7 +257,7 @@ export function useAztecAuth(): UseAztecAuthReturn {
         const witnesses = await createBatchAuthWit(wallet, interactions);
         return witnesses;
       } catch (err) {
-        const authError = err instanceof Error ? err : new Error('Failed to create batch auth witnesses');
+        const authError = err instanceof Error ? err : ErrorFactory.unknownError('Failed to create batch auth witnesses');
         setError(authError);
         throw authError;
       } finally {
@@ -281,7 +281,7 @@ export function useAztecAuth(): UseAztecAuthReturn {
         const authWit = await createAuthWitForMessage(wallet, message, description);
         return authWit;
       } catch (err) {
-        const authError = err instanceof Error ? err : new Error('Failed to create message auth witness');
+        const authError = err instanceof Error ? err : ErrorFactory.unknownError('Failed to create message auth witness');
         setError(authError);
         throw authError;
       } finally {
@@ -304,7 +304,7 @@ export function useAztecAuth(): UseAztecAuthReturn {
         const isValid = await verifyAuthWit(wallet, authWitness, expectedMessage);
         return isValid;
       } catch (err) {
-        const verifyError = err instanceof Error ? err : new Error('Failed to verify auth witness');
+        const verifyError = err instanceof Error ? err : ErrorFactory.unknownError('Failed to verify auth witness');
         setError(verifyError);
         throw verifyError;
       }

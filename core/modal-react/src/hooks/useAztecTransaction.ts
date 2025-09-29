@@ -9,6 +9,7 @@
  */
 
 import { useCallback, useState } from 'react';
+import { ErrorFactory } from '@walletmesh/modal-core';
 import { useAztecWallet } from './useAztecWallet.js';
 import type { TxStatus } from '@aztec/aztec.js';
 import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec';
@@ -175,7 +176,7 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
       options: TransactionOptions = {},
     ): Promise<TransactionResult> => {
       if (!isReady || !aztecWallet) {
-        const error = new Error('Aztec wallet is not ready');
+        const error = ErrorFactory.connectionFailed('Aztec wallet is not ready');
         setError(error);
         if (options.onError) {
           options.onError(error);
@@ -227,7 +228,7 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
 
           // Check for explicit failure conditions
           if (txReceipt.error) {
-            throw new Error(`Transaction failed: ${txReceipt.error}`);
+            throw ErrorFactory.transactionFailed(`Transaction failed: ${txReceipt.error}`);
           }
 
           // Get the status, defaulting to 'SUCCESS' if not present (common in Aztec)
@@ -238,7 +239,7 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
 
           // Only throw if explicitly failed (status is 0 or FAILED)
           if (txStatus === '0' || txStatus === '0x0' || txStatus === 'FAILED') {
-            throw new Error(`Transaction failed with status: ${txStatus}`);
+            throw ErrorFactory.transactionFailed(`Transaction failed with status: ${txStatus}`);
           }
 
           const result: TransactionResult = {
@@ -260,7 +261,7 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
           clearInterval(progressInterval);
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err : new Error('Transaction failed');
+        const errorMessage = err instanceof Error ? err : ErrorFactory.transactionFailed('Transaction failed');
         setError(errorMessage);
         setStatus('error');
         setIsExecuting(false);

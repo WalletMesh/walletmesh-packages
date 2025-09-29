@@ -272,7 +272,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
               return updated;
             });
           } catch (err) {
-            const txError = err instanceof Error ? err : new Error('Transaction failed');
+            const txError = err instanceof Error ? err : ErrorFactory.transactionFailed('Transaction failed');
             errors.push({ index: i, error: txError });
 
             // Update to error
@@ -295,7 +295,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
 
         // Check if all failed
         if (errors.length === interactions.length) {
-          const batchError = new Error(
+          const batchError = ErrorFactory.transactionFailed(
             `All ${interactions.length} transactions failed. First error: ${errors[0]?.error.message}`,
           );
           setError(batchError);
@@ -313,7 +313,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
       } catch (err) {
         // Handle unexpected errors
         if (!error) {
-          const batchError = err instanceof Error ? err : new Error('Batch execution failed');
+          const batchError = err instanceof Error ? err : ErrorFactory.transactionFailed('Batch execution failed');
           setError(batchError);
         }
         throw err;

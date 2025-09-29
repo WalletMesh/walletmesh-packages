@@ -9,6 +9,7 @@
  */
 
 import type { AztecAddress } from '@aztec/aztec.js';
+import { ErrorFactory } from '@walletmesh/modal-core';
 import { useCallback, useState } from 'react';
 import { useAztecWallet } from './useAztecWallet.js';
 
@@ -206,7 +207,7 @@ export function useAztecDeploy(): UseAztecDeployReturn {
       options: DeploymentOptions = {},
     ): Promise<DeploymentResult> => {
       if (!isReady || !aztecWallet || !address) {
-        const error = new Error('Aztec wallet is not ready or no address available');
+        const error = ErrorFactory.connectionFailed('Aztec wallet is not ready or no address available');
         setError(error);
         if (options.onError) {
           options.onError(error);
@@ -288,11 +289,11 @@ export function useAztecDeploy(): UseAztecDeployReturn {
 
         return result;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err : new Error('Deployment failed');
+        const errorMessage = err instanceof Error ? err : ErrorFactory.transactionFailed('Deployment failed');
 
         // Create enhanced error with full context
         const enhancedError = Object.assign(
-          new Error(`Deployment failed at stage '${stage}': ${errorMessage.message}`),
+          ErrorFactory.transactionFailed(`Deployment failed at stage '${stage}': ${errorMessage.message}`),
           {
             originalError: err,
             deploymentStage: stage,
