@@ -6,7 +6,7 @@
 
 # Interface: UseSwitchChainOptions
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:97](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useSwitchChain.ts#L97)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:97](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L97)
 
 Hook options for chain switching
 
@@ -16,7 +16,7 @@ Hook options for chain switching
 
 > `optional` **onConfirm**: (`data`) => `boolean` \| `Promise`\<`boolean`\>
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useSwitchChain.ts#L99)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L99)
 
 Callback fired before chain switch - return false to cancel
 
@@ -110,7 +110,7 @@ Callback fired before chain switch - return false to cancel
 
 > `optional` **onError**: (`error`) => `void`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:105](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useSwitchChain.ts#L105)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:105](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L105)
 
 Callback fired on switch error
 
@@ -130,7 +130,7 @@ Callback fired on switch error
 
 > `optional` **onSuccess**: (`data`) => `void`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useSwitchChain.ts#L103)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L103)
 
 Callback fired on successful switch
 

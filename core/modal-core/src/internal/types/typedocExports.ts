@@ -37,6 +37,13 @@ export type {
   SvelteAdapterConfig
 } from '../../schemas/adapters.js';
 
+// Export the schemas themselves for TypeDoc
+export {
+  reactAdapterConfigSchema,
+  svelteAdapterConfigSchema,
+  vueAdapterConfigSchema
+} from '../../schemas/adapters.js';
+
 // These are type-only exports for TypeDoc compatibility
 export type ReactAdapter = unknown;
 export type VueAdapter = unknown;
@@ -57,6 +64,9 @@ export type { ModalState } from '../../types.js';
 export type { AnyTransportConfig } from '../../types.js';
 
 export type { ViewHooks } from '../../schemas/views.js';
+
+// Export the viewHooksSchema itself for TypeDoc
+export { viewHooksSchema } from '../../schemas/views.js';
 
 // Note: WalletMeshClient is now internal and ModalFactoryConfig uses the public
 // WalletClient interface, so no additional exports are needed for documentation.
@@ -277,3 +287,6 @@ export type { WalletAdapterConstructor } from '../wallets/base/WalletAdapter.js'
 
 // Export ChainType from core types
 export { ChainType } from '../../core/types.js';
+
+// Export EventEmitter class and related types for TypeDoc
+export { EventEmitter, type EventListener } from '../core/events/eventEmitter.js';

@@ -6,7 +6,7 @@
 
 # Interface: TransactionError
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useTransaction.ts#L47)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useTransaction.ts#L47)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [core/modal-react/src/hooks/useTransaction.ts:47](https://github.com
 
 > `optional` **cause**: `unknown`
 
-Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
+Defined in: node\_modules/.pnpm/typescript@5.9.2/node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 #### Inherited from
 
@@ -30,7 +30,7 @@ Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 > **message**: `string`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1077
+Defined in: node\_modules/.pnpm/typescript@5.9.2/node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 #### Inherited from
 
@@ -42,7 +42,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 > **name**: `string`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
+Defined in: node\_modules/.pnpm/typescript@5.9.2/node\_modules/typescript/lib/lib.es5.d.ts:1076
 
 #### Inherited from
 
@@ -54,7 +54,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
 
 > `optional` **stack**: `string`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
+Defined in: node\_modules/.pnpm/typescript@5.9.2/node\_modules/typescript/lib/lib.es5.d.ts:1078
 
 #### Inherited from
 
@@ -66,7 +66,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
 
 > `optional` **stage**: `"proving"` \| `"validation"` \| `"signing"` \| `"broadcasting"` \| `"preparation"` \| `"confirmation"`
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useTransaction.ts#L48)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useTransaction.ts#L48)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [core/modal-react/src/hooks/useTransaction.ts:48](https://github.com
 
 > `optional` **transactionHash**: `string`
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useTransaction.ts#L50)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useTransaction.ts#L50)
 
 ***
 
@@ -82,4 +82,4 @@ Defined in: [core/modal-react/src/hooks/useTransaction.ts:50](https://github.com
 
 > `optional` **transactionId**: `string`
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useTransaction.ts#L49)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useTransaction.ts#L49)

@@ -200,8 +200,17 @@ export class MethodManager<
 
     if (timeoutInSeconds > 0) {
       request.timeoutId = setTimeout(() => {
-        this.pendingRequests.delete(id);
-        reject(new TimeoutError('Request timed out', id));
+        // Defensive check: only timeout if the request is still pending
+        // This prevents phantom timeouts when the response has already been processed
+        const stillPending = this.pendingRequests.get(id);
+        if (stillPending === request) {
+          this.pendingRequests.delete(id);
+          reject(new TimeoutError('Request timed out', id));
+        } else {
+          // Phantom timeout avoided - request was already resolved
+          console.debug('[MethodManager] Phantom timeout avoided for request:', id,
+            stillPending ? 'different request object' : 'request already completed');
+        }
       }, timeoutInSeconds * 1000);
     }
 
@@ -227,6 +236,9 @@ export class MethodManager<
       return false;
     }
 
+    // Atomically remove the request and clear its timeout to prevent race conditions
+    // This must happen before we process the response to prevent phantom timeouts
+    this.pendingRequests.delete(id);
     if (request.timeoutId) {
       clearTimeout(request.timeoutId);
     }
@@ -250,7 +262,6 @@ export class MethodManager<
         request.reject(
           new JSONRPCError(-32603, 'Internal error: Invalid error object', { originalError: String(error) }),
         );
-        this.pendingRequests.delete(id);
         return true;
       }
 
@@ -316,7 +327,6 @@ export class MethodManager<
       }
 
       request.reject(new JSONRPCError(errorCode, errorMessage, errorData));
-      this.pendingRequests.delete(id);
     } else if (request.serializer?.result) {
       try {
         if (
@@ -336,20 +346,16 @@ export class MethodManager<
         }
       } catch (_err) {
         request.reject(new JSONRPCError(-32000, 'Failed to deserialize result'));
-      } finally {
-        this.pendingRequests.delete(id);
       }
     } else {
       if (result === undefined || result === null) {
         request.resolve(result as T[keyof T]['result']);
-        this.pendingRequests.delete(id);
         return true;
       }
 
       const type = typeof result;
       if (type === 'string' || type === 'number' || type === 'boolean') {
         request.resolve(result as T[keyof T]['result']);
-        this.pendingRequests.delete(id);
         return true;
       }
 
@@ -357,17 +363,14 @@ export class MethodManager<
         try {
           JSON.stringify(result);
           request.resolve(result as T[keyof T]['result']);
-          this.pendingRequests.delete(id);
           return true;
         } catch {
           request.reject(new JSONRPCError(-32603, 'Result is not JSON-serializable'));
-          this.pendingRequests.delete(id);
           return true;
         }
       }
 
       request.reject(new JSONRPCError(-32603, 'Invalid result type'));
-      this.pendingRequests.delete(id);
     }
 
     return true;

@@ -181,6 +181,81 @@ false
 
 ***
 
+### discovery?
+
+> `optional` **discovery**: `object`
+
+Discovery configuration for wallet detection.
+Configures how the client discovers available wallets.
+
+#### capabilities?
+
+> `optional` **capabilities**: `object`
+
+Capability requirements for wallet matching
+
+##### capabilities.features?
+
+> `optional` **features**: `string`[]
+
+##### capabilities.technologies?
+
+> `optional` **technologies**: `object`[]
+
+#### dappInfo?
+
+> `optional` **dappInfo**: `object`
+
+dApp information for wallet discovery
+
+##### dappInfo.description?
+
+> `optional` **description**: `string`
+
+##### dappInfo.icon?
+
+> `optional` **icon**: `string`
+
+##### dappInfo.name
+
+> **name**: `string`
+
+##### dappInfo.url?
+
+> `optional` **url**: `string`
+
+#### enabled?
+
+> `optional` **enabled**: `boolean`
+
+Whether discovery is enabled
+
+#### maxAttempts?
+
+> `optional` **maxAttempts**: `number`
+
+Maximum number of discovery attempts
+
+#### retryInterval?
+
+> `optional` **retryInterval**: `number`
+
+Retry interval for periodic discovery
+
+#### technologies?
+
+> `optional` **technologies**: `object`[]
+
+Technology requirements for discovery
+
+#### timeout?
+
+> `optional` **timeout**: `number`
+
+Discovery timeout in milliseconds
+
+***
+
 ### handleRehydration?
 
 > `optional` **handleRehydration**: `boolean`
@@ -193,6 +268,32 @@ Set to false if your framework (e.g., React) handles this separately.
 ```ts
 true
 ```
+
+***
+
+### logger?
+
+> `optional` **logger**: `object`
+
+Logger configuration for debugging and monitoring.
+
+#### debug?
+
+> `optional` **debug**: `boolean`
+
+Enable debug logging
+
+#### level?
+
+> `optional` **level**: `"error"` \| `"debug"` \| `"info"` \| `"warn"` \| `"silent"`
+
+Log level
+
+#### prefix?
+
+> `optional` **prefix**: `string`
+
+Log prefix
 
 ***
 

@@ -293,3 +293,12 @@ This is typically the official wallet name that users will recognize.
 ```ts
 "Phantom"
 ```
+
+***
+
+### responderId?
+
+> `optional` **responderId**: `string`
+
+Original responder identifier provided by discovery transport.
+Kept for correlation with discovery protocol events.

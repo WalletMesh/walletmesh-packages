@@ -167,13 +167,21 @@ Promise that resolves when all wallets are disconnected.
 
 ### discoverWallets()
 
-> **discoverWallets**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`AvailableWallet`](../../../internal/types/typedocExports/interfaces/AvailableWallet.md)[]\>
+> **discoverWallets**(`options?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`AvailableWallet`](AvailableWallet.md)[]\>
 
 Detect all available wallets in the user's environment.
 
+#### Parameters
+
+##### options?
+
+`any`
+
+Optional discovery request options to filter wallets
+
 #### Returns
 
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`AvailableWallet`](../../../internal/types/typedocExports/interfaces/AvailableWallet.md)[]\>
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`AvailableWallet`](AvailableWallet.md)[]\>
 
 Promise resolving to array of detected wallets with availability status.
 
@@ -350,7 +358,7 @@ If wallet is not connected.
 
 ### switchChain()
 
-> **switchChain**(`chainId`, `walletId?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `chainId`: `string`; `chainType`: `string`; `previousChainId`: `string`; `provider`: `unknown`; \}\>
+> **switchChain**(`chainId`, `walletId?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `chainId`: `string`; `chainType`: [`ChainType`](../enumerations/ChainType.md); `previousChainId`: `string`; `provider`: `unknown`; \}\>
 
 Switch to a different blockchain network.
 
@@ -370,7 +378,7 @@ Optional wallet ID. Uses active wallet if not specified.
 
 #### Returns
 
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `chainId`: `string`; `chainType`: `string`; `previousChainId`: `string`; `provider`: `unknown`; \}\>
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `chainId`: `string`; `chainType`: [`ChainType`](../enumerations/ChainType.md); `previousChainId`: `string`; `provider`: `unknown`; \}\>
 
 Promise resolving to chain switch details.
 

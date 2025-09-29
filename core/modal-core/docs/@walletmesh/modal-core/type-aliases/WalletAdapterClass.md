@@ -8,11 +8,11 @@
 
 > **WalletAdapterClass** = [`WalletAdapter`](../interfaces/WalletAdapter.md)
 
-Flexible type for wallet adapter classes that may have different constructor signatures
+Re-export wallet client and related functionality
 
 > **new WalletAdapterClass**(...`args`): [`WalletAdapter`](../interfaces/WalletAdapter.md)
 
-Flexible type for wallet adapter classes that may have different constructor signatures
+Re-export wallet client and related functionality
 
 ## Parameters
 

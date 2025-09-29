@@ -178,11 +178,6 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
       // Event Methods (monitoring)
       'aztec_getPrivateEvents',
       'aztec_getPublicEvents',
-
-      // WalletMesh-specific Methods
-      'aztec_wmExecuteTx',
-      'aztec_wmSimulateTx',
-      'aztec_wmDeployContract',
     ];
   }
 

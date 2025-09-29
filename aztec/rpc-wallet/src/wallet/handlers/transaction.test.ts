@@ -1,14 +1,13 @@
 import type {
   AccountWallet,
   AuthWitness,
-  AztecAddress,
   PXE,
   Tx,
   TxExecutionRequest,
   TxHash,
   TxReceipt,
 } from '@aztec/aztec.js';
-import { Fr } from '@aztec/aztec.js';
+import { AztecAddress, Fr } from '@aztec/aztec.js';
 import type {
   PrivateExecutionResult,
   TxProfileResult,
@@ -16,6 +15,7 @@ import type {
   TxSimulationResult,
   UtilitySimulationResult,
 } from '@aztec/stdlib/tx';
+import type { SimulationOverrides } from '@aztec/stdlib/tx';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ContractArtifactCache } from '../../contractArtifactCache.js';
 // import type { FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfaces'; // Unused
@@ -194,11 +194,21 @@ describe('Transaction Handlers', () => {
 
       vi.mocked(mockWallet.simulateTx).mockResolvedValue(expectedSimulation);
 
+      const overrides = {
+        msgSender: AztecAddress.fromString('0x1234567890123456789012345678901234567890123456789012345678901234')
+      } as SimulationOverrides;
+      const scopes = [
+        AztecAddress.fromString('0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'),
+        AztecAddress.fromString('0x9876543210987654321098765432109876543210987654321098765432109876')
+      ];
+
       const result = await handlers.aztec_simulateTx(context, [
         txRequest,
         simulatePublic,
         skipTxValidation,
         skipFeeEnforcement,
+        overrides,
+        scopes,
       ]);
 
       expect(mockWallet.simulateTx).toHaveBeenCalledWith(
@@ -206,7 +216,8 @@ describe('Transaction Handlers', () => {
         simulatePublic,
         skipTxValidation,
         skipFeeEnforcement,
-        undefined
+        overrides,
+        scopes,
       );
       expect(result).toBe(expectedSimulation);
     });
@@ -230,9 +241,10 @@ describe('Transaction Handlers', () => {
         undefined,
         undefined,
         undefined,
+        undefined,
       ]);
 
-      expect(mockWallet.simulateTx).toHaveBeenCalledWith(txRequest, false, undefined, false, undefined);
+      expect(mockWallet.simulateTx).toHaveBeenCalledWith(txRequest, false, undefined, false, undefined, undefined);
       expect(result).toBe(expectedSimulation);
     });
 
@@ -242,7 +254,7 @@ describe('Transaction Handlers', () => {
       vi.mocked(mockWallet.simulateTx).mockRejectedValue(error);
 
       await expect(
-        handlers.aztec_simulateTx(context, [txRequest, undefined, undefined, undefined, undefined]),
+        handlers.aztec_simulateTx(context, [txRequest, undefined, undefined, undefined, undefined, undefined]),
       ).rejects.toThrow('Simulation failed');
       expect(mockWallet.simulateTx).toHaveBeenCalledOnce();
     });
@@ -330,9 +342,9 @@ describe('Transaction Handlers', () => {
 
       vi.mocked(mockWallet.simulateUtility).mockResolvedValue(expectedResult);
 
-      const result = await handlers.aztec_simulateUtility(context, [functionName, args, to, authWits, from]);
+      const result = await handlers.aztec_simulateUtility(context, [functionName, args, to, authWits, from, undefined]);
 
-      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(functionName, args, to, authWits, from);
+      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(functionName, args, to, authWits, from, undefined);
       expect(result).toBe(expectedResult);
     });
 
@@ -355,9 +367,10 @@ describe('Transaction Handlers', () => {
         to,
         undefined,
         undefined,
+        undefined,
       ]);
 
-      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(functionName, args, to, undefined, undefined);
+      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(functionName, args, to, undefined, undefined, undefined);
       expect(result).toBe(expectedResult);
     });
 
@@ -369,9 +382,9 @@ describe('Transaction Handlers', () => {
       vi.mocked(mockWallet.simulateUtility).mockRejectedValue(error);
 
       await expect(
-        handlers.aztec_simulateUtility(context, [functionName, args, to, undefined, undefined]),
+        handlers.aztec_simulateUtility(context, [functionName, args, to, undefined, undefined, undefined]),
       ).rejects.toThrow('Utility simulation failed');
-      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(functionName, args, to, undefined, undefined);
+      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(functionName, args, to, undefined, undefined, undefined);
     });
   });
 });

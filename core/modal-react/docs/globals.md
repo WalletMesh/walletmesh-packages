@@ -12,7 +12,7 @@ Built on top of @walletmesh/modal-core with React-specific enhancements.
 ## Architecture Overview
 
 - ✨ **10 Core Hooks**: Simplified from 20+ hooks for easier usage
-- 🏗️ **Enterprise Features**: Health monitoring, error recovery, session management
+- 🏗️ **Production Ready**: Error boundaries, automatic recovery, robust session management
 - 🔄 **Session-Based**: Built on modern SessionState architecture
 - 📦 **Single Import**: All modal-core functionality re-exported
 - 🌐 **SSR-Ready**: Full server-side rendering support

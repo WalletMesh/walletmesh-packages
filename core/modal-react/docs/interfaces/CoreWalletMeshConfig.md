@@ -6,7 +6,7 @@
 
 # Interface: CoreWalletMeshConfig
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:376
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:398
 
 Configuration options for initializing a WalletMesh client.
 
@@ -35,7 +35,7 @@ const config: WalletMeshConfig = {
 
 > `optional` **appDescription**: `string`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:386
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:408
 
 Optional description of your application.
 Provides context to users when connecting wallets.
@@ -46,7 +46,7 @@ Provides context to users when connecting wallets.
 
 > `optional` **appIcon**: `string`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:396
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:418
 
 Icon URL for your application.
 Should be a square image (recommended 256x256 or larger).
@@ -57,7 +57,7 @@ Should be a square image (recommended 256x256 or larger).
 
 > `optional` **appMetadata**: `object`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:401
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:423
 
 Extended dApp metadata for identification and display.
 Provides comprehensive identity information that flows through the entire system.
@@ -104,7 +104,7 @@ dApp homepage URL
 
 > **appName**: `string`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:381
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:403
 
 The name of your application.
 This is displayed in wallet connection prompts.
@@ -115,7 +115,7 @@ This is displayed in wallet connection prompts.
 
 > `optional` **appUrl**: `string`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:391
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:413
 
 URL of your application.
 Used by wallets for verification and display.
@@ -126,7 +126,7 @@ Used by wallets for verification and display.
 
 > `optional` **chains**: `object`[]
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:425
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:447
 
 Supported blockchain networks.
 Defines which chains your app supports using SupportedChain objects.
@@ -169,7 +169,7 @@ Defines which chains your app supports using SupportedChain objects.
 
 > `optional` **debug**: `boolean`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:436
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:458
 
 Enable debug mode for additional logging.
 
@@ -181,11 +181,88 @@ false
 
 ***
 
+### discovery?
+
+> `optional` **discovery**: `object`
+
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:481
+
+Discovery configuration for wallet detection.
+Configures how the client discovers available wallets.
+
+#### capabilities?
+
+> `optional` **capabilities**: `object`
+
+Capability requirements for wallet matching
+
+##### capabilities.features?
+
+> `optional` **features**: `string`[]
+
+##### capabilities.technologies?
+
+> `optional` **technologies**: `object`[]
+
+#### dappInfo?
+
+> `optional` **dappInfo**: `object`
+
+dApp information for wallet discovery
+
+##### dappInfo.description?
+
+> `optional` **description**: `string`
+
+##### dappInfo.icon?
+
+> `optional` **icon**: `string`
+
+##### dappInfo.name
+
+> **name**: `string`
+
+##### dappInfo.url?
+
+> `optional` **url**: `string`
+
+#### enabled?
+
+> `optional` **enabled**: `boolean`
+
+Whether discovery is enabled
+
+#### maxAttempts?
+
+> `optional` **maxAttempts**: `number`
+
+Maximum number of discovery attempts
+
+#### retryInterval?
+
+> `optional` **retryInterval**: `number`
+
+Retry interval for periodic discovery
+
+#### technologies?
+
+> `optional` **technologies**: `object`[]
+
+Technology requirements for discovery
+
+#### timeout?
+
+> `optional` **timeout**: `number`
+
+Discovery timeout in milliseconds
+
+***
+
 ### handleRehydration?
 
 > `optional` **handleRehydration**: `boolean`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:442
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:464
 
 Whether the client should handle session rehydration automatically.
 Set to false if your framework (e.g., React) handles this separately.
@@ -198,11 +275,39 @@ true
 
 ***
 
+### logger?
+
+> `optional` **logger**: `object`
+
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:515
+
+Logger configuration for debugging and monitoring.
+
+#### debug?
+
+> `optional` **debug**: `boolean`
+
+Enable debug logging
+
+#### level?
+
+> `optional` **level**: `"error"` \| `"debug"` \| `"info"` \| `"warn"` \| `"silent"`
+
+Log level
+
+#### prefix?
+
+> `optional` **prefix**: `string`
+
+Log prefix
+
+***
+
 ### projectId?
 
 > `optional` **projectId**: `string`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:420
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:442
 
 WalletConnect project ID.
 Required for WalletConnect integration.
@@ -214,7 +319,7 @@ Get one at https://cloud.walletconnect.com
 
 > `optional` **supportedInterfaces**: `object`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:447
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:469
 
 Supported interfaces per technology for discovery.
 Allows specifying which provider interfaces to use for each blockchain technology.
@@ -243,7 +348,7 @@ Solana interfaces (e.g., ['solana-standard-wallet'])
 
 > `optional` **wallets**: [`WalletInfo`](WalletInfo.md)[] \| [`WalletConfig`](WalletConfig.md)
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:431
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:453
 
 Wallet preferences and filtering options.
 Controls which wallets are displayed and in what order.

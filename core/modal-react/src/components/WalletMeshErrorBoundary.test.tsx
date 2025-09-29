@@ -194,7 +194,7 @@ describe('WalletMeshErrorBoundary', () => {
         errorInfo: expect.any(Object),
         resetError: expect.any(Function),
       });
-      expect(mockFallback.mock.calls[0][0].error.message).toBe('Test error');
+      expect(mockFallback.mock.calls[0]?.[0]?.error?.message).toBe('Test error');
     });
 
     it('should render fallback as function', () => {
@@ -418,7 +418,7 @@ describe('WalletMeshErrorBoundary', () => {
         </WalletMeshErrorBoundary>,
       );
 
-      const errorInfo = mockOnError.mock.calls[0][1];
+      const errorInfo = mockOnError.mock.calls[0]?.[1];
       expect(errorInfo.componentStack).toContain('ThrowingComponent');
       expect(errorInfo.componentStack).toContain('NestedComponent');
       expect(errorInfo.componentStack).toContain('WrapperComponent');
@@ -434,7 +434,7 @@ describe('WalletMeshErrorBoundary', () => {
       );
 
       expect(mockOnError).toHaveBeenCalledTimes(1);
-      expect(mockOnError.mock.calls[0][0].message).toBe('Callback error');
+      expect(mockOnError.mock.calls[0]?.[0]?.message).toBe('Callback error');
     });
   });
 

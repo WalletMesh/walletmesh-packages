@@ -58,6 +58,12 @@ Qualified responder with capability intersection.
 
 ***
 
+### sessionId?
+
+> `optional` **sessionId**: `string`
+
+***
+
 ### transportConfig?
 
 > `optional` **transportConfig**: `TransportConfig`

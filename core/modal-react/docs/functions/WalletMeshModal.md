@@ -6,9 +6,9 @@
 
 # Function: WalletMeshModal()
 
-> **WalletMeshModal**(): `null` \| `ReactPortal`
+> **WalletMeshModal**(): `null` \| `ReactElement`\<`unknown`, `string` \| `JSXElementConstructor`\<`any`\>\>
 
-Defined in: [core/modal-react/src/components/WalletMeshModal.tsx:110](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshModal.tsx#L110)
+Defined in: [core/modal-react/src/components/WalletMeshModal.tsx:111](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshModal.tsx#L111)
 
 WalletMesh Modal Component
 
@@ -44,7 +44,7 @@ Uses CSS modules for scoped styling with customizable CSS variables:
 
 ## Returns
 
-`null` \| `ReactPortal`
+`null` \| `ReactElement`\<`unknown`, `string` \| `JSXElementConstructor`\<`any`\>\>
 
 React component for wallet selection modal
 

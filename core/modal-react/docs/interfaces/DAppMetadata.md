@@ -6,7 +6,7 @@
 
 # Interface: DAppMetadata
 
-Defined in: [core/modal-react/src/types.ts:162](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types.ts#L162)
+Defined in: [core/modal-react/src/types.ts:162](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L162)
 
 dApp metadata for identification and display
 Provides identity information that flows through the entire system
@@ -23,7 +23,7 @@ Additional metadata fields for future extensions
 
 > `optional` **description**: `string`
 
-Defined in: [core/modal-react/src/types.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types.ts#L168)
+Defined in: [core/modal-react/src/types.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L168)
 
 dApp description (can override appDescription)
 
@@ -33,7 +33,7 @@ dApp description (can override appDescription)
 
 > `optional` **icon**: `string`
 
-Defined in: [core/modal-react/src/types.ts:170](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types.ts#L170)
+Defined in: [core/modal-react/src/types.ts:170](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L170)
 
 dApp icon URL for wallet display
 
@@ -43,7 +43,7 @@ dApp icon URL for wallet display
 
 > `optional` **name**: `string`
 
-Defined in: [core/modal-react/src/types.ts:166](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types.ts#L166)
+Defined in: [core/modal-react/src/types.ts:166](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L166)
 
 dApp name (can override appName)
 
@@ -53,7 +53,7 @@ dApp name (can override appName)
 
 > `optional` **origin**: `string`
 
-Defined in: [core/modal-react/src/types.ts:164](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types.ts#L164)
+Defined in: [core/modal-react/src/types.ts:164](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L164)
 
 Explicit origin URL (auto-detected from window.location.origin if not provided)
 
@@ -63,6 +63,6 @@ Explicit origin URL (auto-detected from window.location.origin if not provided)
 
 > `optional` **url**: `string`
 
-Defined in: [core/modal-react/src/types.ts:172](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types.ts#L172)
+Defined in: [core/modal-react/src/types.ts:172](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L172)
 
 dApp homepage URL

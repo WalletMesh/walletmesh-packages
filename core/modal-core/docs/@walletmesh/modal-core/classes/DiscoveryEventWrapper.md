@@ -60,9 +60,21 @@ Add event listener
 
 ***
 
+### cleanup()
+
+> **cleanup**(): `void`
+
+Clean up all resources and event listeners
+
+#### Returns
+
+`void`
+
+***
+
 ### connectToWallet()
 
-> **connectToWallet**(`wallet`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `sessionId`: `string`; `transport`: `unknown`; \}\>
+> **connectToWallet**(`wallet`, `sessionId?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `sessionId`: `string`; `transport`: `unknown`; \}\>
 
 Establish connection to a discovered wallet
 
@@ -72,6 +84,10 @@ Establish connection to a discovered wallet
 
 [`QualifiedWallet`](../interfaces/QualifiedWallet.md)
 
+##### sessionId?
+
+`string`
+
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `sessionId`: `string`; `transport`: `unknown`; \}\>
@@ -80,9 +96,15 @@ Establish connection to a discovered wallet
 
 ### startDiscovery()
 
-> **startDiscovery**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`QualifiedWallet`](../interfaces/QualifiedWallet.md)[]\>
+> **startDiscovery**(`initiator?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`QualifiedWallet`](../interfaces/QualifiedWallet.md)[]\>
 
 Start discovery with event emissions
+
+#### Parameters
+
+##### initiator?
+
+[`DiscoveryInitiator`](../interfaces/DiscoveryInitiator.md)
 
 #### Returns
 
@@ -99,3 +121,22 @@ Stop discovery if in progress
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+
+***
+
+### updateDiscoveryInitiator()
+
+> **updateDiscoveryInitiator**(`discoveryInitiator`): `void`
+
+Update the discovery initiator instance
+This allows using a fresh initiator for each discovery session
+
+#### Parameters
+
+##### discoveryInitiator
+
+[`DiscoveryInitiator`](../interfaces/DiscoveryInitiator.md)
+
+#### Returns
+
+`void`

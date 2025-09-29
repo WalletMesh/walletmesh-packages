@@ -121,7 +121,7 @@ Debug mode
 
 ### eventEmitter
 
-> `protected` `readonly` **eventEmitter**: `EventEmitter`\<`string` \| `symbol`, `any`\>
+> `protected` `readonly` **eventEmitter**: [`EventEmitter`](../../../internal/types/typedocExports/classes/EventEmitter.md)
 
 Event emitter for adapter events
 

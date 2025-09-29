@@ -230,12 +230,15 @@ export function useAztecBatch(): UseAztecBatchReturn {
             if (!interaction) {
               throw ErrorFactory.notFound(`No interaction found at index ${i}`);
             }
-            const sentTx = await aztecWallet.wmExecuteTx(interaction);
 
-            // Update with transaction hash
-            const hash =
-              (sentTx as unknown as { txHash?: string; hash?: string }).txHash ||
-              (sentTx as unknown as { txHash?: string; hash?: string }).hash;
+            // Execute transaction using native Aztec flow
+            const contractInteraction = interaction as ContractFunctionInteraction & {
+              request(): Promise<unknown>;
+            };
+            const txRequest = await contractInteraction.request();
+            const provenTx = await aztecWallet.proveTx(txRequest);
+            const txHash = await aztecWallet.sendTx(provenTx);
+            const hash = txHash as unknown as string;
             setTransactionStatuses((prev) => {
               const updated = [...prev];
               const current = updated[i];
@@ -252,7 +255,10 @@ export function useAztecBatch(): UseAztecBatchReturn {
             });
 
             // Wait for confirmation
-            const receipt = await sentTx.wait();
+            const receipt = await aztecWallet.getTxReceipt(txHash);
+            if (!receipt) {
+              throw new Error('Transaction receipt not found');
+            }
             receipts.push(receipt);
 
             // Update to success

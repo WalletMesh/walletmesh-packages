@@ -12,11 +12,15 @@
 import type { SupportedChain, WalletInfo } from '@walletmesh/modal-core';
 import { ErrorFactory } from '@walletmesh/modal-core';
 import type { AztecDappWallet } from '@walletmesh/modal-core/providers/aztec/lazy';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useWalletMeshContext } from '../WalletMeshContext.js';
 import { useStore } from './internal/useStore.js';
 import { useAccount } from './useAccount.js';
 import { useWalletProvider } from './useWalletProvider.js';
+
+// Module-level map to track wallet initializations globally across all components
+// This prevents multiple components from racing to create wallets
+const globalInitializationTracker = new Map<string, Promise<unknown>>();
 
 // Type imports - these will be loaded dynamically from modal-core
 type CreateAztecWalletFunction = (provider: unknown, options?: unknown) => Promise<AztecDappWallet | null>;
@@ -197,8 +201,11 @@ export interface AztecWalletInfo {
  *     const contract = await Contract.at(contractAddress, TokenContract, aztecWallet);
  *     const interaction = contract.methods.transfer(recipient, amount);
  *
- *     const tx = await aztecWallet.wmExecuteTx(interaction);
- *     const receipt = await tx.wait();
+ *     // Use standard Aztec transaction flow
+ *     const txRequest = await interaction.request();
+ *     const provenTx = await aztecWallet.proveTx(txRequest);
+ *     const txHash = await aztecWallet.sendTx(provenTx);
+ *     const receipt = await aztecWallet.getTxReceipt(txHash);
  *
  *     console.log('Transaction complete:', receipt);
  *   };
@@ -237,6 +244,15 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
   const [isLoading, setIsLoading] = useState(false);
   const [initError, setInitError] = useState<Error | null>(null);
 
+  // Use ref to track initialization state across renders
+  const initializationRef = useRef<{
+    isInitializing: boolean;
+    lastProviderId: unknown;
+  }>({
+    isInitializing: false,
+    lastProviderId: null,
+  });
+
   // Subscribe to connection state
   const connectionState = useStore((state) => {
     const activeSessionId = state.active?.sessionId;
@@ -254,7 +270,6 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
   // Initialize Aztec wallet when provider becomes available
   useEffect(() => {
     let cancelled = false;
-    let isInitializing = false;
 
     async function initializeAztecWallet() {
       // Early return if not an Aztec chain or no provider
@@ -267,54 +282,99 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
         return;
       }
 
-      // Check if we are already initializing
-      if (isInitializing) {
+      // Create unique key for global tracking - use session ID if available
+      const sessionId =
+        'sessionId' in provider && typeof provider.sessionId === 'string' ? provider.sessionId : null;
+      const globalKey = sessionId
+        ? `session-${sessionId}-${targetChain.chainId}`
+        : `provider-${provider.constructor.name}-${targetChain.chainId}-${Date.now()}`;
+
+      // Check if we are already initializing this provider globally
+      if (globalInitializationTracker.has(globalKey)) {
+        console.log('[useAztecProvider] Waiting for existing global initialization', globalKey);
+        setIsLoading(true);
+        try {
+          // Wait for the existing initialization to complete
+          const initPromise = globalInitializationTracker.get(globalKey);
+          if (initPromise) {
+            const existingWallet = await initPromise;
+            console.log('[useAztecProvider] Received wallet from global initialization:', !!existingWallet);
+            if (!cancelled && existingWallet) {
+              setAztecWallet(existingWallet as AztecDappWallet);
+              setIsLoading(false);
+            }
+          }
+        } catch (error) {
+          console.error('[useAztecProvider] Global initialization error:', error);
+          if (!cancelled) {
+            setInitError(error instanceof Error ? error : new Error('Global initialization failed'));
+            setIsLoading(false);
+          }
+        }
         return;
       }
 
-      isInitializing = true;
+      // Check if we are already initializing for this provider locally
+      if (initializationRef.current.isInitializing && initializationRef.current.lastProviderId === provider) {
+        console.log('[useAztecProvider] Skipping initialization - already in progress locally');
+        return;
+      }
+
+      // Mark as initializing both locally and globally
+      initializationRef.current.isInitializing = true;
+      initializationRef.current.lastProviderId = provider;
       setIsLoading(true);
       setInitError(null);
 
-      try {
-        // Dynamically import Aztec utilities from modal-core lazy exports
-        console.log('[useAztecProvider] Importing Aztec module...');
-        const aztecModule = await import('@walletmesh/modal-core/providers/aztec/lazy');
-        const createAztecWallet = aztecModule.createAztecWallet as CreateAztecWalletFunction;
+      // Create a promise for this initialization and track it globally
+      const initPromise = (async () => {
+        try {
+          // Dynamically import Aztec utilities from modal-core lazy exports
+          console.log('[useAztecProvider] Importing Aztec module...');
+          const aztecModule = await import('@walletmesh/modal-core/providers/aztec/lazy');
+          const createAztecWallet = aztecModule.createAztecWallet as CreateAztecWalletFunction;
 
-        if (cancelled) return;
+          if (cancelled) return null;
 
         // Get permissions from config for the target chain
-        const permissions =
-          (config as { permissions?: Record<string, string[]> }).permissions?.[targetChain.chainId] ||
-          undefined;
+        const permissionsConfig = (config as { permissions?: Record<string, string[]> }).permissions;
+        const permissions = permissionsConfig?.[targetChain.chainId] || undefined;
 
         // 🔗 REACT-LEVEL PERMISSION LOG: Show what permissions React hook is using
         if (permissions && permissions.length > 0) {
+          const hasCompleteAddress = permissions.includes('aztec_getCompleteAddress');
           console.log('⚛️ REACT HOOK - Permission Usage', {
             source: 'React useAztecWallet hook',
             chainId: targetChain.chainId,
+            targetChain: targetChain.name,
             hook: 'useAztecWallet',
             permissionsFromConfig: permissions,
             permissionCount: permissions.length,
-            message: '✅ React hook is using permissions from provider config',
+            hasCompleteAddress: hasCompleteAddress,
+            message: hasCompleteAddress
+              ? '✅ React hook has aztec_getCompleteAddress permission'
+              : '⚠️ aztec_getCompleteAddress missing - wallet initialization may fail',
             dataFlow: 'AztecWalletMeshProvider config.permissions → useAztecWallet → createAztecWallet',
             troubleshooting: {
               location: 'These permissions come from your AztecWalletMeshProvider config',
               validation: 'React hook validates config.permissions exists before using',
               categories: categorizeReactPermissions(permissions),
+              availableChains: permissionsConfig ? Object.keys(permissionsConfig) : [],
             },
           });
         } else {
           console.warn('⚠️ REACT HOOK - No Permissions Found in Config', {
             source: 'React useAztecWallet hook',
             chainId: targetChain.chainId,
+            targetChain: targetChain.name,
             hook: 'useAztecWallet',
-            issue: 'No permissions found in React provider config',
-            configValue: (config as { permissions?: Record<string, string[]> }).permissions,
+            issue: 'No permissions found in React provider config for this chain',
+            allPermissions: permissionsConfig,
+            availableChains: permissionsConfig ? Object.keys(permissionsConfig) : [],
+            lookingForChain: targetChain.chainId,
             impact: 'createAztecWallet will be called without specific permissions',
-            solution: 'Add permissions to your AztecWalletMeshProvider config',
-            example: "<AztecWalletMeshProvider config={{ permissions: ['aztec_getAddress', ...] }}>",
+            solution: 'Ensure permissions are defined for the correct chain ID',
+            example: `permissions: { '${targetChain.chainId}': ['aztec_getCompleteAddress', ...] }`,
           });
         }
 
@@ -329,31 +389,50 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
           isAvailable,
         );
 
-        const wallet = await createAztecWallet(provider, {
-          chainId: targetChain.chainId,
-          permissions: permissions ? { [targetChain.chainId]: permissions } : undefined,
-        });
+          const wallet = await createAztecWallet(provider, {
+            chainId: targetChain.chainId,
+            permissions: permissions ? { [targetChain.chainId]: permissions } : undefined,
+          });
 
-        if (!cancelled) {
-          if (wallet) {
-            console.log('[useAztecProvider] Aztec wallet wrapper created successfully');
-            setAztecWallet(wallet);
-          } else {
-            console.error('[useAztecProvider] createAztecWallet returned null');
-            setInitError(new Error('Failed to create Aztec wallet wrapper'));
+          if (!cancelled) {
+            if (wallet) {
+              console.log('[useAztecProvider] Aztec wallet wrapper created successfully');
+              setAztecWallet(wallet);
+            } else {
+              console.error('[useAztecProvider] createAztecWallet returned null');
+              setInitError(new Error('Failed to create Aztec wallet wrapper'));
+            }
+            setIsLoading(false);
           }
-          setIsLoading(false);
+
+          return wallet; // Return the wallet for global tracking
+        } catch (error) {
+          if (!cancelled) {
+            const errorMessage =
+              error instanceof Error ? error : new Error('Failed to initialize Aztec wallet');
+            setInitError(errorMessage);
+            setIsLoading(false);
+            console.error('[useAztecProvider] Failed to initialize Aztec wallet:', error);
+          }
+          throw error; // Re-throw for global tracking
+        } finally {
+          // Reset LOCAL initialization tracking in the ref
+          initializationRef.current.isInitializing = false;
+          // Clean up global tracking after a longer delay to ensure all waiting components get the wallet
+          setTimeout(() => {
+            globalInitializationTracker.delete(globalKey);
+          }, 5000); // Increased from 100ms to 5 seconds
         }
+      })();
+
+      // Track this initialization globally
+      globalInitializationTracker.set(globalKey, initPromise);
+
+      // Wait for the initialization to complete
+      try {
+        await initPromise;
       } catch (error) {
-        if (!cancelled) {
-          const errorMessage =
-            error instanceof Error ? error : new Error('Failed to initialize Aztec wallet');
-          setInitError(errorMessage);
-          setIsLoading(false);
-          console.error('[useAztecProvider] Failed to initialize Aztec wallet:', error);
-        }
-      } finally {
-        isInitializing = false;
+        // Error already handled above
       }
     }
 
@@ -361,9 +440,10 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
 
     return () => {
       cancelled = true;
-      isInitializing = false;
+      // Reset initialization tracking in the ref when effect cleans up
+      initializationRef.current.isInitializing = false;
     };
-  }, [provider, isAztecChain, isAvailable, targetChain?.chainId, config]);
+  }, [provider, isAztecChain, isAvailable, targetChain?.chainId, targetChain?.name, config]);
 
   // Cleanup effect when component unmounts or wallet changes
   useEffect(() => {
@@ -417,6 +497,7 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
 
       // Provider information
       aztecWallet,
+      // Wallet is ready when we have an aztecWallet instance and are connected
       isReady: Boolean(aztecWallet && isAvailable && isConnected),
       isLoading: isLoading || isReconnecting,
       error: combinedError,

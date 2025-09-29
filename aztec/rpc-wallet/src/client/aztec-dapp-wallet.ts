@@ -130,8 +130,8 @@ export class AztecDappWallet implements Wallet {
       {
         method: 'aztec_getChainId',
       },
-      5000,
-    ); // 5 second timeout
+      10000,
+    ); // 10 second timeout
     return chainId as unknown as Fr;
   }
 
@@ -163,8 +163,8 @@ export class AztecDappWallet implements Wallet {
       {
         method: 'aztec_getVersion',
       },
-      5000,
-    ); // 5 second timeout
+      10000,
+    ); // 10 second timeout
     return version as unknown as Fr;
   }
 
@@ -230,33 +230,25 @@ export class AztecDappWallet implements Wallet {
       throw new Error('Operation was cancelled');
     }
 
-    // Optimized timeout protection with Promise.race - reduced to 10 seconds
-    const result = await Promise.race([
-      this.routerProvider.call(
+    try {
+      // Use a reasonable timeout for the complete address call (10 seconds)
+      // Previous phantom timeout issues have been resolved in the underlying JSON-RPC layers
+      const result = await this.routerProvider.call(
         this.chainId,
         {
           method: 'aztec_getCompleteAddress',
         },
-        10000,
-      ), // Reduced to 10 second timeout
-      new Promise<CompleteAddress>((_, reject) => {
-        const timeoutId = setTimeout(() => {
-          const elapsed = Date.now() - startTime;
-          logger.error(`[getCompleteAddressAsync] ⏰ TIMEOUT after ${elapsed}ms (10s limit)`);
-          reject(new Error(`getCompleteAddress timed out after ${elapsed}ms (10s limit)`));
-        }, 10000);
+        10000, // 10 second timeout
+      );
 
-        // Cancel timeout if aborted
-        abortSignal?.addEventListener('abort', () => {
-          clearTimeout(timeoutId);
-          reject(new Error('Operation was cancelled'));
-        });
-      }),
-    ]);
-
-    const elapsed = Date.now() - startTime;
-    logger.info(`[getCompleteAddressAsync] ✅ SUCCESS after ${elapsed}ms:`, result);
-    return result as CompleteAddress;
+      const elapsed = Date.now() - startTime;
+      logger.info(`[getCompleteAddressAsync] ✅ SUCCESS after ${elapsed}ms:`, result);
+      return result as CompleteAddress;
+    } catch (error) {
+      const elapsed = Date.now() - startTime;
+      logger.error(`[getCompleteAddressAsync] ❌ FAILED after ${elapsed}ms:`, error);
+      throw error;
+    }
   }
 
   /**

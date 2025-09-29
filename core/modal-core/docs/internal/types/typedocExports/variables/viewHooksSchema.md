@@ -1,0 +1,11 @@
+[**@walletmesh/modal-core v0.0.1**](../../../../README.md)
+
+***
+
+[@walletmesh/modal-core](../../../../modules.md) / [internal/types/typedocExports](../README.md) / viewHooksSchema
+
+# Variable: viewHooksSchema
+
+> `const` **viewHooksSchema**: `ZodObject`\<\{ `onAfterTransition`: `ZodOptional`\<`ZodFunction`\<`ZodTuple`\<\[`ZodString`\], `ZodUnknown`\>, `ZodUnion`\<\[`ZodVoid`, `ZodPromise`\<`ZodVoid`\>\]\>\>\>; `onBeforeTransition`: `ZodOptional`\<`ZodFunction`\<`ZodTuple`\<\[`ZodString`\], `ZodUnknown`\>, `ZodUnion`\<\[`ZodBoolean`, `ZodPromise`\<`ZodBoolean`\>\]\>\>\>; `onEnter`: `ZodOptional`\<`ZodFunction`\<`ZodTuple`\<\[`ZodVoid`\], `ZodUnknown`\>, `ZodUnion`\<\[`ZodVoid`, `ZodPromise`\<`ZodVoid`\>\]\>\>\>; `onExit`: `ZodOptional`\<`ZodFunction`\<`ZodTuple`\<\[`ZodVoid`\], `ZodUnknown`\>, `ZodUnion`\<\[`ZodVoid`, `ZodPromise`\<`ZodVoid`\>\]\>\>\>; \}, `"strip"`, `ZodTypeAny`, \{ `onAfterTransition?`: (...`args`) => `void` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>; `onBeforeTransition?`: (...`args`) => `boolean` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`boolean`\>; `onEnter?`: (...`args`) => `void` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>; `onExit?`: (...`args`) => `void` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>; \}, \{ `onAfterTransition?`: (...`args`) => `void` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>; `onBeforeTransition?`: (...`args`) => `boolean` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`boolean`\>; `onEnter?`: (...`args`) => `void` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>; `onExit?`: (...`args`) => `void` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>; \}\>
+
+View hooks schema for lifecycle management

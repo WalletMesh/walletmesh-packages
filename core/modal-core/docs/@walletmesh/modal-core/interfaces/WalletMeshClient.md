@@ -1,8 +1,8 @@
-[**@walletmesh/modal-core v0.0.1**](../../../../README.md)
+[**@walletmesh/modal-core v0.0.1**](../../../README.md)
 
 ***
 
-[@walletmesh/modal-core](../../../../modules.md) / [internal/types/typedocExports](../README.md) / WalletMeshClient
+[@walletmesh/modal-core](../../../modules.md) / [@walletmesh/modal-core](../README.md) / WalletMeshClient
 
 # Interface: WalletMeshClient
 
@@ -73,7 +73,7 @@ Indicates whether any wallet is currently connected.
 
 ### modal
 
-> `readonly` **modal**: [`HeadlessModal`](../../../../@walletmesh/modal-core/interfaces/HeadlessModal.md)
+> `readonly` **modal**: [`HeadlessModal`](HeadlessModal.md)
 
 Headless modal instance for programmatic control.
 Provides access to modal state and actions without UI dependencies.
@@ -96,7 +96,7 @@ Immediately hides the modal if it's currently visible.
 
 ### connect()
 
-> **connect**(`walletId?`, `options?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`undefined` \| [`WalletConnection`](../../../../@walletmesh/modal-core/interfaces/WalletConnection.md)\>
+> **connect**(`walletId?`, `options?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`undefined` \| [`WalletConnection`](WalletConnection.md)\>
 
 Connects to a wallet.
 
@@ -119,7 +119,7 @@ Optional wallet-specific connection options
 
 #### Returns
 
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`undefined` \| [`WalletConnection`](../../../../@walletmesh/modal-core/interfaces/WalletConnection.md)\>
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`undefined` \| [`WalletConnection`](WalletConnection.md)\>
 
 Promise resolving to connection details or undefined
 
@@ -181,9 +181,47 @@ Promise that resolves when all wallets are disconnected
 
 ***
 
+### discoverWallets()
+
+> **discoverWallets**(`options?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`any`[]\>
+
+Discovers available wallets in the user's environment.
+
+Detects installed browser extensions, mobile wallets, and other
+wallet providers available in the current environment. Can optionally
+filter wallets based on chain types and capabilities.
+
+#### Parameters
+
+##### options?
+
+`any`
+
+Optional discovery request options to filter wallets
+
+#### Returns
+
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`any`[]\>
+
+Promise resolving to array of discovery results
+
+#### Example
+
+```typescript
+// Discover all wallets
+const wallets = await client.discoverWallets();
+
+// Discover wallets with specific capabilities
+const evmWallets = await client.discoverWallets({
+  supportedChainTypes: [ChainType.Evm]
+});
+```
+
+***
+
 ### getActions()
 
-> **getActions**(): [`HeadlessModalActions`](../../../../@walletmesh/modal-core/interfaces/HeadlessModalActions.md)
+> **getActions**(): [`HeadlessModalActions`](HeadlessModalActions.md)
 
 Gets available headless actions for programmatic control.
 
@@ -191,7 +229,7 @@ Provides methods for controlling the modal and connections without UI.
 
 #### Returns
 
-[`HeadlessModalActions`](../../../../@walletmesh/modal-core/interfaces/HeadlessModalActions.md)
+[`HeadlessModalActions`](HeadlessModalActions.md)
 
 Object containing action methods
 
@@ -280,7 +318,7 @@ Preference service instance
 
 ### getPublicProvider()
 
-> **getPublicProvider**(`chainId`): `null` \| [`PublicProvider`](../../../../@walletmesh/modal-core/interfaces/PublicProvider.md)
+> **getPublicProvider**(`chainId`): `null` \| [`PublicProvider`](PublicProvider.md)
 
 Gets a public provider for read-only operations on the specified chain.
 
@@ -297,7 +335,7 @@ The chain ID to get a public provider for
 
 #### Returns
 
-`null` \| [`PublicProvider`](../../../../@walletmesh/modal-core/interfaces/PublicProvider.md)
+`null` \| [`PublicProvider`](PublicProvider.md)
 
 Public provider instance or null if not available
 
@@ -356,7 +394,7 @@ Object containing all available services
 
 ### getState()
 
-> **getState**(): [`HeadlessModalState`](../../../../@walletmesh/modal-core/interfaces/HeadlessModalState.md)
+> **getState**(): [`HeadlessModalState`](HeadlessModalState.md)
 
 Gets the current headless modal state.
 
@@ -365,7 +403,7 @@ available wallets, and modal visibility.
 
 #### Returns
 
-[`HeadlessModalState`](../../../../@walletmesh/modal-core/interfaces/HeadlessModalState.md)
+[`HeadlessModalState`](HeadlessModalState.md)
 
 Current modal state object
 
@@ -389,7 +427,7 @@ Transaction service instance
 
 ### getWalletAdapter()
 
-> **getWalletAdapter**(`walletId`): `null` \| [`WalletAdapter`](../../../../@walletmesh/modal-core/interfaces/WalletAdapter.md)
+> **getWalletAdapter**(`walletId`): `null` \| [`WalletAdapter`](WalletAdapter.md)
 
 Gets a wallet adapter by ID for provider-agnostic access.
 
@@ -407,7 +445,7 @@ ID of the wallet adapter to retrieve
 
 #### Returns
 
-`null` \| [`WalletAdapter`](../../../../@walletmesh/modal-core/interfaces/WalletAdapter.md)
+`null` \| [`WalletAdapter`](WalletAdapter.md)
 
 The wallet adapter instance or null if not found
 
@@ -415,7 +453,7 @@ The wallet adapter instance or null if not found
 
 ### getWalletProvider()
 
-> **getWalletProvider**(`chainId`): `null` \| [`WalletProvider`](../type-aliases/WalletProvider.md)
+> **getWalletProvider**(`chainId`): `null` \| [`WalletProvider`](../../../internal/types/typedocExports/type-aliases/WalletProvider.md)
 
 Gets the wallet provider for write operations on the specified chain.
 
@@ -432,7 +470,7 @@ The chain ID to get a wallet provider for
 
 #### Returns
 
-`null` \| [`WalletProvider`](../type-aliases/WalletProvider.md)
+`null` \| [`WalletProvider`](../../../internal/types/typedocExports/type-aliases/WalletProvider.md)
 
 Wallet provider instance or null if not connected
 
@@ -469,7 +507,7 @@ Modal display options
 
 ###### targetChainType?
 
-[`ChainType`](../../../../@walletmesh/modal-core/enumerations/ChainType.md)
+[`ChainType`](../enumerations/ChainType.md)
 
 Target chain type to filter wallets
 
@@ -509,7 +547,7 @@ Unsubscribe function to stop receiving updates
 
 ### switchChain()?
 
-> `optional` **switchChain**(`chainId`, `walletId?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `chainId`: `string`; `chainType`: `string`; `previousChainId`: `string`; `provider`: `unknown`; \}\>
+> `optional` **switchChain**(`chainId`, `walletId?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `chainId`: `string`; `chainType`: [`ChainType`](../enumerations/ChainType.md); `previousChainId`: `string`; `provider`: `unknown`; \}\>
 
 Switches to a different blockchain network.
 
@@ -532,6 +570,6 @@ Optional wallet ID, uses active wallet if not specified
 
 #### Returns
 
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `chainId`: `string`; `chainType`: `string`; `previousChainId`: `string`; `provider`: `unknown`; \}\>
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<\{ `chainId`: `string`; `chainType`: [`ChainType`](../enumerations/ChainType.md); `previousChainId`: `string`; `provider`: `unknown`; \}\>
 
 Promise with switch details including new provider

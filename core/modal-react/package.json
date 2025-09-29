@@ -81,26 +81,23 @@
     "@walletmesh/modal-core": "workspace:*"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.2.2",
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^14.3.1",
+    "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^4.4.1",
-    "@vitest/coverage-v8": "1.4.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "dequal": "^2.0.3",
     "get-func-name": "^2.0.2",
     "jsdom": "^26.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "rimraf": "^6.0.1",
     "strip-literal": "^2.1.1",
     "tsup": "^8.4.0",
     "type-detect": "^4.1.0",
-    "typescript": "^5.8.3",
-    "vitest": "^1.6.1"
+    "vitest": "^3.2.4"
   },
   "publishConfig": {
     "access": "public"

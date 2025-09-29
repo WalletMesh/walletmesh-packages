@@ -6,7 +6,7 @@
 
 # Interface: ConnectVariables
 
-Defined in: [core/modal-react/src/hooks/useConnect.ts:108](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConnect.ts#L108)
+Defined in: [core/modal-react/src/hooks/useConnect.ts:108](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConnect.ts#L108)
 
 Connection variables for tracking current connection attempt
 
@@ -16,7 +16,7 @@ Connection variables for tracking current connection attempt
 
 > `optional` **chain**: [`ChainConfig`](ChainConfig.md)
 
-Defined in: [core/modal-react/src/hooks/useConnect.ts:112](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConnect.ts#L112)
+Defined in: [core/modal-react/src/hooks/useConnect.ts:112](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConnect.ts#L112)
 
 Chain being connected to
 
@@ -26,6 +26,6 @@ Chain being connected to
 
 > `optional` **walletId**: `string`
 
-Defined in: [core/modal-react/src/hooks/useConnect.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConnect.ts#L110)
+Defined in: [core/modal-react/src/hooks/useConnect.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConnect.ts#L110)
 
 Wallet being connected to

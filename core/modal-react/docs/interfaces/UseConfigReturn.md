@@ -6,9 +6,7 @@
 
 # Interface: UseConfigReturn
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L24)
-
-Hook return type for configuration and modal control
+Defined in: [core/modal-react/src/hooks/useConfig.ts:129](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L129)
 
 ## Properties
 
@@ -16,7 +14,7 @@ Hook return type for configuration and modal control
 
 > **appDescription**: `undefined` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L41)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:146](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L146)
 
 Application description
 
@@ -26,7 +24,7 @@ Application description
 
 > **appIcon**: `undefined` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L45)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:150](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L150)
 
 Application icon URL
 
@@ -36,7 +34,7 @@ Application icon URL
 
 > **appName**: `string`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L39)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:144](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L144)
 
 Application name
 
@@ -46,7 +44,7 @@ Application name
 
 > **appUrl**: `undefined` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L43)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:148](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L148)
 
 Application URL
 
@@ -56,7 +54,7 @@ Application URL
 
 > **chains**: `object`[]
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L47)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:152](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L152)
 
 Supported chains
 
@@ -98,7 +96,7 @@ Supported chains
 
 > **clearWalletFilter**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L65)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:170](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L170)
 
 Clear the current wallet filter
 
@@ -110,9 +108,9 @@ Clear the current wallet filter
 
 ### client
 
-> **client**: `null` \| `WalletMeshClient`
+> **client**: `null` \| [`WalletMeshClient`](WalletMeshClient.md)
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L27)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:132](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L132)
 
 WalletMesh client instance
 
@@ -122,7 +120,7 @@ WalletMesh client instance
 
 > **close**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L35)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L140)
 
 Close the wallet selection modal
 
@@ -136,7 +134,7 @@ Close the wallet selection modal
 
 > **debug**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L69)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:174](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L174)
 
 Whether debug mode is enabled
 
@@ -146,7 +144,7 @@ Whether debug mode is enabled
 
 > **filteredWallets**: [`WalletInfo`](WalletInfo.md)[]
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L61)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:166](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L166)
 
 Filtered wallets based on current filter
 
@@ -156,7 +154,7 @@ Filtered wallets based on current filter
 
 > **isDiscovering**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L53)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:158](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L158)
 
 Whether wallet discovery is in progress
 
@@ -166,7 +164,7 @@ Whether wallet discovery is in progress
 
 > **isOpen**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L31)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L136)
 
 Whether the modal is currently open
 
@@ -176,7 +174,7 @@ Whether the modal is currently open
 
 > **open**: (`options?`) => `void`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L33)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:138](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L138)
 
 Open the wallet selection modal
 
@@ -198,7 +196,7 @@ Open the wallet selection modal
 
 > **refreshWallets**: (`options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L55)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:160](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L160)
 
 Refresh available wallets
 
@@ -206,7 +204,7 @@ Refresh available wallets
 
 ##### options?
 
-[`RefreshWalletsOptions`](../interfaces/RefreshWalletsOptions.md)
+[`RefreshWalletsOptions`](RefreshWalletsOptions.md)
 
 #### Returns
 
@@ -218,7 +216,7 @@ Refresh available wallets
 
 > **setWalletFilter**: (`filter`) => `void`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L63)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L168)
 
 Set a filter function to limit which wallets are shown
 
@@ -238,7 +236,7 @@ Set a filter function to limit which wallets are shown
 
 > **walletFilter**: `null` \| (`wallet`) => `boolean`
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L59)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:164](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L164)
 
 Current wallet filter function
 
@@ -248,6 +246,6 @@ Current wallet filter function
 
 > **wallets**: [`WalletInfo`](WalletInfo.md)[]
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L51)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:156](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L156)
 
 Available wallets detected

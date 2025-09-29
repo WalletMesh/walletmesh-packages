@@ -12,7 +12,7 @@ Configuration for creating a complete wallet client setup
 
 ### client
 
-> **client**: [`WalletMeshClientConfig`](WalletMeshClientConfig.md)
+> **client**: [`WalletMeshConfig`](WalletMeshConfig.md)
 
 Client configuration
 

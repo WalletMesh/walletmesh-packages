@@ -73,7 +73,7 @@ Clear all discovered wallets
 
 ### detectAvailableAdapters()
 
-> **detectAvailableAdapters**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`AvailableWallet`](../../../internal/types/typedocExports/interfaces/AvailableWallet.md)[]\>
+> **detectAvailableAdapters**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`AvailableWallet`](../interfaces/AvailableWallet.md)[]\>
 
 Detect which adapters are available in the current environment
 
@@ -83,7 +83,7 @@ for showing only available wallets in the connection UI.
 
 #### Returns
 
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`AvailableWallet`](../../../internal/types/typedocExports/interfaces/AvailableWallet.md)[]\>
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`AvailableWallet`](../interfaces/AvailableWallet.md)[]\>
 
 Promise resolving to array of detection results
 

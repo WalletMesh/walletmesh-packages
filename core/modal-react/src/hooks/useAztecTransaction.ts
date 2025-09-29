@@ -11,6 +11,7 @@
 import { useCallback, useState } from 'react';
 import { useAztecWallet } from './useAztecWallet.js';
 import type { TxStatus } from '@aztec/aztec.js';
+import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec';
 
 /**
  * Transaction execution options
@@ -219,12 +220,26 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
             );
             txHash = sentTx.txHash || 'deployment';
           } else {
-            // Handle regular transaction
-            // Assert that interaction is a ContractFunctionInteraction
-            sentTx = await aztecWallet.wmExecuteTx(
-              interaction as { request(): unknown; simulate(): Promise<unknown> },
-            );
-            txHash = sentTx.txHash || 'unknown';
+            // Handle regular transaction using native Aztec flow
+            const contractInteraction = interaction as ContractFunctionInteraction & {
+              request(): Promise<unknown>;
+            };
+            const txRequest = await contractInteraction.request();
+            const provenTx = await aztecWallet.proveTx(txRequest);
+            const txHashResult = await aztecWallet.sendTx(provenTx);
+            txHash = txHashResult as unknown as string;
+
+            // Create a sentTx-like object for compatibility
+            sentTx = {
+              wait: async () => {
+                const receipt = await aztecWallet.getTxReceipt(txHashResult);
+                if (!receipt) {
+                  throw new Error('Transaction receipt not found');
+                }
+                return receipt;
+              },
+              txHash,
+            } as typeof sentTx;
           }
 
           if (options.onSent) {

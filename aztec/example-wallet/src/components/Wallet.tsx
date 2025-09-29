@@ -501,10 +501,6 @@ const Wallet: React.FC<WalletProps> = ({
             console.log('[Wallet] Using already registered account');
             wallet = await account.getWallet();
           } else {
-            // Check if account is deployable
-            const isDeployable = await account.isDeployable();
-            console.log('[Wallet] Account is deployable:', isDeployable);
-
             // Try to register the account
             console.log('[Wallet] Attempting to register new account...');
             try {

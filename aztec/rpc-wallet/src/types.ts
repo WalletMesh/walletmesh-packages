@@ -359,6 +359,7 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
    * @param params.2 to - {@link AztecAddress} of the contract/account.
    * @param params.3 authWits - Optional: Array of {@link AuthWitness}.
    * @param params.4 from - Optional: Sender {@link AztecAddress}.
+   * @param params.5 scopes - Optional: Array of {@link AztecAddress} scopes for the simulation.
    * @returns result - The {@link UtilitySimulationResult}.
    */
   aztec_simulateUtility: {
@@ -368,6 +369,7 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
       AztecAddress, // to
       (AuthWitness[] | undefined)?, // authWits
       (AztecAddress | undefined)?, // from
+      (AztecAddress[] | undefined)?, // scopes
     ];
     result: UtilitySimulationResult;
   };

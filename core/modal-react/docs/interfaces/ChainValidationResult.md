@@ -6,7 +6,7 @@
 
 # Interface: ChainValidationResult
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:127](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useSwitchChain.ts#L127)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:127](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L127)
 
 Chain validation result (from useEnsureChain)
 
@@ -16,7 +16,7 @@ Chain validation result (from useEnsureChain)
 
 > **currentChain**: `null` \| \{ `chainId`: `string`; `chainType`: [`ChainType`](../enumerations/ChainType.md); `group?`: `string`; `icon?`: `string`; `interfaces?`: `string`[]; `label?`: `string`; `name`: `string`; `required`: `boolean`; \}
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:131](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useSwitchChain.ts#L131)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:131](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L131)
 
 The current chain
 
@@ -26,7 +26,7 @@ The current chain
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:135](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useSwitchChain.ts#L135)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:135](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L135)
 
 Error if chain validation or switching failed
 
@@ -36,7 +36,7 @@ Error if chain validation or switching failed
 
 > **isCorrectChain**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:129](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useSwitchChain.ts#L129)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:129](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L129)
 
 Whether the current chain matches the required chain
 
@@ -46,7 +46,7 @@ Whether the current chain matches the required chain
 
 > **isSwitching**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:137](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useSwitchChain.ts#L137)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:137](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L137)
 
 Whether a chain switch is currently in progress
 
@@ -56,7 +56,7 @@ Whether a chain switch is currently in progress
 
 > **requiredChain**: `object`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:133](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useSwitchChain.ts#L133)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:133](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L133)
 
 The required chain
 

@@ -6,7 +6,7 @@
 
 # Function: createWalletMesh()
 
-> **createWalletMesh**(`config`, `options?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../../../internal/types/typedocExports/interfaces/WalletMeshClient.md)\>
+> **createWalletMesh**(`config`, `options?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../interfaces/WalletMeshClient.md)\>
 
 Creates a new WalletMesh client instance for managing wallet connections.
 
@@ -21,7 +21,6 @@ a unified interface for interacting with multiple blockchain wallets.
 [`WalletMeshConfig`](../interfaces/WalletMeshConfig.md)
 
 Configuration options for the client
-  - Include `debug?: boolean` to enable verbose debug logging across modal-core and modal-react.
 
 ### options?
 
@@ -31,9 +30,9 @@ Optional creation options
 
 ## Returns
 
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../../../internal/types/typedocExports/interfaces/WalletMeshClient.md)\>
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../interfaces/WalletMeshClient.md)\>
 
-Promise that resolves to a fully initialized [WalletMeshClient](../../../internal/types/typedocExports/interfaces/WalletMeshClient.md) instance with comprehensive wallet management capabilities:
+Promise that resolves to a fully initialized [WalletMeshClient](../interfaces/WalletMeshClient.md) instance with comprehensive wallet management capabilities:
   - **Connection Management**: `connect()`, `disconnect()`, `disconnectAll()`
   - **Chain Management**: `switchChain()` for cross-chain operations
   - **State Observation**: `subscribe()` for reactive state updates
@@ -173,7 +172,7 @@ const client = await createWalletMesh({
 ## See
 
  - [WalletMeshConfig](../interfaces/WalletMeshConfig.md) for all configuration options
- - [WalletMeshClient](../../../internal/types/typedocExports/interfaces/WalletMeshClient.md) for available client methods
+ - [WalletMeshClient](../interfaces/WalletMeshClient.md) for available client methods
  - [Integration Guide](https://docs.walletmesh.com/integration) for detailed patterns
 
 ## Since

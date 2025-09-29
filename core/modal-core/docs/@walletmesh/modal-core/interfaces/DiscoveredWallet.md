@@ -48,7 +48,7 @@ Discovery timestamp
 
 ### discoveryMethod
 
-> **discoveryMethod**: `"extension"` \| `"injected"` \| `"manual"` \| `"announced"`
+> **discoveryMethod**: `"extension"` \| `"injected"` \| `"manual"` \| `"discovery-protocol"` \| `"announced"`
 
 Discovery method used
 

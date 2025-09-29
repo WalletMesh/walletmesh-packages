@@ -11,13 +11,9 @@ export default defineConfig(({ mode }: any) => {
     resolve: {
       alias: {
         pino: 'pino/browser',
-        // Map lodash subpath imports to modular lodash packages
-        'lodash/chunk': 'lodash.chunk',
-        'lodash/uniq': 'lodash.uniq',
-        'lodash/isEqual': 'lodash.isequal',
-        // Support dotted specifiers as well
-        'lodash.chunk': 'lodash.chunk',
-        'lodash.isequal': 'lodash.isequal',
+        // Handle lodash modules
+        'lodash.chunk': 'lodash/chunk',
+        'lodash.isequal': 'lodash/isEqual',
       },
     },
     plugins: [

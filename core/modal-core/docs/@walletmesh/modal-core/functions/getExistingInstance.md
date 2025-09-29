@@ -6,7 +6,7 @@
 
 # Function: getExistingInstance()
 
-> **getExistingInstance**(`instanceKey`): `undefined` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../../../internal/types/typedocExports/interfaces/WalletMeshClient.md)\>
+> **getExistingInstance**(`instanceKey`): `undefined` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../interfaces/WalletMeshClient.md)\>
 
 Get existing instance without creating
 
@@ -18,4 +18,4 @@ Get existing instance without creating
 
 ## Returns
 
-`undefined` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../../../internal/types/typedocExports/interfaces/WalletMeshClient.md)\>
+`undefined` \| [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../interfaces/WalletMeshClient.md)\>

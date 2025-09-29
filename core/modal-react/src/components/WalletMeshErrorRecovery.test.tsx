@@ -40,13 +40,13 @@ vi.mock('./WalletMeshErrorRecovery.module.css', () => ({
 
 describe('WalletMeshErrorRecovery', () => {
   let mockResetError: ReturnType<typeof vi.fn>;
-  let mockOnRetry: ReturnType<typeof vi.fn<[], Promise<void>>>;
-  let mockOnDisconnect: ReturnType<typeof vi.fn<[], Promise<void>>>;
+  let mockOnRetry: ReturnType<typeof vi.fn>;
+  let mockOnDisconnect: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     mockResetError = vi.fn();
-    mockOnRetry = vi.fn<[], Promise<void>>().mockResolvedValue(undefined);
-    mockOnDisconnect = vi.fn<[], Promise<void>>().mockResolvedValue(undefined);
+    mockOnRetry = vi.fn().mockResolvedValue(undefined);
+    mockOnDisconnect = vi.fn().mockResolvedValue(undefined);
     vi.useFakeTimers();
   });
 

@@ -91,7 +91,7 @@ describe('useConnect', () => {
   let wrapper: (props: { children: React.ReactNode }) => React.ReactElement;
   let mockClient: Partial<WalletMeshClient>;
   let mockConnectionService: Partial<ConnectionService>;
-  let mockGetState: Mock<[], WalletMeshState>;
+  let mockGetState: Mock;
   let mockStore: ReturnType<typeof useStoreInstance>;
   let mockActions: ReturnType<typeof useStoreActions>;
 

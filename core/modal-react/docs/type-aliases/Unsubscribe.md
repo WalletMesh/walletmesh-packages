@@ -8,7 +8,7 @@
 
 > **Unsubscribe** = () => `void`
 
-Defined in: core/modal-core/dist/client/index.d.ts:43
+Defined in: core/modal-core/dist/client/index.d.ts:44
 
 Utility type for unsubscribe functions
 

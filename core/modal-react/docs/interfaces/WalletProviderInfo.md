@@ -6,7 +6,7 @@
 
 # Interface: WalletProviderInfo\<T\>
 
-Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletProvider.ts#L20)
+Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletProvider.ts#L20)
 
 Wallet provider information with type safety
 
@@ -22,7 +22,7 @@ Wallet provider information with type safety
 
 > **chain**: `null` \| \{ `chainId`: `string`; `chainType`: [`ChainType`](../enumerations/ChainType.md); `group?`: `string`; `icon?`: `string`; `interfaces?`: `string`[]; `label?`: `string`; `name`: `string`; `required`: `boolean`; \}
 
-Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletProvider.ts#L28)
+Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletProvider.ts#L28)
 
 Chain this provider is for
 
@@ -32,7 +32,7 @@ Chain this provider is for
 
 > **chainType**: `null` \| [`ChainType`](../enumerations/ChainType.md)
 
-Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletProvider.ts#L30)
+Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletProvider.ts#L30)
 
 Chain type (evm, solana, aztec)
 
@@ -42,7 +42,7 @@ Chain type (evm, solana, aztec)
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletProvider.ts#L34)
+Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletProvider.ts#L34)
 
 Connection error if any
 
@@ -52,7 +52,7 @@ Connection error if any
 
 > **isAvailable**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletProvider.ts#L24)
+Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletProvider.ts#L24)
 
 Whether provider is available
 
@@ -62,7 +62,7 @@ Whether provider is available
 
 > **isConnecting**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletProvider.ts#L26)
+Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletProvider.ts#L26)
 
 Whether currently connecting
 
@@ -72,7 +72,7 @@ Whether currently connecting
 
 > **provider**: `null` \| `T`
 
-Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletProvider.ts#L22)
+Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletProvider.ts#L22)
 
 The wallet provider instance
 
@@ -82,6 +82,6 @@ The wallet provider instance
 
 > **walletId**: `null` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletProvider.ts#L32)
+Defined in: [core/modal-react/src/hooks/useWalletProvider.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletProvider.ts#L32)
 
 Wallet ID providing this provider

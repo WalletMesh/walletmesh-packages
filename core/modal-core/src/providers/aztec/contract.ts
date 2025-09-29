@@ -34,9 +34,10 @@ import type { AztecDappWallet, ContractFunctionInteraction, TxReceipt } from './
  *
  * // Use the contract instance
  * const balance = await contract.methods.balance_of(userAddress).simulate();
- * const tx = await wallet.wmExecuteTx(
- *   contract.methods.transfer(recipient, amount)
- * );
+ * const interaction = contract.methods.transfer(recipient, amount);
+ * const txRequest = await interaction.request();
+ * const provenTx = await wallet.proveTx(txRequest);
+ * const txHash = await wallet.sendTx(provenTx);
  * ```
  *
  * @public
@@ -116,8 +117,17 @@ export async function executeBatch(
       try {
         const interaction = interactions[i];
         if (!interaction) continue;
-        const sentTx = await wallet.wmExecuteTx(interaction);
-        const receipt = await sentTx.wait();
+        // Use native Aztec flow
+        const contractInteraction = interaction as ContractFunctionInteraction & {
+          request(): Promise<unknown>;
+        };
+        const txRequest = await contractInteraction.request();
+        const provenTx = await wallet.proveTx(txRequest);
+        const txHash = await wallet.sendTx(provenTx);
+        const receipt = await wallet.getTxReceipt(txHash);
+        if (!receipt) {
+          throw new Error('Transaction receipt not found');
+        }
         receipts.push(receipt);
       } catch (error) {
         errors.push({ index: i, error });
@@ -212,9 +222,12 @@ export async function callViewFunction(
       throw ErrorFactory.notFound(`Method ${methodName} not found on contract`);
     }
 
-    // Call the method with arguments and simulate
-    const interaction = method(...(args || [])) as ContractFunctionInteraction;
-    const result = await wallet.wmSimulateTx(interaction);
+    // Call the method with arguments and simulate using native Aztec flow
+    const interaction = method(...(args || [])) as ContractFunctionInteraction & {
+      request(): Promise<unknown>;
+    };
+    const txRequest = await interaction.request();
+    const result = await wallet.simulateTx(txRequest, true);
 
     // Extract the return value from simulation result
     // Extract return values from simulation result

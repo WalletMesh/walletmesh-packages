@@ -6,7 +6,7 @@
 
 # Class: WalletMeshErrorBoundary
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:151](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L151)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:151](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L151)
 
 Error boundary component for WalletMesh applications
 
@@ -125,7 +125,7 @@ In production mode:
 
 > **new WalletMeshErrorBoundary**(`props`): `WalletMeshErrorBoundary`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:154](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L154)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:154](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L154)
 
 #### Parameters
 
@@ -147,9 +147,9 @@ Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:154](ht
 
 > **context**: `unknown`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1014
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:946
 
-If using the new style context, re-declare this in your class to be the
+If using React Context, re-declare this in your class to be the
 `React.ContextType` of your `static contextType`.
 Should be used with type annotation or static contextType.
 
@@ -177,7 +177,7 @@ declare context: React.ContextType<typeof MyContext>
 
 > `readonly` **props**: `Readonly`\<`P`\>
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1034
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:970
 
 #### Inherited from
 
@@ -185,33 +185,11 @@ Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1034
 
 ***
 
-### ~~refs~~
-
-> **refs**: `object`
-
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1041
-
-#### Index Signature
-
-\[`key`: `string`\]: `ReactInstance`
-
-#### Deprecated
-
-#### See
-
-[Legacy React Docs](https://legacy.reactjs.org/docs/refs-and-the-dom.html#legacy-api-string-refs)
-
-#### Inherited from
-
-`Component.refs`
-
-***
-
 ### state
 
 > **state**: `Readonly`\<`S`\>
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1035
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:971
 
 #### Inherited from
 
@@ -223,7 +201,7 @@ Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1035
 
 > `static` `optional` **contextType**: `Context`\<`any`\>
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:996
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:922
 
 If set, `this.context` will be set at runtime to the current value of the given Context.
 
@@ -250,13 +228,31 @@ class Foo extends React.Component {
 
 `Component.contextType`
 
+***
+
+### ~~propTypes?~~
+
+> `static` `optional` **propTypes**: `any`
+
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:928
+
+Ignored by React.
+
+#### Deprecated
+
+Only kept in types for backwards compatibility. Will be removed in a future major release.
+
+#### Inherited from
+
+`Component.propTypes`
+
 ## Methods
 
 ### componentDidCatch()
 
 > **componentDidCatch**(`error`, `errorInfo`): `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:195](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L195)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:195](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L195)
 
 Lifecycle method called after an error has been thrown by a descendant component
 
@@ -291,7 +287,7 @@ Object containing the component stack trace showing where the error occurred
 
 > `optional` **componentDidMount**(): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1377
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1189
 
 Called immediately after a component is mounted. Setting state here will trigger re-rendering.
 
@@ -309,7 +305,7 @@ Called immediately after a component is mounted. Setting state here will trigger
 
 > `optional` **componentDidUpdate**(`prevProps`, `prevState`, `snapshot?`): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1440
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1252
 
 Called immediately after updating occurs. Not called for the initial render.
 
@@ -343,7 +339,7 @@ The snapshot is only present if [getSnapshotBeforeUpdate](#getsnapshotbeforeupda
 
 > `optional` **componentWillMount**(): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1456
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1268
 
 Called immediately before mounting occurs, and before Component.render.
 Avoid introducing any side-effects or subscriptions in this method.
@@ -375,7 +371,7 @@ this from being invoked.
 
 > `optional` **componentWillReceiveProps**(`nextProps`, `nextContext`): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1487
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1299
 
 Called when the component may be receiving new props.
 React may call this even if props have not changed, so be sure to compare new and existing
@@ -420,7 +416,7 @@ this from being invoked.
 
 > `optional` **componentWillUnmount**(): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1393
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1205
 
 Called immediately before a component is destroyed. Perform any necessary cleanup in this method, such as
 cancelled network requests, or cleaning up any DOM elements created in `componentDidMount`.
@@ -439,7 +435,7 @@ cancelled network requests, or cleaning up any DOM elements created in `componen
 
 > `optional` **componentWillUpdate**(`nextProps`, `nextState`, `nextContext`): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1519
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1331
 
 Called immediately before rendering when new props or state is received. Not called for the initial render.
 
@@ -486,7 +482,7 @@ this from being invoked.
 
 > **forceUpdate**(`callback?`): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1031
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:967
 
 #### Parameters
 
@@ -508,7 +504,7 @@ Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1031
 
 > `optional` **getSnapshotBeforeUpdate**(`prevProps`, `prevState`): `any`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1434
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1246
 
 Runs before React applies the result of Component.render render to the document, and
 returns an object to be given to [componentDidUpdate](#componentdidupdate). Useful for saving
@@ -541,7 +537,7 @@ lifecycle events from running.
 
 > **render**(): `ReactNode`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:482](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L482)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:482](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L482)
 
 Renders the component
 
@@ -561,7 +557,7 @@ Either the fallback UI if an error occurred, or the children
 
 > **resetErrorBoundary**(): `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:279](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L279)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:279](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L279)
 
 Reset the error boundary state to clear the error and re-render children
 
@@ -578,7 +574,7 @@ It's typically triggered by user actions like clicking a "Try Again" button.
 
 > **setState**\<`K`\>(`state`, `callback?`): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1026
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:962
 
 #### Type Parameters
 
@@ -610,7 +606,7 @@ Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1026
 
 > `optional` **shouldComponentUpdate**(`nextProps`, `nextState`, `nextContext`): `boolean`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1388
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1200
 
 Called to determine whether the change in props and state should trigger a re-render.
 
@@ -649,7 +645,7 @@ and `componentDidUpdate` will not be called.
 
 > `optional` **UNSAFE\_componentWillMount**(): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1471
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1283
 
 Called immediately before mounting occurs, and before Component.render.
 Avoid introducing any side-effects or subscriptions in this method.
@@ -683,7 +679,7 @@ this from being invoked.
 
 > `optional` **UNSAFE\_componentWillReceiveProps**(`nextProps`, `nextContext`): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1505
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1317
 
 Called when the component may be receiving new props.
 React may call this even if props have not changed, so be sure to compare new and existing
@@ -730,7 +726,7 @@ this from being invoked.
 
 > `optional` **UNSAFE\_componentWillUpdate**(`nextProps`, `nextState`, `nextContext`): `void`
 
-Defined in: core/modal-react/node\_modules/@types/react/index.d.ts:1535
+Defined in: node\_modules/.pnpm/@types+react@19.1.15/node\_modules/@types/react/index.d.ts:1347
 
 Called immediately before rendering when new props or state is received. Not called for the initial render.
 
@@ -779,7 +775,7 @@ this from being invoked.
 
 > `static` **getDerivedStateFromError**(`error`): `Partial`\<[`ErrorBoundaryState`](../interfaces/ErrorBoundaryState.md)\>
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:176](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L176)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:176](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L176)
 
 Static lifecycle method called when an error is thrown in a descendant component
 

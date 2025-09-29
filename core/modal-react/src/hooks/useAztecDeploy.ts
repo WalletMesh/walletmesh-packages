@@ -8,9 +8,24 @@
  * @packageDocumentation
  */
 
-import type { AztecAddress, ContractArtifact } from '@aztec/aztec.js';
+import type { AztecAddress } from '@aztec/aztec.js';
 import { useCallback, useState } from 'react';
 import { useAztecWallet } from './useAztecWallet.js';
+
+/**
+ * Contract artifact type that handles different artifact formats
+ * from various Aztec contract packages. Automatically adds missing properties
+ * for compatibility.
+ *
+ * @public
+ */
+export type ContractArtifact = {
+  name: string;
+  functions: unknown[];
+  events?: unknown[];
+  notes?: unknown;
+  [key: string]: unknown;
+};
 
 /**
  * Deployment options
@@ -82,6 +97,7 @@ export interface UseAztecDeployReturn {
  *
  * @remarks
  * The hook automatically handles:
+ * - Artifact compatibility (adds missing properties like 'notes')
  * - Deployment state management
  * - Address computation
  * - Proving and sending transactions
@@ -97,6 +113,7 @@ export interface UseAztecDeployReturn {
  *   const { deploy, isDeploying, stage, deployedAddress } = useAztecDeploy();
  *
  *   const handleDeploy = async () => {
+ *     // No need for type conversion - hook handles compatibility
  *     const result = await deploy(
  *       TokenContractArtifact,
  *       [ownerAddress, 'MyToken', 'MTK', 18],
@@ -218,7 +235,21 @@ export function useAztecDeploy(): UseAztecDeployReturn {
           options.onProgress('proving');
         }
 
-        const deploySentTx = await aztecWallet.deployContract(artifact, args);
+        // Ensure artifact has the required notes property for compatibility
+        const compatibleArtifact = {
+          ...artifact,
+          notes: artifact.notes || {},
+        };
+
+        // Use the wallet's deployContract method
+        // Note: While this currently uses aztec_wmDeployContract RPC method internally,
+        // the deployContract method on the wallet interface is part of the standard
+        // Aztec wallet API and is the correct abstraction for deployment.
+        // The underlying RPC method may change but the wallet interface remains stable.
+        const deploySentTx = await aztecWallet.deployContract(
+          compatibleArtifact as Parameters<typeof aztecWallet.deployContract>[0],
+          args,
+        );
 
         setStage('sending');
         if (options.onProgress) {

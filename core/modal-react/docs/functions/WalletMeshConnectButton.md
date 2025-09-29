@@ -8,7 +8,7 @@
 
 > **WalletMeshConnectButton**(`props`): `Element`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:199](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L199)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:197](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L197)
 
 Pre-built connect button component with sensible defaults
 
@@ -63,7 +63,6 @@ React element representing the connect button
   size="lg"
   variant="outline"
   label="Connect Your Wallet"
-  disconnectLabel="Sign Out"
   className="custom-button"
   style={{ borderRadius: '12px' }}
 />
@@ -97,13 +96,12 @@ function App() {
 ```
 
 ```tsx
-// Disconnect confirmation dialog
+// Custom connected click behavior
 <WalletMeshConnectButton
-  showDisconnectConfirmation={true}
-  disconnectConfirmationMessage="Are you sure you want to disconnect?"
+  onConnectedClick={() => console.log('Connected wallet clicked')}
   showAddress={true}
 />
-// When user clicks disconnect: shows browser confirm dialog before disconnecting
+// When user clicks connected button: calls custom handler instead of opening modal
 ```
 
 ```tsx

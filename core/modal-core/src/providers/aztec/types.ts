@@ -20,12 +20,16 @@
 export interface AztecDappWallet {
   /** Deploy a contract to the Aztec network */
   deployContract(artifact: unknown, args: unknown[], constructorName?: string): Promise<DeploySentTx>;
-  /** Execute a transaction using WalletMesh */
-  wmExecuteTx(interaction: ContractFunctionInteraction): Promise<SentTx>;
+  /** Prove a transaction */
+  proveTx(txRequest: unknown, fee?: unknown): Promise<unknown>;
+  /** Send a proven transaction */
+  sendTx(tx: unknown): Promise<unknown>;
   /** Simulate a transaction without executing */
-  wmSimulateTx(interaction: ContractFunctionInteraction): Promise<unknown>;
+  simulateTx(txRequest: unknown, simulatePublic?: boolean, msgSender?: unknown): Promise<unknown>;
   /** Get transaction receipt by hash */
   getTxReceipt(txHash: unknown): Promise<TxReceipt | null>;
+  /** Register a contract class */
+  registerContractClass(artifact: unknown): Promise<void>;
   /** Get the current account address */
   getAddress(): unknown;
   /** Get the complete address with public keys */

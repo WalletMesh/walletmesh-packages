@@ -32,6 +32,7 @@ export {
   type UseAztecDeployReturn,
   type DeploymentOptions,
   type DeploymentResult,
+  type ContractArtifact,
 } from '../../hooks/useAztecDeploy.js';
 
 export {

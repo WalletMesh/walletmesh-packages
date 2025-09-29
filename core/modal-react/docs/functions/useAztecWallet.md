@@ -8,7 +8,7 @@
 
 > **useAztecWallet**(`chain?`): [`AztecWalletInfo`](../interfaces/AztecWalletInfo.md)
 
-Defined in: [core/modal-react/src/hooks/useAztecWallet.ts:221](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecWallet.ts#L221)
+Defined in: [core/modal-react/src/hooks/useAztecWallet.ts:221](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecWallet.ts#L221)
 
 Hook that combines account and Aztec provider functionality
 

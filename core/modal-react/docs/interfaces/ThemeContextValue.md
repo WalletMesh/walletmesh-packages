@@ -6,7 +6,7 @@
 
 # Interface: ThemeContextValue
 
-Defined in: [core/modal-react/src/theme/types.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L227)
+Defined in: [core/modal-react/src/theme/types.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L227)
 
 Theme context value provided to components
 
@@ -20,7 +20,7 @@ Theme context value provided to components
 
 > **isMounted**: `boolean`
 
-Defined in: [core/modal-react/src/theme/types.ts:261](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L261)
+Defined in: [core/modal-react/src/theme/types.ts:261](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L261)
 
 Whether the theme system is mounted and ready
 
@@ -30,7 +30,7 @@ Whether the theme system is mounted and ready
 
 > **refreshSystemTheme**: () => `void`
 
-Defined in: [core/modal-react/src/theme/types.ts:266](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L266)
+Defined in: [core/modal-react/src/theme/types.ts:266](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L266)
 
 Force re-evaluation of system theme
 
@@ -44,7 +44,7 @@ Force re-evaluation of system theme
 
 > **resolvedTheme**: `"light"` \| `"dark"`
 
-Defined in: [core/modal-react/src/theme/types.ts:236](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L236)
+Defined in: [core/modal-react/src/theme/types.ts:236](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L236)
 
 Current resolved theme (never 'system')
 
@@ -54,7 +54,7 @@ Current resolved theme (never 'system')
 
 > **setTheme**: (`mode`) => `void`
 
-Defined in: [core/modal-react/src/theme/types.ts:251](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L251)
+Defined in: [core/modal-react/src/theme/types.ts:251](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L251)
 
 Set the theme mode
 
@@ -74,7 +74,7 @@ Set the theme mode
 
 > **systemTheme**: `"light"` \| `"dark"`
 
-Defined in: [core/modal-react/src/theme/types.ts:241](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L241)
+Defined in: [core/modal-react/src/theme/types.ts:241](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L241)
 
 System's preferred theme
 
@@ -84,7 +84,7 @@ System's preferred theme
 
 > **theme**: `ThemeMode`
 
-Defined in: [core/modal-react/src/theme/types.ts:231](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L231)
+Defined in: [core/modal-react/src/theme/types.ts:231](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L231)
 
 Current active theme mode
 
@@ -94,7 +94,7 @@ Current active theme mode
 
 > **themeConfig**: [`ThemeConfig`](ThemeConfig.md)
 
-Defined in: [core/modal-react/src/theme/types.ts:246](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L246)
+Defined in: [core/modal-react/src/theme/types.ts:246](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L246)
 
 Complete theme configuration
 
@@ -104,7 +104,7 @@ Complete theme configuration
 
 > **toggleTheme**: () => `void`
 
-Defined in: [core/modal-react/src/theme/types.ts:256](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L256)
+Defined in: [core/modal-react/src/theme/types.ts:256](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L256)
 
 Toggle between light and dark themes
 

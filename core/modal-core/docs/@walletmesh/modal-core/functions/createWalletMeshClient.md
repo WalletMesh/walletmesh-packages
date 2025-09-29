@@ -6,7 +6,7 @@
 
 # Function: createWalletMeshClient()
 
-> **createWalletMeshClient**(`appName`, `additionalConfig`): [`WalletMeshClient`](../classes/WalletMeshClient.md)
+> **createWalletMeshClient**(`appName`, `additionalConfig`): [`WalletMeshClient`](../interfaces/WalletMeshClient.md)
 
 Creates a WalletMeshClient instance with sensible defaults
 
@@ -23,13 +23,13 @@ Name of the application
 
 ### additionalConfig
 
-`Partial`\<[`WalletMeshClientConfig`](../interfaces/WalletMeshClientConfig.md)\> = `{}`
+`Partial`\<[`WalletMeshClientConfig`](../type-aliases/WalletMeshClientConfig.md)\> = `{}`
 
 Additional configuration options
 
 ## Returns
 
-[`WalletMeshClient`](../classes/WalletMeshClient.md)
+[`WalletMeshClient`](../interfaces/WalletMeshClient.md)
 
 Configured WalletMeshClient instance
 

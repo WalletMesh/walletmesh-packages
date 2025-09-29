@@ -56,7 +56,7 @@ Discovery timestamp
 
 ### discoveryMethod
 
-> **discoveryMethod**: `"manual"` \| `"extension"` \| `"injected"` \| `"announced"`
+> **discoveryMethod**: `"manual"` \| `"extension"` \| `"injected"` \| `"announced"` \| `"discovery-protocol"`
 
 Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:99
 

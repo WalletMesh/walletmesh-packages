@@ -8,7 +8,7 @@
 
 > **WalletMeshChainSwitchButton**(`props`): `Element`
 
-Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:80](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L80)
+Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:80](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L80)
 
 WalletMeshChainSwitchButton Component
 

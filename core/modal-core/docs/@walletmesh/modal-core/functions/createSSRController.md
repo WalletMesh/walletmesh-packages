@@ -6,7 +6,7 @@
 
 # Function: createSSRController()
 
-> **createSSRController**(): [`WalletMeshClient`](../../../internal/types/typedocExports/interfaces/WalletMeshClient.md)
+> **createSSRController**(): [`WalletMeshClient`](../interfaces/WalletMeshClient.md)
 
 Creates an SSR-safe controller for server environments
 
@@ -16,7 +16,7 @@ requiring browser APIs.
 
 ## Returns
 
-[`WalletMeshClient`](../../../internal/types/typedocExports/interfaces/WalletMeshClient.md)
+[`WalletMeshClient`](../interfaces/WalletMeshClient.md)
 
 SSR-safe controller implementing WalletMeshClient interface
 

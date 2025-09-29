@@ -7,9 +7,11 @@
  * @module hooks/useAztecContract
  */
 
-import type { AztecAddress, ContractArtifact } from '@aztec/aztec.js';
+import type { AztecAddress } from '@aztec/aztec.js';
 import { getContractAt } from '@walletmesh/modal-core/providers/aztec/lazy';
+import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { ContractArtifact } from './useAztecDeploy.js';
 import { useAztecWallet } from './useAztecWallet.js';
 
 /**
@@ -157,7 +159,16 @@ export function useAztecContract<T = unknown>(
     setError(null);
 
     try {
-      const contractInstance = await getContractAt(aztecWallet, address, artifact);
+      // Ensure artifact has required properties for compatibility
+      const compatibleArtifact = {
+        ...artifact,
+        notes: artifact.notes || {},
+      };
+      const contractInstance = await getContractAt(
+        aztecWallet,
+        address,
+        compatibleArtifact as Parameters<typeof getContractAt>[2],
+      );
       setContract(contractInstance as T);
       cacheKeyRef.current = newCacheKey;
     } catch (err) {
@@ -191,15 +202,29 @@ export function useAztecContract<T = unknown>(
         throw new Error('Contract is not loaded');
       }
 
-      // Use the wallet's wmExecuteTx method to execute the interaction
-      const sentTx = await aztecWallet.wmExecuteTx(
-        interaction as { request(): unknown; simulate(): Promise<unknown> },
-      );
-      const receipt = await sentTx.wait();
+      // Execute the contract interaction using native Aztec flow
+      const contractInteraction = interaction as ContractFunctionInteraction & {
+        request(): Promise<unknown>;
+      };
+      const txRequest = await contractInteraction.request();
+      const provenTx = await aztecWallet.proveTx(txRequest);
+      const txHash = await aztecWallet.sendTx(provenTx);
+
+      // Wait for the transaction receipt
+      const receipt = await aztecWallet.getTxReceipt(txHash);
+      if (!receipt) {
+        throw new Error('Transaction receipt not found');
+      }
       return receipt;
     },
     [aztecWallet, contract],
   );
+
+  // Helper function to extract return values from simulation results
+  const extractReturnValues = useCallback((result: unknown): unknown => {
+    const resultWithReturnValues = result as { returnValues?: unknown } & unknown;
+    return resultWithReturnValues.returnValues || result;
+  }, []);
 
   // Simulate a contract method call
   const simulate = useCallback(async (method: unknown): Promise<unknown> => {
@@ -207,14 +232,55 @@ export function useAztecContract<T = unknown>(
       throw new Error('Method is required for simulation');
     }
 
-    // If the method has a simulate function, call it
-    if (typeof method === 'object' && method !== null && 'simulate' in method) {
-      const methodWithSimulate = method as { simulate: () => Promise<unknown> };
-      return methodWithSimulate.simulate();
+    if (!aztecWallet) {
+      throw new Error('Aztec wallet is not available for simulation');
     }
 
-    throw new Error('Method does not support simulation');
-  }, []);
+    // Check if the method is a ContractFunctionInteraction
+    // We need to verify it has the required methods and can be passed to wmSimulateTx
+    if (typeof method === 'object' && method !== null && 'request' in method && 'simulate' in method) {
+      // Type assertion to ContractFunctionInteraction-like object
+      // Note: We can't import the exact type here due to circular dependencies,
+      // but we verify it has the required interface
+      const contractInteraction = method as {
+        request(): unknown;
+        simulate(): Promise<unknown>;
+      };
+
+      // Use the wallet's standard simulateTx method to simulate through the wallet RPC
+      // This ensures the simulation happens in the wallet's context with proper PXE access
+      try {
+        console.log('[useAztecContract] Simulating through wallet RPC...');
+        // Use native Aztec simulation method
+        const txRequest = await contractInteraction.request();
+        const result = await aztecWallet.simulateTx(
+          txRequest,
+          true // simulatePublic
+        );
+        console.log('[useAztecContract] Simulation result from wallet:', result);
+        return extractReturnValues(result);
+      } catch (error) {
+        console.error('[useAztecContract] Simulation through wallet failed:', error);
+        // Fallback to direct simulation for backward compatibility
+        // This might work for some simple view functions
+        console.log('[useAztecContract] Falling back to direct simulation...');
+        const result = await contractInteraction.simulate();
+        console.log('[useAztecContract] Direct simulation result:', result);
+        return extractReturnValues(result);
+      }
+    }
+
+    // If the method only has simulate but not request, try direct simulation
+    if (typeof method === 'object' && method !== null && 'simulate' in method) {
+      console.log('[useAztecContract] Using direct simulation (no request method)...');
+      const methodWithSimulate = method as { simulate: () => Promise<unknown> };
+      const result = await methodWithSimulate.simulate();
+      console.log('[useAztecContract] Direct simulation result:', result);
+      return extractReturnValues(result);
+    }
+
+    throw new Error('Method does not support simulation - missing required simulate() method');
+  }, [aztecWallet, extractReturnValues]);
 
   return {
     contract,

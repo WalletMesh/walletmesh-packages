@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshSandboxedWalletIconProps
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:455](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L455)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:455](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L455)
 
 Props for the WalletMeshSandboxedWalletIcon component
 
@@ -16,7 +16,7 @@ Props for the WalletMeshSandboxedWalletIcon component
 
 > `optional` **className**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:465](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L465)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:465](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L465)
 
 CSS class name
 
@@ -26,7 +26,7 @@ CSS class name
 
 > `optional` **cspTimeout**: `number`
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:473](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L473)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:473](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L473)
 
 Timeout in ms for CSP detection (default: 3000)
 
@@ -36,7 +36,7 @@ Timeout in ms for CSP detection (default: 3000)
 
 > `optional` **disabled**: `boolean`
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:477](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L477)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:477](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L477)
 
 Whether the wallet should appear disabled/greyed out
 
@@ -46,7 +46,7 @@ Whether the wallet should appear disabled/greyed out
 
 > `optional` **disabledStyle**: `DisabledIconStyle`
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:479](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L479)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:479](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L479)
 
 Custom styling for disabled state
 
@@ -56,7 +56,7 @@ Custom styling for disabled state
 
 > `optional` **fallbackIcon**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:471](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L471)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:471](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L471)
 
 Fallback icon data URI to use if CSP blocks the main icon
 
@@ -66,7 +66,7 @@ Fallback icon data URI to use if CSP blocks the main icon
 
 > `optional` **onClick**: (`walletId`) => `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:467](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L467)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:467](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L467)
 
 Click handler that receives the wallet ID
 
@@ -86,7 +86,7 @@ Click handler that receives the wallet ID
 
 > `optional` **onCspError**: (`error`) => `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:475](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L475)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:475](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L475)
 
 Callback when CSP error is detected
 
@@ -106,7 +106,7 @@ Callback when CSP error is detected
 
 > `optional` **size**: `number`
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:463](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L463)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:463](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L463)
 
 Icon size in pixels
 
@@ -116,7 +116,7 @@ Icon size in pixels
 
 > `optional` **style**: `CSSProperties`
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:469](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L469)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:469](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L469)
 
 Style overrides
 
@@ -126,7 +126,7 @@ Style overrides
 
 > **wallet**: `object`
 
-Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:457](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L457)
+Defined in: [core/modal-react/src/components/WalletMeshSandboxedIcon.tsx:457](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshSandboxedIcon.tsx#L457)
 
 Wallet information containing icon and name
 

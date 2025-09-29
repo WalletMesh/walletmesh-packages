@@ -49,6 +49,7 @@ import {
   Capsule,
   HashedValues,
   PrivateExecutionResult,
+  type SimulationOverrides,
   TxProfileResult,
   TxProvingResult,
   TxReceipt,
@@ -419,13 +420,20 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
           const txRequestRaw = ensureParam<Record<string, unknown>>(dAppParams, 'txRequest');
           const txRequest = await TxExecutionRequest.schema.parseAsync(txRequestRaw);
           const simulatePublic = getOptionalParam<boolean>(dAppParams, 'simulatePublic', 'boolean');
-          const msgSenderStr = getOptionalParam<string>(dAppParams, 'msgSender', 'string');
-          const msgSender = msgSenderStr ? AztecAddress.fromString(msgSenderStr) : undefined;
           const skipTxValidation = getOptionalParam<boolean>(dAppParams, 'skipTxValidation', 'boolean');
           const skipFeeEnforcement = getOptionalParam<boolean>(dAppParams, 'skipFeeEnforcement', 'boolean');
+
+          // Create SimulationOverrides object if msgSender is provided
+          const msgSenderStr = getOptionalParam<string>(dAppParams, 'msgSender', 'string');
+          const overrides = msgSenderStr
+            ? ({ msgSender: AztecAddress.fromString(msgSenderStr) } as SimulationOverrides)
+            : undefined;
+
           const scopesRaw = getOptionalParam<string[]>(dAppParams, 'scopes');
           const scopes = scopesRaw?.map((s) => AztecAddress.fromString(s));
-          return [txRequest, simulatePublic, msgSender, skipTxValidation, skipFeeEnforcement, scopes];
+
+          // Return tuple in correct order: [txRequest, simulatePublic, skipTxValidation, skipFeeEnforcement, overrides, scopes]
+          return [txRequest, simulatePublic, skipTxValidation, skipFeeEnforcement, overrides, scopes];
         }
         case 'aztec_profileTx': {
           const txRequestRaw = ensureParam<Record<string, unknown>>(dAppParams, 'txRequest');
@@ -446,10 +454,12 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
           const toStr = ensureParam<string>(dAppParams, 'to', 'string');
           const to = AztecAddress.fromString(toStr);
           const authWitsRaw = getOptionalParam<Record<string, unknown>[]>(dAppParams, 'authWits');
-          const authWits = await authWitsRaw?.map((aw) => AuthWitness.schema.parseAsync(aw)); // Use AuthWitness from @aztec/aztec.js
+          const authWits = authWitsRaw ? await Promise.all(authWitsRaw.map((aw) => AuthWitness.schema.parseAsync(aw))) : undefined; // Use AuthWitness from @aztec/aztec.js
           const fromStr = getOptionalParam<string>(dAppParams, 'from', 'string');
           const from = fromStr ? AztecAddress.fromString(fromStr) : undefined;
-          return [functionName, args, to, authWits, from];
+          const scopesRaw = getOptionalParam<string[]>(dAppParams, 'scopes');
+          const scopes = scopesRaw?.map((s) => AztecAddress.fromString(s));
+          return [functionName, args, to, authWits, from, scopes];
         }
         case 'aztec_getPrivateEvents': {
           const contractAddressStr = ensureParam<string>(dAppParams, 'contractAddress', 'string');

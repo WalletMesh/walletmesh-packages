@@ -6,7 +6,7 @@
 
 # Interface: UseAztecAccountsReturn
 
-Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecAccounts.ts#L29)
+Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecAccounts.ts#L29)
 
 Account management hook return type
 
@@ -16,7 +16,7 @@ Account management hook return type
 
 > **accounts**: [`AztecAccountInfo`](AztecAccountInfo.md)[]
 
-Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecAccounts.ts#L31)
+Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecAccounts.ts#L31)
 
 List of all registered accounts
 
@@ -26,7 +26,7 @@ List of all registered accounts
 
 > **activeAccount**: `null` \| [`AztecAccountInfo`](AztecAccountInfo.md)
 
-Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecAccounts.ts#L33)
+Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecAccounts.ts#L33)
 
 The currently active account
 
@@ -36,7 +36,7 @@ The currently active account
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecAccounts.ts#L41)
+Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecAccounts.ts#L41)
 
 Any error that occurred
 
@@ -46,7 +46,7 @@ Any error that occurred
 
 > **isLoading**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecAccounts.ts#L39)
+Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecAccounts.ts#L39)
 
 Whether accounts are loading
 
@@ -56,7 +56,7 @@ Whether accounts are loading
 
 > **refresh**: () => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecAccounts.ts#L43)
+Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecAccounts.ts#L43)
 
 Refresh the account list
 
@@ -70,7 +70,7 @@ Refresh the account list
 
 > **signMessage**: (`message`) => `Promise`\<`string`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecAccounts.ts#L37)
+Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecAccounts.ts#L37)
 
 Sign a message with the current account
 
@@ -90,7 +90,7 @@ Sign a message with the current account
 
 > **switchAccount**: (`address`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecAccounts.ts#L35)
+Defined in: [core/modal-react/src/hooks/useAztecAccounts.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecAccounts.ts#L35)
 
 Switch to a different account
 

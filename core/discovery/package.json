@@ -64,10 +64,6 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.1.4",
-    "happy-dom": "^18.0.1",
-    "rimraf": "^6.0.1",
-    "typedoc": "^0.28.12",
-    "typedoc-plugin-markdown": "^4.8.1",
-    "typescript": "^5.9.2"
+    "happy-dom": "^18.0.1"
   }
 }

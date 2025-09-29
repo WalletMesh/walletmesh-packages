@@ -6,7 +6,7 @@
 
 # Function: createWalletMeshClientWithConfig()
 
-> **createWalletMeshClientWithConfig**(`config`, `options`): [`WalletMeshClient`](../classes/WalletMeshClient.md)
+> **createWalletMeshClientWithConfig**(`config`, `options`): [`WalletMeshClient`](../interfaces/WalletMeshClient.md)
 
 Creates a new WalletMeshClient instance with full configuration control
 
@@ -21,7 +21,7 @@ This factory function handles the creation and configuration of:
 
 ### config
 
-[`WalletMeshClientConfig`](../interfaces/WalletMeshClientConfig.md)
+[`WalletMeshConfig`](../interfaces/WalletMeshConfig.md)
 
 Full configuration for the WalletMeshClient
 
@@ -33,7 +33,7 @@ Optional creation options
 
 ## Returns
 
-[`WalletMeshClient`](../classes/WalletMeshClient.md)
+[`WalletMeshClient`](../interfaces/WalletMeshClient.md)
 
 A fully configured WalletMeshClient instance
 

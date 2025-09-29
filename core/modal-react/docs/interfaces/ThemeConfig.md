@@ -6,7 +6,7 @@
 
 # Interface: ThemeConfig
 
-Defined in: [core/modal-react/src/theme/types.ts:161](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L161)
+Defined in: [core/modal-react/src/theme/types.ts:161](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L161)
 
 Complete theme configuration
 
@@ -16,7 +16,7 @@ Complete theme configuration
 
 > **animation**: [`ThemeAnimation`](ThemeAnimation.md)
 
-Defined in: [core/modal-react/src/theme/types.ts:165](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L165)
+Defined in: [core/modal-react/src/theme/types.ts:165](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L165)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal-react/src/theme/types.ts:165](https://github.com/WalletM
 
 > **borderRadius**: [`ThemeBorderRadius`](ThemeBorderRadius.md)
 
-Defined in: [core/modal-react/src/theme/types.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L168)
+Defined in: [core/modal-react/src/theme/types.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L168)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/modal-react/src/theme/types.ts:168](https://github.com/WalletM
 
 > **colors**: [`ThemeColors`](ThemeColors.md)
 
-Defined in: [core/modal-react/src/theme/types.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L163)
+Defined in: [core/modal-react/src/theme/types.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L163)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/modal-react/src/theme/types.ts:163](https://github.com/WalletM
 
 > **mode**: `ThemeMode`
 
-Defined in: [core/modal-react/src/theme/types.ts:162](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L162)
+Defined in: [core/modal-react/src/theme/types.ts:162](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L162)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [core/modal-react/src/theme/types.ts:162](https://github.com/WalletM
 
 > **shadows**: [`ThemeShadows`](ThemeShadows.md)
 
-Defined in: [core/modal-react/src/theme/types.ts:164](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L164)
+Defined in: [core/modal-react/src/theme/types.ts:164](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L164)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [core/modal-react/src/theme/types.ts:164](https://github.com/WalletM
 
 > **spacing**: [`ThemeSpacing`](ThemeSpacing.md)
 
-Defined in: [core/modal-react/src/theme/types.ts:167](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L167)
+Defined in: [core/modal-react/src/theme/types.ts:167](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L167)
 
 ***
 
@@ -64,4 +64,4 @@ Defined in: [core/modal-react/src/theme/types.ts:167](https://github.com/WalletM
 
 > **typography**: [`ThemeTypography`](ThemeTypography.md)
 
-Defined in: [core/modal-react/src/theme/types.ts:166](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L166)
+Defined in: [core/modal-react/src/theme/types.ts:166](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L166)

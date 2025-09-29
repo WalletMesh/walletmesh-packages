@@ -4,366 +4,296 @@ import { CounterContractArtifact } from '@aztec/noir-test-contracts.js/Counter';
 import {
   AztecConnectButton,
   AztecWalletReady,
+  useAccount,
   useAztecBatch,
   useAztecContract,
   useAztecDeploy,
-  useAztecTransaction,
   useAztecWallet,
 } from '@walletmesh/modal-react/aztec';
 import type React from 'react';
+import { useState } from 'react';
 import { useToast } from '../contexts/ToastContext.js';
-
-// Type definitions for contract methods
-interface TokenContract {
-  methods: {
-    mint_to_public: (address: unknown, amount: bigint) => Promise<unknown>;
-    transfer_in_public: (from: unknown, to: string, amount: bigint, nonce: bigint) => Promise<unknown>;
-    balance_of_public: (address: unknown) => Promise<unknown>;
-  };
-}
-
-interface CounterContract {
-  methods: {
-    increment: (address: unknown, by: unknown) => any;
-    get_counter: (address: unknown) => any;
-  };
-}
-
 
 /**
  * DApp component for the Aztec example application demonstrating
- * the improved developer experience with new hooks and components.
+ * the improved developer experience with modal-react hooks.
  */
 const DApp: React.FC = () => {
   const { showError, showSuccess, showInfo } = useToast();
 
-  // State for wallet connection and account details
-  const [wallet, setWallet] = useState<AztecDappWallet | null>(null);
-  const [account, setAccount] = useState<string>('');
-  const [isConnected, setIsConnected] = useState(false);
+  // Use modal-react hooks for wallet management
+  const { aztecWallet } = useAztecWallet();
+  const { address } = useAccount();
 
-  // State for Token contract
+  // Use Aztec-specific hooks for deployment
+  const {
+    deploy: deployToken,
+    isDeploying: isDeployingToken,
+    stage: tokenStage,
+    deployedAddress: tokenAddress,
+  } = useAztecDeploy();
+
+  const {
+    deploy: deployCounter,
+    isDeploying: isDeployingCounter,
+    stage: counterStage,
+    deployedAddress: counterAddress,
+  } = useAztecDeploy();
+
+  const { executeBatch, isExecuting: isBatchExecuting, progress: batchProgress } = useAztecBatch();
+
+  // Use contract hooks for Token and Counter contracts
+  const {
+    contract: tokenContract,
+    execute: executeTokenTx,
+    simulate: simulateTokenTx,
+    isLoading: isTokenContractLoading,
+    error: tokenContractError,
+  } = useAztecContract<any>(
+    tokenAddress,
+    tokenAddress ? (TokenContractArtifact as any) : null,
+  );
+
+  const {
+    contract: counterContract,
+    execute: executeCounterTx,
+    simulate: simulateCounterTx,
+    isLoading: isCounterContractLoading,
+    error: counterContractError,
+  } = useAztecContract<any>(
+    counterAddress,
+    counterAddress ? (CounterContractArtifact as any) : null,
+  );
+
+  // State for UI display and transaction status
   const [tokenBalance, setTokenBalance] = useState<string>('');
   const [counterValue, setCounterValue] = useState<string>('');
-  const [tokenAddress, setTokenAddress] = useState<AztecAddress | null>(null);
-  const [counterAddress, setCounterAddress] = useState<AztecAddress | null>(null);
-
-  // Loading states
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isDeployingToken, setIsDeployingToken] = useState(false);
-  const [isDeployingCounter, setIsDeployingCounter] = useState(false);
-  const [isMinting, setIsMinting] = useState(false);
-  const [isTransferring, setIsTransferring] = useState(false);
-  const [isCheckingBalance, setIsCheckingBalance] = useState(false);
-  const [isIncrementing, setIsIncrementing] = useState(false);
-  const [isIncrementingTwice, setIsIncrementingTwice] = useState(false);
-  const [isGettingCounter, setIsGettingCounter] = useState(false);
-
-  /** Ref to the AztecRouterProvider instance. */
-  const providerRef = useRef<AztecRouterProvider | null>(null);
-  /** Ref to the wallet window. */
-  const walletWindowRef = useRef<Window | null>(null);
-  /** Ref to the transport cleanup function. */
-  const transportCleanupRef = useRef<(() => void) | null>(null);
-
-  /**
-   * Connects the DApp to the Aztec wallet via WalletMesh.
-   * Opens the wallet in a new window and sets up cross-window communication.
-   */
-  const connectWallet = async () => {
-    setIsConnecting(true);
-
-    try {
-      // Open wallet in a new window
-      // Use environment variable or fallback to localhost for development
-      const walletOrigin = import.meta.env.VITE_WALLET_URL || 'http://localhost:5174';
-
-      // Set up the message listener BEFORE opening the window to avoid race conditions
-      let handleReady: ((event: MessageEvent) => void) | null = null;
-      let timeout: NodeJS.Timeout | null = null;
-
-      const walletReadyPromise = new Promise<void>((resolve, reject) => {
-        timeout = setTimeout(() => {
-          if (handleReady) {
-            window.removeEventListener('message', handleReady);
-          }
-          reject(new Error('Wallet window took too long to respond'));
-        }, 30000); // 30 second timeout
-
-        handleReady = (event: MessageEvent) => {
-          if (event.origin === walletOrigin && event.data?.type === 'wallet_ready') {
-            if (timeout) clearTimeout(timeout);
-            window.removeEventListener('message', handleReady!);
-            resolve();
-          }
-        };
-
-        window.addEventListener('message', handleReady);
-      });
-
-      // Now open the wallet window
-      const walletWindow = window.open(walletOrigin, 'walletMeshWallet', 'width=800,height=600');
-
-      if (!walletWindow) {
-        // Clean up the event listener if window open fails
-        if (handleReady) {
-          window.removeEventListener('message', handleReady);
-        }
-        if (timeout) clearTimeout(timeout);
-        throw new Error('Failed to open wallet window. Please check your popup blocker.');
-      }
-
-      walletWindowRef.current = walletWindow;
-
-      // Wait for wallet window to be ready
-      await walletReadyPromise;
-
-      // Create cross-window transport
-      const transport = createDappToWalletTransport(walletWindow, walletOrigin);
-
-      // Store cleanup function
-      transportCleanupRef.current = () => {
-        if ('cleanup' in transport && typeof transport.cleanup === 'function') {
-          transport.cleanup();
-        }
-      };
-
-      // Create provider with Aztec serialization support
-      const provider = new AztecRouterProvider(transport);
-      providerRef.current = provider;
-
-      // Connect using the helper that returns an initialized wallet
-      const { wallet: newWallet } = await connectAztec(provider, 'aztec:31337');
-
-      setIsConnected(true);
-      setWallet(newWallet);
-
-      // Get the address (should be cached from initialization)
-      const accountAddress = newWallet.getAddress();
-
-      // Defensive string conversion to handle any edge cases
-      const addressString = typeof accountAddress === 'string'
-        ? accountAddress
-        : (accountAddress?.toString?.() ?? String(accountAddress));
-
-      setAccount(addressString);
-      showSuccess('Wallet connected successfully!');
-    } catch (error: any) {
-      console.error('Failed to connect wallet:', error);
-      showError(`Failed to connect wallet: ${error.message}`);
-      setIsConnected(false);
-      setWallet(null);
-      setAccount('');
-      transportCleanupRef.current?.();
-      walletWindowRef.current?.close();
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  /**
-   * Disconnects the wallet and closes the wallet window.
-   */
-  const disconnectWallet = () => {
-    setIsConnected(false);
-    setWallet(null);
-    setAccount('');
-    transportCleanupRef.current?.();
-    walletWindowRef.current?.close();
-    walletWindowRef.current = null;
-    showInfo('Wallet disconnected');
-  };
+  const [isExecutingTx, setIsExecutingTx] = useState<boolean>(false);
 
   /**
    * Deploys the TokenContractArtifact to the Aztec network using the connected wallet.
-   * Updates component state with the deployed token contract's address.
    */
-  const deployToken = async () => {
-    if (wallet) {
-      setIsDeployingToken(true);
-      try {
-        const ownerAddress = await wallet.getAddress();
-
-        const deploySentTx = await wallet.deployContract(TokenContractArtifact, [ownerAddress, 'TokenName', 'TKN', 18]);
-        // const deploySentTx = await Contract.deploy(wallet, TokenContractArtifact, [ownerAddress, 'TokenName', 'TKN', 18]).send();;
-
-        const token = await deploySentTx.deployed();
-        setTokenAddress(token.address);
-        showSuccess(`Token deployed at ${token.address.toString()}`);
-      }
-      catch (error: any) {
-        console.error('Token deployment failed:', error);
-        showError(`Token deployment failed: ${error.message}`);
-      } finally {
-        setIsDeployingToken(false);
-      }
-    } else {
+  const handleDeployToken = async () => {
+    if (!aztecWallet || !address) {
       showError('Please connect a wallet first.');
+      return;
+    }
+
+    try {
+      // Hook now handles artifact compatibility internally
+      await deployToken(
+        TokenContractArtifact as any,
+        [address, 'TokenName', 'TKN', 18],
+        {
+          onSuccess: (deployedAddress) => {
+            showSuccess(`Token deployed at ${deployedAddress.toString()}`);
+          },
+          onError: (error) => {
+            showError(`Token deployment failed: ${error.message}`);
+          },
+        },
+      );
+    } catch (error) {
+      console.error('Token deployment failed:', error);
+      if (error instanceof Error) {
+        showError(`Token deployment failed: ${error.message}`);
+      }
     }
   };
 
   /**
    * Deploys the CounterContractArtifact to the Aztec network.
-   * Updates component state with the deployed counter contract's address.
    */
-  const deployCounter = async () => {
-    if (wallet) {
-      setIsDeployingCounter(true);
-      try {
-        const ownerAddress = await wallet.getAddress();
-        const deploySentTx = await Contract.deploy(wallet, CounterContractArtifact, [0, ownerAddress]).send({ from: ownerAddress });
-        const counter = await deploySentTx.deployed();
-        setCounterAddress(counter.address);
-        showSuccess(`Counter deployed at ${counter.address.toString()}`);
-      } catch (error: any) {
-        showError(`Counter deployment failed: ${error.message}`);
-        console.error('Counter deployment failed:', error);
-      } finally {
-        setIsDeployingCounter(false);
-      }
-    } else {
+  const handleDeployCounter = async () => {
+    if (!aztecWallet || !address) {
       showError('Please connect a wallet first.');
+      return;
+    }
+
+    try {
+      // Hook now handles artifact compatibility internally
+      await deployCounter(
+        CounterContractArtifact as any,
+        [0, address],
+        {
+          onSuccess: (deployedAddress) => {
+            showSuccess(`Counter deployed at ${deployedAddress.toString()}`);
+          },
+          onError: (error) => {
+            showError(`Counter deployment failed: ${error.message}`);
+          },
+        },
+      );
+    } catch (error) {
+      console.error('Counter deployment failed:', error);
+      if (error instanceof Error) {
+        showError(`Counter deployment failed: ${error.message}`);
+      }
     }
   };
 
   /**
    * Mints tokens to the connected account using the deployed Token contract.
    */
-  const mintTokens = async () => {
-    if (wallet && tokenAddress) {
-      setIsMinting(true);
-      try {
-        const tokenContract = await Contract.at(tokenAddress, TokenContractArtifact, wallet);
-        const interaction = tokenContract.methods.mint_to_public(account, 10000000000000000000000n);
-        const sentTx = await wallet.wmExecuteTx(interaction);
-        const receipt = await sentTx.wait();
-        if (receipt.status !== TxStatus.SUCCESS) {
-          showError(`Minting failed: ${receipt.error}`);
-          throw new Error(`Minting failed: ${receipt.error}`);
-        }
-        showSuccess('Tokens minted successfully');
-      } catch (error: any) {
-        console.error('Mint transaction failed:', error);
-        showError(`Transaction failed: ${error.message}`);
-      } finally {
-        setIsMinting(false);
-      }
-    } else {
+  const handleMintTokens = async () => {
+    if (!aztecWallet || !tokenContract || !address) {
       showError('Please deploy a token contract first.');
+      return;
+    }
+
+    setIsExecutingTx(true);
+    try {
+      // No type casting needed - execute handles wallet interaction
+      showInfo('Minting tokens, please wait for confirmation...');
+      const receipt = await executeTokenTx(
+        tokenContract.methods.mint_to_public(address, 10000000000000000000000n),
+      );
+      console.log('Mint receipt:', receipt);
+      showSuccess('Tokens minted successfully! You can now check your balance.');
+    } catch (error) {
+      console.error('Mint transaction failed:', error);
+      if (error instanceof Error) {
+        showError(`Transaction failed: ${error.message}`);
+      }
+    } finally {
+      setIsExecutingTx(false);
     }
   };
 
   /**
    * Transfers tokens from the connected account to a test account.
    */
-  const transferTokens = async () => {
-    if (wallet && tokenAddress) {
-      setIsTransferring(true);
-      try {
-        const tokenContract = await Contract.at(tokenAddress, TokenContractArtifact, wallet);
-        const to = await getInitialTestAccounts().then(accounts => accounts[1].address);
-        const interaction = tokenContract.methods.transfer_in_public(account, to.toString(), 100000n, 0n);
-        const sentTx = await wallet.wmExecuteTx(interaction);
-        const receipt = await sentTx.wait();
-        if (receipt.status != TxStatus.SUCCESS) {
-          throw new Error(`Transfer failed: ${receipt.error}`);
-        }
-        showSuccess(`Transferred tokens to ${to.toString()}`);
-      } catch (error: any) {
-        showError(`Transaction failed: ${error.message}`);
-      } finally {
-        setIsTransferring(false);
-      }
-    } else {
+  const handleTransferTokens = async () => {
+    if (!aztecWallet || !tokenContract || !address) {
       showError('Please deploy a token contract first.');
+      return;
+    }
+
+    setIsExecutingTx(true);
+    try {
+      const to = await getInitialTestAccounts().then((accounts) => accounts[1].address);
+      // Clean interaction without type casting
+      await executeTokenTx(
+        tokenContract.methods.transfer_in_public(address, to.toString(), 100000n, 0n),
+      );
+      showSuccess('Transferred tokens to test account');
+    } catch (error) {
+      if (error instanceof Error) {
+        showError(`Transaction failed: ${error.message}`);
+      }
+    } finally {
+      setIsExecutingTx(false);
     }
   };
 
   /**
    * Checks and displays the token balance of the connected account.
    */
-  const checkTokenBalance = async () => {
-    if (wallet && tokenAddress) {
-      setIsCheckingBalance(true);
-      try {
-        const tokenContract = await Contract.at(tokenAddress, TokenContractArtifact, wallet);
-        // TODO(twt): Switch to using `wallet.wmSimulateTx` once it returns a higher-level result
-        const balance = await tokenContract.methods.balance_of_public(account).simulate({ from: wallet.getAddress() });
-        setTokenBalance(balance.toString());
-        showInfo(`Token balance: ${balance.toString()}`);
-      } catch (error: any) {
-        showError(`Simulation failed: ${error.message}`);
-      } finally {
-        setIsCheckingBalance(false);
-      }
-    } else {
+  const handleGetTokenBalance = async () => {
+    if (!aztecWallet || !tokenContract || !address) {
       showError('Please deploy a token contract first.');
+      return;
+    }
+
+    try {
+      showInfo('Checking token balance...');
+
+      // Try to get the balance using simulation
+      console.log('[DApp] Checking balance for address:', address.toString());
+      const balanceMethod = tokenContract.methods.balance_of_public(address);
+      console.log('[DApp] Balance method:', balanceMethod);
+
+      const balance = await simulateTokenTx(balanceMethod);
+
+      const balanceStr = String(balance);
+      setTokenBalance(balanceStr);
+      showInfo(`Token balance: ${balanceStr}`);
+    } catch (error) {
+      console.error('[DApp] Balance check failed:', error);
+
+      // If simulation fails, it might be because the storage hasn't been initialized
+      // or the transaction hasn't been confirmed yet
+      if (error instanceof Error && error.message.includes('Assertion failed')) {
+        showInfo('Balance check failed. The transaction might still be confirming or the balance is 0.');
+        setTokenBalance('0');
+      } else {
+        showError(`Failed to check balance: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
   };
 
   /**
    * Increments the value in the deployed Counter contract.
    */
-  const incrementCounter = async () => {
-    if (wallet && counterAddress) {
-      setIsIncrementing(true);
-      try {
-        const counterContract = await Contract.at(counterAddress, CounterContractArtifact, wallet);
-        const tx = await counterContract.methods.increment(account, account).send({ from: wallet.getAddress() });
-        await tx.wait();
-        showSuccess('Counter incremented');
-      } catch (error: any) {
-        showError(`Transaction failed: ${error.message}`);
-      } finally {
-        setIsIncrementing(false);
-      }
-    } else {
+  const handleIncrementCounter = async () => {
+    if (!aztecWallet || !counterContract || !address) {
       showError('Please deploy a counter contract first.');
+      return;
+    }
+
+    setIsExecutingTx(true);
+    try {
+      // Clean execution without type casting
+      await executeCounterTx(
+        counterContract.methods.increment(address, address),
+      );
+      showSuccess('Counter incremented');
+    } catch (error) {
+      if (error instanceof Error) {
+        showError(`Transaction failed: ${error.message}`);
+      }
+    } finally {
+      setIsExecutingTx(false);
     }
   };
 
   /**
-   * Increments the Counter contract value twice in two separate transactions.
+   * Increments the Counter contract value twice in a batch transaction.
    */
-  const incrementCounterTwice = async () => {
-    if (wallet && counterAddress) {
-      setIsIncrementingTwice(true);
-      try {
-        const counterContract = await Contract.at(counterAddress, CounterContractArtifact, wallet);
-        // Execute two increments in sequence
-        const tx1 = await counterContract.methods.increment(account, account).send({ from: wallet.getAddress() });
-        await tx1.wait();
-        const tx2 = await counterContract.methods.increment(account, account).send({ from: wallet.getAddress() });
-        await tx2.wait();
-        showSuccess('Counter incremented twice');
-      } catch (error: any) {
-        showError(`Transaction failed: ${error.message}`);
-      } finally {
-        setIsIncrementingTwice(false);
-      }
-    } else {
+  const handleIncrementCounterTwice = async () => {
+    if (!aztecWallet || !counterContract || !address) {
       showError('Please deploy a counter contract first.');
+      return;
     }
-  }
+
+    try {
+      // Use cached contract instance - no need to recreate
+      const interactions = [
+        counterContract.methods.increment(address, address),
+        counterContract.methods.increment(address, address),
+      ];
+
+      // Execute batch
+      await executeBatch(interactions as any);
+      showSuccess('Counter incremented twice in batch');
+    } catch (error) {
+      if (error instanceof Error) {
+        showError(`Batch transaction failed: ${error.message}`);
+      }
+    }
+  };
 
   /**
    * Retrieves and displays the current value from the Counter contract.
    */
-  const getCounter = async () => {
-    if (wallet && counterAddress) {
-      setIsGettingCounter(true);
-      try {
-        const counterContract = await Contract.at(counterAddress, CounterContractArtifact, wallet);
-        const value = await counterContract.methods.get_counter(account).simulate({ from: wallet.getAddress() });
-        setCounterValue(value.toString());
-        showInfo(`Counter value: ${value.toString()}`);
-      } catch (error: any) {
-        showError(`Simulation failed: ${error.message}`);
-      } finally {
-        setIsGettingCounter(false);
-      }
-    } else {
+  const handleGetCounter = async () => {
+    if (!aztecWallet || !counterContract || !address) {
       showError('Please deploy a counter contract first.');
+      return;
+    }
+
+    try {
+      // Clean simulation with the hook
+      const value = await simulateCounterTx(
+        counterContract.methods.get_counter(address),
+      );
+      const valueStr = String(value);
+      setCounterValue(valueStr);
+      showInfo(`Counter value: ${valueStr}`);
+    } catch (error) {
+      if (error instanceof Error) {
+        showError(`Simulation failed: ${error.message}`);
+      }
     }
   };
 
@@ -399,16 +329,32 @@ const DApp: React.FC = () => {
       <AztecWalletReady
         fallback={<p>Please connect your Aztec wallet to interact with contracts</p>}
         connectingFallback={<p>🔄 Initializing Aztec wallet...</p>}
-        errorFallback={(error: any) => <p style={{ color: 'red' }}>Error: {error.message}</p>}
+        errorFallback={(error: Error) => <p style={{ color: 'red' }}>Error: {error.message}</p>}
       >
         <div>
-          {/* Show proving progress when transaction is in progress */}
-          {txStatus === 'proving' && (
+          {/* Show loading states for contracts */}
+          {(isTokenContractLoading || isCounterContractLoading) && (
             <div
-              style={{ marginBottom: '20px', padding: '10px', background: '#f0f0f0', borderRadius: '5px' }}
+              style={{ marginBottom: '20px', padding: '10px', background: '#fffbf0', borderRadius: '5px' }}
             >
-              <p>🔐 Generating zero-knowledge proof...</p>
-              <progress value={provingProgress} max={100} style={{ width: '100%' }} />
+              <p>⏳ Loading contract instances...</p>
+            </div>
+          )}
+
+          {/* Show error states for contracts */}
+          {tokenContractError && (
+            <div
+              style={{ marginBottom: '20px', padding: '10px', background: '#ffebee', borderRadius: '5px' }}
+            >
+              <p style={{ color: '#c62828' }}>❌ Token contract error: {tokenContractError.message}</p>
+            </div>
+          )}
+
+          {counterContractError && (
+            <div
+              style={{ marginBottom: '20px', padding: '10px', background: '#ffebee', borderRadius: '5px' }}
+            >
+              <p style={{ color: '#c62828' }}>❌ Counter contract error: {counterContractError.message}</p>
             </div>
           )}
 
@@ -437,31 +383,31 @@ const DApp: React.FC = () => {
               <>
                 <p>Contract Address: {tokenAddress.toString()}</p>
 
-
                 <div style={{ marginTop: '10px' }}>
                   <button
                     type="button"
                     onClick={handleMintTokens}
-                    disabled={txStatus !== 'idle' && txStatus !== 'success' && txStatus !== 'error'}
+                    disabled={isExecutingTx || isTokenContractLoading}
                   >
-                    Mint Tokens
+                    {isExecutingTx ? '⏳ Processing...' : 'Mint Tokens'}
                   </button>
                   <button
                     type="button"
                     onClick={handleTransferTokens}
                     style={{ marginLeft: '5px' }}
-                    disabled={txStatus !== 'idle' && txStatus !== 'success' && txStatus !== 'error'}
+                    disabled={isExecutingTx || isTokenContractLoading}
                   >
-                    Transfer Tokens
+                    {isExecutingTx ? '⏳ Processing...' : 'Transfer Tokens'}
                   </button>
                   <button
                     type="button"
                     onClick={handleGetTokenBalance}
                     style={{ marginLeft: '5px' }}
-                    disabled={tokenContract.isLoading}
+                    disabled={isExecutingTx || isTokenContractLoading}
                   >
                     Get Token Balance
                   </button>
+                  {tokenBalance && <p>Balance: {tokenBalance}</p>}
                 </div>
               </>
             )}
@@ -489,9 +435,9 @@ const DApp: React.FC = () => {
                       borderRadius: '4px',
                       cursor: 'pointer'
                     }}
-                    disabled={txStatus !== 'idle' && txStatus !== 'success' && txStatus !== 'error' || isBatchExecuting}
+                    disabled={isExecutingTx || isBatchExecuting || isCounterContractLoading}
                   >
-                    Increment Counter
+                    {isExecutingTx ? '⏳ Processing...' : 'Increment Counter'}
                   </button>
                   <button
                     type="button"
@@ -503,9 +449,9 @@ const DApp: React.FC = () => {
                       borderRadius: '4px',
                       cursor: 'pointer'
                     }}
-                    disabled={txStatus !== 'idle' && txStatus !== 'success' && txStatus !== 'error' || isBatchExecuting}
+                    disabled={isExecutingTx || isBatchExecuting || isCounterContractLoading}
                   >
-                    Increment Twice
+                    {isBatchExecuting ? '⚡ Batch Processing...' : 'Increment Twice'}
                   </button>
                   <button
                     type="button"
@@ -516,15 +462,15 @@ const DApp: React.FC = () => {
                       borderRadius: '4px',
                       cursor: 'pointer'
                     }}
-                    disabled={counterContract.isLoading}
+                    disabled={isExecutingTx || isCounterContractLoading}
                   >
                     Get Counter Value
                   </button>
+                  {counterValue && <p>Counter: {counterValue}</p>}
                 </div>
               </>
             )}
           </div>
-
         </div>
       </AztecWalletReady>
     </div>

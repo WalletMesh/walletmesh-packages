@@ -61,13 +61,21 @@ function TokenDApp() {
     if (!contract || !aztecWallet || !address) return;
 
     try {
-      // Call view function through wallet
-      const result = await aztecWallet.wmSimulateTx(
-        (contract as unknown as { methods: { balance_of: (addr: string) => unknown } }).methods.balance_of(
-          address,
-        ),
+      // Call view function through wallet using standard flow
+      const interaction = (contract as unknown as { methods: { balance_of: (addr: string) => { request(): Promise<unknown> } } }).methods.balance_of(
+        address,
       );
-      setBalance(result.toString());
+
+      // Extract the transaction request and simulate it
+      const txRequest = await interaction.request();
+      const result = await aztecWallet.simulateTx(
+        txRequest as Parameters<typeof aztecWallet.simulateTx>[0],
+        true, // simulatePublic
+      );
+
+      // Extract return values from simulation result
+      const balance = (result as { privateExecutionResult?: { returnValues?: unknown } }).privateExecutionResult?.returnValues || result;
+      setBalance(balance?.toString() || '');
     } catch (err) {
       console.error('Failed to check balance:', err);
       alert('Failed to check balance');
@@ -81,15 +89,17 @@ function TokenDApp() {
     try {
       // Create the contract interaction
       const interaction = (
-        contract as unknown as { methods: { transfer: (to: string, amt: bigint) => unknown } }
+        contract as unknown as { methods: { transfer: (to: string, amt: bigint) => { request(): Promise<unknown> } }
       ).methods.transfer(recipient, BigInt(amount));
 
-      // Execute through wallet
-      const sentTx = await aztecWallet.wmExecuteTx(interaction);
-      console.log('Transaction sent:', sentTx);
+      // Execute through wallet using standard flow
+      const txRequest = await interaction.request();
+      const provenTx = await aztecWallet.proveTx(txRequest as Parameters<typeof aztecWallet.proveTx>[0]);
+      const txHash = await aztecWallet.sendTx(provenTx);
+      console.log('Transaction sent:', txHash);
 
       // Wait for confirmation
-      const receipt = await sentTx.wait();
+      const receipt = await aztecWallet.getTxReceipt(txHash);
       console.log('Transaction confirmed:', receipt);
 
       alert('Transfer successful!');

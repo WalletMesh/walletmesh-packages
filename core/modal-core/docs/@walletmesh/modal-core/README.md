@@ -126,7 +126,6 @@ try {
 - [TransactionService](classes/TransactionService.md)
 - [UIService](classes/UIService.md)
 - [WalletActionManager](classes/WalletActionManager.md)
-- [WalletMeshClient](classes/WalletMeshClient.md)
 - [WalletMeshDebugger](classes/WalletMeshDebugger.md)
 - [WalletMetadataManager](classes/WalletMetadataManager.md)
 - [WalletPreferenceService](classes/WalletPreferenceService.md)
@@ -152,12 +151,12 @@ try {
 ### Core
 
 - [DiscoveryInitiator](interfaces/DiscoveryInitiator.md)
+- [DiscoveryResponder](interfaces/DiscoveryResponder.md)
 
 ### Discovery
 
 - [CapabilityPreferences](interfaces/CapabilityPreferences.md)
 - [CapabilityRequirements](interfaces/CapabilityRequirements.md)
-- [DiscoveryResponder](interfaces/DiscoveryResponder.md)
 - [QualifiedWallet](interfaces/QualifiedWallet.md)
 - [ResponderFeature](interfaces/ResponderFeature.md)
 
@@ -213,7 +212,6 @@ try {
 - [ChainValidationEventData](interfaces/ChainValidationEventData.md)
 - [ChainValidationOptions](interfaces/ChainValidationOptions.md)
 - [ChainValidationResult](interfaces/ChainValidationResult.md)
-- [ClientDiscoveryEvent](interfaces/ClientDiscoveryEvent.md)
 - [ConnectArgs](interfaces/ConnectArgs.md)
 - [ConnectButtonConnectionInfo](interfaces/ConnectButtonConnectionInfo.md)
 - [ConnectButtonContent](interfaces/ConnectButtonContent.md)
@@ -234,7 +232,6 @@ try {
 - [ConnectionServiceDependencies](interfaces/ConnectionServiceDependencies.md)
 - [ConnectionServiceResult](interfaces/ConnectionServiceResult.md)
 - [ConnectionState](interfaces/ConnectionState.md)
-- [ConnectionStateChangeEvent](interfaces/ConnectionStateChangeEvent.md)
 - [ConnectionValidation](interfaces/ConnectionValidation.md)
 - [ConnectOptions](interfaces/ConnectOptions.md)
 - [CoreWalletMeshConfig](interfaces/CoreWalletMeshConfig.md)
@@ -261,6 +258,7 @@ try {
 - [DiscoveryConnectionManager](interfaces/DiscoveryConnectionManager.md)
 - [DiscoveryConnectionState](interfaces/DiscoveryConnectionState.md)
 - [DiscoveryConnectionStateChangeEvent](interfaces/DiscoveryConnectionStateChangeEvent.md)
+- [DiscoveryRequestOptions](interfaces/DiscoveryRequestOptions.md)
 - [DiscoveryResult](interfaces/DiscoveryResult.md)
 - [EIP1193Provider](interfaces/EIP1193Provider.md)
 - [EIP6963ProviderDetail](interfaces/EIP6963ProviderDetail.md)
@@ -419,14 +417,13 @@ try {
 - [WalletConfig](interfaces/WalletConfig.md)
 - [WalletConnection](interfaces/WalletConnection.md)
 - [WalletConnectionState](interfaces/WalletConnectionState.md)
-- [WalletConnectOptions](interfaces/WalletConnectOptions.md)
 - [WalletDiscoveredEvent](interfaces/WalletDiscoveredEvent.md)
 - [WalletDisplayData](interfaces/WalletDisplayData.md)
 - [WalletEventMap](interfaces/WalletEventMap.md)
 - [WalletFilterCriteria](interfaces/WalletFilterCriteria.md)
 - [WalletHistoryEntry](interfaces/WalletHistoryEntry.md)
 - [WalletInfo](interfaces/WalletInfo.md)
-- [WalletMeshClientConfig](interfaces/WalletMeshClientConfig.md)
+- [WalletMeshClient](interfaces/WalletMeshClient.md)
 - [WalletMeshConfig](interfaces/WalletMeshConfig.md)
 - [WalletMeshState](interfaces/WalletMeshState.md)
 - [WalletMethodMap](interfaces/WalletMethodMap.md)
@@ -529,6 +526,7 @@ try {
 - [WalletAdapterClass](type-aliases/WalletAdapterClass.md)
 - [WalletAdapterConstructor](type-aliases/WalletAdapterConstructor.md)
 - [WalletFeature](type-aliases/WalletFeature.md)
+- [WalletMeshClientConfig](type-aliases/WalletMeshClientConfig.md)
 - [WalletSortOption](type-aliases/WalletSortOption.md)
 
 ### Types

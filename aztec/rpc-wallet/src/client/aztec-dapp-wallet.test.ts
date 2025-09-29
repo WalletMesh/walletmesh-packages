@@ -117,8 +117,8 @@ describe('AztecDappWallet', () => {
       await wallet.initialize();
 
       expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getCompleteAddress' }, 10000);
-      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getChainId' }, 5000);
-      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getVersion' }, 5000);
+      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getChainId' }, 10000);
+      expect(provider.call).toHaveBeenCalledWith(testChainId, { method: 'aztec_getVersion' }, 10000);
     });
 
     it('should handle initialization errors', async () => {
@@ -437,7 +437,7 @@ describe('AztecDappWallet', () => {
         {
           method: 'aztec_getChainId',
         },
-        5000,
+        10000,
       );
       expect(result).toEqual(mockChainIdFr);
     });
@@ -459,7 +459,7 @@ describe('AztecDappWallet', () => {
         {
           method: 'aztec_getVersion',
         },
-        5000,
+        10000,
       );
       expect(result).toEqual(mockVersionFr);
     });

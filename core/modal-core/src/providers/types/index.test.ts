@@ -118,8 +118,9 @@ describe('Provider Types Index Module', () => {
       const mockAztecProvider = {
         // Required Aztec wallet methods that isAztecProvider checks for
         deployContract: () => Promise.resolve(),
-        wmExecuteTx: () => Promise.resolve(),
-        wmSimulateTx: () => Promise.resolve(),
+        proveTx: () => Promise.resolve(),
+        sendTx: () => Promise.resolve(),
+        simulateTx: () => Promise.resolve(),
         getTxReceipt: () => Promise.resolve(),
         getAddress: () => Promise.resolve(),
         getCompleteAddress: () => Promise.resolve(),

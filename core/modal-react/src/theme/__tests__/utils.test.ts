@@ -341,7 +341,7 @@ describe('Theme Utils', () => {
       const callback = vi.fn();
       onSystemThemeChange(callback);
 
-      const eventHandler = addEventListener.mock.calls[0][1];
+      const eventHandler = addEventListener.mock.calls[0]?.[1];
       eventHandler({ matches: true });
       expect(callback).toHaveBeenCalledWith('dark');
 
