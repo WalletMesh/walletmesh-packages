@@ -86,7 +86,7 @@ export interface ConnectionMetrics {
 export class ConnectionStateMachine {
   private state = ConnectionState.Disconnected;
   private sessionId: string | undefined;
-  // @ts-ignore - stored for future use
+  // @ts-expect-error - stored for future use
   private remoteOrigin: string | undefined;
   private sequenceNumber = 0;
   private metrics: ConnectionMetrics = {

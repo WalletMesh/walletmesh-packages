@@ -491,7 +491,7 @@ describe('PopupWindowTransport', () => {
 
         // Mock the AbstractTransport destroy method
         mockSuperDestroy = vi.fn().mockResolvedValue(undefined);
-        // @ts-ignore - Mock the super.destroy call
+        // @ts-expect-error - Mock the super.destroy call
         vi.spyOn(Object.getPrototypeOf(PopupWindowTransport.prototype), 'destroy').mockImplementation(
           mockSuperDestroy,
         );

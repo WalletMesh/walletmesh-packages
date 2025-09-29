@@ -382,7 +382,7 @@ describe('Modal Controller Error Handling Integration', () => {
           .mockRejectedValue(ErrorFactory.renderFailed('View transition failed', 'ViewSystem')),
       };
 
-      // @ts-ignore - Access private property for testing
+      // @ts-expect-error - Access private property for testing
       modalController['viewSystem'] = viewSystemMock;
 
       // Trigger an operation that changes view internally
@@ -482,7 +482,7 @@ describe('Modal Controller Error Handling Integration', () => {
       };
 
       // Set the error on the modal controller
-      // @ts-ignore - Access private property for testing
+      // @ts-expect-error - Access private property for testing
       modalController['stateManager'].setError(testError);
 
       // Verify error state
