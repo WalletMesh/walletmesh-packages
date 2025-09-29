@@ -83,10 +83,13 @@ export interface UseAztecBatchReturn {
  * ```tsx
  * import { useAztecBatch, useAztecContract } from '@walletmesh/modal-react';
  *
- * function BatchTransfer({ tokenContract }) {
+ * function BatchTransfer({ tokenAddress, TokenArtifact }) {
  *   const { executeBatch, transactionStatuses, progress } = useAztecBatch();
+ *   const { contract: tokenContract } = useAztecContract(tokenAddress, TokenArtifact);
  *
  *   const handleBatchTransfer = async () => {
+ *     if (!tokenContract) return;
+ *
  *     const interactions = [
  *       tokenContract.methods.transfer(address1, amount1),
  *       tokenContract.methods.transfer(address2, amount2),
@@ -103,7 +106,7 @@ export interface UseAztecBatchReturn {
  *
  *   return (
  *     <div>
- *       <button onClick={handleBatchTransfer}>
+ *       <button onClick={handleBatchTransfer} disabled={!tokenContract}>
  *         Send Batch Transfers
  *       </button>
  *
@@ -130,7 +133,6 @@ export interface UseAztecBatchReturn {
  * // Complex batch with different contract interactions
  * function ComplexBatch() {
  *   const { executeBatch, completedTransactions, failedTransactions } = useAztecBatch();
- *   const { aztecWallet } = useAztecWallet();
  *
  *   const { contract: token1 } = useAztecContract(token1Address, TokenArtifact);
  *   const { contract: token2 } = useAztecContract(token2Address, TokenArtifact);
@@ -222,7 +224,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
               return updated;
             });
 
-            // Execute the transaction
+            // Execute the transaction using native Aztec.js
             if (!aztecWallet) {
               throw ErrorFactory.connectionFailed('Wallet disconnected during batch execution');
             }
@@ -231,14 +233,10 @@ export function useAztecBatch(): UseAztecBatchReturn {
               throw ErrorFactory.notFound(`No interaction found at index ${i}`);
             }
 
-            // Execute transaction using native Aztec flow
-            const contractInteraction = interaction as ContractFunctionInteraction & {
-              request(): Promise<unknown>;
-            };
-            const txRequest = await contractInteraction.request();
-            const provenTx = await aztecWallet.proveTx(txRequest);
-            const txHash = await aztecWallet.sendTx(provenTx);
-            const hash = txHash as unknown as string;
+            // Use native Aztec.js transaction flow
+            const sentTx = await interaction.send();
+            const hash = sentTx.txHash.toString();
+
             setTransactionStatuses((prev) => {
               const updated = [...prev];
               const current = updated[i];
@@ -255,11 +253,8 @@ export function useAztecBatch(): UseAztecBatchReturn {
             });
 
             // Wait for confirmation
-            const receipt = await aztecWallet.getTxReceipt(txHash);
-            if (!receipt) {
-              throw new Error('Transaction receipt not found');
-            }
-            receipts.push(receipt);
+            const receipt = await sentTx.wait();
+            receipts.push(receipt as TxReceipt);
 
             // Update to success
             setTransactionStatuses((prev) => {
@@ -270,7 +265,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
                   index: current.index,
                   status: 'success',
                   ...(current.hash !== undefined && { hash: current.hash }),
-                  receipt,
+                  receipt: receipt as TxReceipt,
                   ...(current.error !== undefined && { error: current.error }),
                 };
               }

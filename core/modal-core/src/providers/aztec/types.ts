@@ -83,13 +83,23 @@ export interface TxReceipt {
 /**
  * Contract function interaction
  *
+ * Represents a prepared contract method call that can be sent as a transaction
+ * or simulated. This is the type returned by contract.methods.methodName(...).
+ *
  * @public
  */
 export interface ContractFunctionInteraction {
-  /** Create the request object */
+  /** Create the transaction request object */
   request(): unknown;
-  /** Simulate the interaction */
+  /** Simulate the interaction to see what would happen */
   simulate(): Promise<unknown>;
+  /** Send the transaction to the network */
+  send(): Promise<{
+    /** Transaction hash */
+    txHash: { toString(): string };
+    /** Wait for transaction confirmation */
+    wait(): Promise<unknown>;
+  }>;
 }
 
 /**

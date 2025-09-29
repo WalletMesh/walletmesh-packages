@@ -51,9 +51,9 @@ export interface TransactionResult {
  * @public
  */
 export interface UseAztecTransactionReturn {
-  /** Execute a transaction with automatic handling */
+  /** Execute a transaction with automatic handling. Pass a ContractFunctionInteraction from contract.methods.methodName(...) */
   execute: (
-    transactionBuilder: (wallet: unknown) => Promise<unknown>,
+    interaction: ContractFunctionInteraction,
     options?: TransactionOptions,
   ) => Promise<TransactionResult>;
   /** Whether a transaction is currently executing */
@@ -91,16 +91,17 @@ export interface UseAztecTransactionReturn {
  * @example
  * ```tsx
  * import { useAztecTransaction } from '@walletmesh/modal-react';
+ * import { useAztecContract } from '@walletmesh/modal-react';
  *
- * function TransactionExample() {
+ * function TransactionExample({ tokenAddress, TokenArtifact }) {
  *   const { execute, isExecuting, status, error } = useAztecTransaction();
+ *   const { contract } = useAztecContract(tokenAddress, TokenArtifact);
  *
  *   const handleTransfer = async () => {
+ *     if (!contract) return;
+ *
  *     const result = await execute(
- *       async (wallet) => {
- *         const contract = await Contract.at(address, artifact, wallet);
- *         return contract.methods.transfer(recipient, amount);
- *       },
+ *       contract.methods.transfer(recipient, amount),
  *       {
  *         onSent: (hash) => console.log('Transaction sent:', hash),
  *         onSuccess: (receipt) => console.log('Success:', receipt),
@@ -123,14 +124,15 @@ export interface UseAztecTransactionReturn {
  * @example
  * ```tsx
  * // With proving progress tracking
- * function ContractDeployment() {
+ * function ContractInteraction() {
  *   const { execute, provingProgress, status } = useAztecTransaction();
+ *   const { contract } = useAztecContract(contractAddress, ContractArtifact);
  *
- *   const handleDeploy = async () => {
+ *   const handleMethod = async () => {
+ *     if (!contract) return;
+ *
  *     await execute(
- *       async (wallet) => {
- *         return wallet.deployContract(ContractArtifact, [param1, param2]);
- *       },
+ *       contract.methods.someMethod(param1, param2),
  *       {
  *         onProvingProgress: (progress) => {
  *           console.log(`Proving: ${progress}%`);
@@ -144,7 +146,7 @@ export interface UseAztecTransactionReturn {
  *       {status === 'proving' && (
  *         <progress value={provingProgress} max={100} />
  *       )}
- *       <button onClick={handleDeploy}>Deploy Contract</button>
+ *       <button onClick={handleMethod}>Execute Method</button>
  *     </div>
  *   );
  * }
@@ -169,7 +171,7 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
 
   const execute = useCallback(
     async (
-      transactionBuilder: (wallet: unknown) => Promise<unknown>,
+      interaction: ContractFunctionInteraction,
       options: TransactionOptions = {},
     ): Promise<TransactionResult> => {
       if (!isReady || !aztecWallet) {
@@ -187,60 +189,26 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
       setProvingProgress(0);
 
       try {
-        // Build the transaction/interaction
-        const interaction = await transactionBuilder(aztecWallet);
-
-        // Check if this is a deployment or a regular transaction
-        const isDeployment = interaction && typeof interaction === 'object' && 'deploy' in interaction;
-
         setStatus('proving');
         // Simulate proving progress (real implementation would get this from the wallet)
         const progressInterval = setInterval(() => {
           setProvingProgress((prev) => {
-            if (prev >= 90) {
-              clearInterval(progressInterval);
-              return 90;
+            const newProgress = prev >= 90 ? 90 : prev + 10;
+            if (options.onProvingProgress) {
+              options.onProvingProgress(newProgress);
             }
-            return prev + 10;
+            if (newProgress >= 90) {
+              clearInterval(progressInterval);
+            }
+            return newProgress;
           });
         }, 500);
 
         try {
-          // Execute the transaction
+          // Execute the transaction using native Aztec.js
           setStatus('sending');
-          let sentTx: { txHash?: string; hash?: string; wait: () => Promise<unknown> };
-          let txHash: string;
-
-          if (isDeployment) {
-            // Handle contract deployment
-            const deploymentInteraction = interaction as unknown as { artifact: unknown; args: unknown[] };
-            sentTx = await aztecWallet.deployContract(
-              deploymentInteraction.artifact,
-              deploymentInteraction.args,
-            );
-            txHash = sentTx.txHash || 'deployment';
-          } else {
-            // Handle regular transaction using native Aztec flow
-            const contractInteraction = interaction as ContractFunctionInteraction & {
-              request(): Promise<unknown>;
-            };
-            const txRequest = await contractInteraction.request();
-            const provenTx = await aztecWallet.proveTx(txRequest);
-            const txHashResult = await aztecWallet.sendTx(provenTx);
-            txHash = txHashResult as unknown as string;
-
-            // Create a sentTx-like object for compatibility
-            sentTx = {
-              wait: async () => {
-                const receipt = await aztecWallet.getTxReceipt(txHashResult);
-                if (!receipt) {
-                  throw new Error('Transaction receipt not found');
-                }
-                return receipt;
-              },
-              txHash,
-            } as typeof sentTx;
-          }
+          const sentTx = await interaction.send();
+          const txHash = sentTx.txHash.toString();
 
           if (options.onSent) {
             options.onSent(txHash);

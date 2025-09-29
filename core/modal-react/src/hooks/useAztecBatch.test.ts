@@ -39,6 +39,10 @@ interface MockContractFunctionInteraction {
   args: unknown[];
   request: () => Promise<unknown>;
   simulate: () => Promise<unknown>;
+  send: () => Promise<{
+    txHash: { toString(): string };
+    wait: () => Promise<unknown>;
+  }>;
 }
 
 interface MockSentTx {
@@ -51,6 +55,27 @@ interface MockTxReceipt {
   txHash: string;
   status: string;
   error?: string;
+}
+
+// Helper to create mock interactions with send method
+function createMockInteraction(
+  id: string,
+  method: string,
+  args: unknown[],
+  txHash = '0xmockhash',
+  receipt: MockTxReceipt = { txHash, status: 'success' }
+): MockContractFunctionInteraction {
+  return {
+    id,
+    method,
+    args,
+    request: vi.fn().mockResolvedValue({ type: 'tx-request' }),
+    simulate: vi.fn(),
+    send: vi.fn().mockResolvedValue({
+      txHash: { toString: () => txHash },
+      wait: vi.fn().mockResolvedValue(receipt),
+    }),
+  };
 }
 
 describe('useAztecBatch', () => {
@@ -415,19 +440,20 @@ describe('useAztecBatch', () => {
       status: 'success',
     };
 
-    const mockSentTx: MockSentTx = {
-      hash: '0xabcd1234', // Test hash field instead of txHash
-      wait: vi.fn().mockResolvedValue(mockReceipt),
-    };
-
-    mockWallet.proveTx.mockResolvedValue({ provenTxData: 'proven' });
-    mockWallet.sendTx.mockResolvedValue('0xabcd1234');
-    mockWallet.getTxReceipt.mockResolvedValue(mockReceipt);
-
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
+      {
+        id: 'tx1',
+        method: 'transfer',
+        args: ['0x123', 100],
+        request: vi.fn().mockResolvedValue({ type: 'tx-request' }),
+        simulate: vi.fn(),
+        send: vi.fn().mockResolvedValue({
+          txHash: { toString: () => '0xabcd1234' },
+          wait: vi.fn().mockResolvedValue(mockReceipt),
+        }),
+      },
     ];
 
     await act(async () => {
@@ -448,15 +474,6 @@ describe('useAztecBatch', () => {
       txHash: '0xabcd1234',
       status: 'success',
     };
-
-    // Test with neither txHash nor hash field
-    const mockSentTx: MockSentTx = {
-      wait: vi.fn().mockResolvedValue(mockReceipt),
-    };
-
-    mockWallet.proveTx.mockResolvedValue({ provenTxData: 'proven' });
-    mockWallet.sendTx.mockResolvedValue('0xabcd1234');
-    mockWallet.getTxReceipt.mockResolvedValue(mockReceipt);
 
     const { result } = renderHook(() => useAztecBatch());
 
