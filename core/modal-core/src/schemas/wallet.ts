@@ -4,6 +4,7 @@
 
 import { z } from 'zod';
 import { ChainType } from '../types.js';
+import { transportConfigSchema } from './discovery.js';
 
 /**
  * Supported blockchain types
@@ -69,6 +70,11 @@ export const walletInfoSchema = walletMetadataSchema.extend({
    * Supported blockchain types
    */
   chains: z.array(chainTypeSchema).min(1),
+
+  /**
+   * Transport details used to establish communication
+   */
+  transportConfig: transportConfigSchema.optional(),
 });
 
 /**

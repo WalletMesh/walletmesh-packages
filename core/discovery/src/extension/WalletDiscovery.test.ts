@@ -7,7 +7,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DiscoveryRequestEvent } from '../types/core.js';
 import type { ResponderInfo, TechnologyCapability } from '../types/capabilities.js';
-import { createResponderInfo } from '../responder/factory.js';
+import { createTestResponderInfo } from '../testing/testUtils.js';
 import { createConsoleSpy, setupChromeEnvironment } from '../testing/index.js';
 import { cleanupFakeTimers, setupFakeTimers } from '../testing/timingHelpers.js';
 import { WalletDiscovery } from './WalletDiscovery.js';
@@ -35,14 +35,19 @@ describe('WalletDiscovery', () => {
     // biome-ignore lint/suspicious/noExplicitAny: Mock function setup requires any for test utilities
     (mockChrome.tabs.sendMessage as any) = vi.fn().mockResolvedValue(undefined);
 
-    mockResponderInfo = createResponderInfo.aztec({
-      uuid: 'test-wallet-uuid',
-      rdns: 'com.test.wallet',
-      name: 'Test Aztec Wallet',
-      icon: 'data:image/svg+xml;base64,dGVzdA==',
-      type: 'extension',
-      features: ['private-transactions', 'contract-deployment'],
-    });
+    mockResponderInfo = {
+      ...createTestResponderInfo.aztec({
+        uuid: 'test-wallet-uuid',
+        rdns: 'com.test.wallet',
+        name: 'Test Aztec Wallet',
+        icon: 'data:image/svg+xml;base64,dGVzdA==',
+        type: 'extension',
+      }),
+      features: [
+        { id: 'private-transactions', name: 'Private Transactions' },
+        { id: 'contract-deployment', name: 'Contract Deployment' },
+      ],
+    };
 
     walletDiscovery = new WalletDiscovery({
       responderInfo: mockResponderInfo,
@@ -323,14 +328,18 @@ describe('WalletDiscovery', () => {
     it('should update responder information', async () => {
       await walletDiscovery.enable();
 
-      const updatedInfo = createResponderInfo.aztec({
-        uuid: 'updated-uuid',
-        rdns: 'com.updated.wallet',
-        name: 'Updated Aztec Wallet',
-        icon: 'data:image/svg+xml;base64,dXBkYXRlZA==',
-        type: 'extension',
-        features: ['private-transactions'],
-      });
+      const updatedInfo: ResponderInfo = {
+        ...createTestResponderInfo.aztec({
+          uuid: 'updated-uuid',
+          rdns: 'com.updated.wallet',
+          name: 'Updated Aztec Wallet',
+          icon: 'data:image/svg+xml;base64,dXBkYXRlZA==',
+          type: 'extension',
+        }),
+        features: [
+          { id: 'private-transactions', name: 'Private Transactions' },
+        ],
+      };
 
       // Should not throw error
       walletDiscovery.updateResponderInfo(updatedInfo);

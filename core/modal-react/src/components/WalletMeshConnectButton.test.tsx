@@ -121,7 +121,8 @@ describe('WalletMeshConnectButton', () => {
       );
 
       const button = screen.getByRole('button');
-      expect(button).toHaveStyle('background-color: red');
+      // jsdom normalizes named colors to rgb()
+      expect(button).toHaveStyle('background-color: rgb(255, 0, 0)');
     });
 
     it('should have proper button type', () => {

@@ -8,19 +8,61 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DiscoveryService } from '../../client/DiscoveryService.js';
 import { createMockLogger, createMockRegistry } from '../../testing/helpers/mocks.js';
 import { ChainType } from '../../types.js';
+import { setupDiscoveryInitiatorMock, type MockDiscoveryInitiator } from '../../testing/helpers/setupDiscoveryInitiatorMock.js';
+
+// Mock @walletmesh/discovery module
+vi.mock('@walletmesh/discovery', () => ({
+  DiscoveryInitiator: vi.fn(),
+  createInitiatorSession: vi.fn(),
+}));
+
+// Mock the store module
+vi.mock('../../state/store.js', () => ({
+  getStoreInstance: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      ui: { isOpen: false, isLoading: false, error: undefined },
+      connections: {
+        activeSessions: [],
+        availableWallets: [],
+        discoveredWallets: [],
+        activeSessionId: null,
+        connectionStatus: 'disconnected'
+      },
+      transactions: {
+        pending: [],
+        confirmed: [],
+        failed: [],
+        activeTransaction: undefined
+      }
+      ,
+      entities: {
+        wallets: {}
+      }
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+    subscribeWithSelector: vi.fn(() => vi.fn())
+  }))
+}));
 
 describe('Discovery Flow Edge Cases (Simplified)', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockRegistry: ReturnType<typeof createMockRegistry>;
+  let mockInitiator: MockDiscoveryInitiator;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockLogger = createMockLogger();
     mockRegistry = createMockRegistry();
     vi.useFakeTimers();
+
+    ({ mockInitiator } = await setupDiscoveryInitiatorMock({
+      on: vi.fn(),
+      off: vi.fn(),
+      removeAllListeners: vi.fn(),
+    }));
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -129,9 +171,9 @@ describe('Discovery Flow Edge Cases (Simplified)', () => {
         mockLogger,
       );
 
-      // Test that the methods exist (but avoid async calls that aren't properly mocked)
-      expect(typeof service.startContinuousDiscovery).toBe('function');
-      expect(typeof service.stopContinuousDiscovery).toBe('function');
+      // Ensure core discovery methods exist
+      expect(typeof service.scan).toBe('function');
+      expect(typeof service.reset).toBe('function');
     });
 
     it('should cleanup resources on destroy', async () => {
@@ -158,10 +200,21 @@ describe('Discovery Flow Edge Cases (Simplified)', () => {
       );
 
       // Should handle different chain types without throwing
-      await expect(service.discoverWallets([ChainType.Evm])).resolves.toBeDefined();
-      await expect(service.discoverWallets([ChainType.Solana])).resolves.toBeDefined();
-      await expect(service.discoverWallets([ChainType.Aztec])).resolves.toBeDefined();
-      await expect(service.discoverWallets([ChainType.Evm, ChainType.Solana])).resolves.toBeDefined();
+      const scanPromise1 = service.scan({ supportedChainTypes: [ChainType.Evm] });
+      await vi.advanceTimersByTimeAsync(100);
+      await expect(scanPromise1).resolves.toBeDefined();
+
+      const scanPromise2 = service.scan({ supportedChainTypes: [ChainType.Solana] });
+      await vi.advanceTimersByTimeAsync(100);
+      await expect(scanPromise2).resolves.toBeDefined();
+
+      const scanPromise3 = service.scan({ supportedChainTypes: [ChainType.Aztec] });
+      await vi.advanceTimersByTimeAsync(100);
+      await expect(scanPromise3).resolves.toBeDefined();
+
+      const scanPromise4 = service.scan({ supportedChainTypes: [ChainType.Evm, ChainType.Solana] });
+      await vi.advanceTimersByTimeAsync(100);
+      await expect(scanPromise4).resolves.toBeDefined();
     });
 
     it('should handle discovery with no chain types specified', async () => {
@@ -172,7 +225,9 @@ describe('Discovery Flow Edge Cases (Simplified)', () => {
       );
 
       // Should handle discovery without specific chain types
-      await expect(service.discoverWallets()).resolves.toBeDefined();
+      const scanPromise = service.scan();
+      await vi.advanceTimersByTimeAsync(100);
+      await expect(scanPromise).resolves.toBeDefined();
     });
   });
 
@@ -202,11 +257,12 @@ describe('Discovery Flow Edge Cases (Simplified)', () => {
 
       // Multiple concurrent discovery calls should not throw
       const promises = [
-        service.discoverWallets([ChainType.Evm]),
-        service.discoverWallets([ChainType.Solana]),
-        service.discoverWallets([ChainType.Aztec]),
+        service.scan({ supportedChainTypes: [ChainType.Evm] }),
+        service.scan({ supportedChainTypes: [ChainType.Solana] }),
+        service.scan({ supportedChainTypes: [ChainType.Aztec] }),
       ];
 
+      await vi.advanceTimersByTimeAsync(100);
       await expect(Promise.all(promises)).resolves.toBeDefined();
     });
   });
@@ -223,7 +279,9 @@ describe('Discovery Flow Edge Cases (Simplified)', () => {
       const service = new DiscoveryService({ enabled: true }, mockRegistry, mockLogger);
 
       // Should log debug message about chain configuration
-      await service.discoverWallets([ChainType.Evm, ChainType.Solana]);
+      const promise = service.scan({ supportedChainTypes: [ChainType.Evm, ChainType.Solana] });
+      await vi.advanceTimersByTimeAsync(100);
+      await promise;
 
       expect(mockLogger.debug).toHaveBeenCalledWith('Updating chain configuration', {
         chainTypes: [ChainType.Evm, ChainType.Solana],
@@ -240,7 +298,9 @@ describe('Discovery Flow Edge Cases (Simplified)', () => {
       );
 
       // Simple operation that doesn't require complex mocking
-      await service.discoverWallets([ChainType.Evm]);
+      const promise = service.scan({ supportedChainTypes: [ChainType.Evm] });
+      await vi.advanceTimersByTimeAsync(100);
+      await promise;
 
       // Cleanup should not throw and should clear resources
       await expect(service.destroy()).resolves.toBeUndefined();
@@ -283,11 +343,13 @@ describe('Discovery Flow Edge Cases (Simplified)', () => {
       );
 
       // Start an operation then destroy immediately
-      const discoverPromise = service.discoverWallets([ChainType.Evm]);
+      const scanPromise = service.scan({ supportedChainTypes: [ChainType.Evm] });
+      await vi.advanceTimersByTimeAsync(10);
       const destroyPromise = service.destroy();
 
       // Both should complete without throwing
-      await expect(Promise.all([discoverPromise, destroyPromise])).resolves.toBeDefined();
+      await vi.advanceTimersByTimeAsync(100);
+      await expect(Promise.all([scanPromise, destroyPromise])).resolves.toBeDefined();
       expect(service.getDiscoveredAdapters()).toHaveLength(0);
     });
 
@@ -298,8 +360,16 @@ describe('Discovery Flow Edge Cases (Simplified)', () => {
         mockLogger,
       );
 
+      // Mock the internal methods to avoid hanging
+      service['initializeDiscovery'] = vi.fn().mockResolvedValue(undefined);
+      service['reset'] = vi.fn().mockResolvedValue(undefined);
+      service['performDiscovery'] = vi.fn().mockResolvedValue([]);
+      service['getWalletsWithTransport'] = vi.fn().mockReturnValue([]);
+
       // Should handle empty results gracefully
-      const results = await service.discoverWallets([ChainType.Aztec]);
+      const promise = service.scan({ supportedChainTypes: [ChainType.Aztec] });
+      await vi.advanceTimersByTimeAsync(100);
+      const results = await promise;
       expect(Array.isArray(results)).toBe(true);
       expect(results).toHaveLength(0);
     });

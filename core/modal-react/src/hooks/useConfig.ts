@@ -7,20 +7,125 @@
  * @module hooks/useConfig
  */
 
-import type { ChainType, SupportedChain, WalletInfo } from '@walletmesh/modal-core';
-import { ErrorFactory } from '@walletmesh/modal-core';
+import {
+  ChainType,
+  ErrorFactory,
+  WalletMeshClient,
+} from '@walletmesh/modal-core';
+import type {
+  DiscoveryRequestOptions,
+  SupportedChain,
+  WalletInfo,
+} from '@walletmesh/modal-core';
 import { useCallback, useMemo } from 'react';
 import { useWalletMeshContext } from '../WalletMeshContext.js';
 import { useStore, useStoreActions, useStoreInstance } from './internal/useStore.js';
 
-// Import the client type that createWalletMesh returns (unwrapped from Promise)
-type WalletMeshClient = Awaited<ReturnType<typeof import('@walletmesh/modal-core').createWalletMesh>>;
+const getInvocationCaller = (): string => {
+  const err = new Error();
+  if (!err.stack) {
+    return 'unknown';
+  }
+  const stackLines = err.stack.split('\n').map((line) => line.trim());
+  const callerFrame = stackLines[2];
+  return callerFrame || 'unknown';
+};
+
+function normalizeChainTypeInput(type: ChainType | string): ChainType | null {
+  if (type === ChainType.Evm || type === 'evm') {
+    return ChainType.Evm;
+  }
+  if (type === ChainType.Solana || type === 'solana') {
+    return ChainType.Solana;
+  }
+  if (type === ChainType.Aztec || type === 'aztec') {
+    return ChainType.Aztec;
+  }
+  return null;
+}
+
+function createDiscoveryRequest(
+  options?: RefreshWalletsOptions,
+): DiscoveryRequestOptions | undefined {
+  if (!options) {
+    return undefined;
+  }
+
+  const supportedChainTypes = new Set<ChainType>();
+  const technologies: NonNullable<DiscoveryRequestOptions['technologies']> = [];
+
+  // Add target chain type if specified
+  if (options.targetChainType) {
+    supportedChainTypes.add(options.targetChainType);
+  }
+
+  // Process technology-specific discovery requests
+  if (options.technologies) {
+    for (const technology of options.technologies) {
+      technologies.push(technology);
+      // Normalize and add to supported chain types
+      const normalized = normalizeChainTypeInput(technology.type);
+      if (normalized) {
+        supportedChainTypes.add(normalized);
+      }
+    }
+  }
+
+  // Build discovery request object
+  const discoveryRequest: DiscoveryRequestOptions = {};
+
+  if (supportedChainTypes.size > 0) {
+    discoveryRequest.supportedChainTypes = Array.from(supportedChainTypes);
+  }
+
+  // Add capabilities if specified
+  if (options.capabilities) {
+    const capabilities: DiscoveryRequestOptions['capabilities'] = {};
+
+    if (options.capabilities.chains?.length) {
+      capabilities.chains = options.capabilities.chains;
+    }
+    if (options.capabilities.features?.length) {
+      capabilities.features = options.capabilities.features;
+    }
+    if (options.capabilities.interfaces?.length) {
+      capabilities.interfaces = options.capabilities.interfaces;
+    }
+
+    if (Object.keys(capabilities).length > 0) {
+      discoveryRequest.capabilities = capabilities;
+    }
+  }
+
+  if (technologies.length > 0) {
+    discoveryRequest.technologies = technologies;
+  }
+
+  return Object.keys(discoveryRequest).length > 0 ? discoveryRequest : undefined;
+}
 
 /**
  * Hook return type for configuration and modal control
  *
  * @public
  */
+export interface RefreshWalletsOptions {
+  /** Optional chain type focus for the upcoming discovery */
+  targetChainType?: ChainType;
+  /** Additional capability requirements to merge with provider defaults */
+  capabilities?: {
+    chains?: string[];
+    features?: string[];
+    interfaces?: string[];
+  };
+  /** Technology specific templates for discovery requests */
+  technologies?: Array<{
+    type: ChainType | 'evm' | 'solana' | 'aztec';
+    interfaces?: string[];
+    features?: string[];
+  }>;
+}
+
 export interface UseConfigReturn {
   // Client
   /** WalletMesh client instance */
@@ -52,7 +157,7 @@ export interface UseConfigReturn {
   /** Whether wallet discovery is in progress */
   isDiscovering: boolean;
   /** Refresh available wallets */
-  refreshWallets: () => Promise<void>;
+  refreshWallets: (options?: RefreshWalletsOptions) => Promise<void>;
 
   // Wallet filtering
   /** Current wallet filter function */
@@ -161,11 +266,19 @@ export function useConfig(): UseConfigReturn {
 
   // Subscribe to modal state and wallet filter
   // Note: walletFilter is a function and may not serialize properly with persist middleware
-  const { isOpen, wallets, isDiscovering } = useStore((state) => ({
-    isOpen: state.ui.modalOpen,
-    wallets: Object.values(state.entities?.wallets || {}),
-    isDiscovering: state.ui.loading?.discovery || false,
-  }));
+  const { isOpen, wallets, isDiscovering } = useStore((state) => {
+    const stateData = {
+      isOpen: state.ui.modalOpen,
+      wallets: Object.values(state.entities?.wallets || {}),
+      isDiscovering: state.ui.loading?.discovery || false,
+    };
+    console.log('[useConfig] Modal state update:', {
+      ...stateData,
+      walletIds: stateData.wallets.map(w => w.id),
+      availableWalletIds: state.meta?.availableWalletIds || [],
+    });
+    return stateData;
+  });
 
   // Subscribe to walletFilter separately to handle function storage properly
   const walletFilter = useStore((state) => state.ui.walletFilter || null);
@@ -184,23 +297,70 @@ export function useConfig(): UseConfigReturn {
   );
 
   const close = useCallback(() => {
+    console.log('[useConfig] close() called');
     if (!client) {
       throw ErrorFactory.configurationError(
         'Client not available. Make sure you are using this hook within WalletMeshProvider.',
       );
     }
+    console.log('[useConfig] calling client.closeModal()');
     client.closeModal();
   }, [client]);
 
   // Refresh wallets method
-  const refreshWallets = useCallback(async () => {
-    actions.ui.startDiscovery(store);
-    // In a real implementation, this would trigger actual wallet discovery
-    // For now, we'll just set the scanning state
-    setTimeout(() => {
-      actions.ui.stopDiscovery(store);
-    }, 1000);
-  }, [actions, store]);
+  const refreshWallets = useCallback(
+    async (overrides?: RefreshWalletsOptions) => {
+      const caller = getInvocationCaller();
+      console.debug('[useConfig] refreshWallets invoked', { caller });
+      actions.ui.startDiscovery(store);
+
+      if (!client) {
+        actions.ui.addDiscoveryError(store, 'WalletMesh client unavailable');
+        actions.ui.stopDiscovery(store);
+        throw ErrorFactory.configurationError(
+          'WalletMesh client not available. Make sure WalletMeshProvider has finished initializing.',
+        );
+      }
+
+      try {
+        const discoveryRequest = createDiscoveryRequest(overrides);
+        const discoveryResults = await client.discoverWallets(discoveryRequest);
+
+        // Reset available wallet list before applying new results
+        store.setState((state) => {
+          state.meta.availableWalletIds = [];
+        });
+
+        for (const result of discoveryResults) {
+          if (!result.available) {
+            continue;
+          }
+
+          const adapter = result.adapter;
+          const walletInfo: WalletInfo = {
+            id: adapter.id,
+            name: adapter.metadata.name,
+            chains: adapter.capabilities.chains.map((chain: any) => chain.type),
+            ...(adapter.metadata.icon ? { icon: adapter.metadata.icon } : {}),
+            ...(adapter.metadata.description ? { description: adapter.metadata.description } : {}),
+            ...(result.version ? { version: result.version } : {}),
+            ...(adapter.capabilities.features.size > 0
+              ? { features: Array.from(adapter.capabilities.features) }
+              : {}),
+          };
+
+          actions.connections.addDiscoveredWallet(store, walletInfo);
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Unknown discovery failure';
+        actions.ui.addDiscoveryError(store, message);
+      } finally {
+        actions.ui.stopDiscovery(store);
+      }
+    },
+    [actions, client, config.discovery, store],
+  );
 
   // Extract chains from config - now SupportedChain objects instead of ChainType enums
   const chains: SupportedChain[] = useMemo(() => {

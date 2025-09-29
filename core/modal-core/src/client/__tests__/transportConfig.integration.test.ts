@@ -585,7 +585,7 @@ describe('Transport Config Integration Tests', () => {
   describe('Integration with Transport Discovery Service', () => {
     it('should properly extract and store transport config during discovery', async () => {
       const mockDiscovery = {
-        discover: vi.fn().mockResolvedValue([
+        scan: vi.fn().mockResolvedValue([
           {
             id: 'test-wallet',
             name: 'Test Wallet',
@@ -626,8 +626,8 @@ describe('Transport Config Integration Tests', () => {
       class MockUnifiedDiscoveryService {
         private discoveredResponders = new Map<string, QualifiedResponder>();
 
-        async discover() {
-          const wallets = await mockDiscovery.discover();
+        async scan() {
+          const wallets = await mockDiscovery.scan();
           // Process qualified wallets to store transport configuration
           for (const [walletId, qualifiedWallet] of mockDiscovery.qualifiedWallets) {
             this.discoveredResponders.set(walletId, qualifiedWallet);
@@ -642,7 +642,7 @@ describe('Transport Config Integration Tests', () => {
 
       const service = new MockUnifiedDiscoveryService();
 
-      await service.discover();
+      await service.scan();
 
       const walletsWithTransport = service.getWalletsWithTransport();
       expect(walletsWithTransport).toHaveLength(1);

@@ -699,9 +699,10 @@ export {
  *
  * @public
  */
+// Export the client implementation
+
 export {
-  // Main client implementation
-  WalletMeshClient,
+  // Factory functions
   createWalletMeshClient,
   createWalletMeshClientWithConfig,
   createCompleteWalletSetup,
@@ -710,10 +711,11 @@ export {
   // Client types
   type WalletMeshClientConfig,
   type WalletAdapterClass,
-  type WalletConnectOptions,
+  // type WalletConnectOptions,
   type AvailableWallet,
-  type ConnectionStateChangeEvent,
-  type DiscoveryEvent as ClientDiscoveryEvent,
+  // type ConnectionStateChangeEvent,
+  // type DiscoveryEvent as ClientDiscoveryEvent,
+  type DiscoveryRequestOptions,
   type CreateWalletMeshClientOptions,
   type WalletClientSetup,
   type ClientEventHandler,

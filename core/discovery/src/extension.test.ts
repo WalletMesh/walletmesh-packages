@@ -31,11 +31,11 @@ describe('extension module exports', () => {
   });
 
   it('should export createSecurityPolicy from security module', async () => {
-    const { createSecurityPolicy } = await import('./extension.js');
+    const { createSecurityPolicy, SECURITY_PRESETS } = await import('./extension.js');
     expect(createSecurityPolicy).toBeDefined();
     expect(createSecurityPolicy).toBeTypeOf('function');
-    expect(createSecurityPolicy.strict).toBeTypeOf('function');
-    expect(createSecurityPolicy.development).toBeTypeOf('function');
+    expect(SECURITY_PRESETS.strict.requireHttps).toBe(true);
+    expect(SECURITY_PRESETS.development.allowLocalhost).toBe(true);
   });
 
   it('should export validateOrigin from security module', async () => {
@@ -107,18 +107,20 @@ describe('extension module exports', () => {
   });
 
   it('should allow all exported components to work together', async () => {
-    const { ContentScriptRelay, WalletDiscovery, createSecurityPolicy, validateOrigin } = await import(
+    const { ContentScriptRelay, WalletDiscovery, createSecurityPolicy, validateOrigin, SECURITY_PRESETS } = await import(
       './extension.js'
     );
 
     // Test security policy creation
-    const strictPolicy = createSecurityPolicy.strict();
+    const strictPolicy = createSecurityPolicy(SECURITY_PRESETS.strict);
     expect(strictPolicy).toBeDefined();
     expect(strictPolicy.requireHttps).toBe(true);
+    expect(strictPolicy.certificateValidation).toBe(true);
 
-    const devPolicy = createSecurityPolicy.development();
+    const devPolicy = createSecurityPolicy(SECURITY_PRESETS.development);
     expect(devPolicy).toBeDefined();
     expect(devPolicy.requireHttps).toBe(false);
+    expect(devPolicy.allowLocalhost).toBe(true);
 
     // Test origin validation
     const validResult = validateOrigin('https://example.com', strictPolicy);

@@ -309,9 +309,8 @@ export function createAutoMockedWalletHealthService() {
 export function createAutoMockedDiscoveryService(): MockedObject<DiscoveryService> {
   // Create a manual mock without instantiating the real service to avoid circular dependency
   const mockedService = {
-    start: vi.fn(),
-    stop: vi.fn(),
-    discover: vi.fn(),
+    scan: vi.fn(),
+    reset: vi.fn(),
     getDiscoveredWallets: vi.fn(),
     getAvailableWallets: vi.fn(),
     getDiscoveredWallet: vi.fn(),
@@ -356,9 +355,8 @@ export function createAutoMockedDiscoveryService(): MockedObject<DiscoveryServic
     },
   ];
 
-  mockedService.start.mockResolvedValue(undefined);
-  mockedService.stop.mockResolvedValue(undefined);
-  mockedService.discover.mockResolvedValue(mockDiscoveredWallets);
+  mockedService.scan.mockResolvedValue([]);
+  mockedService.reset.mockResolvedValue(undefined);
   mockedService.getDiscoveredWallets.mockReturnValue(mockDiscoveredWallets);
   mockedService.getAvailableWallets.mockReturnValue(mockDiscoveredWallets);
   mockedService.getDiscoveredWallet.mockImplementation(

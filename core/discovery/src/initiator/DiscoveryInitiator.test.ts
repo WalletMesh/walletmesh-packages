@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { DiscoveryInitiator } from './DiscoveryInitiator.js';
+import { DiscoveryInitiator } from '../initiator.js';
 import { createTestDAppInfo, createTestDiscoveryResponse } from '../testing/testUtils.js';
 import { MockEventTarget } from '../testing/MockEventTarget.js';
 import { setupFakeTimers, cleanupFakeTimers, advanceTimeAndWait } from '../testing/timingHelpers.js';
@@ -15,6 +15,22 @@ import type { CapabilityRequirements } from '../types/capabilities.js';
 import type { DiscoveryInitiatorConfig } from '../types/testing.js';
 import { DISCOVERY_EVENTS, DISCOVERY_PROTOCOL_VERSION } from '../core/constants.js';
 import type { InitiatorStateMachine } from './InitiatorStateMachine.js';
+
+function createInitiatorFromConfig(config: DiscoveryInitiatorConfig): DiscoveryInitiator {
+  const options = {
+    ...(config.timeout !== undefined && { timeout: config.timeout }),
+    ...(config.eventTarget && { eventTarget: config.eventTarget }),
+    ...(config.logger && { logger: config.logger }),
+    ...(config.securityPolicy && { security: config.securityPolicy }),
+  } as const;
+
+  return new DiscoveryInitiator(
+    config.requirements,
+    config.initiatorInfo,
+    options,
+    config.preferences,
+  );
+}
 
 describe('DiscoveryInitiator', () => {
   let listener: DiscoveryInitiator;
@@ -42,7 +58,7 @@ describe('DiscoveryInitiator', () => {
       timeout: 1000,
     };
 
-    listener = new DiscoveryInitiator(defaultConfig);
+    listener = createInitiatorFromConfig(defaultConfig);
   });
 
   afterEach(() => {
@@ -153,7 +169,7 @@ describe('DiscoveryInitiator', () => {
     });
 
     it('should only reset state machine if in DISCOVERING state after discovery', async () => {
-      const listenerWithEventTarget = new DiscoveryInitiator({
+      const listenerWithEventTarget = createInitiatorFromConfig({
         ...defaultConfig,
         eventTarget,
       });
@@ -173,7 +189,7 @@ describe('DiscoveryInitiator', () => {
     });
 
     it('should reset state machine when completing discovery from DISCOVERING state', async () => {
-      const listenerWithEventTarget = new DiscoveryInitiator({
+      const listenerWithEventTarget = createInitiatorFromConfig({
         ...defaultConfig,
         eventTarget,
       });
@@ -246,8 +262,8 @@ describe('DiscoveryInitiator', () => {
         timeout: 1000,
       };
 
-      expect(() => new DiscoveryInitiator(emptyRequirementsConfig)).not.toThrow();
-      const emptyListener = new DiscoveryInitiator(emptyRequirementsConfig);
+      expect(() => createInitiatorFromConfig(emptyRequirementsConfig)).not.toThrow();
+      const emptyListener = createInitiatorFromConfig(emptyRequirementsConfig);
 
       expect(() => emptyListener.startDiscovery()).not.toThrow();
       emptyListener.stopDiscovery();
@@ -264,7 +280,7 @@ describe('DiscoveryInitiator', () => {
         timeout: 1000,
       };
 
-      expect(() => new DiscoveryInitiator(duplicateRequirementsConfig)).not.toThrow();
+      expect(() => createInitiatorFromConfig(duplicateRequirementsConfig)).not.toThrow();
     });
   });
 
@@ -344,7 +360,7 @@ describe('DiscoveryInitiator', () => {
         },
       };
 
-      listener = new DiscoveryInitiator(configWithPolicy);
+      listener = createInitiatorFromConfig(configWithPolicy);
       const warnSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
       const discoveryPromise = listener.startDiscovery();
@@ -377,25 +393,27 @@ describe('DiscoveryInitiator', () => {
       const throwingEventTarget = {
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
-        dispatchEvent: vi.fn().mockImplementation(() => {
-          throw new Error('Event dispatch failed');
+        dispatchEvent: vi.fn().mockImplementation((event: Event) => {
+          if (event.type === DISCOVERY_EVENTS.COMPLETE) {
+            throw new Error('Event dispatch failed');
+          }
+          return true;
         }),
       } as unknown as EventTarget;
 
-      listener = new DiscoveryInitiator({
+      listener = createInitiatorFromConfig({
         ...defaultConfig,
         eventTarget: throwingEventTarget,
       });
 
-      // The error is caught and logged, but discovery continues
-      const discoveryPromise = listener.startDiscovery();
+      const runDiscovery = async () => {
+        const discoveryPromise = listener.startDiscovery().catch((error) => error as Error);
 
-      // Complete the discovery
-      await vi.advanceTimersByTimeAsync(1000);
+        await vi.advanceTimersByTimeAsync(1000);
+        return discoveryPromise;
+      };
 
-      // Should resolve with empty array since no responses
-      const result = await discoveryPromise;
-      expect(result).toEqual([]);
+      await expect(runDiscovery()).resolves.toMatchObject({ message: 'Event dispatch failed' });
     });
 
     it('should handle error during discovery and still manage state correctly', async () => {
@@ -410,7 +428,7 @@ describe('DiscoveryInitiator', () => {
           .mockImplementation(() => true), // Subsequent calls succeed
       } as unknown as EventTarget;
 
-      const listenerWithMockTarget = new DiscoveryInitiator({
+      const listenerWithMockTarget = createInitiatorFromConfig({
         ...defaultConfig,
         eventTarget: mockEventTarget,
       });
@@ -710,7 +728,7 @@ describe('DiscoveryInitiator', () => {
   // ===============================================
   describe('Wallet Selection', () => {
     it('should successfully collect wallet responses during DISCOVERING state', async () => {
-      const listenerWithEventTarget = new DiscoveryInitiator({
+      const listenerWithEventTarget = createInitiatorFromConfig({
         ...defaultConfig,
         eventTarget,
       });
@@ -784,7 +802,7 @@ describe('DiscoveryInitiator', () => {
         },
       };
 
-      const secureListener = new DiscoveryInitiator(securityConfig);
+      const secureListener = createInitiatorFromConfig(securityConfig);
       const discoveryPromise = secureListener.startDiscovery();
       await vi.advanceTimersByTimeAsync(10);
 
@@ -843,7 +861,7 @@ describe('DiscoveryInitiator', () => {
         },
       };
 
-      const secureListener = new DiscoveryInitiator(securityConfig);
+      const secureListener = createInitiatorFromConfig(securityConfig);
       const discoveryPromise = secureListener.startDiscovery();
       await vi.advanceTimersByTimeAsync(10);
 
@@ -913,7 +931,7 @@ describe('DiscoveryInitiator', () => {
       // Remove window to simulate non-browser environment
       (globalThis as unknown as Record<string, unknown>)['window'] = undefined;
 
-      const nonBrowserListener = new DiscoveryInitiator(defaultConfig);
+      const nonBrowserListener = createInitiatorFromConfig(defaultConfig);
 
       // Access private method through type assertion
       const privateListener = nonBrowserListener as unknown as {

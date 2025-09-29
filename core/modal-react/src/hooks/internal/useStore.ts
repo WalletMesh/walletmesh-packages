@@ -25,7 +25,7 @@ import {
   uiActions,
   useStore as useModalCoreStore,
 } from '@walletmesh/modal-core';
-import { useRef, useSyncExternalStore } from 'react';
+import { useMemo, useRef, useSyncExternalStore } from 'react';
 
 // Re-export types and helper functions for convenience
 export type { WalletMeshState };
@@ -159,12 +159,14 @@ export function useStore<T>(selector: (state: WalletMeshState) => T): T {
  * @internal
  */
 export function useStoreActions(): { ui: typeof uiActions; connections: typeof connectionActions } {
-  // Return the imported action objects directly
-  // These actions need to be called with the store as the first parameter
-  return {
-    ui: uiActions,
-    connections: connectionActions,
-  };
+  // Memoize to provide stable action references across renders
+  return useMemo(
+    () => ({
+      ui: uiActions,
+      connections: connectionActions,
+    }),
+    [],
+  );
 }
 
 /**

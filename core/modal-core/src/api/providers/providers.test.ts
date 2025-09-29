@@ -83,11 +83,6 @@ describe('providers API exports', () => {
       'ensureBuiltinProviders',
       'PublicProviderWrapper',
       'WalletProviderFallbackWrapper',
-      'ProviderAdapter',
-      'AztecProviderAdapter',
-      'EIP1193ProviderAdapter',
-      'SolanaProviderAdapter',
-      'DiscoveryTransport',
     ];
 
     for (const exportName of functionalExports) {

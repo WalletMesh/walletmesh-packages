@@ -18,8 +18,8 @@ export function ProviderComparisonDemo() {
   // Demo state
   const [activeChain, setActiveChain] = useState<'evm' | 'solana'>('evm');
   const [comparisonResults, setComparisonResults] = useState<{
-    public: { result: string; error?: string; timestamp: number };
-    wallet: { result: string; error?: string; timestamp: number };
+    public: { result: string; error?: string; timestamp: number } | null;
+    wallet: { result: string; error?: string; timestamp: number } | null;
   } | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
 

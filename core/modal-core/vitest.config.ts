@@ -4,13 +4,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@solana/web3.js':
-        '/home/vscode/walletmesh-packages/core/modal-core/src/internal/testing/mocks/solana-web3.ts',
-      '@walletmesh/jsonrpc': '/home/vscode/walletmesh-packages/core/jsonrpc/src/index.ts',
-      '@walletmesh/discovery': '/home/vscode/walletmesh-packages/core/discovery/src/index.ts',
-      '@walletmesh/discovery/responder': '/home/vscode/walletmesh-packages/core/discovery/src/responder.ts',
-      '@walletmesh/router': '/home/vscode/walletmesh-packages/core/router/src/index.ts',
-      '@walletmesh/aztec-rpc-wallet': '/home/vscode/walletmesh-packages/aztec/rpc-wallet/src/index.ts',
-      '@walletmesh/aztec-helpers': '/home/vscode/walletmesh-packages/aztec/helpers/src/index.ts',
+        '/home/parallels/dev/walletmesh-packages/core/modal-core/src/internal/testing/mocks/solana-web3.ts',
+      '@walletmesh/jsonrpc': '/home/parallels/dev/walletmesh-packages/core/jsonrpc/src/index.ts',
+      '@walletmesh/discovery': '/home/parallels/dev/walletmesh-packages/core/discovery/src/index.ts',
+      '@walletmesh/discovery/responder': '/home/parallels/dev/walletmesh-packages/core/discovery/src/responder.ts',
+      '@walletmesh/router': '/home/parallels/dev/walletmesh-packages/core/router/src/index.ts',
+      '@walletmesh/aztec-rpc-wallet': '/home/parallels/dev/walletmesh-packages/aztec/rpc-wallet/src/index.ts',
+      '@walletmesh/aztec-helpers': '/home/parallels/dev/walletmesh-packages/aztec/helpers/src/index.ts',
     },
   },
   test: {

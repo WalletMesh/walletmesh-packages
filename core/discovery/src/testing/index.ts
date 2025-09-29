@@ -278,6 +278,7 @@ export {
   createTestDAppInfo,
   createTestDiscoveryRequest,
   createTestDiscoveryResponse,
+  createTestDiscoveryInitiator,
   // Export the object-based createTestResponderInfo with methods like .ethereum()
   createTestResponderInfo,
 } from './testUtils.js';

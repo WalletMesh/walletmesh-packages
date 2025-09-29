@@ -38,3 +38,5 @@ export type { SecurityPolicy } from './types/security.js';
 
 // Re-export security utilities commonly used in extensions
 export { createSecurityPolicy, validateOrigin } from './security.js';
+// Re-export security presets for convenience
+export { SECURITY_PRESETS } from './presets/security.js';

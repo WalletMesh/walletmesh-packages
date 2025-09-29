@@ -43,9 +43,19 @@
     "./components/WalletMeshModal.module.css": "./dist/components/WalletMeshModal.module.css",
     "./components/WalletMeshModal.css": "./dist/components/WalletMeshModal.css"
   },
-  "files": ["dist", "testing.ts", "testing.d.ts", "development.ts", "development.d.ts", "README.md"],
+  "files": [
+    "dist",
+    "testing.ts",
+    "testing.d.ts",
+    "development.ts",
+    "development.d.ts",
+    "README.md"
+  ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && pnpm copy-css && pnpm copy-module-css && pnpm fix-css",
+    "build": "tsx scripts/build.ts",
+    "build:ts": "tsc --build tsconfig.build.json --incremental",
+    "build:css": "tsx scripts/build-css.ts",
+    "build:force": "pnpm build:ts && pnpm build:css",
     "copy-css": "mkdir -p dist/components && find src/components -name '*.css' ! -name '*.module.css' -exec cp {} dist/components/ \\;",
     "copy-module-css": "mkdir -p dist/components && find src/components -name '*.module.css' -exec cp {} dist/components/ \\;",
     "fix-css": "touch dist/components/WalletMeshModal.css && cat src/components/WalletMeshModal.module.css > dist/components/WalletMeshModal.css || true",
@@ -82,7 +92,6 @@
     "@vitest/coverage-v8": "1.4.0",
     "dequal": "^2.0.3",
     "get-func-name": "^2.0.2",
-    "happy-dom": "^17.4.6",
     "jsdom": "^26.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

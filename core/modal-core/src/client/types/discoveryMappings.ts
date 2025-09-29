@@ -439,6 +439,8 @@ export function getTransportTypeFromDiscovery(transportType: string): TransportT
       return TransportType.Iframe;
     case 'websocket':
       return TransportType.WebSocket;
+    case 'web':
+      return TransportType.Popup; // map to Popup in minimal wiring
     case 'extension':
       return TransportType.Extension;
     default:
@@ -510,13 +512,17 @@ export function validateWalletTransport(responder: QualifiedResponder): boolean 
     return false;
   }
 
-  switch (transportConfig.type) {
+  switch (transportConfig.type as any) {
     case 'extension':
       return !!transportConfig.extensionId;
     case 'popup':
       return true; // Popup can work with default URL
     case 'websocket':
-      return !!transportConfig.websocketUrl;
+      return !!(transportConfig as any).url || !!(transportConfig as any).websocketUrl;
+    case 'postmessage':
+      return true;
+    case 'iframe':
+      return true;
     case 'injected':
       return true; // Injected wallets don't need transport
     default:
@@ -545,7 +551,8 @@ export function getTransportConfigFromWallet(responder: QualifiedResponder): Rec
     ...transportConfig.adapterConfig,
   };
 
-  switch (transportConfig.type) {
+  // Cast type to any to allow non-standard 'web' during minimal wiring
+  switch ((transportConfig as any).type) {
     case 'extension':
       return {
         ...baseConfig,
@@ -559,8 +566,12 @@ export function getTransportConfigFromWallet(responder: QualifiedResponder): Rec
     case 'websocket':
       return {
         ...baseConfig,
-        url: transportConfig.websocketUrl,
+        url: (transportConfig as any).url ?? (transportConfig as any).websocketUrl,
       };
+    case 'postmessage':
+      return baseConfig;
+    case 'iframe':
+      return baseConfig;
     default:
       return baseConfig;
   }

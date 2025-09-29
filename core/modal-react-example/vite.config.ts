@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 
 // https://vite.dev/config/
 export default defineConfig({
+  cacheDir: './node_modules/.vite',
   plugins: [react()],
   resolve: {
     alias: {
@@ -12,8 +13,6 @@ export default defineConfig({
       util: 'util',
       path: 'path-browserify',
       stream: 'stream-browserify',
-      fs: false,
-      os: false,
     },
   },
   server: {

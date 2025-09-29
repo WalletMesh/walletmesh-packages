@@ -396,8 +396,8 @@ export const mockFactories = {
   /**
    * Create unified store mock implementation
    */
-  createStoreMock: () => ({
-    useStore: {
+  createStoreMock: () => {
+    const mockStore = {
       getState: vi.fn().mockReturnValue({
         ui: { isOpen: false, currentView: 'walletSelection', isLoading: false },
         connections: {
@@ -415,10 +415,17 @@ export const mockFactories = {
       }),
       setState: vi.fn(),
       subscribe: vi.fn().mockReturnValue(() => {}),
-    },
-    getActiveSession: vi.fn().mockReturnValue(null),
-    getSessionsByWallet: vi.fn().mockReturnValue([]),
-  }),
+      subscribeWithSelector: vi.fn().mockReturnValue(() => {}),
+    };
+
+    return {
+      useStore: mockStore,
+      getStoreInstance: vi.fn(() => mockStore),
+      getWalletMeshStore: vi.fn(() => mockStore),
+      getActiveSession: vi.fn().mockReturnValue(null),
+      getSessionsByWallet: vi.fn().mockReturnValue([]),
+    };
+  },
 };
 
 /**

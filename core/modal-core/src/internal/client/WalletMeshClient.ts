@@ -183,7 +183,7 @@ export interface WalletMeshClient {
     walletId?: string,
   ): Promise<{
     provider: unknown;
-    chainType: string;
+    chainType: ChainType;
     chainId: string;
     previousChainId: string;
   }>;
@@ -341,6 +341,29 @@ export interface WalletMeshClient {
    * @returns The wallet adapter instance or null if not found
    */
   getWalletAdapter(walletId: string): WalletAdapter | null;
+
+  /**
+   * Discovers available wallets in the user's environment.
+   *
+   * Detects installed browser extensions, mobile wallets, and other
+   * wallet providers available in the current environment. Can optionally
+   * filter wallets based on chain types and capabilities.
+   *
+   * @param options - Optional discovery request options to filter wallets
+   * @returns Promise resolving to array of discovery results
+   *
+   * @example
+   * ```typescript
+   * // Discover all wallets
+   * const wallets = await client.discoverWallets();
+   *
+   * // Discover wallets with specific capabilities
+   * const evmWallets = await client.discoverWallets({
+   *   supportedChainTypes: [ChainType.Evm]
+   * });
+   * ```
+   */
+  discoverWallets(options?: any): Promise<any[]>;
 }
 
 /**
@@ -507,6 +530,78 @@ export interface WalletMeshConfig {
     /** Aztec interfaces (e.g., ['aztec-wallet-api-v1', 'aztec-connect-v2']) */
     aztec?: string[];
   };
+
+  /**
+   * Discovery configuration for wallet detection.
+   * Configures how the client discovers available wallets.
+   */
+  discovery?: {
+    /** Whether discovery is enabled */
+    enabled?: boolean;
+    /** Discovery timeout in milliseconds */
+    timeout?: number;
+    /** Retry interval for periodic discovery */
+    retryInterval?: number;
+    /** Maximum number of discovery attempts */
+    maxAttempts?: number;
+    /** Technology requirements for discovery */
+    technologies?: Array<{
+      type: string;
+      interfaces?: string[];
+      features?: string[];
+    }>;
+    /** dApp information for wallet discovery */
+    dappInfo?: {
+      name: string;
+      description?: string;
+      url?: string;
+      icon?: string;
+    };
+    /** Capability requirements for wallet matching */
+    capabilities?: {
+      technologies?: Array<{
+        type: string;
+        interfaces?: string[];
+      }>;
+      features?: string[];
+    };
+  };
+
+  /**
+   * Logger configuration for debugging and monitoring.
+   */
+  logger?: {
+    /** Enable debug logging */
+    debug?: boolean;
+    /** Log level */
+    level?: 'debug' | 'info' | 'warn' | 'error' | 'silent';
+    /** Log prefix */
+    prefix?: string;
+  };
+}
+
+// Type alias for backwards compatibility
+export type WalletMeshClientConfig = WalletMeshConfig;
+
+// Export WalletAdapterClass for compatibility
+export type WalletAdapterClass = {
+  new (...args: unknown[]): WalletAdapter;
+  getWalletInfo(): WalletInfo;
+};
+
+// Discovery request options
+export interface DiscoveryRequestOptions {
+  supportedChainTypes?: ChainType[];
+  capabilities?: {
+    chains?: string[];
+    features?: string[];
+    interfaces?: string[];
+  };
+  technologies?: Array<{
+    type: string;
+    interfaces?: string[];
+    features?: string[];
+  }>;
 }
 
 /**
@@ -730,7 +825,7 @@ export interface InternalWalletMeshClient {
     walletId?: string,
   ): Promise<{
     provider: unknown;
-    chainType: string;
+    chainType: ChainType;
     chainId: string;
     previousChainId: string;
   }>;
@@ -764,6 +859,7 @@ export interface InternalWalletMeshClient {
   /**
    * Detect all available wallets in the user's environment.
    *
+   * @param options - Optional discovery request options to filter wallets
    * @returns Promise resolving to array of detected wallets with availability status.
    *
    * @example
@@ -772,7 +868,7 @@ export interface InternalWalletMeshClient {
    * const installed = wallets.filter(w => w.available);
    * ```
    */
-  discoverWallets(): Promise<AvailableWallet[]>;
+  discoverWallets(options?: any): Promise<AvailableWallet[]>;
 
   /**
    * Get a specific wallet adapter by ID.

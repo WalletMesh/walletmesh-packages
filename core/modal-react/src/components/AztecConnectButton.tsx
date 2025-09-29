@@ -16,7 +16,9 @@
  */
 
 import { ChainType } from '@walletmesh/modal-core';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { WalletInfo } from '@walletmesh/modal-core';
+import { useConfig } from '../hooks/useConfig.js';
 import { useAztecWallet } from '../hooks/useAztecWallet.js';
 import styles from './AztecConnectButton.module.css';
 import { WalletMeshConnectButton } from './WalletMeshConnectButton.js';
@@ -84,8 +86,21 @@ export function AztecConnectButton({
   ...restProps
 }: AztecConnectButtonProps) {
   const { isConnected, aztecWallet } = useAztecWallet();
+  const { setWalletFilter, clearWalletFilter } = useConfig();
   // State for proof generation status - will be set when events are supported
   const [isProving] = useState(false);
+
+  const aztecOnlyFilter = useMemo(
+    () => (wallet: WalletInfo) => Array.isArray(wallet.chains) && wallet.chains.includes(ChainType.Aztec),
+    [],
+  );
+
+  useEffect(() => {
+    setWalletFilter(aztecOnlyFilter);
+    return () => {
+      clearWalletFilter();
+    };
+  }, [aztecOnlyFilter, clearWalletFilter, setWalletFilter]);
 
   // Monitor Aztec proof generation events
   useEffect(() => {

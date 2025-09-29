@@ -4,15 +4,24 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { randomUUID } from 'node:crypto';
-import { createResponderDiscoverySetup, createResponderInfo, createDiscoveryResponder } from './factory.js';
-import { DiscoveryResponder } from './DiscoveryResponder.js';
+import { DiscoveryResponder } from '../responder.js';
 import { CapabilityMatcher } from './CapabilityMatcher.js';
 import type { ResponderInfo } from '../types/capabilities.js';
 import type { SecurityPolicy } from '../types/security.js';
 import { createTestResponderInfo, createTestDiscoveryRequest } from '../testing/testUtils.js';
 import { createSecurityPolicy } from '../security.js';
+import { SECURITY_PRESETS } from '../presets/security.js';
 import { setupFakeTimers, cleanupFakeTimers } from '../testing/timingHelpers.js';
+import type { DiscoveryResponderConfig } from '../types/testing.js';
+
+function createAnnouncer(config: DiscoveryResponderConfig): DiscoveryResponder {
+  return new DiscoveryResponder(config.responderInfo, {
+    ...(config.securityPolicy && { security: config.securityPolicy }),
+    ...(config.sessionOptions && { sessionOptions: config.sessionOptions }),
+    ...(config.eventTarget && { eventTarget: config.eventTarget }),
+    ...(config.logger && { logger: config.logger }),
+  });
+}
 
 describe('Responder Module', () => {
   beforeEach(() => {
@@ -24,146 +33,12 @@ describe('Responder Module', () => {
   });
 
   // ===============================================
-  // Factory Functions Tests
-  // ===============================================
-  describe('Factory Functions', () => {
-    describe('DiscoveryResponder constructor', () => {
-      it('should create announcer with minimal config', () => {
-        const responderInfo = createTestResponderInfo.ethereum();
-        const announcer = new DiscoveryResponder({ responderInfo });
-
-        expect(announcer).toBeDefined();
-        expect(announcer.isAnnouncerListening()).toBe(false);
-        announcer.cleanup();
-      });
-
-      it('should create announcer with full config', () => {
-        const responderInfo = createTestResponderInfo.ethereum();
-        const securityPolicy: SecurityPolicy = {
-          requireHttps: true,
-          allowedOrigins: ['https://trusted.com'],
-          rateLimit: {
-            enabled: true,
-            maxRequests: 10,
-            windowMs: 60000,
-          },
-        };
-
-        const announcer = new DiscoveryResponder({ responderInfo, securityPolicy });
-
-        expect(announcer).toBeDefined();
-        announcer.cleanup();
-      });
-
-      it('should handle web wallet configuration', () => {
-        const webResponderInfo = {
-          ...createTestResponderInfo.ethereum(),
-          type: 'web' as const,
-          url: 'https://wallet.example.com',
-        };
-
-        const announcer = new DiscoveryResponder({ responderInfo: webResponderInfo });
-
-        expect(announcer).toBeDefined();
-        announcer.cleanup();
-      });
-    });
-
-    describe('createResponderDiscoverySetup', () => {
-      it('should create complete responder setup', () => {
-        const setup = createResponderDiscoverySetup({
-          responderInfo: createResponderInfo.ethereum({
-            uuid: randomUUID(),
-            rdns: 'com.example.wallet',
-            name: 'Example Wallet',
-            icon: 'data:image/png;base64,test',
-            type: 'extension',
-          }),
-          securityPolicy: createSecurityPolicy({
-            requireHttps: true,
-          }),
-        });
-
-        expect(setup).toBeDefined();
-        expect(setup.discoveryAnnouncer).toBeDefined();
-        expect(setup.capabilityMatcher).toBeDefined();
-
-        setup.stopListening();
-      });
-
-      it('should create setup with default values', () => {
-        const setup = createResponderDiscoverySetup({
-          responderInfo: createResponderInfo.ethereum({
-            uuid: randomUUID(),
-            rdns: 'com.test.wallet',
-            name: 'Test Wallet',
-            icon: 'data:image/png;base64,test',
-            type: 'extension',
-          }),
-        });
-
-        expect(setup.discoveryAnnouncer).toBeDefined();
-        expect(setup.capabilityMatcher).toBeDefined();
-
-        setup.stopListening();
-      });
-    });
-  });
-
-  // ===============================================
-  // ResponderInfo Factory Tests
-  // ===============================================
-  describe('ResponderInfo Factory', () => {
-    describe('createResponderInfo', () => {
-      it('should create Ethereum responder info', () => {
-        const responderInfo = createResponderInfo.ethereum({
-          uuid: 'test-uuid',
-          rdns: 'com.ethereum.wallet',
-          name: 'Ethereum Wallet',
-          icon: 'data:image/png;base64,test',
-          type: 'extension',
-        });
-
-        expect(responderInfo.rdns).toBe('com.ethereum.wallet');
-        expect(responderInfo.name).toBe('Ethereum Wallet');
-        expect(responderInfo.technologies.some((tech) => tech.type === 'evm')).toBe(true);
-      });
-
-      it('should create Solana responder info', () => {
-        const responderInfo = createResponderInfo.solana({
-          uuid: randomUUID(),
-          rdns: 'com.solana.wallet',
-          name: 'Solana Wallet',
-          icon: 'data:image/png;base64,test',
-          type: 'web',
-        });
-
-        expect(responderInfo.type).toBe('web');
-        expect(responderInfo.technologies.some((tech) => tech.type === 'solana')).toBe(true);
-      });
-
-      it('should create multi-chain responder info', () => {
-        const responderInfo = createResponderInfo.multiChain({
-          uuid: randomUUID(),
-          rdns: 'com.multichain.wallet',
-          name: 'Multi-Chain Wallet',
-          icon: 'data:image/png;base64,test',
-          type: 'extension',
-        });
-
-        expect(responderInfo.technologies.length).toBeGreaterThan(0);
-        expect(responderInfo.technologies.some((tech) => tech.type === 'evm')).toBe(true);
-      });
-    });
-  });
-
-  // ===============================================
   // Security Policy Factory Tests
   // ===============================================
   describe('Security Policy Factory', () => {
     describe('createSecurityPolicy', () => {
       it('should create strict security policy', () => {
-        const policy = createSecurityPolicy.strict();
+        const policy = createSecurityPolicy(SECURITY_PRESETS.strict);
 
         expect(policy.requireHttps).toBe(true);
         expect(policy.allowLocalhost).toBe(false);
@@ -171,7 +46,7 @@ describe('Responder Module', () => {
       });
 
       it('should create development security policy', () => {
-        const policy = createSecurityPolicy.development();
+        const policy = createSecurityPolicy(SECURITY_PRESETS.development);
 
         expect(policy.requireHttps).toBe(false);
         expect(policy.allowLocalhost).toBe(true);
@@ -333,7 +208,7 @@ describe('Responder Module', () => {
           type,
         };
 
-        const announcer = new DiscoveryResponder({ responderInfo });
+        const announcer = createAnnouncer({ responderInfo });
 
         expect(announcer).toBeDefined();
         announcer.cleanup();
@@ -362,7 +237,7 @@ describe('Responder Module', () => {
         expect(
           () =>
             // @ts-expect-error - Testing invalid input
-            new DiscoveryResponder(config),
+            createAnnouncer(config),
         ).toThrow();
       }
     });
@@ -379,7 +254,7 @@ describe('Responder Module', () => {
         ],
       };
 
-      const announcer = new DiscoveryResponder({ responderInfo: customResponderInfo });
+      const announcer = createAnnouncer({ responderInfo: customResponderInfo });
 
       expect(announcer).toBeDefined();
       announcer.cleanup();
@@ -391,7 +266,7 @@ describe('Responder Module', () => {
   // ===============================================
   describe('Module Exports', () => {
     it('should export DiscoveryResponder class', async () => {
-      const { DiscoveryResponder } = await import('./DiscoveryResponder.js');
+      const { DiscoveryResponder } = await import('../responder.js');
 
       expect(DiscoveryResponder).toBeDefined();
       expect(typeof DiscoveryResponder).toBe('function');
@@ -404,17 +279,6 @@ describe('Responder Module', () => {
       expect(typeof CapabilityMatcher).toBe('function');
     });
 
-    it('should export factory functions', async () => {
-      const factoryModule = await import('./factory.js');
-
-      // createDiscoveryResponder is deprecated and no longer exported
-      expect(factoryModule.createResponderDiscoverySetup).toBeDefined();
-      expect(factoryModule.createResponderInfo).toBeDefined();
-
-      expect(typeof factoryModule.createResponderDiscoverySetup).toBe('function');
-      expect(typeof factoryModule.createResponderInfo).toBe('object');
-    });
-
     it('should export all expected responder exports', async () => {
       const responderIndex = await import('./index.js');
 
@@ -422,19 +286,16 @@ describe('Responder Module', () => {
       expect(responderIndex.DiscoveryResponder).toBeDefined();
       expect(responderIndex.CapabilityMatcher).toBeDefined();
 
-      // Factory functions (createDiscoveryResponder is deprecated and no longer exported)
-      expect(responderIndex.createResponderDiscoverySetup).toBeDefined();
-      expect(responderIndex.createResponderInfo).toBeDefined();
-      // createSecurityPolicy is now imported from security module
+      // Security utilities are re-exported for convenience
       expect(responderIndex.createSecurityPolicy).toBeDefined();
     });
 
     it('should allow all responder components to work together', () => {
       const responderInfo = createTestResponderInfo.ethereum();
       const matcher = new CapabilityMatcher(responderInfo);
-      const announcer = new DiscoveryResponder({
+      const announcer = createAnnouncer({
         responderInfo,
-        securityPolicy: createSecurityPolicy.development(),
+        securityPolicy: createSecurityPolicy(SECURITY_PRESETS.development),
       });
 
       // Test integration
@@ -468,7 +329,7 @@ describe('Responder Module', () => {
         expect(
           () =>
             // @ts-expect-error - Testing invalid input
-            new DiscoveryResponder(config),
+            createAnnouncer(config),
         ).toThrow();
       }
     });
@@ -484,9 +345,8 @@ describe('Responder Module', () => {
 
       for (const policy of invalidPolicies) {
         expect(() =>
-          createDiscoveryResponder({
-            responderInfo,
-            securityPolicy: policy as unknown as SecurityPolicy,
+          new DiscoveryResponder(responderInfo, {
+            security: policy as unknown as SecurityPolicy,
           }),
         ).not.toThrow(); // Should handle gracefully, not throw
       }
@@ -505,146 +365,4 @@ describe('Responder Module', () => {
     });
   });
 
-  // ===============================================
-  // createResponderInfo Coverage Tests
-  // ===============================================
-  describe('createResponderInfo Coverage', () => {
-    describe('ethereum factory', () => {
-      it('should create web wallet type with ethereum', () => {
-        const webWallet = createResponderInfo.ethereum({
-          uuid: randomUUID(),
-          rdns: 'com.example.webwallet',
-          name: 'Web Ethereum Wallet',
-          icon: 'data:image/svg+xml;base64,...',
-          type: 'web',
-        });
-
-        expect(webWallet.type).toBe('web');
-        expect(webWallet).toHaveProperty('url', 'https://responder.example.com');
-      });
-
-      it('should handle custom chain configuration', () => {
-        const customWallet = createResponderInfo.ethereum({
-          uuid: randomUUID(),
-          rdns: 'com.example.custom',
-          name: 'Custom Wallet',
-          icon: 'data:image/svg+xml;base64,...',
-          type: 'extension',
-        });
-
-        // Check that the wallet was created successfully with custom chains
-        expect(customWallet.name).toBe('Custom Wallet');
-        expect(customWallet.type).toBe('extension');
-        const evmTech = customWallet.technologies.find((tech) => tech.type === 'evm');
-        expect(evmTech).toBeDefined();
-      });
-    });
-
-    describe('aztec factory', () => {
-      it('should create aztec wallet with defaults', () => {
-        const aztecWallet = createResponderInfo.aztec({
-          uuid: randomUUID(),
-          rdns: 'com.aztec.wallet',
-          name: 'Aztec Wallet',
-          icon: 'data:image/svg+xml;base64,...',
-          type: 'extension',
-        });
-
-        const aztecTech = aztecWallet.technologies.find((tech) => tech.type === 'aztec');
-        expect(aztecTech?.interfaces).toHaveLength(1);
-        expect(aztecWallet.features).toHaveLength(3); // private-transactions, contract-deployment, token-management
-        expect(aztecTech?.interfaces).toContain('aztec-wallet-api-v1');
-      });
-
-      it('should create web wallet type with aztec', () => {
-        const webAztec = createResponderInfo.aztec({
-          uuid: randomUUID(),
-          rdns: 'com.aztec.webwallet',
-          name: 'Aztec Web Wallet',
-          icon: 'data:image/svg+xml;base64,...',
-          type: 'web',
-        });
-
-        expect(webAztec.type).toBe('web');
-        expect(webAztec).toHaveProperty('url', 'https://responder.aztec.network');
-      });
-
-      it('should handle custom aztec chains', () => {
-        const customAztec = createResponderInfo.aztec({
-          uuid: randomUUID(),
-          rdns: 'com.aztec.custom',
-          name: 'Custom Aztec',
-          icon: 'data:image/svg+xml;base64,...',
-          type: 'extension',
-        });
-
-        const customAztecTech = customAztec.technologies.find((tech) => tech.type === 'aztec');
-        expect(customAztecTech?.interfaces).toHaveLength(1);
-        expect(customAztecTech?.interfaces).toContain('aztec-wallet-api-v1');
-      });
-
-      it('should handle custom aztec features', () => {
-        const customFeatures = createResponderInfo.aztec({
-          uuid: randomUUID(),
-          rdns: 'com.aztec.features',
-          name: 'Feature Aztec',
-          icon: 'data:image/svg+xml;base64,...',
-          type: 'extension',
-          features: ['custom-feature-1', 'custom-feature-2'],
-        });
-
-        expect(customFeatures.features).toHaveLength(2);
-        expect(customFeatures.features?.[0]?.id).toBe('custom-feature-1');
-        expect(customFeatures.features?.[1]?.id).toBe('custom-feature-2');
-      });
-    });
-
-    describe('multiChain factory', () => {
-      it('should create web wallet type with multiChain', () => {
-        const webMulti = createResponderInfo.multiChain({
-          uuid: randomUUID(),
-          rdns: 'com.multi.webwallet',
-          name: 'Multi Web Wallet',
-          icon: 'data:image/svg+xml;base64,...',
-          type: 'web',
-        });
-
-        expect(webMulti.type).toBe('web');
-        expect(webMulti).toHaveProperty('url', 'https://multi-responder.com');
-      });
-
-      it('should handle diverse chain types', () => {
-        const multiChain = createResponderInfo.multiChain({
-          uuid: randomUUID(),
-          rdns: 'com.multi.diverse',
-          name: 'Diverse Chain Wallet',
-          icon: 'data:image/svg+xml;base64,...',
-          type: 'extension',
-        });
-
-        expect(multiChain.technologies.length).toBeGreaterThan(0);
-
-        // Verify each technology type is handled correctly
-        const techTypes = multiChain.technologies.map((t) => t.type);
-        expect(techTypes).toContain('evm');
-        expect(techTypes).toContain('solana');
-        expect(techTypes).toContain('aztec');
-      });
-    });
-
-    describe('solana factory', () => {
-      it('should create web wallet type with solana', () => {
-        const webSolana = createResponderInfo.solana({
-          uuid: randomUUID(),
-          rdns: 'com.solana.webwallet',
-          name: 'Solana Web Wallet',
-          icon: 'data:image/svg+xml;base64,...',
-          type: 'web',
-        });
-
-        expect(webSolana.type).toBe('web');
-        expect(webSolana).toHaveProperty('url', 'https://responder.solana.com');
-      });
-    });
-  });
 });

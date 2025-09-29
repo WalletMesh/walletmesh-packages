@@ -10,7 +10,7 @@
  * @packageDocumentation
  */
 
-import type { WalletInfo } from '@walletmesh/modal-core';
+import type { WalletInfo, WalletMeshConfig } from '@walletmesh/modal-core';
 import { WalletMeshProvider } from '../WalletMeshProvider.js';
 import { createAztecConfig } from '../chains/aztec/config.js';
 import type { WalletMeshProviderProps } from '../types.js';
@@ -121,6 +121,14 @@ export interface AztecProviderConfig {
    * ```
    */
   permissions?: string[];
+
+  /**
+   * Optional overrides for wallet discovery behaviour.
+   *
+   * Use this to disable automatic discovery or tweak retry timing.
+   * When omitted, sensible Aztec defaults are applied.
+   */
+  discovery?: WalletMeshConfig['discovery'];
 }
 
 /**
@@ -181,7 +189,7 @@ export function AztecWalletMeshProvider({ config, children, ...restProps }: Azte
   const walletMeshConfig = createAztecConfig(config);
 
   return (
-    <WalletMeshProvider config={walletMeshConfig} {...restProps}>
+    <WalletMeshProvider config={walletMeshConfig as any} {...restProps}>
       {children}
     </WalletMeshProvider>
   );

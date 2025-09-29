@@ -322,12 +322,14 @@ export class CapabilityMatcher {
       return null;
     }
 
-    // Find matching interfaces (at least one required)
+    // Find matching interfaces
     const matchedInterfaces = requirement.interfaces.filter((iface) =>
       supportedTech.interfaces.includes(iface),
     );
 
-    if (matchedInterfaces.length === 0) {
+    // If interfaces are specified, at least one must match
+    // If no interfaces specified (empty array), technology type match is sufficient
+    if (requirement.interfaces.length > 0 && matchedInterfaces.length === 0) {
       return null;
     }
 

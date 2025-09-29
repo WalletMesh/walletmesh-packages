@@ -12,11 +12,51 @@ import { createComponentServices } from '../../internal/core/factories/serviceFa
 import { WalletRegistry } from '../../internal/registries/wallets/WalletRegistry.js';
 import { DiscoveryAdapter } from '../../internal/wallets/discovery/DiscoveryAdapter.js';
 
-// Mock the discovery package imports
-vi.mock('@walletmesh/discovery', () => ({
-  createDiscoveryListener: vi.fn(),
-  createConnectionManager: vi.fn(),
+// Mock the store module
+vi.mock('../../state/store.js', () => ({
+  getStoreInstance: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      ui: { isOpen: false, isLoading: false, error: undefined },
+      connections: {
+        activeSessions: [],
+        availableWallets: [],
+        discoveredWallets: [],
+        activeSessionId: null,
+        connectionStatus: 'disconnected'
+      },
+      transactions: {
+        pending: [],
+        confirmed: [],
+        failed: [],
+        activeTransaction: undefined
+      }
+      ,
+      entities: {
+        wallets: {}
+      }
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+    subscribeWithSelector: vi.fn(() => vi.fn())
+  }))
 }));
+
+// Mock the discovery package imports
+vi.mock('@walletmesh/discovery', () => {
+  const createMockInitiator = () => ({
+    startDiscovery: vi.fn().mockResolvedValue([]),
+    stopDiscovery: vi.fn().mockResolvedValue(undefined),
+    isDiscovering: vi.fn().mockReturnValue(false),
+    on: vi.fn(),
+    off: vi.fn(),
+    removeAllListeners: vi.fn(),
+  });
+
+  return {
+    DiscoveryInitiator: vi.fn().mockImplementation(createMockInitiator),
+    createInitiatorSession: vi.fn().mockImplementation(createMockInitiator),
+  };
+});
 
 // Mock transport creation
 vi.mock('../../api/transports/transports.js', () => ({
@@ -155,7 +195,6 @@ describe('Multiple Discovered Wallets Integration', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 

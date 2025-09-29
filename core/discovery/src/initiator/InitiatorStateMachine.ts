@@ -62,6 +62,18 @@ export interface InitiatorStateMachineConfig {
    * Optional logger instance.
    */
   logger?: Logger;
+
+  /**
+   * Interval for rebroadcasting discovery requests in milliseconds.
+   * Default: 200ms
+   */
+  rebroadcastInterval?: number;
+
+  /**
+   * Whether to enable rebroadcasting of discovery requests.
+   * Default: true in browser environments
+   */
+  rebroadcastEnabled?: boolean;
 }
 
 /**
@@ -118,6 +130,8 @@ export class InitiatorStateMachine extends ProtocolStateMachine {
   private readonly eventTarget: EventTarget;
   private readonly config: InitiatorStateMachineConfig;
   private readonly logger: Logger;
+  private rebroadcastTimer?: number;
+  private discoveryRequest?: CustomEvent;
 
   /**
    * Creates a new InitiatorStateMachine instance.
@@ -152,12 +166,14 @@ export class InitiatorStateMachine extends ProtocolStateMachine {
 
           case 'COMPLETED':
             if (stateEvent.fromState === 'DISCOVERING') {
+              this.stopRebroadcasting();
               this.sendDiscoveryComplete(stateEvent.metadata);
             }
             break;
 
           case 'ERROR':
             if (stateEvent.fromState === 'DISCOVERING') {
+              this.stopRebroadcasting();
               this.sendDiscoveryError(stateEvent.metadata);
             }
             break;
@@ -166,7 +182,7 @@ export class InitiatorStateMachine extends ProtocolStateMachine {
         // Log but don't throw - message dispatch failure shouldn't break state transitions
         this.logger.error('Failed to dispatch discovery message:', error);
 
-        // Emit error event for monitoring
+        // Emit error event for observers (handled gracefully by initiator)
         this.emit('error', error as Error, stateEvent.toState);
       }
     });
@@ -192,7 +208,62 @@ export class InitiatorStateMachine extends ProtocolStateMachine {
       detail: request,
     });
 
-    this.eventTarget.dispatchEvent(event);
+    // Store the discovery request for rebroadcasting
+    this.discoveryRequest = event;
+
+    // Dispatch the initial request
+    try {
+      this.eventTarget.dispatchEvent(event);
+    } catch (error) {
+      this.logger.error('Failed to dispatch discovery message:', error);
+      this.emit('error', error as Error, 'DISCOVERING');
+    }
+
+    // Start rebroadcasting if enabled and in browser environment
+    if (typeof window !== 'undefined') {
+      const rebroadcastEnabled = this.config.rebroadcastEnabled !== false;
+      if (rebroadcastEnabled) {
+        const interval = this.config.rebroadcastInterval ?? 200;
+        this.startRebroadcasting(interval);
+      }
+    }
+  }
+
+  /**
+   * Start rebroadcasting the discovery request at the specified interval.
+   * @private
+   */
+  private startRebroadcasting(interval: number): void {
+    this.stopRebroadcasting(); // Clear any existing timer
+
+    if (!this.discoveryRequest) {
+      this.logger.warn('No discovery request to rebroadcast');
+      return;
+    }
+
+    this.logger.debug(`Starting discovery request rebroadcast with ${interval}ms interval`);
+
+    this.rebroadcastTimer = window.setInterval(() => {
+      if (this.discoveryRequest && this.isInState('DISCOVERING')) {
+        this.logger.debug('Rebroadcasting discovery request', { sessionId: this.config.sessionId });
+        this.eventTarget.dispatchEvent(this.discoveryRequest);
+      } else {
+        // Stop rebroadcasting if no longer discovering
+        this.stopRebroadcasting();
+      }
+    }, interval);
+  }
+
+  /**
+   * Stop rebroadcasting the discovery request.
+   * @private
+   */
+  private stopRebroadcasting(): void {
+    if (this.rebroadcastTimer !== undefined && typeof window !== 'undefined') {
+      window.clearInterval(this.rebroadcastTimer);
+      delete this.rebroadcastTimer;
+      this.logger.debug('Stopped discovery request rebroadcast');
+    }
   }
 
   /**
@@ -236,7 +307,12 @@ export class InitiatorStateMachine extends ProtocolStateMachine {
       detail: completeEvent,
     });
 
-    this.eventTarget.dispatchEvent(event);
+    try {
+      this.eventTarget.dispatchEvent(event);
+    } catch (error) {
+      this.logger.error('Failed to dispatch discovery message:', error);
+      this.emit('error', error as Error, 'COMPLETED');
+    }
   }
 
   /**
@@ -263,7 +339,12 @@ export class InitiatorStateMachine extends ProtocolStateMachine {
       detail: errorEvent,
     });
 
-    this.eventTarget.dispatchEvent(event);
+    try {
+      this.eventTarget.dispatchEvent(event);
+    } catch (error) {
+      this.logger.error('Failed to dispatch discovery message:', error);
+      this.emit('error', error as Error, 'ERROR');
+    }
   }
 
   /**
@@ -284,6 +365,16 @@ export class InitiatorStateMachine extends ProtocolStateMachine {
   updateConfig(updates: Partial<Omit<InitiatorStateMachineConfig, 'sessionId'>>): void {
     // Session ID cannot be changed
     Object.assign(this.config, updates);
+  }
+
+  /**
+   * Dispose of the state machine and clean up resources.
+   * Stops rebroadcasting and calls parent dispose.
+   */
+  override dispose(): void {
+    this.stopRebroadcasting();
+    delete this.discoveryRequest;
+    super.dispose();
   }
 }
 

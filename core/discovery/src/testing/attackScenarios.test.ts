@@ -6,8 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { DiscoveryResponder } from '../responder/DiscoveryResponder.js';
-import type { DiscoveryInitiator } from '../initiator/DiscoveryInitiator.js';
+import { DiscoveryResponder } from '../responder.js';
 import { MockEventTarget } from './MockEventTarget.js';
 import {
   createTestResponderInfo,
@@ -21,7 +20,6 @@ import { setupFakeTimers, cleanupFakeTimers } from './timingHelpers.js';
 
 describe('Attack Scenario Tests', () => {
   let announcer: DiscoveryResponder;
-  let listener: DiscoveryInitiator | undefined;
   let mockEventTarget: MockEventTarget;
 
   beforeEach(() => {
@@ -38,9 +36,6 @@ describe('Attack Scenario Tests', () => {
     if (announcer) {
       announcer.cleanup();
     }
-    if (listener) {
-      listener.dispose();
-    }
   });
 
   describe('Session Poisoning Attacks', () => {
@@ -54,10 +49,9 @@ describe('Attack Scenario Tests', () => {
         requireHttps: true,
       });
 
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy,
+        security: securityPolicy,
       });
 
       announcer.startListening();
@@ -83,10 +77,9 @@ describe('Attack Scenario Tests', () => {
         allowedOrigins: ['https://app1.com', 'https://app2.com'],
       });
 
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy,
+        security: securityPolicy,
       });
 
       announcer.startListening();
@@ -129,10 +122,9 @@ describe('Attack Scenario Tests', () => {
       // Set up browser environment for trusted dapp
       mockBrowserEnvironment({ origin: 'https://trusted-dapp.com' });
 
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy: createTestSecurityPolicy(),
+        security: createTestSecurityPolicy(),
       });
 
       announcer.startListening();
@@ -168,10 +160,9 @@ describe('Attack Scenario Tests', () => {
         blockedOrigins: ['https://malicious-site.com', 'https://phishing-site.com'],
       });
 
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy,
+        security: securityPolicy,
       });
 
       announcer.startListening();
@@ -198,10 +189,9 @@ describe('Attack Scenario Tests', () => {
         requireHttps: true,
       });
 
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy,
+        security: securityPolicy,
       });
 
       announcer.startListening();
@@ -239,10 +229,9 @@ describe('Attack Scenario Tests', () => {
         requireHttps: true,
       });
 
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy,
+        security: securityPolicy,
       });
 
       announcer.startListening();
@@ -290,10 +279,9 @@ describe('Attack Scenario Tests', () => {
         requireHttps: true,
       });
 
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy,
+        security: securityPolicy,
       });
 
       announcer.startListening();
@@ -340,10 +328,9 @@ describe('Attack Scenario Tests', () => {
       // Wallet only supports Ethereum
       const ethOnlyResponder = createTestResponderInfo.ethereum();
 
-      announcer = new DiscoveryResponder({
-        responderInfo: ethOnlyResponder,
+      announcer = new DiscoveryResponder(ethOnlyResponder, {
         eventTarget: mockEventTarget,
-        securityPolicy: createTestSecurityPolicy(),
+        security: createTestSecurityPolicy(),
       });
 
       announcer.startListening();
@@ -379,10 +366,9 @@ describe('Attack Scenario Tests', () => {
       // Set up browser environment for malformed dapp
       mockBrowserEnvironment({ origin: 'https://malformed-dapp.com' });
 
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy: createTestSecurityPolicy(),
+        security: createTestSecurityPolicy(),
       });
 
       announcer.startListening();
@@ -407,10 +393,9 @@ describe('Attack Scenario Tests', () => {
       // Set up browser environment for outdated dapp
       mockBrowserEnvironment({ origin: 'https://outdated-dapp.com' });
 
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy: createTestSecurityPolicy(),
+        security: createTestSecurityPolicy(),
       });
 
       announcer.startListening();
@@ -451,10 +436,9 @@ describe('Attack Scenario Tests', () => {
         },
       });
 
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy,
+        security: securityPolicy,
         logger: mockLogger,
       });
 
@@ -504,10 +488,9 @@ describe('Attack Scenario Tests', () => {
 
       // Create new announcer with fresh rate limiter to ensure the request succeeds
       announcer.cleanup();
-      announcer = new DiscoveryResponder({
-        responderInfo: createTestResponderInfo.ethereum(),
+      announcer = new DiscoveryResponder(createTestResponderInfo.ethereum(), {
         eventTarget: mockEventTarget,
-        securityPolicy,
+        security: securityPolicy,
         logger: mockLogger, // Pass the mock logger to track logs
       });
       announcer.startListening();
@@ -534,10 +517,11 @@ describe('Attack Scenario Tests', () => {
         );
       }
 
-      // Check security stats still work without SecurityEventLogger
+      // Check announcer stats still accessible without SecurityEventLogger
       const stats = announcer.getStats();
-      expect(stats.securityStats).toBeDefined();
-      expect(stats.securityStats.usedSessionsCount).toBeDefined();
+      expect(stats.capabilityDetails).toBeDefined();
+      expect(stats.usedSessionsCount).toBeGreaterThanOrEqual(0);
+      expect(stats.activeSessionsCount).toBeGreaterThanOrEqual(0);
 
       // Test completed successfully
     });

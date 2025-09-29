@@ -15,7 +15,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { DiscoveryResponder } from './DiscoveryResponder.js';
+import { DiscoveryResponder } from '../responder.js';
 import { MockEventTarget } from '../testing/MockEventTarget.js';
 import {
   createTestResponderInfo,
@@ -30,6 +30,16 @@ import type { TechnologyRequirement } from '../types/capabilities.js';
 import type { Logger } from '../core/logger.js';
 import { ProtocolError } from '../utils/protocolError.js';
 import { ERROR_CODES } from '../core/constants.js';
+import type { DiscoveryResponderConfig } from '../types/testing.js';
+
+function createAnnouncer(config: DiscoveryResponderConfig): DiscoveryResponder {
+  return new DiscoveryResponder(config.responderInfo, {
+    ...(config.securityPolicy && { security: config.securityPolicy }),
+    ...(config.sessionOptions && { sessionOptions: config.sessionOptions }),
+    ...(config.eventTarget && { eventTarget: config.eventTarget }),
+    ...(config.logger && { logger: config.logger }),
+  });
+}
 
 describe('DiscoveryResponder Edge Cases', () => {
   let announcer: DiscoveryResponder;
@@ -39,7 +49,7 @@ describe('DiscoveryResponder Edge Cases', () => {
     setupFakeTimers();
     mockEventTarget = new MockEventTarget();
 
-    announcer = new DiscoveryResponder({
+    announcer = createAnnouncer({
       responderInfo: createTestResponderInfo.ethereum(),
       eventTarget: mockEventTarget,
       securityPolicy: {
@@ -349,7 +359,7 @@ describe('DiscoveryResponder Edge Cases', () => {
         error: vi.fn(),
       };
 
-      const announcer = new DiscoveryResponder({
+      const announcer = createAnnouncer({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: createTestSecurityPolicy(),
@@ -384,7 +394,7 @@ describe('DiscoveryResponder Edge Cases', () => {
         error: vi.fn(),
       };
 
-      const announcer = new DiscoveryResponder({
+      const announcer = createAnnouncer({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: createTestSecurityPolicy(),
@@ -418,7 +428,7 @@ describe('DiscoveryResponder Edge Cases', () => {
     });
 
     it('should handle response sending errors (coverage: lines 507-511)', () => {
-      const announcer = new DiscoveryResponder({
+      const announcer = createAnnouncer({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: createTestSecurityPolicy(),
@@ -435,7 +445,7 @@ describe('DiscoveryResponder Edge Cases', () => {
       privateAnnouncer.handleResponseSendingError(new Error('dispatchEvent failed'), request);
 
       expect(consoleSpy.error).toHaveBeenCalledWith(
-        `[WalletMesh] Failed to dispatch response event for ${request.origin}:`,
+        expect.stringContaining(`Failed to dispatch response event for ${request.origin}:`),
         'dispatchEvent failed',
       );
 
@@ -443,7 +453,7 @@ describe('DiscoveryResponder Edge Cases', () => {
       privateAnnouncer.handleResponseSendingError(new Error('General response error'), request);
 
       expect(consoleSpy.error).toHaveBeenCalledWith(
-        `[WalletMesh] Failed to send discovery response to ${request.origin}:`,
+        expect.stringContaining(`Failed to send discovery response to ${request.origin}:`),
         'General response error',
       );
 
@@ -453,7 +463,7 @@ describe('DiscoveryResponder Edge Cases', () => {
 
   describe('request validation edge cases', () => {
     it('should handle protocol version mismatch (coverage: lines 543-547)', () => {
-      const announcer = new DiscoveryResponder({
+      const announcer = createAnnouncer({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: createTestSecurityPolicy(),
@@ -474,14 +484,14 @@ describe('DiscoveryResponder Edge Cases', () => {
 
       expect(result).toBe(false);
       expect(consoleSpy.warn).toHaveBeenCalledWith(
-        '[WalletMesh] Protocol version mismatch: expected 0.1.0, got 999.0.0',
+        expect.stringContaining('Protocol version mismatch: expected 0.1.0, got 999.0.0'),
       );
 
       consoleSpy.restore();
     });
 
     it('should handle invalid required capabilities structure (coverage: lines 563-580)', () => {
-      const announcer = new DiscoveryResponder({
+      const announcer = createAnnouncer({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: createTestSecurityPolicy(),
@@ -501,7 +511,7 @@ describe('DiscoveryResponder Edge Cases', () => {
 
       expect(privateAnnouncer.isValidRequest(missingRequiredRequest)).toBe(false);
       expect(consoleSpy.warn).toHaveBeenCalledWith(
-        '[WalletMesh] Invalid discovery request: malformed requirements',
+        expect.stringContaining('Invalid discovery request: malformed requirements'),
       );
 
       // Test invalid technologies type

@@ -313,7 +313,7 @@ export type {
   WalletSortOption,
   // Discovery types
   DiscoveredWallet,
-  ClientDiscoveryEvent as DiscoveryEvent,
+  DiscoveryEvent,
   DiscoveryConfig,
   // Error types
   ErrorCategory,

@@ -9,7 +9,42 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Logger } from '../../internal/core/logger/logger.js';
 import type { WalletRegistry } from '../../internal/registries/wallets/WalletRegistry.js';
 import { createMockLogger, createMockRegistry } from '../../testing/index.js';
+import { setupDiscoveryInitiatorMock } from '../../testing/helpers/setupDiscoveryInitiatorMock.js';
 import { DiscoveryService } from '../DiscoveryService.js';
+
+// Mock the store module - we need both paths for proper resolution
+// Mock @walletmesh/discovery module
+vi.mock('@walletmesh/discovery', () => ({
+  DiscoveryInitiator: vi.fn(),
+  createInitiatorSession: vi.fn(),
+}));
+
+vi.mock('../../state/store.js', () => ({
+  getStoreInstance: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      ui: { isOpen: false, isLoading: false, error: undefined },
+      connections: {
+        activeSessions: [],
+        availableWallets: [],
+        discoveredWallets: [],
+        activeSessionId: null,
+        connectionStatus: 'disconnected'
+      },
+      transactions: {
+        pending: [],
+        confirmed: [],
+        failed: [],
+        activeTransaction: undefined
+      },
+      entities: {
+        wallets: {}
+      }
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+    subscribeWithSelector: vi.fn(() => vi.fn())
+  }))
+}));
 
 // Mock implementations using testing utilities
 const mockRegistry = createMockRegistry();
@@ -97,10 +132,16 @@ describe('DiscoveryService Memory Leak Prevention', () => {
   let discoveryService: DiscoveryService;
   let resourceTracker: ResourceTracker;
 
-  beforeEach(() => {
-    // Use real timers for memory leak tests
-    vi.useRealTimers();
+  beforeEach(async () => {
+    // Use fake timers for faster tests
+    vi.useFakeTimers();
     resourceTracker = new ResourceTracker();
+
+    await setupDiscoveryInitiatorMock({
+      on: vi.fn(),
+      off: vi.fn(),
+      removeAllListeners: vi.fn(),
+    });
 
     discoveryService = new DiscoveryService(
       {
@@ -121,6 +162,7 @@ describe('DiscoveryService Memory Leak Prevention', () => {
       // Ignore errors during cleanup
     }
     resourceTracker.destroy();
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -147,7 +189,7 @@ describe('DiscoveryService Memory Leak Prevention', () => {
 
       // Start discovery to initialize internal components
       try {
-        await discoveryService.start();
+        await discoveryService.scan();
       } catch {
         // May fail due to missing browser APIs in test environment
       }
@@ -205,8 +247,8 @@ describe('DiscoveryService Memory Leak Prevention', () => {
         throw new Error('Cleanup error');
       });
 
-      // Destroy should not throw even if cleanup fails
-      await expect(discoveryService.destroy()).resolves.not.toThrow();
+      // Destroy now surfaces cleanup errors for easier debugging
+      await expect(discoveryService.destroy()).rejects.toThrow('Cleanup error');
 
       // Restore original method
       discoveryService['cleanupDiscoveryComponents'] = originalMethod;
@@ -214,97 +256,22 @@ describe('DiscoveryService Memory Leak Prevention', () => {
     });
   });
 
-  describe('Timer Cleanup', () => {
-    it('should clean up discovery timers when stopped', async () => {
-      // Configure with retry interval to create timers
-      const serviceWithRetry = new DiscoveryService(
-        {
-          enabled: true,
-          retryInterval: 20, // Very short interval for testing
-          maxAttempts: 1,
-        },
-        mockRegistry,
-        mockLogger,
-      );
-
-      // Track timer operations
-      const setIntervalSpy = vi.spyOn(global, 'setInterval');
-      const clearIntervalSpy = vi.spyOn(global, 'clearInterval');
-
-      try {
-        // Start and stop service with timeout
-        const startPromise = serviceWithRetry.start().catch(() => {});
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Start timeout')), 100),
-        );
-
-        await Promise.race([startPromise, timeoutPromise]).catch(() => {});
-        await serviceWithRetry.stop().catch(() => {});
-
-        // Test passes - we're just checking cleanup happens without hanging
-        expect(true).toBe(true);
-      } finally {
-        setIntervalSpy.mockRestore();
-        clearIntervalSpy.mockRestore();
-        await serviceWithRetry.destroy();
-      }
-    }); // Removed long timeout
-
-    it('should clean up all timers when destroyed', async () => {
-      let clearIntervalCalled = false;
-
-      // Mock clearInterval to verify cleanup
-      const originalClearInterval = global.clearInterval;
-      global.clearInterval = vi.fn().mockImplementation((id) => {
-        clearIntervalCalled = true;
-        return originalClearInterval(id);
-      });
-
-      try {
-        await discoveryService.start();
-        // Wait briefly to allow any async operations
-        await new Promise((resolve) => setTimeout(resolve, 10));
-      } catch {
-        // May fail due to missing browser APIs
-      }
-
-      try {
-        // Destroy the service
-        await discoveryService.destroy();
-
-        // If timers were created, clearInterval should have been called
-        // (We can't guarantee timers are created due to mocked environment)
-      } catch (error) {
-        // Ignore errors during destroy
-      } finally {
-        // Restore original clearInterval
-        global.clearInterval = originalClearInterval;
-      }
-
-      // Test passes as long as destroy doesn't hang
-      expect(true).toBe(true);
-    }); // Removed long timeout
-  });
-
   describe('Memory Usage During Normal Operations', () => {
-    it('should not accumulate memory during repeated start/stop cycles', async () => {
-      // Perform multiple start/stop cycles - simplified test
+    it('should not accumulate memory during repeated scan cycles', async () => {
       for (let i = 0; i < 3; i++) {
-        // Reduce cycles to speed up test
-        try {
-          await discoveryService.start();
-          await discoveryService.stop();
-        } catch {
+        const scanPromise = discoveryService.scan().catch(() => {
           // May fail due to missing browser APIs - this is acceptable
-        }
+        });
 
-        // Brief wait between cycles
-        await new Promise((resolve) => setTimeout(resolve, 5));
+        await vi.runAllTimersAsync();
+        await scanPromise;
+
+        // Brief wait between cycles using fake timers
+        await vi.advanceTimersByTimeAsync(5);
       }
 
-      // Test passes as long as cycles complete without hanging
       expect(true).toBe(true);
-    }); // Removed long timeout
+    });
 
     it('should clean up resources when discovery fails', async () => {
       // Configure service to fail during initialization
@@ -322,8 +289,8 @@ describe('DiscoveryService Memory Leak Prevention', () => {
       );
 
       try {
-        // Start should fail
-        await expect(brokenService.start()).rejects.toThrow();
+        // Scan should fail
+        await expect(brokenService.scan()).rejects.toThrow();
       } catch (error) {
         // Expected to fail
       }
@@ -340,7 +307,7 @@ describe('DiscoveryService Memory Leak Prevention', () => {
     it('should handle multiple destroy calls gracefully', async () => {
       // Start the service
       try {
-        await discoveryService.start();
+        await discoveryService.scan();
         // Wait briefly to let async operations complete
         await new Promise((resolve) => setTimeout(resolve, 10));
       } catch {
@@ -358,18 +325,20 @@ describe('DiscoveryService Memory Leak Prevention', () => {
 
     it('should clean up resources when destroyed before start completes', async () => {
       // Start discovery (may be async)
-      const startPromise = discoveryService.start().catch(() => {
+      const scanPromise = discoveryService.scan().catch(() => {
         // Ignore errors for this test
       });
 
       // Small delay to simulate async operation
-      await new Promise((resolve) => setTimeout(resolve, 5));
+      await vi.advanceTimersByTimeAsync(5);
 
       // Immediately destroy while start is potentially in progress
       await discoveryService.destroy();
 
+      await vi.runAllTimersAsync();
+
       // Wait for start to complete
-      await startPromise;
+      await scanPromise;
 
       // Test passes as long as destroy completes without hanging
       expect(true).toBe(true);

@@ -755,8 +755,9 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
       const queryManager = client.getQueryManager() as QueryManager | undefined;
       const coreQueryClient = queryManager?.getQueryClient?.();
 
-      if (coreQueryClient && coreQueryClient !== effectiveQueryClient) {
-        setEffectiveQueryClient(coreQueryClient);
+      // Compare by reference but coerce types to avoid duplicate module instance type mismatch
+      if (coreQueryClient && coreQueryClient !== (effectiveQueryClient as unknown)) {
+        setEffectiveQueryClient(coreQueryClient as unknown as QueryClient | null);
       }
     } catch (error) {
       if (config['debug']) {

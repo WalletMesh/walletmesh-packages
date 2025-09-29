@@ -3,7 +3,7 @@
  */
 // Import test setup first
 import '../test-utils/setup.js';
-import { render, renderHook, screen } from '@testing-library/react';
+import { act, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAccount } from '../hooks/useAccount.js';
 import { useConfig } from '../hooks/useConfig.js';
@@ -15,12 +15,14 @@ describe('Enhanced SSR Utilities', () => {
   let wrapper: ReturnType<typeof createTestWrapper>['wrapper'];
 
   beforeEach(() => {
+    vi.useFakeTimers();
     vi.clearAllMocks();
     const testSetup = createTestWrapper();
     wrapper = testSetup.wrapper;
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.clearAllMocks();
   });
 
@@ -31,13 +33,20 @@ describe('Enhanced SSR Utilities', () => {
       expect(result.current.isBrowser).toBe(true);
       expect(result.current.isServer).toBe(false);
 
-      // Check hydration state - starts false but becomes true
+      // Check hydration state - starts false but becomes true after useEffect
       expect(result.current.isHydrated).toBe(false);
 
-      // Advance timers to trigger hydration
-      await vi.advanceTimersByTimeAsync(0);
+      await act(async () => {
+        await Promise.resolve();
+      });
 
-      // Now hydration should be complete
+      // Advance fake timers to allow hydration effect to run.
+      // Call runAllTimers() twice to flush chained timers/microtasks
+      // that may schedule follow-up timeouts inside useEffect.
+      await act(async () => {
+        vi.runAllTimers();
+        vi.runAllTimers();
+      });
       expect(result.current.isHydrated).toBe(true);
     });
   });

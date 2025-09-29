@@ -85,11 +85,11 @@ When modifying the protocol, follow this checklist to ensure all components rema
 - **Note**: Security utilities are internal implementation details and exported only for specific use cases
 
 **Initiator Module** (`src/initiator/`):
-- `DiscoveryInitiator.ts`: Discovery broadcast and collection
+- `initiator.ts`: Discovery broadcast and collection
 - `factory.ts`: Factory functions for initiator setup
 
 **Responder Module** (`src/responder/`):
-- `DiscoveryResponder.ts`: Responder announcement logic
+- `responder.ts`: Responder announcement logic
 - `CapabilityMatcher.ts`: Capability intersection calculation
 - `factory.ts`: Factory functions for responder setup
 
@@ -1092,8 +1092,8 @@ const testScenario = createDiscoveryTestScenario({
 
 - `src/core/types.ts`: 4 message types and interfaces
 - `src/core/constants.ts`: 4 event types, protocol constants
-- `src/initiator/DiscoveryInitiator.ts`: Discovery logic
-- `src/responder/DiscoveryResponder.ts`: Announcement logic
+- `src/initiator.ts`: Discovery logic
+- `src/responder.ts`: Announcement logic
 - `src/responder/CapabilityMatcher.ts`: Capability intersection logic
 - `src/security/`: Security components
 

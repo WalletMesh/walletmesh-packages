@@ -37,6 +37,7 @@ export class WalletRegistry {
     { constructor: WalletAdapterConstructor; walletInfo: WalletInfo }
   >();
   private discoveredWallets = new Map<string, DiscoveredWalletInfo>();
+  private discoveredWalletAliases = new Map<string, string>();
   private eventTarget = new EventTarget();
 
   /**
@@ -872,6 +873,11 @@ export class WalletRegistry {
    */
   registerDiscoveredWallet(walletInfo: DiscoveredWalletInfo): void {
     this.discoveredWallets.set(walletInfo.id, walletInfo);
+
+    if (walletInfo.responderId && walletInfo.responderId !== walletInfo.id) {
+      this.discoveredWalletAliases.set(walletInfo.responderId, walletInfo.id);
+    }
+
     this.emit('wallet:discovered', walletInfo);
   }
 
@@ -882,7 +888,17 @@ export class WalletRegistry {
    * @returns Wallet information if found
    */
   getDiscoveredWallet(walletId: string): DiscoveredWalletInfo | undefined {
-    return this.discoveredWallets.get(walletId);
+    const direct = this.discoveredWallets.get(walletId);
+    if (direct) {
+      return direct;
+    }
+
+    const canonicalId = this.discoveredWalletAliases.get(walletId);
+    if (canonicalId) {
+      return this.discoveredWallets.get(canonicalId);
+    }
+
+    return undefined;
   }
 
   /**
@@ -901,7 +917,10 @@ export class WalletRegistry {
    * @returns True if the wallet has been discovered
    */
   hasDiscoveredWallet(walletId: string): boolean {
-    return this.discoveredWallets.has(walletId);
+    return (
+      this.discoveredWallets.has(walletId) ||
+      this.discoveredWalletAliases.has(walletId)
+    );
   }
 
   /**
@@ -910,7 +929,15 @@ export class WalletRegistry {
    * @param walletId - The ID of the wallet to remove
    */
   removeDiscoveredWallet(walletId: string): void {
-    if (this.discoveredWallets.delete(walletId)) {
+    const removed = this.discoveredWallets.delete(walletId);
+
+    for (const [alias, target] of this.discoveredWalletAliases.entries()) {
+      if (target === walletId || alias === walletId) {
+        this.discoveredWalletAliases.delete(alias);
+      }
+    }
+
+    if (removed) {
       this.emit('wallet:removed', walletId);
     }
   }
@@ -920,6 +947,7 @@ export class WalletRegistry {
    */
   clearDiscoveredWallets(): void {
     this.discoveredWallets.clear();
+    this.discoveredWalletAliases.clear();
   }
 
   /**
@@ -936,6 +964,7 @@ export class WalletRegistry {
   clear(): void {
     this.adapters.clear();
     this.discoveredWallets.clear();
+    this.discoveredWalletAliases.clear();
   }
 
   /**

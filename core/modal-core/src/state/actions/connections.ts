@@ -69,7 +69,7 @@ export const connectionActions = {
     );
 
     // This is a simplified version - in practice, this would integrate with SessionManager
-    const sessionId = generateSessionId('session');
+    const sessionId = validatedParams.sessionId ?? generateSessionId('session');
 
     const defaultAccount: AccountInfo = {
       address: '',
@@ -397,18 +397,32 @@ export const connectionActions = {
    * Add a discovered wallet to the state
    */
   addDiscoveredWallet: (store: StoreApi<WalletMeshState>, wallet: WalletInfo) => {
+    console.log('[addDiscoveredWallet] Adding wallet to store:', { walletId: wallet.id, walletName: wallet.name });
+
     // Validate wallet info
     const validatedWallet = parseWithErrorFactory(walletInfoSchema, wallet, 'Invalid wallet info');
     const cleanedWallet = cleanObject(validatedWallet) as WalletInfo;
 
+    console.log('[addDiscoveredWallet] Validated wallet:', cleanedWallet);
+
     mutateState(store, (state) => {
       // Add to wallets entities
       state.entities.wallets[cleanedWallet.id] = cleanedWallet;
+      console.log('[addDiscoveredWallet] Added to entities.wallets');
 
       // Update available wallet IDs list
       if (!state.meta.availableWalletIds.includes(cleanedWallet.id)) {
         state.meta.availableWalletIds.push(cleanedWallet.id);
+        console.log('[addDiscoveredWallet] Added to availableWalletIds:', cleanedWallet.id);
+      } else {
+        console.log('[addDiscoveredWallet] Wallet already in availableWalletIds:', cleanedWallet.id);
       }
+
+      console.log('[addDiscoveredWallet] Current state after update:', {
+        totalWallets: Object.keys(state.entities.wallets).length,
+        availableWalletIds: state.meta.availableWalletIds,
+        walletEntities: Object.keys(state.entities.wallets)
+      });
     });
   },
 

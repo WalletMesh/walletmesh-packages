@@ -31,6 +31,17 @@ export type {
 // BaseFrameworkAdapter has been removed with the refactoring to composition pattern
 
 // Export framework adapter types
+export type {
+  ReactAdapterConfig,
+  VueAdapterConfig,
+  SvelteAdapterConfig
+} from '../../schemas/adapters.js';
+
+// These are type-only exports for TypeDoc compatibility
+export type ReactAdapter = unknown;
+export type VueAdapter = unknown;
+export type SvelteAdapter = unknown;
+export type ComponentMap = unknown;
 
 export { errorCategorySchema as ErrorCategory } from '../../schemas/errors.js';
 
@@ -45,6 +56,8 @@ export type { ModalState } from '../../types.js';
 
 export type { AnyTransportConfig } from '../../types.js';
 
+export type { ViewHooks } from '../../schemas/views.js';
+
 // Note: WalletMeshClient is now internal and ModalFactoryConfig uses the public
 // WalletClient interface, so no additional exports are needed for documentation.
 
@@ -52,6 +65,7 @@ export type { AnyTransportConfig } from '../../types.js';
 // These are marked as @internal to indicate they're not part of the public API
 export type {
   WalletMeshClient,
+  WalletMeshClient as WalletMeshBaseClient,
   CreateWalletMeshOptions,
 } from '../client/WalletMeshClient.js';
 export type {
@@ -65,6 +79,7 @@ export type { WalletInfo } from '../../types.js';
 
 // Export types that are referenced in documentation but not in public API
 export type { WalletProvider, BasicChainInfo } from '../../api/types/providers.js';
+export type { ChainInfo } from '../../services/chain/types.js';
 export type {
   WalletConnectionState,
   ConnectionState as ApiConnectionState,
@@ -92,7 +107,15 @@ export type {
   TransportMessageEvent,
 } from '../../api/types/events.js';
 
-// Discovery service types have been removed with legacy discovery services
+// Discovery service types
+export type { AztecAccount } from '../../api/types/providers.js';
+export type {
+  SolanaWalletStandardWallet as SolanaWallet,
+  SolanaWalletAccount as SolanaAccount
+} from '../../client/discovery/solana/types.js';
+
+// Type-only export for compatibility
+export type WalletStandardEvent = unknown;
 
 // Export missing types referenced in TypeDoc warnings
 export type { WalletEventMap } from '../../api/types/providers.js';

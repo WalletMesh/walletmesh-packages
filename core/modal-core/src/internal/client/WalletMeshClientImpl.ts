@@ -89,7 +89,31 @@ import type { ChainConfig } from './WalletMeshClient.js';
  * @category Client
  * @since 1.0.0
  */
-export class WalletMeshClient implements InternalWalletMeshClientInterface, WalletMeshClientInterface {
+type ModalInternals = ModalController & {
+  stores?: {
+    connection?: {
+      actions?: {
+        setConnecting?: (walletId: string) => void;
+        setConnected?: (data: {
+          walletId: string;
+          accounts?: string[];
+          chainId?: string;
+          chainType?: string;
+          address?: string;
+        }) => void;
+        setDisconnected?: () => void;
+      };
+    };
+    error?: {
+      actions?: {
+        setError?: (error: unknown, message: string) => void;
+      };
+    };
+  };
+  setView?: (view: string) => void;
+};
+
+export class WalletMeshClient implements WalletMeshClientInterface, InternalWalletMeshClientInterface {
   private adapters = new Map<string, WalletAdapter>();
   private providerVersions = new Map<string, number>();
   private providerLoader: ProviderLoader;
@@ -99,6 +123,7 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
   private evmDiscoveryService?: EVMDiscoveryService;
   private solanaDiscoveryService?: SolanaDiscoveryService;
   private initialized = false;
+  private initializingPromise?: Promise<void>;
   private rehydrationAttempted = false;
   private modalUnsubscribe?: (() => void) | undefined;
   private isClosingModal = false;
@@ -188,6 +213,92 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
     // Multi-wallet functionality is now part of unified store
   }
 
+  private getInvocationCaller(): string {
+    const err = new Error();
+    if (!err.stack) {
+      return 'unknown';
+    }
+    const stackLines = err.stack.split('\n').map((line) => line.trim());
+    const callerFrame = stackLines[2];
+    return callerFrame || 'unknown';
+  }
+
+  private withModalInternals(callback: (modal: ModalInternals) => void): void {
+    if (!this.modal) {
+      return;
+    }
+    callback(this.modal as ModalInternals);
+  }
+
+  private updateModalStatus(
+    status: 'connecting' | 'connected' | 'error',
+    payload: {
+      walletId?: string;
+      accounts?: string[];
+      chainId?: string;
+      chainType?: string;
+      address?: string;
+      error?: unknown;
+      errorMessage?: string;
+    } = {},
+  ): void {
+    this.withModalInternals((modal) => {
+      switch (status) {
+        case 'connecting': {
+          if (payload.walletId && modal.stores?.connection?.actions?.setConnecting) {
+            modal.stores.connection.actions.setConnecting(payload.walletId);
+          }
+          modal.setView?.('connecting');
+          break;
+        }
+        case 'connected': {
+          if (payload.walletId && modal.stores?.connection?.actions?.setConnected) {
+            const connectedPayload: {
+              walletId: string;
+              accounts?: string[];
+              chainId?: string;
+              chainType?: string;
+              address?: string;
+            } = {
+              walletId: payload.walletId,
+            };
+
+            if (payload.accounts) {
+              connectedPayload.accounts = payload.accounts;
+            }
+            if (payload.chainId) {
+              connectedPayload.chainId = payload.chainId;
+            }
+            if (payload.chainType) {
+              connectedPayload.chainType = payload.chainType;
+            }
+            if (payload.address) {
+              connectedPayload.address = payload.address;
+            }
+
+            modal.stores.connection.actions.setConnected(connectedPayload);
+          }
+          modal.setView?.('connected');
+          break;
+        }
+        case 'error': {
+          if (modal.stores?.error?.actions?.setError) {
+            const errorMessage =
+              payload.errorMessage ||
+              (payload.error instanceof Error
+                ? payload.error.message
+                : typeof payload.error === 'string'
+                  ? payload.error
+                  : JSON.stringify(payload.error));
+            modal.stores.error.actions.setError(payload.error, errorMessage);
+          }
+          modal.setView?.('error');
+          break;
+        }
+      }
+    });
+  }
+
   /**
    * Initializes the client and all its subsystems.
    *
@@ -215,28 +326,52 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
       return;
     }
 
+    if (this.initializingPromise) {
+      await this.initializingPromise;
+      return;
+    }
+
+    const initializationTask = (async () => {
+      await this.performCoreInitialization();
+      this.initialized = true;
+
+      if (this.config.handleRehydration !== false) {
+        try {
+          await this.handleRehydratedSessions();
+        } catch (rehydrationError) {
+          this.logger?.warn('Session rehydration encountered an error', rehydrationError);
+        }
+      }
+
+      this.logger?.debug('WalletMeshClient: Initialization complete');
+    })();
+
+    this.initializingPromise = initializationTask;
+
+    try {
+      await initializationTask;
+    } finally {
+      delete this.initializingPromise;
+    }
+  }
+
+  private async performCoreInitialization(): Promise<void> {
     this.logger?.debug('WalletMeshClient: Initializing');
 
-    // Extract chain configurations for different purposes
     const basicChainConfigs = this.extractBasicChainConfigs();
     const fullChainInfos = this.extractFullChainInfos();
 
-    // Initialize service registry first with full chain infos
     await this.serviceRegistry.initialize({
       ...(this.logger ? { logger: this.logger } : {}),
       chains: fullChainInfos,
     });
 
-    // Initialize provider loader
     await this.providerLoader.initialize();
 
-    // Initialize dApp RPC service from basic chain configurations
     this.dappRpcIntegration.initializeFromChainConfigs(basicChainConfigs);
 
-    // Initialize discovery coordinator
     await this.initializeDiscovery();
 
-    // Initialize chain-specific discovery services based on configured chains
     const supportedChainTypes = this.extractChainTypesFromConfig();
     this.logger?.info('Chain type configuration for wallet discovery', {
       supportedChainTypes,
@@ -250,37 +385,25 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
       willDiscoverAztec: supportedChainTypes.includes(ChainType.Aztec),
     });
 
-    // Only initialize discovery services for configured chain types
     if (supportedChainTypes.includes(ChainType.Evm)) {
-      this.logger?.info('Initializing EVM wallet discovery');
+      this.logger?.info('Preparing EVM wallet discovery (manual execution)');
       await this.initializeEVMDiscovery();
     } else {
       this.logger?.info('Skipping EVM wallet discovery - not in configured chain types');
     }
 
     if (supportedChainTypes.includes(ChainType.Solana)) {
-      this.logger?.info('Initializing Solana wallet discovery');
+      this.logger?.info('Preparing Solana wallet discovery (manual execution)');
       await this.initializeSolanaDiscovery();
     } else {
       this.logger?.info('Skipping Solana wallet discovery - not in configured chain types');
     }
 
-    // Note: Aztec discovery is handled through the main discovery coordinator
-    // and wallet registration, not through a separate discovery service
     if (supportedChainTypes.includes(ChainType.Aztec)) {
       this.logger?.info(
         'Aztec wallets will be discovered through main discovery coordinator and direct registration',
       );
     }
-
-    // Handle rehydrated sessions
-    // Only handle rehydration if not disabled by config (e.g., React apps handle this themselves)
-    if (this.config.handleRehydration !== false) {
-      await this.handleRehydratedSessions();
-    }
-
-    this.initialized = true;
-    this.logger?.debug('WalletMeshClient: Initialization complete');
   }
 
   /**
@@ -367,10 +490,27 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
       // Convert supportedInterfaces to technology-based requirements
       const technologies = this.createTechnologyRequirements();
 
+      // Use discovery config from client config if available
+      const discoveryConfig = this.config.discovery || {};
+
       const discoveryService = new DiscoveryService(
         {
-          timeout: 5000,
-          ...(technologies && { technologies }),
+          enabled: discoveryConfig.enabled !== false,
+          timeout: discoveryConfig.timeout || 5000,
+          retryInterval: discoveryConfig.retryInterval ?? 30000,
+          maxAttempts: discoveryConfig.maxAttempts || 0,
+          // Use technologies from config if available, otherwise use generated ones
+          ...(discoveryConfig.technologies ? {
+            technologies: discoveryConfig.technologies.map(tech => ({
+              type: tech.type as 'evm' | 'solana' | 'aztec',
+              interfaces: tech.interfaces || [],
+              ...(tech.features && { features: tech.features })
+            }))
+          } : (technologies && { technologies })),
+          // Add dApp info from discovery config
+          ...(discoveryConfig.dappInfo && { dappInfo: discoveryConfig.dappInfo }),
+          // Add capabilities from discovery config
+          ...(discoveryConfig.capabilities && { capabilities: discoveryConfig.capabilities }),
           transport: {
             adapterConfig: {
               autoConnect: false,
@@ -392,17 +532,9 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
 
       // No longer listening for adapter_created since adapters are created on-demand
 
-      // Start discovery for supported chain types
-      const supportedChains = this.extractChainTypesFromConfig();
-      if (supportedChains.length > 0) {
-        this.logger.debug('Starting wallet discovery', { supportedChains });
-        await discoveryService.discoverWallets(supportedChains);
-      }
-
       // Store discovery service for cleanup
       this.discoveryService = discoveryService;
-
-      this.logger.debug('Discovery system initialized successfully');
+      this.logger.debug('Discovery system initialized for manual wallet discovery');
     } catch (error) {
       this.logger.error('Failed to initialize discovery system', error);
       // Don't throw - discovery is optional and shouldn't break client initialization
@@ -458,43 +590,109 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
   }
 
   /**
-   * Initializes EVM-specific wallet discovery using EIP-6963 and EIP-1193.
+   * Prepares the EVM discovery service for manual execution.
    *
-   * This method discovers EVM wallets and registers them in the wallet registry
-   * as discovered wallets (not adapter instances). Adapters are created on-demand
-   * when users select wallets.
+   * This creates the discovery service without triggering any discovery
+   * scans. Actual discovery runs are deferred until explicitly requested.
    *
    * @private
-   * @returns Promise that resolves when EVM discovery is complete
    */
   private async initializeEVMDiscovery(): Promise<void> {
-    // Only run in browser environment
     if (typeof window === 'undefined') {
-      this.logger?.debug('Skipping EVM discovery - not in browser environment');
+      this.logger?.debug('Skipping EVM discovery preparation - not in browser environment');
       return;
     }
 
-    // Check if EVM chain type is supported
-    const supportedChains = this.extractChainTypesFromConfig();
-    if (!supportedChains.includes(ChainType.Evm)) {
-      this.logger?.debug('Skipping EVM discovery - EVM chain type not in configuration');
+    const configuredChainTypes = this.extractChainTypesFromConfig();
+    if (!configuredChainTypes.includes(ChainType.Evm)) {
+      this.logger?.debug('Skipping EVM discovery preparation - EVM chain type not in configuration');
+      return;
+    }
+
+    if (this.evmDiscoveryService) {
+      this.logger?.debug('EVM discovery service already prepared');
       return;
     }
 
     try {
-      this.logger?.debug('Starting EVM wallet discovery');
+      this.evmDiscoveryService = new EVMDiscoveryService(
+        {
+          enabled: true,
+          eip6963Timeout: 100,
+          preferEIP6963: true,
+        },
+        this.logger,
+      );
+      this.logger?.debug('EVM discovery service prepared for manual execution');
+    } catch (error) {
+      this.logger?.error('Failed to prepare EVM discovery service', error);
+    }
+  }
 
-      // Create EVM discovery service
-      this.evmDiscoveryService = new EVMDiscoveryService({
-        enabled: true,
-        eip6963Timeout: 100,
-        preferEIP6963: true,
-      });
+  /**
+   * Prepares the Solana discovery service for manual execution.
+   *
+   * This creates the discovery service without triggering any discovery
+   * scans. Actual discovery runs are deferred until explicitly requested.
+   *
+   * @private
+   */
+  private async initializeSolanaDiscovery(): Promise<void> {
+    if (typeof window === 'undefined') {
+      this.logger?.debug('Skipping Solana discovery preparation - not in browser environment');
+      return;
+    }
 
-      // Discover EVM wallets
+    const configuredChainTypes = this.extractChainTypesFromConfig();
+    if (!configuredChainTypes.includes(ChainType.Solana)) {
+      this.logger?.debug('Skipping Solana discovery preparation - Solana chain type not in configuration');
+      return;
+    }
+
+    if (this.solanaDiscoveryService) {
+      this.logger?.debug('Solana discovery service already prepared');
+      return;
+    }
+
+    try {
+      this.solanaDiscoveryService = new SolanaDiscoveryService(
+        {
+          enabled: true,
+          walletStandardTimeout: 500,
+          preferWalletStandard: true,
+          includeDeprecated: false,
+        },
+        this.logger,
+      );
+      this.logger?.debug('Solana discovery service prepared for manual execution');
+    } catch (error) {
+      this.logger?.error('Failed to prepare Solana discovery service', error);
+    }
+  }
+
+  /**
+   * Runs the EVM discovery workflow on-demand.
+   *
+   * @private
+   */
+  private async runEVMDiscovery(): Promise<void> {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const configuredChainTypes = this.extractChainTypesFromConfig();
+    if (!configuredChainTypes.includes(ChainType.Evm)) {
+      return;
+    }
+
+    try {
+      await this.initializeEVMDiscovery();
+      if (!this.evmDiscoveryService) {
+        return;
+      }
+
+      this.logger?.debug('Running EVM wallet discovery');
       const results = await this.evmDiscoveryService.discover();
-
-      // Get all discovered wallets as a flat array
       const allWallets = this.evmDiscoveryService.getDiscoveredWallets();
 
       this.logger?.info('EVM discovery completed', {
@@ -503,10 +701,10 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
         totalFound: allWallets.length,
       });
 
-      // Register each discovered wallet in the registry
       for (const wallet of allWallets) {
         const discoveredInfo: DiscoveredWalletInfo = {
           id: wallet.id,
+          responderId: wallet.id,
           name: wallet.name,
           icon: wallet.icon,
           adapterType: 'evm',
@@ -520,21 +718,15 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
           metadata: wallet.metadata || {},
         };
 
-        // Register in wallet registry as discovered wallet
         this.registry.registerDiscoveredWallet(discoveredInfo);
 
-        // Get the adapter to determine supported chains
-        let supportedChains: ChainType[] = [ChainType.Evm]; // Default for EVM discovered wallets
-
-        // Try to get the adapter if it exists to get accurate chain support
+        let walletSupportedChains: ChainType[] = [ChainType.Evm];
         const adapter = this.registry.getAdapter(wallet.id);
         if (adapter?.capabilities.chains) {
-          supportedChains = adapter.capabilities.chains.map((c) => c.type);
+          walletSupportedChains = adapter.capabilities.chains.map((c) => c.type);
         }
 
-        // Also add to modal's wallet list - but only if it supports configured chain types
-        const configuredChainTypes = this.extractChainTypesFromConfig();
-        const walletSupportsConfiguredChains = supportedChains.some((chainType) =>
+        const walletSupportsConfiguredChains = walletSupportedChains.some((chainType) =>
           configuredChainTypes.includes(chainType),
         );
 
@@ -544,7 +736,7 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
             name: wallet.name,
             icon: wallet.icon,
             description: `Discovered ${wallet.name} wallet`,
-            chains: supportedChains,
+            chains: walletSupportedChains,
           };
           connectionActions.addWallet(useStore, walletInfo);
           this.logger?.debug('Registered discovered EVM wallet', {
@@ -555,60 +747,43 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
         } else {
           this.logger?.debug('Skipping EVM wallet registration - does not support configured chain types', {
             walletId: wallet.id,
-            walletChains: supportedChains,
+            walletChains: walletSupportedChains,
             configuredChains: configuredChainTypes,
           });
         }
       }
 
-      this.logger?.info('EVM wallet discovery completed successfully', {
+      this.logger?.info('EVM wallet discovery run completed successfully', {
         registeredCount: allWallets.length,
       });
     } catch (error) {
-      this.logger?.error('Failed to initialize EVM discovery', error);
-      // Don't throw - EVM discovery is optional and shouldn't break client initialization
+      this.logger?.error('Failed to run EVM discovery', error);
     }
   }
 
   /**
-   * Initializes Solana-specific wallet discovery using Wallet Standard and injection.
-   *
-   * This method discovers Solana wallets and registers them in the wallet registry
-   * as discovered wallets (not adapter instances). Adapters are created on-demand
-   * when users select wallets.
+   * Runs the Solana discovery workflow on-demand.
    *
    * @private
-   * @returns Promise that resolves when Solana discovery is complete
    */
-  private async initializeSolanaDiscovery(): Promise<void> {
-    // Only run in browser environment
+  private async runSolanaDiscovery(): Promise<void> {
     if (typeof window === 'undefined') {
-      this.logger?.debug('Skipping Solana discovery - not in browser environment');
       return;
     }
 
-    // Check if Solana chain type is supported
-    const supportedChains = this.extractChainTypesFromConfig();
-    if (!supportedChains.includes(ChainType.Solana)) {
-      this.logger?.debug('Skipping Solana discovery - Solana chain type not in configuration');
+    const configuredChainTypes = this.extractChainTypesFromConfig();
+    if (!configuredChainTypes.includes(ChainType.Solana)) {
       return;
     }
 
     try {
-      this.logger?.debug('Starting Solana wallet discovery');
+      await this.initializeSolanaDiscovery();
+      if (!this.solanaDiscoveryService) {
+        return;
+      }
 
-      // Create Solana discovery service
-      this.solanaDiscoveryService = new SolanaDiscoveryService({
-        enabled: true,
-        walletStandardTimeout: 500,
-        preferWalletStandard: true,
-        includeDeprecated: false,
-      });
-
-      // Discover Solana wallets
+      this.logger?.debug('Running Solana wallet discovery');
       const results = await this.solanaDiscoveryService.discover();
-
-      // Get all discovered wallets as a flat array
       const allWallets = this.solanaDiscoveryService.getDiscoveredWallets();
 
       this.logger?.info('Solana discovery completed', {
@@ -618,10 +793,10 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
         totalFound: allWallets.length,
       });
 
-      // Register each discovered wallet in the registry
       for (const wallet of allWallets) {
         const discoveredInfo: DiscoveredWalletInfo = {
           id: wallet.id,
+          responderId: wallet.id,
           name: wallet.name,
           icon: wallet.icon,
           adapterType: 'solana',
@@ -635,21 +810,15 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
           metadata: wallet.metadata || {},
         };
 
-        // Register in wallet registry as discovered wallet
         this.registry.registerDiscoveredWallet(discoveredInfo);
 
-        // Get the adapter to determine supported chains
-        let supportedChains: ChainType[] = [ChainType.Solana]; // Default for Solana discovered wallets
-
-        // Try to get the adapter if it exists to get accurate chain support
+        let walletSupportedChains: ChainType[] = [ChainType.Solana];
         const adapter = this.registry.getAdapter(wallet.id);
         if (adapter?.capabilities.chains) {
-          supportedChains = adapter.capabilities.chains.map((c) => c.type);
+          walletSupportedChains = adapter.capabilities.chains.map((c) => c.type);
         }
 
-        // Also add to modal's wallet list - but only if it supports configured chain types
-        const configuredChainTypes = this.extractChainTypesFromConfig();
-        const walletSupportsConfiguredChains = supportedChains.some((chainType) =>
+        const walletSupportsConfiguredChains = walletSupportedChains.some((chainType) =>
           configuredChainTypes.includes(chainType),
         );
 
@@ -659,7 +828,7 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
             name: wallet.name,
             icon: wallet.icon,
             description: `Discovered ${wallet.name} wallet`,
-            chains: supportedChains,
+            chains: walletSupportedChains,
           };
           connectionActions.addWallet(useStore, walletInfo);
           this.logger?.debug('Registered discovered Solana wallet', {
@@ -672,19 +841,37 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
             'Skipping Solana wallet registration - does not support configured chain types',
             {
               walletId: wallet.id,
-              walletChains: supportedChains,
+              walletChains: walletSupportedChains,
               configuredChains: configuredChainTypes,
             },
           );
         }
       }
 
-      this.logger?.info('Solana wallet discovery completed successfully', {
+      this.logger?.info('Solana wallet discovery run completed successfully', {
         registeredCount: allWallets.length,
       });
     } catch (error) {
-      this.logger?.error('Failed to initialize Solana discovery', error);
-      // Don't throw - Solana discovery is optional and shouldn't break client initialization
+      this.logger?.error('Failed to run Solana discovery', error);
+    }
+  }
+
+  /**
+   * Runs browser-based discovery fallbacks for configured chain types.
+   *
+   * @private
+   */
+  private async runBrowserDiscovery(chainTypes?: ChainType[]): Promise<void> {
+    const requestedChainTypes = chainTypes && chainTypes.length > 0
+      ? new Set(chainTypes)
+      : new Set(this.extractChainTypesFromConfig());
+
+    if (requestedChainTypes.has(ChainType.Evm)) {
+      await this.runEVMDiscovery();
+    }
+
+    if (requestedChainTypes.has(ChainType.Solana)) {
+      await this.runSolanaDiscovery();
     }
   }
 
@@ -702,12 +889,48 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
       return;
     }
 
+    const canonicalId = this.resolveCanonicalWalletId(wallet);
+
     this.logger?.debug('Wallet discovered through discovery protocol', {
-      walletId: wallet.responderId,
+      walletId: canonicalId,
+      responderId: wallet.responderId,
       name: wallet.name,
       technologies: wallet.matched?.required?.technologies,
       transportType: wallet.transportConfig?.type,
     });
+  }
+
+  private resolveCanonicalWalletId(
+    wallet: import('@walletmesh/discovery').QualifiedResponder,
+  ): string {
+    const discovered = this.registry.getDiscoveredWallet(wallet.responderId);
+    if (discovered) {
+      return discovered.id;
+    }
+
+    const metadata = wallet.metadata as Record<string, unknown> | undefined;
+    const metadataId =
+      metadata && typeof metadata['canonicalId'] === 'string'
+        ? (metadata['canonicalId'] as string).trim()
+        : '';
+    if (metadataId) {
+      return metadataId;
+    }
+
+    const rdns = typeof wallet.rdns === 'string' ? wallet.rdns.trim() : '';
+    if (rdns) {
+      return rdns;
+    }
+
+    const transport = wallet.transportConfig;
+    if (transport?.type === 'extension' && typeof transport.extensionId === 'string') {
+      const extensionId = transport.extensionId.trim();
+      if (extensionId) {
+        return `extension:${extensionId}`;
+      }
+    }
+
+    return wallet.responderId;
   }
 
   /**
@@ -758,6 +981,45 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
         features: ['account-management', 'private-transactions'],
       });
     }
+
+    return technologies.length > 0 ? technologies : undefined;
+  }
+
+  private mapChainTypesToTechnologies(chainTypes: ChainType[]):
+    | Array<{
+        type: 'evm' | 'solana' | 'aztec';
+        interfaces: string[];
+      }>
+    | undefined {
+    if (!chainTypes || chainTypes.length === 0) {
+      return undefined;
+    }
+
+    const technologies = chainTypes
+      .map((chainType) => {
+        switch (chainType) {
+          case 'evm':
+            return {
+              type: 'evm' as const,
+              interfaces: ['eip-1193'],
+            };
+          case 'solana':
+            return {
+              type: 'solana' as const,
+              interfaces: ['solana-standard'],
+            };
+          case 'aztec':
+            return {
+              type: 'aztec' as const,
+              // Request the canonical Aztec wallet API interface for discovery matching
+              interfaces: ['aztec-wallet-api-v1'],
+            };
+          default:
+            this.logger?.warn('Unknown chain type for discovery configuration override', { chainType });
+            return undefined;
+        }
+      })
+      .filter((tech): tech is { type: 'evm' | 'solana' | 'aztec'; interfaces: string[] } => tech !== undefined);
 
     return technologies.length > 0 ? technologies : undefined;
   }
@@ -996,20 +1258,12 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
         if (aztecChainId && configWithPermissions.permissions[aztecChainId]) {
           const permissions = configWithPermissions.permissions[aztecChainId];
 
-          // 📋 CLIENT-SIDE PERMISSION LOG: Show what permissions are configured
-          console.log('🔧 CLIENT CONFIG - Permission Declaration', {
-            source: 'dApp configuration (client-side)',
+          this.logger?.info('Client permissions configured for Aztec chain', {
             chainId: aztecChainId,
             walletId: targetWalletId,
             declaredPermissions: permissions,
             permissionCount: permissions.length,
-            message: '✅ These permissions are declared in your dApp configuration',
-            usage: 'Permissions declared here will be passed to the wallet adapter during connection',
-            troubleshooting: {
-              missing: "If a method fails, ensure it's included in this permissions array",
-              location: 'Update permissions in your AztecWalletMeshProvider config.permissions',
-              categories: this.categorizePermissions(permissions),
-            },
+            permissionCategories: this.categorizePermissions(permissions),
           });
 
           connectOptions['aztecOptions'] = {
@@ -1018,62 +1272,36 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
           };
         } else if (aztecChainId) {
           // Log when no permissions are configured for Aztec chain
-          console.warn('⚠️ CLIENT CONFIG - No Permissions Declared', {
-            source: 'dApp configuration (client-side)',
+          this.logger?.warn('No explicit permissions configured for Aztec chain', {
             chainId: aztecChainId,
             walletId: targetWalletId,
-            issue: 'No permissions configured for Aztec chain',
-            impact:
-              'Wallet adapter will use default permissions, may cause "insufficient permissions" errors',
-            solution: 'Add permissions array to your AztecWalletMeshProvider config',
-            example: "permissions: ['aztec_getAddress', 'aztec_simulateUtility', ...]",
+            impact: 'Wallet adapter will use default permissions which may be insufficient',
+            recommendation: 'Add permissions array to AztecWalletMeshProvider config',
           });
         }
       } else {
         // Log when no permissions configuration exists at all
-        console.warn('⚠️ CLIENT CONFIG - No Permission System Configured', {
-          source: 'dApp configuration (client-side)',
+        this.logger?.warn('No permission configuration defined in client options', {
           walletId: targetWalletId,
-          issue: 'No permissions field found in dApp configuration',
           impact: 'All permission requests will use adapter defaults',
-          solution: 'Add permissions configuration to your provider config',
-          example: "config: { permissions: ['aztec_getAddress', 'aztec_simulateUtility', ...] }",
+          recommendation: 'Add permissions configuration to provider config',
         });
       }
 
-      // Update modal state to connecting if modal is available
-      if (this.modal && targetWalletId) {
-        // Type cast to access internal implementation details
-        interface ModalInternals {
-          stores?: {
-            connection?: {
-              actions?: {
-                setConnecting?: (walletId: string) => void;
-                setConnected?: (data: { walletId: string; address?: string; chainId?: string }) => void;
-              };
-            };
-            ui?: {
-              getState?: () => { currentView?: string };
-            };
-          };
-          setView?: (view: string) => void;
-        }
-        const modalImpl = this.modal as ModalInternals;
-
-        // Update the modal state to show connecting
-        if (modalImpl.stores?.connection?.actions?.setConnecting) {
-          modalImpl.stores.connection.actions.setConnecting(targetWalletId);
-        }
-        // Update view to connecting
-        if (modalImpl.setView) {
-          modalImpl.setView('connecting');
-        }
-        // Note: Removed event emissions here - let the modal controller handle its own events
-        // This prevents duplicate events from being emitted
+      if (targetWalletId) {
+        this.updateModalStatus('connecting', { walletId: targetWalletId });
       }
 
       // Connect
+      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'Client.connect: calling adapter.connect', {
+        walletId: targetWalletId,
+        adapterClass: adapter?.constructor?.name,
+      });
       const connection = await adapter.connect(connectOptions);
+      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'Client.connect: adapter.connect resolved', {
+        walletId: targetWalletId,
+        adapterClass: adapter?.constructor?.name,
+      });
       this.logger?.debug('Connection established, creating session', {
         walletId: targetWalletId,
         address: connection.address,
@@ -1127,6 +1355,10 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
           },
         },
       };
+
+      if (options?.sessionId && options.requestNewSession !== true) {
+        sessionParams.sessionId = options.sessionId;
+      }
 
       this.logger?.debug('Session parameters prepared', sessionParams);
 
@@ -1184,46 +1416,14 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
       // Initialize provider version tracking
       this.providerVersions.set(targetWalletId, 1);
 
-      // Update modal state to connected if modal is available
-      if (this.modal && targetWalletId) {
-        // Type cast to access internal implementation details
-        interface ModalInternals {
-          stores?: {
-            connection?: {
-              actions?: {
-                setConnecting?: (walletId: string) => void;
-                setConnected?: (data: {
-                  walletId: string;
-                  accounts?: string[];
-                  chainId?: string;
-                  chainType?: string;
-                  address?: string;
-                }) => void;
-              };
-            };
-            ui?: {
-              getState?: () => { currentView?: string };
-            };
-          };
-          setView?: (view: string) => void;
-        }
-        const modalImpl = this.modal as ModalInternals;
-
-        if (modalImpl.stores?.connection?.actions?.setConnected) {
-          modalImpl.stores.connection.actions.setConnected({
-            walletId: targetWalletId,
-            accounts: connection.accounts || [connection.address],
-            chainId: String(connection.chain.chainId) || '',
-            chainType: connection.chain.chainType || 'evm',
-            address: connection.address,
-          });
-        }
-        // Update view to connected
-        if (modalImpl.setView) {
-          modalImpl.setView('connected');
-        }
-        // Note: Removed event emissions here - let the modal controller handle its own events
-        // This prevents duplicate events from being emitted
+      if (targetWalletId) {
+        this.updateModalStatus('connected', {
+          walletId: targetWalletId,
+          accounts: connection.accounts || [connection.address],
+          chainId: String(connection.chain.chainId) || '',
+          chainType: connection.chain.chainType || 'evm',
+          address: connection.address,
+        });
       }
 
       // Emit event
@@ -1238,38 +1438,8 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
       return this.sessionToWalletConnection(session);
     } catch (error) {
       // Update modal state to error if modal is available
-      if (this.modal && targetWalletId) {
-        // Type cast to access internal implementation details
-        interface ModalInternals {
-          stores?: {
-            error?: {
-              actions?: {
-                setError?: (error: unknown, message: string) => void;
-              };
-            };
-            ui?: {
-              getState?: () => { currentView?: string };
-            };
-          };
-          setView?: (view: string) => void;
-        }
-        const modalImpl = this.modal as ModalInternals;
-
-        if (modalImpl.stores?.error?.actions?.setError) {
-          const errorMessage =
-            error instanceof Error
-              ? error.message
-              : typeof error === 'string'
-                ? error
-                : JSON.stringify(error);
-          modalImpl.stores.error.actions.setError(error, errorMessage);
-        }
-        // Update view to error
-        if (modalImpl.setView) {
-          modalImpl.setView('error');
-        }
-        // Note: Removed event emissions here - let the modal controller handle its own events
-        // This prevents duplicate events from being emitted
+      if (targetWalletId) {
+        this.updateModalStatus('error', { walletId: targetWalletId, error });
       }
       throw error;
     }
@@ -1357,34 +1527,10 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
     // Clean up provider version tracking
     this.providerVersions.delete(walletId);
 
-    // Update modal state to disconnected if modal is available
-    if (this.modal) {
-      // Type cast to access internal implementation details
-      interface ModalInternals {
-        stores?: {
-          connection?: {
-            actions?: {
-              setDisconnected?: () => void;
-            };
-          };
-          ui?: {
-            getState?: () => { currentView?: string };
-          };
-        };
-        setView?: (view: string) => void;
-      }
-      const modalImpl = this.modal as ModalInternals;
-
-      if (modalImpl.stores?.connection?.actions?.setDisconnected) {
-        modalImpl.stores.connection.actions.setDisconnected();
-      }
-      // Update view to wallet selection
-      if (modalImpl.setView) {
-        modalImpl.setView('walletSelection');
-      }
-      // Note: Removed event emissions here - let the modal controller handle its own events
-      // This prevents duplicate events from being emitted
-    }
+    this.withModalInternals((modal) => {
+      modal.stores?.connection?.actions?.setDisconnected?.();
+      modal.setView?.('walletSelection');
+    });
 
     // Connection removed - state automatically updated via session manager
   }
@@ -1682,23 +1828,123 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
   }
 
   /**
-   * Discover all available wallets in the user's environment.
+   * Discovers available wallets in the current environment.
    *
-   * Detects installed browser extensions, mobile wallets, and
-   * other available wallet providers.
+   * This method performs dynamic wallet discovery by:
+   * 1. Using the unified discovery service with reset capability for fresh discovery
+   * 2. Optionally filtering for specific chain types
+   * 3. Combining results from multiple discovery protocols
+   *
+   * The discovery service is reset before each discovery to ensure fresh results
+   * and can be reconfigured for different chain types throughout the dApp's lifecycle.
+   *
+   * @param options - Discovery options with optional chain type filtering
    *
    * @returns Promise resolving to array of available wallets
    *
    * @example
    * ```typescript
-   * const wallets = await client.discoverWallets();
-   * const installed = wallets.filter(w => w.available);
-   * console.log('Installed wallets:', installed);
+   * // Discover all wallets
+   * const allWallets = await client.discoverWallets();
+   *
+   * // Discover only EVM wallets
+   * const evmWallets = await client.discoverWallets({ chainTypes: ['evm'] });
+   *
+   * // Discover Solana and Aztec wallets
+   * const multiChain = await client.discoverWallets({
+   *   chainTypes: ['solana', 'aztec']
+   * });
    * ```
    *
    * @public
    */
-  async discoverWallets(): Promise<AvailableWallet[]> {
+  async discoverWallets(options?: { chainTypes?: ChainType[] }): Promise<any[]> {
+    const caller = this.getInvocationCaller();
+    this.logger?.debug('WalletMeshClient.discoverWallets invoked', { caller });
+    this.logger?.debug('Starting wallet discovery', { options });
+
+    // Use discovery service if available for cross-origin discovery
+    if (this.discoveryService) {
+      try {
+        this.logger?.debug('Using unified discovery service for wallet discovery');
+
+        const chainTypes = options?.chainTypes || this.extractChainTypesFromConfig();
+        const shouldOverrideChains = Boolean(options?.chainTypes && options.chainTypes.length > 0);
+
+        const overrideTechnologies = shouldOverrideChains
+          ? this.mapChainTypesToTechnologies(options!.chainTypes!)
+          : undefined;
+
+        const scanConfig = shouldOverrideChains
+          ? {
+              supportedChainTypes: [...options!.chainTypes!],
+              ...(overrideTechnologies ? { technologies: overrideTechnologies } : {}),
+            }
+          : undefined;
+
+        const discoveryResults = await this.discoveryService.scan(scanConfig);
+
+        this.logger?.debug('Discovery service completed', {
+          foundWallets: discoveryResults.length,
+          chainTypes,
+        });
+
+        // Convert discovery results to AvailableWallet format
+        const discoveredAsAvailable: AvailableWallet[] = discoveryResults.map((result) => {
+          const canonicalId = this.resolveCanonicalWalletId(result.wallet);
+          const responderId = result.wallet.responderId;
+          const discoveredInfo =
+            this.registry.getDiscoveredWallet(canonicalId) ||
+            this.registry.getDiscoveredWallet(responderId);
+          const customMetadata =
+            (discoveredInfo?.metadata as Record<string, unknown> | undefined) ||
+            (result.wallet.metadata as Record<string, unknown> | undefined) ||
+            {};
+
+          return {
+            adapter: {
+              id: canonicalId,
+              metadata: {
+                name: result.wallet.name || 'Unknown Wallet',
+                icon: result.wallet.icon || '',
+                description: `Discovered ${result.wallet.name || 'wallet'} via discovery protocol`,
+                homepage: '',
+              },
+              capabilities: {
+                chains: this.extractChainCapabilities(result.wallet),
+                features: new Set(['sign_message', 'sign_typed_data', 'multi_account']),
+              },
+
+              // These methods won't be called on discovered wallets since adapters are created on-demand
+              detect: async () => ({ available: true }),
+              connect: async () => {
+                throw new Error('Should not be called - use client.connect() instead');
+              },
+              disconnect: async () => {
+                throw new Error('Should not be called - use client.disconnect() instead');
+              },
+            } as unknown as WalletAdapter,
+            available: true,
+            customData: {
+              discoveryMethod: 'discovery-protocol',
+              responderId,
+              metadata: customMetadata,
+            },
+          };
+        });
+
+        return discoveredAsAvailable;
+      } catch (error) {
+        this.logger?.error('Discovery service failed, falling back to registry-based discovery', error);
+        // Fall through to fallback discovery
+      }
+    }
+
+    // Fallback: use registry-based discovery
+    this.logger?.debug('Using registry-based discovery (fallback)');
+
+    await this.runBrowserDiscovery(options?.chainTypes);
+
     // Get adapters that are already registered
     const availableAdapters = await this.registry.detectAvailableAdapters();
 
@@ -1727,10 +1973,10 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
         // These methods won't be called on discovered wallets since adapters are created on-demand
         detect: async () => ({ available: true }),
         connect: async () => {
-          throw new Error('Should not be called');
+          throw new Error('Should not be called - use client.connect() instead');
         },
         disconnect: async () => {
-          throw new Error('Should not be called');
+          throw new Error('Should not be called - use client.disconnect() instead');
         },
       } as unknown as WalletAdapter,
       available: true,
@@ -1750,13 +1996,38 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
       }
     }
 
-    this.logger?.debug('Combined wallet discovery results', {
-      adapterCount: availableAdapters.length,
-      discoveredCount: discoveredWallets.length,
-      totalCount: combinedWallets.length,
+    this.logger?.debug('Fallback discovery completed', {
+      registered: availableAdapters.length,
+      discovered: discoveredWallets.length,
+      total: combinedWallets.length,
     });
 
     return combinedWallets;
+  }
+
+  /**
+   * Extract chain capabilities from qualified responder
+   * @private
+   */
+  private extractChainCapabilities(
+    wallet: import('@walletmesh/discovery').QualifiedResponder,
+  ): Array<{ type: ChainType; chainIds: string | string[] }> {
+    try {
+      if (wallet.matched?.required?.technologies) {
+        return wallet.matched.required.technologies.map((tech: any) => ({
+          type: tech.type as ChainType,
+          chainIds: '*', // Discovery protocol doesn't provide specific chain IDs
+        }));
+      }
+      // Fallback for wallets without technology info
+      return [{ type: ChainType.Evm, chainIds: '*' }];
+    } catch (error) {
+      this.logger?.warn('Failed to extract chain capabilities from qualified responder', {
+        walletId: wallet.responderId,
+        error,
+      });
+      return [{ type: ChainType.Evm, chainIds: '*' }];
+    }
   }
 
   /**
@@ -2794,6 +3065,12 @@ export class WalletMeshClient implements InternalWalletMeshClientInterface, Wall
     this.logger?.debug('Adapter found', {
       adapterId: adapter.id,
       adapterName: adapter.metadata.name,
+    });
+
+    // Trace whether this is DiscoveryAdapter and will create transports on connect
+    this.logger?.debug('Adapter class trace', {
+      isDiscoveryAdapter: adapter.constructor?.name === 'DiscoveryAdapter',
+      className: adapter.constructor?.name,
     });
 
     // Determine chain type for this wallet

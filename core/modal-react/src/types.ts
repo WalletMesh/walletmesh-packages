@@ -344,7 +344,7 @@ export interface WalletMeshReactConfig extends WalletMeshConfig {
    * @see {@link DiscoveryConfig} For detailed discovery options
    * @since 1.1.0
    */
-  discovery?: DiscoveryConfig;
+  // discovery?: DiscoveryConfig; // Inherited from WalletMeshConfig
 
   /**
    * Chain-specific permissions configuration.

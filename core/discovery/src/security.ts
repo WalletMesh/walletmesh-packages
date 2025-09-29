@@ -502,7 +502,7 @@ export class RateLimiter {
 export function createSecurityPolicy(options: Partial<SecurityPolicy> = {}): SecurityPolicy {
   const isDevelopment = process.env['NODE_ENV'] === 'development';
 
-  return {
+  const policy: SecurityPolicy = {
     requireHttps: options.requireHttps ?? !isDevelopment,
     allowLocalhost: options.allowLocalhost ?? isDevelopment,
     allowedOrigins: options.allowedOrigins ?? [],
@@ -513,40 +513,21 @@ export function createSecurityPolicy(options: Partial<SecurityPolicy> = {}): Sec
       windowMs: 60000,
     },
   };
+
+  if (options.certificateValidation !== undefined) {
+    policy.certificateValidation = options.certificateValidation;
+  }
+
+  if (options.contentSecurityPolicy !== undefined) {
+    policy.contentSecurityPolicy = options.contentSecurityPolicy;
+  }
+
+  if (options.maxSessionAge !== undefined) {
+    policy.maxSessionAge = options.maxSessionAge;
+  }
+
+  return policy;
 }
-
-// Add static methods to createSecurityPolicy for compatibility
-createSecurityPolicy.strict = (
-  options: { allowedOrigins?: string[]; blockedOrigins?: string[] } = {},
-): SecurityPolicy => ({
-  ...(options.allowedOrigins && { allowedOrigins: options.allowedOrigins }),
-  ...(options.blockedOrigins && { blockedOrigins: options.blockedOrigins }),
-  requireHttps: true,
-  allowLocalhost: false,
-  certificateValidation: true,
-  rateLimit: {
-    enabled: true,
-    maxRequests: 10,
-    windowMs: 60 * 1000,
-  },
-});
-
-createSecurityPolicy.development = (
-  options: { allowedOrigins?: string[]; blockedOrigins?: string[] } = {},
-): SecurityPolicy => ({
-  ...(options.allowedOrigins && { allowedOrigins: options.allowedOrigins }),
-  ...(options.blockedOrigins && { blockedOrigins: options.blockedOrigins }),
-  requireHttps: false,
-  allowLocalhost: true,
-  certificateValidation: false,
-  rateLimit: {
-    enabled: true,
-    maxRequests: 100,
-    windowMs: 60 * 1000,
-  },
-});
-
-createSecurityPolicy.production = createSecurityPolicy.strict;
 
 // ============================================================================
 // Integrated Security Manager

@@ -7,19 +7,61 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DiscoveryService } from '../../client/DiscoveryService.js';
 import { createMockLogger, createMockRegistry } from '../../testing/helpers/mocks.js';
 import { ChainType } from '../../types.js';
+import { setupDiscoveryInitiatorMock, type MockDiscoveryInitiator } from '../../testing/helpers/setupDiscoveryInitiatorMock.js';
+
+// Mock the store module
+// Mock @walletmesh/discovery module
+vi.mock('@walletmesh/discovery', () => ({
+  DiscoveryInitiator: vi.fn(),
+  createInitiatorSession: vi.fn(),
+}));
+
+vi.mock('../../state/store.js', () => ({
+  getStoreInstance: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      ui: { isOpen: false, isLoading: false, error: undefined },
+      connections: {
+        activeSessions: [],
+        availableWallets: [],
+        discoveredWallets: [],
+        activeSessionId: null,
+        connectionStatus: 'disconnected'
+      },
+      transactions: {
+        pending: [],
+        confirmed: [],
+        failed: [],
+        activeTransaction: undefined
+      }
+      ,
+      entities: {
+        wallets: {}
+      }
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+    subscribeWithSelector: vi.fn(() => vi.fn())
+  }))
+}));
 
 describe('Discovery Flow Edge Cases (Working)', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockRegistry: ReturnType<typeof createMockRegistry>;
+  let mockInitiator: MockDiscoveryInitiator;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockLogger = createMockLogger();
     mockRegistry = createMockRegistry();
     vi.useFakeTimers();
+
+    ({ mockInitiator } = await setupDiscoveryInitiatorMock({
+      on: vi.fn(),
+      off: vi.fn(),
+      removeAllListeners: vi.fn(),
+    }));
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -133,7 +175,7 @@ describe('Discovery Flow Edge Cases (Working)', () => {
       ];
 
       for (const chainTypes of chainTypeCombinations) {
-        const result = await service.discoverWallets(chainTypes);
+        const result = await service.scan({ supportedChainTypes: chainTypes });
         expect(Array.isArray(result)).toBe(true);
       }
     });
@@ -178,18 +220,18 @@ describe('Discovery Flow Edge Cases (Working)', () => {
   });
 
   describe('Discovery Lifecycle Edge Cases', () => {
-    it('should handle start/stop continuous discovery multiple times', async () => {
+    it('should handle repeated scan and reset cycles', async () => {
       const service = new DiscoveryService(
         { enabled: true, autoCreateAdapters: false },
         mockRegistry,
         mockLogger,
       );
 
-      // Test that the methods exist and don't throw (but avoid actual async operations that aren't mocked)
-      expect(typeof service.startContinuousDiscovery).toBe('function');
-      expect(typeof service.stopContinuousDiscovery).toBe('function');
+      for (let i = 0; i < 3; i++) {
+        await service.scan();
+        await service.reset();
+      }
 
-      // Should handle gracefully
       expect(service.getDiscoveredAdapters()).toEqual([]);
     });
 
@@ -264,7 +306,7 @@ describe('Discovery Flow Edge Cases (Working)', () => {
       );
 
       // Should handle gracefully without throwing
-      const result = await service.discoverWallets([]);
+      const result = await service.scan({ supportedChainTypes: [] });
       expect(Array.isArray(result)).toBe(true);
     });
   });
@@ -278,7 +320,7 @@ describe('Discovery Flow Edge Cases (Working)', () => {
       );
 
       // Put service in simple state before cleanup
-      await service.discoverWallets([ChainType.Evm]);
+      await service.scan({ supportedChainTypes: [ChainType.Evm] });
 
       // Cleanup should work regardless of state
       await expect(service.destroy()).resolves.toBeUndefined();
@@ -309,9 +351,9 @@ describe('Discovery Flow Edge Cases (Working)', () => {
       const service = new DiscoveryService({ enabled: true }, mockRegistry, mockLogger);
 
       // Should handle discovery with different configurations
-      await service.discoverWallets([ChainType.Evm]);
-      await service.discoverWallets([ChainType.Solana]);
-      await service.discoverWallets([ChainType.Evm, ChainType.Solana]);
+      await service.scan({ supportedChainTypes: [ChainType.Evm] });
+      await service.scan({ supportedChainTypes: [ChainType.Solana] });
+      await service.scan({ supportedChainTypes: [ChainType.Evm, ChainType.Solana] });
 
       // Should log configuration updates
       expect(mockLogger.debug).toHaveBeenCalledWith('Updating chain configuration', expect.any(Object));
@@ -328,9 +370,9 @@ describe('Discovery Flow Edge Cases (Working)', () => {
 
       // Rapid state changes
       const operations = [
-        service.discoverWallets([ChainType.Evm]),
-        service.discoverWallets([ChainType.Solana]),
-        service.discoverWallets([ChainType.Aztec]),
+        service.scan({ supportedChainTypes: [ChainType.Evm] }),
+        service.scan({ supportedChainTypes: [ChainType.Solana] }),
+        service.scan({ supportedChainTypes: [ChainType.Aztec] }),
       ];
 
       await Promise.all(operations);
@@ -351,7 +393,7 @@ describe('Discovery Flow Edge Cases (Working)', () => {
       expect(service.getDiscoveredAdapters()).toEqual([]);
 
       // After operations
-      await service.discoverWallets([ChainType.Evm]);
+      await service.scan({ supportedChainTypes: [ChainType.Evm] });
       const midState = service.getDiscoveredAdapters();
       expect(Array.isArray(midState)).toBe(true);
 

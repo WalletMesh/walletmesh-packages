@@ -31,7 +31,7 @@
  */
 
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
-import { EventEmitter } from 'eventemitter3';
+import { EventEmitter } from '../../core/events/eventEmitter.js';
 import { createTransport } from '../../../api/transports/transports.js';
 import type { WalletAdapterConnectionState, WalletConnection } from '../../../api/types/connection.js';
 import { ConnectionStatus } from '../../../api/types/connectionStatus.js';
@@ -285,8 +285,21 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
    * Subscribe to a one-time event
    */
   once<E extends AdapterEvent>(event: E, handler: EventHandler<E>): Unsubscribe {
-    this.eventEmitter.once(event, handler);
-    return () => this.eventEmitter.off(event, handler);
+    // Create a wrapper that will be registered with the event emitter
+    let isUnsubscribed = false;
+    const wrapper = (data: unknown) => {
+      if (!isUnsubscribed) {
+        handler(data as EventData<E>);
+      }
+    };
+
+    this.eventEmitter.once(event, wrapper);
+
+    // Return unsubscribe function that marks as unsubscribed
+    return () => {
+      isUnsubscribed = true;
+      this.eventEmitter.off(event, wrapper);
+    };
   }
 
   /**

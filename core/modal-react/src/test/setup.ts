@@ -33,6 +33,21 @@ if (typeof process !== 'undefined' && process.stderr) {
 if (typeof window !== 'undefined') {
   // Track error handler state
   let errorHandlerInstalled = false;
+  // Guard window.close in tests to be a no-op to avoid teardown issues.
+  try {
+    // biome-ignore lint/suspicious/noExplicitAny: test env shim
+    const w: any = window as any;
+    if (!w.__WM_ORIGINAL_CLOSE__) {
+      w.__WM_ORIGINAL_CLOSE__ = w.close?.bind(w) ?? (() => {});
+      w.close = () => {
+        // Respect opt-out via env if needed
+        // no-op in tests to avoid environment teardown issues
+        return undefined;
+      };
+    }
+  } catch {
+    // ignore
+  }
 
   const installErrorHandlers = () => {
     if (errorHandlerInstalled) return;
@@ -90,8 +105,77 @@ if (typeof window !== 'undefined') {
   // Also install in beforeEach to ensure they're active
   beforeEach(() => {
     installErrorHandlers();
+    // Restore original schedulers before each test
+    try {
+      const w: any = window as any;
+      if (w.__WM_ORIGINAL_RAF__) {
+        w.requestAnimationFrame = w.__WM_ORIGINAL_RAF__;
+      }
+      if (w.__WM_ORIGINAL_CAF__) {
+        w.cancelAnimationFrame = w.__WM_ORIGINAL_CAF__;
+      }
+      if (w.__WM_ORIGINAL_SET_TIMEOUT__) {
+        w.setTimeout = w.__WM_ORIGINAL_SET_TIMEOUT__;
+      }
+      if (w.__WM_ORIGINAL_CLEAR_TIMEOUT__) {
+        w.clearTimeout = w.__WM_ORIGINAL_CLEAR_TIMEOUT__;
+      }
+    } catch {}
   });
 }
+
+// Flush and guard schedulers to prevent DOM ops during teardown
+afterEach(async () => {
+  try {
+    // Flush any pending microtasks
+    await Promise.resolve();
+  } catch {}
+
+  try {
+    if (vi.isFakeTimers()) {
+      // Run timers twice to flush chained callbacks
+      vi.runAllTimers();
+      vi.runAllTimers();
+      vi.clearAllTimers();
+    } else if (typeof window !== 'undefined') {
+      const w: any = window as any;
+      // Drain a frame if rAF exists
+      const originalRaf = w.requestAnimationFrame?.bind(w);
+      if (originalRaf) {
+        await new Promise<void>((resolve) => originalRaf(() => resolve()));
+      }
+      // Best-effort macrotask flush
+      await new Promise<void>((resolve) => w.setTimeout(resolve, 0));
+
+      // Install guards so no new tasks schedule DOM work during teardown
+      if (!w.__WM_ORIGINAL_RAF__) w.__WM_ORIGINAL_RAF__ = w.requestAnimationFrame?.bind(w);
+      if (!w.__WM_ORIGINAL_CAF__) w.__WM_ORIGINAL_CAF__ = w.cancelAnimationFrame?.bind(w);
+      if (!w.__WM_ORIGINAL_SET_TIMEOUT__) w.__WM_ORIGINAL_SET_TIMEOUT__ = w.setTimeout.bind(w);
+      if (!w.__WM_ORIGINAL_CLEAR_TIMEOUT__) w.__WM_ORIGINAL_CLEAR_TIMEOUT__ = w.clearTimeout.bind(w);
+
+      let blocked = false;
+      // Helper kept for clarity in previous logic; use inline assignment instead of separate function
+      w.requestAnimationFrame = (cb: FrameRequestCallback) => {
+        if (blocked) return -1;
+        return (w.__WM_ORIGINAL_RAF__ ?? ((fn: any) => setTimeout(fn, 16)))(cb);
+      };
+      w.cancelAnimationFrame = (id: number) => {
+        return (w.__WM_ORIGINAL_CAF__ ?? clearTimeout)(id as unknown as NodeJS.Timeout);
+      };
+      w.setTimeout = ((...args: any[]) => {
+        if (blocked) return -1 as unknown as NodeJS.Timeout;
+        return w.__WM_ORIGINAL_SET_TIMEOUT__(...args);
+      }) as typeof setTimeout;
+      w.clearTimeout = ((id: any) => w.__WM_ORIGINAL_CLEAR_TIMEOUT__(id)) as typeof clearTimeout;
+
+      // Activate block after giving a final tick
+      await Promise.resolve();
+      blocked = true;
+    }
+  } catch {
+    // ignore
+  }
+});
 
 // Mock React Query to avoid hook issues in tests
 vi.mock('@tanstack/react-query', () => ({

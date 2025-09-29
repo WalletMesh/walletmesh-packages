@@ -17,7 +17,7 @@ import { ChainType } from '../types.js';
 import type {
   WalletMeshClient as PublicWalletMeshClient,
   WalletMeshClientConfig,
-} from './WalletMeshClient.js';
+} from '../internal/client/WalletMeshClient.js';
 
 import { createModal } from '../api/core/modal.js';
 import { isServer } from '../api/utilities/ssr.js';
@@ -545,11 +545,11 @@ export function createWalletMeshClient(
     appName,
     appDescription: additionalConfig.appDescription || `${appName} - Web3 Application`,
     debug: process.env['NODE_ENV'] === 'development',
-    providerLoader: {
-      preloadOnInit: true,
-      preloadChainTypes: [ChainType.Evm],
-      ...additionalConfig.providerLoader,
-    },
+    // providerLoader: {
+    //   preloadOnInit: true,
+    //   preloadChainTypes: [ChainType.Evm],
+    //   ...additionalConfig.providerLoader,
+    // },
     discovery: {
       enabled: true,
       timeout: 5000,

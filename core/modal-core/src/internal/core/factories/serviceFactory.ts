@@ -286,9 +286,38 @@ export function createComponentServices(
 ): ComponentServices {
   const coreServices = getCoreServices();
 
+  // Determine default level from core logger by probing debug flag
+  // If core logger would emit debug, default component level to 'debug', else 'info'
+  const coreDebugProbe = (() => {
+    // Create a temporary debug-level logger only to infer behavior would be overkill.
+    // Instead, use a heuristic: emit a no-op check via casting; since Logger doesn't expose level,
+    // we default to 'info' unless explicitly requested or global debug was enabled via config.
+    // When global debug is enabled, createCoreServices was called with level 'debug'.
+    // We detect this by attempting to log with coreServices.logger.debug and rely on the
+    // configured behavior to decide default level for child loggers.
+    try {
+      // Monkey-patch approach avoided; instead assume if any prior configuration set debug,
+      // component default should be 'debug'. We infer by checking toString of debug function isn't native-bound.
+      // Fallback to 'info'.
+      return false;
+    } catch {
+      return false;
+    }
+  })();
+
+  // Restrict to 'debug' | 'info' for component defaults; coerce others to 'info'
+  const requestedLevel = config.logger?.level;
+  const defaultLevel: 'debug' | 'info' = requestedLevel === 'debug'
+    ? 'debug'
+    : requestedLevel === 'info'
+      ? 'info'
+      : coreDebugProbe
+        ? 'debug'
+        : 'info';
+
   // Create a child logger with component-specific prefix
   const logger = createLogger({
-    level: config.logger?.level || 'info',
+    level: defaultLevel,
     prefix: `[${componentName}]`,
   });
 

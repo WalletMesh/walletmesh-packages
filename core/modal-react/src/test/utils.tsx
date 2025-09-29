@@ -3,6 +3,7 @@
  */
 
 import { render } from '@testing-library/react';
+import type { RenderOptions, RenderResult } from '@testing-library/react';
 import { ChainType, type SupportedChain } from '@walletmesh/modal-core';
 import type React from 'react';
 import { WalletMeshProvider } from '../WalletMeshProvider.js';
@@ -63,7 +64,10 @@ export function createWrapper(config = mockConfig) {
   };
 }
 
-export function renderWithProvider(ui: React.ReactElement, options?: Parameters<typeof render>[1]) {
+export function renderWithProvider(
+  ui: React.ReactElement,
+  options?: RenderOptions,
+): RenderResult {
   return render(ui, {
     wrapper: createWrapper(),
     ...options,

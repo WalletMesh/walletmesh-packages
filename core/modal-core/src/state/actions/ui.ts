@@ -81,7 +81,9 @@ export const uiActions = {
    * Close the wallet connection modal
    */
   closeModal: (store: StoreApi<WalletMeshState>) => {
+    console.log('[uiActions.closeModal] Closing modal');
     mutateState(store, (state) => {
+      console.log('[uiActions.closeModal] Before state update - modalOpen:', state.ui.modalOpen);
       state.ui.modalOpen = false;
       state.ui.currentView = 'walletSelection';
       state.ui.viewHistory = [];
@@ -100,7 +102,9 @@ export const uiActions = {
       // Clear wallet filter when closing (direct mutation to avoid circular calls)
       // biome-ignore lint/performance/noDelete: Required for exactOptionalPropertyTypes
       delete state.ui.walletFilter;
+      console.log('[uiActions.closeModal] After state update - modalOpen:', state.ui.modalOpen);
     });
+    console.log('[uiActions.closeModal] Modal close completed');
   },
 
   /**

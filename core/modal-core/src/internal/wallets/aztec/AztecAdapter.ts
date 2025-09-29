@@ -1,7 +1,7 @@
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import type { WalletConnection } from '../../../api/types/connection.js';
 import type { WalletProvider } from '../../../api/types/providers.js';
-import { ChainType, type Transport } from '../../../types.js';
+import { ChainType, type Transport, type TransportEvent, type TransportMessageEvent } from '../../../types.js';
 import { ErrorFactory } from '../../core/errors/errorFactory.js';
 import { AbstractWalletAdapter } from '../base/AbstractWalletAdapter.js';
 import type {
@@ -91,6 +91,11 @@ export class AztecAdapter extends AbstractWalletAdapter {
    */
   private aztecProvider?: unknown;
 
+  /**
+   * Cleanup function for JSON-RPC transport subscriptions
+   */
+  private jsonrpcUnsubscribe: (() => void) | null = null;
+
   constructor(config?: AztecAdapterConfig) {
     super();
 
@@ -149,49 +154,49 @@ export class AztecAdapter extends AbstractWalletAdapter {
       // Dynamically import AztecRouterProvider to avoid hard dependency
       const { AztecRouterProvider } = await import('@walletmesh/aztec-rpc-wallet');
 
-      // Create a JSONRPCTransport adapter from the Transport
-      // The Transport interface is compatible with JSONRPCTransport for our use case
-      const jsonRpcTransport = transport as unknown as JSONRPCTransport;
+      const jsonRpcTransport = this.ensureJSONRPCTransport(transport);
 
       // Create AztecRouterProvider instance
       this.aztecProvider = new AztecRouterProvider(jsonRpcTransport);
 
       // Determine network to connect to
-      const network = this.config.network || 'aztec:testnet';
+      const network = this.normalizeNetworkId(_options);
 
-      // Request permissions for Aztec operations
-      const permissions = ['aztec_getAddress', 'aztec_sendTx', 'aztec_getAccounts'];
+      // Request permissions for Aztec operations (minimal set for connection)
+      const permissions = this.resolveRequestedPermissions(_options);
 
-      // Connect to the wallet
+      // Establish session with the wallet router
       const provider = this.aztecProvider as {
-        connect: (config: Record<string, string[]>) => Promise<void>;
-        request: (params: { method: string; params: unknown[] }) => Promise<unknown>;
+        connect: (config: Record<string, string[]>) => Promise<{ sessionId: string }>;
+        call: <M extends string>(chainId: string, call: { method: M; params?: unknown[] }) => Promise<unknown>;
+        disconnect?: () => Promise<void>;
       };
-      await provider.connect({
+
+      const { sessionId } = await provider.connect({
         [network]: permissions,
       });
 
-      // Get the connected accounts
-      const accounts = (await provider.request({
-        method: 'aztec_getAccounts',
-        params: [],
-      })) as Array<{ address: string; name?: string }> | undefined;
+      // Retrieve the wallet address (Aztec wallets expose a single account)
+      const addressResponse = await provider.call(network, {
+        method: 'aztec_getAddress',
+      });
 
-      const address = accounts?.[0]?.address || '';
-      const accountAddresses = accounts?.map((acc) => acc.address) || [address];
+      const address = this.normalizeAddress(addressResponse);
+      const accounts = [address];
 
-      // Store the provider reference
+      // Store the provider reference for future calls
       this.providers.set(ChainType.Aztec, this.aztecProvider as WalletProvider);
 
       // Use base class method to create connection and manage state
       const walletConnection = await this.createConnection({
         address,
-        accounts: accountAddresses,
-        chainId: network.split(':')[1] || 'testnet',
+        accounts,
+        chainId: network,
         chainType: ChainType.Aztec,
         provider: this.aztecProvider as WalletProvider,
-        chainName: 'Aztec Network',
+        chainName: this.getChainName(network),
         chainRequired: false,
+        sessionId,
       });
 
       return walletConnection;
@@ -201,6 +206,37 @@ export class AztecAdapter extends AbstractWalletAdapter {
         adapterId: this.id,
       });
     }
+  }
+
+  private ensureJSONRPCTransport(transport: Transport | undefined): JSONRPCTransport {
+    if (!transport) {
+      throw ErrorFactory.configurationError('Transport required for Aztec adapter', {
+        adapterId: this.id,
+      });
+    }
+
+    const maybeJsonrpc = transport as Partial<JSONRPCTransport>;
+    if (typeof maybeJsonrpc.send === 'function' && typeof maybeJsonrpc.onMessage === 'function') {
+      return maybeJsonrpc as JSONRPCTransport;
+    }
+
+    // Bridge Transport events to JSON-RPC expectations
+    return {
+      send: async (message: unknown) => {
+        await transport.send(message);
+      },
+      onMessage: (callback: (message: unknown) => void) => {
+        if (this.jsonrpcUnsubscribe) {
+          this.jsonrpcUnsubscribe();
+          this.jsonrpcUnsubscribe = null;
+        }
+
+        this.jsonrpcUnsubscribe = transport.on('message', (event: TransportEvent) => {
+          const messageEvent = event as TransportMessageEvent;
+          callback(messageEvent.data);
+        });
+      },
+    };
   }
 
   /**
@@ -215,6 +251,10 @@ export class AztecAdapter extends AbstractWalletAdapter {
 
       // Clear provider reference
       this.aztecProvider = undefined;
+      if (this.jsonrpcUnsubscribe) {
+        this.jsonrpcUnsubscribe();
+        this.jsonrpcUnsubscribe = null;
+      }
 
       // Use base class cleanup which handles state and providers
       await this.cleanup();
@@ -251,5 +291,81 @@ export class AztecAdapter extends AbstractWalletAdapter {
   setTransport(transport: Transport): void {
     this.transport = transport;
     this.log('debug', 'Set transport for Aztec adapter');
+  }
+
+  private normalizeNetworkId(options?: ConnectOptions): string {
+    let network = this.config.network;
+
+    if (!network && options?.chains) {
+      const aztecChain = options.chains.find((chain) => chain.type === ChainType.Aztec && chain.chainId);
+      if (aztecChain?.chainId) {
+        network = aztecChain.chainId;
+      }
+    }
+
+    if (!network && this.capabilities.chains.length > 0) {
+      const firstChain = this.capabilities.chains[0];
+      if (typeof firstChain === 'object' && 'chainIds' in firstChain) {
+        const chainIds = firstChain.chainIds;
+        if (typeof chainIds === 'string' && chainIds !== '*') {
+          network = chainIds;
+        } else if (Array.isArray(chainIds) && chainIds.length > 0) {
+          network = chainIds[0];
+        }
+      }
+    }
+
+    if (!network) {
+      network = 'aztec:testnet';
+    }
+
+    if (!network.startsWith('aztec:')) {
+      network = `aztec:${network}`;
+    }
+
+    return network;
+  }
+
+  private resolveRequestedPermissions(options?: ConnectOptions): string[] {
+    const aztecOptions = (options as Record<string, unknown> | undefined)?.['aztecOptions'] as
+      | { permissions?: string[] }
+      | undefined;
+
+    const fromOptions = aztecOptions?.permissions;
+    if (Array.isArray(fromOptions) && fromOptions.length > 0) {
+      return fromOptions;
+    }
+
+    return ['aztec_getAddress'];
+  }
+
+  private normalizeAddress(addressResponse: unknown): string {
+    if (typeof addressResponse === 'string') {
+      return addressResponse;
+    }
+
+    if (addressResponse && typeof addressResponse === 'object' && 'toString' in addressResponse) {
+      const stringValue = (addressResponse as { toString: () => string }).toString();
+      if (stringValue && stringValue !== '[object Object]') {
+        return stringValue;
+      }
+    }
+
+    throw ErrorFactory.connectionFailed('Failed to parse Aztec address from wallet response', {
+      originalError: new Error(`Unsupported address format: ${typeof addressResponse}`),
+    });
+  }
+
+  private getChainName(chainId: string): string {
+    switch (chainId) {
+      case 'aztec:mainnet':
+        return 'Aztec Mainnet';
+      case 'aztec:testnet':
+        return 'Aztec Testnet';
+      case 'aztec:31337':
+        return 'Aztec Sandbox';
+      default:
+        return 'Aztec Network';
+    }
   }
 }

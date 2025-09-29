@@ -190,10 +190,10 @@ export function restoreBrowserEnvironment(): void {
  * await withMockWindow(
  *   { origin: 'https://trusted-dapp.com' },
  *   async () => {
- *     const announcer = new DiscoveryResponder({
- *       responderInfo: testWallet,
- *       securityPolicy: { allowedOrigins: ['https://trusted-dapp.com'] }
- *     });
+ *     const announcer = new DiscoveryResponder(
+ *       testWallet,
+ *       { security: { allowedOrigins: ['https://trusted-dapp.com'] } }
+ *     );
  *
  *     // Test origin validation
  *     expect(validateOrigin(window.location.origin, policy)).toBe(true);
