@@ -38,8 +38,12 @@
       "import": "./dist/providers/evm/lazy.js"
     },
     "./providers/solana": {
-      "types": "./dist/providers/solana.d.ts",
-      "import": "./dist/providers/solana.js"
+      "types": "./dist/providers/solana/index.d.ts",
+      "import": "./dist/providers/solana/index.js"
+    },
+    "./providers/solana/lazy": {
+      "types": "./dist/providers/solana/lazy.d.ts",
+      "import": "./dist/providers/solana/lazy.js"
     },
     "./providers/nemi-account": {
       "types": "./dist/api/providers/nemi-account.d.ts",
