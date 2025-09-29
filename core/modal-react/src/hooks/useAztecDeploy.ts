@@ -290,24 +290,27 @@ export function useAztecDeploy(): UseAztecDeployReturn {
       } catch (err) {
         const errorMessage = err instanceof Error ? err : new Error('Deployment failed');
 
-        // Extract detailed error information if available
-        let detailedError = errorMessage;
-        if (err && typeof err === 'object' && 'data' in err) {
-          const errorData = (err as { data: { stage?: string } }).data;
-          if (errorData?.stage) {
-            detailedError = new Error(`Deployment failed at ${errorData.stage}: ${errorMessage.message}`);
+        // Create enhanced error with full context
+        const enhancedError = Object.assign(
+          new Error(`Deployment failed at stage '${stage}': ${errorMessage.message}`),
+          {
+            originalError: err,
+            deploymentStage: stage,
+            artifactName: artifact.name,
+            constructorArgs: args,
+            cause: errorMessage,
           }
-        }
+        );
 
-        setError(detailedError);
+        setError(enhancedError);
         setStage('error');
         setIsDeploying(false);
 
         if (options.onError) {
-          options.onError(detailedError);
+          options.onError(enhancedError);
         }
 
-        throw detailedError;
+        throw enhancedError;
       }
     },
     [aztecWallet, isReady, address],
