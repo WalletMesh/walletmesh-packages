@@ -41,6 +41,10 @@
       "types": "./dist/providers/solana.d.ts",
       "import": "./dist/providers/solana.js"
     },
+    "./providers/nemi-account": {
+      "types": "./dist/api/providers/nemi-account.d.ts",
+      "import": "./dist/api/providers/nemi-account.js"
+    },
     "./testing": {
       "types": "./dist/testing/index.d.ts",
       "import": "./dist/testing/index.js"
@@ -97,6 +101,14 @@
     "glob": "^10.4.5",
     "happy-dom": "^17.6.3",
     "vitest": "2.1.8"
+  },
+  "peerDependencies": {
+    "@nemi-fi/wallet-sdk": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@nemi-fi/wallet-sdk": {
+      "optional": true
+    }
   },
   "files": ["dist"]
 }

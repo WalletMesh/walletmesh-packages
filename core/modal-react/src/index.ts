@@ -456,6 +456,14 @@ export {
   type AztecWalletInfo,
 } from './hooks/useAztecWallet.js';
 
+// === NEMI SDK INTEGRATION ===
+// Nemi SDK Account integration for Aztec
+export {
+  useNemiAccount,
+  useNemiAccountRequired,
+  type UseNemiAccountReturn,
+} from './hooks/useNemiAccount.js';
+
 // === CONSOLIDATED EVM HOOKS ===
 // Simplified EVM wallet integration
 export {

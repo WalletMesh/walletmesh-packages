@@ -60,3 +60,12 @@ export {
 export type { WalletConnectionState, WalletInfo } from '../../types.js';
 
 export type { WalletProviderContext } from '../../internal/providers/base/BaseWalletProvider.js';
+
+/**
+ * Re-export nemi SDK Account provider
+ */
+export {
+	createWalletMeshAccount,
+	WalletMeshAccount,
+} from './nemi-account.js';
+export type { NemiAccount } from './nemi-account.js';

@@ -148,7 +148,7 @@ describe('createTransport', () => {
 
   it('should throw an error for unsupported transport type', () => {
     expect(() => {
-      // @ts-ignore - Testing invalid type
+      // @ts-expect-error - Testing invalid type
       createTransport('INVALID_TYPE');
     }).toThrow('Unsupported transport type');
   });
@@ -180,7 +180,7 @@ describe('createTransport', () => {
   it('should handle unknown transport types with base validation', () => {
     // Test the default case in the switch statement for validation
     expect(() => {
-      // @ts-ignore - Testing with mock unknown type
+      // @ts-expect-error - Testing with mock unknown type
       createTransport('unknown' as TransportType, { invalidProperty: true });
     }).toThrow('Unsupported transport type');
   });
