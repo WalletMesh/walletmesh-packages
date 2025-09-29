@@ -231,7 +231,7 @@ export type {
   WalletSortOption,
   // Discovery types
   DiscoveredWallet,
-  ClientDiscoveryEvent as DiscoveryEvent,
+  // ClientDiscoveryEvent as DiscoveryEvent,
   DiscoveryConfig,
   // Error types
   ErrorCategory,
@@ -399,6 +399,12 @@ export type { WalletMeshProviderProps } from './types.js';
 
 // Main modal component
 export { WalletMeshModal } from './components/WalletMeshModal.js';
+
+// Connect button component
+export {
+  WalletMeshConnectButton,
+  type WalletMeshConnectButtonProps,
+} from './components/WalletMeshConnectButton.js';
 
 // Icon sandbox components
 export {

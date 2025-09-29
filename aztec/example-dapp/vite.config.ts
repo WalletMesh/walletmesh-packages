@@ -7,7 +7,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 export default defineConfig(({ mode }: any) => {
   const env = loadEnv(mode, process.cwd());
   return {
-    cacheDir: '/tmp/.vite',
+    cacheDir: './node_modules/.vite',
     resolve: {
       alias: {
         pino: 'pino/browser',

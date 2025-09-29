@@ -39,6 +39,7 @@ type MockClientWithModal = WalletMeshClient & {
   getPublicProvider: ReturnType<typeof vi.fn>;
   getWalletProvider: ReturnType<typeof vi.fn>;
   getWalletAdapter: ReturnType<typeof vi.fn>;
+  discoverWallets: ReturnType<typeof vi.fn>;
 };
 
 describe('useConfig', () => {
@@ -54,8 +55,13 @@ describe('useConfig', () => {
       stopDiscovery: ReturnType<typeof vi.fn>;
       setWalletFilter: ReturnType<typeof vi.fn>;
       clearWalletFilter: ReturnType<typeof vi.fn>;
+      addDiscoveryError: ReturnType<typeof vi.fn>;
+    };
+    connections: {
+      addDiscoveredWallet: ReturnType<typeof vi.fn>;
     };
   };
+  let currentMockClient: MockClientWithModal | null;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -120,11 +126,11 @@ describe('useConfig', () => {
           (mockState.ui as any).walletFilter = undefined;
           // biome-ignore lint/suspicious/noExplicitAny: Mock functions need flexible typing for tests
         }) as any,
-        // biome-ignore lint/suspicious/noExplicitAny: Mock UI actions need flexible typing
+        addDiscoveryError: vi.fn(),
       } as any,
-      // biome-ignore lint/suspicious/noExplicitAny: Mock connections need flexible typing
-      connections: {} as any,
-      // biome-ignore lint/suspicious/noExplicitAny: Mock actions object needs flexible typing for tests
+      connections: {
+        addDiscoveredWallet: vi.fn(),
+      } as any,
     } as any;
 
     // Get the global mock client (if it exists) and ensure it has all required properties
@@ -139,6 +145,12 @@ describe('useConfig', () => {
           getWalletAdapter: vi.fn().mockReturnValue(null),
         }
       : null;
+
+    if (mockClient) {
+      (mockClient as MockClientWithModal).discoverWallets = vi.fn().mockResolvedValue([]);
+    }
+
+    currentMockClient = (mockClient as MockClientWithModal) || null;
 
     // Setup context mock with client and config
     vi.mocked(useWalletMeshContext).mockReturnValue({
@@ -177,6 +189,7 @@ describe('useConfig', () => {
   });
 
   afterEach(() => {
+    currentMockClient = null;
     vi.restoreAllMocks();
   });
 
@@ -339,18 +352,37 @@ describe('useConfig', () => {
     const wrapper = createWrapper();
     const { result } = renderHook(() => useConfig(), { wrapper });
 
-    // Initially not discovering
     expect(result.current.isDiscovering).toBe(false);
 
-    // Trigger refresh
-    const refreshPromise = result.current.refreshWallets();
+    const mockAdapter = {
+      id: 'test-wallet',
+      metadata: {
+        name: 'Test Wallet',
+        icon: 'data:image/svg+xml;base64,test',
+        description: 'A wallet for testing',
+      },
+      capabilities: {
+        chains: [{ type: 'evm', chainIds: '*' }],
+        features: new Set(['sign_message']),
+      },
+    } as any;
 
-    // Should be discovering
-    // Note: In the actual implementation, this sets isScanning which maps to isDiscovering
+    currentMockClient?.discoverWallets.mockResolvedValueOnce([
+      {
+        adapter: mockAdapter,
+        available: true,
+        version: '1.0.0',
+      },
+    ] as any);
 
-    await refreshPromise;
+    await result.current.refreshWallets();
 
-    // After refresh completes, should no longer be discovering
-    // The implementation uses a setTimeout, so we'd need to wait or use fake timers
+    expect(mockActions.ui.startDiscovery).toHaveBeenCalledWith(mockStore);
+    expect(currentMockClient?.discoverWallets).toHaveBeenCalledTimes(1);
+    expect(mockActions.connections.addDiscoveredWallet).toHaveBeenCalledWith(
+      mockStore,
+      expect.objectContaining({ id: 'test-wallet', name: 'Test Wallet' }),
+    );
+    expect(mockActions.ui.stopDiscovery).toHaveBeenCalledWith(mockStore);
   });
 });

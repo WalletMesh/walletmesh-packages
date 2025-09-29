@@ -33,14 +33,14 @@ import { vi } from 'vitest';
 import type { MockedObject } from 'vitest';
 
 // Import REAL client implementation to auto-mock it
-import { WalletMeshClient } from '../../client/WalletMeshClient.js';
+import { WalletMeshClient } from '../../internal/client/WalletMeshClientImpl.js';
 import type { createWalletMeshClient } from '../../client/createWalletMeshClient.js';
 import { ChainType } from '../../types.js';
 
 // ServiceDependencies no longer exists - use specific dependency types as needed
 import type { HeadlessModalState } from '../../api/core/headless.js';
 // Import real types - no more duplicate interfaces!
-import type { WalletMeshClientConfig } from '../../client/WalletMeshClient.js';
+import type { WalletMeshClientConfig } from '../../internal/client/WalletMeshClient.js';
 
 // Import the preference service to auto-mock it
 import { WalletPreferenceService } from '../../services/preferences/WalletPreferenceService.js';

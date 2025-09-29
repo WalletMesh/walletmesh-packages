@@ -123,6 +123,77 @@ export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig
     permissions[chain.chainId] = [...aztecMethods];
   }
 
+  const defaultDiscoveryTechnologies = [
+    {
+      type: 'aztec' as 'aztec',
+      interfaces: ['aztec-wallet-api-v1'],
+    },
+  ];
+
+  const discoveryOverrides = config.discovery ?? {};
+
+  const discoveryTimeout = discoveryOverrides.timeout ?? config.discoveryTimeout ?? 5000;
+  const discoveryRetryInterval = discoveryOverrides.retryInterval ?? 2000;
+  const discoveryMaxAttempts = discoveryOverrides.maxAttempts ?? 0;
+  const discoveryEnabled = discoveryOverrides.enabled ?? true;
+
+  const discoveryTechnologies =
+    discoveryOverrides.technologies && discoveryOverrides.technologies.length > 0
+      ? discoveryOverrides.technologies
+      : defaultDiscoveryTechnologies;
+
+  const defaultDappInfo = {
+    name: config.appName,
+    description: config.appDescription || `${config.appName} - Aztec dApp`,
+    url: config.appUrl || (typeof window !== 'undefined' ? window.location.origin : ''),
+    icon: config.appIcon || '',
+  };
+
+  const mergedDappInfo = discoveryOverrides.dappInfo
+    ? { ...defaultDappInfo, ...discoveryOverrides.dappInfo }
+    : defaultDappInfo;
+
+  const defaultCapabilities = {
+    technologies: defaultDiscoveryTechnologies,
+    features: [] as string[],
+  };
+
+  const mergedCapabilities = discoveryOverrides.capabilities
+    ? {
+        ...defaultCapabilities,
+        ...discoveryOverrides.capabilities,
+      }
+    : defaultCapabilities;
+
+  const capabilityTechnologies =
+    mergedCapabilities.technologies && mergedCapabilities.technologies.length > 0
+      ? mergedCapabilities.technologies
+      : discoveryTechnologies;
+
+  const capabilityFeatures = mergedCapabilities.features ?? [];
+
+  const discoveryConfig = {
+    enabled: discoveryEnabled,
+    timeout: discoveryTimeout,
+    retryInterval: discoveryRetryInterval,
+    maxAttempts: discoveryMaxAttempts,
+    technologies: discoveryTechnologies as Array<{
+      type: 'aztec' | 'evm' | 'solana';
+      interfaces: string[];
+      features?: string[];
+    }>,
+    dappInfo: mergedDappInfo,
+    capabilities: {
+      ...mergedCapabilities,
+      technologies: capabilityTechnologies as Array<{
+        type: 'aztec' | 'evm' | 'solana';
+        interfaces: string[];
+        features?: string[];
+      }>,
+      features: capabilityFeatures,
+    },
+  };
+
   return {
     appName: config.appName,
     ...(config.appDescription && { appDescription: config.appDescription }),
@@ -140,11 +211,7 @@ export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig
     ...(config.wallets && { wallets: config.wallets }),
 
     // Optimized discovery configuration for Aztec
-    discovery: {
-      enabled: true,
-      timeout: config.discoveryTimeout || 5000,
-      retryInterval: 2000,
-    },
+    discovery: discoveryConfig as any,
 
     // Enhanced logging for development
     debug: config.debug ?? isDevelopment,
@@ -156,9 +223,9 @@ export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig
 
     // Aztec-specific interfaces
     supportedInterfaces: {
-      aztec: ['aztec-wallet-api-v1', 'aztec-connect-v2'],
+      aztec: ['aztec-wallet-api-v1'],
     },
-  } as unknown as WalletMeshConfig;
+  } as WalletMeshConfig;
 }
 
 /**

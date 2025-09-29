@@ -7,19 +7,61 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DiscoveryService } from '../../client/DiscoveryService.js';
 import { createMockLogger, createMockRegistry } from '../../testing/helpers/mocks.js';
 import { ChainType } from '../../types.js';
+import { setupDiscoveryInitiatorMock, type MockDiscoveryInitiator } from '../../testing/helpers/setupDiscoveryInitiatorMock.js';
+
+// Mock the store module
+// Mock @walletmesh/discovery module
+vi.mock('@walletmesh/discovery', () => ({
+  DiscoveryInitiator: vi.fn(),
+  createInitiatorSession: vi.fn(),
+}));
+
+vi.mock('../../state/store.js', () => ({
+  getStoreInstance: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      ui: { isOpen: false, isLoading: false, error: undefined },
+      connections: {
+        activeSessions: [],
+        availableWallets: [],
+        discoveredWallets: [],
+        activeSessionId: null,
+        connectionStatus: 'disconnected'
+      },
+      transactions: {
+        pending: [],
+        confirmed: [],
+        failed: [],
+        activeTransaction: undefined
+      }
+      ,
+      entities: {
+        wallets: {}
+      }
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+    subscribeWithSelector: vi.fn(() => vi.fn())
+  }))
+}));
 
 describe('Discovery Performance Tests (Working)', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockRegistry: ReturnType<typeof createMockRegistry>;
+  let mockInitiator: MockDiscoveryInitiator;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockLogger = createMockLogger();
     mockRegistry = createMockRegistry();
     vi.useFakeTimers();
+
+    ({ mockInitiator } = await setupDiscoveryInitiatorMock({
+      on: vi.fn(),
+      off: vi.fn(),
+      removeAllListeners: vi.fn(),
+    }));
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -84,11 +126,11 @@ describe('Discovery Performance Tests (Working)', () => {
 
       // Make multiple rapid discovery calls
       const promises = [
-        service.discoverWallets([ChainType.Evm]),
-        service.discoverWallets([ChainType.Solana]),
-        service.discoverWallets([ChainType.Aztec]),
-        service.discoverWallets([ChainType.Evm, ChainType.Solana]),
-        service.discoverWallets([ChainType.Evm, ChainType.Aztec]),
+        service.scan({ supportedChainTypes: [ChainType.Evm] }),
+        service.scan({ supportedChainTypes: [ChainType.Solana] }),
+        service.scan({ supportedChainTypes: [ChainType.Aztec] }),
+        service.scan({ supportedChainTypes: [ChainType.Evm, ChainType.Solana] }),
+        service.scan({ supportedChainTypes: [ChainType.Evm, ChainType.Aztec] }),
       ];
 
       await vi.advanceTimersByTimeAsync(1000);
@@ -142,7 +184,7 @@ describe('Discovery Performance Tests (Working)', () => {
       );
 
       // Simulate some discovery activity
-      await service.discoverWallets([ChainType.Evm]);
+      await service.scan({ supportedChainTypes: [ChainType.Evm] });
       await vi.advanceTimersByTimeAsync(100);
 
       // Check initial state
@@ -242,11 +284,11 @@ describe('Discovery Performance Tests (Working)', () => {
 
       // Mix different types of operations
       const operations = [
-        service.discoverWallets([ChainType.Evm]),
+        service.scan({ supportedChainTypes: [ChainType.Evm] }),
         service.getWalletAdapter('test-wallet-1'),
-        service.discoverWallets([ChainType.Solana]),
+        service.scan({ supportedChainTypes: [ChainType.Solana] }),
         service.getWalletAdapter('test-wallet-2'),
-        service.discoverWallets([ChainType.Aztec]),
+        service.scan({ supportedChainTypes: [ChainType.Aztec] }),
       ];
 
       await vi.advanceTimersByTimeAsync(1000);

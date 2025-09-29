@@ -52,14 +52,6 @@ export type {
   TechnologyMatch,
   QualifiedResponder,
   CapabilityIntersection,
-  // Chain-related types
-  ChainCapability,
-  ChainType,
-  ChainFeature,
-  NetworkInfo,
-  TransactionType,
-  ParameterSpec,
-  ValidationRule,
   // Additional responder types
   PermissionModel,
   ResponderPlatform,
@@ -105,25 +97,20 @@ export type { Logger } from './core/logger.js';
 
 // Export initiator functionality
 export { DiscoveryInitiator, type DiscoveryInitiatorOptions } from './initiator.js';
+export { createInitiatorSession, runDiscovery } from './initiator/api.js';
+export type { InitiatorSessionParams } from './initiator/api.js';
 export { InitiatorStateMachine, createInitiatorStateMachine } from './initiator/InitiatorStateMachine.js';
 export type { InitiatorStateMachineConfig } from './initiator/InitiatorStateMachine.js';
 
 // Export responder functionality
 export { DiscoveryResponder, type DiscoveryResponderOptions } from './responder.js';
+export { createResponderServer, startResponder } from './responder/api.js';
+export type { ResponderServerHandle, ResponderServerParams } from './responder/api.js';
 export { CapabilityMatcher } from './responder/CapabilityMatcher.js';
 export type { CapabilityMatchResult } from './responder/CapabilityMatcher.js';
 
 // Export factory functions
-export {
-  createInitiatorDiscoverySetup,
-  createCapabilityRequirements,
-} from './initiator/factory.js';
-export {
-  createResponderDiscoverySetup,
-  createResponderInfo,
-  createCapabilityMatcher,
-  createDiscoveryResponder,
-} from './responder/factory.js';
+export { createCapabilityRequirements } from './initiator/factory.js';
 
 // ============================================================================
 // Presets and Helpers

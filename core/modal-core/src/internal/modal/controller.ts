@@ -364,6 +364,16 @@ export class ModalController implements PublicModalController {
     }
   }
 
+  private getInvocationCaller(): string {
+    const err = new Error();
+    if (!err.stack) {
+      return 'unknown';
+    }
+    const stackLines = err.stack.split('\n').map((line) => line.trim());
+    const callerFrame = stackLines[2];
+    return callerFrame || 'unknown';
+  }
+
   /**
    * Setup store subscriptions for logging and monitoring
    * @private
@@ -977,6 +987,10 @@ export class ModalController implements PublicModalController {
    * @returns {Promise<Array<WalletInfo & { isAvailable: boolean }>>}
    */
   async getAvailableWallets(): Promise<Array<WalletInfo & { isAvailable: boolean }>> {
+    const caller = this.getInvocationCaller();
+    if (this.logger) {
+      this.logger.debug('ModalController.getAvailableWallets invoked', { caller });
+    }
     const state = useStore.getState();
     const allWallets = Object.values(state.entities.wallets);
 

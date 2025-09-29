@@ -1675,6 +1675,12 @@ export interface DiscoveredWalletInfo {
   id: string;
 
   /**
+   * Original responder identifier provided by discovery transport.
+   * Kept for correlation with discovery protocol events.
+   */
+  responderId?: string;
+
+  /**
    * Display name for the wallet
    *
    * @remarks

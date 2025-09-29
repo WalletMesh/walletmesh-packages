@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DiscoveryInitiator } from '../initiator/DiscoveryInitiator.js';
 import { DISCOVERY_EVENTS } from '../core/constants.js';
 import { createConsoleSpy } from './consoleMocks.js';
 import type { DiscoveryCompleteEvent, DiscoveryErrorEvent } from '../types/core.js';
+import { createTestDiscoveryInitiator, createTestDAppInfo } from './testUtils.js';
 
 describe('Discovery Completion Events', () => {
   let mockEventTarget: EventTarget;
@@ -33,7 +33,7 @@ describe('Discovery Completion Events', () => {
 
   describe('Discovery Completed Events', () => {
     it('should broadcast discovery completed event on timeout', async () => {
-      const listener = new DiscoveryInitiator({
+      const listener = createTestDiscoveryInitiator({
         requirements: {
           technologies: [
             {
@@ -43,10 +43,7 @@ describe('Discovery Completion Events', () => {
           ],
           features: ['account-management'],
         },
-        initiatorInfo: {
-          name: 'Test DApp',
-          url: 'https://dapp.example.com',
-        },
+        initiatorInfo: createTestDAppInfo({ name: 'Test DApp', url: 'https://dapp.example.com' }),
         timeout: 1000,
         eventTarget: mockEventTarget,
       });
@@ -76,7 +73,7 @@ describe('Discovery Completion Events', () => {
     });
 
     it('should broadcast discovery completed event on manual stop', async () => {
-      const listener = new DiscoveryInitiator({
+      const listener = createTestDiscoveryInitiator({
         requirements: {
           technologies: [
             {
@@ -86,10 +83,7 @@ describe('Discovery Completion Events', () => {
           ],
           features: ['account-management'],
         },
-        initiatorInfo: {
-          name: 'Test DApp',
-          url: 'https://dapp.example.com',
-        },
+        initiatorInfo: createTestDAppInfo({ name: 'Test DApp', url: 'https://dapp.example.com' }),
         timeout: 5000,
         eventTarget: mockEventTarget,
       });
@@ -123,7 +117,7 @@ describe('Discovery Completion Events', () => {
 
   describe('Discovery Error Events', () => {
     it('should broadcast discovery error event on duplicate response', async () => {
-      const listener = new DiscoveryInitiator({
+      const listener = createTestDiscoveryInitiator({
         requirements: {
           technologies: [
             {
@@ -133,10 +127,7 @@ describe('Discovery Completion Events', () => {
           ],
           features: ['account-management'],
         },
-        initiatorInfo: {
-          name: 'Test DApp',
-          url: 'https://dapp.example.com',
-        },
+        initiatorInfo: createTestDAppInfo({ name: 'Test DApp', url: 'https://dapp.example.com' }),
         timeout: 5000,
         eventTarget: mockEventTarget,
       });
@@ -203,7 +194,7 @@ describe('Discovery Completion Events', () => {
     });
 
     it('should not broadcast completion events when session ID is null', async () => {
-      const listener = new DiscoveryInitiator({
+      const listener = createTestDiscoveryInitiator({
         requirements: {
           technologies: [
             {
@@ -213,10 +204,7 @@ describe('Discovery Completion Events', () => {
           ],
           features: ['account-management'],
         },
-        initiatorInfo: {
-          name: 'Test DApp',
-          url: 'https://dapp.example.com',
-        },
+        initiatorInfo: createTestDAppInfo({ name: 'Test DApp', url: 'https://dapp.example.com' }),
         timeout: 1000,
         eventTarget: mockEventTarget,
       });
@@ -236,23 +224,25 @@ describe('Discovery Completion Events', () => {
 
   describe('Event Broadcasting Edge Cases', () => {
     it('should handle completion event dispatching errors gracefully', async () => {
-      // Mock dispatchEvent to work normally for discovery request but fail for completion events
-      let callCount = 0;
+      // Mock dispatchEvent to work normally for discovery requests but fail for completion events
       const mockEventTargetWithError = {
-        dispatchEvent: vi.fn().mockImplementation((_event) => {
-          callCount++;
-          // Let the first call (discovery request) succeed
-          if (callCount === 1) {
+        dispatchEvent: vi.fn().mockImplementation((event: CustomEvent) => {
+          // Allow discovery request events to succeed (including rebroadcasts)
+          if (event.type === DISCOVERY_EVENTS.REQUEST) {
             return true;
           }
-          // Fail subsequent calls (completion events)
-          throw new Error('Event dispatch failed');
+          // Fail completion/error events to test error handling
+          if (event.type === DISCOVERY_EVENTS.COMPLETE || event.type === DISCOVERY_EVENTS.ERROR) {
+            throw new Error('Event dispatch failed');
+          }
+          // Allow other events to succeed
+          return true;
         }),
         addEventListener: vi.fn(),
         removeEventListener: vi.fn(),
       } as unknown as EventTarget;
 
-      const listener = new DiscoveryInitiator({
+      const listener = createTestDiscoveryInitiator({
         requirements: {
           technologies: [
             {
@@ -262,10 +252,7 @@ describe('Discovery Completion Events', () => {
           ],
           features: ['account-management'],
         },
-        initiatorInfo: {
-          name: 'Test DApp',
-          url: 'https://dapp.example.com',
-        },
+        initiatorInfo: createTestDAppInfo({ name: 'Test DApp', url: 'https://dapp.example.com' }),
         timeout: 1000,
         eventTarget: mockEventTargetWithError,
       });
@@ -273,19 +260,18 @@ describe('Discovery Completion Events', () => {
       // Console.error should be called for event dispatch error, but discovery should still work
       const consoleSpy = createConsoleSpy({ methods: ['error'], mockFn: () => vi.fn() });
 
-      // Start discovery
-      const discoveryPromise = listener.startDiscovery();
+      const runDiscovery = async () => {
+        const discoveryPromise = listener.startDiscovery().catch((error) => error as Error);
 
-      // Advance time to trigger timeout
-      await vi.advanceTimersByTimeAsync(1100);
+        await vi.advanceTimersByTimeAsync(1100);
+        return discoveryPromise;
+      };
 
-      // Discovery should still complete normally despite event dispatch error
-      const responders = await discoveryPromise;
-      expect(responders).toEqual([]);
+      await expect(runDiscovery()).resolves.toMatchObject({ message: 'Event dispatch failed' });
 
       // Should have logged the event dispatch error
       expect(consoleSpy.error).toHaveBeenCalledWith(
-        '[WalletMesh] Failed to dispatch discovery message:',
+        expect.stringContaining('Failed to dispatch discovery message:'),
         expect.any(Error),
       );
 

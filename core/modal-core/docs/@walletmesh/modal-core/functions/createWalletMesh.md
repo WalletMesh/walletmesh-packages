@@ -21,6 +21,7 @@ a unified interface for interacting with multiple blockchain wallets.
 [`WalletMeshConfig`](../interfaces/WalletMeshConfig.md)
 
 Configuration options for the client
+  - Include `debug?: boolean` to enable verbose debug logging across modal-core and modal-react.
 
 ### options?
 

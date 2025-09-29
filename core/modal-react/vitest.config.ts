@@ -18,12 +18,13 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'happy-dom',
+    environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}'],
     testTimeout: 5000,
     hookTimeout: 5000,
     teardownTimeout: 2000,
+    // No special env needed; jsdom handles teardown cleanly
     // Isolate each test file to prevent timer accumulation
     isolate: true,
     // Pool options to better handle async operations

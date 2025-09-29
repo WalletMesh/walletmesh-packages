@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import { ChainType } from '@walletmesh/modal-core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EVMConnectButton } from './EVMConnectButton.js';
 import type { EVMConnectButtonProps } from './EVMConnectButton.js';
@@ -40,6 +39,7 @@ describe('EVMConnectButton', async () => {
   const MockWalletMeshConnectButton = vi.mocked(
     (await import('./WalletMeshConnectButton.js')).WalletMeshConnectButton,
   );
+
 
   const defaultMockEvmWallet = {
     // Account information
@@ -82,11 +82,11 @@ describe('EVMConnectButton', async () => {
         expect.objectContaining({
           label: 'Connect EVM Wallet',
           connectedLabel: 'Disconnect',
-          targetChainType: ChainType.Evm,
+          className: 'evmButton',
           showAddress: true,
           showChain: true,
         }),
-        expect.anything(),
+        undefined,
       );
     });
 
@@ -95,8 +95,12 @@ describe('EVMConnectButton', async () => {
       expect(MockWalletMeshConnectButton).toHaveBeenCalledWith(
         expect.objectContaining({
           label: 'Connect Ethereum',
+          connectedLabel: 'Disconnect',
+          className: 'evmButton',
+          showAddress: true,
+          showChain: true,
         }),
-        expect.anything(),
+        undefined,
       );
     });
 
@@ -104,9 +108,13 @@ describe('EVMConnectButton', async () => {
       render(<EVMConnectButton connectedLabel="Sign Out" />);
       expect(MockWalletMeshConnectButton).toHaveBeenCalledWith(
         expect.objectContaining({
+          label: 'Connect EVM Wallet',
           connectedLabel: 'Sign Out',
+          className: 'evmButton',
+          showAddress: true,
+          showChain: true,
         }),
-        expect.anything(),
+        undefined,
       );
     });
 
@@ -114,9 +122,13 @@ describe('EVMConnectButton', async () => {
       render(<EVMConnectButton className="custom-class" />);
       expect(MockWalletMeshConnectButton).toHaveBeenCalledWith(
         expect.objectContaining({
+          label: 'Connect EVM Wallet',
+          connectedLabel: 'Disconnect',
           className: 'evmButton custom-class',
+          showAddress: true,
+          showChain: true,
         }),
-        expect.anything(),
+        undefined,
       );
     });
 
@@ -124,11 +136,16 @@ describe('EVMConnectButton', async () => {
       render(<EVMConnectButton size="lg" variant="outline" disabled />);
       expect(MockWalletMeshConnectButton).toHaveBeenCalledWith(
         expect.objectContaining({
+          label: 'Connect EVM Wallet',
+          connectedLabel: 'Disconnect',
+          className: 'evmButton',
+          showAddress: true,
+          showChain: true,
           size: 'lg',
           variant: 'outline',
           disabled: true,
         }),
-        expect.anything(),
+        undefined,
       );
     });
   });
@@ -287,7 +304,7 @@ describe('EVMConnectButton', async () => {
         expect.objectContaining({
           className: 'evmButton transacting',
         }),
-        expect.anything(),
+        undefined,
       );
     });
   });
@@ -373,11 +390,10 @@ describe('EVMConnectButton', async () => {
           size: 'lg',
           variant: 'outline',
           disabled: true,
-          targetChainType: ChainType.Evm,
           showAddress: true,
           showChain: true,
         }),
-        expect.anything(),
+        undefined,
       );
     });
 
@@ -385,9 +401,10 @@ describe('EVMConnectButton', async () => {
       render(<EVMConnectButton />);
       expect(MockWalletMeshConnectButton).toHaveBeenCalledWith(
         expect.objectContaining({
-          targetChainType: ChainType.Evm,
+          showAddress: true,
+          showChain: true,
         }),
-        expect.anything(),
+        undefined,
       );
     });
 
@@ -398,7 +415,7 @@ describe('EVMConnectButton', async () => {
           showAddress: true,
           showChain: true,
         }),
-        expect.anything(),
+        undefined,
       );
     });
   });

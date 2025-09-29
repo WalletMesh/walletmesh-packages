@@ -1,9 +1,8 @@
 import {
   type BaseResponderInfo,
-  type ChainCapability,
-  createDiscoveryResponder,
+  type TechnologyCapability,
+  DiscoveryResponder,
   type DiscoveryRequestEvent,
-  type DiscoveryResponder,
   type DiscoveryResponseEvent,
   type ResponderInfo,
 } from '@walletmesh/discovery';
@@ -130,7 +129,7 @@ export function DiscoveryProtocolDemo() {
   });
 
   // Refs for cleanup - now supporting multiple responders
-  const respondersRef = useRef<Map<string, DiscoveryResponder>>(new Map());
+  const respondersRef = useRef<Map<string, any>>(new Map());
   const eventTargetsRef = useRef<Map<string, MockEventTarget>>(new Map());
 
   const { client } = useWalletMeshContext();
@@ -198,58 +197,30 @@ export function DiscoveryProtocolDemo() {
 
   // Create responder info from a specific profile
   const createProfileResponderInfo = useCallback((profile: DiscoveryProfile): ResponderInfo => {
-    const chainCapabilities: ChainCapability[] = profile.mockWallet.chains.map((chainName) => {
-      if (chainName === 'ethereum') {
-        return {
-          chainId: 'evm:ethereum:1',
-          chainType: 'evm' as const,
-          network: {
-            name: 'Ethereum Mainnet',
-            chainId: 'evm:ethereum:1',
-            nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-            testnet: false,
-          },
-          standards: ['eip-1193', 'eip-6963'],
-          rpcMethods: ['eth_accounts', 'eth_sendTransaction', 'eth_sign'],
-          transactionTypes: [],
-          signatureSchemes: ['secp256k1'],
-          features: [],
-        };
-      }
-      if (chainName === 'polygon') {
-        return {
-          chainId: 'evm:polygon:137',
-          chainType: 'evm' as const,
-          network: {
-            name: 'Polygon Mainnet',
-            chainId: 'evm:polygon:137',
-            nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-            testnet: false,
-          },
-          standards: ['eip-1193'],
-          rpcMethods: ['eth_accounts', 'eth_sendTransaction'],
-          transactionTypes: [],
-          signatureSchemes: ['secp256k1'],
-          features: [],
-        };
+    const technologyCapabilities: TechnologyCapability[] = [];
+
+    for (const chainName of profile.mockWallet.chains) {
+      let type: TechnologyCapability['type'];
+      let interfaces: string[];
+
+      if (chainName.startsWith('solana')) {
+        type = 'solana';
+        interfaces = ['solana-wallet-standard'];
+      } else if (chainName.startsWith('aztec')) {
+        type = 'aztec';
+        interfaces = ['aztec-wallet-api-v1'];
+      } else {
+        type = 'evm';
+        interfaces = ['eip-1193', 'eip-6963'];
       }
 
-      return {
-        chainId: `evm:${chainName}:1`,
-        chainType: 'evm' as const,
-        network: {
-          name: `${chainName} Network`,
-          chainId: `evm:${chainName}:1`,
-          nativeCurrency: { name: chainName, symbol: chainName.toUpperCase(), decimals: 18 },
-          testnet: false,
-        },
-        standards: ['eip-1193'],
-        rpcMethods: ['eth_accounts', 'eth_sendTransaction'],
-        transactionTypes: [],
-        signatureSchemes: ['secp256k1'],
-        features: [],
-      };
-    });
+      const existing = technologyCapabilities.find((tech) => tech.type === type);
+      if (existing) {
+        existing.interfaces = Array.from(new Set([...existing.interfaces, ...interfaces]));
+      } else {
+        technologyCapabilities.push({ type, interfaces, features: [] });
+      }
+    }
 
     const responderInfo: BaseResponderInfo = {
       name: profile.mockWallet.name,
@@ -259,11 +230,7 @@ export function DiscoveryProtocolDemo() {
       version: '1.0.0',
       protocolVersion: '0.1.0',
       type: 'extension',
-      technologies: chainCapabilities.map((chain) => ({
-        type: chain.chainType,
-        interfaces: chain.standards || ['eip-1193', 'eip-6963'],
-        features: (chain.features || []).map((f) => f.id),
-      })),
+      technologies: technologyCapabilities,
       features: profile.mockWallet.features.map((feature) => ({
         id: feature,
         name: feature
@@ -309,10 +276,9 @@ export function DiscoveryProtocolDemo() {
         const eventTarget = new MockEventTarget();
         const responderInfo = createProfileResponderInfo(profile);
 
-        const responder = createDiscoveryResponder({
-          responderInfo,
+        const responder = new DiscoveryResponder(responderInfo, {
           eventTarget,
-          securityPolicy: {
+          security: {
             requireHttps: false,
             allowLocalhost: true,
             rateLimit: {

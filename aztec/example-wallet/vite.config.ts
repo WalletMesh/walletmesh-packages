@@ -7,13 +7,17 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 export default defineConfig(({ mode }: any) => {
   const env = loadEnv(mode, process.cwd());
   return {
-    cacheDir: '/tmp/.vite',
+    cacheDir: './node_modules/.vite',
     resolve: {
       alias: {
         pino: 'pino/browser',
-        // Handle lodash modules
-        'lodash.chunk': 'lodash/chunk',
-        'lodash.isequal': 'lodash/isEqual',
+        // Map lodash subpath imports to modular lodash packages
+        'lodash/chunk': 'lodash.chunk',
+        'lodash/uniq': 'lodash.uniq',
+        'lodash/isEqual': 'lodash.isequal',
+        // Support dotted specifiers as well
+        'lodash.chunk': 'lodash.chunk',
+        'lodash.isequal': 'lodash.isequal',
       },
     },
     plugins: [

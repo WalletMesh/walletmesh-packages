@@ -9,59 +9,71 @@
  * Key components:
  * - {@link DiscoveryResponder}: Listens for discovery requests and responds if qualified
  * - {@link CapabilityMatcher}: Calculates capability intersections and determines qualification
- * - Factory functions: Simplified setup with pre-configured blockchain templates
+ * - Manual capability builders: Provide structured {@link ResponderInfo} objects for real wallets
  * - Security features: Origin validation, rate limiting, and session tracking
  *
  * @example Basic responder setup:
  * ```typescript
- * import { createResponderDiscoverySetup, createResponderInfo } from '@walletmesh/discovery/responder';
+ * import { DiscoveryResponder } from '@walletmesh/discovery/responder';
  *
- * const setup = createResponderDiscoverySetup({
- *   responderInfo: createResponderInfo.ethereum({
+ * const responder = new DiscoveryResponder(
+ *   {
  *     uuid: crypto.randomUUID(),
  *     rdns: 'com.mycompany.wallet',
  *     name: 'My Ethereum Wallet',
  *     icon: 'data:image/svg+xml;base64,...',
- *     type: 'extension'
- *   }),
- *   securityPolicy: {
- *     requireHttps: true,
- *     allowedOrigins: ['https://trusted-dapp.com'],
- *     rateLimit: { enabled: true, maxRequests: 10, windowMs: 60000 }
- *   }
- * });
+ *     type: 'extension',
+ *     version: '1.0.0',
+ *     protocolVersion: '0.1.0',
+ *     technologies: [
+ *       { type: 'evm', interfaces: ['eip-1193', 'eip-6963'], features: ['personal-sign'] },
+ *     ],
+ *     features: [
+ *       { id: 'account-management', name: 'Account Management' },
+ *       { id: 'transaction-signing', name: 'Transaction Signing' },
+ *     ],
+ *   },
+ *   { security: 'development' },
+ * );
  *
- * setup.startListening();
+ * responder.startListening();
  * console.log('Responder is now discoverable');
  * ```
  *
  * @example Multi-chain responder:
  * ```typescript
- * import { createResponderInfo, createDiscoveryResponder } from '@walletmesh/discovery/responder';
+ * import { DiscoveryResponder } from '@walletmesh/discovery/responder';
  *
- * const responderInfo = createResponderInfo.multiChain({
+ * const responderInfo = {
  *   uuid: crypto.randomUUID(),
- *   rdns: 'com.mycompany.multiwallet',
+ *   rdns: 'com.mycompany.wallet',
  *   name: 'Universal Wallet',
  *   icon: 'data:image/svg+xml;base64,...',
  *   type: 'extension',
- *   chains: [
- *     // Define custom chain capabilities
- *     { chainId: 'eip155:1', chainType: 'evm' }, // evm config
- *     { chainId: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp', chainType: 'account' } // solana config
+ *   version: '1.0.0',
+ *   protocolVersion: '0.1.0',
+ *   technologies: [
+ *     { type: 'evm', interfaces: ['eip-1193'], features: ['eip-712'] },
+ *     { type: 'solana', interfaces: ['solana-wallet-standard'] }
  *   ],
- *   features: ['account-management', 'transaction-signing', 'cross-chain-swaps']
- * });
+ *   features: [
+ *     { id: 'account-management', name: 'Account Management' },
+ *     { id: 'transaction-signing', name: 'Transaction Signing' }
+ *   ],
+ * } as const;
  *
- * const announcer = createDiscoveryResponder({ responderInfo });
- * announcer.startListening();
+ * const responder = new DiscoveryResponder(responderInfo);
+ * responder.startListening();
+ *
+ * // Later when shutting down
+ * responder.cleanup();
  * ```
  *
  * @example Manual capability matching:
  * ```typescript
- * import { createCapabilityMatcher } from '@walletmesh/discovery/responder';
+ * import { CapabilityMatcher } from '@walletmesh/discovery/responder';
  *
- * const matcher = createCapabilityMatcher(myResponderInfo);
+ * const matcher = new CapabilityMatcher(myResponderInfo);
  *
  * // Check if responder can fulfill a discovery request
  * const result = matcher.matchCapabilities(capabilityRequest);
@@ -77,16 +89,11 @@
  */
 
 // Export responder-side classes
-export { DiscoveryResponder } from './DiscoveryResponder.js';
+export { DiscoveryResponder, type DiscoveryResponderOptions } from '../responder.js';
+export { createResponderServer, startResponder } from './api.js';
+export type { ResponderServerHandle, ResponderServerParams } from './api.js';
 export { CapabilityMatcher } from './CapabilityMatcher.js';
 export type { CapabilityMatchResult } from './CapabilityMatcher.js';
-
-// Export factory functions and helpers (only keeping the non-deprecated ones)
-export {
-  createCapabilityMatcher,
-  createResponderDiscoverySetup,
-  createResponderInfo,
-} from './factory.js';
 
 // Re-export core types needed by responders
 export type {
@@ -97,7 +104,6 @@ export type {
 export type {
   ResponderInfo,
   CapabilityIntersection,
-  ChainCapability,
   ResponderFeature,
   ResponderType,
 } from '../types/capabilities.js';

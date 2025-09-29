@@ -5,20 +5,21 @@ import type {
   WalletMeshConfig,
 } from '../../internal/client/WalletMeshClient.js';
 import type { ModalController, SupportedChain, WalletInfo } from '../../types.js';
+import { ChainType } from '../../types.js';
 
 // Re-export types that are part of the public API
 export type { WalletMeshClient, CreateWalletMeshOptions, WalletMeshConfig };
 import { WalletMeshClient as WalletMeshClientImpl } from '../../internal/client/WalletMeshClientImpl.js';
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
-import { createComponentServices } from '../../internal/core/factories/serviceFactory.js';
-import { modalLogger } from '../../internal/core/logger/globalLogger.js';
+import { createComponentServices, createCoreServices } from '../../internal/core/factories/serviceFactory.js';
+import { modalLogger, configureModalLogger } from '../../internal/core/logger/globalLogger.js';
 import { WalletRegistry } from '../../internal/registries/wallets/WalletRegistry.js';
 import { createModal } from '../core/modal.js';
 import { createSSRController, isServer } from '../utilities/ssr.js';
 
 // Import built-in adapters (non-Aztec to avoid bundling issues)
 import { EvmAdapter } from '../../internal/wallets/evm/EvmAdapter.js';
-// SolanaAdapter is not imported by default - can be added via config.wallets.custom
+import { SolanaAdapter } from '../../internal/wallets/solana/SolanaAdapter.js';
 // DebugWallet is not imported by default - import from '@walletmesh/modal-core' to use it for testing
 // AztecExampleWalletAdapter is not imported by default - loaded only when needed for Aztec dApps
 
@@ -31,6 +32,9 @@ const clientCache = new Map<string, WalletMeshClient>();
 
 // Create a stable cache key from config content
 function createConfigCacheKey(config: WalletMeshConfig): string {
+  const { supportedInterfaces } = config as { supportedInterfaces?: unknown };
+  const { permissions } = config as { permissions?: unknown };
+
   return JSON.stringify({
     appName: config.appName,
     appDescription: config.appDescription,
@@ -40,7 +44,79 @@ function createConfigCacheKey(config: WalletMeshConfig): string {
     wallets: config.wallets,
     debug: config.debug,
     projectId: config.projectId,
+    discovery: config.discovery,
+    supportedInterfaces,
+    handleRehydration: config.handleRehydration,
+    permissions,
   });
+}
+
+function configHasEvmChain(config: WalletMeshConfig): boolean {
+  return (config.chains ?? []).some((chain) => {
+    const chainType = chain.chainType;
+    if (typeof chainType === 'string') {
+      return chainType.toLowerCase() === 'evm';
+    }
+    return chainType === ChainType.Evm;
+  });
+}
+
+function configHasSolanaChain(config: WalletMeshConfig): boolean {
+  return (config.chains ?? []).some((chain) => {
+    const chainType = chain.chainType;
+    if (typeof chainType === 'string') {
+      return chainType.toLowerCase() === 'solana';
+    }
+    return chainType === ChainType.Solana;
+  });
+}
+
+function shouldIncludeDefaultEvmAdapter(
+  config: WalletMeshConfig,
+  options: { walletIds?: string[]; walletConfig?: WalletConfig | undefined } = {},
+): boolean {
+  if (configHasEvmChain(config)) {
+    return true;
+  }
+
+  if (options.walletIds?.includes('evm-wallet')) {
+    return true;
+  }
+
+  const walletConfig = options.walletConfig;
+  if (walletConfig?.include && walletConfig.include.includes('evm-wallet')) {
+    return true;
+  }
+
+  if (walletConfig?.custom && walletConfig.custom.some((adapter) => adapter.id === 'evm-wallet')) {
+    return true;
+  }
+
+  return false;
+}
+
+function shouldIncludeDefaultSolanaAdapter(
+  config: WalletMeshConfig,
+  options: { walletIds?: string[]; walletConfig?: WalletConfig | undefined } = {},
+): boolean {
+  if (configHasSolanaChain(config)) {
+    return true;
+  }
+
+  if (options.walletIds?.includes('solana-wallet')) {
+    return true;
+  }
+
+  const walletConfig = options.walletConfig;
+  if (walletConfig?.include && walletConfig.include.includes('solana-wallet')) {
+    return true;
+  }
+
+  if (walletConfig?.custom && walletConfig.custom.some((adapter) => adapter.id === 'solana-wallet')) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -213,6 +289,20 @@ export async function createWalletMesh(
   config: WalletMeshConfig,
   options?: CreateWalletMeshOptions,
 ): Promise<WalletMeshClient> {
+  // Configure global logging based on config.debug before any loggers are created
+  try {
+    if (config.debug === true) {
+      configureModalLogger(true);
+      // Ensure core services default logger is set to debug for component loggers
+      createCoreServices({ logger: { level: 'debug' } });
+    } else {
+      // Initialize core services if not already initialized, preserving default level
+      createCoreServices();
+    }
+  } catch {
+    // Non-fatal: proceed even if logger configuration fails
+  }
+
   // Create services for logging
   const services = createComponentServices('WalletClient');
   const logger = services.logger;
@@ -265,7 +355,14 @@ export async function createWalletMesh(
     });
 
     // Register default adapters for the wallet IDs provided
-    const defaultAdapters: WalletAdapter[] = [new EvmAdapter()];
+    const walletIds = walletsForModal.map((w) => w.id);
+    const defaultAdapters: WalletAdapter[] = [];
+    if (shouldIncludeDefaultEvmAdapter(config, { walletIds })) {
+      defaultAdapters.push(new EvmAdapter());
+    }
+    if (shouldIncludeDefaultSolanaAdapter(config, { walletIds })) {
+      defaultAdapters.push(new SolanaAdapter());
+    }
 
     // Note: AztecExampleWalletAdapter is not loaded by default
     // It should be explicitly added via wallet configuration for Aztec dApps
@@ -314,15 +411,18 @@ export async function createWalletMesh(
     });
 
     // Register default adapters
-    const defaultAdapters: WalletAdapter[] = [
-      new EvmAdapter(),
-      // SolanaAdapter not included by default - can be added via config.wallets.custom
-      // DebugWallet not included by default - can be added via config.wallets.custom
-      // AztecExampleWalletAdapter not included by default - should be added via config for Aztec dApps
-    ];
+    const walletConfig = config.wallets as WalletConfig | undefined;
+    const defaultAdapters: WalletAdapter[] = [];
+    if (shouldIncludeDefaultEvmAdapter(config, { walletConfig })) {
+      defaultAdapters.push(new EvmAdapter());
+    }
+    if (shouldIncludeDefaultSolanaAdapter(config, { walletConfig })) {
+      defaultAdapters.push(new SolanaAdapter());
+    }
+    // DebugWallet not included by default - can be added via config.wallets.custom
+    // AztecExampleWalletAdapter not included by default - should be added via config for Aztec dApps
 
     // Check if custom adapters are provided in the config
-    const walletConfig = config.wallets as WalletConfig | undefined;
     modalLogger.debug('Checking for custom adapters', {
       hasWalletConfig: !!walletConfig,
       walletConfigType: typeof walletConfig,

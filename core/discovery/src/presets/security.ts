@@ -29,7 +29,8 @@ import type { SecurityPolicy } from '../types/security.js';
  * @category Presets
  * @since 0.1.0
  */
-export const SECURITY_PRESETS: Record<string, SecurityPolicy> = {
+// Use a strongly-typed map so property access (dot syntax) is safe in tests
+export const SECURITY_PRESETS: Record<'development' | 'testing' | 'production' | 'strict', SecurityPolicy> = {
   /**
    * Development security policy.
    * Relaxed settings for local development and testing.

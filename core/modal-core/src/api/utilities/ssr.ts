@@ -94,7 +94,7 @@ class SSRController implements WalletMeshClient {
     _walletId?: string,
   ): Promise<{
     provider: unknown;
-    chainType: string;
+    chainType: ChainType;
     chainId: string;
     previousChainId: string;
   }> {
@@ -186,6 +186,11 @@ class SSRController implements WalletMeshClient {
       // Destroy the modal and clean up resources
       destroy: () => {},
     };
+  }
+
+  // Wallet discovery (returns empty in SSR)
+  async discoverWallets(_options?: any): Promise<any[]> {
+    return [];
   }
 }
 

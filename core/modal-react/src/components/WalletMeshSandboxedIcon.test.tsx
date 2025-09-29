@@ -89,7 +89,7 @@ describe('WalletMeshSandboxedIcon', () => {
       expect.objectContaining({
         src: "data:image/svg+xml,<svg><circle r='10'/></svg>",
       }),
-      expect.anything(),
+      undefined,
     );
   });
 

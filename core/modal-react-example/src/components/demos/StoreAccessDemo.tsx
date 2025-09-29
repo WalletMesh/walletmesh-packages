@@ -31,8 +31,22 @@ interface StoreSnapshotDisplayProps {
 interface ConfigurationDisplayProps {
   config: {
     appName?: string;
-    chains?: string[];
-    wallets?: string[];
+    chains?: Array<{
+      chainId: string;
+      chainType: string;
+      name: string;
+      required: boolean;
+      label?: string;
+      interfaces?: string[];
+      group?: string;
+      icon?: string;
+    }>;
+    wallets?: Array<{
+      id: string;
+      name: string;
+      icon?: string;
+      [key: string]: any;
+    }>;
     debug?: boolean;
     isOpen?: boolean;
     open?: () => void;

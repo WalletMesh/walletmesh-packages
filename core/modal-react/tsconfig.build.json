@@ -1,5 +1,9 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "incremental": true,
+    "tsBuildInfoFile": "dist/.tsbuildinfo"
+  },
   "exclude": [
     "**/*.test.ts",
     "**/*.test.tsx",

@@ -6,17 +6,14 @@ import { AztecAdapter } from './AztecAdapter.js';
 
 // Mock the dynamic import of @walletmesh/aztec-rpc-wallet
 vi.mock('@walletmesh/aztec-rpc-wallet', () => ({
-  AztecRouterProvider: vi.fn().mockImplementation((transport: JSONRPCTransport) => ({
-    connect: vi.fn().mockResolvedValue(undefined),
+  AztecRouterProvider: vi.fn().mockImplementation((_transport: JSONRPCTransport) => ({
+    connect: vi.fn().mockResolvedValue({ sessionId: 'session-123' }),
     disconnect: vi.fn().mockResolvedValue(undefined),
-    request: vi.fn().mockImplementation(({ method }) => {
-      if (method === 'aztec_getAccounts') {
-        return Promise.resolve([
-          { address: '0xaztec123...', name: 'Account 1' },
-          { address: '0xaztec456...', name: 'Account 2' },
-        ]);
+    call: vi.fn().mockImplementation(async (_network: string, request: { method: string }) => {
+      if (request.method === 'aztec_getAddress') {
+        return 'aztec1address';
       }
-      return Promise.resolve(null);
+      return null;
     }),
   })),
 }));
@@ -33,7 +30,7 @@ describe('AztecAdapter', () => {
       connect: vi.fn().mockResolvedValue(undefined),
       disconnect: vi.fn().mockResolvedValue(undefined),
       isConnected: vi.fn().mockReturnValue(true),
-      on: vi.fn(),
+      on: vi.fn().mockReturnValue(() => {}),
       off: vi.fn(),
       dispose: vi.fn(),
     } as unknown as JSONRPCTransport;
@@ -133,16 +130,22 @@ describe('AztecAdapter', () => {
       adapter = new AztecAdapter({ transport: mockTransport });
 
       const connection = await adapter.connect();
+      const provider = adapter.getProvider(ChainType.Aztec) as unknown as {
+        connect: ReturnType<typeof vi.fn>;
+        call: ReturnType<typeof vi.fn>;
+        disconnect: ReturnType<typeof vi.fn>;
+      };
 
       expect(connection).toBeDefined();
       expect(connection.walletId).toBe('aztec-wallet');
-      expect(connection.address).toBe('0xaztec123...');
-      expect(connection.accounts).toEqual(['0xaztec123...', '0xaztec456...']);
+      expect(connection.address).toBe('aztec1address');
+      expect(connection.accounts).toEqual(['aztec1address']);
       expect(connection.chain.chainType).toBe(ChainType.Aztec);
-      expect(connection.chain.chainId).toBe('testnet');
+      expect(connection.chain.chainId).toBe('aztec:testnet');
       expect(connection.chainType).toBe(ChainType.Aztec);
-      expect(connection.provider).toBeDefined();
+      expect(connection.provider).toBe(provider);
       expect(adapter.state.isConnected).toBe(true);
+      expect(provider.call).toHaveBeenCalledWith('aztec:testnet', { method: 'aztec_getAddress' });
     });
 
     it('should connect with custom network configuration', async () => {
@@ -152,8 +155,12 @@ describe('AztecAdapter', () => {
       });
 
       const connection = await adapter.connect();
+      const provider = adapter.getProvider(ChainType.Aztec) as unknown as {
+        connect: ReturnType<typeof vi.fn>;
+      };
 
-      expect(connection.chain.chainId).toBe('mainnet');
+      expect(connection.chain.chainId).toBe('aztec:mainnet');
+      expect(provider.connect).toHaveBeenCalledWith({ 'aztec:mainnet': ['aztec_getAddress'] });
     });
 
     it('should throw error when no transport is available', async () => {
@@ -175,6 +182,8 @@ describe('AztecAdapter', () => {
       const { AztecRouterProvider } = await import('@walletmesh/aztec-rpc-wallet');
       (AztecRouterProvider as ReturnType<typeof vi.fn>).mockImplementationOnce(() => ({
         connect: vi.fn().mockRejectedValue(new Error('Connection failed')),
+        call: vi.fn(),
+        disconnect: vi.fn(),
       }));
 
       adapter = new AztecAdapter({ transport: failingTransport });
@@ -191,9 +200,14 @@ describe('AztecAdapter', () => {
       adapter = new AztecAdapter({ transport: mockTransport });
       await adapter.connect();
 
+      const provider = adapter.getProvider(ChainType.Aztec) as unknown as {
+        disconnect: ReturnType<typeof vi.fn>;
+      };
+
       await adapter.disconnect();
 
       expect(adapter.state.isConnected).toBe(false);
+      expect(provider.disconnect).toHaveBeenCalled();
       // After disconnect, getProvider should throw for any chain type
       expect(() => adapter.getProvider(ChainType.Aztec)).toThrow();
     });
@@ -203,7 +217,9 @@ describe('AztecAdapter', () => {
       await adapter.connect();
 
       // Mock the provider to throw an error on disconnect
-      const provider = adapter.getProvider(ChainType.Aztec) as { disconnect: ReturnType<typeof vi.fn> };
+      const provider = adapter.getProvider(ChainType.Aztec) as unknown as {
+        disconnect: ReturnType<typeof vi.fn>;
+      };
       provider.disconnect = vi.fn().mockRejectedValue(new Error('Disconnect failed'));
 
       await expect(adapter.disconnect()).rejects.toMatchObject({
@@ -232,24 +248,30 @@ describe('AztecAdapter', () => {
       adapter = new AztecAdapter({ transport: mockTransport });
       await adapter.connect();
 
-      const provider = adapter.getProvider(ChainType.Aztec);
+      const provider = adapter.getProvider(ChainType.Aztec) as unknown as {
+        call: ReturnType<typeof vi.fn>;
+        disconnect: ReturnType<typeof vi.fn>;
+      };
       expect(provider).toBeDefined();
-      expect(provider).toHaveProperty('connect');
+      expect(provider).toHaveProperty('call');
       expect(provider).toHaveProperty('disconnect');
-      expect(provider).toHaveProperty('request');
+      expect(provider.call).toHaveBeenCalledWith('aztec:testnet', { method: 'aztec_getAddress' });
     });
   });
 
   describe('setTransport', () => {
-    it('should set transport after adapter creation', () => {
+    it('should set transport after adapter creation', async () => {
       adapter = new AztecAdapter();
 
       adapter.setTransport(mockTransport);
 
       // Verify transport is set by attempting to detect
-      adapter.detect().then((result) => {
-        expect(result.isInstalled).toBe(true);
-        expect(result.metadata.transport).toBe(mockTransport);
+      const result = await adapter.detect();
+
+      expect(result.isInstalled).toBe(true);
+      expect(result.metadata).toEqual({
+        type: 'aztec',
+        transport: mockTransport,
       });
     });
   });

@@ -198,26 +198,22 @@ export class MockWalletMeshClient implements Partial<WalletMeshClient> {
   // Updated switchChain to match the expected signature
   switchChain = vi.fn(
     async (
-      chain: SupportedChain,
+      chainId: string,
       _walletId?: string,
     ): Promise<{
       provider: unknown;
       chainType: ChainType;
-      chain: SupportedChain;
-      previousChain: SupportedChain;
+      chainId: string;
+      previousChainId: string;
     }> => {
       if (!this.currentScenario.sessionId) {
         throw new Error('No active session');
       }
 
-      const previousChain: SupportedChain = {
-        chainId: this.currentScenario.chainId ?? '0x1',
-        name: this.getChainName(this.currentScenario.chainId ?? '0x1'),
-        chainType: this.currentScenario.chainType ?? ChainType.Evm,
-        required: true,
-      };
+      const previousChainId = this.currentScenario.chainId ?? '0x1';
+      const newChainType = this.getChainTypeFromId(chainId);
 
-      this.currentScenario = { ...this.currentScenario, chainId: chain.chainId };
+      this.currentScenario = { ...this.currentScenario, chainId, chainType: newChainType };
       this.state = this.buildState();
       this.notifyStateChange();
 
@@ -227,9 +223,9 @@ export class MockWalletMeshClient implements Partial<WalletMeshClient> {
           on: vi.fn(),
           removeAllListeners: vi.fn(),
         } as unknown,
-        chainType: chain.chainType,
-        chain,
-        previousChain,
+        chainType: newChainType,
+        chainId,
+        previousChainId,
       };
     },
   );
@@ -602,6 +598,19 @@ export class MockWalletMeshClient implements Partial<WalletMeshClient> {
       '0xa': 'Optimism',
     };
     return names[chainId] || 'Unknown Chain';
+  }
+
+  private getChainTypeFromId(chainId: string): ChainType {
+    // Most chains in tests are EVM-based
+    // You can extend this mapping as needed
+    if (chainId.startsWith('solana:')) {
+      return ChainType.Solana;
+    }
+    if (chainId.startsWith('aztec:')) {
+      return ChainType.Aztec;
+    }
+    // Default to EVM for standard hex chain IDs
+    return ChainType.Evm;
   }
 }
 

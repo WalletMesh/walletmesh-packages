@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useState } from 'react';
+// Use TS path to ensure correct resolution in tests/build
 import { isBrowser, isServer } from '../utils/ssr-walletmesh.js';
 
 /**
@@ -55,9 +56,25 @@ export function useSSR(): UseSSRReturn {
 
   useEffect(() => {
     setIsMounted(true);
-    // Small delay to ensure hydration is complete
-    const timeout = setTimeout(() => setIsHydrated(true), 0);
-    return () => clearTimeout(timeout);
+    // Schedule via requestAnimationFrame when available
+    // Fallback to microtask if rAF is not available
+    let cancelled = false;
+    const raf = (globalThis as any).requestAnimationFrame as undefined | ((cb: FrameRequestCallback) => number);
+    let rafId: number | undefined;
+    if (typeof raf === 'function') {
+      rafId = raf(() => {
+        if (!cancelled) setIsHydrated(true);
+      });
+    } else {
+      Promise.resolve().then(() => {
+        if (!cancelled) setIsHydrated(true);
+      });
+    }
+    return () => {
+      cancelled = true;
+      const caf = (globalThis as any).cancelAnimationFrame as undefined | ((id: number) => void);
+      if (rafId !== undefined && typeof caf === 'function') caf(rafId);
+    };
   }, []);
 
   return {

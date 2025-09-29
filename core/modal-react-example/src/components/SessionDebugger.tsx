@@ -15,20 +15,22 @@ export function SessionDebugger() {
   const [connectionDebugInfo, setConnectionDebugInfo] = useState<ConnectionDebugInfo | null>(null);
 
   // Get connection data from store using hook
-  const connectionState = useStore((state) => state.connections);
+  const activeSessionId = useStore((state) => state.active.sessionId);
+  const activeWalletId = useStore((state) => state.active.walletId);
+  const sessions = useStore((state) => state.entities.sessions);
+  const wallets = useStore((state) => state.entities.wallets);
 
   useEffect(() => {
-    if (connectionState) {
-      const activeSession = connectionState.activeSessions?.[0];
-      setConnectionDebugInfo({
-        activeWallet: connectionState.selectedWallet?.id ?? null,
-        connectionStatus: connectionState.connectionStatus,
-        address: activeSession?.address ?? null,
-        chainId: activeSession?.chain?.chainId ?? null,
-        chainType: activeSession?.chain?.chainType ?? null,
-      });
-    }
-  }, [connectionState]);
+    const activeWallet = activeWalletId ? wallets[activeWalletId] : null;
+
+    setConnectionDebugInfo({
+      activeWallet: activeWallet?.name ?? null,
+      connectionStatus: isConnected ? 'connected' : 'disconnected',
+      address: address ?? null,
+      chainId: chain?.chainId ?? null,
+      chainType: chain?.chainType ?? null,
+    });
+  }, [activeSessionId, activeWalletId, sessions, wallets, isConnected, address, chain]);
 
   if (!connectionDebugInfo) return null;
 

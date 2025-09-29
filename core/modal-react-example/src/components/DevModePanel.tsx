@@ -1,5 +1,22 @@
-import type { DevModeConfig, DevModeGlobal } from '@walletmesh/modal-core';
 import { useCallback, useEffect, useState } from 'react';
+
+interface DevModeConfig {
+  logLevel?: 'debug' | 'info' | 'warn' | 'error';
+  enableStateCapture?: boolean;
+  enableEventLogging?: boolean;
+  maxHistorySize?: number;
+}
+
+interface DevModeGlobal {
+  config: DevModeConfig;
+  setConfig: (config: Partial<DevModeConfig>) => void;
+  getStateHistory: () => Array<{ timestamp: number; state: unknown }>;
+  getEventLog: () => Array<{ timestamp: number; event: string; data: unknown }>;
+  clearHistory: () => void;
+  clearEventLog: () => void;
+  captureState: (state: unknown) => void;
+  logEvent: (event: string, data?: unknown) => void;
+}
 
 declare global {
   interface Window {

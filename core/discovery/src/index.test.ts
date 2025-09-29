@@ -16,9 +16,9 @@ describe('Package Exports', () => {
     const initiatorModule = await import('./initiator/index.js');
 
     expect(initiatorModule.DiscoveryInitiator).toBeDefined();
-    // createDiscoveryInitiator is deprecated and removed
-    expect(initiatorModule.createInitiatorDiscoverySetup).toBeDefined();
     expect(initiatorModule.createCapabilityRequirements).toBeDefined();
+    expect(initiatorModule.createInitiatorSession).toBeDefined();
+    expect(initiatorModule.runDiscovery).toBeDefined();
   });
 
   it('should export responder functionality', async () => {
@@ -26,10 +26,8 @@ describe('Package Exports', () => {
 
     expect(responderModule.DiscoveryResponder).toBeDefined();
     expect(responderModule.CapabilityMatcher).toBeDefined();
-    // createDiscoveryResponder is deprecated and removed
-    expect(responderModule.createCapabilityMatcher).toBeDefined();
-    expect(responderModule.createResponderDiscoverySetup).toBeDefined();
-    expect(responderModule.createResponderInfo).toBeDefined();
+    expect(responderModule.startResponder).toBeDefined();
+    expect(responderModule.createResponderServer).toBeDefined();
   });
 
   it('should export security utilities', async () => {
@@ -58,13 +56,12 @@ describe('Package Exports', () => {
     expect(mainExports.DiscoveryResponder).toBeDefined();
     expect(mainExports.CapabilityMatcher).toBeDefined();
 
-    // Factory functions (deprecated ones removed)
-    // createDiscoveryInitiator and createDiscoveryResponder are deprecated and removed
-    expect(mainExports.createCapabilityMatcher).toBeDefined();
-    expect(mainExports.createInitiatorDiscoverySetup).toBeDefined();
-    expect(mainExports.createResponderDiscoverySetup).toBeDefined();
-    expect(mainExports.createResponderInfo).toBeDefined();
+    // Helper functions
     expect(mainExports.createCapabilityRequirements).toBeDefined();
+    expect(mainExports.createInitiatorSession).toBeDefined();
+    expect(mainExports.runDiscovery).toBeDefined();
+    expect(mainExports.createResponderServer).toBeDefined();
+    expect(mainExports.startResponder).toBeDefined();
 
     // Security utilities (including createSecurityPolicy)
     expect(mainExports.SessionTracker).toBeDefined();

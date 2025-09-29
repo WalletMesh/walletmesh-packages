@@ -256,6 +256,8 @@ type AztecRouterProviderInstance = {
 export class LazyAztecRouterProvider {
   private initPromise: Promise<void>;
   private realProvider: AztecRouterProviderInstance | null = null;
+  private pxeReadyPromise: Promise<void> | null = null;
+  private pxeReadyResolve: (() => void) | null = null;
 
   constructor(transport: JSONRPCTransport, context?: Record<string, unknown>) {
     // Initialize the real provider asynchronously
@@ -269,6 +271,30 @@ export class LazyAztecRouterProvider {
       transport,
       context,
     ) as unknown as AztecRouterProviderInstance;
+
+    // Listen for PXE readiness notifications (wm_status)
+    try {
+      const markReady = () => {
+        if (this.pxeReadyResolve) {
+          this.pxeReadyResolve();
+          this.pxeReadyResolve = null;
+        }
+      };
+      const handler = (payload: any) => {
+        try {
+          const m = payload as { jsonrpc?: string; method?: string; params?: any };
+          if (m && m.jsonrpc === '2.0' && m.method === 'wm_status' && m.params && m.params.pxeReady) {
+            markReady();
+          }
+        } catch {
+          // ignore
+        }
+      };
+      this.realProvider.on?.('notification', handler);
+      this.realProvider.on?.('message', handler);
+    } catch {
+      // Non-fatal
+    }
   }
 
   private async ensureInitialized(): Promise<AztecRouterProviderInstance> {
@@ -277,6 +303,21 @@ export class LazyAztecRouterProvider {
       throw ErrorFactory.configurationError('Failed to initialize AztecRouterProvider');
     }
     return this.realProvider;
+  }
+
+  private ensurePxeReady(): Promise<void> {
+    if (this.pxeReadyPromise) return this.pxeReadyPromise;
+    this.pxeReadyPromise = new Promise<void>((resolve) => {
+      this.pxeReadyResolve = resolve;
+    });
+    // Fallback timeout so app can proceed if status is never sent
+    setTimeout(() => {
+      if (this.pxeReadyResolve) {
+        this.pxeReadyResolve();
+        this.pxeReadyResolve = null;
+      }
+    }, 30000);
+    return this.pxeReadyPromise;
   }
 
   // Proxy all public methods to the real provider
@@ -309,11 +350,17 @@ export class LazyAztecRouterProvider {
 
   async call(chainId: string, call: MethodCall, timeout?: number): Promise<MethodResults> {
     const provider = await this.ensureInitialized();
+    if (call?.method?.startsWith?.('aztec_')) {
+      await this.ensurePxeReady();
+    }
     return provider.call(chainId, call, timeout);
   }
 
   async bulkCall(chainId: string, calls: MethodCall[], timeout?: number): Promise<MethodResults[]> {
     const provider = await this.ensureInitialized();
+    if (calls?.some?.((c) => c?.method?.startsWith?.('aztec_'))) {
+      await this.ensurePxeReady();
+    }
     return provider.bulkCall(chainId, calls, timeout);
   }
 

@@ -7,53 +7,29 @@
  *
  * Key components:
  * - {@link DiscoveryInitiator}: Broadcasts capability requirements and collects responses
- * - Factory functions: Simplified setup with pre-configured templates
+ * - Capability helpers: {@link createCapabilityRequirements} for common presets
  * - Type-safe interfaces: Complete TypeScript support for all operations
  *
  * @example Basic initiator setup:
  * ```typescript
- * import { createInitiatorDiscoverySetup } from '@walletmesh/discovery/initiator';
- *
- * const setup = createInitiatorDiscoverySetup({
- *   discovery: {
- *     requirements: {
- *       technologies: [{
- *         type: 'evm',
- *         interfaces: ['eip-1193']
- *       }],
- *       features: ['account-management', 'transaction-signing']
- *     },
- *     initiatorInfo: {
- *       name: 'My DApp',
- *       url: 'https://mydapp.com',
- *       icon: 'data:image/svg+xml;base64,...'
- *     }
- *   }
- * });
- *
- * const result = await setup.discoverAndConnect({
- *   requestedChains: ['eip155:1'],
- *   requestedPermissions: ['accounts', 'sign-transactions']
- * });
- * ```
- *
  * @example Manual discovery:
  * ```typescript
- * import { createDiscoveryInitiator } from '@walletmesh/discovery/initiator';
+ * import { DiscoveryInitiator, createCapabilityRequirements } from '@walletmesh/discovery/initiator';
  *
- * const listener = createDiscoveryInitiator({
- *   requirements: {
- *     technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
- *     features: ['account-management']
+ * const requirements = createCapabilityRequirements.ethereum();
+ *
+ * const initiator = new DiscoveryInitiator(
+ *   requirements,
+ *   {
+ *     name: 'My DApp',
+ *     url: 'https://mydapp.com',
+ *     icon: 'data:image/svg+xml;base64,...'
  *   },
- *   initiatorInfo: { name: 'My DApp', url: 'https://mydapp.com', icon: '...' }
- * });
+ *   { timeout: 5000 }
+ * );
  *
- * const responders = await listener.startDiscovery();
- * const selectedResponder = responders[0]; // User selection logic here
- *
- * // Connection handling is done by modal-core and modal-react packages
- * // using the transport configuration provided by the responder
+ * const responders = await initiator.startDiscovery();
+ * const selectedResponder = responders[0];
  * ```
  *
  * @module initiator
@@ -62,14 +38,13 @@
  */
 
 // Export initiator-side classes
-export { DiscoveryInitiator } from './DiscoveryInitiator.js';
+export { DiscoveryInitiator } from '../initiator.js';
+export { createInitiatorSession, runDiscovery } from './api.js';
+export type { InitiatorSessionParams } from './api.js';
 export { InitiatorStateMachine, createInitiatorStateMachine } from './InitiatorStateMachine.js';
 
-// Export factory functions and helpers (only keeping the non-deprecated ones)
-export {
-  createInitiatorDiscoverySetup,
-  createCapabilityRequirements,
-} from './factory.js';
+// Export capability helpers
+export { createCapabilityRequirements } from './factory.js';
 
 // Re-export core types needed by initiators
 export type {

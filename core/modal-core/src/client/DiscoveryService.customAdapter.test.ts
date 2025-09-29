@@ -10,7 +10,42 @@ import { globalAdapterRegistry } from '../internal/registry/WalletAdapterRegistr
 import { AbstractWalletAdapter } from '../internal/wallets/base/AbstractWalletAdapter.js';
 import { DiscoveryAdapter } from '../internal/wallets/discovery/DiscoveryAdapter.js';
 import { createMockLogger, createMockRegistry } from '../testing/helpers/mocks.js';
+import { setupDiscoveryInitiatorMock, type MockDiscoveryInitiator } from '../testing/helpers/setupDiscoveryInitiatorMock.js';
 import { DiscoveryService } from './DiscoveryService.js';
+
+// Mock @walletmesh/discovery module
+vi.mock('@walletmesh/discovery', () => ({
+  DiscoveryInitiator: vi.fn(),
+  createInitiatorSession: vi.fn(),
+}));
+
+// Mock the store module
+vi.mock('../state/store.js', () => ({
+  getStoreInstance: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      ui: { isOpen: false, isLoading: false, error: undefined },
+      connections: {
+        activeSessions: [],
+        availableWallets: [],
+        discoveredWallets: [],
+        activeSessionId: null,
+        connectionStatus: 'disconnected'
+      },
+      transactions: {
+        pending: [],
+        confirmed: [],
+        failed: [],
+        activeTransaction: undefined
+      },
+      entities: {
+        wallets: {}
+      }
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+    subscribeWithSelector: vi.fn(() => vi.fn())
+  })),
+}));
 
 // Custom adapter for testing
 class CustomAztecAdapter extends AbstractWalletAdapter {
@@ -70,6 +105,7 @@ describe('DiscoveryService - Custom Adapter Support', () => {
   let discoveryService: DiscoveryService;
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockRegistry: ReturnType<typeof createMockRegistry>;
+  let mockInitiator: MockDiscoveryInitiator;
 
   const mockQualifiedResponder: QualifiedResponder = {
     responderId: '550e8400-e29b-41d4-a716-446655440000', // Valid UUID
@@ -97,10 +133,17 @@ describe('DiscoveryService - Custom Adapter Support', () => {
     disconnect: vi.fn().mockResolvedValue(undefined),
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.useFakeTimers();
     mockLogger = createMockLogger();
     mockRegistry = createMockRegistry();
+
+    ({ mockInitiator } = await setupDiscoveryInitiatorMock({
+      getQualifiedResponders: vi.fn().mockReturnValue([]),
+      on: vi.fn(),
+      off: vi.fn(),
+      removeAllListeners: vi.fn(),
+    }));
 
     // Clear registry before each test
     globalAdapterRegistry.clear();
@@ -142,7 +185,6 @@ describe('DiscoveryService - Custom Adapter Support', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
     globalAdapterRegistry.clear();
   });
@@ -290,26 +332,34 @@ describe('DiscoveryService - Custom Adapter Support', () => {
       // Register custom adapter
       globalAdapterRegistry.register('CustomAztecAdapter', CustomAztecAdapter);
 
-      // Perform discovery
-      const results = await discoveryService.discoverWallets();
+      // Configure mock to return the qualified responder
+      mockInitiator.startDiscovery.mockResolvedValue([mockQualifiedResponder]);
 
-      // Verify wallet was registered in the registry
-      expect(mockRegistry.registerDiscoveredWallet).toHaveBeenCalledWith(
+      // Perform discovery
+      const results = await discoveryService.scan();
+
+      // Verify wallet was registered in the registry with updated metadata
+      expect(mockRegistry.registerDiscoveredWallet).toHaveBeenCalledTimes(1);
+      const registeredWallet = mockRegistry.registerDiscoveredWallet.mock.calls[0][0];
+      expect(registeredWallet).toMatchObject({
+        id: 'com.aztec.wallet',
+        responderId: mockQualifiedResponder.responderId,
+        name: 'Aztec Privacy Wallet',
+        adapterType: 'discovery',
+      });
+      expect(registeredWallet.adapterConfig).toEqual(
         expect.objectContaining({
-          id: '550e8400-e29b-41d4-a716-446655440000',
-          name: 'Aztec Privacy Wallet',
-          adapterType: 'discovery',
-          adapterConfig: expect.objectContaining({
-            qualifiedResponder: mockQualifiedResponder,
-          }),
+          qualifiedResponder: mockQualifiedResponder,
         }),
       );
+      expect(registeredWallet.adapterConfig.transportConfig).toBeDefined();
 
-      // Verify custom adapter info is in the config
-      const registeredWallet = mockRegistry.registerDiscoveredWallet.mock.calls[0][0];
+      // Verify custom adapter info is in the metadata
       expect(registeredWallet.metadata).toEqual(
         expect.objectContaining({
           customAdapter: 'CustomAztecAdapter',
+          canonicalId: 'com.aztec.wallet',
+          responderId: mockQualifiedResponder.responderId,
         }),
       );
 
@@ -335,35 +385,36 @@ describe('DiscoveryService - Custom Adapter Support', () => {
         },
       };
 
-      // Mock discovery to return both wallets
-      discoveryService['eventWrapper'].startDiscovery = vi
-        .fn()
-        .mockResolvedValue([mockQualifiedResponder, genericResponder]);
+      // Configure mock to return both wallets
+      mockInitiator.startDiscovery.mockResolvedValue([mockQualifiedResponder, genericResponder]);
+
       discoveryService['qualifiedWallets'].set('550e8400-e29b-41d4-a716-446655440001', genericResponder);
       discoveryService['discoveredResponders'].set('550e8400-e29b-41d4-a716-446655440001', genericResponder);
 
       // Perform discovery
-      const results = await discoveryService.discoverWallets();
+      const results = await discoveryService.scan();
 
       // Verify both wallets were registered with correct metadata
       expect(results).toHaveLength(2);
       expect(mockRegistry.registerDiscoveredWallet).toHaveBeenCalledTimes(2);
 
       // Check that custom adapter info was stored for the custom wallet
-      const customWalletCall = mockRegistry.registerDiscoveredWallet.mock.calls.find(
-        (call) => call[0].id === '550e8400-e29b-41d4-a716-446655440000',
+      const customWalletArgs = mockRegistry.registerDiscoveredWallet.mock.calls.find(
+        ([wallet]) => wallet.metadata?.customAdapter === 'CustomAztecAdapter',
       );
-      expect(customWalletCall[0].metadata).toEqual(
+      const customWallet = customWalletArgs?.[0];
+      expect(customWallet?.metadata).toEqual(
         expect.objectContaining({
           customAdapter: 'CustomAztecAdapter',
         }),
       );
 
       // Check that generic wallet doesn't have custom adapter info
-      const genericWalletCall = mockRegistry.registerDiscoveredWallet.mock.calls.find(
-        (call) => call[0].id === '550e8400-e29b-41d4-a716-446655440001',
+      const genericWalletArgs = mockRegistry.registerDiscoveredWallet.mock.calls.find(
+        ([wallet]) => !wallet.metadata?.customAdapter,
       );
-      expect(genericWalletCall[0].metadata?.customAdapter).toBeUndefined();
+      const genericWallet = genericWalletArgs?.[0];
+      expect(genericWallet?.metadata?.customAdapter).toBeUndefined();
     });
   });
 

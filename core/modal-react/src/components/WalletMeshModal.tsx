@@ -35,6 +35,7 @@ import { useConnect } from '../hooks/useConnect.js';
 import { createComponentLogger } from '../utils/logger.js';
 import { isBrowser } from '../utils/ssr-walletmesh.js';
 import styles from './WalletMeshModal.module.css';
+import { WalletMeshSandboxedWalletIcon } from './WalletMeshSandboxedIcon.js';
 
 /**
  * WalletMesh Modal Component
@@ -107,7 +108,7 @@ import styles from './WalletMeshModal.module.css';
  * @public
  */
 
-export function WalletMeshModal() {
+export function WalletMeshModal(): React.ReactElement | null {
   const logger = createComponentLogger('WalletMeshModal');
   const { isOpen, close, isDiscovering } = useConfig();
   const { isConnected, isConnecting, wallet, walletId, addresses } = useAccount();
@@ -420,6 +421,15 @@ export function WalletMeshModal() {
       ? wallets.filter((wallet) => wallet.chains?.includes(targetChainType))
       : wallets;
 
+    console.log('[WalletMeshModal] Wallet selection view data:', {
+      totalWallets: wallets.length,
+      walletIds: wallets.map(w => w.id),
+      filteredWallets: filteredWallets.length,
+      filteredWalletIds: filteredWallets.map(w => w.id),
+      targetChainType,
+      isDiscovering
+    });
+
     return (
       <div>
         <div className={styles['modalHeader']}>
@@ -466,10 +476,29 @@ export function WalletMeshModal() {
               <button
                 key={wallet.id}
                 type="button"
-                onClick={() => handleWalletSelect(wallet.id)}
+                onClick={() => {
+                  console.debug('[WalletMeshModal] Wallet clicked', { walletId: wallet.id });
+                  handleWalletSelect(wallet.id);
+                }}
                 className={styles['walletOption']}
               >
-                {wallet.icon && <img src={wallet.icon} alt={wallet.name} className={styles['walletIcon']} />}
+                {/* Use sandboxed icon with a generic fallback to ensure visibility */}
+                <WalletMeshSandboxedWalletIcon
+                  wallet={{ id: wallet.id, name: wallet.name, icon: wallet.icon || '' }}
+                  size={24}
+                  className={styles['walletIcon'] as string}
+                  fallbackIcon={
+                    // Simple generic wallet glyph as data URI (visible, safe)
+                    'data:image/svg+xml;utf8,' +
+                    encodeURIComponent(
+                      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<rect x="2" y="5" width="20" height="14" rx="2" ry="2" fill="#f3f4f6" stroke="#6b7280"/>' +
+                        '<path d="M16 12h2" stroke="#6b7280"/>' +
+                        '<circle cx="17.5" cy="12" r="1.5" fill="#6b7280"/>' +
+                      '</svg>'
+                    )
+                  }
+                />
                 <span className={styles['walletName']}>{wallet.name}</span>
               </button>
             ))}

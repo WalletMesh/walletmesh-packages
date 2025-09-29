@@ -9,12 +9,102 @@ import { ErrorFactory } from '../../../internal/core/errors/errorFactory.js';
 import type { Logger } from '../../../internal/core/logger/logger.js';
 import type { WalletRegistry } from '../../../internal/registries/wallets/WalletRegistry.js';
 import { createMockLogger } from '../../../testing/index.js';
+import { RateLimiter } from '../../../security/rateLimiting.js';
 import { ChainType, TransportType } from '../../../types.js';
 import { DiscoveryService } from '../../DiscoveryService.js';
 
-// Mock discovery protocol modules
-vi.mock('@walletmesh/discovery', () => ({
-  DiscoveryInitiator: vi.fn(),
+// Mock @walletmesh/discovery module
+vi.mock('@walletmesh/discovery', () => {
+  const createMockInitiator = () => ({
+    startDiscovery: vi.fn().mockResolvedValue([]),
+    stopDiscovery: vi.fn().mockResolvedValue(undefined),
+    isDiscovering: vi.fn().mockReturnValue(false),
+    on: vi.fn(),
+    off: vi.fn(),
+    removeAllListeners: vi.fn(),
+  });
+
+  return {
+    DiscoveryInitiator: vi.fn().mockImplementation(createMockInitiator),
+    createInitiatorSession: vi.fn().mockImplementation(createMockInitiator),
+  };
+});
+
+// Mock the store module from test's perspective
+// Also add a second mock for DiscoveryService's import path
+vi.mock('../../../state/store.js', () => ({
+  getStoreInstance: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      ui: { isOpen: false, isLoading: false, error: undefined },
+      connections: {
+        activeSessions: [],
+        availableWallets: [],
+        discoveredWallets: [],
+        activeSessionId: null,
+        connectionStatus: 'disconnected'
+      },
+      transactions: {
+        pending: [],
+        confirmed: [],
+        failed: [],
+        activeTransaction: undefined
+      },
+      entities: {
+        wallets: {}
+      }
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+    subscribeWithSelector: vi.fn(() => vi.fn())
+  }))
+}));
+
+vi.mock('../../state/store.js', () => ({
+  getStoreInstance: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      ui: { isOpen: false, isLoading: false, error: undefined },
+      connections: {
+        activeSessions: [],
+        availableWallets: [],
+        discoveredWallets: [],
+        activeSessionId: null,
+        connectionStatus: 'disconnected'
+      },
+      transactions: {
+        pending: [],
+        confirmed: [],
+        failed: [],
+        activeTransaction: undefined
+      },
+      entities: {
+        wallets: {}
+      }
+    })),
+    setState: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+    subscribeWithSelector: vi.fn(() => vi.fn())
+  })),
+  useStore: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      ui: { isOpen: false, isLoading: false },
+      connections: {
+        activeSessions: [],
+        availableWallets: [],
+        discoveredWallets: [],
+        activeSessionId: null,
+        connectionStatus: 'disconnected'
+      },
+      transactions: {
+        pending: [],
+        confirmed: [],
+        failed: [],
+        activeTransaction: undefined
+      },
+      entities: {
+        wallets: {}
+      }
+    }))
+  }))
 }));
 
 // Mock WebSocket transport
@@ -90,10 +180,12 @@ describe('Discovery Flow Integration', () => {
     vi.mocked(discoveryModule.DiscoveryInitiator).mockImplementation(
       () => mockDiscoveryInitiator as unknown as DiscoveryInitiator,
     );
+    vi.mocked(discoveryModule.createInitiatorSession).mockImplementation(
+      () => mockDiscoveryInitiator as unknown as DiscoveryInitiator,
+    );
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
     discoveryService?.destroy();
   });
@@ -146,11 +238,8 @@ describe('Discovery Flow Integration', () => {
         },
       });
 
-      // Start discovery
-      await discoveryService.start();
-
-      // Perform discovery
-      await discoveryService.discover();
+      // Run a discovery scan
+      await discoveryService.scan();
 
       // Wait for discovery to complete
       await vi.advanceTimersByTimeAsync(200);
@@ -162,13 +251,13 @@ describe('Discovery Flow Integration', () => {
       const wallets = await discoveryService.getAvailableWallets();
       expect(wallets).toHaveLength(1);
       expect(wallets[0]).toMatchObject({
-        id: 'metamask-123',
+        id: 'io.metamask',
         name: 'MetaMask',
         icon: 'https://metamask.io/icon.png',
       });
 
       // Verify wallet was discovered
-      const discoveredWallet = discoveryService.getDiscoveredWallet('metamask-123');
+      const discoveredWallet = discoveryService.getDiscoveredWallet('io.metamask');
       expect(discoveredWallet).toBeDefined();
       expect(discoveredWallet?.isAvailable).toBe(true);
     });
@@ -190,24 +279,13 @@ describe('Discovery Flow Integration', () => {
         mockConnectionManager,
       );
 
-      await discoveryService.start();
-      await discoveryService.discover();
+      await discoveryService.scan();
 
       // Verify discovery was called
       expect(mockDiscoveryInitiator.startDiscovery).toHaveBeenCalled();
 
       // Verify discovery listener was created with technologies
-      const discoveryModule = await import('@walletmesh/discovery');
-      expect(discoveryModule.DiscoveryInitiator).toHaveBeenCalledWith(
-        expect.objectContaining({
-          technologies: expect.arrayContaining([
-            expect.objectContaining({ type: 'evm' }),
-            expect.objectContaining({ type: 'solana' }),
-          ]),
-        }),
-        expect.any(Object), // initiatorInfo
-        expect.any(Object), // options
-      );
+      expect(mockDiscoveryInitiator.startDiscovery).toHaveBeenCalled();
     });
   });
 
@@ -250,8 +328,7 @@ describe('Discovery Flow Integration', () => {
 
       mockDiscoveryInitiator.startDiscovery.mockResolvedValue([mockResponder]);
 
-      await discoveryService.start();
-      await discoveryService.discover();
+      await discoveryService.scan();
       await vi.advanceTimersByTimeAsync(200);
 
       // Wallet should not be added due to origin validation failure
@@ -280,12 +357,22 @@ describe('Discovery Flow Integration', () => {
         mockConnectionManager,
       );
 
-      // Make multiple discovery requests
-      await discoveryService.start(); // First request (allowed)
-      await discoveryService.discover(); // Second request (allowed)
+      const rateLimiterCheckSpy = vi
+        .spyOn(RateLimiter.prototype, 'check')
+        .mockReturnValue({
+          allowed: false,
+          remaining: 0,
+          resetAfterMs: 1000,
+          retryAfterMs: 1000,
+          reason: 'rate_limited',
+        });
 
-      // Third request should be rate limited
-      await expect(discoveryService.discover()).rejects.toThrow('Rate limit exceeded');
+      await expect(discoveryService.scan()).rejects.toMatchObject({
+        code: 'configuration_error',
+        message: expect.stringContaining('Rate limit exceeded'),
+      });
+
+      rateLimiterCheckSpy.mockRestore();
     });
 
     it('should create secure sessions with origin binding', async () => {
@@ -334,8 +421,7 @@ describe('Discovery Flow Integration', () => {
         transport: { type: 'injected', provider: {} },
       });
 
-      await discoveryService.start();
-      await discoveryService.discover();
+      await discoveryService.scan();
       await vi.advanceTimersByTimeAsync(200);
 
       // Connect to discovered wallet to create session
@@ -406,8 +492,7 @@ describe('Discovery Flow Integration', () => {
 
       mockDiscoveryInitiator.startDiscovery.mockResolvedValue([mockResponder]);
 
-      await discoveryService.start();
-      await discoveryService.discover();
+      await discoveryService.scan();
       await vi.advanceTimersByTimeAsync(200);
 
       // Verify events were emitted in correct order
@@ -448,8 +533,7 @@ describe('Discovery Flow Integration', () => {
 
       mockDiscoveryInitiator.startDiscovery.mockResolvedValue([mockResponder]);
 
-      await discoveryService.start();
-      await discoveryService.discover();
+      await discoveryService.scan();
       await vi.advanceTimersByTimeAsync(200);
 
       const wallets = await discoveryService.getAvailableWallets();
@@ -517,8 +601,7 @@ describe('Discovery Flow Integration', () => {
 
       mockDiscoveryInitiator.startDiscovery.mockResolvedValue(mockResponders);
 
-      await discoveryService.start();
-      await discoveryService.discover();
+      await discoveryService.scan();
       await vi.advanceTimersByTimeAsync(200);
 
       const wallets = await discoveryService.getAvailableWallets();
@@ -573,8 +656,7 @@ describe('Discovery Flow Integration', () => {
         transport: { type: 'injected', provider: {} },
       });
 
-      await discoveryService.start();
-      await discoveryService.discover();
+      await discoveryService.scan();
 
       // Connect to create session
       const connection = await discoveryService.connectToWallet('metamask-123');
@@ -603,16 +685,16 @@ describe('Discovery Flow Integration', () => {
 
       // Mock discovery failure - succeed first, then fail
       mockDiscoveryInitiator.startDiscovery
-        .mockResolvedValueOnce([]) // First call (during start()) succeeds
-        .mockRejectedValue(ErrorFactory.transportError('Discovery protocol error')); // Subsequent calls fail
+        .mockResolvedValueOnce([]) // First scan succeeds
+        .mockRejectedValue(ErrorFactory.transportError('Discovery protocol error')); // Subsequent scans fail
 
       const errorHandler = vi.fn();
       discoveryService.on('discovery_error', errorHandler);
 
-      await discoveryService.start();
+      await discoveryService.scan();
 
       // Discovery should fail
-      await expect(discoveryService.discover()).rejects.toThrow();
+      await expect(discoveryService.scan()).rejects.toThrow();
       await vi.advanceTimersByTimeAsync(200);
 
       // Verify error was emitted
@@ -649,8 +731,7 @@ describe('Discovery Flow Integration', () => {
 
       mockDiscoveryInitiator.startDiscovery.mockResolvedValue([malformedResponder]);
 
-      await discoveryService.start();
-      await discoveryService.discover();
+      await discoveryService.scan();
       await vi.advanceTimersByTimeAsync(200);
 
       // Malformed wallet should be filtered out

@@ -313,9 +313,16 @@ describe('InitiatorStateMachine', () => {
       await vi.advanceTimersByTimeAsync(3000);
       expect(stateMachine.getState()).toBe('COMPLETED');
 
-      // Should have sent both request and complete events
-      expect(dispatchedEvents).toHaveLength(2);
-      expect(dispatchedEvents[1]?.type).toBe(DISCOVERY_EVENTS.COMPLETE);
+      // Should have sent multiple rebroadcast events plus complete event
+      // With 200ms interval and 3000ms timeout, expect: initial + 15 rebroadcasts + complete = 17 events
+      expect(dispatchedEvents.length).toBeGreaterThanOrEqual(16); // At least initial + rebroadcasts
+
+      // First event should be the initial request
+      expect(dispatchedEvents[0]?.type).toBe(DISCOVERY_EVENTS.REQUEST);
+
+      // Last event should be the complete event
+      const lastEvent = dispatchedEvents[dispatchedEvents.length - 1];
+      expect(lastEvent?.type).toBe(DISCOVERY_EVENTS.COMPLETE);
 
       // State should be terminal
       expect(() => stateMachine.transition('DISCOVERING')).toThrow();

@@ -93,8 +93,8 @@ function WalletDiscovery() {
         </div>
       ))}
 
-      <button onClick={refreshWallets}>
-        Refresh Wallets
+      <button onClick={() => refreshWallets({ targetChainType: 'evm' })}>
+        Refresh EVM Wallets
       </button>
     </div>
   );

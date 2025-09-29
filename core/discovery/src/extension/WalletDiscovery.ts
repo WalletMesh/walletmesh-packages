@@ -9,7 +9,7 @@
 import type { DiscoveryRequestEvent, DiscoveryResponseEvent } from '../types/core.js';
 import type { ResponderInfo } from '../types/capabilities.js';
 import type { SecurityPolicy } from '../types/security.js';
-import { DiscoveryResponder } from '../responder/DiscoveryResponder.js';
+import { DiscoveryResponder } from '../responder.js';
 import { CapabilityMatcher } from '../responder/CapabilityMatcher.js';
 import { type Logger, defaultLogger } from '../core/logger.js';
 import { getBrowserAPI, getExtensionId, type BrowserAPI } from './browserApi.js';
@@ -178,10 +178,9 @@ export class WalletDiscovery {
     const eventTarget = new BackgroundEventTarget(onAnnouncement);
 
     // Discovery announcer runs in secure background
-    this.announcer = new DiscoveryResponder({
-      responderInfo: this.responderInfo,
-      eventTarget: eventTarget,
-      securityPolicy: this.securityPolicy,
+    this.announcer = new DiscoveryResponder(this.responderInfo, {
+      eventTarget,
+      security: this.securityPolicy,
       logger: this.logger,
     });
   }

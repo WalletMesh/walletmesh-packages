@@ -186,6 +186,7 @@ export const createSessionParamsSchema = z.object({
   metadata: z.record(z.unknown()).optional(), // Generic record for now
   expiresAt: z.number().optional(),
   providerMetadata: providerMetadataSchema.optional(),
+  sessionId: sessionIdSchema.optional(),
 });
 
 /**

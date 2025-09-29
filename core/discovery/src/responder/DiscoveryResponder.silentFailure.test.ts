@@ -4,13 +4,23 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DiscoveryResponder } from './DiscoveryResponder.js';
+import { DiscoveryResponder } from '../responder.js';
 import { MockEventTarget } from '../testing/MockEventTarget.js';
 import { createTestResponderInfo, createTestDiscoveryRequest } from '../testing/testUtils.js';
 import { setupFakeTimers, cleanupFakeTimers } from '../testing/timingHelpers.js';
 import { DISCOVERY_EVENTS, ERROR_CODES } from '../core/constants.js';
 import type { Logger } from '../core/logger.js';
 import type { ResponderInfo } from '../types/capabilities.js';
+import type { DiscoveryResponderConfig } from '../types/testing.js';
+
+function createResponder(config: DiscoveryResponderConfig): DiscoveryResponder {
+  return new DiscoveryResponder(config.responderInfo, {
+    ...(config.securityPolicy && { security: config.securityPolicy }),
+    ...(config.sessionOptions && { sessionOptions: config.sessionOptions }),
+    ...(config.eventTarget && { eventTarget: config.eventTarget }),
+    ...(config.logger && { logger: config.logger }),
+  });
+}
 
 describe('DiscoveryResponder - Silent Failure Behavior', () => {
   let responder: DiscoveryResponder;
@@ -50,7 +60,7 @@ describe('DiscoveryResponder - Silent Failure Behavior', () => {
   describe('Silent Failure for Security Violations', () => {
     it('should silently fail on rate limit exceeded without sending response', async () => {
       // Create responder with strict rate limiting
-      responder = new DiscoveryResponder({
+      responder = createResponder({
         responderInfo,
         eventTarget: mockEventTarget,
         logger: mockLogger,
@@ -105,7 +115,7 @@ describe('DiscoveryResponder - Silent Failure Behavior', () => {
 
     it('should silently fail on origin validation failure without sending response', async () => {
       // Create responder with strict origin validation
-      responder = new DiscoveryResponder({
+      responder = createResponder({
         responderInfo,
         eventTarget: mockEventTarget,
         logger: mockLogger,
@@ -144,7 +154,7 @@ describe('DiscoveryResponder - Silent Failure Behavior', () => {
     });
 
     it('should silently fail on session replay attack without sending response', async () => {
-      responder = new DiscoveryResponder({
+      responder = createResponder({
         responderInfo,
         eventTarget: mockEventTarget,
         logger: mockLogger,
@@ -198,7 +208,7 @@ describe('DiscoveryResponder - Silent Failure Behavior', () => {
 
     it('should silently fail when capabilities cannot be fulfilled without sending response', async () => {
       // Create responder that only supports Ethereum
-      responder = new DiscoveryResponder({
+      responder = createResponder({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         logger: mockLogger,
@@ -248,7 +258,7 @@ describe('DiscoveryResponder - Silent Failure Behavior', () => {
     });
 
     it('should not log warnings for silent failures', async () => {
-      responder = new DiscoveryResponder({
+      responder = createResponder({
         responderInfo,
         eventTarget: mockEventTarget,
         logger: mockLogger,
@@ -302,7 +312,7 @@ describe('DiscoveryResponder - Silent Failure Behavior', () => {
 
     it('should handle ProtocolError with silent failure codes correctly', async () => {
       // Create a responder with strict origin validation to trigger a silent failure
-      responder = new DiscoveryResponder({
+      responder = createResponder({
         responderInfo,
         eventTarget: mockEventTarget,
         logger: mockLogger,
@@ -339,7 +349,7 @@ describe('DiscoveryResponder - Silent Failure Behavior', () => {
 
   describe('Successful Responses (Non-Silent Failures)', () => {
     it('should send response when all validation passes', async () => {
-      responder = new DiscoveryResponder({
+      responder = createResponder({
         responderInfo,
         eventTarget: mockEventTarget,
         logger: mockLogger,

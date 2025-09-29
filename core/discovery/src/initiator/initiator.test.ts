@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { createInitiatorDiscoverySetup, createCapabilityRequirements } from './factory.js';
+import { createCapabilityRequirements } from './factory.js';
 import { DiscoveryInitiator } from '../initiator.js';
 import type { InitiatorInfo } from '../types/core.js';
 import type { CapabilityRequirements, CapabilityPreferences } from '../types/capabilities.js';
@@ -87,7 +87,7 @@ describe('Initiator Module', () => {
         technologies: [
           {
             type: 'evm',
-            interfaces: [],
+            interfaces: ['eip-1193'],
           },
         ],
         features: [],
@@ -135,67 +135,6 @@ describe('Initiator Module', () => {
   });
 
   // ===============================================
-  // Factory Helper Tests
-  // ===============================================
-  describe('createInitiatorDiscoverySetup', () => {
-    it('should create complete discovery setup', () => {
-      const setup = createInitiatorDiscoverySetup({
-        chains: ['eip155:1', 'eip155:137'],
-        timeout: 5000,
-      });
-
-      expect(setup).toBeDefined();
-      expect(setup.listener).toBeDefined();
-      expect(setup.config).toBeDefined();
-      expect(setup.requirements).toBeDefined();
-      expect(setup.securityPolicy).toBeDefined();
-
-      // Verify listener is properly created
-      expect(setup.listener.startDiscovery).toBeTypeOf('function');
-      expect(setup.listener.stopDiscovery).toBeTypeOf('function');
-      expect(setup.listener.getQualifiedResponders).toBeTypeOf('function');
-      expect(setup.listener.isDiscovering).toBeTypeOf('function');
-    });
-
-    it('should handle minimal configuration', () => {
-      const setup = createInitiatorDiscoverySetup({
-        chains: ['eip155:1'],
-      });
-
-      expect(setup).toBeDefined();
-      expect(setup.listener).toBeDefined();
-      expect(setup.config.timeout).toBe(3000); // Default timeout
-    });
-
-    it('should pass through custom configuration', () => {
-      const customEventTarget = new EventTarget();
-      const customInitiatorInfo: InitiatorInfo = {
-        name: 'Custom DApp',
-        url: 'https://custom.example.com',
-        icon: 'data:image/svg+xml;base64,test',
-      };
-
-      const setup = createInitiatorDiscoverySetup({
-        chains: ['eip155:1'],
-        timeout: 10000,
-        requireHttps: true,
-        initiatorInfo: customInitiatorInfo,
-        preferences: {
-          features: ['notifications'],
-        },
-        eventTarget: customEventTarget,
-        securityPolicy: {
-          requireHttps: true,
-        },
-      });
-
-      expect(setup).toBeDefined();
-      expect(setup.config.timeout).toBe(10000);
-      expect(setup.securityPolicy.requireHttps).toBe(true);
-    });
-  });
-
-  // ===============================================
   // Capability Requirements Helper Tests
   // ===============================================
   describe('createCapabilityRequirements', () => {
@@ -235,14 +174,11 @@ describe('Initiator Module', () => {
   // Module Export Tests
   // ===============================================
   describe('Module Exports', () => {
-    it('should export factory functions', async () => {
+    it('should export capability helpers', async () => {
       const factoryModule = await import('./factory.js');
 
-      // createDiscoveryInitiator is deprecated and might not be exported
-      expect(factoryModule.createInitiatorDiscoverySetup).toBeDefined();
       expect(factoryModule.createCapabilityRequirements).toBeDefined();
 
-      expect(typeof factoryModule.createInitiatorDiscoverySetup).toBe('function');
       expect(typeof factoryModule.createCapabilityRequirements).toBe('object');
     });
 
@@ -254,23 +190,19 @@ describe('Initiator Module', () => {
       expect(initiatorIndex.InitiatorStateMachine).toBeDefined();
       expect(initiatorIndex.createInitiatorStateMachine).toBeDefined();
 
-      // Factory functions (createDiscoveryInitiator is deprecated and no longer exported)
-      expect(initiatorIndex.createInitiatorDiscoverySetup).toBeDefined();
+      // Helpers
       expect(initiatorIndex.createCapabilityRequirements).toBeDefined();
 
       // Type exports (exported as types only)
       expect(typeof initiatorIndex.DiscoveryInitiator).toBe('function');
-      expect(typeof initiatorIndex.createInitiatorDiscoverySetup).toBe('function');
     });
 
     it('should export from main index', async () => {
       const mainIndex = await import('../index.js');
 
-      // Initiator exports
       expect(mainIndex.DiscoveryInitiator).toBeDefined();
       expect(mainIndex.InitiatorStateMachine).toBeDefined();
-
-      // Type exports should be available
+      expect(mainIndex.createCapabilityRequirements).toBeDefined();
       expect(typeof mainIndex.DiscoveryInitiator).toBe('function');
     });
   });
@@ -280,16 +212,6 @@ describe('Initiator Module', () => {
   // ===============================================
   describe('Integration', () => {
     it('should work with all components together', async () => {
-      // Create setup
-      const setup = createInitiatorDiscoverySetup({
-        chains: ['eip155:1'],
-        timeout: 5000,
-      });
-
-      // Use listener
-      expect(setup.listener.isDiscovering()).toBe(false);
-
-      // Can also create directly
       const requirements = createCapabilityRequirements.ethereum();
       const listener = new DiscoveryInitiator(requirements, {
         name: 'Test DApp',

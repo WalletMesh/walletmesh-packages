@@ -14,7 +14,8 @@
   "scripts": {
     "dev": "pnpm --filter @walletmesh/jsonrpc build && pnpm --filter @walletmesh/discovery build && pnpm --filter @walletmesh/modal-core build && pnpm --filter @walletmesh/modal-react build && vite",
     "dev:clean": "pnpm --filter @walletmesh/jsonrpc clean && pnpm --filter @walletmesh/jsonrpc build && pnpm --filter @walletmesh/discovery clean && pnpm --filter @walletmesh/discovery build && pnpm --filter @walletmesh/modal-core clean:build && pnpm --filter @walletmesh/modal-core build && pnpm --filter @walletmesh/modal-react clean && pnpm --filter @walletmesh/modal-react build && vite",
-    "build": "pnpm --filter @walletmesh/jsonrpc build && pnpm --filter @walletmesh/discovery build && pnpm --filter @walletmesh/modal-core build && pnpm --filter @walletmesh/modal-react build && vite build",
+    "build": "tsx scripts/build.ts",
+    "build:force": "pnpm --filter @walletmesh/jsonrpc build && pnpm --filter @walletmesh/discovery build && pnpm --filter @walletmesh/modal-core build && pnpm --filter @walletmesh/modal-react build && vite build",
     "preview": "vite preview",
     "clean": "rimraf dist node_modules",
     "type-check": "tsc --noEmit",

@@ -148,6 +148,10 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
    */
   async connect(options?: ConnectOptions): Promise<WalletConnection> {
     try {
+      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter.connect invoked', {
+        responderId: this.qualifiedResponder.responderId,
+        transportType: (this.qualifiedResponder.transportConfig as any)?.type,
+      });
       // Use discovery protocol's ConnectionManager to establish connection
       // Convert chains from ConnectOptions format to string array
       const requestedChains = options?.chains
@@ -206,10 +210,24 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
 
       // Base class will handle events
 
+      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter.connect completed', {
+        walletId: walletConnection.walletId,
+        chainType: walletConnection.chainType,
+      });
       return walletConnection;
     } catch (error) {
-      const walletError = ErrorFactory.walletNotFound(this.qualifiedResponder.responderId);
-      throw walletError;
+      const originalError = error instanceof Error ? error : new Error(String(error));
+
+      this.logger?.error('Discovery adapter connection failed', {
+        walletId: this.qualifiedResponder.responderId,
+        message: originalError.message,
+        stack: originalError.stack,
+      });
+
+      throw ErrorFactory.connectionFailed(originalError.message, {
+        walletId: this.qualifiedResponder.responderId,
+        originalError,
+      });
     }
   }
 
@@ -315,38 +333,66 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       ...transportConfig.adapterConfig,
     };
 
-    switch (transportConfig.type) {
+    let transport: Transport;
+    (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter: selecting transport', {
+      walletId: this.qualifiedResponder.responderId,
+      type: (transportConfig as any)?.type,
+      hasUrl: Boolean((transportConfig as any)?.url),
+      hasWebsocketUrl: Boolean((transportConfig as any)?.websocketUrl),
+      extensionId: (transportConfig as any)?.extensionId,
+    });
+
+    // Select transport strictly from supported types
+    switch ((transportConfig as any).type) {
       case 'extension':
         if (!transportConfig.extensionId) {
           throw ErrorFactory.configurationError('Extension ID required for Chrome extension transport');
         }
         baseConfig['extensionId'] = transportConfig.extensionId;
-        return createTransport(TransportType.Extension, baseConfig);
-
-      case 'popup':
-        if (!transportConfig.popupUrl) {
-          // Use default popup URL if not provided
-          baseConfig['url'] = `/wallets/${this.qualifiedResponder.rdns}/popup`;
-        } else {
-          baseConfig['url'] = transportConfig.popupUrl;
-        }
-        return createTransport(TransportType.Popup, baseConfig);
+        transport = createTransport(TransportType.Extension, baseConfig);
+        break;
 
       case 'websocket':
-        if (!transportConfig.websocketUrl) {
+        if (!(transportConfig as any).url && !(transportConfig as any).websocketUrl) {
           throw ErrorFactory.configurationError('WebSocket URL required for WebSocket transport');
         }
-        baseConfig['url'] = transportConfig.websocketUrl;
-        // Use popup transport for now since WebSocket is not defined
-        return createTransport(TransportType.Popup, baseConfig);
+        baseConfig['url'] = (transportConfig as any).url ?? (transportConfig as any).websocketUrl;
+        // Map to Popup transport as a placeholder until WebSocket transport exists
+        transport = createTransport(TransportType.Popup, baseConfig);
+        break;
 
       case 'injected':
-        // Injected wallets don't need a transport
+        // Injected wallets don't use discovery transports; treat as unsupported in this path
         throw ErrorFactory.configurationError('Injected wallets do not use transports');
 
       default:
         throw ErrorFactory.configurationError(`Unsupported transport type: ${transportConfig.type}`);
     }
+
+    try {
+      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter: connecting transport', {
+        walletId: this.qualifiedResponder.responderId,
+        type: (transportConfig as any)?.type,
+      });
+      await transport.connect();
+      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter: transport connected', {
+        walletId: this.qualifiedResponder.responderId,
+      });
+    } catch (error) {
+      const connectError =
+        error instanceof Error ? error : new Error(`Failed to connect transport: ${String(error)}`);
+      // Provide clearer guidance for extension lastError cases
+      const message = connectError.message?.includes('Receiving end does not exist')
+        ? 'Extension not reachable. Ensure it is installed and allows this origin.'
+        : connectError.message;
+      throw ErrorFactory.connectionFailed(connectError.message, {
+        walletId: this.qualifiedResponder.responderId,
+        transportType: transportConfig.type,
+        originalError: new Error(message),
+      });
+    }
+
+    return transport;
   }
 
   /**
@@ -384,10 +430,15 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
             icon: this.metadata.icon,
             ...(this.metadata.description && { description: this.metadata.description }),
             transport: this.transport || undefined,
-            network: 'aztec:testnet', // Default network, can be configured
+            network: 'aztec:31337', // Default local network to match extension router
+          });
+          (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter: connecting Aztec adapter', {
+            walletId: this.id,
+            transportType: (this.qualifiedResponder.transportConfig as any)?.type,
           });
           // Connect the adapter to establish the provider
           await aztecAdapter.connect();
+          this.logger?.debug('DiscoveryAdapter: Aztec adapter connected', { walletId: this.id });
           // Store the provider from the adapter
           const aztecProvider = aztecAdapter.getProvider(ChainType.Aztec);
           if (aztecProvider) {

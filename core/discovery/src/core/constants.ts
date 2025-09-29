@@ -141,34 +141,6 @@ export const DISCOVERY_CONFIG = {
 } as const;
 
 /**
- * Standard chain type identifiers for blockchain classification.
- *
- * Categorizes blockchain networks by their fundamental architecture
- * and transaction models. Used for capability matching and wallet
- * integration pattern selection.
- *
- * @example
- * ```typescript
- * const ethereumType = CHAIN_TYPES.EVM;     // 'evm'
- * const bitcoinType = CHAIN_TYPES.UTXO;     // 'utxo'
- * const solanaType = CHAIN_TYPES.ACCOUNT;   // 'account'
- * ```
- *
- * @category Blockchain
- * @since 0.1.0
- * @readonly
- * @see {@link ChainCapability} for chain-specific capabilities
- */
-export const CHAIN_TYPES = {
-  EVM: 'evm',
-  UTXO: 'utxo',
-  ACCOUNT: 'account',
-  SUBSTRATE: 'substrate',
-  COSMOS: 'cosmos',
-  CUSTOM: 'custom',
-} as const;
-
-/**
  * Standard responder feature identifiers for capability matching.
  *
  * Features represent specific wallet functionalities beyond basic blockchain support.

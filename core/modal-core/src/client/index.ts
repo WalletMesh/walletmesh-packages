@@ -11,13 +11,14 @@
 // Main client implementation
 export {
   WalletMeshClient,
-  type WalletMeshClientConfig,
-  type WalletAdapterClass,
-  type WalletConnectOptions,
-  type AvailableWallet,
-  type ConnectionStateChangeEvent,
-  type DiscoveryEvent,
-} from './WalletMeshClient.js';
+} from '../internal/client/WalletMeshClientImpl.js';
+
+export type {
+  WalletMeshClientConfig,
+  WalletAdapterClass,
+  AvailableWallet,
+  DiscoveryRequestOptions,
+} from '../internal/client/WalletMeshClient.js';
 
 // Factory functions
 export {
@@ -75,8 +76,8 @@ import type { DiscoveryConfig } from './DiscoveryService.js';
 import { EventSystem } from './EventSystem.js';
 import type { EventSystemConfig } from './EventSystem.js';
 // Import the classes for internal use
-import type { WalletMeshClient } from './WalletMeshClient.js';
-import type { WalletMeshClientConfig } from './WalletMeshClient.js';
+import type { WalletMeshClient } from '../internal/client/WalletMeshClient.js';
+import type { WalletMeshClientConfig } from '../internal/client/WalletMeshClient.js';
 import { createWalletMeshClientWithConfig } from './createWalletMeshClient.js';
 import type { CreateWalletMeshClientOptions } from './createWalletMeshClient.js';
 
@@ -373,10 +374,10 @@ export function createDevelopmentWalletSetup(
     client: {
       appName: `${appName} (Development)`,
       debug: true,
-      providerLoader: {
-        preloadOnInit: true,
-        preloadChainTypes: [ChainType.Evm],
-      },
+      // providerLoader: {
+      //   preloadOnInit: true,
+      //   preloadChainTypes: [ChainType.Evm],
+      // },
       chains: [
         { chainId: '1', chainType: ChainType.Evm, name: 'Ethereum', required: false },
         { chainId: '5', chainType: ChainType.Evm, name: 'Goerli', required: false },
@@ -447,9 +448,9 @@ export function createProductionWalletSetup(
     client: {
       appName,
       debug: false,
-      providerLoader: {
-        preloadOnInit: false, // Load on demand in production
-      },
+      // providerLoader: {
+      //   preloadOnInit: false, // Load on demand in production
+      // },
       ...additionalConfig,
     },
     connectionRecovery: {

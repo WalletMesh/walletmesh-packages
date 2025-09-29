@@ -17,7 +17,7 @@ export const transportConfigSchema = z.object({
   /**
    * Transport type
    */
-  type: z.enum(['extension', 'popup', 'websocket', 'injected']),
+  type: z.enum(['extension', 'popup', 'websocket', 'injected', 'postmessage', 'iframe']),
 
   /**
    * Chrome extension ID (required for extension transport)
@@ -30,9 +30,14 @@ export const transportConfigSchema = z.object({
   popupUrl: z.string().url().optional(),
 
   /**
-   * WebSocket endpoint URL (required for websocket transport)
+   * WebSocket endpoint URL (original field for websocket transport)
    */
   websocketUrl: z.string().url().optional(),
+
+  /**
+   * Generic endpoint URL (used by minimal 'web' support and can mirror websocketUrl)
+   */
+  url: z.string().url().optional(),
 
   /**
    * Wallet adapter class name

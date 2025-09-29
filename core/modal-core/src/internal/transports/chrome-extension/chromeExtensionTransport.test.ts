@@ -342,7 +342,12 @@ describe('ChromeExtensionTransport', () => {
     const postMessageSpy = vi.spyOn(mockPort, 'postMessage');
 
     const testData = { message: 'hello' };
+    // Before wallet_ready, message should be queued; no immediate postMessage
     await transport.send(testData);
+    expect(postMessageSpy).not.toHaveBeenCalled();
+
+    // Simulate wallet readiness to flush the queue
+    mockPort.simulateMessage({ type: 'wallet_ready' });
 
     expect(postMessageSpy).toHaveBeenCalledWith(testData);
   });
@@ -461,7 +466,7 @@ describe('ChromeExtensionTransport', () => {
     // Don't connect
     const sendPromise = transport.send({ test: 'data' });
 
-    // Advance timers for retries
+    // Advance timers for retries and readiness timeout flush
     await transportTestUtils.runAllTimers();
 
     await expect(sendPromise).rejects.toThrow('Failed to send message through transport');
@@ -489,9 +494,12 @@ describe('ChromeExtensionTransport', () => {
     // Reset the spy to clear any previous events
     emitSpy.mockReset();
 
+    // Ensure readiness so send path executes immediately and throws
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
     const sendPromise = transport.send({ test: 'data' });
 
-    // Advance timers for retries
+    // No retries needed since throw is synchronous; still advance timers to flush microtasks
     await transportTestUtils.runAllTimers();
 
     await expect(sendPromise).rejects.toThrow('Failed to send message through transport');
@@ -504,6 +512,31 @@ describe('ChromeExtensionTransport', () => {
         category: 'network',
       }),
     });
+  });
+
+  it('should flush queued messages after readiness timeout when no wallet_ready is received', async () => {
+    const transport = createTestTransport({
+      extensionId: 'test-extension-id',
+      timeout: 200, // short timeout to trigger readiness timeout quickly
+      retries: 1,
+      retryDelay: 50,
+    });
+
+    await transport.connect();
+
+    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+    const postMessageSpy = vi.spyOn(mockPort, 'postMessage');
+
+    // Send while not ready; should be queued initially
+    const payload = { message: 'queued' };
+    await transport.send(payload);
+    expect(postMessageSpy).not.toHaveBeenCalled();
+
+    // Advance timers beyond readiness timeout (min/max bounds applied in transport)
+    await vi.advanceTimersByTimeAsync(1000); // readiness timeout clamps to at least 1000ms
+
+    // After timeout, queue should flush
+    expect(postMessageSpy).toHaveBeenCalledWith(payload);
   });
 
   it('should handle timeout when connection is already timed out during microtask', async () => {
