@@ -531,6 +531,21 @@ export {
   isAztecRouterProvider,
 } from './types/guards.js';
 
+// Error handling
+/**
+ * ErrorFactory provides convenient methods for creating structured errors.
+ * Use these methods instead of generic Error constructors for consistent error handling.
+ *
+ * @example
+ * ```typescript
+ * import { ErrorFactory } from '@walletmesh/modal-core';
+ *
+ * throw ErrorFactory.connectionFailed('Failed to connect to wallet');
+ * throw ErrorFactory.transactionFailed('Transaction rejected by user');
+ * ```
+ */
+export { ErrorFactory } from '../internal/core/errors/errorFactory.js';
+
 // Client types
 /**
  * Base provider types for blockchain interactions.

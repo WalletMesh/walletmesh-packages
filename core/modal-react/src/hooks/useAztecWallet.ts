@@ -12,11 +12,21 @@
 import type { SupportedChain, WalletInfo } from '@walletmesh/modal-core';
 import { ErrorFactory } from '@walletmesh/modal-core';
 import type { AztecDappWallet } from '@walletmesh/modal-core/providers/aztec/lazy';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type AccountInfo,
+  getAccountInfo,
+  getRegisteredAccounts,
+  signMessage as signMessageUtil,
+  switchAccount as switchAccountUtil,
+} from '@walletmesh/modal-core/providers/aztec/lazy';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWalletMeshContext } from '../WalletMeshContext.js';
 import { useStore } from './internal/useStore.js';
 import { useAccount } from './useAccount.js';
 import { useWalletProvider } from './useWalletProvider.js';
+
+// Re-export AccountInfo type for convenience
+export type { AccountInfo };
 
 // Module-level map to track wallet initializations globally across all components
 // This prevents multiple components from racing to create wallets
@@ -95,6 +105,20 @@ export interface AztecWalletInfo {
   chainId: string | null;
   /** Wallet information */
   wallet: WalletInfo | null;
+
+  // Multi-account management
+  /** List of all registered accounts (requires wallet support) */
+  accounts: AccountInfo[];
+  /** The currently active account */
+  activeAccount: AccountInfo | null;
+  /** Switch to a different account */
+  switchAccount: (address: unknown) => Promise<void>;
+  /** Sign a message with the current account */
+  signMessage: (message: string) => Promise<string>;
+  /** Refresh the account list */
+  refreshAccounts: () => Promise<void>;
+  /** Whether accounts are currently loading */
+  isLoadingAccounts: boolean;
 
   // Provider information
   /** Aztec wallet instance with typed methods */
@@ -244,6 +268,12 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
   const [isLoading, setIsLoading] = useState(false);
   const [initError, setInitError] = useState<Error | null>(null);
 
+  // Account management state
+  const [accounts, setAccounts] = useState<AccountInfo[]>([]);
+  const [activeAccount, setActiveAccount] = useState<AccountInfo | null>(null);
+  const [isLoadingAccounts, setIsLoadingAccounts] = useState(false);
+  const [accountError, setAccountError] = useState<Error | null>(null);
+
   // Use ref to track initialization state across renders
   const initializationRef = useRef<{
     isInitializing: boolean;
@@ -277,7 +307,7 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
         setAztecWallet(null);
         setIsLoading(false);
         if (!isAztecChain && provider) {
-          setInitError(new Error('Not connected to an Aztec chain'));
+          setInitError(ErrorFactory.configurationError('Not connected to an Aztec chain'));
         }
         return;
       }
@@ -307,7 +337,7 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
         } catch (error) {
           console.error('[useAztecProvider] Global initialization error:', error);
           if (!cancelled) {
-            setInitError(error instanceof Error ? error : new Error('Global initialization failed'));
+            setInitError(error instanceof Error ? error : ErrorFactory.unknownError('Global initialization failed'));
             setIsLoading(false);
           }
         }
@@ -400,7 +430,7 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
               setAztecWallet(wallet);
             } else {
               console.error('[useAztecProvider] createAztecWallet returned null');
-              setInitError(new Error('Failed to create Aztec wallet wrapper'));
+              setInitError(ErrorFactory.configurationError('Failed to create Aztec wallet wrapper'));
             }
             setIsLoading(false);
           }
@@ -409,7 +439,7 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
         } catch (error) {
           if (!cancelled) {
             const errorMessage =
-              error instanceof Error ? error : new Error('Failed to initialize Aztec wallet');
+              error instanceof Error ? error : ErrorFactory.unknownError('Failed to initialize Aztec wallet');
             setInitError(errorMessage);
             setIsLoading(false);
             console.error('[useAztecProvider] Failed to initialize Aztec wallet:', error);
@@ -467,9 +497,121 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
     };
   }, [aztecWallet, provider]);
 
+  // Account management functions
+  const fetchAccounts = useCallback(async () => {
+    if (!aztecWallet || !isAvailable) {
+      setAccounts([]);
+      setActiveAccount(null);
+      return;
+    }
+
+    setIsLoadingAccounts(true);
+    setAccountError(null);
+
+    try {
+      // Get registered accounts
+      const registeredAccounts = await getRegisteredAccounts(aztecWallet);
+
+      // Get detailed info for each account
+      const accountInfos: AccountInfo[] = [];
+      for (const account of registeredAccounts) {
+        try {
+          const info = await getAccountInfo(aztecWallet, account);
+          accountInfos.push(info);
+        } catch (err) {
+          // If we can't get info for an account, create basic info
+          accountInfos.push({
+            address: account,
+            completeAddress: account,
+            isActive: false,
+            label: 'Account',
+          });
+        }
+      }
+
+      // If no accounts have detailed info, at least get current account
+      if (accountInfos.length === 0) {
+        const currentInfo = await getAccountInfo(aztecWallet);
+        accountInfos.push(currentInfo);
+      }
+
+      setAccounts(accountInfos);
+
+      // Set active account
+      const active = accountInfos.find((a) => a.isActive) || accountInfos[0];
+      setActiveAccount(active || null);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to fetch accounts');
+      setAccountError(errorMessage);
+      console.error('Failed to fetch accounts:', err);
+
+      // Try to at least get current account
+      try {
+        const currentInfo = await getAccountInfo(aztecWallet);
+        setAccounts([currentInfo]);
+        setActiveAccount(currentInfo);
+      } catch {
+        // Ignore secondary error
+      }
+    } finally {
+      setIsLoadingAccounts(false);
+    }
+  }, [aztecWallet, isAvailable]);
+
+  // Fetch accounts when wallet becomes available
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
+
+  // Switch account function
+  const switchAccount = useCallback(
+    async (addressToSwitch: unknown) => {
+      if (!aztecWallet) {
+        const error = ErrorFactory.connectionFailed('No wallet connected');
+        setAccountError(error);
+        throw error;
+      }
+
+      setAccountError(null);
+
+      try {
+        await switchAccountUtil(aztecWallet, addressToSwitch);
+        // Refresh accounts after switching
+        await fetchAccounts();
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to switch account');
+        setAccountError(errorMessage);
+        throw errorMessage;
+      }
+    },
+    [aztecWallet, fetchAccounts],
+  );
+
+  // Sign message function
+  const signMessage = useCallback(
+    async (message: string) => {
+      if (!aztecWallet) {
+        const error = ErrorFactory.connectionFailed('No wallet connected');
+        setAccountError(error);
+        throw error;
+      }
+
+      setAccountError(null);
+
+      try {
+        return await signMessageUtil(aztecWallet, message);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to sign message');
+        setAccountError(errorMessage);
+        throw errorMessage;
+      }
+    },
+    [aztecWallet],
+  );
+
   // Consolidate information
   const walletInfo = useMemo<AztecWalletInfo>(() => {
-    const combinedError = providerError || initError;
+    const combinedError = providerError || initError || accountError;
 
     // Determine overall status
     let status: AztecWalletInfo['status'];
@@ -494,6 +636,14 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
       chain: targetChain,
       chainId: targetChain?.chainId || null,
       wallet,
+
+      // Multi-account management
+      accounts,
+      activeAccount,
+      switchAccount,
+      signMessage,
+      refreshAccounts: fetchAccounts,
+      isLoadingAccounts,
 
       // Provider information
       aztecWallet,
@@ -521,9 +671,16 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
     isLoading,
     providerError,
     initError,
+    accountError,
     isReconnecting,
     walletId,
     isAztecChain,
+    accounts,
+    activeAccount,
+    switchAccount,
+    signMessage,
+    fetchAccounts,
+    isLoadingAccounts,
   ]);
 
   return walletInfo;

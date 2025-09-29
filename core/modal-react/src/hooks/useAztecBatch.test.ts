@@ -45,12 +45,6 @@ interface MockContractFunctionInteraction {
   }>;
 }
 
-interface MockSentTx {
-  txHash?: string;
-  hash?: string;
-  wait: () => Promise<MockTxReceipt>;
-}
-
 interface MockTxReceipt {
   txHash: string;
   status: string;
@@ -78,6 +72,23 @@ function createMockInteraction(
   };
 }
 
+// Helper to create failing mock interaction
+function createFailingMockInteraction(
+  id: string,
+  method: string,
+  args: unknown[],
+  error: Error = new Error('Transaction failed')
+): MockContractFunctionInteraction {
+  return {
+    id,
+    method,
+    args,
+    request: vi.fn().mockResolvedValue({ type: 'tx-request' }),
+    simulate: vi.fn(),
+    send: vi.fn().mockRejectedValue(error),
+  };
+}
+
 describe('useAztecBatch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -102,6 +113,13 @@ describe('useAztecBatch', () => {
       error: null,
       status: 'ready' as const,
       isAztecChain: true,
+      // Account management fields (consolidated from useAztecAccounts)
+      accounts: [],
+      activeAccount: null,
+      switchAccount: vi.fn().mockResolvedValue(undefined),
+      signMessage: vi.fn().mockResolvedValue('mock-signature'),
+      refreshAccounts: vi.fn().mockResolvedValue(undefined),
+      isLoadingAccounts: false,
     });
   });
 
@@ -139,12 +157,19 @@ describe('useAztecBatch', () => {
       error: null,
       status: 'disconnected' as const,
       isAztecChain: false,
+      // Account management fields
+      accounts: [],
+      activeAccount: null,
+      switchAccount: vi.fn().mockResolvedValue(undefined),
+      signMessage: vi.fn().mockResolvedValue('mock-signature'),
+      refreshAccounts: vi.fn().mockResolvedValue(undefined),
+      isLoadingAccounts: false,
     });
 
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
+      createMockInteraction('tx1', 'transfer', ['0x123', 100]),
     ];
 
     await act(async () => {
@@ -184,13 +209,7 @@ describe('useAztecBatch', () => {
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      {
-        id: 'tx1',
-        method: 'transfer',
-        args: ['0x123', 100],
-        request: vi.fn().mockResolvedValue({ type: 'tx-request' }),
-        simulate: vi.fn()
-      },
+      createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xabcd1234', mockReceipt),
     ];
 
     let receipts: MockTxReceipt[] = [];
@@ -248,9 +267,9 @@ describe('useAztecBatch', () => {
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request-1' }), simulate: vi.fn() },
-      { id: 'tx2', method: 'transfer', args: ['0x456', 200], request: vi.fn().mockResolvedValue({ type: 'tx-request-2' }), simulate: vi.fn() },
-      { id: 'tx3', method: 'approve', args: ['0x789', 300], request: vi.fn().mockResolvedValue({ type: 'tx-request-3' }), simulate: vi.fn() },
+      createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xabcd1234', mockReceipts[0]),
+      createMockInteraction('tx2', 'transfer', ['0x456', 200], '0xefgh5678', mockReceipts[1]),
+      createMockInteraction('tx3', 'approve', ['0x789', 300], '0xijkl9012', mockReceipts[2]),
     ];
 
     let receipts: MockTxReceipt[] = [];
@@ -280,12 +299,11 @@ describe('useAztecBatch', () => {
 
   it('should handle single transaction failure', async () => {
     const error = new Error('Transaction failed');
-    mockWallet.proveTx.mockRejectedValue(error);
 
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
+      createFailingMockInteraction('tx1', 'transfer', ['0x123', 100], error),
     ];
 
     await act(async () => {
@@ -312,30 +330,24 @@ describe('useAztecBatch', () => {
   });
 
   it('should handle partial batch failure', async () => {
-    const mockReceipt: MockTxReceipt = {
+    const mockReceipt1: MockTxReceipt = {
       txHash: '0xabcd1234',
       status: 'success',
     };
 
-    const mockProvenTx = { provenTxData: 'proven' };
-    const mockTxHash = '0xabcd1234';
+    const mockReceipt3: MockTxReceipt = {
+      txHash: '0xijkl9012',
+      status: 'success',
+    };
 
     const error = new Error('Second transaction failed');
-
-    mockWallet.proveTx
-      .mockResolvedValueOnce(mockProvenTx) // First succeeds
-      .mockRejectedValueOnce(error) // Second fails
-      .mockResolvedValueOnce(mockProvenTx); // Third succeeds
-
-    mockWallet.sendTx.mockResolvedValue(mockTxHash);
-    mockWallet.getTxReceipt.mockResolvedValue(mockReceipt);
 
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
-      { id: 'tx2', method: 'transfer', args: ['0x456', 200], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
-      { id: 'tx3', method: 'approve', args: ['0x789', 300], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
+      createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xabcd1234', mockReceipt1),
+      createFailingMockInteraction('tx2', 'transfer', ['0x456', 200], error),
+      createMockInteraction('tx3', 'approve', ['0x789', 300], '0xijkl9012', mockReceipt3),
     ];
 
     // Mock console.warn to verify it's called
@@ -396,15 +408,23 @@ describe('useAztecBatch', () => {
         error: null,
         status: 'disconnected' as const,
         isAztecChain: false,
+        // Account management fields
+        accounts: [],
+        activeAccount: null,
+        switchAccount: vi.fn().mockResolvedValue(undefined),
+        signMessage: vi.fn().mockResolvedValue('mock-signature'),
+        refreshAccounts: vi.fn().mockResolvedValue(undefined),
+        isLoadingAccounts: false,
       });
       throw new Error('Wallet disconnected during batch execution');
     });
 
     const { result } = renderHook(() => useAztecBatch());
 
+    const mockReceipt1: MockTxReceipt = { txHash: '0xabcd1234', status: 'success' };
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
-      { id: 'tx2', method: 'transfer', args: ['0x456', 200], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
+      createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xabcd1234', mockReceipt1),
+      createFailingMockInteraction('tx2', 'transfer', ['0x456', 200], new Error('Wallet disconnected during batch execution')),
     ];
 
     let receipts: MockTxReceipt[] = [];
@@ -443,17 +463,7 @@ describe('useAztecBatch', () => {
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      {
-        id: 'tx1',
-        method: 'transfer',
-        args: ['0x123', 100],
-        request: vi.fn().mockResolvedValue({ type: 'tx-request' }),
-        simulate: vi.fn(),
-        send: vi.fn().mockResolvedValue({
-          txHash: { toString: () => '0xabcd1234' },
-          wait: vi.fn().mockResolvedValue(mockReceipt),
-        }),
-      },
+      createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xabcd1234', mockReceipt),
     ];
 
     await act(async () => {
@@ -478,7 +488,7 @@ describe('useAztecBatch', () => {
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
+      createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xabcd1234', mockReceipt),
     ];
 
     await act(async () => {
@@ -495,12 +505,10 @@ describe('useAztecBatch', () => {
   });
 
   it('should handle non-Error exceptions', async () => {
-    mockWallet.proveTx.mockRejectedValue('String error');
-
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
+      createFailingMockInteraction('tx1', 'transfer', ['0x123', 100], 'String error' as unknown as Error),
     ];
 
     await act(async () => {
@@ -546,7 +554,7 @@ describe('useAztecBatch', () => {
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
+      createMockInteraction('tx1', 'transfer', ['0x123', 100]),
     ];
 
     await act(async () => {
@@ -599,9 +607,9 @@ describe('useAztecBatch', () => {
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
-      { id: 'tx2', method: 'transfer', args: ['0x456', 200], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
-      { id: 'tx3', method: 'approve', args: ['0x789', 300], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
+      createMockInteraction('tx1', 'transfer', ['0x123', 100], mockTxHashes[0], mockReceipts[0]),
+      createMockInteraction('tx2', 'transfer', ['0x456', 200], mockTxHashes[1], mockReceipts[1]),
+      createMockInteraction('tx3', 'approve', ['0x789', 300], mockTxHashes[2], mockReceipts[2]),
     ];
 
     await act(async () => {
@@ -620,11 +628,9 @@ describe('useAztecBatch', () => {
     expect(result.current).not.toBeNull();
     expect(typeof result.current.executeBatch).toBe('function');
 
-    // Mock an unexpected error that's not from individual transactions
-    mockWallet.proveTx.mockRejectedValue(new Error('Unexpected batch error'));
-
+    const error = new Error('Unexpected batch error');
     const interactions: MockContractFunctionInteraction[] = [
-      { id: 'tx1', method: 'transfer', args: ['0x123', 100], request: vi.fn().mockResolvedValue({ type: 'tx-request' }), simulate: vi.fn() },
+      createFailingMockInteraction('tx1', 'transfer', ['0x123', 100], error),
     ];
 
     await act(async () => {

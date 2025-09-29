@@ -8,7 +8,6 @@
 import {
   WalletMeshProvider,
   useAccount,
-  useAztecAccounts,
   useAztecAuth,
   useAztecBatch,
   useAztecContract,
@@ -93,7 +92,7 @@ function ConnectionManager() {
  * Account Management Example
  */
 function AccountManager() {
-  const { accounts, activeAccount, switchAccount, signMessage, isLoading, error } = useAztecAccounts();
+  const { accounts, activeAccount, switchAccount, signMessage, isLoadingAccounts, error } = useAztecWallet();
 
   const handleSign = async () => {
     try {
@@ -108,7 +107,7 @@ function AccountManager() {
   return (
     <div style={{ marginBottom: '20px' }}>
       <h2>Account Management</h2>
-      {isLoading ? (
+      {isLoadingAccounts ? (
         <p>Loading accounts...</p>
       ) : error ? (
         <p style={{ color: 'red' }}>Error: {error.message}</p>

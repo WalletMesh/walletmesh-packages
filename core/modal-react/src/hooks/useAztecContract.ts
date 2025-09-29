@@ -8,6 +8,7 @@
  */
 
 import type { AztecAddress } from '@aztec/aztec.js';
+import { ErrorFactory } from '@walletmesh/modal-core';
 import { getContractAt } from '@walletmesh/modal-core/providers/aztec/lazy';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ContractArtifact } from './useAztecDeploy.js';
@@ -174,7 +175,7 @@ export function useAztecContract<T = unknown>(
       setContract(contractInstance as T);
       cacheKeyRef.current = newCacheKey;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err : new Error('Failed to load contract');
+      const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to load contract');
       setError(errorMessage);
       setContract(null);
       console.error('Failed to load contract:', err);

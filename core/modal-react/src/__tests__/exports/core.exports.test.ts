@@ -155,7 +155,6 @@ describe('@walletmesh/modal-react/core exports', () => {
           'useAztecWallet',
           'useAztecWalletRequired',
           'useAztecContract',
-          'useAztecAccounts',
           'useAztecEvents',
           'useAztecBatch',
           'useAztecAuth',

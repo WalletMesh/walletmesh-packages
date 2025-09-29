@@ -497,12 +497,6 @@ export {
 } from './hooks/useAztecDeploy.js';
 
 export {
-  useAztecAccounts,
-  type UseAztecAccountsReturn,
-  type AccountInfo as AztecAccountInfo,
-} from './hooks/useAztecAccounts.js';
-
-export {
   useAztecEvents,
   type UseAztecEventsReturn,
   type EventQueryOptions,

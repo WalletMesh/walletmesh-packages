@@ -76,7 +76,6 @@ describe('@walletmesh/modal-react/solana exports', () => {
           'useAztecWallet',
           'useAztecWalletRequired',
           'useAztecContract',
-          'useAztecAccounts',
           'useAztecEvents',
           'useAztecBatch',
           'useAztecAuth',

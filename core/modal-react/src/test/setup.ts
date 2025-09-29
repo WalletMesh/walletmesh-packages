@@ -579,6 +579,34 @@ vi.mock('@walletmesh/modal-core', () => {
         });
         return error;
       }),
+      transactionFailed: vi.fn().mockImplementation((message, details) => {
+        const error = new Error(message);
+        Object.assign(error, {
+          code: 'TRANSACTION_FAILED',
+          category: 'transaction',
+          fatal: false,
+          data: details,
+        });
+        return error;
+      }),
+      notFound: vi.fn().mockImplementation((message) => {
+        const error = new Error(message);
+        Object.assign(error, {
+          code: 'NOT_FOUND',
+          category: 'validation',
+          fatal: false,
+        });
+        return error;
+      }),
+      unknownError: vi.fn().mockImplementation((message) => {
+        const error = new Error(message);
+        Object.assign(error, {
+          code: 'UNKNOWN_ERROR',
+          category: 'unknown',
+          fatal: false,
+        });
+        return error;
+      }),
     },
 
     // Actions
