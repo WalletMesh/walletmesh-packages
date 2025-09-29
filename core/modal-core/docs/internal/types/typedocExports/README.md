@@ -11,13 +11,16 @@
 - [ConnectionState](enumerations/ConnectionState.md)
 - [InternalModalEventType](enumerations/InternalModalEventType.md)
 
+## Classes
+
+- [EventEmitter](classes/EventEmitter.md)
+
 ## Interfaces
 
 ### Other
 
 - [AccountChangeEvent](interfaces/AccountChangeEvent.md)
 - [ApiConnectionState](interfaces/ApiConnectionState.md)
-- [AvailableWallet](interfaces/AvailableWallet.md)
 - [BaseChainService](interfaces/BaseChainService.md)
 - [BaseTransactionParams](interfaces/BaseTransactionParams.md)
 - [ChainBalanceInfo](interfaces/ChainBalanceInfo.md)
@@ -62,7 +65,6 @@
 - [ViewChangingEvent](interfaces/ViewChangingEvent.md)
 - [WalletAdapterConstructor](interfaces/WalletAdapterConstructor.md)
 - [WalletEventMap](interfaces/WalletEventMap.md)
-- [WalletMeshClient](interfaces/WalletMeshClient.md)
 
 ### Security
 
@@ -73,26 +75,52 @@
 - [AnyTransportConfig](type-aliases/AnyTransportConfig.md)
 - [ChainServiceFactory](type-aliases/ChainServiceFactory.md)
 - [ChainServiceLoader](type-aliases/ChainServiceLoader.md)
+- [ComponentMap](type-aliases/ComponentMap.md)
 - [ConnectButtonState](type-aliases/ConnectButtonState.md)
 - [EventHandler](type-aliases/EventHandler.md)
+- [EventListener](type-aliases/EventListener.md)
 - [EventMappingWalletEventType](type-aliases/EventMappingWalletEventType.md)
 - [ModalView](type-aliases/ModalView.md)
 - [ProviderFactory](type-aliases/ProviderFactory.md)
 - [ProviderLoaderFunction](type-aliases/ProviderLoaderFunction.md)
+- [ReactAdapter](type-aliases/ReactAdapter.md)
+- [ReactAdapterConfig](type-aliases/ReactAdapterConfig.md)
 - [SupportedChain](type-aliases/SupportedChain.md)
 - [SupportedChainsConfig](type-aliases/SupportedChainsConfig.md)
+- [SvelteAdapter](type-aliases/SvelteAdapter.md)
+- [SvelteAdapterConfig](type-aliases/SvelteAdapterConfig.md)
 - [Unsubscribe](type-aliases/Unsubscribe.md)
+- [ViewHooks](type-aliases/ViewHooks.md)
+- [VueAdapter](type-aliases/VueAdapter.md)
+- [VueAdapterConfig](type-aliases/VueAdapterConfig.md)
 - [WalletEvent](type-aliases/WalletEvent.md)
 - [WalletProvider](type-aliases/WalletProvider.md)
+- [WalletStandardEvent](type-aliases/WalletStandardEvent.md)
 
 ## Variables
 
 - [ErrorCategory](variables/ErrorCategory.md)
 - [modalViewSchema](variables/modalViewSchema.md)
+- [reactAdapterConfigSchema](variables/reactAdapterConfigSchema.md)
 - [supportedChainSchema](variables/supportedChainSchema.md)
 - [supportedChainsConfigSchema](variables/supportedChainsConfigSchema.md)
+- [svelteAdapterConfigSchema](variables/svelteAdapterConfigSchema.md)
+- [viewHooksSchema](variables/viewHooksSchema.md)
+- [vueAdapterConfigSchema](variables/vueAdapterConfigSchema.md)
 
 ## References
+
+### AvailableWallet
+
+Re-exports [AvailableWallet](../../../@walletmesh/modal-core/interfaces/AvailableWallet.md)
+
+***
+
+### AztecAccount
+
+Re-exports [AztecAccount](../../../@walletmesh/modal-core/interfaces/AztecAccount.md)
+
+***
 
 ### BaseWalletProvider
 
@@ -115,6 +143,12 @@ Re-exports [ChainCompatibilityInfo](../../../@walletmesh/modal-core/interfaces/C
 ### ChainEnsuranceConfig
 
 Re-exports [ChainEnsuranceConfig](../../../@walletmesh/modal-core/interfaces/ChainEnsuranceConfig.md)
+
+***
+
+### ChainInfo
+
+Renames and re-exports [ServiceChainInfo](../../../@walletmesh/modal-core/interfaces/ServiceChainInfo.md)
 
 ***
 
@@ -310,6 +344,12 @@ Re-exports [SessionStateMetadata](../../../@walletmesh/modal-core/interfaces/Ses
 
 ***
 
+### SolanaAccount
+
+Renames and re-exports [SolanaWalletAccount](../../../@walletmesh/modal-core/interfaces/SolanaWalletAccount.md)
+
+***
+
 ### SolanaInstruction
 
 Re-exports [SolanaInstruction](../../../@walletmesh/modal-core/interfaces/SolanaInstruction.md)
@@ -319,6 +359,12 @@ Re-exports [SolanaInstruction](../../../@walletmesh/modal-core/interfaces/Solana
 ### SolanaTransaction
 
 Re-exports [SolanaTransaction](../../../@walletmesh/modal-core/interfaces/SolanaTransaction.md)
+
+***
+
+### SolanaWallet
+
+Renames and re-exports [SolanaWalletStandardWallet](../../../@walletmesh/modal-core/interfaces/SolanaWalletStandardWallet.md)
 
 ***
 
@@ -373,6 +419,18 @@ Re-exports [WalletConnectionState](../../../@walletmesh/modal-core/interfaces/Wa
 ### WalletInfo
 
 Re-exports [WalletInfo](../../../@walletmesh/modal-core/interfaces/WalletInfo.md)
+
+***
+
+### WalletMeshBaseClient
+
+Renames and re-exports [WalletMeshClient](../../../@walletmesh/modal-core/interfaces/WalletMeshClient.md)
+
+***
+
+### WalletMeshClient
+
+Re-exports [WalletMeshClient](../../../@walletmesh/modal-core/interfaces/WalletMeshClient.md)
 
 ***
 

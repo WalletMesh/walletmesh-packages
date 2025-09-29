@@ -6,7 +6,7 @@
 
 # Function: getWalletClientInstance()
 
-> **getWalletClientInstance**(`config`, `options?`, `instanceKey?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../../../internal/types/typedocExports/interfaces/WalletMeshClient.md)\>
+> **getWalletClientInstance**(`config`, `options?`, `instanceKey?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../interfaces/WalletMeshClient.md)\>
 
 Get or create a WalletClient instance
 
@@ -35,7 +35,7 @@ Optional key for multiple instances
 
 ## Returns
 
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../../../internal/types/typedocExports/interfaces/WalletMeshClient.md)\>
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../interfaces/WalletMeshClient.md)\>
 
 Promise that resolves to WalletClient instance
 

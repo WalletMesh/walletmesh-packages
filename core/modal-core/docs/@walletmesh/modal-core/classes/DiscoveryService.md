@@ -28,11 +28,8 @@ discoveryService.onEnhanced('adapter_created', (event) => {
   console.log('Adapter created:', event.adapter.id);
 });
 
-// Start discovery
-await discoveryService.start();
-
-// Get discovery results with adapters
-const results = await discoveryService.discoverWallets();
+// Run a discovery scan (optionally provide a config override)
+const results = await discoveryService.scan();
 results.forEach(result => {
   console.log('Wallet:', result.wallet.name, 'Adapter:', result.adapter?.id);
 });
@@ -185,39 +182,6 @@ Clean up discovery service resources
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
-
-***
-
-### discover()
-
-> **discover**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`DiscoveredWallet`](../interfaces/DiscoveredWallet.md)[]\>
-
-Perform a one-time discovery scan
-
-#### Returns
-
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`DiscoveredWallet`](../interfaces/DiscoveredWallet.md)[]\>
-
-Promise that resolves to discovered wallets
-
-***
-
-### discoverWallets()
-
-> **discoverWallets**(`chainTypes?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`DiscoveryResult`](../interfaces/DiscoveryResult.md)[]\>
-
-Discover wallets for specified chain types
-Enhanced version that returns DiscoveryResult with adapters
-
-#### Parameters
-
-##### chainTypes?
-
-[`ChainType`](../enumerations/ChainType.md)[]
-
-#### Returns
-
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`DiscoveryResult`](../interfaces/DiscoveryResult.md)[]\>
 
 ***
 
@@ -445,7 +409,7 @@ Get wallets by transport type
 
 ##### transportType
 
-`"popup"` | `"extension"` | `"websocket"` | `"injected"`
+`"extension"` | `"popup"` | `"websocket"` | `"injected"`
 
 #### Returns
 
@@ -480,6 +444,19 @@ Get wallet information with transport configuration
 #### Returns
 
 `undefined` \| [`QualifiedWallet`](../interfaces/QualifiedWallet.md)
+
+***
+
+### initializeDiscovery()
+
+> **initializeDiscovery**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+
+Prepare discovery components without starting a scan.
+Allows callers to set up responders ahead of invoking `scan()`.
+
+#### Returns
+
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
 
 ***
 
@@ -645,25 +622,12 @@ Promise that resolves to updated wallet info
 
 ***
 
-### start()
+### reset()
 
-> **start**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+> **reset**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
 
-Start the discovery service
-
-#### Returns
-
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
-
-Promise that resolves when discovery is started
-
-***
-
-### startContinuousDiscovery()
-
-> **startContinuousDiscovery**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
-
-Start continuous discovery
+Reset discovery service to initial state for fresh discovery
+This allows the service to be reused for multiple discovery sessions
 
 #### Returns
 
@@ -671,29 +635,24 @@ Start continuous discovery
 
 ***
 
-### stop()
+### scan()
 
-> **stop**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+> **scan**(`config?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`DiscoveryResult`](../interfaces/DiscoveryResult.md)[]\>
 
-Stop the discovery service
+Execute a discovery scan and register discovered wallets.
 
-#### Returns
+The optional config parameter replaces the service configuration for this scan,
+allowing callers to run targeted discovery passes without mutating previous state.
 
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+#### Parameters
 
-Promise that resolves when discovery is stopped
+##### config?
 
-***
-
-### stopContinuousDiscovery()
-
-> **stopContinuousDiscovery**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
-
-Stop continuous discovery
+[`DiscoveryConfig`](../interfaces/DiscoveryConfig.md)
 
 #### Returns
 
-[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`DiscoveryResult`](../interfaces/DiscoveryResult.md)[]\>
 
 ***
 

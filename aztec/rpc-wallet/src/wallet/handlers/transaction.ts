@@ -157,6 +157,7 @@ export function createTransactionHandlers() {
         skipTxValidation,
         skipFeeEnforcementInput, // skipFeeEnforcement is optional in PXE interface
         overrides, // SimulationOverrides which may contain msgSender
+        scopes, // Array of AztecAddress scopes for the simulation
       ] = paramsTuple;
       // Handle optional params with defaults if necessary, matching PXE behavior
       const simulatePublic = simulatePublicInput === undefined ? false : simulatePublicInput;
@@ -169,12 +170,14 @@ export function createTransactionHandlers() {
       }
 
       // Call with the parameters that the underlying wallet expects
-      return await ctx.wallet.simulateTx(
+      // Cast to any to handle the extended simulateTx signature with scopes
+      return await (ctx.wallet as any).simulateTx(
         txRequest,
         simulatePublic,
         skipTxValidation,
         skipFeeEnforcement,
         overrides,
+        scopes,
       );
     },
 
@@ -222,6 +225,7 @@ export function createTransactionHandlers() {
      * @param paramsTuple.2 - The {@link AztecAddress} of the contract or account to call.
      * @param paramsTuple.3 - Optional: An array of {@link AuthWitness} for authorization, if needed.
      * @param paramsTuple.4 - Optional: The {@link AztecAddress} of the sender, if relevant for the utility call.
+     * @param paramsTuple.5 - Optional: Array of {@link AztecAddress} scopes for the simulation.
      * @returns A promise that resolves to the {@link UtilitySimulationResult}.
      *          Type defined by {@link AztecWalletMethodMap.aztec_simulateUtility.result}.
      * @throws {Error} If required parameters like `functionName`, `args`, or `to` are missing or invalid.
@@ -230,13 +234,14 @@ export function createTransactionHandlers() {
       ctx: AztecHandlerContext,
       paramsTuple: AztecWalletMethodMap['aztec_simulateUtility']['params'],
     ): Promise<AztecWalletMethodMap['aztec_simulateUtility']['result']> => {
-      const [functionName, args, to, authWits, from] = paramsTuple;
+      const [functionName, args, to, authWits, from, scopes] = paramsTuple;
       logger.debug(`[HANDLER] aztec_simulateUtility: functionName = ${functionName}, to = ${to?.toString()}`);
       if (!functionName || !args || !to) {
         // Mandatory params
         throw new Error('Invalid parameters received in tuple for aztec_simulateUtility');
       }
-      return await ctx.wallet.simulateUtility(functionName, args, to, authWits, from);
+      // Cast to any to handle the extended simulateUtility signature with scopes
+      return await (ctx.wallet as any).simulateUtility(functionName, args, to, authWits, from, scopes);
     },
   };
 }

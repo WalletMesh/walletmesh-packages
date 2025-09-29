@@ -6,9 +6,9 @@
 
 # Interface: AvailableWallet
 
-Defined in: core/modal-core/dist/client/WalletMeshClient.d.ts:111
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:643
 
-Wallet detection result with availability information
+Result of wallet detection, including availability status.
 
 ## Properties
 
@@ -16,9 +16,9 @@ Wallet detection result with availability information
 
 > **adapter**: [`WalletAdapter`](WalletAdapter.md)
 
-Defined in: core/modal-core/dist/client/WalletMeshClient.d.ts:113
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:647
 
-The wallet adapter instance
+The wallet adapter instance.
 
 ***
 
@@ -26,9 +26,9 @@ The wallet adapter instance
 
 > **available**: `boolean`
 
-Defined in: core/modal-core/dist/client/WalletMeshClient.d.ts:115
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:651
 
-Whether the wallet is currently available
+Whether the wallet is currently available (installed/accessible).
 
 ***
 
@@ -36,9 +36,9 @@ Whether the wallet is currently available
 
 > `optional` **customData**: `Record`\<`string`, `unknown`\>
 
-Defined in: core/modal-core/dist/client/WalletMeshClient.d.ts:119
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:659
 
-Additional metadata
+Additional wallet-specific metadata.
 
 ***
 
@@ -46,6 +46,6 @@ Additional metadata
 
 > `optional` **version**: `string`
 
-Defined in: core/modal-core/dist/client/WalletMeshClient.d.ts:117
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:655
 
-Optional version information
+Optional version string of the detected wallet.

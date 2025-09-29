@@ -1,16 +1,20 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const rootPath = path.resolve(__dirname, '../..');
 
 export default defineConfig({
   resolve: {
     alias: {
-      '@solana/web3.js':
-        '/home/parallels/dev/walletmesh-packages/core/modal-core/src/internal/testing/mocks/solana-web3.ts',
-      '@walletmesh/jsonrpc': '/home/parallels/dev/walletmesh-packages/core/jsonrpc/src/index.ts',
-      '@walletmesh/discovery': '/home/parallels/dev/walletmesh-packages/core/discovery/src/index.ts',
-      '@walletmesh/discovery/responder': '/home/parallels/dev/walletmesh-packages/core/discovery/src/responder.ts',
-      '@walletmesh/router': '/home/parallels/dev/walletmesh-packages/core/router/src/index.ts',
-      '@walletmesh/aztec-rpc-wallet': '/home/parallels/dev/walletmesh-packages/aztec/rpc-wallet/src/index.ts',
-      '@walletmesh/aztec-helpers': '/home/parallels/dev/walletmesh-packages/aztec/helpers/src/index.ts',
+      '@solana/web3.js': path.resolve(__dirname, 'src/internal/testing/mocks/solana-web3.ts'),
+      '@walletmesh/jsonrpc': path.resolve(rootPath, 'core/jsonrpc/src/index.ts'),
+      '@walletmesh/discovery': path.resolve(rootPath, 'core/discovery/src/index.ts'),
+      '@walletmesh/discovery/responder': path.resolve(rootPath, 'core/discovery/src/responder.ts'),
+      '@walletmesh/router': path.resolve(rootPath, 'core/router/src/index.ts'),
+      '@walletmesh/aztec-rpc-wallet': path.resolve(rootPath, 'aztec/rpc-wallet/src/index.ts'),
+      '@walletmesh/aztec-helpers': path.resolve(rootPath, 'aztec/helpers/src/index.ts'),
     },
   },
   test: {

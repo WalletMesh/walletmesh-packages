@@ -138,8 +138,33 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     if (!this._sessionId) {
       return;
     }
-    await this.callMethod('wm_disconnect', { sessionId: this._sessionId }, timeout);
-    this._sessionId = undefined;
+
+    try {
+      await this.callMethod('wm_disconnect', { sessionId: this._sessionId }, timeout);
+    } catch (error) {
+      // Check if this is a transport-level error (e.g., window closed)
+      const isTransportError =
+        error &&
+        typeof error === 'object' &&
+        'message' in error &&
+        typeof error.message === 'string' &&
+        (error.message.includes('window closed') ||
+          error.message.includes('Not connected') ||
+          error.message.includes('disconnected'));
+
+      if (isTransportError) {
+        // Transport errors during disconnect are expected when the wallet window
+        // is already closed. Log for debugging but don't throw.
+        console.debug('[WalletRouterProvider] Transport already disconnected during disconnect:', error);
+      } else {
+        // For other errors, rethrow since they may indicate real problems
+        throw error;
+      }
+    } finally {
+      // Always clear session ID, even if disconnect message failed
+      // This ensures we don't try to use a stale session
+      this._sessionId = undefined;
+    }
   }
 
   /**

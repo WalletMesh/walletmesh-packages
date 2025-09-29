@@ -410,6 +410,7 @@ export {
 export {
   useConfig,
   type UseConfigReturn,
+  type RefreshWalletsOptions,
 } from './hooks/useConfig.js';
 export {
   useTheme,
@@ -477,6 +478,23 @@ export {
   useAztecContract,
   type UseAztecContractReturn,
 } from './hooks/useAztecContract.js';
+
+// Aztec transaction hook
+export {
+  useAztecTransaction,
+  type UseAztecTransactionReturn,
+  type TransactionOptions,
+  type TransactionResult as AztecTransactionResult,
+} from './hooks/useAztecTransaction.js';
+
+// Aztec deployment hook
+export {
+  useAztecDeploy,
+  type UseAztecDeployReturn,
+  type DeploymentOptions,
+  type DeploymentResult,
+  type ContractArtifact,
+} from './hooks/useAztecDeploy.js';
 
 export {
   useAztecAccounts,
@@ -707,7 +725,11 @@ export {
 
 // Wallet capabilities hooks
 export { useWalletCapabilities, type WalletCapabilitiesInfo } from './hooks/useWalletCapabilities.js';
-export { useWalletTransport, type WalletTransportInfo } from './hooks/useWalletTransport.js';
+export {
+  useWalletTransport,
+  type WalletTransport,
+  type WalletTransportInfo,
+} from './hooks/useWalletTransport.js';
 
 // Performance optimization hooks and utilities
 export * from './hooks/granular/index.js';

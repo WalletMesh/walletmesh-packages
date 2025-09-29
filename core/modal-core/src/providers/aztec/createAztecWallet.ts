@@ -107,20 +107,11 @@ export async function createAztecWallet(
     return null;
   }
 
-  // Check if we already have a cached instance for this provider
-  const cachedWallet = walletInstanceCache.get(provider);
-  if (cachedWallet) {
-    modalLogger.info('✅ Using cached AztecDappWallet instance for provider', {
-      providerType: provider.constructor.name,
-      chainId: options.chainId,
-      providerId: 'id' in provider && typeof provider.id === 'string' ? provider.id : 'no-id',
-    });
-    return cachedWallet;
-  }
-
-  // Check session-based cache as fallback (for React StrictMode)
+  // Extract session ID first for better cache key
   const sessionId =
     'sessionId' in provider && typeof provider.sessionId === 'string' ? provider.sessionId : undefined;
+
+  // PRIORITY 1: Check session-based cache first (most reliable)
   if (sessionId && walletInstanceCacheBySession.has(sessionId)) {
     const sessionCachedWallet = walletInstanceCacheBySession.get(sessionId);
     if (sessionCachedWallet) {
@@ -135,9 +126,47 @@ export async function createAztecWallet(
     }
   }
 
-  // Create a unique key for deduplication based on chain ID and provider type
+  // PRIORITY 2: Check provider-based cache (for non-session scenarios)
+  const cachedWallet = walletInstanceCache.get(provider);
+  if (cachedWallet) {
+    modalLogger.info('✅ Using cached AztecDappWallet instance for provider', {
+      providerType: provider.constructor.name,
+      chainId: options.chainId,
+      providerId: 'id' in provider && typeof provider.id === 'string' ? provider.id : 'no-id',
+    });
+    // Also cache by session for consistency
+    if (sessionId) {
+      walletInstanceCacheBySession.set(sessionId, cachedWallet);
+    }
+    return cachedWallet;
+  }
+
+  // Create a unique key for deduplication - prioritize session ID if available
   // This prevents concurrent creation of the same wallet
-  const dedupeKey = `${provider.constructor.name}-${options.chainId || 'default'}`;
+  const dedupeKey = sessionId
+    ? `session-${sessionId}-${options.chainId || 'default'}`
+    : `${provider.constructor.name}-${options.chainId || 'default'}-${Date.now()}`;
+
+  // For session-based providers, also check if any pending creation exists for this session
+  if (sessionId) {
+    const sessionDedupeKey = `session-${sessionId}-${options.chainId || 'default'}`;
+    if (pendingCreations.has(sessionDedupeKey)) {
+      modalLogger.info('⏳ Waiting for pending wallet creation (session-based)', {
+        sessionDedupeKey,
+        sessionId,
+        chainId: options.chainId,
+      });
+      const pendingPromise = pendingCreations.get(sessionDedupeKey);
+      if (pendingPromise) {
+        const pendingWallet = await pendingPromise;
+        if (pendingWallet) {
+          walletInstanceCache.set(provider, pendingWallet);
+          walletInstanceCacheBySession.set(sessionId, pendingWallet);
+        }
+        return pendingWallet;
+      }
+    }
+  }
 
   // Check if there's already a pending creation for this key
   if (pendingCreations.has(dedupeKey)) {

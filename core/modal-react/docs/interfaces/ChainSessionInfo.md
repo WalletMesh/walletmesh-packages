@@ -32,7 +32,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1141
 
 > **chainType**: [`ChainType`](../enumerations/ChainType.md)
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1143
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1142
 
 #### Inherited from
 
@@ -44,7 +44,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1143
 
 > `optional` **group**: `string`
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1148
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1147
 
 #### Inherited from
 
@@ -56,7 +56,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1148
 
 > `optional` **icon**: `string`
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1145
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1148
 
 #### Inherited from
 
@@ -68,7 +68,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1145
 
 > `optional` **interfaces**: `string`[]
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1147
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1146
 
 #### Inherited from
 
@@ -90,7 +90,7 @@ Whether this is the native chain for the wallet
 
 > `optional` **label**: `string`
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1146
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1145
 
 #### Inherited from
 
@@ -102,7 +102,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1146
 
 > **name**: `string`
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1142
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1143
 
 #### Inherited from
 

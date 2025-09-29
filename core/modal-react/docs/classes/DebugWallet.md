@@ -90,7 +90,7 @@ Display metadata for the wallet
 
 > `readonly` **supportedProviders**: `Partial`\<`Record`\<[`ChainType`](../enumerations/ChainType.md), `ProviderClass`\>\>
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:127
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:128
 
 Default supported providers - empty by default
 Override in subclasses to specify supported provider classes
@@ -107,7 +107,7 @@ Override in subclasses to specify supported provider classes
 
 > **get** **connection**(): `null` \| [`WalletConnection`](../interfaces/WalletConnection.md)
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:171
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:172
 
 Get current connection (read-only)
 
@@ -129,7 +129,7 @@ Current connection if connected
 
 > **get** **state**(): [`WalletAdapterConnectionState`](../interfaces/WalletAdapterConnectionState.md)
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:167
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:168
 
 Get current connection state (read-only)
 
@@ -209,7 +209,7 @@ Public disconnect method required by AbstractWalletAdapter
 
 > `optional` **getJSONRPCTransport**(`_chainType`): `undefined` \| `JSONRPCTransport`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:224
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:225
 
 Default implementation returns undefined
 Override in subclasses to provide JSON-RPC transport
@@ -267,7 +267,7 @@ Returns a comprehensive mock that implements common wallet provider methods
 
 > **getProvider**(`chainType`): `WalletProvider`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:231
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:232
 
 Get provider for a specific chain type
 
@@ -299,7 +299,7 @@ If chain type not supported or not connected
 
 > **hasProvider**(`chainType`): `boolean`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:236
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:237
 
 Check if a provider is available for a chain type
 
@@ -325,7 +325,7 @@ Type of blockchain to check
 
 > **install**(`context`): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:189
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:190
 
 Initialize the adapter with context
 
@@ -364,7 +364,7 @@ async install(context: AdapterContext): Promise<void> {
 
 > **off**\<`E`\>(`event`, `handler`): `void`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:216
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:217
 
 Unsubscribe from an event
 
@@ -398,7 +398,7 @@ Unsubscribe from an event
 
 > **on**\<`E`\>(`event`, `handler`): `Unsubscribe`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:208
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:209
 
 Subscribe to adapter events
 
@@ -432,7 +432,7 @@ Subscribe to adapter events
 
 > **once**\<`E`\>(`event`, `handler`): `Unsubscribe`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:212
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:213
 
 Subscribe to a one-time event
 
@@ -466,7 +466,7 @@ Subscribe to a one-time event
 
 > **uninstall**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:193
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:194
 
 Clean up adapter resources
 

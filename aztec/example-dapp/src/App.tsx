@@ -53,11 +53,11 @@ function App() {
           permissions: [
             // Account Methods (required for initialization)
             'aztec_getAddress',
-            'aztec_getCompleteAddress',
+            'aztec_getCompleteAddress', // ⚠️ CRITICAL: Required for wallet initialization - fetches complete address with public keys
 
             // Chain/Node Methods (required for initialization and queries)
-            'aztec_getChainId',
-            'aztec_getVersion',
+            'aztec_getChainId', // ⚠️ CRITICAL: Required for wallet initialization - identifies the connected chain
+            'aztec_getVersion', // ⚠️ CRITICAL: Required for wallet initialization - verifies protocol compatibility
             'aztec_getBlockNumber',
             'aztec_getCurrentBaseFees',
             'aztec_getNodeInfo',

@@ -88,9 +88,16 @@ export class JSONRPCProxy {
 
       // Set up timeout
       const timeout = setTimeout(() => {
-        this.pendingRequests.delete(id);
-        this.log('Request timeout', { id, method, timeoutMs });
-        reject(new TimeoutError(`Request timeout after ${timeoutMs}ms`, id));
+        // Defensive check: only timeout if the request is still pending
+        // This prevents phantom timeouts when the response has already been processed
+        if (this.pendingRequests.has(id)) {
+          this.pendingRequests.delete(id);
+          this.log('Request timeout', { id, method, timeoutMs });
+          reject(new TimeoutError(`Request timeout after ${timeoutMs}ms`, id));
+        } else {
+          // Phantom timeout avoided - request was already resolved
+          this.log('Phantom timeout avoided', { id, method, timeoutMs });
+        }
       }, timeoutMs);
 
       // Store pending request
@@ -123,20 +130,22 @@ export class JSONRPCProxy {
   private handleResponse(message: unknown): void {
     const id = this.extractId(message);
 
-    if (id !== undefined && this.pendingRequests.has(id)) {
-      const pending = this.pendingRequests.get(id) as NonNullable<
-        ReturnType<typeof this.pendingRequests.get>
-      >;
-      this.pendingRequests.delete(id);
-      clearTimeout(pending.timeout);
+    if (id !== undefined) {
+      const pending = this.pendingRequests.get(id);
+      if (pending) {
+        // Atomically remove the request and clear its timeout to prevent race conditions
+        // This must happen before we process the response to prevent phantom timeouts
+        this.pendingRequests.delete(id);
+        clearTimeout(pending.timeout);
 
-      this.log('Response received', {
-        id,
-        method: pending.method,
-        duration: Date.now() - pending.timestamp,
-      });
+        this.log('Response received', {
+          id,
+          method: pending.method,
+          duration: Date.now() - pending.timestamp,
+        });
 
-      pending.resolve(message);
+        pending.resolve(message);
+      }
     } else if (id === undefined) {
       // Handle events/notifications from the server
       const event = this.extractEvent(message);

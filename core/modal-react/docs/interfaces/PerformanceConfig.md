@@ -6,7 +6,7 @@
 
 # Interface: PerformanceConfig
 
-Defined in: [core/modal-react/src/utils/performance.ts:304](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/utils/performance.ts#L304)
+Defined in: [core/modal-react/src/utils/performance.ts:304](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/utils/performance.ts#L304)
 
 Performance monitoring configuration
 
@@ -16,7 +16,7 @@ Performance monitoring configuration
 
 > **enableLogging**: `boolean`
 
-Defined in: [core/modal-react/src/utils/performance.ts:305](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/utils/performance.ts#L305)
+Defined in: [core/modal-react/src/utils/performance.ts:305](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/utils/performance.ts#L305)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal-react/src/utils/performance.ts:305](https://github.com/W
 
 > **logLevel**: `"error"` \| `"debug"` \| `"info"` \| `"warn"`
 
-Defined in: [core/modal-react/src/utils/performance.ts:308](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/utils/performance.ts#L308)
+Defined in: [core/modal-react/src/utils/performance.ts:308](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/utils/performance.ts#L308)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/modal-react/src/utils/performance.ts:308](https://github.com/W
 
 > **renderCountThreshold**: `number`
 
-Defined in: [core/modal-react/src/utils/performance.ts:306](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/utils/performance.ts#L306)
+Defined in: [core/modal-react/src/utils/performance.ts:306](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/utils/performance.ts#L306)
 
 ***
 
@@ -40,4 +40,4 @@ Defined in: [core/modal-react/src/utils/performance.ts:306](https://github.com/W
 
 > **renderTimeThreshold**: `number`
 
-Defined in: [core/modal-react/src/utils/performance.ts:307](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/utils/performance.ts#L307)
+Defined in: [core/modal-react/src/utils/performance.ts:307](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/utils/performance.ts#L307)

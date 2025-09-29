@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshConnectButtonProps
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:12](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L12)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:12](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L12)
 
 Props for the WalletMeshConnectButton component
 
@@ -16,7 +16,7 @@ Props for the WalletMeshConnectButton component
 
 > `optional` **className**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:20](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L20)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:20](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L20)
 
 Custom className for styling
 
@@ -26,7 +26,7 @@ Custom className for styling
 
 > `optional` **connectedLabel**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:18](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L18)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:18](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L18)
 
 Custom label for the connected button
 
@@ -36,7 +36,7 @@ Custom label for the connected button
 
 > `optional` **connectingLabel**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:16](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L16)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:16](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L16)
 
 Custom label for the connecting button
 
@@ -46,7 +46,7 @@ Custom label for the connecting button
 
 > `optional` **disabled**: `boolean`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:36](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L36)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:36](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L36)
 
 Whether the button should be disabled
 
@@ -56,7 +56,7 @@ Whether the button should be disabled
 
 > `optional` **label**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:14](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L14)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:14](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L14)
 
 Custom label for the connect button
 
@@ -66,7 +66,7 @@ Custom label for the connect button
 
 > `optional` **onConnectedClick**: () => `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:34](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L34)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:34](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L34)
 
 Custom click handler for when connected (instead of opening modal)
 
@@ -80,7 +80,7 @@ Custom click handler for when connected (instead of opening modal)
 
 > `optional` **showAddress**: `boolean`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:28](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L28)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:28](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L28)
 
 Whether to show the address when connected
 
@@ -90,7 +90,7 @@ Whether to show the address when connected
 
 > `optional` **showChain**: `boolean`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:30](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L30)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:30](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L30)
 
 Whether to show the chain when connected
 
@@ -100,7 +100,7 @@ Whether to show the chain when connected
 
 > `optional` **showWalletName**: `boolean`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:32](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L32)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:32](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L32)
 
 Whether to show the wallet name when connected
 
@@ -110,7 +110,7 @@ Whether to show the wallet name when connected
 
 > `optional` **size**: `"sm"` \| `"md"` \| `"lg"`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:24](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L24)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:24](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L24)
 
 Size variant
 
@@ -120,7 +120,7 @@ Size variant
 
 > `optional` **style**: `CSSProperties`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:22](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L22)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:22](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L22)
 
 Custom styles object
 
@@ -130,7 +130,7 @@ Custom styles object
 
 > `optional` **targetChainType**: [`ChainType`](../enumerations/ChainType.md)
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:38](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L38)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:38](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L38)
 
 Target chain type for chain-specific buttons
 
@@ -140,6 +140,6 @@ Target chain type for chain-specific buttons
 
 > `optional` **variant**: `"primary"` \| `"secondary"` \| `"outline"`
 
-Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:26](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshConnectButton.tsx#L26)
+Defined in: [core/modal-react/src/components/WalletMeshConnectButton.tsx:26](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshConnectButton.tsx#L26)
 
 Color variant

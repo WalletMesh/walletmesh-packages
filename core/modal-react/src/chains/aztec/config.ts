@@ -107,6 +107,9 @@ export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig
   // Create permissions for each chain
   const permissions: Record<string, string[]> = {};
 
+  // Critical permissions required for wallet initialization
+  const criticalPermissions = ['aztec_getCompleteAddress', 'aztec_getChainId', 'aztec_getVersion'];
+
   // Use provided permissions or fall back to defaults
   const aztecMethods = config.permissions || [
     'aztec_getAddress',
@@ -119,8 +122,32 @@ export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig
     'aztec_getRegisteredAccounts',
   ];
 
+  // Validate that critical permissions are included
+  const missingCritical = criticalPermissions.filter((perm) => !aztecMethods.includes(perm));
+  if (missingCritical.length > 0) {
+    console.warn(
+      '⚠️ AZTEC CONFIG - Missing Critical Permissions',
+      {
+        warning: 'Critical permissions missing from configuration',
+        missing: missingCritical,
+        provided: aztecMethods,
+        impact: 'Wallet initialization may fail without these permissions',
+        solution: 'Add missing permissions to your config',
+        critical: criticalPermissions,
+      },
+    );
+    // Add missing critical permissions
+    aztecMethods.push(...missingCritical);
+  }
+
   for (const chain of chains) {
     permissions[chain.chainId] = [...aztecMethods];
+    console.log('📝 AZTEC CONFIG - Permissions Configured', {
+      chainId: chain.chainId,
+      chainName: chain.name,
+      permissions: aztecMethods,
+      hasCriticalPermissions: criticalPermissions.every((p) => aztecMethods.includes(p)),
+    });
   }
 
   const defaultDiscoveryTechnologies = [

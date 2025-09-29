@@ -12,8 +12,12 @@ import { useRef } from 'react';
 import { useWalletMeshContext } from '../WalletMeshContext.js';
 import { shallowEqual, useStore } from './internal/useStore.js';
 
-// Define WalletTransport interface locally
-interface WalletTransport {
+/**
+ * Wallet transport interface for low-level communication
+ *
+ * @public
+ */
+export interface WalletTransport {
   connect(): Promise<string>;
   disconnect(): Promise<void>;
   request<T = unknown>(request: { method: string; params?: unknown }): Promise<T>;

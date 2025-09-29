@@ -30,7 +30,6 @@ describe('Wallet Component - Account Registration', () => {
   it('should handle account registration failure gracefully', async () => {
     // Mock account that fails to register
     const mockAccount = {
-      isDeployable: vi.fn().mockResolvedValue(true),
       register: vi.fn().mockRejectedValue(new Error('Registration failed')),
       getWallet: vi.fn().mockResolvedValue({
         getAddress: () => ({ toString: () => '0xaztec123' }),
@@ -51,7 +50,6 @@ describe('Wallet Component - Account Registration', () => {
   it('should use account directly as last resort fallback', async () => {
     // Mock account where both register and getWallet fail
     const mockAccount = {
-      isDeployable: vi.fn().mockResolvedValue(true),
       register: vi.fn().mockRejectedValue(new Error('Registration failed')),
       getWallet: vi.fn().mockRejectedValue(new Error('getWallet not available')),
       getAddress: () => ({ toString: () => '0xaztec456' }),
@@ -72,7 +70,6 @@ describe('Wallet Component - Account Registration', () => {
     vi.useFakeTimers();
 
     const mockAccount = {
-      isDeployable: vi.fn().mockResolvedValue(true),
       register: vi
         .fn()
         .mockRejectedValueOnce(new Error('First attempt failed'))
@@ -107,7 +104,6 @@ describe('Wallet Component - Account Registration', () => {
     };
 
     const mockAccount = {
-      isDeployable: vi.fn().mockResolvedValue(true),
       register: vi.fn().mockResolvedValue(mockWallet),
       getWallet: vi.fn().mockResolvedValue(mockWallet),
     };

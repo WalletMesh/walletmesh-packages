@@ -6,7 +6,7 @@
 
 # Interface: ConnectionProgress
 
-Defined in: [core/modal-react/src/hooks/useConnect.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConnect.ts#L94)
+Defined in: [core/modal-react/src/hooks/useConnect.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConnect.ts#L94)
 
 Connection progress interface
 
@@ -16,7 +16,7 @@ Connection progress interface
 
 > `optional` **details**: `string`
 
-Defined in: [core/modal-react/src/hooks/useConnect.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConnect.ts#L100)
+Defined in: [core/modal-react/src/hooks/useConnect.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConnect.ts#L100)
 
 Optional step details
 
@@ -26,7 +26,7 @@ Optional step details
 
 > **progress**: `number`
 
-Defined in: [core/modal-react/src/hooks/useConnect.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConnect.ts#L96)
+Defined in: [core/modal-react/src/hooks/useConnect.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConnect.ts#L96)
 
 Progress percentage (0-100)
 
@@ -36,6 +36,6 @@ Progress percentage (0-100)
 
 > **step**: `string`
 
-Defined in: [core/modal-react/src/hooks/useConnect.ts:98](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConnect.ts#L98)
+Defined in: [core/modal-react/src/hooks/useConnect.ts:98](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConnect.ts#L98)
 
 Current step being performed

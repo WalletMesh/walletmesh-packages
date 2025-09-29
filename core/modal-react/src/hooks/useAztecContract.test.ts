@@ -2,13 +2,13 @@
  * Tests for useAztecContract hook
  */
 
-import type { ContractArtifact } from '@aztec/aztec.js';
 import { renderHook } from '@testing-library/react';
 import * as lazyModule from '@walletmesh/modal-core/providers/aztec/lazy';
 import type { AztecDappWallet } from '@walletmesh/modal-core/providers/aztec/lazy';
 import { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createWrapper } from '../test/utils.js';
+import type { ContractArtifact } from './useAztecDeploy.js';
 import { useAztecContract } from './useAztecContract.js';
 import * as aztecWallet from './useAztecWallet.js';
 import type { AztecWalletInfo } from './useAztecWallet.js';
@@ -57,8 +57,10 @@ describe('useAztecContract - Synchronous behavior', () => {
 
   it('should start loading when address and artifact are provided', () => {
     const mockWallet = {
-      wmExecuteTx: vi.fn(),
-      wmSimulateTx: vi.fn(),
+      proveTx: vi.fn(),
+      sendTx: vi.fn(),
+      getTxReceipt: vi.fn(),
+      simulateTx: vi.fn(),
       getAddress: vi.fn(),
     };
 

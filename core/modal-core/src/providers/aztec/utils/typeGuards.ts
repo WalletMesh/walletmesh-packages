@@ -23,8 +23,9 @@ export function isAztecProvider(provider: unknown): provider is AztecDappWallet 
   // Check for required Aztec wallet methods
   return (
     typeof wallet['deployContract'] === 'function' &&
-    typeof wallet['wmExecuteTx'] === 'function' &&
-    typeof wallet['wmSimulateTx'] === 'function' &&
+    typeof wallet['proveTx'] === 'function' &&
+    typeof wallet['sendTx'] === 'function' &&
+    typeof wallet['simulateTx'] === 'function' &&
     typeof wallet['getTxReceipt'] === 'function' &&
     typeof wallet['getAddress'] === 'function' &&
     typeof wallet['getCompleteAddress'] === 'function' &&

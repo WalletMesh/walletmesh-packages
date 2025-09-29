@@ -166,7 +166,10 @@ export const isWalletAvailable =
  *   wallet,
  *   async (w) => {
  *     const contract = await Contract.at(address, artifact, w);
- *     return w.wmExecuteTx(contract.methods.mint(amount));
+ *     const interaction = contract.methods.mint(amount);
+ *     const txRequest = await interaction.request();
+ *     const provenTx = await w.proveTx(txRequest);
+ *     return await w.sendTx(provenTx);
  *   },
  *   'Minting failed'
  * );

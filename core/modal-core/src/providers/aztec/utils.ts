@@ -87,7 +87,25 @@ export async function executeTx(
   }
 
   try {
-    return await wallet.wmExecuteTx(interaction);
+    // Use native Aztec flow: request → proveTx → sendTx
+    const contractInteraction = interaction as ContractFunctionInteraction & {
+      request(): Promise<unknown>;
+    };
+    const txRequest = await contractInteraction.request();
+    const provenTx = await wallet.proveTx(txRequest);
+    const txHash = await wallet.sendTx(provenTx);
+
+    // Create a SentTx-compatible object
+    return {
+      wait: async () => {
+        const receipt = await wallet.getTxReceipt(txHash);
+        if (!receipt) {
+          throw new Error('Transaction receipt not found');
+        }
+        return receipt;
+      },
+      txHash: txHash as unknown as string,
+    };
   } catch (error) {
     throw ErrorFactory.transportError(
       `Failed to execute transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -122,7 +140,12 @@ export async function simulateTx(
   }
 
   try {
-    return await wallet.wmSimulateTx(interaction);
+    // Use native Aztec simulation
+    const contractInteraction = interaction as ContractFunctionInteraction & {
+      request(): Promise<unknown>;
+    };
+    const txRequest = await contractInteraction.request();
+    return await wallet.simulateTx(txRequest, true); // simulatePublic = true
   } catch (error) {
     throw ErrorFactory.transportError(
       `Failed to simulate transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -248,7 +271,10 @@ export function isWalletAvailable(wallet: AztecDappWallet | null): wallet is Azt
  *   wallet,
  *   async (w) => {
  *     const contract = await Contract.at(address, artifact, w);
- *     return w.wmExecuteTx(contract.methods.mint(amount));
+ *     const interaction = contract.methods.mint(amount);
+ *     const txRequest = await interaction.request();
+ *     const provenTx = await w.proveTx(txRequest);
+ *     return await w.sendTx(provenTx);
  *   },
  *   'Minting failed'
  * );

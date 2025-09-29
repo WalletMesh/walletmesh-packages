@@ -30,7 +30,7 @@ Object with all client services
 
 ### client
 
-> **client**: [`WalletMeshClient`](../classes/WalletMeshClient.md)
+> **client**: [`WalletMeshClient`](../interfaces/WalletMeshClient.md)
 
 ### connectionManager
 

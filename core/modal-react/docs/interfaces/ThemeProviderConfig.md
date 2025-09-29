@@ -6,7 +6,7 @@
 
 # Interface: ThemeProviderConfig
 
-Defined in: [core/modal-react/src/theme/types.ts:187](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L187)
+Defined in: [core/modal-react/src/theme/types.ts:187](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L187)
 
 Theme provider configuration options
 
@@ -20,7 +20,7 @@ Theme provider configuration options
 
 > `optional` **cssPrefix**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:215](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L215)
+Defined in: [core/modal-react/src/theme/types.ts:215](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L215)
 
 CSS class prefix for theme variables
 
@@ -36,7 +36,7 @@ CSS class prefix for theme variables
 
 > `optional` **customization**: [`ThemeCustomization`](ThemeCustomization.md)
 
-Defined in: [core/modal-react/src/theme/types.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L203)
+Defined in: [core/modal-react/src/theme/types.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L203)
 
 Custom theme overrides
 
@@ -46,7 +46,7 @@ Custom theme overrides
 
 > `optional` **disableTransitionsOnChange**: `boolean`
 
-Defined in: [core/modal-react/src/theme/types.ts:221](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L221)
+Defined in: [core/modal-react/src/theme/types.ts:221](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L221)
 
 Disable theme transitions during initial load
 
@@ -62,7 +62,7 @@ true
 
 > `optional` **mode**: `ThemeMode`
 
-Defined in: [core/modal-react/src/theme/types.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L192)
+Defined in: [core/modal-react/src/theme/types.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L192)
 
 Initial theme mode
 
@@ -78,7 +78,7 @@ Initial theme mode
 
 > `optional` **persist**: `boolean`
 
-Defined in: [core/modal-react/src/theme/types.ts:198](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L198)
+Defined in: [core/modal-react/src/theme/types.ts:198](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L198)
 
 Whether to persist theme choice in localStorage
 
@@ -94,7 +94,7 @@ true
 
 > `optional` **storageKey**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:209](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L209)
+Defined in: [core/modal-react/src/theme/types.ts:209](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L209)
 
 Storage key for persisting theme
 

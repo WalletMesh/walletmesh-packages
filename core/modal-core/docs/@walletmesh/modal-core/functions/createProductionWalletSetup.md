@@ -23,7 +23,7 @@ Application name
 
 ### additionalConfig
 
-`Partial`\<[`WalletMeshClientConfig`](../interfaces/WalletMeshClientConfig.md)\> = `{}`
+`Partial`\<[`WalletMeshClientConfig`](../type-aliases/WalletMeshClientConfig.md)\> = `{}`
 
 Additional configuration
 
@@ -35,7 +35,7 @@ Complete production setup
 
 ### client
 
-> **client**: [`WalletMeshClient`](../classes/WalletMeshClient.md)
+> **client**: [`WalletMeshClient`](../interfaces/WalletMeshClient.md)
 
 ### connectionManager
 

@@ -117,7 +117,7 @@ const READ_ONLY_METHODS = new Set([
   'getPublicStorageAt',
   'getNullifierMembershipWitness',
   'isContractClassPubliclyRegistered',
-  'isContractPubliclyDeployed',
+  'isContractPublished',
 ]);
 
 /**

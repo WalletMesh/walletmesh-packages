@@ -6,7 +6,7 @@
 
 # Enumeration: WalletMeshErrorCode
 
-Defined in: [core/modal-react/src/types/errors.ts:1](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L1)
+Defined in: [core/modal-react/src/types/errors.ts:1](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L1)
 
 ## Enumeration Members
 
@@ -14,7 +14,7 @@ Defined in: [core/modal-react/src/types/errors.ts:1](https://github.com/WalletMe
 
 > **ALREADY\_CONNECTED**: `"ALREADY_CONNECTED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:9](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L9)
+Defined in: [core/modal-react/src/types/errors.ts:9](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L9)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [core/modal-react/src/types/errors.ts:9](https://github.com/WalletMe
 
 > **CHAIN\_MISMATCH**: `"CHAIN_MISMATCH"`
 
-Defined in: [core/modal-react/src/types/errors.ts:13](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L13)
+Defined in: [core/modal-react/src/types/errors.ts:13](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L13)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [core/modal-react/src/types/errors.ts:13](https://github.com/WalletM
 
 > **CHAIN\_SWITCH\_FAILED**: `"CHAIN_SWITCH_FAILED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:15](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L15)
+Defined in: [core/modal-react/src/types/errors.ts:15](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L15)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [core/modal-react/src/types/errors.ts:15](https://github.com/WalletM
 
 > **CONNECTION\_FAILED**: `"CONNECTION_FAILED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:7](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L7)
+Defined in: [core/modal-react/src/types/errors.ts:7](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L7)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [core/modal-react/src/types/errors.ts:7](https://github.com/WalletMe
 
 > **CONNECTION\_TIMEOUT**: `"CONNECTION_TIMEOUT"`
 
-Defined in: [core/modal-react/src/types/errors.ts:8](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L8)
+Defined in: [core/modal-react/src/types/errors.ts:8](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L8)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [core/modal-react/src/types/errors.ts:8](https://github.com/WalletMe
 
 > **GAS\_ESTIMATION\_FAILED**: `"GAS_ESTIMATION_FAILED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L26)
+Defined in: [core/modal-react/src/types/errors.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L26)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [core/modal-react/src/types/errors.ts:26](https://github.com/WalletM
 
 > **INSUFFICIENT\_FUNDS**: `"INSUFFICIENT_FUNDS"`
 
-Defined in: [core/modal-react/src/types/errors.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L23)
+Defined in: [core/modal-react/src/types/errors.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L23)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [core/modal-react/src/types/errors.ts:23](https://github.com/WalletM
 
 > **INVALID\_PARAMS**: `"INVALID_PARAMS"`
 
-Defined in: [core/modal-react/src/types/errors.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L34)
+Defined in: [core/modal-react/src/types/errors.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L34)
 
 ***
 
@@ -78,7 +78,7 @@ Defined in: [core/modal-react/src/types/errors.ts:34](https://github.com/WalletM
 
 > **METHOD\_NOT\_SUPPORTED**: `"METHOD_NOT_SUPPORTED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L35)
+Defined in: [core/modal-react/src/types/errors.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L35)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [core/modal-react/src/types/errors.ts:35](https://github.com/WalletM
 
 > **NOT\_CONNECTED**: `"NOT_CONNECTED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:10](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L10)
+Defined in: [core/modal-react/src/types/errors.ts:10](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L10)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [core/modal-react/src/types/errors.ts:10](https://github.com/WalletM
 
 > **PROVIDER\_ERROR**: `"PROVIDER_ERROR"`
 
-Defined in: [core/modal-react/src/types/errors.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L30)
+Defined in: [core/modal-react/src/types/errors.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L30)
 
 ***
 
@@ -102,7 +102,7 @@ Defined in: [core/modal-react/src/types/errors.ts:30](https://github.com/WalletM
 
 > **PROVIDER\_NOT\_FOUND**: `"PROVIDER_NOT_FOUND"`
 
-Defined in: [core/modal-react/src/types/errors.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L29)
+Defined in: [core/modal-react/src/types/errors.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L29)
 
 ***
 
@@ -110,7 +110,7 @@ Defined in: [core/modal-react/src/types/errors.ts:29](https://github.com/WalletM
 
 > **TRANSACTION\_FAILED**: `"TRANSACTION_FAILED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L24)
+Defined in: [core/modal-react/src/types/errors.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L24)
 
 ***
 
@@ -118,7 +118,7 @@ Defined in: [core/modal-react/src/types/errors.ts:24](https://github.com/WalletM
 
 > **TRANSACTION\_REJECTED**: `"TRANSACTION_REJECTED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L25)
+Defined in: [core/modal-react/src/types/errors.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L25)
 
 ***
 
@@ -126,7 +126,7 @@ Defined in: [core/modal-react/src/types/errors.ts:25](https://github.com/WalletM
 
 > **UNKNOWN\_ERROR**: `"UNKNOWN_ERROR"`
 
-Defined in: [core/modal-react/src/types/errors.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L33)
+Defined in: [core/modal-react/src/types/errors.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L33)
 
 ***
 
@@ -134,7 +134,7 @@ Defined in: [core/modal-react/src/types/errors.ts:33](https://github.com/WalletM
 
 > **UNSUPPORTED\_CHAIN**: `"UNSUPPORTED_CHAIN"`
 
-Defined in: [core/modal-react/src/types/errors.ts:14](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L14)
+Defined in: [core/modal-react/src/types/errors.ts:14](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L14)
 
 ***
 
@@ -142,7 +142,7 @@ Defined in: [core/modal-react/src/types/errors.ts:14](https://github.com/WalletM
 
 > **USER\_CANCELLED**: `"USER_CANCELLED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:4](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L4)
+Defined in: [core/modal-react/src/types/errors.ts:4](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L4)
 
 ***
 
@@ -150,7 +150,7 @@ Defined in: [core/modal-react/src/types/errors.ts:4](https://github.com/WalletMe
 
 > **USER\_REJECTED**: `"USER_REJECTED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:3](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L3)
+Defined in: [core/modal-react/src/types/errors.ts:3](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L3)
 
 ***
 
@@ -158,7 +158,7 @@ Defined in: [core/modal-react/src/types/errors.ts:3](https://github.com/WalletMe
 
 > **WALLET\_LOCKED**: `"WALLET_LOCKED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L20)
+Defined in: [core/modal-react/src/types/errors.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L20)
 
 ***
 
@@ -166,7 +166,7 @@ Defined in: [core/modal-react/src/types/errors.ts:20](https://github.com/WalletM
 
 > **WALLET\_NOT\_FOUND**: `"WALLET_NOT_FOUND"`
 
-Defined in: [core/modal-react/src/types/errors.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L18)
+Defined in: [core/modal-react/src/types/errors.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L18)
 
 ***
 
@@ -174,4 +174,4 @@ Defined in: [core/modal-react/src/types/errors.ts:18](https://github.com/WalletM
 
 > **WALLET\_NOT\_INSTALLED**: `"WALLET_NOT_INSTALLED"`
 
-Defined in: [core/modal-react/src/types/errors.ts:19](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/types/errors.ts#L19)
+Defined in: [core/modal-react/src/types/errors.ts:19](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types/errors.ts#L19)

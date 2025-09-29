@@ -8,7 +8,7 @@
 
 > **useConfig**(): [`UseConfigReturn`](../interfaces/UseConfigReturn.md)
 
-Defined in: [core/modal-react/src/hooks/useConfig.ts:158](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useConfig.ts#L158)
+Defined in: [core/modal-react/src/hooks/useConfig.ts:262](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConfig.ts#L262)
 
 Hook for accessing WalletMesh configuration and modal controls
 
@@ -27,9 +27,8 @@ Configuration and control methods
 
 ## See
 
- - useModal - For just modal controls
- - useWallets - For wallet discovery state
- - [useConnect](useConnect.md) - For connecting to wallets
+ - [useAccount](useAccount.md) - For account and connection state
+ - [useConnect](useConnect.md) - For connection operations
 
 ## Remarks
 
@@ -93,8 +92,8 @@ function WalletDiscovery() {
         </div>
       ))}
 
-      <button onClick={() => refreshWallets({ targetChainType: 'evm' })}>
-        Refresh EVM Wallets
+      <button onClick={refreshWallets}>
+        Refresh Wallets
       </button>
     </div>
   );

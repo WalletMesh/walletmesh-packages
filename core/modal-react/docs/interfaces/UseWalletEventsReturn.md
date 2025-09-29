@@ -6,7 +6,7 @@
 
 # Interface: UseWalletEventsReturn
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L49)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L49)
 
 Event hook return type
 
@@ -16,7 +16,7 @@ Event hook return type
 
 > **activeEvents**: `string`[]
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L70)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L70)
 
 Currently active event subscriptions
 
@@ -26,7 +26,7 @@ Currently active event subscriptions
 
 > **isPaused**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L68)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L68)
 
 Whether subscriptions are currently paused
 
@@ -36,7 +36,7 @@ Whether subscriptions are currently paused
 
 > **off**: \<`K`\>(`event`, `handler?`) => `void`
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L57)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L57)
 
 Unsubscribe from an event
 
@@ -66,7 +66,7 @@ Unsubscribe from an event
 
 > **on**: \<`K`\>(`event`, `handler`, `options?`) => () => `void`
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L51)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L51)
 
 Subscribe to a new event at runtime
 
@@ -104,7 +104,7 @@ Subscribe to a new event at runtime
 
 > **once**: \<`K`\>(`event`, `handler`) => () => `void`
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L59)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L59)
 
 Subscribe to an event once
 
@@ -138,7 +138,7 @@ Subscribe to an event once
 
 > **pause**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L64)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L64)
 
 Pause all event subscriptions
 
@@ -152,7 +152,7 @@ Pause all event subscriptions
 
 > **resume**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L66)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L66)
 
 Resume all event subscriptions
 

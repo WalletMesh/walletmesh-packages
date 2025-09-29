@@ -6,7 +6,7 @@
 
 # Function: createWalletMesh()
 
-> **createWalletMesh**(`config`, `options?`): `Promise`\<`WalletMeshClient`\>
+> **createWalletMesh**(`config`, `options?`): `Promise`\<[`WalletMeshClient`](../interfaces/WalletMeshClient.md)\>
 
 Defined in: core/modal-core/dist/api/core/createWalletClient.d.ts:169
 
@@ -32,7 +32,7 @@ Optional creation options
 
 ## Returns
 
-`Promise`\<`WalletMeshClient`\>
+`Promise`\<[`WalletMeshClient`](../interfaces/WalletMeshClient.md)\>
 
 Promise that resolves to a fully initialized [WalletMeshClient](../interfaces/WalletMeshClient.md) instance with comprehensive wallet management capabilities:
   - **Connection Management**: `connect()`, `disconnect()`, `disconnectAll()`

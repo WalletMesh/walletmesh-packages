@@ -6,7 +6,7 @@
 
 # Interface: UseAztecContractReturn\<T\>
 
-Defined in: [core/modal-react/src/hooks/useAztecContract.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecContract.ts#L20)
+Defined in: [core/modal-react/src/hooks/useAztecContract.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecContract.ts#L21)
 
 Contract hook return type
 
@@ -22,7 +22,7 @@ Contract hook return type
 
 > **contract**: `null` \| `T`
 
-Defined in: [core/modal-react/src/hooks/useAztecContract.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecContract.ts#L22)
+Defined in: [core/modal-react/src/hooks/useAztecContract.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecContract.ts#L23)
 
 The contract instance, null if not loaded
 
@@ -32,7 +32,7 @@ The contract instance, null if not loaded
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useAztecContract.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecContract.ts#L26)
+Defined in: [core/modal-react/src/hooks/useAztecContract.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecContract.ts#L27)
 
 Any error that occurred while loading
 
@@ -42,7 +42,7 @@ Any error that occurred while loading
 
 > **execute**: (`interaction`) => `Promise`\<`unknown`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecContract.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecContract.ts#L30)
+Defined in: [core/modal-react/src/hooks/useAztecContract.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecContract.ts#L31)
 
 Execute a contract method with automatic wallet handling
 
@@ -62,7 +62,7 @@ Execute a contract method with automatic wallet handling
 
 > **isLoading**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAztecContract.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecContract.ts#L24)
+Defined in: [core/modal-react/src/hooks/useAztecContract.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecContract.ts#L25)
 
 Whether the contract is currently loading
 
@@ -72,7 +72,7 @@ Whether the contract is currently loading
 
 > **refetch**: () => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecContract.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecContract.ts#L28)
+Defined in: [core/modal-react/src/hooks/useAztecContract.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecContract.ts#L29)
 
 Refetch the contract instance
 
@@ -86,7 +86,7 @@ Refetch the contract instance
 
 > **simulate**: (`method`) => `Promise`\<`unknown`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecContract.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useAztecContract.ts#L32)
+Defined in: [core/modal-react/src/hooks/useAztecContract.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecContract.ts#L33)
 
 Simulate a contract method call
 

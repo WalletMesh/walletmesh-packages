@@ -6,7 +6,7 @@
 
 # Interface: AvailableWallet
 
-Wallet detection result with availability information
+Result of wallet detection, including availability status.
 
 ## Properties
 
@@ -14,7 +14,7 @@ Wallet detection result with availability information
 
 > **adapter**: [`WalletAdapter`](WalletAdapter.md)
 
-The wallet adapter instance
+The wallet adapter instance.
 
 ***
 
@@ -22,7 +22,7 @@ The wallet adapter instance
 
 > **available**: `boolean`
 
-Whether the wallet is currently available
+Whether the wallet is currently available (installed/accessible).
 
 ***
 
@@ -30,7 +30,7 @@ Whether the wallet is currently available
 
 > `optional` **customData**: `Record`\<`string`, `unknown`\>
 
-Additional metadata
+Additional wallet-specific metadata.
 
 ***
 
@@ -38,4 +38,4 @@ Additional metadata
 
 > `optional` **version**: `string`
 
-Optional version information
+Optional version string of the detected wallet.

@@ -8,10 +8,6 @@
 
 Options for connecting to a wallet
 
-## Extended by
-
-- [`WalletConnectOptions`](../../../../@walletmesh/modal-core/interfaces/WalletConnectOptions.md)
-
 ## Indexable
 
 \[`key`: `string`\]: `unknown`

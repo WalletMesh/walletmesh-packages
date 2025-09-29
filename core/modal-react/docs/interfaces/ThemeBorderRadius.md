@@ -6,7 +6,7 @@
 
 # Interface: ThemeBorderRadius
 
-Defined in: [core/modal-react/src/theme/types.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L149)
+Defined in: [core/modal-react/src/theme/types.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L149)
 
 Border radius values
 
@@ -16,7 +16,7 @@ Border radius values
 
 > **full**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:155](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L155)
+Defined in: [core/modal-react/src/theme/types.ts:155](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L155)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal-react/src/theme/types.ts:155](https://github.com/WalletM
 
 > **lg**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:153](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L153)
+Defined in: [core/modal-react/src/theme/types.ts:153](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L153)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/modal-react/src/theme/types.ts:153](https://github.com/WalletM
 
 > **md**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:152](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L152)
+Defined in: [core/modal-react/src/theme/types.ts:152](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L152)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/modal-react/src/theme/types.ts:152](https://github.com/WalletM
 
 > **none**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:150](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L150)
+Defined in: [core/modal-react/src/theme/types.ts:150](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L150)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [core/modal-react/src/theme/types.ts:150](https://github.com/WalletM
 
 > **sm**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:151](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L151)
+Defined in: [core/modal-react/src/theme/types.ts:151](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L151)
 
 ***
 
@@ -56,4 +56,4 @@ Defined in: [core/modal-react/src/theme/types.ts:151](https://github.com/WalletM
 
 > **xl**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:154](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L154)
+Defined in: [core/modal-react/src/theme/types.ts:154](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L154)

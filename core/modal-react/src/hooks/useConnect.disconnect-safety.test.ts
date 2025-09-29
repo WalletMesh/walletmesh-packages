@@ -9,7 +9,6 @@ import type {
   TransactionRequest,
   TransactionResult,
   TransactionStatus,
-  WalletMeshState,
 } from '@walletmesh/modal-core';
 import { act } from 'react';
 import type React from 'react';
@@ -58,7 +57,7 @@ describe('useConnect - Disconnect Safety', () => {
   let wrapper: (props: { children: React.ReactNode }) => React.ReactElement;
   let mockClient: Partial<WalletMeshClient>;
   let mockConnectionService: Partial<ConnectionService>;
-  let mockGetState: Mock<[], WalletMeshState>;
+  let mockGetState: Mock;
   let mockStore: ReturnType<typeof useStoreInstance>;
   let mockActions: ReturnType<typeof useStoreActions>;
 

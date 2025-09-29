@@ -8,7 +8,7 @@
 
 > **useIsConnected**(): `boolean`
 
-Defined in: [core/modal-react/src/hooks/granular/index.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/granular/index.ts#L99)
+Defined in: [core/modal-react/src/hooks/granular/index.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/granular/index.ts#L99)
 
 Hook to check if connected (boolean only)
 Re-renders only when connected state changes

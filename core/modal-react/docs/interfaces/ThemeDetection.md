@@ -6,7 +6,7 @@
 
 # Interface: ThemeDetection
 
-Defined in: [core/modal-react/src/theme/types.ts:279](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L279)
+Defined in: [core/modal-react/src/theme/types.ts:279](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L279)
 
 Theme detection utilities
 
@@ -16,7 +16,7 @@ Theme detection utilities
 
 > **getStoredTheme**(`storageKey`): `null` \| `ThemeMode`
 
-Defined in: [core/modal-react/src/theme/types.ts:288](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L288)
+Defined in: [core/modal-react/src/theme/types.ts:288](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L288)
 
 Get stored theme preference
 
@@ -36,7 +36,7 @@ Get stored theme preference
 
 > **getSystemTheme**(): `"light"` \| `"dark"`
 
-Defined in: [core/modal-react/src/theme/types.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L283)
+Defined in: [core/modal-react/src/theme/types.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L283)
 
 Detect system theme preference
 
@@ -50,7 +50,7 @@ Detect system theme preference
 
 > **onSystemThemeChange**(`callback`): () => `void`
 
-Defined in: [core/modal-react/src/theme/types.ts:303](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L303)
+Defined in: [core/modal-react/src/theme/types.ts:303](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L303)
 
 Listen for system theme changes
 
@@ -74,7 +74,7 @@ Listen for system theme changes
 
 > **removeStoredTheme**(`storageKey`): `void`
 
-Defined in: [core/modal-react/src/theme/types.ts:298](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L298)
+Defined in: [core/modal-react/src/theme/types.ts:298](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L298)
 
 Remove stored theme preference
 
@@ -94,7 +94,7 @@ Remove stored theme preference
 
 > **storeTheme**(`mode`, `storageKey`): `void`
 
-Defined in: [core/modal-react/src/theme/types.ts:293](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/theme/types.ts#L293)
+Defined in: [core/modal-react/src/theme/types.ts:293](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L293)
 
 Store theme preference
 

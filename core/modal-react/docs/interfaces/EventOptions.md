@@ -6,7 +6,7 @@
 
 # Interface: EventOptions
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L24)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L24)
 
 Event subscription options
 
@@ -16,7 +16,7 @@ Event subscription options
 
 > `optional` **deps**: `DependencyList`
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L28)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L28)
 
 Dependency array for the effect
 
@@ -26,6 +26,6 @@ Dependency array for the effect
 
 > `optional` **once**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/hooks/useWalletEvents.ts#L26)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletEvents.ts#L26)
 
 Fire handler only once then auto-unsubscribe

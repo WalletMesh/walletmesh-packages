@@ -6,7 +6,7 @@
 
 # Interface: ErrorAction
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:20](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L20)
+Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:20](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L20)
 
 Error action configuration
 
@@ -16,7 +16,7 @@ Error action configuration
 
 > **action**: () => `void` \| `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:22](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L22)
+Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:22](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L22)
 
 #### Returns
 
@@ -28,7 +28,7 @@ Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:22](htt
 
 > `optional` **autoRetry**: `object`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:26](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L26)
+Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:26](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L26)
 
 #### attempts
 
@@ -44,7 +44,7 @@ Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:26](htt
 
 > `optional` **disabled**: `boolean`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:25](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L25)
+Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:25](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L25)
 
 ***
 
@@ -52,7 +52,7 @@ Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:25](htt
 
 > `optional` **icon**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:23](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L23)
+Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:23](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L23)
 
 ***
 
@@ -60,7 +60,7 @@ Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:23](htt
 
 > **label**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:21](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L21)
+Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:21](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L21)
 
 ***
 
@@ -68,4 +68,4 @@ Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:21](htt
 
 > `optional` **variant**: `"primary"` \| `"secondary"` \| `"danger"`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:24](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L24)
+Defined in: [core/modal-react/src/components/WalletMeshErrorRecovery.tsx:24](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshErrorRecovery.tsx#L24)

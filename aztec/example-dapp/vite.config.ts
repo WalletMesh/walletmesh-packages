@@ -6,6 +6,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 // https://vite.dev/config/
 export default defineConfig(({ mode }: any) => {
   const env = loadEnv(mode, process.cwd());
+
   return {
     cacheDir: './node_modules/.vite',
     resolve: {
@@ -14,9 +15,6 @@ export default defineConfig(({ mode }: any) => {
         // Handle lodash modules
         'lodash.chunk': 'lodash/chunk',
         'lodash.isequal': 'lodash/isEqual',
-        // Deduplicate React to prevent multiple instances
-        react: `${nodeModulesPath}/react`,
-        'react-dom': `${nodeModulesPath}/react-dom`,
       },
     },
     plugins: [
@@ -38,7 +36,7 @@ export default defineConfig(({ mode }: any) => {
       }),
     ],
     optimizeDeps: {
-      exclude: [],
+      exclude: ['@aztec/bb.js', 'barretenberg'],
       include: ['react', 'react-dom', 'react/jsx-runtime'],
     },
     server: {
