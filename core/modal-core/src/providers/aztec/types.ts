@@ -94,7 +94,7 @@ export interface ContractFunctionInteraction {
   /** Simulate the interaction to see what would happen */
   simulate(): Promise<unknown>;
   /** Send the transaction to the network */
-  send(): Promise<{
+  send(options?: unknown): Promise<{
     /** Transaction hash */
     txHash: { toString(): string };
     /** Wait for transaction confirmation */

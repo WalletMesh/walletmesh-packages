@@ -81,11 +81,13 @@ Understanding the dependency relationships between packages is crucial for devel
 @walletmesh/router (depends on jsonrpc)
     ↑
 @walletmesh/discovery (depends on jsonrpc)
-    ↑
-@walletmesh/modal-core (depends on router, discovery)
+
+@walletmesh/modal-core (depends on jsonrpc, discovery)
     ↑
 @walletmesh/modal-react (depends on modal-core)
 ```
+
+**Note**: `@walletmesh/modal-core` intentionally does NOT depend on `@walletmesh/router` to keep the bundle size minimal. Router functionality is accessed only through dynamic imports via the optional peer dependency `@walletmesh/aztec-rpc-wallet`. This allows users who only need EVM or Solana support to avoid unnecessary dependencies.
 
 **Aztec Package Hierarchy**:
 ```

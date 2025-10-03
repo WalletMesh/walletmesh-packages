@@ -73,14 +73,30 @@
     "preversion": "pnpm test"
   },
   "peerDependencies": {
+    "@walletmesh/aztec-rpc-wallet": "^0.5.0",
+    "@nemi-fi/wallet-sdk": "^1.0.0",
+    "@solana/web3.js": "^1.0.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@walletmesh/aztec-rpc-wallet": {
+      "optional": true
+    },
+    "@nemi-fi/wallet-sdk": {
+      "optional": true
+    },
+    "@solana/web3.js": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@tanstack/react-query": "^5.60.5",
     "@walletmesh/modal-core": "workspace:*"
   },
   "devDependencies": {
+    "@nemi-fi/wallet-sdk": "^1.0.0",
+    "@solana/web3.js": "^1.95.8",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -89,6 +105,7 @@
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^4.4.1",
     "@vitest/coverage-v8": "^3.2.4",
+    "@walletmesh/aztec-rpc-wallet": "workspace:*",
     "dequal": "^2.0.3",
     "get-func-name": "^2.0.2",
     "jsdom": "^26.1.0",

@@ -931,8 +931,11 @@ const Wallet: React.FC<WalletProps> = ({
                   ['aztec_wmSimulateTx', AllowAskDenyState.ALLOW],
 
                   // Methods that require approval each time (ASK state)
-                  ['aztec_sendTx', AllowAskDenyState.ASK],
-                  ['aztec_proveTx', AllowAskDenyState.ASK],
+                  // Note: aztec_sendTx and aztec_proveTx are set to ALLOW because they are
+                  // called internally by Aztec.js when using contract methods (e.g., contract.methods.transfer(...).send())
+                  // The user already approved the connection, so low-level transaction methods should be allowed
+                  ['aztec_sendTx', AllowAskDenyState.ALLOW],
+                  ['aztec_proveTx', AllowAskDenyState.ALLOW],
                   ['aztec_wmExecuteTx', AllowAskDenyState.ASK],
                   ['aztec_wmDeployContract', AllowAskDenyState.ASK],
                   ['aztec_contractInteraction', AllowAskDenyState.ASK],

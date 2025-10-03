@@ -493,16 +493,6 @@ describe('WalletMeshClient', () => {
 
       expect(client).toBeDefined();
     });
-
-    it.skip('should initialize services on init', async () => {
-      // Skip this test - initialization involves complex discovery service setup
-      // that would require extensive mocking
-    });
-
-    it.skip('should handle initialization errors gracefully', async () => {
-      // Skip this test - initialization involves complex discovery service setup
-      // that would require extensive mocking
-    });
   });
 
   describe('wallet discovery', () => {
@@ -842,142 +832,11 @@ describe('WalletMeshClient', () => {
 
       expect(callback).toHaveBeenCalledWith(newState);
     });
-
-    it.skip('should handle on() method for event subscriptions', () => {
-      // Skip this test - the on() method no longer exists in the current implementation
-      // Event handling is now done through the store subscriptions
-    });
-
-    it.skip('should handle once() method for one-time event subscriptions', () => {
-      // Skip this test - the once() method no longer exists in the current implementation
-      // Event handling is now done through the store subscriptions
-    });
   });
 
   describe('chain management', () => {
     beforeEach(async () => {
       client = new WalletMeshClient(config, createMockRegistry(), createMockModal(), createMockLogger());
-    });
-
-    it.skip('should return early if already on requested chain', async () => {
-      // Create a proper mock session
-      const mockSession = {
-        sessionId: 'test-session',
-        walletId: 'metamask',
-        status: 'connected' as const,
-        chain: {
-          chainId: 'eip155:1',
-          chainType: ChainType.Evm,
-          name: 'Ethereum Mainnet',
-          required: true,
-          interfaces: ['eip1193'],
-        },
-        provider: {
-          instance: { test: 'provider' },
-          type: 'injected',
-          version: '1.0.0',
-          multiChainCapable: false,
-          supportedMethods: [],
-        },
-        activeAccount: {
-          address: '0x123',
-          index: 0,
-          derivationPath: "m/44'/60'/0'/0/0",
-        },
-        accounts: [
-          {
-            address: '0x123',
-            index: 0,
-            derivationPath: "m/44'/60'/0'/0/0",
-            isActive: true,
-          },
-        ],
-        lifecycle: {
-          createdAt: Date.now(),
-          lastActiveAt: Date.now(),
-          lastAccessedAt: Date.now(),
-        },
-      };
-
-      // Set up the mock before creating the client
-      const mockSwitchChain = vi.fn();
-
-      // Mock the connectionActions methods
-      const connectionActionsModule = await import('../state/actions/connections.js');
-      vi.spyOn(connectionActionsModule.connectionActions, 'getWalletSessions').mockReturnValue([
-        mockSession as SessionState,
-      ]);
-      vi.spyOn(connectionActionsModule.connectionActions, 'switchChain').mockImplementation(mockSwitchChain);
-
-      // Use the actual store that was set up in beforeEach
-      const storeModule = await import('../state/store.js');
-      const currentGetState = vi.mocked(storeModule.useStore.getState);
-      const originalState = currentGetState();
-
-      // Mock the connections state to include our test session
-      currentGetState.mockReturnValue({
-        ...originalState,
-        connections: {
-          ...originalState.connections,
-          activeSessions: [mockSession as SessionState],
-          activeSessionId: mockSession.sessionId,
-          wallets: [
-            {
-              id: 'metamask',
-              name: 'MetaMask',
-              icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiPjwvc3ZnPg==',
-              chains: [ChainType.Evm],
-            },
-          ],
-          availableWalletIds: ['metamask'],
-        },
-      });
-
-      const mockAdapter = {
-        id: 'metamask',
-        connection: {
-          walletId: 'metamask',
-          address: '0x123',
-          chain: {
-            chainId: 'eip155:1',
-            chainType: ChainType.Evm,
-            name: 'Ethereum Mainnet',
-            required: true,
-            interfaces: ['eip1193'],
-          },
-          chainType: ChainType.Evm,
-          provider: {
-            request: vi.fn().mockResolvedValue(null),
-          },
-        },
-      };
-
-      client['adapters'].set('metamask', mockAdapter);
-
-      // Since we already mocked the store state above with the session,
-      // we don't need to create another one
-
-      const targetChain: SupportedChain = {
-        chainId: 'eip155:1',
-        chainType: ChainType.Evm,
-        name: 'Ethereum Mainnet',
-        required: true,
-        interfaces: ['eip1193'],
-      };
-
-      const switchPromise = client.switchChain(targetChain); // Same chain
-      await vi.runAllTimersAsync();
-      const result = await switchPromise;
-
-      expect(result).toMatchObject({
-        chain: targetChain,
-        chainType: ChainType.Evm,
-        previousChain: targetChain,
-        provider: { test: 'provider' },
-      });
-
-      // Verify that switchChain was not called on the session manager since we're already on the chain
-      expect(mockSwitchChain).not.toHaveBeenCalled();
     });
 
     it('should throw error if no wallet connected', async () => {
