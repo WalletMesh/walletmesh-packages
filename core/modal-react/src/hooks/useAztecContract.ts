@@ -11,8 +11,37 @@ import type { AztecAddress } from '@aztec/aztec.js';
 import { ErrorFactory } from '@walletmesh/modal-core';
 import { getContractAt } from '@walletmesh/modal-core/providers/aztec/lazy';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { AztecDappWallet } from '@walletmesh/modal-core/providers/aztec/types.js';
 import type { ContractArtifact } from './useAztecDeploy.js';
 import { useAztecWallet } from './useAztecWallet.js';
+
+const registeredContractClasses = new Set<string>();
+
+async function registerArtifactWithWallet(wallet: AztecDappWallet | null, artifact: ContractArtifact) {
+  if (!wallet) {
+    return;
+  }
+
+  const { getContractClassFromArtifact } = await import('@aztec/stdlib/contract');
+  const { id } = await getContractClassFromArtifact(artifact as any);
+  const key = id.toString();
+
+  if (registeredContractClasses.has(key)) {
+    return;
+  }
+
+  try {
+    await wallet.registerContractClass(artifact as Parameters<typeof wallet.registerContractClass>[0]);
+  } catch (error) {
+    // If registration fails because the class already exists, we can safely continue.
+    const message = error instanceof Error ? error.message : '';
+    if (!message.includes('already registered')) {
+      throw error;
+    }
+  }
+
+  registeredContractClasses.add(key);
+}
 
 /**
  * Contract hook return type
@@ -167,6 +196,9 @@ export function useAztecContract<T = unknown>(
         ...artifact,
         notes: artifact.notes || {},
       };
+
+      await registerArtifactWithWallet(aztecWallet, compatibleArtifact);
+
       const contractInstance = await getContractAt(
         aztecWallet,
         address,
