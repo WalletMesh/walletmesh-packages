@@ -12,41 +12,6 @@
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 import type { AztecDappWallet, ContractFunctionInteraction, TxReceipt } from './types.js';
 
-/** Tracks contract classes we've already confirmed/registered for the current session. */
-const registeredContractClasses = new Set<string>();
-
-async function ensureContractClassRegistered(
-  wallet: AztecDappWallet,
-  artifact: unknown,
-): Promise<void> {
-  try {
-    const { getContractClassFromArtifact } = await import('@aztec/stdlib/contract');
-    const typedArtifact = artifact as Parameters<typeof getContractClassFromArtifact>[0];
-    const { id: classId } = await getContractClassFromArtifact(typedArtifact);
-    const classIdKey = classId.toString();
-
-    if (registeredContractClasses.has(classIdKey)) {
-      return;
-    }
-
-    try {
-      await wallet.registerContractClass(artifact as Parameters<typeof wallet.registerContractClass>[0]);
-      registeredContractClasses.add(classIdKey);
-    } catch (registerError) {
-      const errorMessage =
-        registerError instanceof Error ? registerError.message : 'Unknown error during registration';
-      throw ErrorFactory.transportError(
-        `Failed to register contract class '${(artifact as { name?: string })?.name ?? 'Unknown'}': ${errorMessage}`,
-      );
-    }
-  } catch (error) {
-    if (error instanceof Error) {
-      throw error;
-    }
-    throw ErrorFactory.transportError('Failed to prepare contract artifact for registration');
-  }
-}
-
 /**
  * Get a contract instance at a specific address
  *
@@ -89,8 +54,6 @@ export async function getContractAt(
   try {
     // Dynamically import Contract from aztec.js to avoid forcing the dependency
     const { Contract } = await import('@aztec/aztec.js');
-
-    await ensureContractClassRegistered(wallet, artifact);
 
     // Create contract instance using the wallet
     // Cast to any because AztecDappWallet has a subset of Wallet methods

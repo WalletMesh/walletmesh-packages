@@ -35,11 +35,6 @@ export class ContractArtifactCache {
   private cache = new Map<string, ContractArtifact>();
 
   /**
-   * Stores artifacts keyed by contract class identifiers to survive PXE metadata gaps.
-   */
-  private classCache = new Map<string, ContractArtifact>();
-
-  /**
    * Reference to the `aztec.js` {@link Wallet} instance used to fetch contract
    * metadata and artifacts in case of a cache miss.
    * @internal
@@ -90,13 +85,7 @@ export class ContractArtifactCache {
 
   public async rememberContractClass(artifact: ContractArtifact): Promise<string> {
     const { artifactHash } = await getContractClassFromArtifact(artifact);
-    const classIdKey = this.toKey(artifactHash);
-    this.classCache.set(classIdKey, artifact);
-    return classIdKey;
-  }
-
-  private getArtifactForClass(classId: AztecAddress | Fr | string): ContractArtifact | undefined {
-    return this.classCache.get(this.toKey(classId));
+    return this.toKey(artifactHash);
   }
 
   public async getContractArtifact(contractAddress: AztecAddress): Promise<ContractArtifact> {
@@ -116,14 +105,10 @@ export class ContractArtifactCache {
       const contractClassMetadata = await this.wallet.getContractClassMetadata(
         contract.currentContractClassId,
       );
-      let artifact = contractClassMetadata.artifact;
-      if (!artifact) {
-        artifact = this.getArtifactForClass(contract.currentContractClassId);
-      }
+      const artifact = contractClassMetadata.artifact;
       if (!artifact) {
         throw new AztecWalletError('contractClassNotRegistered', contract.currentContractClassId.toString());
       }
-      this.classCache.set(this.toKey(contract.currentContractClassId), artifact);
       this.cache.set(addressStr, artifact);
       return artifact;
     } catch (error) {
