@@ -152,7 +152,20 @@ export class AztecAdapter extends AbstractWalletAdapter {
       const transport = this.transport || this.config.transport;
 
       // Dynamically import AztecRouterProvider to avoid hard dependency
-      const { AztecRouterProvider } = await import('@walletmesh/aztec-rpc-wallet');
+      let AztecRouterProvider: new (
+        transport: JSONRPCTransport,
+        context?: Record<string, unknown>,
+        sessionId?: string
+      ) => unknown;
+      try {
+        const aztecModule = await import('@walletmesh/aztec-rpc-wallet');
+        AztecRouterProvider = aztecModule.AztecRouterProvider;
+      } catch (error) {
+        throw ErrorFactory.configurationError(
+          'Failed to load @walletmesh/aztec-rpc-wallet. Please install it to use Aztec wallets: npm install @walletmesh/aztec-rpc-wallet',
+          { adapterId: this.id, originalError: error }
+        );
+      }
 
       const jsonRpcTransport = this.ensureJSONRPCTransport(transport);
 

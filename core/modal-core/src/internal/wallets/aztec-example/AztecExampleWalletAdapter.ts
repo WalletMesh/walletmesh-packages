@@ -13,8 +13,7 @@
  * @packageDocumentation
  */
 
-import { AztecRouterProvider } from '@walletmesh/aztec-rpc-wallet';
-import { registerAztecSerializers } from '@walletmesh/aztec-rpc-wallet';
+import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import type { WalletConnection } from '../../../api/types/connection.js';
 import type { WalletProvider } from '../../../api/types/providers.js';
 import { ChainType, type Transport } from '../../../types.js';
@@ -62,10 +61,21 @@ export interface AztecExampleWalletConfig {
  *
  * @public
  */
+/**
+ * Interface for AztecRouterProvider methods we use
+ * Defined locally to avoid static import dependency
+ */
+interface AztecRouterProviderInterface {
+  call: <M extends string>(chainId: string, call: { method: M; params?: unknown[] }, timeout?: number) => Promise<unknown>;
+  connect: (permissions: Record<string, string[]>, timeout?: number) => Promise<{ sessionId: string; permissions: unknown }>;
+  disconnect: () => Promise<void>;
+  on: (event: string, listener: (...args: unknown[]) => void) => void;
+}
+
 export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
   readonly id = 'aztec-example-wallet';
 
-  private routerProvider: AztecRouterProvider | null = null;
+  private routerProvider: AztecRouterProviderInterface | null = null;
   protected override transport: Transport | null = null;
   private sessionId: string | null = null;
 
@@ -687,6 +697,25 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
     modalLogger.info('🚀 Creating AztecRouterProvider with chainId', { chainId });
     console.log('[AztecExampleWalletAdapter] Creating router provider with chainId:', chainId);
 
+    // Dynamically import AztecRouterProvider and registerAztecSerializers to avoid hard dependency
+    let AztecRouterProvider: new (
+      transport: JSONRPCTransport,
+      context?: Record<string, unknown>,
+      sessionId?: string
+    ) => AztecRouterProviderInterface;
+    let registerAztecSerializers: (provider: unknown) => void;
+
+    try {
+      const aztecModule = await import('@walletmesh/aztec-rpc-wallet');
+      AztecRouterProvider = aztecModule.AztecRouterProvider;
+      registerAztecSerializers = aztecModule.registerAztecSerializers as (provider: unknown) => void;
+    } catch (error) {
+      throw ErrorFactory.configurationError(
+        'Failed to load @walletmesh/aztec-rpc-wallet. Please install it to use Aztec wallets: npm install @walletmesh/aztec-rpc-wallet',
+        { walletId: this.id, originalError: error }
+      );
+    }
+
     // Create AztecRouterProvider with the transport and session if we have one
     this.routerProvider = new AztecRouterProvider(
       jsonRpcTransport,
@@ -849,8 +878,8 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
   protected override setupProviderListeners(
     provider: import('../../../api/types/providers.js').WalletProvider,
   ): void {
-    // Cast to AztecRouterProvider for type safety
-    const aztecProvider = provider as unknown as AztecRouterProvider;
+    // Cast to Aztec router provider interface (type loaded dynamically at runtime)
+    const aztecProvider = provider as unknown as AztecRouterProviderInterface;
 
     // Forward provider events to adapter events
     aztecProvider.on('accountsChanged', (accounts: unknown) => {

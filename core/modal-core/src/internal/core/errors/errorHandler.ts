@@ -60,15 +60,20 @@ export class ErrorHandler implements Disposable {
       modalError = ErrorFactory.unknownError('An unexpected error occurred');
     }
 
-    // Add context data if provided - preserve all properties including recoveryStrategy
-    if (context) {
-      const existingData = modalError.data || {};
-      const mergedData = { ...existingData, ...context };
+    // ✅ Preserve original error as cause and add context (Commandment #4)
+    const shouldPreserveCause = error instanceof Error || (error !== null && typeof error === 'object');
 
-      // Create a new ModalErrorImpl with the merged data to preserve all properties
+    if (context || shouldPreserveCause) {
+      const existingData = modalError.data || {};
+      const mergedData = context ? { ...existingData, ...context } : existingData;
+
+      // Use toJSON to get a plain object with all properties including message
+      const errorData = modalError instanceof ModalErrorImpl ? modalError.toJSON() : modalError;
+
       return new ModalErrorImpl({
-        ...modalError,
+        ...errorData,
         data: mergedData,
+        ...(shouldPreserveCause && { cause: error }), // Preserve the entire error chain
       });
     }
 

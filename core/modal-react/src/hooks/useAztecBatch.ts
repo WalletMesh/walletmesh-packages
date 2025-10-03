@@ -35,9 +35,19 @@ export interface BatchTransactionStatus {
  *
  * @public
  */
+/**
+ * Options forwarded to each interaction's send() call during batch execution.
+ */
+export interface BatchSendOptions {
+  from?: unknown;
+  fee?: unknown;
+  txNonce?: unknown;
+  cancellable?: boolean;
+}
+
 export interface UseAztecBatchReturn {
   /** Execute a batch of transactions */
-  executeBatch: (interactions: ContractFunctionInteraction[]) => Promise<TxReceipt[]>;
+  executeBatch: (interactions: ContractFunctionInteraction[], options?: BatchSendOptions) => Promise<TxReceipt[]>;
   /** Status of each transaction in the current/last batch */
   transactionStatuses: BatchTransactionStatus[];
   /** Whether a batch is currently executing */
@@ -182,7 +192,10 @@ export function useAztecBatch(): UseAztecBatchReturn {
 
   // Execute batch function
   const executeBatchTransactions = useCallback(
-    async (interactions: ContractFunctionInteraction[]): Promise<TxReceipt[]> => {
+    async (
+      interactions: ContractFunctionInteraction[],
+      options: BatchSendOptions = {},
+    ): Promise<TxReceipt[]> => {
       if (!aztecWallet || !isAvailable) {
         throw ErrorFactory.connectionFailed('No Aztec wallet connected');
       }
@@ -234,8 +247,9 @@ export function useAztecBatch(): UseAztecBatchReturn {
             }
 
             // Use native Aztec.js transaction flow
-            const sentTx = await interaction.send();
-            const hash = sentTx.txHash.toString();
+            const sentTx = await (interaction as any).send(options);
+            const txHash = await sentTx.getTxHash();
+            const hash = txHash.toString();
 
             setTransactionStatuses((prev) => {
               const updated = [...prev];

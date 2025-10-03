@@ -50,7 +50,9 @@ export class ModalErrorImpl extends Error implements ModalError {
     | 'permanent'
     | 'unknown';
   public readonly data?: Record<string, unknown>;
-  public override readonly cause?: unknown;
+  // Cause property for error chaining (inherited from Error but declared here for TypeScript)
+  // Note: Not readonly to allow post-construction assignment in some edge cases
+  public override cause?: unknown;
 
   /**
    * Override the name property to identify this as a ModalError
@@ -67,6 +69,8 @@ export class ModalErrorImpl extends Error implements ModalError {
   }
 
   constructor(error: ModalError) {
+    // Pass message to Error constructor
+    // Note: Don't pass cause to super() as it may not work in all environments/test frameworks
     super(error.message);
 
     // The name is set via the getter above
@@ -90,9 +94,6 @@ export class ModalErrorImpl extends Error implements ModalError {
     if (error.data !== undefined) {
       this.data = error.data;
     }
-    if (error.cause !== undefined) {
-      this.cause = error.cause;
-    }
 
     // Ensure proper prototype chain for instanceof checks
     // This is necessary when extending built-in classes like Error
@@ -101,6 +102,12 @@ export class ModalErrorImpl extends Error implements ModalError {
     // Capture stack trace (V8 engines only)
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ModalErrorImpl);
+    }
+
+    // ✅ Set cause AFTER setPrototypeOf to ensure it's properly assigned
+    // Direct assignment works because cause is declared as a regular (non-readonly) property
+    if (error.cause !== undefined) {
+      this.cause = error.cause;
     }
   }
 

@@ -19,6 +19,7 @@ export { ErrorFactory } from './errorFactory.js';
 
 // Export utility functions
 export { isModalError, isFatalError, isRecoverableError } from './utils.js';
+export { ensureError, ensureModalError } from './ensureError.js';
 
 // Export ModalErrorImpl class
 export { ModalErrorImpl } from './modalError.js';

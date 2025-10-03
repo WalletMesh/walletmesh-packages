@@ -182,6 +182,13 @@ export function createDeveloperMessage(
     parts.push(`\n💡 Suggestion: ${template.suggestion}`);
   }
 
+  // ✅ Show stack trace in development if cause is available (Commandment #4)
+  if (process.env['NODE_ENV'] === 'development' && context?.['cause'] instanceof Error) {
+    if (context['cause'].stack) {
+      parts.push(`\n📚 Stack trace:\n${context['cause'].stack}`);
+    }
+  }
+
   if (template.link) {
     parts.push(`\n🔗 Learn more: ${template.link}`);
   }
@@ -191,7 +198,13 @@ export function createDeveloperMessage(
   }
 
   if (context && Object.keys(context).length > 0) {
-    parts.push(`\n🔍 Debug info: ${JSON.stringify(context, null, 2)}`);
+    // ✅ Don't stringify cause twice - it's already shown in stack trace
+    const debugInfo = { ...context };
+    delete debugInfo['cause'];
+
+    if (Object.keys(debugInfo).length > 0) {
+      parts.push(`\n🔍 Debug info: ${JSON.stringify(debugInfo, null, 2)}`);
+    }
   }
 
   return parts.join('\n');

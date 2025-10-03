@@ -11,7 +11,12 @@
 
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 import type { ErrorHandler } from '../../internal/core/errors/errorHandler.js';
-import { ModalErrorImpl, isModalError as internalIsModalError } from '../../internal/core/errors/index.js';
+import {
+  ModalErrorImpl,
+  isModalError as internalIsModalError,
+  ensureError as internalEnsureError,
+  ensureModalError as internalEnsureModalError,
+} from '../../internal/core/errors/index.js';
 import type { ErrorContext, ModalError, ModalErrorCategory } from '../../internal/core/errors/types.js';
 import { ERROR_CODES } from '../../internal/core/errors/types.js';
 
@@ -97,6 +102,63 @@ export interface ErrorData {
  */
 export function isModalError(error: unknown): error is ModalError {
   return internalIsModalError(error);
+}
+
+/**
+ * Convert unknown values to proper Error instances with stack traces
+ *
+ * This utility implements best practices for error handling by ensuring that any
+ * value thrown or caught can be converted to a proper Error instance with a stack trace.
+ *
+ * @function ensureError
+ * @param {unknown} value - Unknown value that might be an error
+ * @returns {Error} Error instance with preserved information and stack trace
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   riskyOperation();
+ * } catch (error) {  // error is 'unknown'
+ *   const properError = ensureError(error);
+ *   logger.error(properError.message, properError.stack);
+ * }
+ * ```
+ *
+ * @public
+ */
+export function ensureError(value: unknown): Error {
+  return internalEnsureError(value);
+}
+
+/**
+ * Convert unknown values to ModalError with stack traces preserved
+ *
+ * This utility ensures that errors have proper ModalError structure with all
+ * the rich metadata used by modal-core for error handling, recovery, and UI display.
+ *
+ * @function ensureModalError
+ * @param {unknown} value - Unknown value that might be an error
+ * @param {ErrorContext} [context] - Optional context for the error
+ * @returns {ModalError} ModalError instance with preserved stack trace
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   await wallet.connect();
+ * } catch (error) {  // error is 'unknown'
+ *   const modalError = ensureModalError(error, {
+ *     component: 'WalletConnector',
+ *     operation: 'connect',
+ *     walletId: 'metamask'
+ *   });
+ *   throw modalError;
+ * }
+ * ```
+ *
+ * @public
+ */
+export function ensureModalError(value: unknown, context?: ErrorContext): ModalError {
+  return internalEnsureModalError(value, context);
 }
 
 /**
