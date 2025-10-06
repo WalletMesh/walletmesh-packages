@@ -20,6 +20,10 @@
 export interface AztecDappWallet {
   /** Deploy a contract to the Aztec network */
   deployContract(artifact: unknown, args: unknown[], constructorName?: string): Promise<DeploySentTx>;
+  /** Execute a transaction via WalletMesh helper */
+  wmExecuteTx?(interaction: ContractFunctionInteraction): Promise<unknown>;
+  /** Simulate a transaction via WalletMesh helper */
+  wmSimulateTx?(interaction: ContractFunctionInteraction): Promise<unknown>;
   /** Prove a transaction */
   proveTx(txRequest: unknown, fee?: unknown): Promise<unknown>;
   /** Send a proven transaction */
@@ -38,6 +42,19 @@ export interface AztecDappWallet {
   createAuthWit(messageHash: unknown | Buffer): Promise<unknown>;
   /** Get the current block number */
   getBlockNumber(): Promise<number>;
+}
+
+/**
+ * Contract artifact definition shared by Aztec helpers.
+ *
+ * @public
+ */
+export interface AztecContractArtifact {
+  name: string;
+  functions: unknown[];
+  events?: unknown[];
+  notes?: unknown;
+  [key: string]: unknown;
 }
 
 /**
@@ -71,6 +88,19 @@ export interface SentTx {
  *
  * @public
  */
+
+/**
+ * Options for sending Aztec transactions.
+ *
+ * @public
+ */
+export interface AztecSendOptions {
+  from?: unknown;
+  fee?: unknown;
+  txNonce?: unknown;
+  cancellable?: boolean;
+}
+
 export interface TxReceipt {
   /** Transaction status */
   status: string;
@@ -88,15 +118,33 @@ export interface TxReceipt {
  *
  * @public
  */
+
+/**
+ * Deployment lifecycle stages.
+ *
+ * @public
+ */
+export type AztecDeploymentStage =
+  | 'idle'
+  | 'preparing'
+  | 'computing'
+  | 'proving'
+  | 'sending'
+  | 'confirming'
+  | 'success'
+  | 'error';
+
 export interface ContractFunctionInteraction {
   /** Create the transaction request object */
   request(): unknown;
   /** Simulate the interaction to see what would happen */
   simulate(): Promise<unknown>;
   /** Send the transaction to the network */
-  send(options?: unknown): Promise<{
+  send(options?: AztecSendOptions): Promise<{
     /** Transaction hash */
-    txHash: { toString(): string };
+    txHash: { toString(): string } | string;
+    /** Optional helper to fetch the hash later */
+    getTxHash?: () => Promise<{ toString(): string }>;
     /** Wait for transaction confirmation */
     wait(): Promise<unknown>;
   }>;
@@ -141,7 +189,11 @@ export interface AztecProviderFunctions {
     constructorName?: string,
   ) => Promise<DeploySentTx>;
 
-  executeTx: (wallet: AztecDappWallet | null, interaction: ContractFunctionInteraction) => Promise<SentTx>;
+  executeTx: (
+    wallet: AztecDappWallet | null,
+    interaction: ContractFunctionInteraction,
+    options?: AztecSendOptions,
+  ) => Promise<SentTx>;
 
   simulateTx: (wallet: AztecDappWallet | null, interaction: ContractFunctionInteraction) => Promise<unknown>;
 
@@ -167,6 +219,7 @@ export interface AztecContractFunctions {
   executeBatch: (
     wallet: AztecDappWallet | null,
     interactions: ContractFunctionInteraction[],
+    options?: AztecSendOptions,
   ) => Promise<TxReceipt[]>;
 
   callViewFunction: (

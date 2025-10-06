@@ -611,6 +611,7 @@ export function registerAztecSerializers(node: JSONRPCNode<AztecWalletMethodMap>
     'aztec_getPrivateEvents',
     'aztec_getPublicEvents',
     'aztec_wmExecuteTx',
+    'aztec_wmSimulateTx',
     'aztec_wmDeployContract',
   ];
 

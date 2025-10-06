@@ -10,7 +10,7 @@
 import {
   ChainType,
   ErrorFactory,
-  WalletMeshClient,
+  type WalletMeshClient,
 } from '@walletmesh/modal-core';
 import type {
   DiscoveryRequestOptions,

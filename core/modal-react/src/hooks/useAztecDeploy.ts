@@ -11,6 +11,7 @@
 import type { AztecAddress } from '@aztec/aztec.js';
 import { ErrorFactory } from '@walletmesh/modal-core';
 import { useCallback, useState } from 'react';
+import { registerArtifactWithWallet, normalizeArtifact } from './internal/useAztecArtifact.js';
 import { useAztecWallet } from './useAztecWallet.js';
 
 /**
@@ -84,6 +85,21 @@ export interface UseAztecDeployReturn {
   lastDeployment: DeploymentResult | null;
   /** Reset the deployment state */
   reset: () => void;
+}
+
+export const DEPLOYMENT_STAGE_LABELS: Record<UseAztecDeployReturn['stage'], string> = {
+  idle: 'Ready to deploy',
+  preparing: '📝 Preparing deployment...',
+  computing: '🔢 Computing contract address...',
+  proving: '🔐 Generating proof...',
+  sending: '📤 Sending transaction...',
+  confirming: '⏳ Waiting for confirmation...',
+  success: '✅ Deployment complete!',
+  error: '❌ Deployment failed',
+};
+
+export function getDeploymentStageLabel(stage: UseAztecDeployReturn['stage']): string {
+  return DEPLOYMENT_STAGE_LABELS[stage] ?? DEPLOYMENT_STAGE_LABELS.idle;
 }
 
 /**
@@ -237,16 +253,10 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         }
 
         // Ensure artifact has the required notes property for compatibility
-        const compatibleArtifact = {
-          ...artifact,
-          notes: artifact.notes || {},
-        };
+        const compatibleArtifact = normalizeArtifact(artifact);
 
-        // Use the wallet's deployContract method
-        // Note: While this currently uses aztec_wmDeployContract RPC method internally,
-        // the deployContract method on the wallet interface is part of the standard
-        // Aztec wallet API and is the correct abstraction for deployment.
-        // The underlying RPC method may change but the wallet interface remains stable.
+        await registerArtifactWithWallet(aztecWallet, compatibleArtifact);
+
         const deploySentTx = await aztecWallet.deployContract(
           compatibleArtifact as Parameters<typeof aztecWallet.deployContract>[0],
           args,

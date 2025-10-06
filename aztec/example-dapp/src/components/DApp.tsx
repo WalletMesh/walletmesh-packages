@@ -1,5 +1,4 @@
 import { getInitialTestAccounts } from '@aztec/accounts/testing';
-import { AztecAddress, FeeJuicePaymentMethod } from '@aztec/aztec.js';
 import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';
 import { CounterContractArtifact } from '@aztec/noir-test-contracts.js/Counter';
 import {
@@ -9,7 +8,11 @@ import {
   useAztecBatch,
   useAztecContract,
   useAztecDeploy,
+  useAztecAddress,
+  useAztecSimulation,
   useAztecWallet,
+  getDeploymentStageLabel,
+  executeTx as executeAztecTx,
 } from '@walletmesh/modal-react/aztec';
 import type React from 'react';
 import { useState } from 'react';
@@ -25,6 +28,9 @@ const DApp: React.FC = () => {
   // Use modal-react hooks for wallet management
   const { aztecWallet } = useAztecWallet();
   const { address } = useAccount();
+
+  // Use simulation hook for contract calls
+  const { simulate: simulateInteraction, isSimulating } = useAztecSimulation();
 
   // Use Aztec-specific hooks for deployment
   const {
@@ -42,6 +48,7 @@ const DApp: React.FC = () => {
   } = useAztecDeploy();
 
   const { executeBatch, isExecuting: isBatchExecuting, progress: batchProgress } = useAztecBatch();
+  const { toAztecAddress, toAddressString } = useAztecAddress();
 
   // Use contract hooks for Token and Counter contracts
   const {
@@ -129,18 +136,6 @@ const DApp: React.FC = () => {
     }
   };
 
-  const ensureAztecAddress = (value: unknown) => {
-    if (value && typeof value === 'object' && 'toBuffer' in value && typeof (value as any).toBuffer === 'function') {
-      return value as AztecAddress;
-    }
-
-    const stringValue = typeof value === 'string' ? value : value?.toString?.();
-    if (!stringValue) {
-      throw new Error('Unable to derive Aztec address from value.');
-    }
-    return AztecAddress.fromString(stringValue);
-  };
-
   /**
    * Mints tokens to the connected account using the deployed Token contract.
    */
@@ -174,17 +169,11 @@ const DApp: React.FC = () => {
 
     setIsExecutingTx(true);
     try {
-      // Use native Aztec.js API with explicit fee configuration
       showInfo('Minting tokens, please wait for confirmation...');
-      const ownerAddress = ensureAztecAddress(address);
+      const ownerAddress = toAztecAddress(address);
       const ownerAddressHex = ownerAddress.toString();
-      const sentTx = await tokenContract.methods.mint_to_public(ownerAddressHex, 10000000000000000000000n).send({
-        from: ownerAddress,
-        fee: {
-          paymentMethod: new FeeJuicePaymentMethod(ownerAddress),
-          estimateGas: true,
-        },
-      });
+      const interaction = tokenContract.methods.mint_to_public(ownerAddressHex, 10000000000000000000000n);
+      const sentTx = await executeAztecTx(aztecWallet, interaction);
       const receipt = await sentTx.wait();
       console.log('Mint receipt:', receipt);
       showSuccess('Tokens minted successfully! You can now check your balance.');
@@ -230,18 +219,15 @@ const DApp: React.FC = () => {
 
     setIsExecutingTx(true);
     try {
-      const to = await getInitialTestAccounts().then((accounts) => ensureAztecAddress(accounts[1].address));
-      const ownerAddress = ensureAztecAddress(address);
-      // Use native Aztec.js API with explicit fee configuration
-      const sentTx = await tokenContract.methods
-        .transfer_in_public(ownerAddress.toString(), to.toString(), 100000n, 0n)
-        .send({
-          from: ownerAddress,
-          fee: {
-            paymentMethod: new FeeJuicePaymentMethod(ownerAddress),
-            estimateGas: true,
-          },
-        });
+      const to = await getInitialTestAccounts().then((accounts) => toAztecAddress(accounts[1].address));
+      const ownerAddress = toAztecAddress(address);
+      const interaction = tokenContract.methods.transfer_in_public(
+        ownerAddress.toString(),
+        to.toString(),
+        100000n,
+        0n,
+      );
+      const sentTx = await executeAztecTx(aztecWallet, interaction);
       await sentTx.wait();
       showSuccess('Transferred tokens to test account');
     } catch (error) {
@@ -282,11 +268,11 @@ const DApp: React.FC = () => {
     try {
       showInfo('Checking token balance...');
 
-      // Use native Aztec.js API
-      const ownerAddress = ensureAztecAddress(address);
-      const ownerAddressHex = ownerAddress.toString();
+      const ownerAddressHex = toAddressString(address);
       console.log('[DApp] Checking balance for address:', ownerAddressHex);
-      const balance = await tokenContract.methods.balance_of_public(ownerAddressHex).simulate({ from: ownerAddress });
+      const balance = await simulateInteraction(
+        tokenContract.methods.balance_of_public(ownerAddressHex),
+      );
 
       const balanceStr = String(balance);
       setTokenBalance(balanceStr);
@@ -316,15 +302,12 @@ const DApp: React.FC = () => {
 
     setIsExecutingTx(true);
     try {
-      // Use native Aztec.js API
-      const ownerAddress = ensureAztecAddress(address);
-      const sentTx = await counterContract.methods.increment(ownerAddress.toString(), ownerAddress.toString()).send({
-        from: ownerAddress,
-        fee: {
-          paymentMethod: new FeeJuicePaymentMethod(ownerAddress),
-          estimateGas: true,
-        },
-      });
+      const ownerAddress = toAztecAddress(address);
+      const interaction = counterContract.methods.increment(
+        ownerAddress.toString(),
+        ownerAddress.toString(),
+      );
+      const sentTx = await executeAztecTx(aztecWallet, interaction);
       await sentTx.wait();
       showSuccess('Counter incremented');
     } catch (error) {
@@ -346,22 +329,13 @@ const DApp: React.FC = () => {
     }
 
     try {
-      // Use cached contract instance - no need to recreate
-      const ownerAddress = ensureAztecAddress(address);
-      const ownerAddressHex = ownerAddress.toString();
+      const ownerAddressHex = toAddressString(address);
       const interactions = [
         counterContract.methods.increment(ownerAddressHex, ownerAddressHex),
         counterContract.methods.increment(ownerAddressHex, ownerAddressHex),
       ];
 
-      // Execute batch with explicit fee configuration
-      await executeBatch(interactions as any, {
-        from: ownerAddress,
-        fee: {
-          paymentMethod: new FeeJuicePaymentMethod(ownerAddress),
-          estimateGas: true,
-        },
-      });
+      await executeBatch(interactions as any);
       showSuccess('Counter incremented twice in batch');
     } catch (error) {
       if (error instanceof Error) {
@@ -380,9 +354,8 @@ const DApp: React.FC = () => {
     }
 
     try {
-      // Use native Aztec.js API
-      const ownerAddress = ensureAztecAddress(address);
-      const value = await counterContract.methods.get_counter(ownerAddress.toString()).simulate({ from: ownerAddress });
+      const ownerAddressHex = toAddressString(address);
+      const value = await simulateInteraction(counterContract.methods.get_counter(ownerAddressHex));
       const valueStr = String(value);
       setCounterValue(valueStr);
       showInfo(`Counter value: ${valueStr}`);
@@ -390,28 +363,6 @@ const DApp: React.FC = () => {
       if (error instanceof Error) {
         showError(`Simulation failed: ${error.message}`);
       }
-    }
-  };
-
-  // Helper to get status message for deployments
-  const getDeploymentStatus = (stage: string) => {
-    switch (stage) {
-      case 'preparing':
-        return '📝 Preparing...';
-      case 'computing':
-        return '🔢 Computing address...';
-      case 'proving':
-        return '🔐 Generating proof...';
-      case 'sending':
-        return '📤 Sending...';
-      case 'confirming':
-        return '⏳ Confirming...';
-      case 'success':
-        return '✅ Deployed!';
-      case 'error':
-        return '❌ Failed';
-      default:
-        return '';
     }
   };
 
@@ -473,7 +424,7 @@ const DApp: React.FC = () => {
 
             {!tokenAddress ? (
               <button type="button" onClick={handleDeployToken} disabled={isDeployingToken}>
-                {isDeployingToken ? getDeploymentStatus(tokenStage) : 'Deploy Token Contract'}
+                {isDeployingToken ? getDeploymentStageLabel(tokenStage) : 'Deploy Token Contract'}
               </button>
             ) : (
               <>
@@ -499,9 +450,9 @@ const DApp: React.FC = () => {
                     type="button"
                     onClick={handleGetTokenBalance}
                     style={{ marginLeft: '5px' }}
-                    disabled={isExecutingTx || isTokenContractLoading}
+                    disabled={isExecutingTx || isTokenContractLoading || isSimulating}
                   >
-                    Get Token Balance
+                    {isSimulating ? '⏳ Simulating...' : 'Get Token Balance'}
                   </button>
                   {tokenBalance && <p>Balance: {tokenBalance}</p>}
                 </div>
@@ -515,7 +466,7 @@ const DApp: React.FC = () => {
 
             {!counterAddress ? (
               <button type="button" onClick={handleDeployCounter} disabled={isDeployingCounter}>
-                {isDeployingCounter ? getDeploymentStatus(counterStage) : 'Deploy Counter Contract'}
+                {isDeployingCounter ? getDeploymentStageLabel(counterStage) : 'Deploy Counter Contract'}
               </button>
             ) : (
               <>
@@ -558,9 +509,9 @@ const DApp: React.FC = () => {
                       borderRadius: '4px',
                       cursor: 'pointer'
                     }}
-                    disabled={isExecutingTx || isCounterContractLoading}
+                    disabled={isExecutingTx || isCounterContractLoading || isSimulating}
                   >
-                    Get Counter Value
+                    {isSimulating ? '⏳ Simulating...' : 'Get Counter Value'}
                   </button>
                   {counterValue && <p>Counter: {counterValue}</p>}
                 </div>

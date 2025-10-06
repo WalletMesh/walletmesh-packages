@@ -9,7 +9,9 @@
 
 import { ErrorFactory } from '@walletmesh/modal-core';
 import type { ContractFunctionInteraction, TxReceipt } from '@walletmesh/modal-core/providers/aztec/lazy';
+import type { AztecSendOptions } from '@walletmesh/modal-core/providers/aztec';
 import { useCallback, useState } from 'react';
+import { runAztecTransaction } from './internal/runAztecTransaction.js';
 import { useAztecWallet } from './useAztecWallet.js';
 
 /**
@@ -31,20 +33,15 @@ export interface BatchTransactionStatus {
 }
 
 /**
+ * Options forwarded to each interaction's send() call during batch execution.
+ */
+export type BatchSendOptions = AztecSendOptions;
+
+/**
  * Batch transaction hook return type
  *
  * @public
  */
-/**
- * Options forwarded to each interaction's send() call during batch execution.
- */
-export interface BatchSendOptions {
-  from?: unknown;
-  fee?: unknown;
-  txNonce?: unknown;
-  cancellable?: boolean;
-}
-
 export interface UseAztecBatchReturn {
   /** Execute a batch of transactions */
   executeBatch: (interactions: ContractFunctionInteraction[], options?: BatchSendOptions) => Promise<TxReceipt[]>;
@@ -216,6 +213,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
 
       const receipts: TxReceipt[] = [];
       const errors: Array<{ index: number; error: Error }> = [];
+      const sendOptions = Object.values(options).some((value) => value !== undefined) ? options : undefined;
 
       try {
         // Execute each transaction sequentially
@@ -237,7 +235,6 @@ export function useAztecBatch(): UseAztecBatchReturn {
               return updated;
             });
 
-            // Execute the transaction using native Aztec.js
             if (!aztecWallet) {
               throw ErrorFactory.connectionFailed('Wallet disconnected during batch execution');
             }
@@ -246,31 +243,28 @@ export function useAztecBatch(): UseAztecBatchReturn {
               throw ErrorFactory.notFound(`No interaction found at index ${i}`);
             }
 
-            // Use native Aztec.js transaction flow
-            const sentTx = await (interaction as any).send(options);
-            const txHash = await sentTx.getTxHash();
-            const hash = txHash.toString();
-
-            setTransactionStatuses((prev) => {
-              const updated = [...prev];
-              const current = updated[i];
-              if (current) {
-                updated[i] = {
-                  index: current.index,
-                  status: 'confirming',
-                  ...(hash !== undefined && { hash }),
-                  ...(current.receipt !== undefined && { receipt: current.receipt }),
-                  ...(current.error !== undefined && { error: current.error }),
-                };
-              }
-              return updated;
+            const result = await runAztecTransaction(aztecWallet, interaction as ContractFunctionInteraction, {
+              ...(sendOptions && { sendOptions }),
+              onSent: (hash) => {
+                setTransactionStatuses((prev) => {
+                  const updated = [...prev];
+                  const current = updated[i];
+                  if (current) {
+                    updated[i] = {
+                      index: current.index,
+                      status: 'confirming',
+                      hash,
+                      ...(current.receipt !== undefined && { receipt: current.receipt }),
+                      ...(current.error !== undefined && { error: current.error }),
+                    };
+                  }
+                  return updated;
+                });
+              },
             });
 
-            // Wait for confirmation
-            const receipt = await sentTx.wait();
-            receipts.push(receipt as TxReceipt);
+            receipts.push(result.receipt);
 
-            // Update to success
             setTransactionStatuses((prev) => {
               const updated = [...prev];
               const current = updated[i];
@@ -278,8 +272,8 @@ export function useAztecBatch(): UseAztecBatchReturn {
                 updated[i] = {
                   index: current.index,
                   status: 'success',
-                  ...(current.hash !== undefined && { hash: current.hash }),
-                  receipt: receipt as TxReceipt,
+                  hash: result.hash,
+                  receipt: result.receipt,
                   ...(current.error !== undefined && { error: current.error }),
                 };
               }

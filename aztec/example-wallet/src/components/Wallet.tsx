@@ -53,7 +53,9 @@ import {
 import { useToast } from '../contexts/ToastContext.js';
 >>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 import { createFunctionArgNamesMiddleware } from '../middlewares/functionArgNamesMiddleware.js';
+import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware.js';
 import { createHistoryMiddleware, type HistoryEntry } from '../middlewares/historyMiddleware.js';
+import { createTransactionSummaryMiddleware, type TransactionSummary } from '../middlewares/transactionSummaryMiddleware.js';
 import { createOriginMiddleware } from '../middlewares/originMiddleware.js';
 import { createWalletSideTransport } from '../transports/CrossWindowTransport.js';
 import FunctionCallDisplay from './FunctionCallDisplay.js';
@@ -213,6 +215,7 @@ interface WalletProps {
     chainId: string;
     method: string;
     params?: unknown;
+    functionArgNames?: FunctionArgNames;
     resolve: (approved: boolean) => void;
   } | null;
   /** Callback invoked when the user responds to an approval request. */
@@ -223,6 +226,7 @@ interface WalletProps {
     chainId: string;
     method: string;
     params?: unknown;
+    functionArgNames?: FunctionArgNames;
   }) => Promise<boolean>;
   /** Callback invoked when the user enables auto-approve from an approval prompt. */
   onEnableAutoApprove?: () => void;
@@ -597,12 +601,16 @@ const Wallet: React.FC<WalletProps> = ({
           }
         });
 
-        // Add middleware to the wallet node for function arg names and history
+        // Add middleware to the wallet node for function arg names, summaries, and history
         aztecWalletNode.addMiddleware(createFunctionArgNamesMiddleware(pxe));
+<<<<<<< HEAD
 <<<<<<< HEAD
         aztecWalletNode.addMiddleware(createHistoryMiddleware((entries) => {
           setRequestHistory(entries as HistoryEntry[]);
 =======
+=======
+        aztecWalletNode.addMiddleware(createTransactionSummaryMiddleware());
+>>>>>>> bd392add (feat(modal-react,modal-core): enhance Aztec transaction flow with simulation, summaries, and improved execution)
         aztecWalletNode.addMiddleware(
           createHistoryMiddleware((entries) => {
             setRequestHistory(entries as HistoryEntry[]);
@@ -994,12 +1002,24 @@ const Wallet: React.FC<WalletProps> = ({
               console.log('[Wallet] wm_bulkCall for chainId:', chainId, 'sessionId:', bulkParams.sessionId);
             }
 
+            const transactionSummary = (context as { transactionSummary?: TransactionSummary }).transactionSummary;
+            const functionArgNames = (context as { functionCallArgNames?: FunctionArgNames }).functionCallArgNames;
+
+            const displayParams =
+              transactionSummary && transactionSummary.functionCalls.length > 0
+                ? {
+                    functionCalls: transactionSummary.functionCalls,
+                    originalParams: params,
+                  }
+                : params;
+
             // Now we can use the async approval flow
             return await (onApprovalRequest || (async () => true))({
               origin,
               chainId,
               method,
-              params,
+              params: displayParams,
+              functionArgNames,
             });
           },
           // initialState: Define initial permission states
@@ -1026,11 +1046,8 @@ const Wallet: React.FC<WalletProps> = ({
                   ['aztec_wmSimulateTx', AllowAskDenyState.ALLOW],
 
                   // Methods that require approval each time (ASK state)
-                  // Note: aztec_sendTx and aztec_proveTx are set to ALLOW because they are
-                  // called internally by Aztec.js when using contract methods (e.g., contract.methods.transfer(...).send())
-                  // The user already approved the connection, so low-level transaction methods should be allowed
-                  ['aztec_sendTx', AllowAskDenyState.ALLOW],
-                  ['aztec_proveTx', AllowAskDenyState.ALLOW],
+                  ['aztec_sendTx', AllowAskDenyState.ASK],
+                  ['aztec_proveTx', AllowAskDenyState.ASK],
                   ['aztec_wmExecuteTx', AllowAskDenyState.ASK],
                   ['aztec_wmDeployContract', AllowAskDenyState.ASK],
                   ['aztec_contractInteraction', AllowAskDenyState.ASK],
@@ -1407,7 +1424,9 @@ const Wallet: React.FC<WalletProps> = ({
               | undefined
           }
           origin={pendingApproval.origin}
-          functionArgNames={requestHistory.find((h) => !h.status)?.functionArgNames}
+          functionArgNames={
+            pendingApproval.functionArgNames ?? requestHistory.find((h) => !h.status)?.functionArgNames
+          }
           onApprove={handleApprove}
           onDeny={handleDeny}
           onEnableAutoApprove={onEnableAutoApprove || (() => {})}

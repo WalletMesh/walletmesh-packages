@@ -1,6 +1,7 @@
 import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCMiddleware } from '@walletmesh/jsonrpc';
 import type { FunctionArgNames } from './functionArgNamesMiddleware';
+import type { TransactionSummary } from './transactionSummaryMiddleware';
 
 export type RequestStatus = 'processing' | 'approved' | 'denied' | 'success' | 'error';
 
@@ -12,6 +13,7 @@ export type HistoryEntry = {
   status?: RequestStatus;
   functionArgNames?: FunctionArgNames;
   id?: number;
+  transactionSummary?: TransactionSummary;
   // New fields for enhanced tracking
   requestTimestamp: number;
   responseTimestamp?: number;
@@ -74,7 +76,10 @@ export const createHistoryMiddleware = (
   onHistoryUpdate: (history: HistoryEntry[]) => void,
 ): JSONRPCMiddleware<
   AztecWalletMethodMap,
-  AztecHandlerContext & { functionCallArgNames?: FunctionArgNames }
+  AztecHandlerContext & {
+    functionCallArgNames?: FunctionArgNames;
+    transactionSummary?: TransactionSummary;
+  }
 > => {
   // Maintain history internally
   let history: HistoryEntry[] = [];
@@ -100,6 +105,7 @@ export const createHistoryMiddleware = (
       origin: detectedOrigin,
       time: timestamp,
       functionArgNames: context.functionCallArgNames,
+      transactionSummary: context.transactionSummary as TransactionSummary | undefined,
       requestTimestamp,
       status: 'processing',
       processingStatus: 'processing',

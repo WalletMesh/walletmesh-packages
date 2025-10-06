@@ -15,6 +15,13 @@ export {
   type AztecWalletInfo,
 } from '../../hooks/useAztecWallet.js';
 
+export { useAztecAddress, type UseAztecAddressReturn } from '../../hooks/useAztecAddress.js';
+export {
+  useAztecSimulation,
+  type UseAztecSimulationOptions,
+  type UseAztecSimulationReturn,
+} from '../../hooks/useAztecSimulation.js';
+
 export {
   useAztecContract,
   type UseAztecContractReturn,
@@ -33,6 +40,8 @@ export {
   type DeploymentOptions,
   type DeploymentResult,
   type ContractArtifact,
+  DEPLOYMENT_STAGE_LABELS,
+  getDeploymentStageLabel,
 } from '../../hooks/useAztecDeploy.js';
 
 export {
@@ -46,6 +55,12 @@ export {
   type UseAztecBatchReturn,
   type BatchTransactionStatus,
 } from '../../hooks/useAztecBatch.js';
+
+export {
+  executeTx,
+  simulateTx,
+  waitForTxReceipt,
+} from '@walletmesh/modal-core/providers/aztec/lazy';
 
 export {
   useAztecAuth,

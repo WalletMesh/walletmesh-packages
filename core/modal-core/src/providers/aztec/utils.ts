@@ -8,15 +8,87 @@
  * @packageDocumentation
  */
 
+import type { Fr } from '@aztec/foundation/fields';
+import { decodeFromAbi, FunctionType, type FunctionAbi } from '@aztec/stdlib/abi';
+import type { TxSimulationResult } from '@aztec/stdlib/tx';
+
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 import type {
   AztecDappWallet,
+  AztecSendOptions,
   ContractFunctionInteraction,
   DeploySentTx,
   SentTx,
   TxReceipt,
 } from './types.js';
 import { TX_STATUS } from './types.js';
+
+type ContractFunctionInteractionInternal = ContractFunctionInteraction & {
+  functionDao?: FunctionAbi;
+  simulate?: () => Promise<unknown>;
+};
+
+type NativeSentTx = {
+  txHash?: string | { toString(): string };
+  getTxHash?: () => Promise<{ toString(): string }>;
+  wait?: () => Promise<unknown>;
+};
+
+type TxReceiptLike = TxReceipt | (Omit<TxReceipt, 'txHash'> & { txHash: string | { toString(): string } });
+
+function normalizeHash(value: unknown): string | undefined {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (value && typeof (value as { toString(): unknown }).toString === 'function') {
+    const stringified = (value as { toString(): unknown }).toString();
+    if (typeof stringified === 'string') {
+      return stringified;
+    }
+  }
+  return undefined;
+}
+
+function hasSendOptions(options?: AztecSendOptions): options is AztecSendOptions {
+  if (!options) {
+    return false;
+  }
+  return Object.values(options).some((value) => value !== undefined);
+}
+
+async function resolveNativeHash(nativeTx: NativeSentTx): Promise<string> {
+  const directHash = normalizeHash(nativeTx.txHash);
+  if (directHash) {
+    return directHash;
+  }
+  if (typeof nativeTx.getTxHash === 'function') {
+    const hash = await nativeTx.getTxHash();
+    const normalized = normalizeHash(hash);
+    if (normalized) {
+      return normalized;
+    }
+  }
+  throw ErrorFactory.transactionFailed('Transaction hash unavailable from send() result');
+}
+
+async function waitForNativeReceipt(nativeTx: NativeSentTx): Promise<TxReceiptLike> {
+  if (typeof nativeTx.wait !== 'function') {
+    throw ErrorFactory.transactionFailed('Transaction wait() unavailable');
+  }
+  return (await nativeTx.wait()) as TxReceiptLike;
+}
+
+function normalizeReceipt(receipt: TxReceiptLike, fallbackHash: string): TxReceipt {
+  const normalizedHash = normalizeHash(receipt.txHash) ?? fallbackHash;
+  return {
+    ...receipt,
+    txHash: normalizedHash,
+  } satisfies TxReceipt;
+}
+
+function toError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error));
+}
 
 /**
  * Deploy an Aztec contract using the wallet
@@ -81,31 +153,72 @@ export async function deployContract(
 export async function executeTx(
   wallet: AztecDappWallet | null,
   interaction: ContractFunctionInteraction,
+  options?: AztecSendOptions,
 ): Promise<SentTx> {
   if (!wallet) {
     throw ErrorFactory.connectionFailed('No Aztec wallet available');
   }
 
   try {
-    // Use native Aztec flow: request → proveTx → sendTx
+    const useCustomSend = hasSendOptions(options);
+
+    if (!useCustomSend && typeof wallet.wmExecuteTx === 'function') {
+      const aztecSentTx = (await wallet.wmExecuteTx(interaction)) as NativeSentTx;
+      const txHash = await resolveNativeHash(aztecSentTx);
+
+      return {
+        txHash,
+        wait: async (): Promise<TxReceipt> => {
+          const receipt = await waitForNativeReceipt(aztecSentTx);
+          return normalizeReceipt(receipt, txHash);
+        },
+      } satisfies SentTx;
+    }
+
+    const sendableInteraction = interaction as ContractFunctionInteraction & {
+      send?: (opts?: AztecSendOptions) => Promise<NativeSentTx>;
+    };
+
+    if (typeof sendableInteraction.send === 'function') {
+      const nativeTx = await sendableInteraction.send(options);
+      const txHash = await resolveNativeHash(nativeTx);
+
+      return {
+        txHash,
+        wait: async (): Promise<TxReceipt> => {
+          const receipt = await waitForNativeReceipt(nativeTx);
+          return normalizeReceipt(receipt, txHash);
+        },
+      } satisfies SentTx;
+    }
+
+    if (useCustomSend) {
+      throw ErrorFactory.invalidParams('Custom send options are not supported for this interaction');
+    }
+
+    // Fallback: request → proveTx → sendTx
     const contractInteraction = interaction as ContractFunctionInteraction & {
       request(): Promise<unknown>;
     };
     const txRequest = await contractInteraction.request();
     const provenTx = await wallet.proveTx(txRequest);
-    const txHash = await wallet.sendTx(provenTx);
+    const rawTxHash = await wallet.sendTx(provenTx);
+    const txHash = normalizeHash(rawTxHash);
 
-    // Create a SentTx-compatible object
+    if (!txHash) {
+      throw ErrorFactory.transactionFailed('Transaction hash unavailable from wallet.sendTx');
+    }
+
     return {
+      txHash,
       wait: async () => {
-        const receipt = await wallet.getTxReceipt(txHash);
+        const receipt = await wallet.getTxReceipt(rawTxHash);
         if (!receipt) {
           throw new Error('Transaction receipt not found');
         }
-        return receipt;
+        return normalizeReceipt(receipt as TxReceiptLike, txHash);
       },
-      txHash: txHash as unknown as string,
-    };
+    } satisfies SentTx;
   } catch (error) {
     throw ErrorFactory.transportError(
       `Failed to execute transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -139,17 +252,98 @@ export async function simulateTx(
     throw ErrorFactory.connectionFailed('No Aztec wallet available');
   }
 
+  const errors: Error[] = [];
+  let undecodedResult: unknown;
+
+  if (typeof wallet.wmSimulateTx === 'function') {
+    try {
+      const simulationResult = await wallet.wmSimulateTx(interaction);
+      const decoded = tryDecodeSimulationResult(interaction, simulationResult);
+      if (decoded !== undefined) {
+        return decoded;
+      }
+      console.warn('wmSimulateTx returned undecodable result; falling back to native simulation.');
+      undecodedResult = simulationResult;
+    } catch (error) {
+      console.warn('wmSimulateTx failed, attempting native simulation fallback.', error);
+      errors.push(toError(error));
+    }
+  }
+
+  const maybeSimulate = (interaction as ContractFunctionInteractionInternal).simulate;
+  if (typeof maybeSimulate === 'function') {
+    try {
+      return await maybeSimulate.call(interaction);
+    } catch (error) {
+      errors.push(toError(error));
+    }
+  }
+
   try {
-    // Use native Aztec simulation
     const contractInteraction = interaction as ContractFunctionInteraction & {
       request(): Promise<unknown>;
     };
     const txRequest = await contractInteraction.request();
-    return await wallet.simulateTx(txRequest, true); // simulatePublic = true
+    const simulationResult = await wallet.simulateTx(txRequest, true);
+    const decoded = tryDecodeSimulationResult(interaction, simulationResult);
+    return decoded !== undefined ? decoded : simulationResult;
   } catch (error) {
-    throw ErrorFactory.transportError(
-      `Failed to simulate transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    );
+    errors.push(toError(error));
+  }
+
+  if (undecodedResult !== undefined) {
+    return undecodedResult;
+  }
+
+  const firstError = errors[0];
+  const message = firstError ? firstError.message : 'Unknown error';
+  throw ErrorFactory.transportError(`Failed to simulate transaction: ${message}`);
+}
+
+function isTxSimulationResult(value: unknown): value is TxSimulationResult {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as TxSimulationResult).getPublicReturnValues === 'function' &&
+    typeof (value as TxSimulationResult).getPrivateReturnValues === 'function'
+  );
+}
+
+function tryDecodeSimulationResult(
+  interaction: ContractFunctionInteraction,
+  result: unknown,
+): unknown | undefined {
+  if (!isTxSimulationResult(result)) {
+    return undefined;
+  }
+
+  const { functionDao } = interaction as ContractFunctionInteractionInternal;
+  if (!functionDao) {
+    return undefined;
+  }
+
+  try {
+    let rawReturnValues: Fr[] | undefined;
+
+    if (functionDao.functionType === FunctionType.PRIVATE) {
+      const privateReturnValues = result.getPrivateReturnValues();
+      rawReturnValues =
+        privateReturnValues.nested.length > 0
+          ? (privateReturnValues.nested[0]?.values as Fr[] | undefined)
+          : (privateReturnValues.values as Fr[] | undefined);
+    } else {
+      const publicReturnValues = result.getPublicReturnValues();
+      rawReturnValues = publicReturnValues?.[0]?.values as Fr[] | undefined;
+    }
+
+    if (!rawReturnValues || rawReturnValues.length === 0) {
+      return functionDao.returnTypes.length === 0 ? [] : undefined;
+    }
+
+    return decodeFromAbi(functionDao.returnTypes, rawReturnValues);
+  } catch (error) {
+    console.debug('Failed to decode Aztec simulation result', error);
+    return undefined;
   }
 }
 
