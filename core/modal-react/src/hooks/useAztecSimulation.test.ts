@@ -1,17 +1,17 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
-vi.mock('@walletmesh/modal-core/providers/aztec/lazy', async () => {
-  const actual = await vi.importActual<typeof import('@walletmesh/modal-core/providers/aztec/lazy')>(
-    '@walletmesh/modal-core/providers/aztec/lazy',
+vi.mock('@walletmesh/modal-core/providers/aztec', async () => {
+  const actual = await vi.importActual<typeof import('@walletmesh/modal-core/providers/aztec')>(
+    '@walletmesh/modal-core/providers/aztec',
   );
   return {
     ...actual,
-    simulateTx: vi.fn(),
+    simulateInteraction: vi.fn(),
   };
 });
 
-import { simulateTx } from '@walletmesh/modal-core/providers/aztec/lazy';
+import { simulateInteraction } from '@walletmesh/modal-core/providers/aztec';
 import { useAztecSimulation } from './useAztecSimulation.js';
 import { useAztecWallet } from './useAztecWallet.js';
 
@@ -20,7 +20,7 @@ vi.mock('./useAztecWallet.js', () => ({
 }));
 
 const mockUseAztecWallet = vi.mocked(useAztecWallet);
-const mockSimulateTx = vi.mocked(simulateTx);
+const mockSimulateInteraction = vi.mocked(simulateInteraction);
 
 const mockWallet = {
   simulateTx: vi.fn(),
@@ -33,8 +33,11 @@ describe('useAztecSimulation', () => {
   });
 
   it('simulates interaction and stores result', async () => {
-    const interaction = { id: 'test' } as any;
-    mockSimulateTx.mockResolvedValueOnce('result');
+    const interaction = {
+      id: 'test',
+      request: vi.fn().mockResolvedValue({ type: 'request' }),
+    } as any;
+    mockSimulateInteraction.mockResolvedValueOnce('result' as any);
 
     const { result } = renderHook(() => useAztecSimulation());
 
@@ -49,7 +52,10 @@ describe('useAztecSimulation', () => {
 
   it('propagates errors when wallet missing', async () => {
     mockUseAztecWallet.mockReturnValue({ aztecWallet: null } as any);
-    const interaction = { id: 'test' } as any;
+    const interaction = {
+      id: 'test',
+      request: vi.fn().mockResolvedValue({ type: 'request' }),
+    } as any;
 
     const { result } = renderHook(() => useAztecSimulation());
 

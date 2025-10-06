@@ -7,7 +7,7 @@
 
 import { ErrorFactory } from '@walletmesh/modal-core';
 import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec/lazy';
-import { simulateTx as simulateAztecTx } from '@walletmesh/modal-core/providers/aztec/lazy';
+import { simulateInteraction } from '@walletmesh/modal-core/providers/aztec';
 import { useCallback, useState } from 'react';
 import { useAztecWallet } from './useAztecWallet.js';
 
@@ -49,7 +49,7 @@ export function useAztecSimulation(options: UseAztecSimulationOptions = {}): Use
       setError(null);
 
       try {
-        const result = await simulateAztecTx(aztecWallet, interaction);
+        const result = await simulateInteraction(aztecWallet, interaction);
         setLastResult(result);
         options.onSuccess?.(result);
         return result;

@@ -13,7 +13,7 @@ import { ErrorFactory } from '@walletmesh/modal-core';
 import type { TxStatus } from '@aztec/aztec.js';
 import type { AztecSendOptions } from '@walletmesh/modal-core/providers/aztec';
 import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec/lazy';
-import { runAztecTransaction } from './internal/runAztecTransaction.js';
+import { executeInteraction } from '@walletmesh/modal-core/providers/aztec';
 import { useAztecWallet } from './useAztecWallet.js';
 
 /**
@@ -192,33 +192,45 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
       setStatus('preparing');
       setError(null);
       setProvingProgress(0);
+      options.onProvingProgress?.(0);
 
       try {
         setStatus('proving');
 
-        setStatus('sending');
+        const progressInterval = setInterval(() => {
+          setProvingProgress((prev) => {
+            const next = prev >= 90 ? 90 : prev + 10;
+            options.onProvingProgress?.(next);
+            if (next >= 90) {
+              clearInterval(progressInterval);
+            }
+            return next;
+          });
+        }, 500);
 
-        const result = await runAztecTransaction(aztecWallet, interaction, {
-          ...(options.sendOptions && { sendOptions: options.sendOptions }),
-          onProvingProgress: (progress) => {
-            setProvingProgress(progress);
-            options.onProvingProgress?.(progress);
-          },
-          onSent: (hash) => {
-            setStatus('confirming');
-            options.onSent?.(hash);
-          },
-        });
+        try {
+          setStatus('sending');
+          const result = await executeInteraction(aztecWallet, interaction, {
+            ...(options.sendOptions && { sendOptions: options.sendOptions }),
+            onSent: (hash: string) => {
+              setStatus('confirming');
+              options.onSent?.(hash);
+            },
+          });
 
-        setStatus('success');
-        setIsExecuting(false);
-        setLastResult(result);
+          setProvingProgress(100);
+          options.onProvingProgress?.(100);
+          clearInterval(progressInterval);
 
-        if (options.onSuccess) {
-          options.onSuccess(result.receipt);
+          setStatus('success');
+          setIsExecuting(false);
+          setLastResult(result);
+
+          options.onSuccess?.(result.receipt);
+          return result;
+        } finally {
+          clearInterval(progressInterval);
         }
-
-        return result;
       } catch (err) {
         const errorMessage = err instanceof Error ? err : ErrorFactory.transactionFailed('Transaction failed');
         setError(errorMessage);

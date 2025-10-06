@@ -11,7 +11,7 @@ import type { AztecAddress } from '@aztec/aztec.js';
 import { ErrorFactory } from '@walletmesh/modal-core';
 import { getContractAt } from '@walletmesh/modal-core/providers/aztec/lazy';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { registerArtifactWithWallet, normalizeArtifact } from './internal/useAztecArtifact.js';
+import { ensureContractClassRegistered, normalizeArtifact } from '@walletmesh/modal-core/providers/aztec';
 import type { ContractArtifact } from './useAztecDeploy.js';
 import { useAztecWallet } from './useAztecWallet.js';
 
@@ -166,7 +166,7 @@ export function useAztecContract<T = unknown>(
       // Ensure artifact has required properties for compatibility
       const compatibleArtifact = normalizeArtifact(artifact);
 
-      await registerArtifactWithWallet(aztecWallet, compatibleArtifact);
+      await ensureContractClassRegistered(aztecWallet, compatibleArtifact);
 
       const contractInstance = await getContractAt(
         aztecWallet,

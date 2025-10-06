@@ -54,12 +54,23 @@ export {
 export {
   deployContract,
   executeTx,
+  executeInteraction,
+  executeBatchInteractions,
   simulateTx,
+  simulateInteraction,
   waitForTxReceipt,
   getAddress,
   getCompleteAddress,
   isWalletAvailable,
   withAztecWallet,
+  normalizeArtifact,
+  ensureContractClassRegistered,
+  normalizeAztecAddress,
+  formatAztecAddress,
+  isAztecAddressValue,
+  DEPLOYMENT_STAGE_LABELS,
+  getDeploymentStageLabel,
+  type ExecuteInteractionResult,
 } from './utils.js';
 
 // Export contract interaction utilities

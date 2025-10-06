@@ -10,8 +10,9 @@
 
 import type { AztecAddress } from '@aztec/aztec.js';
 import { ErrorFactory } from '@walletmesh/modal-core';
+import type { AztecContractArtifact, AztecDeploymentStage } from '@walletmesh/modal-core/providers/aztec';
+import { ensureContractClassRegistered, normalizeArtifact } from '@walletmesh/modal-core/providers/aztec';
 import { useCallback, useState } from 'react';
-import { registerArtifactWithWallet, normalizeArtifact } from './internal/useAztecArtifact.js';
 import { useAztecWallet } from './useAztecWallet.js';
 
 /**
@@ -21,13 +22,7 @@ import { useAztecWallet } from './useAztecWallet.js';
  *
  * @public
  */
-export type ContractArtifact = {
-  name: string;
-  functions: unknown[];
-  events?: unknown[];
-  notes?: unknown;
-  [key: string]: unknown;
-};
+export type ContractArtifact = AztecContractArtifact;
 
 /**
  * Deployment options
@@ -42,7 +37,7 @@ export interface DeploymentOptions {
   /** Callback when deployment fails */
   onError?: (error: Error) => void;
   /** Callback for deployment progress */
-  onProgress?: (stage: string) => void;
+  onProgress?: (stage: AztecDeploymentStage) => void;
 }
 
 /**
@@ -76,7 +71,7 @@ export interface UseAztecDeployReturn {
   /** Whether a deployment is currently in progress */
   isDeploying: boolean;
   /** Current deployment stage */
-  stage: 'idle' | 'preparing' | 'computing' | 'proving' | 'sending' | 'confirming' | 'success' | 'error';
+  stage: AztecDeploymentStage;
   /** Any error that occurred during deployment */
   error: Error | null;
   /** Last deployed contract address */
@@ -85,21 +80,6 @@ export interface UseAztecDeployReturn {
   lastDeployment: DeploymentResult | null;
   /** Reset the deployment state */
   reset: () => void;
-}
-
-export const DEPLOYMENT_STAGE_LABELS: Record<UseAztecDeployReturn['stage'], string> = {
-  idle: 'Ready to deploy',
-  preparing: '📝 Preparing deployment...',
-  computing: '🔢 Computing contract address...',
-  proving: '🔐 Generating proof...',
-  sending: '📤 Sending transaction...',
-  confirming: '⏳ Waiting for confirmation...',
-  success: '✅ Deployment complete!',
-  error: '❌ Deployment failed',
-};
-
-export function getDeploymentStageLabel(stage: UseAztecDeployReturn['stage']): string {
-  return DEPLOYMENT_STAGE_LABELS[stage] ?? DEPLOYMENT_STAGE_LABELS.idle;
 }
 
 /**
@@ -205,7 +185,7 @@ export function getDeploymentStageLabel(stage: UseAztecDeployReturn['stage']): s
 export function useAztecDeploy(): UseAztecDeployReturn {
   const { aztecWallet, isReady, address } = useAztecWallet();
   const [isDeploying, setIsDeploying] = useState(false);
-  const [stage, setStage] = useState<UseAztecDeployReturn['stage']>('idle');
+  const [stage, setStage] = useState<AztecDeploymentStage>('idle');
   const [error, setError] = useState<Error | null>(null);
   const [deployedAddress, setDeployedAddress] = useState<AztecAddress | string | null>(null);
   const [lastDeployment, setLastDeployment] = useState<DeploymentResult | null>(null);
@@ -234,6 +214,7 @@ export function useAztecDeploy(): UseAztecDeployReturn {
       setIsDeploying(true);
       setStage('preparing');
       setError(null);
+      options.onProgress?.('preparing');
 
       if (options.onStart) {
         options.onStart();
@@ -255,7 +236,7 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         // Ensure artifact has the required notes property for compatibility
         const compatibleArtifact = normalizeArtifact(artifact);
 
-        await registerArtifactWithWallet(aztecWallet, compatibleArtifact);
+        await ensureContractClassRegistered(aztecWallet, compatibleArtifact);
 
         const deploySentTx = await aztecWallet.deployContract(
           compatibleArtifact as Parameters<typeof aztecWallet.deployContract>[0],
@@ -337,3 +318,5 @@ export function useAztecDeploy(): UseAztecDeployReturn {
     reset,
   };
 }
+export { DEPLOYMENT_STAGE_LABELS, getDeploymentStageLabel } from '@walletmesh/modal-core/providers/aztec';
+
