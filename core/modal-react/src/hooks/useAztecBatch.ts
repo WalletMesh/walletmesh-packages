@@ -10,8 +10,8 @@
 import { ErrorFactory } from '@walletmesh/modal-core';
 import type { ContractFunctionInteraction, TxReceipt } from '@walletmesh/modal-core/providers/aztec/lazy';
 import type { AztecSendOptions } from '@walletmesh/modal-core/providers/aztec';
+import { executeBatchInteractions, type ExecuteInteractionResult } from '@walletmesh/modal-core/providers/aztec';
 import { useCallback, useState } from 'react';
-import { runAztecTransaction } from './internal/runAztecTransaction.js';
 import { useAztecWallet } from './useAztecWallet.js';
 
 /**
@@ -211,95 +211,73 @@ export function useAztecBatch(): UseAztecBatchReturn {
       }));
       setTransactionStatuses(initialStatuses);
 
-      const receipts: TxReceipt[] = [];
-      const errors: Array<{ index: number; error: Error }> = [];
-      const sendOptions = Object.values(options).some((value) => value !== undefined) ? options : undefined;
-
       try {
-        // Execute each transaction sequentially
-        for (let i = 0; i < interactions.length; i++) {
-          try {
-            // Update status to sending
-            setTransactionStatuses((prev) => {
-              const updated = [...prev];
-              const current = updated[i];
-              if (current) {
-                updated[i] = {
-                  index: current.index,
-                  status: 'sending',
-                  ...(current.hash !== undefined && { hash: current.hash }),
-                  ...(current.receipt !== undefined && { receipt: current.receipt }),
-                  ...(current.error !== undefined && { error: current.error }),
-                };
-              }
-              return updated;
-            });
-
-            if (!aztecWallet) {
-              throw ErrorFactory.connectionFailed('Wallet disconnected during batch execution');
-            }
-            const interaction = interactions[i];
-            if (!interaction) {
-              throw ErrorFactory.notFound(`No interaction found at index ${i}`);
-            }
-
-            const result = await runAztecTransaction(aztecWallet, interaction as ContractFunctionInteraction, {
-              ...(sendOptions && { sendOptions }),
-              onSent: (hash) => {
+        // Use modal-core batch execution with callbacks for React state updates
+        const { receipts, errors } = await executeBatchInteractions(
+          aztecWallet,
+          interactions,
+          {
+            sendOptions: options,
+            callbacks: {
+              onSending: (index: number) => {
                 setTransactionStatuses((prev) => {
                   const updated = [...prev];
-                  const current = updated[i];
+                  const current = updated[index];
                   if (current) {
-                    updated[i] = {
-                      index: current.index,
-                      status: 'confirming',
-                      hash,
-                      ...(current.receipt !== undefined && { receipt: current.receipt }),
-                      ...(current.error !== undefined && { error: current.error }),
+                    updated[index] = {
+                      ...current,
+                      status: 'sending',
                     };
                   }
                   return updated;
                 });
               },
-            });
-
-            receipts.push(result.receipt);
-
-            setTransactionStatuses((prev) => {
-              const updated = [...prev];
-              const current = updated[i];
-              if (current) {
-                updated[i] = {
-                  index: current.index,
-                  status: 'success',
-                  hash: result.hash,
-                  receipt: result.receipt,
-                  ...(current.error !== undefined && { error: current.error }),
-                };
-              }
-              return updated;
-            });
-          } catch (err) {
-            const txError = err instanceof Error ? err : ErrorFactory.transactionFailed('Transaction failed');
-            errors.push({ index: i, error: txError });
-
-            // Update to error
-            setTransactionStatuses((prev) => {
-              const updated = [...prev];
-              const current = updated[i];
-              if (current) {
-                updated[i] = {
-                  index: current.index,
-                  status: 'error',
-                  ...(current.hash !== undefined && { hash: current.hash }),
-                  ...(current.receipt !== undefined && { receipt: current.receipt }),
-                  error: txError,
-                };
-              }
-              return updated;
-            });
-          }
-        }
+              onSent: (index: number, hash: string) => {
+                setTransactionStatuses((prev) => {
+                  const updated = [...prev];
+                  const current = updated[index];
+                  if (current) {
+                    updated[index] = {
+                      ...current,
+                      status: 'confirming',
+                      hash,
+                    };
+                  }
+                  return updated;
+                });
+              },
+              onSuccess: (index: number, result: ExecuteInteractionResult) => {
+                setTransactionStatuses((prev) => {
+                  const updated = [...prev];
+                  const current = updated[index];
+                  if (current) {
+                    updated[index] = {
+                      ...current,
+                      status: 'success',
+                      hash: result.hash,
+                      receipt: result.receipt,
+                    };
+                  }
+                  return updated;
+                });
+              },
+              onError: (index: number, txError: Error) => {
+                setTransactionStatuses((prev) => {
+                  const updated = [...prev];
+                  const current = updated[index];
+                  if (current) {
+                    updated[index] = {
+                      ...current,
+                      status: 'error',
+                      error: txError,
+                    };
+                  }
+                  return updated;
+                });
+              },
+            },
+          },
+        );
 
         // Check if all failed
         if (errors.length === interactions.length) {
@@ -313,23 +291,21 @@ export function useAztecBatch(): UseAztecBatchReturn {
         // Warn about partial failures
         if (errors.length > 0) {
           console.warn(
-            `Batch execution partially failed. Failed transactions: ${errors.map((e) => e.index + 1).join(', ')}`,
+            `Batch execution partially failed. Failed transactions: ${errors.map((e: { index: number; error: Error }) => e.index + 1).join(', ')}`,
           );
         }
 
         return receipts;
       } catch (err) {
         // Handle unexpected errors
-        if (!error) {
-          const batchError = err instanceof Error ? err : ErrorFactory.transactionFailed('Batch execution failed');
-          setError(batchError);
-        }
-        throw err;
+        const batchError = err instanceof Error ? err : ErrorFactory.transactionFailed('Batch execution failed');
+        setError(batchError);
+        throw batchError;
       } finally {
         setIsExecuting(false);
       }
     },
-    [aztecWallet, isAvailable, error],
+    [aztecWallet, isAvailable],
   );
 
   // Clear statuses function

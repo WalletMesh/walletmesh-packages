@@ -21,6 +21,11 @@ vi.mock('@walletmesh/modal-core/providers/aztec/lazy', () => {
   };
 });
 
+vi.mock('@walletmesh/modal-core/providers/aztec', () => ({
+  ensureContractClassRegistered: vi.fn(),
+  normalizeArtifact: vi.fn((artifact) => artifact),
+}));
+
 // Additional synchronous tests to ensure basic functionality
 describe('useAztecContract - Synchronous behavior', () => {
   beforeEach(() => {

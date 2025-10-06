@@ -8,13 +8,16 @@
  * @packageDocumentation
  */
 
+import { AztecAddress } from '@aztec/aztec.js';
 import type { Fr } from '@aztec/foundation/fields';
 import { decodeFromAbi, FunctionType, type FunctionAbi } from '@aztec/stdlib/abi';
 import type { TxSimulationResult } from '@aztec/stdlib/tx';
 
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 import type {
+  AztecContractArtifact,
   AztecDappWallet,
+  AztecDeploymentStage,
   AztecSendOptions,
   ContractFunctionInteraction,
   DeploySentTx,
@@ -28,13 +31,97 @@ type ContractFunctionInteractionInternal = ContractFunctionInteraction & {
   simulate?: () => Promise<unknown>;
 };
 
+const registeredContractClasses = new Set<string>();
+
+export function normalizeArtifact(artifact: AztecContractArtifact): AztecContractArtifact {
+  if (!artifact) {
+    throw new Error('Artifact is required');
+  }
+
+  if (artifact.notes) {
+    return artifact;
+  }
+
+  return {
+    ...artifact,
+    notes: {},
+  } satisfies AztecContractArtifact;
+}
+
+export async function ensureContractClassRegistered(
+  wallet: AztecDappWallet | null,
+  artifact: AztecContractArtifact,
+): Promise<void> {
+  if (!wallet) {
+    return;
+  }
+
+  const { getContractClassFromArtifact } = await import('@aztec/stdlib/contract');
+  const { id } = await getContractClassFromArtifact(artifact as any);
+  const key = id.toString();
+
+  if (registeredContractClasses.has(key)) {
+    return;
+  }
+
+  try {
+    await wallet.registerContractClass(artifact as Parameters<typeof wallet.registerContractClass>[0]);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (!message.includes('already registered')) {
+      throw error;
+    }
+  }
+
+  registeredContractClasses.add(key);
+}
+
 type NativeSentTx = {
   txHash?: string | { toString(): string };
   getTxHash?: () => Promise<{ toString(): string }>;
-  wait?: () => Promise<unknown>;
+  wait?: () => Promise<TxReceiptLike>;
 };
 
 type TxReceiptLike = TxReceipt | (Omit<TxReceipt, 'txHash'> & { txHash: string | { toString(): string } });
+
+export function isAztecAddressValue(value: unknown): value is AztecAddress {
+  return value instanceof AztecAddress;
+}
+
+export function normalizeAztecAddress(value: unknown, label = 'address'): AztecAddress {
+  if (value === undefined || value === null) {
+    throw ErrorFactory.invalidParams(`No ${label} provided`);
+  }
+
+  if (isAztecAddressValue(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    try {
+      return AztecAddress.fromString(value);
+    } catch (error) {
+      throw ErrorFactory.invalidParams(`Invalid ${label}: ${(error as Error).message}`);
+    }
+  }
+
+  if (typeof value === 'object') {
+    const stringValue = (value as { toString?: () => unknown }).toString?.();
+    if (typeof stringValue === 'string') {
+      try {
+        return AztecAddress.fromString(stringValue);
+      } catch (error) {
+        throw ErrorFactory.invalidParams(`Invalid ${label}: ${(error as Error).message}`);
+      }
+    }
+  }
+
+  throw ErrorFactory.invalidParams(`Invalid ${label}: expected Aztec address-like input`);
+}
+
+export function formatAztecAddress(value: unknown, label = 'address'): string {
+  return normalizeAztecAddress(value, label).toString();
+}
 
 function normalizeHash(value: unknown): string | undefined {
   if (typeof value === 'string') {
@@ -180,7 +267,7 @@ export async function executeTx(
     };
 
     if (typeof sendableInteraction.send === 'function') {
-      const nativeTx = await sendableInteraction.send(options);
+      const nativeTx = await sendableInteraction.send(options) as NativeSentTx;
       const txHash = await resolveNativeHash(nativeTx);
 
       return {
@@ -224,6 +311,113 @@ export async function executeTx(
       `Failed to execute transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
   }
+}
+
+export interface ExecuteInteractionOptions {
+  sendOptions?: AztecSendOptions;
+  onSent?: (hash: string) => void;
+}
+
+export interface ExecuteInteractionResult {
+  hash: string;
+  receipt: TxReceipt;
+  status: string;
+}
+
+export async function executeInteraction(
+  wallet: AztecDappWallet | null,
+  interaction: ContractFunctionInteraction,
+  options: ExecuteInteractionOptions = {},
+): Promise<ExecuteInteractionResult> {
+  if (!wallet) {
+    throw ErrorFactory.connectionFailed('No Aztec wallet available');
+  }
+
+  const sentTx = await executeTx(wallet, interaction, options.sendOptions);
+  options.onSent?.(sentTx.txHash);
+  const receiptRaw = (await sentTx.wait()) as TxReceipt;
+  const receipt = normalizeReceipt(receiptRaw, sentTx.txHash);
+
+  if (receipt.error) {
+    throw ErrorFactory.transactionFailed(`Transaction failed: ${receipt.error}`);
+  }
+
+  const status = receipt.status ?? 'SUCCESS';
+  const normalizedStatus = typeof status === 'string' ? status.toUpperCase() : status;
+  if (normalizedStatus === '0' || normalizedStatus === '0X0' || normalizedStatus === 'FAILED') {
+    throw ErrorFactory.transactionFailed(`Transaction failed with status: ${status}`);
+  }
+
+  return {
+    hash: sentTx.txHash,
+    receipt,
+    status,
+  };
+}
+
+export interface ExecuteBatchCallbacks {
+  onSending?: (index: number) => void;
+  onSent?: (index: number, hash: string) => void;
+  onSuccess?: (index: number, result: ExecuteInteractionResult) => void;
+  onError?: (index: number, error: Error) => void;
+}
+
+export interface ExecuteBatchOptions {
+  sendOptions?: AztecSendOptions;
+  callbacks?: ExecuteBatchCallbacks;
+}
+
+export async function executeBatchInteractions(
+  wallet: AztecDappWallet | null,
+  interactions: ContractFunctionInteraction[],
+  options: ExecuteBatchOptions = {},
+): Promise<{ receipts: TxReceipt[]; errors: Array<{ index: number; error: Error }> }> {
+  if (!wallet) {
+    throw ErrorFactory.connectionFailed('No Aztec wallet available');
+  }
+
+  if (!Array.isArray(interactions) || interactions.length === 0) {
+    throw ErrorFactory.invalidParams('No interactions provided');
+  }
+
+  const receipts: TxReceipt[] = [];
+  const errors: Array<{ index: number; error: Error }> = [];
+  const sendOptions = options.sendOptions;
+  const callbacks = options.callbacks;
+
+  for (let index = 0; index < interactions.length; index++) {
+    const interaction = interactions[index];
+    if (!interaction) {
+      continue;
+    }
+
+    callbacks?.onSending?.(index);
+
+    try {
+      const result = await executeInteraction(wallet, interaction, {
+        ...(sendOptions && { sendOptions }),
+        onSent: (hash) => callbacks?.onSent?.(index, hash),
+      });
+
+      receipts.push(result.receipt);
+      callbacks?.onSuccess?.(index, result);
+    } catch (error) {
+      const err = error instanceof Error
+        ? error
+        : ErrorFactory.transactionFailed('Transaction failed');
+      errors.push({ index, error: err });
+      callbacks?.onError?.(index, err);
+    }
+  }
+
+  return { receipts, errors };
+}
+
+export async function simulateInteraction(
+  wallet: AztecDappWallet | null,
+  interaction: ContractFunctionInteraction,
+): Promise<unknown> {
+  return await simulateTx(wallet, interaction);
 }
 
 /**
@@ -345,6 +539,21 @@ function tryDecodeSimulationResult(
     console.debug('Failed to decode Aztec simulation result', error);
     return undefined;
   }
+}
+
+export const DEPLOYMENT_STAGE_LABELS: Record<AztecDeploymentStage, string> = {
+  idle: 'Ready to deploy',
+  preparing: '📝 Preparing deployment...',
+  computing: '🔢 Computing contract address...',
+  proving: '🔐 Generating proof...',
+  sending: '\uD83D\uDCE4 Sending transaction...',
+  confirming: '⏳ Waiting for confirmation...',
+  success: '✅ Deployment complete!',
+  error: '❌ Deployment failed',
+};
+
+export function getDeploymentStageLabel(stage: AztecDeploymentStage): string {
+  return DEPLOYMENT_STAGE_LABELS[stage] ?? DEPLOYMENT_STAGE_LABELS.idle;
 }
 
 /**

@@ -10,8 +10,12 @@
  * @packageDocumentation
  */
 
-import { AztecAddress } from '@aztec/aztec.js';
-import { ErrorFactory } from '@walletmesh/modal-core';
+import type { AztecAddress } from '@aztec/aztec.js';
+import {
+  isAztecAddressValue,
+  normalizeAztecAddress,
+  formatAztecAddress
+} from '@walletmesh/modal-core/providers/aztec';
 import { useMemo } from 'react';
 
 /**
@@ -30,45 +34,6 @@ export interface UseAztecAddressReturn {
   toAztecAddress: (value: unknown, label?: string) => AztecAddress;
   /** Normalize an arbitrary value into a checksummed hex string. */
   toAddressString: (value: unknown, label?: string) => string;
-}
-
-function isAztecAddress(value: unknown): value is AztecAddress {
-  return value instanceof AztecAddress;
-}
-
-function asAztecAddress(value: unknown, label = 'address'): AztecAddress {
-  if (value === undefined || value === null) {
-    throw ErrorFactory.invalidParams(`No ${label} provided`);
-  }
-
-  if (isAztecAddress(value)) {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    try {
-      return AztecAddress.fromString(value);
-    } catch (error) {
-      throw ErrorFactory.invalidParams(`Invalid ${label}: ${(error as Error).message}`);
-    }
-  }
-
-  if (typeof value === 'object') {
-    const stringValue = (value as { toString?: () => unknown }).toString?.();
-    if (typeof stringValue === 'string') {
-      try {
-        return AztecAddress.fromString(stringValue);
-      } catch (error) {
-        throw ErrorFactory.invalidParams(`Invalid ${label}: ${(error as Error).message}`);
-      }
-    }
-  }
-
-  throw ErrorFactory.invalidParams(`Invalid ${label}: expected Aztec address-like input`);
-}
-
-function asAddressString(value: unknown, label = 'address'): string {
-  return asAztecAddress(value, label).toString();
 }
 
 /**
@@ -90,9 +55,9 @@ function asAddressString(value: unknown, label = 'address'): string {
 export function useAztecAddress(value?: unknown): UseAztecAddressReturn {
   const helpers = useMemo(
     () => ({
-      isAztecAddress,
-      toAztecAddress: asAztecAddress,
-      toAddressString: asAddressString,
+      isAztecAddress: isAztecAddressValue,
+      toAztecAddress: normalizeAztecAddress,
+      toAddressString: formatAztecAddress,
     }),
     [],
   );
