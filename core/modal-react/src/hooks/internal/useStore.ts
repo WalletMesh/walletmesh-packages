@@ -210,7 +210,7 @@ export function shallowEqual<T>(a: T, b: T): boolean {
   }
 
   for (const key of keysA) {
-    if (!Object.prototype.hasOwnProperty.call(b, key) || !Object.is(a[key as keyof T], b[key as keyof T])) {
+    if (!Object.hasOwn(b, key) || !Object.is(a[key as keyof T], b[key as keyof T])) {
       return false;
     }
   }

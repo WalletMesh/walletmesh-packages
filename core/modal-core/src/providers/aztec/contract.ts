@@ -10,7 +10,13 @@
  */
 
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
-import type { AztecDappWallet, ContractFunctionInteraction, TxReceipt } from './types.js';
+import { executeTx } from './utils.js';
+import type {
+  AztecDappWallet,
+  AztecSendOptions,
+  ContractFunctionInteraction,
+  TxReceipt,
+} from './types.js';
 
 /**
  * Get a contract instance at a specific address
@@ -99,6 +105,7 @@ export async function getContractAt(
 export async function executeBatch(
   wallet: AztecDappWallet | null,
   interactions: ContractFunctionInteraction[],
+  options: AztecSendOptions = {},
 ): Promise<TxReceipt[]> {
   if (!wallet) {
     throw ErrorFactory.connectionFailed('No Aztec wallet available');
@@ -117,17 +124,9 @@ export async function executeBatch(
       try {
         const interaction = interactions[i];
         if (!interaction) continue;
-        // Use native Aztec flow
-        const contractInteraction = interaction as ContractFunctionInteraction & {
-          request(): Promise<unknown>;
-        };
-        const txRequest = await contractInteraction.request();
-        const provenTx = await wallet.proveTx(txRequest);
-        const txHash = await wallet.sendTx(provenTx);
-        const receipt = await wallet.getTxReceipt(txHash);
-        if (!receipt) {
-          throw new Error('Transaction receipt not found');
-        }
+
+        const sentTx = await executeTx(wallet, interaction, options);
+        const receipt = await sentTx.wait();
         receipts.push(receipt);
       } catch (error) {
         errors.push({ index: i, error });

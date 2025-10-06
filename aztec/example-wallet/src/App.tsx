@@ -2,12 +2,14 @@ import { useState } from 'react';
 import './App.css';
 import Wallet from './components/Wallet.js';
 import { ToastProvider } from './contexts/ToastContext.js';
+import type { FunctionArgNames } from './middlewares/functionArgNamesMiddleware.js';
 
 interface ApprovalRequest {
   origin: string;
   chainId: string;
   method: string;
   params?: unknown;
+  functionArgNames?: FunctionArgNames;
   resolve: (approved: boolean) => void;
 }
 
@@ -20,6 +22,7 @@ function App() {
     chainId: string;
     method: string;
     params?: unknown;
+    functionArgNames?: FunctionArgNames;
   }): Promise<boolean> => {
     // Note: Auto-approve is handled in the Wallet component's permission manager
     // This handler is only called when user interaction is needed

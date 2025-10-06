@@ -62,6 +62,7 @@ describe('useAztecContract - Synchronous behavior', () => {
       getTxReceipt: vi.fn(),
       simulateTx: vi.fn(),
       getAddress: vi.fn(),
+      registerContractClass: vi.fn().mockResolvedValue(undefined),
     };
 
     vi.mocked(aztecWallet.useAztecWallet).mockReturnValue({
@@ -133,6 +134,7 @@ describe('useAztecContract', () => {
     wmExecuteTx: vi.fn(),
     wmSimulateTx: vi.fn(),
     getAddress: vi.fn(),
+    registerContractClass: vi.fn().mockResolvedValue(undefined),
   };
 
   const mockArtifact = {

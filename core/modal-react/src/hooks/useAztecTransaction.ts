@@ -10,9 +10,11 @@
 
 import { useCallback, useState } from 'react';
 import { ErrorFactory } from '@walletmesh/modal-core';
-import { useAztecWallet } from './useAztecWallet.js';
 import type { TxStatus } from '@aztec/aztec.js';
-import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec';
+import type { AztecSendOptions } from '@walletmesh/modal-core/providers/aztec';
+import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec/lazy';
+import { runAztecTransaction } from './internal/runAztecTransaction.js';
+import { useAztecWallet } from './useAztecWallet.js';
 
 /**
  * Transaction execution options
@@ -30,6 +32,8 @@ export interface TransactionOptions {
   onProvingProgress?: (progress: number) => void;
   /** Whether to automatically check status */
   autoCheckStatus?: boolean;
+  /** Optional send options forwarded to the wallet */
+  sendOptions?: AztecSendOptions;
 }
 
 /**
@@ -191,75 +195,30 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
 
       try {
         setStatus('proving');
-        // Simulate proving progress (real implementation would get this from the wallet)
-        const progressInterval = setInterval(() => {
-          setProvingProgress((prev) => {
-            const newProgress = prev >= 90 ? 90 : prev + 10;
-            if (options.onProvingProgress) {
-              options.onProvingProgress(newProgress);
-            }
-            if (newProgress >= 90) {
-              clearInterval(progressInterval);
-            }
-            return newProgress;
-          });
-        }, 500);
 
-        try {
-          // Execute the transaction using native Aztec.js
-          setStatus('sending');
-          const sentTx = await interaction.send();
-          const txHash = sentTx.txHash.toString();
+        setStatus('sending');
 
-          if (options.onSent) {
-            options.onSent(txHash);
-          }
+        const result = await runAztecTransaction(aztecWallet, interaction, {
+          ...(options.sendOptions && { sendOptions: options.sendOptions }),
+          onProvingProgress: (progress) => {
+            setProvingProgress(progress);
+            options.onProvingProgress?.(progress);
+          },
+          onSent: (hash) => {
+            setStatus('confirming');
+            options.onSent?.(hash);
+          },
+        });
 
-          // Wait for confirmation
-          setStatus('confirming');
-          clearInterval(progressInterval);
-          setProvingProgress(100);
+        setStatus('success');
+        setIsExecuting(false);
+        setLastResult(result);
 
-          const receipt = await sentTx.wait();
-
-          // Check status - Aztec transactions may not have a status field
-          // Consider the transaction successful unless there's an explicit error
-          const txReceipt = receipt as { status?: string | number; error?: string };
-
-          // Check for explicit failure conditions
-          if (txReceipt.error) {
-            throw ErrorFactory.transactionFailed(`Transaction failed: ${txReceipt.error}`);
-          }
-
-          // Get the status, defaulting to 'SUCCESS' if not present (common in Aztec)
-          const txStatus =
-            typeof txReceipt.status === 'number'
-              ? txReceipt.status.toString()
-              : txReceipt.status || 'SUCCESS';
-
-          // Only throw if explicitly failed (status is 0 or FAILED)
-          if (txStatus === '0' || txStatus === '0x0' || txStatus === 'FAILED') {
-            throw ErrorFactory.transactionFailed(`Transaction failed with status: ${txStatus}`);
-          }
-
-          const result: TransactionResult = {
-            hash: txHash,
-            receipt,
-            status: txStatus,
-          };
-
-          setLastResult(result);
-          setStatus('success');
-          setIsExecuting(false);
-
-          if (options.onSuccess) {
-            options.onSuccess(receipt);
-          }
-
-          return result;
-        } finally {
-          clearInterval(progressInterval);
+        if (options.onSuccess) {
+          options.onSuccess(result.receipt);
         }
+
+        return result;
       } catch (err) {
         const errorMessage = err instanceof Error ? err : ErrorFactory.transactionFailed('Transaction failed');
         setError(errorMessage);

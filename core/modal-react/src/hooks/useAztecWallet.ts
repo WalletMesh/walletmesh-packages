@@ -11,6 +11,7 @@
 
 import type { SupportedChain, WalletInfo } from '@walletmesh/modal-core';
 import { ErrorFactory } from '@walletmesh/modal-core';
+import type { AztecAddress } from '@aztec/aztec.js';
 import type { AztecDappWallet } from '@walletmesh/modal-core/providers/aztec/lazy';
 import {
   type AccountInfo,
@@ -24,6 +25,7 @@ import { useWalletMeshContext } from '../WalletMeshContext.js';
 import { useStore } from './internal/useStore.js';
 import { useAccount } from './useAccount.js';
 import { useWalletProvider } from './useWalletProvider.js';
+import { useAztecAddress } from './useAztecAddress.js';
 
 // Re-export AccountInfo type for convenience
 export type { AccountInfo };
@@ -99,6 +101,10 @@ export interface AztecWalletInfo {
   isConnected: boolean;
   /** Current account address */
   address: string | null;
+  /** Current account address as {@link AztecAddress} */
+  addressAztec: AztecAddress | null;
+  /** Canonical hex string representation of the account address */
+  addressString: string | null;
   /** Current chain information */
   chain: SupportedChain | null;
   /** Current chain ID */
@@ -296,6 +302,8 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
 
   const targetChain = chain || connectionState.currentChain;
   const isAztecChain = targetChain?.chainType === 'aztec';
+
+  const { address: addressAztec, addressString } = useAztecAddress(address ?? undefined);
 
   // Initialize Aztec wallet when provider becomes available
   useEffect(() => {
@@ -632,7 +640,9 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
     return {
       // Account information
       isConnected,
-      address: address || null,
+      address: (addressString ?? address) || null,
+      addressAztec,
+      addressString: (addressString ?? address) || null,
       chain: targetChain,
       chainId: targetChain?.chainId || null,
       wallet,
@@ -663,6 +673,8 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
   }, [
     isConnected,
     address,
+    addressAztec,
+    addressString,
     targetChain,
     wallet,
     aztecWallet,

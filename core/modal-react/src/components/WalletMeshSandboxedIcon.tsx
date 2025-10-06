@@ -57,7 +57,8 @@ import {
   createSandboxedIcon,
   normalizeIconOptions,
 } from '@walletmesh/modal-core';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type React from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createComponentLogger } from '../utils/logger.js';
 
 /**

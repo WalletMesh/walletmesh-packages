@@ -5,7 +5,7 @@
 import { renderHook } from '@testing-library/react';
 import type { ChainType, SessionState, SupportedChain } from '@walletmesh/modal-core';
 import { ChainType as ChainTypeEnum } from '@walletmesh/modal-core';
-import React from 'react';
+import type React from 'react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { createAutoMockedStore } from '../test-utils/testHelpers.js';
