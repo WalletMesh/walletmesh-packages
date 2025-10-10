@@ -241,6 +241,26 @@ export class JSONRPCNode<
   }
 
   /**
+   * Send a JSON-RPC notification (request without id) to the remote endpoint.
+   *
+   * @param method - Method name of the notification
+   * @param params - Optional parameters payload
+   * @protected
+   */
+  protected async sendNotification(method: string, params?: JSONRPCParams): Promise<void> {
+    const notification: JSONRPCRequest<JSONRPCMethodMap, string> = {
+      jsonrpc: '2.0',
+      method,
+    };
+
+    if (params !== undefined) {
+      notification.params = params;
+    }
+
+    await this.transport.send(notification);
+  }
+
+  /**
    * Adds a middleware function to the request processing chain.
    * Middleware functions can intercept and modify incoming requests and outgoing responses.
    *

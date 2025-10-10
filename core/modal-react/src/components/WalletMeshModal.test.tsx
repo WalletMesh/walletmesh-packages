@@ -230,6 +230,9 @@ describe('WalletMeshModal (Simplified)', () => {
       availableWalletIds: [],
       discoveryErrors: [],
       transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
     },
   };
 

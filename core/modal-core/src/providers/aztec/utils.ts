@@ -446,10 +446,48 @@ export async function simulateTx(
     throw ErrorFactory.connectionFailed('No Aztec wallet available');
   }
 
+  const interactionInternal = interaction as ContractFunctionInteractionInternal;
   const errors: Error[] = [];
   let undecodedResult: unknown;
+  let preparedExecutionPayload: unknown | null = null;
 
-  if (typeof wallet.wmSimulateTx === 'function') {
+  const getExecutionPayload = async (): Promise<unknown | undefined> => {
+    if (preparedExecutionPayload !== null) {
+      return preparedExecutionPayload;
+    }
+    const requestFn = (interactionInternal as ContractFunctionInteraction & {
+      request?: () => Promise<unknown>;
+    }).request;
+    if (typeof requestFn !== 'function') {
+      preparedExecutionPayload = undefined;
+      return undefined;
+    }
+    const payload = await requestFn.call(interaction);
+    preparedExecutionPayload = payload ?? undefined;
+    return preparedExecutionPayload;
+  };
+
+  let functionType: FunctionType | string | undefined = interactionInternal.functionDao?.functionType;
+  if (!functionType) {
+    try {
+      const payload = await getExecutionPayload();
+      if (payload && typeof payload === 'object') {
+        const calls = (payload as { calls?: Array<{ type?: string }> }).calls;
+        const detectedType = calls?.[0]?.type;
+        if (typeof detectedType === 'string') {
+          functionType = detectedType;
+        }
+      }
+    } catch (error) {
+      const resolvedError = toError(error);
+      errors.push(resolvedError);
+    }
+  }
+
+  const isUtilityFunction =
+    functionType === FunctionType.UTILITY || functionType === 'utility';
+
+  if (!isUtilityFunction && typeof wallet.wmSimulateTx === 'function') {
     try {
       const simulationResult = await wallet.wmSimulateTx(interaction);
       const decoded = tryDecodeSimulationResult(interaction, simulationResult);
@@ -464,7 +502,7 @@ export async function simulateTx(
     }
   }
 
-  const maybeSimulate = (interaction as ContractFunctionInteractionInternal).simulate;
+  const maybeSimulate = interactionInternal.simulate;
   if (typeof maybeSimulate === 'function') {
     try {
       return await maybeSimulate.call(interaction);
@@ -473,16 +511,18 @@ export async function simulateTx(
     }
   }
 
-  try {
-    const contractInteraction = interaction as ContractFunctionInteraction & {
-      request(): Promise<unknown>;
-    };
-    const txRequest = await contractInteraction.request();
-    const simulationResult = await wallet.simulateTx(txRequest, true);
-    const decoded = tryDecodeSimulationResult(interaction, simulationResult);
-    return decoded !== undefined ? decoded : simulationResult;
-  } catch (error) {
-    errors.push(toError(error));
+  if (!isUtilityFunction) {
+    try {
+      const txRequest = await getExecutionPayload();
+      if (!txRequest) {
+        throw new Error('Unable to prepare execution payload for simulation.');
+      }
+      const simulationResult = await wallet.simulateTx(txRequest, true);
+      const decoded = tryDecodeSimulationResult(interaction, simulationResult);
+      return decoded !== undefined ? decoded : simulationResult;
+    } catch (error) {
+      errors.push(toError(error));
+    }
   }
 
   if (undecodedResult !== undefined) {

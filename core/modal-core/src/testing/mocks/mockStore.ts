@@ -55,6 +55,9 @@ export function createAutoMockedStore(initialState?: Partial<WalletMeshState>) {
       availableWalletIds: [],
       discoveryErrors: [],
       transactionStatus: 'idle' as const,
+      aztecProving: {
+        entries: {},
+      },
     },
     ...initialState,
   };
@@ -143,6 +146,9 @@ export function createTestStore(config?: TestStoreConfig) {
       availableWalletIds: [],
       discoveryErrors: [],
       transactionStatus: 'idle' as const,
+      aztecProving: {
+        entries: {},
+      },
     },
   });
 

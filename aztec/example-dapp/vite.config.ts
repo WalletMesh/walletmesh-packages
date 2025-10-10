@@ -50,8 +50,8 @@ export default defineConfig(({ mode }: any) => {
     define: {
       'process.env': JSON.stringify({
         LOG_LEVEL: env.LOG_LEVEL || 'info',
-        VITE_WALLET_URL: env.VITE_WALLET_URL,
-        VITE_NODE_URL: env.VITE_NODE_URL,
+        VITE_AZTEC_RPC_URL:
+          env.VITE_AZTEC_RPC_URL || 'https://sandbox.aztec.walletmesh.com/api/v1/public',
       }),
     },
     build: {

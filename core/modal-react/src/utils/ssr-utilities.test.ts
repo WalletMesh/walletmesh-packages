@@ -12,6 +12,12 @@ vi.mock('@walletmesh/modal-core', () => ({
     extractSafeState: vi.fn(),
   },
   createWalletMesh: vi.fn(),
+  getAztecProvingState: vi.fn(() => ({ entries: {} })),
+  getActiveAztecProvingEntries: vi.fn(() => []),
+  provingActions: {
+    handleNotification: vi.fn(),
+    clearAll: vi.fn(),
+  },
   ChainType: {
     Evm: 'evm',
     Solana: 'solana',

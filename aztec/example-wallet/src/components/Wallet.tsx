@@ -1,5 +1,5 @@
 import { createAztecWalletNode } from '@walletmesh/aztec-rpc-wallet';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 // Type definitions for window extensions
 declare global {
@@ -148,6 +148,12 @@ const LiveTimer: React.FC<{ startTime: number }> = ({ startTime }) => {
   );
 };
 
+const PROVING_METHODS = new Set([
+  'aztec_proveTx',
+  'aztec_wmExecuteTx',
+  'aztec_wmDeployContract',
+]);
+
 /**
  * Creates and initializes a PXE (Private eXecution Environment) client.
  * This function handles the configuration and setup necessary for the PXE service,
@@ -288,8 +294,17 @@ const Wallet: React.FC<WalletProps> = ({
   const [nodeStatus, setNodeStatus] = useState<'idle' | 'connecting' | 'connected' | 'error'>('idle');
 
   /** Toast system for error display */
-  const { showError, showSuccess, showInfo, showWarning } = useToast();
+  const { showError, showWarning } = useToast();
 
+  const activeProvingRequests = useMemo(
+    () =>
+      requestHistory.filter(
+        (entry) => entry.processingStatus === 'processing' && PROVING_METHODS.has(entry.method),
+      ),
+    [requestHistory],
+  );
+
+  const activeProvingCount = activeProvingRequests.length;
   /** Update auto-approve ref when prop changes */
   useEffect(() => {
     autoApproveRef.current = autoApprove;
@@ -341,7 +356,7 @@ const Wallet: React.FC<WalletProps> = ({
     const errorMessage = error instanceof Error ? error.message : String(error);
     // Use the nodeUrl from state if available, otherwise fall back to env var
     const currentNodeUrl =
-      nodeUrl || import.meta.env.VITE_NODE_URL || 'https://sandbox.aztec.walletmesh.com/api/v1/public';
+      nodeUrl || import.meta.env.VITE_AZTEC_RPC_URL || 'https://sandbox.aztec.walletmesh.com/api/v1/public';
     const isLocalNode = currentNodeUrl.includes('localhost') || currentNodeUrl.includes('127.0.0.1');
 
     // Check for common error patterns and provide helpful messages
@@ -438,7 +453,7 @@ const Wallet: React.FC<WalletProps> = ({
         await initAcvmJs(fetch('/assets/acvm_js_bg.wasm'));
 
         const aztecNodeUrl =
-          import.meta.env.VITE_NODE_URL || 'https://sandbox.aztec.walletmesh.com/api/v1/public';
+          import.meta.env.VITE_AZTEC_RPC_URL || 'https://sandbox.aztec.walletmesh.com/api/v1/public';
         const isLocal = aztecNodeUrl.includes('localhost') || aztecNodeUrl.includes('127.0.0.1');
 
         setNodeUrl(aztecNodeUrl);
@@ -1146,6 +1161,16 @@ const Wallet: React.FC<WalletProps> = ({
         setConnectionStatus('connected');
         setConnectionError(null);
 
+        // Notify connected dApps that PXE is ready to accept requests
+        void router
+          .notify('aztec_status', {
+            pxeReady: true,
+            timestamp: Date.now(),
+          })
+          .catch((error) => {
+            console.error('[Wallet] Failed to emit aztec_status notification', error);
+          });
+
         // Ready message is already sent above after router creation
         console.log('[Wallet] Wallet router setup complete');
       } catch (error) {
@@ -1159,7 +1184,7 @@ const Wallet: React.FC<WalletProps> = ({
 
     // Initialize
     setupWalletRouter();
-  }, [onApprovalRequest, showError, showSuccess, showInfo, showWarning]);
+  }, [onApprovalRequest, showError, showWarning]);
 
   // Helper function to detect dApp origin consistently
   const detectDappOrigin = (): string | undefined => {
@@ -1364,6 +1389,32 @@ const Wallet: React.FC<WalletProps> = ({
           <p className="connection-status account-info">
             <strong>Account:</strong> <code className="account-address">{connectedAccount || 'Loading...'}</code>
           </p>
+          {activeProvingCount > 0 && (
+            <div className="proving-banner" role="status" aria-live="polite">
+              <div className="proving-banner__header">
+                <span className="proving-banner__spinner" aria-hidden="true" />
+                <div>
+                  <strong>Generating zero-knowledge proof</strong>
+                  <div className="proving-banner__subtitle">
+                    {activeProvingCount === 1
+                      ? '1 transaction is currently proving'
+                      : `${activeProvingCount} transactions are currently proving`}
+                  </div>
+                </div>
+              </div>
+              <ul className="proving-banner__list">
+                {activeProvingRequests.map((entry) => (
+                  <li key={`${entry.time}-${entry.method}`} className="proving-banner__item">
+                    <span className="proving-banner__method">{entry.method}</span>
+                    <span className="proving-banner__timer">
+                      Started {new Date(entry.requestTimestamp).toLocaleTimeString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="proving-banner__hint">This can take a couple of minutes. Sit tight!</p>
+            </div>
+          )}
           <div className="transaction-stats">
             <div className="stat-item">
               <div className="stat-label">Node</div>

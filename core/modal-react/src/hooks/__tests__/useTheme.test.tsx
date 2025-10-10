@@ -50,6 +50,12 @@ vi.mock('@walletmesh/modal-core', () => ({
   disableTransitions: vi.fn(),
   DEFAULT_THEME_STORAGE_KEY: 'walletmesh-theme',
   DEFAULT_CSS_PREFIX: 'wm',
+  getAztecProvingState: vi.fn(() => ({ entries: {} })),
+  getActiveAztecProvingEntries: vi.fn(() => []),
+  provingActions: {
+    handleNotification: vi.fn(),
+    clearAll: vi.fn(),
+  },
 }));
 
 // Mock theme definitions

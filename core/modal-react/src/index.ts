@@ -522,6 +522,11 @@ export {
   type AuthWitnessEntry,
 } from './hooks/useAztecAuth.js';
 
+export {
+  useAztecProvingStatus,
+  type UseAztecProvingStatusResult,
+} from './hooks/useAztecProvingStatus.js';
+
 // === THEME SUPPORT ===
 // Theme management and customization
 export {
@@ -585,10 +590,11 @@ export {
 
 // Main provider component
 export { WalletMeshProvider } from './WalletMeshProvider.js';
-export type { WalletMeshProviderProps } from './types.js';
+export type { WalletMeshProviderProps, AztecProvingOverlayConfig } from './types.js';
 
 // Main modal component
 export { WalletMeshModal } from './components/WalletMeshModal.js';
+export { AztecProvingOverlay, type AztecProvingOverlayProps } from './components/AztecProvingOverlay.js';
 
 // Built-in UI components
 export {

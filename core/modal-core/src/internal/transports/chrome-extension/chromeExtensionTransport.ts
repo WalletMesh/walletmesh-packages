@@ -434,7 +434,7 @@ export class ChromeExtensionTransport extends AbstractTransport {
         return;
       }
       // Detect PXE readiness status; propagate as normal message so providers can subscribe
-      if (m && m.jsonrpc === '2.0' && m.method === 'wm_status' && m.params && typeof m.params === 'object') {
+      if (m && m.jsonrpc === '2.0' && m.method === 'aztec_status' && m.params && typeof m.params === 'object') {
         // Do not alter ready flag here; this is separate from transport readiness
         // Forward event to consumers
       }

@@ -57,6 +57,9 @@ describe('stateTransform', () => {
       availableWalletIds: [],
       discoveryErrors: [],
       transactionStatus: 'idle' as const,
+      aztecProving: {
+        entries: {},
+      },
       ...(overrides.meta || {}),
     },
   });
@@ -331,6 +334,9 @@ describe('stateTransform', () => {
           availableWalletIds: ['metamask', 'phantom'],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -391,6 +397,9 @@ describe('stateTransform', () => {
           connectionTimestamps: {},
           discoveryErrors: [],
           transactionStatus: 'idle' as const,
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -431,6 +440,9 @@ describe('stateTransform', () => {
           connectionTimestamps: {},
           discoveryErrors: [],
           transactionStatus: 'idle' as const,
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -470,6 +482,9 @@ describe('stateTransform', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -506,6 +521,9 @@ describe('stateTransform', () => {
           availableWalletIds: ['unknown-wallet'],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -546,6 +564,9 @@ describe('stateTransform', () => {
           availableWalletIds: ['metamask'],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -571,6 +592,9 @@ describe('stateTransform', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -608,6 +632,9 @@ describe('stateTransform', () => {
           availableWalletIds: ['metamask'],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -638,6 +665,9 @@ describe('stateTransform', () => {
           availableWalletIds: ['metamask'],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -663,6 +693,9 @@ describe('stateTransform', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -692,6 +725,9 @@ describe('stateTransform', () => {
           availableWalletIds: ['metamask'],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -746,6 +782,9 @@ describe('stateTransform', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 
@@ -774,6 +813,9 @@ describe('stateTransform', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       });
 

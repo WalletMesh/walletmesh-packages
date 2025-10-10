@@ -11,6 +11,11 @@ export interface JSONRPCProxyConfig {
   logger?: (message: string, data?: unknown) => void;
   /** Chain ID for logging context */
   chainId?: string;
+  /**
+   * Optional callback invoked when a notification (request without id) is received
+   * from the remote endpoint.
+   */
+  onNotification?: (method: string, params: unknown, rawMessage: unknown) => void;
 }
 
 /**
@@ -148,6 +153,14 @@ export class JSONRPCProxy {
       }
     } else if (id === undefined) {
       // Handle events/notifications from the server
+      const method = this.extractMethod(message);
+      if (method) {
+        const params = this.extractParams(message);
+        this.log('Notification received', { method });
+        this.config.onNotification?.(method, params, message);
+        return;
+      }
+
       const event = this.extractEvent(message);
       if (event) {
         this.log('Event received', { event });
@@ -175,6 +188,16 @@ export class JSONRPCProxy {
     if (message && typeof message === 'object' && 'method' in message) {
       const method = (message as Record<string, unknown>).method;
       return typeof method === 'string' ? method : undefined;
+    }
+    return undefined;
+  }
+
+  /**
+   * Extract params from a message
+   */
+  private extractParams(message: unknown): unknown {
+    if (message && typeof message === 'object' && 'params' in message) {
+      return (message as Record<string, unknown>).params;
     }
     return undefined;
   }

@@ -57,6 +57,11 @@ export {
 } from '../../hooks/useAztecBatch.js';
 
 export {
+  useAztecProvingStatus,
+  type UseAztecProvingStatusResult,
+} from '../../hooks/useAztecProvingStatus.js';
+
+export {
   executeTx,
   simulateTx,
   waitForTxReceipt,
@@ -73,6 +78,11 @@ export {
   AztecConnectButton,
   type AztecConnectButtonProps,
 } from '../../components/AztecConnectButton.js';
+
+export {
+  AztecProvingOverlay,
+  type AztecProvingOverlayProps,
+} from '../../components/AztecProvingOverlay.js';
 
 export {
   AztecWalletMeshProvider,

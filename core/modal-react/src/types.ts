@@ -266,6 +266,17 @@ export interface WalletMeshConfig extends Omit<CoreWalletMeshConfig, 'chains' | 
  * @public
  * @since 1.0.0
  */
+export interface AztecProvingOverlayConfig {
+  /** Whether the overlay should be rendered. Defaults to true when Aztec chains are present. */
+  enabled?: boolean;
+  /** Override headline text displayed in the overlay. */
+  headline?: string;
+  /** Override the descriptive/supporting text. */
+  description?: string;
+  /** Disable the beforeunload navigation guard while the overlay is shown. */
+  disableNavigationGuard?: boolean;
+}
+
 export interface WalletMeshReactConfig extends WalletMeshConfig {
   // React-specific options
   /**
@@ -278,6 +289,15 @@ export interface WalletMeshReactConfig extends WalletMeshConfig {
    * @defaultValue true
    */
   autoInjectModal?: boolean;
+
+  /**
+   * Configure the automatic Aztec proving overlay that appears while proofs are generated.
+   *
+   * Set to `false` to disable the overlay entirely. Provide an object to customize messaging
+   * or disable navigation guards while keeping the overlay visible. When omitted, the overlay
+   * is enabled automatically for configurations that include an Aztec chain.
+   */
+  aztecProvingOverlay?: boolean | AztecProvingOverlayConfig;
 
   /**
    * Custom portal target for modal rendering.

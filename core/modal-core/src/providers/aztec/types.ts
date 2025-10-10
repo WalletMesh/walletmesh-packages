@@ -9,6 +9,8 @@
  * @packageDocumentation
  */
 
+import { z } from 'zod';
+
 /**
  * Aztec wallet interface for dApp interactions
  *
@@ -178,6 +180,68 @@ export interface CreateAztecWalletOptions {
   chainId?: string;
   /** Custom chain ID options to request permissions for */
   permissions?: Record<string, string[]>;
+}
+
+/**
+ * Lifecycle status values emitted while the wallet is generating proofs.
+ */
+export const AZTEC_PROVING_STATUS_VALUES = ['started', 'completed', 'failed'] as const;
+
+/**
+ * Union of lifecycle status strings.
+ */
+export type AztecProvingLifecycleStatus = (typeof AZTEC_PROVING_STATUS_VALUES)[number];
+
+/**
+ * Schema describing the payload emitted via the `aztec_provingStatus` notification.
+ */
+export const aztecProvingStatusNotificationSchema = z.object({
+  provingId: z.string().min(1, 'provingId is required'),
+  status: z.enum(AZTEC_PROVING_STATUS_VALUES),
+  txHash: z.string().min(1).optional(),
+  timestamp: z.coerce.number().int().nonnegative().optional(),
+  error: z.string().optional(),
+});
+
+/**
+ * Parsed proving status notification payload.
+ */
+export type AztecProvingStatusNotification = z.infer<typeof aztecProvingStatusNotificationSchema>;
+
+/**
+ * Attempt to parse a proving status notification payload.
+ *
+ * Returns `null` when the payload does not conform to the schema.
+ */
+export function parseAztecProvingStatusNotification(
+  payload: unknown,
+): AztecProvingStatusNotification | null {
+  const candidate = Array.isArray(payload) ? payload[0] : payload;
+  const parsed = aztecProvingStatusNotificationSchema.safeParse(candidate);
+  if (!parsed.success) {
+    return null;
+  }
+  return parsed.data;
+}
+
+/**
+ * Stored entry describing a proving lifecycle.
+ */
+export interface AztecProvingEntry {
+  provingId: string;
+  status: AztecProvingLifecycleStatus;
+  startedAt: number;
+  lastUpdatedAt: number;
+  completedAt?: number;
+  txHash?: string;
+  error?: string;
+}
+
+/**
+ * Aggregate Aztec proving state stored in modal-core.
+ */
+export interface AztecProvingState {
+  entries: Record<string, AztecProvingEntry>;
 }
 
 // Function signatures for lazy loading

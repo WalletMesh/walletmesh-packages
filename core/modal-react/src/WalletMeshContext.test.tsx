@@ -23,6 +23,8 @@ vi.mock('@walletmesh/modal-core', () => ({
     error: vi.fn(),
     setLevel: vi.fn(),
   })),
+  getAztecProvingState: vi.fn(() => ({ entries: {} })),
+  getActiveAztecProvingEntries: vi.fn(() => []),
   ErrorFactory: {
     configurationError: vi.fn().mockImplementation((message, details) => {
       const error = new Error(message);
@@ -54,6 +56,10 @@ vi.mock('@walletmesh/modal-core', () => ({
       });
       return error;
     }),
+  },
+  provingActions: {
+    handleNotification: vi.fn(),
+    clearAll: vi.fn(),
   },
   ChainType: {
     Evm: 'evm',
