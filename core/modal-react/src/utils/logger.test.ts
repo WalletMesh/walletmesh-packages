@@ -3,6 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // Mock the modal-core createDebugLogger function
 vi.mock('@walletmesh/modal-core', () => ({
   createDebugLogger: vi.fn(),
+  getAztecProvingState: vi.fn(() => ({ entries: {} })),
+  getActiveAztecProvingEntries: vi.fn(() => []),
+  provingActions: {
+    handleNotification: vi.fn(),
+    clearAll: vi.fn(),
+  },
 }));
 
 import { createDebugLogger } from '@walletmesh/modal-core';

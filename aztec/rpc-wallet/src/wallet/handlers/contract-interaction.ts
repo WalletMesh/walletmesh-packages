@@ -16,6 +16,7 @@ import type { TxExecutionRequest, TxSimulationResult } from '@aztec/stdlib/tx';
 import { JSONRPCError } from '@walletmesh/jsonrpc';
 import type { AztecWalletMethodMap } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
+import { generateProvingId, notifyProvingStatus } from './provingNotifications.js';
 
 const logger = createLogger('aztec-rpc-wallet:contract-interaction:handler');
 
@@ -142,12 +143,16 @@ export function createContractInteractionHandlers() {
     );
     logger.debug('Execution payload:', executionPayload);
 
+    const provingId = generateProvingId();
+    let provingCompleted = false;
+
     try {
       const txRequest = await createTxExecutionRequest(ctx, executionPayload);
       const simulationResult = await simulateTransaction(ctx, executionPayload, txRequest);
 
       logger.debug('Starting transaction proving...');
       const proveStartTime = Date.now();
+      await notifyProvingStatus(ctx, { provingId, status: 'started' });
       const provingResult = await ctx.wallet.proveTx(txRequest, simulationResult.privateExecutionResult);
       logger.debug(`Transaction proving completed in ${Date.now() - proveStartTime}ms`);
       logger.debug('Proving result:', provingResult);
@@ -155,6 +160,22 @@ export function createContractInteractionHandlers() {
       logger.debug('Creating transaction from proving result...');
       const tx = await provingResult.toTx();
       logger.debug('Transaction created:', tx);
+
+      let txHashString: string | undefined;
+      try {
+        txHashString = tx?.getTxHash?.()?.toString?.();
+      } catch (hashError) {
+        logger.debug('Unable to derive tx hash after proving', {
+          error: hashError instanceof Error ? hashError.message : hashError,
+        });
+      }
+
+      await notifyProvingStatus(ctx, {
+        provingId,
+        status: 'completed',
+        ...(txHashString && { txHash: txHashString })
+      });
+      provingCompleted = true;
 
       logger.debug('Sending transaction to network...');
       const sendStartTime = Date.now();
@@ -166,6 +187,13 @@ export function createContractInteractionHandlers() {
       const totalTime = Date.now() - startTime;
       logger.error(`Transaction execution failed after ${totalTime}ms}`);
       logger.error('Error details:', error);
+      if (!provingCompleted) {
+        await notifyProvingStatus(ctx, {
+          provingId,
+          status: 'failed',
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
       throw error;
     }
   }

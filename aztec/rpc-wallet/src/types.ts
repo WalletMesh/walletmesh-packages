@@ -87,6 +87,50 @@ export interface AztecWalletContext {
 }
 
 /**
+ * Status values emitted while the wallet is generating a proof.
+ */
+export type AztecProvingLifecycleStatus = 'started' | 'completed' | 'failed';
+
+/**
+ * Payload published by the wallet whenever proving lifecycle changes.
+ *
+ * Used by dApps to show/hide UX overlays while proofs are running.
+ */
+export interface AztecProvingStatusNotification {
+  /**
+   * Unique identifier for the proving operation so start/finish events can be correlated.
+   */
+  provingId: string;
+  /**
+   * Lifecycle status of the proving operation.
+   */
+  status: AztecProvingLifecycleStatus;
+  /**
+   * Optional transaction hash once it becomes available.
+   */
+  txHash?: string;
+  /**
+   * Millisecond timestamp supplied by the wallet (defaults to Date.now()).
+   */
+  timestamp?: number;
+  /**
+   * Optional error message supplied when proving fails.
+   */
+  error?: string;
+}
+
+/**
+ * Defines the notification methods that can be sent from the wallet to the client.
+ * These are fire-and-forget messages that don't expect a response.
+ */
+export interface AztecWalletNotificationMap {
+  /**
+   * Notification emitted while the wallet is generating proofs.
+   */
+  aztec_provingStatus: { params: AztecProvingStatusNotification; result: void };
+}
+
+/**
  * A constant array defining a set of base wallet methods.
  * These methods might be intended for initial wallet discovery or basic connection negotiation.
  * Note: Current connection helpers like `connectAztec` default to `ALL_AZTEC_METHODS`.

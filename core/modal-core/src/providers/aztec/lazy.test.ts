@@ -23,6 +23,7 @@ vi.mock('@walletmesh/aztec-rpc-wallet', () => ({
     }),
     registerMethodSerializer: vi.fn(),
     on: vi.fn().mockReturnValue(() => {}),
+    onNotification: vi.fn().mockReturnValue(() => {}),
     emit: vi.fn(),
     sessionId: 'test-session',
   })),

@@ -436,6 +436,9 @@ export class MockWalletMeshClient implements Partial<WalletMeshClient> {
           availableWalletIds: ['metamask', 'phantom', 'rainbow'],
           discoveryErrors: [],
           transactionStatus: 'idle' as const,
+          aztecProving: {
+            entries: {},
+          },
         },
       };
     }
@@ -540,6 +543,9 @@ export class MockWalletMeshClient implements Partial<WalletMeshClient> {
         availableWalletIds: ['metamask', 'phantom', 'rainbow'],
         discoveryErrors: [],
         transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
       },
     } as WalletMeshState;
   }

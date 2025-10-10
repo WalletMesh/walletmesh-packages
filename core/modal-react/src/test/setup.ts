@@ -247,6 +247,9 @@ vi.mock('@walletmesh/modal-core/testing', () => ({
         availableWalletIds: [],
         discoveryErrors: [],
         transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
       },
     }),
     setState: vi.fn(),
@@ -317,6 +320,9 @@ vi.mock('@walletmesh/modal-core', () => {
       availableWalletIds: [],
       discoveryErrors: [],
       transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
     },
   };
 
@@ -391,6 +397,7 @@ vi.mock('@walletmesh/modal-core', () => {
     createWalletMeshClient: vi.fn().mockResolvedValue(mockClient),
     createWalletMeshStore: vi.fn().mockReturnValue(mockStore),
     getWalletMeshStore: vi.fn().mockReturnValue(mockStore),
+    getStoreInstance: vi.fn(() => mockStore),
     walletMeshStore: mockStore,
     resetStore: vi.fn(() => {
       // Reset mock state
@@ -422,6 +429,9 @@ vi.mock('@walletmesh/modal-core', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
+          aztecProving: {
+            entries: {},
+          },
         },
       };
     }),
@@ -669,6 +679,50 @@ vi.mock('@walletmesh/modal-core', () => {
       setActiveTransaction: vi.fn(),
       clearTransactions: vi.fn(),
       clearError: vi.fn(),
+    },
+    getAztecProvingState: vi.fn(() => mockState.meta.aztecProving),
+    getActiveAztecProvingEntries: vi.fn(() => {
+      const entries = mockState.meta.aztecProving.entries as Record<string, { status?: string } | undefined>;
+      return Object.values(entries).filter((entry) => entry?.status === 'started');
+    }),
+    provingActions: {
+      handleNotification: vi.fn((_store: unknown, payload: { provingId: string; status: string; txHash?: string; error?: string; timestamp?: number }) => {
+        const timestamp = payload.timestamp ?? Date.now();
+        const id = payload.provingId || payload.txHash || `mock-${timestamp}`;
+        const entries = mockState.meta.aztecProving.entries as Record<string, any>;
+        const current = entries[id] || {
+          provingId: id,
+          startedAt: timestamp,
+          lastUpdatedAt: timestamp,
+          status: 'started',
+          txHash: payload.txHash,
+        };
+
+        if (payload.status === 'started') {
+          entries[id] = {
+            ...current,
+            status: 'started',
+            startedAt: timestamp,
+            lastUpdatedAt: timestamp,
+            txHash: payload.txHash ?? current.txHash,
+            error: undefined,
+            completedAt: undefined,
+          };
+          return;
+        }
+
+        entries[id] = {
+          ...current,
+          status: payload.status,
+          lastUpdatedAt: timestamp,
+          txHash: payload.txHash ?? current.txHash,
+          completedAt: timestamp,
+          error: payload.status === 'failed' ? payload.error ?? 'Proof generation failed' : undefined,
+        };
+      }),
+      clearAll: vi.fn(() => {
+        mockState.meta.aztecProving.entries = {};
+      }),
     },
 
     // Store utility functions

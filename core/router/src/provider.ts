@@ -1,4 +1,9 @@
-import { JSONRPCNode, type JSONRPCSerializer, type JSONRPCTransport } from '@walletmesh/jsonrpc';
+import {
+  JSONRPCNode,
+  type JSONRPCParams,
+  type JSONRPCSerializer,
+  type JSONRPCTransport,
+} from '@walletmesh/jsonrpc';
 import { RouterError, RouterErrorMap } from './errors.js';
 import { OperationBuilder } from './operation.js';
 import { ProviderSerializerRegistry } from './provider-serialization.js';
@@ -60,6 +65,7 @@ import type {
 export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext> {
   private _sessionId: string | undefined;
   private serializerRegistry = new ProviderSerializerRegistry();
+  private notificationHandlers = new Map<string, Set<(params: unknown) => void>>();
 
   /**
    * Creates a new WalletRouterProvider instance.
@@ -73,6 +79,20 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     if (sessionId) {
       this._sessionId = sessionId;
     }
+
+    this.addMiddleware(
+      async (_context, request, next) => {
+        if (request.id === undefined && typeof request.method === 'string') {
+          this.dispatchNotification(request.method, request.params);
+          return {
+            jsonrpc: '2.0' as const,
+            id: undefined,
+            result: null,
+          };
+        }
+        return next();
+      },
+    );
   }
 
   /**
@@ -86,6 +106,29 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    */
   get sessionId(): string | undefined {
     return this._sessionId;
+  }
+
+  /**
+   * Register a handler for router-delivered notifications.
+   *
+   * @param method - Notification method name
+   * @param handler - Callback invoked with notification params
+   * @returns Cleanup function to remove the handler
+   */
+  onNotification(method: string, handler: (params: unknown) => void): () => void {
+    if (!this.notificationHandlers.has(method)) {
+      this.notificationHandlers.set(method, new Set());
+    }
+
+    const handlers = this.notificationHandlers.get(method)!;
+    handlers.add(handler);
+
+    return () => {
+      handlers.delete(handler);
+      if (handlers.size === 0) {
+        this.notificationHandlers.delete(method);
+      }
+    };
   }
 
   /**
@@ -505,6 +548,31 @@ permissions: [
    */
   public chain(chainId: ChainId): OperationBuilder<readonly []> {
     return new OperationBuilder(chainId, this, [] as const);
+  }
+
+  /**
+   * Dispatch an incoming notification to registered handlers.
+   *
+   * @param method - Notification method name
+   * @param params - Notification payload
+   * @private
+   */
+  private dispatchNotification(method: string, params: JSONRPCParams | undefined): void {
+    const handlers = this.notificationHandlers.get(method);
+    if (!handlers || handlers.size === 0) {
+      return;
+    }
+
+    for (const handler of handlers) {
+      try {
+        handler(params);
+      } catch (error) {
+        console.error('[WalletRouterProvider] Notification handler error', {
+          method,
+          error: error instanceof Error ? error.message : error,
+        });
+      }
+    }
   }
 
   /**

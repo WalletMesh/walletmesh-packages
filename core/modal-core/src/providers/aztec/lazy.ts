@@ -10,9 +10,14 @@
  */
 
 import type { JSONRPCSerializer, JSONRPCTransport } from '@walletmesh/jsonrpc';
+import type { StoreApi } from 'zustand';
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
+import { provingActions } from '../../state/actions/proving.js';
+import { useStore } from '../../state/store.js';
 import { createLazyModule } from '../../utils/lazy/index.js';
+import type { WalletMeshState } from '../../state/store.js';
 import type { AztecProviderFunctions } from './types.js';
+import { parseAztecProvingStatusNotification } from './types.js';
 
 // Create lazy loader for the Aztec implementation
 const aztecModule = createLazyModule<typeof import('./utils.js')>(() => import('./utils.js'), {
@@ -261,10 +266,22 @@ export class LazyAztecRouterProvider {
   private realProvider: AztecRouterProviderInstance | null = null;
   private pxeReadyPromise: Promise<void> | null = null;
   private pxeReadyResolve: (() => void) | null = null;
+  private notificationCleanup: Array<() => void> = [];
 
   constructor(transport: JSONRPCTransport, context?: Record<string, unknown>) {
     // Initialize the real provider asynchronously
     this.initPromise = this.initialize(transport, context);
+  }
+
+  private cleanupNotificationHandlers(): void {
+    const handlers = this.notificationCleanup.splice(0);
+    for (const cleanup of handlers) {
+      try {
+        cleanup();
+      } catch (error) {
+        console.error('[LazyAztecRouterProvider] Failed to remove notification handler', error);
+      }
+    }
   }
 
   private async initialize(transport: JSONRPCTransport, context?: Record<string, unknown>): Promise<void> {
@@ -275,7 +292,7 @@ export class LazyAztecRouterProvider {
       context,
     ) as unknown as AztecRouterProviderInstance;
 
-    // Listen for PXE readiness notifications (wm_status)
+    // Listen for PXE readiness notifications (aztec_status)
     try {
       const markReady = () => {
         if (this.pxeReadyResolve) {
@@ -283,20 +300,49 @@ export class LazyAztecRouterProvider {
           this.pxeReadyResolve = null;
         }
       };
-      const handler = (payload: any) => {
+
+      const store = useStore as unknown as StoreApi<WalletMeshState>;
+      this.cleanupNotificationHandlers();
+
+      if (typeof (this.realProvider as unknown as { onNotification?: unknown }).onNotification !== 'function') {
+        throw ErrorFactory.configurationError(
+          'AztecRouterProvider is missing onNotification support. Update to a compatible WalletMesh router version.',
+        );
+      }
+
+      const providerWithNotifications = this.realProvider as AztecRouterProviderInstance & {
+        onNotification: (method: string, handler: (params: unknown) => void) => () => void;
+      };
+
+      const removeStatus = providerWithNotifications.onNotification('aztec_status', (params) => {
         try {
-          const m = payload as { jsonrpc?: string; method?: string; params?: any };
-          if (m && m.jsonrpc === '2.0' && m.method === 'wm_status' && m.params && m.params.pxeReady) {
+          if (
+            params &&
+            typeof params === 'object' &&
+            (params as { pxeReady?: boolean }).pxeReady
+          ) {
             markReady();
           }
-        } catch {
-          // ignore
+        } catch (error) {
+          console.error('[LazyAztecRouterProvider] Error handling aztec_status notification', error);
         }
-      };
-      this.realProvider.on?.('notification', handler);
-      this.realProvider.on?.('message', handler);
-    } catch {
-      // Non-fatal
+      });
+      this.notificationCleanup.push(removeStatus);
+
+      const removeProving = providerWithNotifications.onNotification('aztec_provingStatus', (params) => {
+        try {
+          const parsed = parseAztecProvingStatusNotification(params);
+          if (parsed) {
+            provingActions.handleNotification(store, parsed);
+          }
+        } catch (error) {
+          console.error('[LazyAztecRouterProvider] Error handling aztec_provingStatus notification', error);
+        }
+      });
+      this.notificationCleanup.push(removeProving);
+    } catch (error) {
+      // Surface configuration issues immediately
+      throw error;
     }
   }
 

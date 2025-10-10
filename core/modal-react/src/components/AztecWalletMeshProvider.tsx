@@ -13,7 +13,7 @@
 import type { WalletInfo, WalletMeshConfig } from '@walletmesh/modal-core';
 import { WalletMeshProvider } from '../WalletMeshProvider.js';
 import { createAztecConfig } from '../chains/aztec/config.js';
-import type { WalletMeshProviderProps } from '../types.js';
+import type { AztecProvingOverlayConfig, WalletMeshProviderProps } from '../types.js';
 
 /**
  * Configuration options specific to Aztec dApps
@@ -121,6 +121,26 @@ export interface AztecProviderConfig {
    * ```
    */
   permissions?: string[];
+
+  /**
+   * Configuration for the Aztec proving overlay.
+   *
+   * Controls the overlay that appears when generating zero-knowledge proofs.
+   * Set to false to disable the overlay, or provide an object to customize it.
+   *
+   * @example
+   * ```ts
+   * // Customize overlay text
+   * aztecProvingOverlay: {
+   *   headline: 'Generating zero-knowledge proof…',
+   *   description: 'This can take up to a couple of minutes. Please keep this tab open.'
+   * }
+   *
+   * // Disable the overlay
+   * aztecProvingOverlay: false
+   * ```
+   */
+  aztecProvingOverlay?: boolean | AztecProvingOverlayConfig;
 
   /**
    * Optional overrides for wallet discovery behaviour.

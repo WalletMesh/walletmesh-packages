@@ -83,6 +83,9 @@ const createMockState = (overrides?: Partial<WalletMeshState>): WalletMeshState 
     availableWalletIds: [],
     discoveryErrors: [],
     transactionStatus: 'idle' as const,
+    aztecProving: {
+      entries: {},
+    },
   },
   ...overrides,
 });
@@ -745,6 +748,9 @@ describe('useConnect', () => {
               availableWalletIds: [],
               discoveryErrors: [],
               transactionStatus: 'signing' as const,
+              aztecProving: {
+                entries: {},
+              },
             },
           }),
         );
@@ -866,6 +872,9 @@ describe('useConnect', () => {
               availableWalletIds: [],
               discoveryErrors: [],
               transactionStatus: 'proving' as const,
+              aztecProving: {
+                entries: {},
+              },
             },
           }),
         );
@@ -987,6 +996,9 @@ describe('useConnect', () => {
               availableWalletIds: [],
               discoveryErrors: [],
               transactionStatus: 'proving' as const,
+              aztecProving: {
+                entries: {},
+              },
             },
           }),
         );
@@ -1159,6 +1171,9 @@ describe('useConnect', () => {
               availableWalletIds: [],
               discoveryErrors: [],
               transactionStatus: 'idle' as const,
+              aztecProving: {
+                entries: {},
+              },
             },
           }),
         );

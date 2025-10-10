@@ -25,6 +25,7 @@ const createMockContext = (wallet: AccountWallet): AztecHandlerContext => ({
   wallet,
   pxe: {} as PXE,
   cache: {} as ContractArtifactCache,
+  notify: vi.fn(),
 });
 
 describe('Account Handlers', () => {

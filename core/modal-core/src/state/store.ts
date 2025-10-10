@@ -19,6 +19,7 @@ import type { ModalError } from '../internal/core/errors/types.js';
 import type { TransactionResult, TransactionStatus } from '../services/transaction/types.js';
 import type { ChainType, ModalView } from '../types.js';
 import type { WalletInfo } from '../types.js';
+import type { AztecProvingEntry, AztecProvingState } from '../providers/aztec/types.js';
 
 // Enable MapSet plugin for Immer (still needed for SessionState internals)
 enableMapSet();
@@ -112,6 +113,8 @@ export interface WalletMeshState {
     discoveryErrors: string[];
     // Transaction status
     transactionStatus: TransactionStatus;
+    // Aztec proving lifecycle entries
+    aztecProving: AztecProvingState;
   };
 }
 
@@ -208,6 +211,23 @@ export const getTransactionHistory = (state: WalletMeshState): TransactionResult
 };
 
 /**
+ * Get the complete Aztec proving state.
+ */
+export const getAztecProvingState = (state: WalletMeshState): AztecProvingState => state.meta.aztecProving;
+
+/**
+ * Get all active (in-flight) proving lifecycle entries.
+ */
+export const getActiveAztecProvingEntries = (state: WalletMeshState): AztecProvingEntry[] =>
+  Object.values(state.meta.aztecProving.entries).filter((entry) => entry.status === 'started');
+
+/**
+ * Determine whether any proving operations are currently running.
+ */
+export const hasActiveAztecProving = (state: WalletMeshState): boolean =>
+  getActiveAztecProvingEntries(state).length > 0;
+
+/**
  * Check if wallet is available
  */
 export const isWalletAvailable = (state: WalletMeshState, walletId: string): boolean =>
@@ -290,6 +310,9 @@ const createInitialState = (): WalletMeshState => ({
     availableWalletIds: [],
     discoveryErrors: [],
     transactionStatus: 'idle',
+    aztecProving: {
+      entries: {},
+    },
   },
 });
 

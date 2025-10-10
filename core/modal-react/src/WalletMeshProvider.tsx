@@ -36,12 +36,20 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorFactory, createWalletMesh } from '@walletmesh/modal-core';
 import type { ChainType, QueryManager, WalletMeshConfig } from '@walletmesh/modal-core';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AztecProvingOverlay } from './components/AztecProvingOverlay.js';
 import { WalletMeshModal } from './components/WalletMeshModal.js';
 
 import { WalletMeshContext } from './WalletMeshContext.js';
 import { ThemeProvider } from './theme/ThemeContext.js';
-import type { WalletMeshProviderProps } from './types.js';
+import type { AztecProvingOverlayConfig, WalletMeshProviderProps } from './types.js';
 import { createComponentLogger } from './utils/logger.js';
+
+type ResolvedOverlayConfig = {
+  enabled: boolean;
+  headline?: string;
+  description?: string;
+  disableNavigationGuard?: boolean;
+};
 
 /**
  * Provider component for WalletMesh functionality.
@@ -462,24 +470,25 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
     };
 
     // Create config object for createWalletMeshClient with exact optional property handling
-    const clientConfig: {
-      appName: string;
-      appDescription?: string;
-      appUrl?: string;
-      appIcon?: string;
-      appMetadata?: typeof appMetadata;
-      chains: { chainId: string; chainType: ChainType; name: string; required: boolean }[];
-      wallets?: Array<unknown>;
-      debug?: boolean;
-      projectId?: string;
-      handleRehydration?: boolean;
-      discovery?: typeof config.discovery;
-      permissions?: typeof config.permissions;
-    } = {
-      appName: config['appName'] || 'DApp',
-      chains: transformedChains,
-      // Enable client-side rehydration for automatic wallet reconnection
-      handleRehydration: true,
+  const clientConfig: {
+    appName: string;
+    appDescription?: string;
+    appUrl?: string;
+    appIcon?: string;
+    appMetadata?: typeof appMetadata;
+    chains: { chainId: string; chainType: ChainType; name: string; required: boolean }[];
+    wallets?: Array<unknown>;
+    debug?: boolean;
+    projectId?: string;
+    handleRehydration?: boolean;
+    discovery?: typeof config.discovery;
+    permissions?: typeof config.permissions;
+    aztecProvingOverlay?: boolean | AztecProvingOverlayConfig;
+  } = {
+    appName: config['appName'] || 'DApp',
+    chains: transformedChains,
+    // Enable client-side rehydration for automatic wallet reconnection
+    handleRehydration: true,
     };
 
     // Only add properties that are actually defined to satisfy exactOptionalPropertyTypes
@@ -501,6 +510,9 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
     if (config['projectId']) clientConfig.projectId = config['projectId'];
     if (config['discovery']) clientConfig.discovery = config['discovery'];
     if (config['permissions']) clientConfig.permissions = config['permissions'];
+    if (config['aztecProvingOverlay'] !== undefined) {
+      clientConfig.aztecProvingOverlay = config['aztecProvingOverlay'];
+    }
 
     return clientConfig;
   }, [config, detectChainType]);
@@ -631,6 +643,34 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
       console.error('[WalletMeshProvider] Client creation failed:', clientError);
     }
   }, [clientError]);
+
+  const hasAztecChain = useMemo(() => {
+    return (config.chains || []).some((chain) => detectChainType(chain) === ('aztec' as ChainType));
+  }, [config.chains, detectChainType]);
+
+  const provingOverlaySettings = useMemo<ResolvedOverlayConfig>(() => {
+    const raw = config.aztecProvingOverlay;
+    if (raw === false) {
+      return { enabled: false };
+    }
+    if (raw === true || raw === undefined) {
+      return { enabled: true };
+    }
+    const overlayConfig = raw as AztecProvingOverlayConfig;
+    const result: ResolvedOverlayConfig = {
+      enabled: overlayConfig.enabled !== false,
+    };
+    if (overlayConfig.headline !== undefined) {
+      result.headline = overlayConfig.headline;
+    }
+    if (overlayConfig.description !== undefined) {
+      result.description = overlayConfig.description;
+    }
+    if (overlayConfig.disableNavigationGuard !== undefined) {
+      result.disableNavigationGuard = overlayConfig.disableNavigationGuard;
+    }
+    return result;
+  }, [config.aztecProvingOverlay]);
 
   /**
    * Creates the React context value with client instance and normalized configuration.
@@ -781,6 +821,13 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
       <WalletMeshContext.Provider value={contextValue}>
         {children}
         {config.autoInjectModal !== false && <WalletMeshModal />}
+        {hasAztecChain && provingOverlaySettings.enabled && (
+          <AztecProvingOverlay
+            {...(provingOverlaySettings.headline !== undefined && { headline: provingOverlaySettings.headline })}
+            {...(provingOverlaySettings.description !== undefined && { description: provingOverlaySettings.description })}
+            {...(provingOverlaySettings.disableNavigationGuard !== undefined && { disableNavigationGuard: provingOverlaySettings.disableNavigationGuard })}
+          />
+        )}
       </WalletMeshContext.Provider>
     );
 

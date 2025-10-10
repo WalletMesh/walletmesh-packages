@@ -413,6 +413,20 @@ export interface WmBulkCallType<M extends keyof RouterMethodMap> {
  */
 export interface RouterMethodMap extends JSONRPCMethodMap {
   /**
+   * Aztec-specific status notifications (e.g., PXE readiness).
+   * @param pxeReady - Whether the PXE service is ready for requests
+   * @param timestamp - Optional UNIX timestamp when status was emitted
+   */
+  aztec_status: {
+    params: {
+      pxeReady?: boolean;
+      timestamp?: number;
+      [key: string]: unknown;
+    };
+    result: void;
+  };
+
+  /**
    * Attempt to reconnect to an existing session
    * @param sessionId - ID of the session to reconnect to
    * @returns Object containing reconnection status and current permissions

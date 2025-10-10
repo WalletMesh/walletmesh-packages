@@ -12,6 +12,12 @@ vi.mock('@walletmesh/modal-core', () => ({
   })),
   isServer: vi.fn(() => false),
   isBrowser: vi.fn(() => true),
+  getAztecProvingState: vi.fn(() => ({ entries: {} })),
+  getActiveAztecProvingEntries: vi.fn(() => []),
+  provingActions: {
+    handleNotification: vi.fn(),
+    clearAll: vi.fn(),
+  },
   ssrState: {
     isClient: true,
     isServer: false,

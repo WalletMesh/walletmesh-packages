@@ -369,6 +369,9 @@ export const resetStore = () => {
       connectionTimestamps: {},
       discoveryErrors: [],
       transactionStatus: 'idle' as const,
+      aztecProving: {
+        entries: {},
+      },
     },
   });
 };

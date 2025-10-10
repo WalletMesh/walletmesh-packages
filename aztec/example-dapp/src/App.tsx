@@ -35,6 +35,10 @@ function App() {
         config={{
           appName: 'Aztec DApp Demo',
           appDescription: 'Example Aztec dApp using WalletMesh with zero-knowledge proofs',
+          aztecProvingOverlay: {
+            headline: 'Generating zero-knowledge proof…',
+            description: 'This can take up to a couple of minutes. Please keep this tab open until it finishes.',
+          },
           // Provide explicit metadata for proper identification
           appMetadata: {
             // Explicitly set the origin for the dApp (helps with cross-origin communication)

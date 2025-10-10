@@ -9,6 +9,9 @@ vi.mock('@walletmesh/modal-core', async () => {
   const actual = await vi.importActual('@walletmesh/modal-core');
   return {
     ...actual,
+    getAztecProvingState: actual['getAztecProvingState'] ?? (() => ({ entries: {} })),
+    getActiveAztecProvingEntries: actual['getActiveAztecProvingEntries'] ?? (() => []),
+    provingActions: actual['provingActions'] ?? { handleNotification: vi.fn(), clearAll: vi.fn() },
     useConnectButtonState: vi.fn((_state, options) => {
       // Return disconnected state with custom label if provided
       return {

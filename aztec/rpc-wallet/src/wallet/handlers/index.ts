@@ -1,7 +1,7 @@
 import type { AccountWallet, PXE } from '@aztec/aztec.js';
 import type { JSONRPCContext, JSONRPCParams } from '@walletmesh/jsonrpc';
 import type { ContractArtifactCache } from '../../contractArtifactCache.js';
-import type { AztecWalletMethodMap } from '../../types.js';
+import type { AztecWalletMethodMap, AztecWalletNotificationMap } from '../../types.js';
 
 import { createAccountHandlers } from './account.js';
 import { createContractHandlers } from './contract.js';
@@ -27,6 +27,10 @@ export interface AztecHandlerContext extends JSONRPCContext {
   wallet: AccountWallet;
   pxe: PXE;
   cache: ContractArtifactCache;
+  notify<M extends keyof (AztecWalletMethodMap & AztecWalletNotificationMap)>(
+    method: M,
+    params: (AztecWalletMethodMap & AztecWalletNotificationMap)[M]['params'],
+  ): Promise<void>;
 }
 
 /**

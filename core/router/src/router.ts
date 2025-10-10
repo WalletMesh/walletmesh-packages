@@ -2,6 +2,7 @@ import {
   JSONRPCError,
   JSONRPCNode,
   JSONRPCProxy,
+  type JSONRPCParams,
   type JSONRPCProxyConfig,
   type JSONRPCTransport,
 } from '@walletmesh/jsonrpc';
@@ -211,6 +212,9 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       if (config.debug || config.proxyConfig?.debug) {
         proxyConfig.debug = true;
       }
+      proxyConfig.onNotification = (method, params) => {
+        this.handleWalletNotification(chainId, method, params);
+      };
       this.walletProxies.set(chainId, new JSONRPCProxy(walletTransport, proxyConfig));
     }
 
@@ -276,6 +280,9 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     if (this.config.debug || this.config.proxyConfig?.debug) {
       proxyConfig.debug = true;
     }
+    proxyConfig.onNotification = (method, params) => {
+      this.handleWalletNotification(chainId, method, params);
+    };
 
     this.walletProxies.set(chainId, new JSONRPCProxy(transport, proxyConfig));
 
@@ -310,6 +317,24 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     this.emit('wm_walletAvailabilityChanged', {
       chainId,
       available: false,
+    });
+  }
+
+  /**
+   * Forward wallet-originated notifications to connected clients.
+   *
+   * @param chainId - Chain that emitted the notification
+   * @param method - Method name from the wallet notification
+   * @param params - Parameters payload
+   * @private
+   */
+  private handleWalletNotification(chainId: ChainId, method: string, params: unknown): void {
+    void this.sendNotification(method, params as JSONRPCParams).catch((error) => {
+      console.warn('[WalletRouter] Failed to forward wallet notification', {
+        chainId,
+        method,
+        error: error instanceof Error ? error.message : error,
+      });
     });
   }
 

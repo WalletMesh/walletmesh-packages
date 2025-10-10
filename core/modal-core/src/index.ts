@@ -474,6 +474,9 @@ export {
   getAllSessions,
   getAllTransactions,
   getTransactionHistory,
+  getAztecProvingState,
+  getActiveAztecProvingEntries,
+  hasActiveAztecProving,
   isWalletAvailable,
   getConnectionStatus,
   getConnectionTimestamp,
@@ -506,9 +509,25 @@ export {
   uiActions,
   connectionActions,
   transactionActions,
+  provingActions,
   actions,
   useStoreActions,
 } from './state/actions/index.js';
+
+/**
+ * Aztec proving notification helpers
+ *
+ * @public
+ */
+export {
+  AZTEC_PROVING_STATUS_VALUES,
+  aztecProvingStatusNotificationSchema,
+  parseAztecProvingStatusNotification,
+  type AztecProvingLifecycleStatus,
+  type AztecProvingStatusNotification,
+  type AztecProvingEntry,
+  type AztecProvingState,
+} from './providers/aztec/types.js';
 
 /**
  * Re-export discovery services
