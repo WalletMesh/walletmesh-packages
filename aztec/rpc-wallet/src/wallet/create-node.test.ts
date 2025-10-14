@@ -14,6 +14,7 @@ vi.mock('@walletmesh/jsonrpc', async () => {
     JSONRPCNode: vi.fn().mockImplementation(() => ({
       registerMethod: vi.fn(),
       registerSerializer: vi.fn(),
+      addMiddleware: vi.fn(),
       transport: {},
       context: {},
       methodManager: {},
@@ -106,6 +107,7 @@ describe('createAztecWalletNode', () => {
   let mockNode: {
     registerMethod: ReturnType<typeof vi.fn>;
     registerSerializer: ReturnType<typeof vi.fn>;
+    addMiddleware: ReturnType<typeof vi.fn>;
     transport: object;
     context: object;
     methodManager: object;
@@ -136,6 +138,7 @@ describe('createAztecWalletNode', () => {
     mockNode = {
       registerMethod: vi.fn(),
       registerSerializer: vi.fn(),
+      addMiddleware: vi.fn(),
       transport: {},
       context: {},
       methodManager: {},

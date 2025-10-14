@@ -43,10 +43,10 @@ export const transactionActions = {
   addTransaction: (store: StoreApi<WalletMeshState>, transaction: TransactionResult) => {
     mutateState(store, (state) => {
       // Add or update transaction in normalized entities
-      state.entities.transactions[transaction.id] = transaction;
+      state.entities.transactions[transaction.txStatusId] = transaction;
 
       // Set as active transaction
-      state.active.transactionId = transaction.id;
+      state.active.transactionId = transaction.txStatusId;
 
       // Keep only the last 100 transactions (cleanup old ones)
       const allTxIds = Object.keys(state.entities.transactions);
@@ -113,9 +113,9 @@ export const transactionActions = {
     if (transaction) {
       mutateState(store, (state) => {
         // Ensure transaction exists in entities
-        state.entities.transactions[transaction.id] = transaction;
+        state.entities.transactions[transaction.txStatusId] = transaction;
         // Set as active
-        state.active.transactionId = transaction.id;
+        state.active.transactionId = transaction.txStatusId;
       });
     } else {
       mutateState(store, (state) => {
@@ -241,9 +241,10 @@ export const transactionActions = {
     const state = store.getState();
     return Object.values(state.entities.transactions).filter(
       (tx) =>
-        tx.status === 'preparing' ||
-        tx.status === 'signing' ||
-        tx.status === 'broadcasting' ||
+        tx.status === 'simulating' ||
+        tx.status === 'proving' ||
+        tx.status === 'sending' ||
+        tx.status === 'pending' ||
         tx.status === 'confirming',
     );
   },

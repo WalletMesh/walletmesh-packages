@@ -239,8 +239,8 @@ export class MockWalletMeshClient implements Partial<WalletMeshClient> {
     await new Promise((resolve) => setTimeout(resolve, 200));
 
     return {
-      id: `tx-${Date.now()}`,
-      hash: `0x${Math.random().toString(16).substring(2, 66)}`,
+      txStatusId: `tx-${Date.now()}`,
+      txHash: `0x${Math.random().toString(16).substring(2, 66)}`,
       chainId: this.currentScenario.chainId ?? '0x1',
       from: this.currentScenario.addresses[0] || '0x0000000000000000000000000000000000000000',
       status: 'confirmed',
@@ -436,9 +436,7 @@ export class MockWalletMeshClient implements Partial<WalletMeshClient> {
           availableWalletIds: ['metamask', 'phantom', 'rainbow'],
           discoveryErrors: [],
           transactionStatus: 'idle' as const,
-          aztecProving: {
-            entries: {},
-          },
+          backgroundTransactionIds: [],
         },
       };
     }
@@ -543,9 +541,7 @@ export class MockWalletMeshClient implements Partial<WalletMeshClient> {
         availableWalletIds: ['metamask', 'phantom', 'rainbow'],
         discoveryErrors: [],
         transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+        backgroundTransactionIds: [],
       },
     } as WalletMeshState;
   }

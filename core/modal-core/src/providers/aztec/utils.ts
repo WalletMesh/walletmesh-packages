@@ -250,14 +250,20 @@ export async function executeTx(
     const useCustomSend = hasSendOptions(options);
 
     if (!useCustomSend && typeof wallet.wmExecuteTx === 'function') {
-      const aztecSentTx = (await wallet.wmExecuteTx(interaction)) as NativeSentTx;
-      const txHash = await resolveNativeHash(aztecSentTx);
+      // wmExecuteTx now returns { txHash: TxHash; txStatusId: string }
+      const result = await wallet.wmExecuteTx(interaction);
+      const txHash = normalizeHash(result.txHash);
+
+      if (!txHash) {
+        throw ErrorFactory.transactionFailed('Transaction hash unavailable from wmExecuteTx');
+      }
 
       return {
         txHash,
         wait: async (): Promise<TxReceipt> => {
-          const receipt = await waitForNativeReceipt(aztecSentTx);
-          return normalizeReceipt(receipt, txHash);
+          // Use wallet's getTxReceipt to wait for confirmation
+          const receipt = await waitForTxReceipt(wallet, txHash);
+          return normalizeReceipt(receipt as TxReceiptLike, txHash);
         },
       } satisfies SentTx;
     }

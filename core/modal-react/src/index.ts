@@ -491,8 +491,8 @@ export {
 export {
   useAztecTransaction,
   type UseAztecTransactionReturn,
-  type TransactionOptions,
-  type TransactionResult as AztecTransactionResult,
+  type TransactionCallbacks,
+  type AztecTransactionResult,
 } from './hooks/useAztecTransaction.js';
 
 // Aztec deployment hook
@@ -521,11 +521,6 @@ export {
   type UseAztecAuthReturn,
   type AuthWitnessEntry,
 } from './hooks/useAztecAuth.js';
-
-export {
-  useAztecProvingStatus,
-  type UseAztecProvingStatusResult,
-} from './hooks/useAztecProvingStatus.js';
 
 // === THEME SUPPORT ===
 // Theme management and customization
@@ -590,11 +585,12 @@ export {
 
 // Main provider component
 export { WalletMeshProvider } from './WalletMeshProvider.js';
-export type { WalletMeshProviderProps, AztecProvingOverlayConfig } from './types.js';
+export type { WalletMeshProviderProps } from './types.js';
 
 // Main modal component
 export { WalletMeshModal } from './components/WalletMeshModal.js';
-export { AztecProvingOverlay, type AztecProvingOverlayProps } from './components/AztecProvingOverlay.js';
+export { AztecTransactionStatusOverlay, type AztecTransactionStatusOverlayProps } from './components/AztecTransactionStatusOverlay.js';
+export { BackgroundTransactionIndicator, type BackgroundTransactionIndicatorProps } from './components/BackgroundTransactionIndicator.js';
 
 // Built-in UI components
 export {

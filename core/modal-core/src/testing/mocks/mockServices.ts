@@ -44,8 +44,8 @@ export function createAutoMockedTransactionService(): MockedObject<TransactionSe
 
   // Set up realistic default behaviors
   mockedService.sendTransaction.mockResolvedValue({
-    id: 'mock-tx-1',
-    hash: '0x1234567890abcdef',
+    txStatusId: 'mock-tx-1',
+    txHash: '0x1234567890abcdef',
     status: 'confirming',
     chainId: '0x1',
     chainType: ChainType.Evm,

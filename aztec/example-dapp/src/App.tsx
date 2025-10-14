@@ -1,12 +1,15 @@
 import './App.css';
 import {
   AztecExampleWalletAdapter,
+  AztecTransactionStatusOverlay,
+  BackgroundTransactionIndicator,
   AztecWalletMeshProvider,
   ChainType,
   WalletMeshErrorBoundary,
   WalletMeshErrorRecovery,
 } from '@walletmesh/modal-react/aztec';
 import DApp from './components/DApp.js';
+import TransactionStatusOverlay from './components/TransactionStatusOverlay.js';
 import { ToastProvider } from './contexts/ToastContext.js';
 
 function App() {
@@ -35,10 +38,6 @@ function App() {
         config={{
           appName: 'Aztec DApp Demo',
           appDescription: 'Example Aztec dApp using WalletMesh with zero-knowledge proofs',
-          aztecProvingOverlay: {
-            headline: 'Generating zero-knowledge proof…',
-            description: 'This can take up to a couple of minutes. Please keep this tab open until it finishes.',
-          },
           // Provide explicit metadata for proper identification
           appMetadata: {
             // Explicitly set the origin for the dApp (helps with cross-origin communication)
@@ -49,7 +48,13 @@ function App() {
             icon: '/favicon.ico',
           },
           // Explicitly specify which chain to use
-          chains: [{ chainId: 'aztec:31337', required: false, label: 'Aztec Sandbox' }],
+          chains: [
+            {
+              chainId: 'aztec:31337',
+              required: false,
+              label: 'Aztec Sandbox',
+            },
+          ],
           // Include the Aztec Example Wallet for testing in development
           // Pass the wallet info, not the class
           wallets: [AztecExampleWalletAdapter.getWalletInfo()],
@@ -104,6 +109,18 @@ function App() {
             <h1>Aztec DApp Example</h1>
             <DApp />
           </div>
+          {/*
+            TransactionStatusOverlay shows the full transaction lifecycle for SYNC transactions (executeSync).
+            It replaces the legacy ProvingOverlay, providing comprehensive tracking with 8 stages:
+            idle → preparing → proving → signing → broadcasting → confirming → confirmed/failed
+
+            For ASYNC transactions (execute), this overlay does NOT appear.
+            Instead, BackgroundTransactionIndicator provides a non-intrusive floating badge,
+            allowing users to continue working while transactions process in the background.
+          */}
+          <TransactionStatusOverlay />
+          <AztecTransactionStatusOverlay />
+          <BackgroundTransactionIndicator position="bottom-right" />
         </ToastProvider>
       </AztecWalletMeshProvider>
     </WalletMeshErrorBoundary>

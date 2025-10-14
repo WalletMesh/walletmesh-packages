@@ -119,7 +119,13 @@ const DeployContractParamsSchema = z.object({
 
 const DeployContractResultSchema = z.object({
   txHash: TxHash.schema,
-  contractAddress: AztecAddress.schema,
+  contractAddress: z.string().transform((s) => AztecAddress.fromString(s)),
+  txStatusId: z.string(),
+});
+
+const ExecuteTxResultSchema = z.object({
+  txHash: TxHash.schema,
+  txStatusId: z.string(),
 });
 
 const logger = createLogger('aztec-rpc-wallet:serializers');
@@ -217,11 +223,31 @@ const RESULT_SERIALIZERS: Partial<
       deserialize: async (_, d) => JSON.parse(d.serialized),
     },
   },
-  aztec_wmExecuteTx: createResultSerializer<TxHash>(TxHash.schema),
+  aztec_wmExecuteTx: createResultSerializer<{ txHash: TxHash; txStatusId: string }>(ExecuteTxResultSchema),
   aztec_wmSimulateTx: createResultSerializer<TxSimulationResult>(TxSimulationResult.schema),
-  aztec_wmDeployContract: createResultSerializer<{ txHash: TxHash; contractAddress: AztecAddress }>(
-    DeployContractResultSchema,
-  ),
+  aztec_wmDeployContract: {
+    result: {
+      serialize: async (method: string, value: { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string }) => {
+        // Convert AztecAddress to string before jsonStringify (like aztec_getSenders does)
+        // Check if contractAddress itself is a Promise and await it
+        const address = value.contractAddress instanceof Promise ? await value.contractAddress : value.contractAddress;
+        const addressString = address.toString();
+        const serialized = jsonStringify({
+          txHash: value.txHash,
+          contractAddress: addressString,
+          txStatusId: value.txStatusId,
+        });
+        return {
+          method,
+          serialized,
+        };
+      },
+      deserialize: async (_method: string, data: JSONRPCSerializedData) => {
+        // Use the schema to parse and transform the result
+        return await DeployContractResultSchema.parseAsync(JSON.parse(data.serialized));
+      },
+    },
+  },
   wm_getSupportedMethods: {
     result: {
       serialize: async (m, v) => ({ method: m, serialized: jsonStringify(v) }),

@@ -1,0 +1,348 @@
+/* Container positioning */
+.indicator {
+  position: fixed;
+  z-index: 2147483645; /* Below full-screen overlay but above most content */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.indicator--top-left {
+  top: 24px;
+  left: 24px;
+  align-items: flex-start;
+}
+
+.indicator--top-right {
+  top: 24px;
+  right: 24px;
+  align-items: flex-end;
+}
+
+.indicator--bottom-left {
+  bottom: 24px;
+  left: 24px;
+  align-items: flex-start;
+}
+
+.indicator--bottom-right {
+  bottom: 24px;
+  right: 24px;
+  align-items: flex-end;
+}
+
+/* Badge button */
+.badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 9999px;
+  background: rgba(9, 14, 26, 0.95);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge:hover {
+  background: rgba(9, 14, 26, 1);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.5);
+  transform: translateY(-2px);
+}
+
+.badge:active {
+  transform: translateY(0);
+}
+
+.badgeIcon {
+  font-size: 1.25rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badgeCount {
+  min-width: 20px;
+  text-align: center;
+  color: #38bdf8;
+  font-variant-numeric: tabular-nums;
+}
+
+.badgeSpinner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(56, 189, 248, 0.3);
+  border-top-color: #38bdf8;
+  animation: wm-bg-spin 1s linear infinite;
+}
+
+/* Drawer */
+.drawer {
+  width: 380px;
+  max-width: calc(100vw - 48px);
+  max-height: calc(100vh - 120px);
+  background: rgba(9, 14, 26, 0.96);
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: wm-drawer-slide-in 0.2s ease-out;
+}
+
+@keyframes wm-drawer-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Drawer header */
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(15, 23, 42, 0.3);
+}
+
+.drawerTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.drawerClose {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: rgba(226, 232, 240, 0.7);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  transition: all 0.2s ease;
+}
+
+.drawerClose:hover {
+  background: rgba(148, 163, 184, 0.15);
+  color: #f8fafc;
+}
+
+/* Drawer content */
+.drawerContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  min-height: 0;
+}
+
+.emptyState {
+  padding: 48px 24px;
+  text-align: center;
+  color: rgba(226, 232, 240, 0.6);
+  font-size: 0.875rem;
+}
+
+/* Transaction list */
+.transactionList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.transactionItem {
+  margin: 0;
+  padding: 0;
+}
+
+/* Individual transaction */
+.transaction {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.transaction:enabled:hover {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+.transaction:disabled {
+  cursor: default;
+}
+
+.transaction--completed {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.transaction--failed {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.transactionIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.transaction--completed .transactionIcon {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.transaction--failed .transactionIcon {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.transactionDetails {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.transactionHash {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.95);
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transactionStatus {
+  font-size: 0.75rem;
+  color: rgba(148, 163, 184, 0.8);
+}
+
+.transaction--completed .transactionStatus {
+  color: rgba(34, 197, 94, 0.9);
+}
+
+.transaction--failed .transactionStatus {
+  color: rgba(239, 68, 68, 0.9);
+}
+
+.transactionMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.transactionDuration {
+  font-size: 0.75rem;
+  color: rgba(148, 163, 184, 0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+.transactionSpinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(56, 189, 248, 0.3);
+  border-top-color: #38bdf8;
+  animation: wm-bg-spin 1s linear infinite;
+}
+
+/* Drawer footer */
+.drawerFooter {
+  padding: 12px 20px;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(15, 23, 42, 0.3);
+}
+
+.drawerFooterText {
+  font-size: 0.8125rem;
+  color: rgba(148, 163, 184, 0.8);
+  text-align: center;
+}
+
+/* Animations */
+@keyframes wm-bg-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .indicator--top-left,
+  .indicator--top-right,
+  .indicator--bottom-left,
+  .indicator--bottom-right {
+    top: auto;
+    bottom: 16px;
+    right: 16px;
+    left: auto;
+  }
+
+  .drawer {
+    width: calc(100vw - 32px);
+    max-height: calc(100vh - 80px);
+  }
+
+  .badge {
+    padding: 10px 14px;
+  }
+
+  .badgeIcon {
+    font-size: 1.125rem;
+  }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .badge,
+  .transaction,
+  .drawer {
+    animation: none;
+    transition: none;
+  }
+
+  .badgeSpinner,
+  .transactionSpinner {
+    animation: none;
+    opacity: 0.5;
+  }
+}

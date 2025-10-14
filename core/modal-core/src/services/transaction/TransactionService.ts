@@ -381,13 +381,13 @@ export class TransactionService {
 
       // Create initial transaction result
       const result: TransactionResult = {
-        id: txId,
-        hash: '',
+        txStatusId: txId,
+        txHash: '',
         chainId: chain.chainId,
         chainType,
         walletId,
         from: address,
-        status: 'preparing',
+        status: 'simulating',
         request: txParams,
         startTime: Date.now(),
         ...(txParams.metadata?.data && { metadata: txParams.metadata.data }),
@@ -398,10 +398,10 @@ export class TransactionService {
       this.transactions.set(txId, result);
 
       // Log transaction preparation
-      this.logger.debug('Preparing transaction', { id: txId });
+      this.logger.debug('Simulating transaction', { id: txId });
 
-      // Update status to signing
-      this.updateTransactionStatus(txId, 'signing');
+      // Update status to proving (for Aztec) or sending (for EVM/Solana)
+      this.updateTransactionStatus(txId, chainType === 'aztec' ? 'proving' : 'sending');
 
       // Format transaction for provider
       const formatted = TransactionFormatter.formatForProvider(txParams, chainType);
@@ -445,14 +445,14 @@ export class TransactionService {
       hash = TransactionFormatter.formatHash(hash, chainType);
 
       // Update transaction with hash
-      result.hash = hash;
-      this.updateTransactionStatus(txId, 'broadcasting');
+      result.txHash = hash;
+      this.updateTransactionStatus(txId, 'sending');
 
       // Log transaction sent
       this.logger.info('Transaction sent', { id: txId, hash });
 
       // Start confirmation monitoring
-      this.updateTransactionStatus(txId, 'confirming');
+      this.updateTransactionStatus(txId, 'pending');
       this.startConfirmationMonitoring(txId, hash, provider, chainType);
 
       // Manage history size
@@ -485,7 +485,7 @@ export class TransactionService {
    * const transaction = txService.getTransaction('tx_1234567_abc');
    * if (transaction) {
    *   console.log(`Status: ${transaction.status}`);
-   *   console.log(`Hash: ${transaction.hash}`);
+   *   console.log(`Hash: ${transaction.txHash}`);
    * }
    * ```
    */
@@ -513,7 +513,7 @@ export class TransactionService {
    */
   getTransactionByHash(hash: string): TransactionResult | null {
     for (const tx of this.transactions.values()) {
-      if (tx.hash === hash) {
+      if (tx.txHash === hash) {
         return tx;
       }
     }
@@ -702,11 +702,11 @@ export class TransactionService {
     }
 
     // Check if we already have a confirmation promise
-    const existingPromise = this.confirmationPromises.get(transaction.hash);
+    const existingPromise = this.confirmationPromises.get(transaction.txHash);
     if (existingPromise) {
       return new Promise((resolve, reject) => {
         // Replace the callbacks with new ones
-        this.confirmationPromises.set(transaction.hash, {
+        this.confirmationPromises.set(transaction.txHash, {
           ...existingPromise,
           resolve,
           reject,
@@ -716,7 +716,7 @@ export class TransactionService {
 
     // Create new confirmation promise
     return new Promise((resolve, reject) => {
-      this.confirmationPromises.set(transaction.hash, {
+      this.confirmationPromises.set(transaction.txHash, {
         resolve,
         reject,
       });
@@ -930,7 +930,7 @@ export class TransactionService {
     this.logger.debug('Transaction status changed', {
       id,
       status,
-      hash: transaction.hash,
+      hash: transaction.txHash,
     });
   }
 
@@ -1506,7 +1506,7 @@ export class TransactionService {
    */
   computeLoadingState(status: TransactionStatus): boolean {
     return (
-      status === 'preparing' || status === 'proving' || status === 'signing' || status === 'broadcasting'
+      status === 'simulating' || status === 'proving' || status === 'sending' || status === 'pending'
     );
   }
 }

@@ -5,18 +5,17 @@ import {
   AztecConnectButton,
   AztecWalletReady,
   useAccount,
-  useAztecProvingStatus,
   useAztecBatch,
   useAztecContract,
   useAztecDeploy,
   useAztecAddress,
   useAztecSimulation,
   useAztecWallet,
+  useAztecTransaction,
   getDeploymentStageLabel,
-  executeTx as executeAztecTx,
 } from '@walletmesh/modal-react/aztec';
 import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '../contexts/ToastContext.js';
 
 /**
@@ -26,8 +25,7 @@ import { useToast } from '../contexts/ToastContext.js';
 const DApp: React.FC = () => {
   const { showError, showSuccess, showInfo } = useToast();
   const externalAztecRpcUrl =
-    import.meta.env?.VITE_AZTEC_RPC_URL ||
-    'https://sandbox.aztec.walletmesh.com/api/v1/public';
+    import.meta.env?.VITE_AZTEC_RPC_URL || 'https://sandbox.aztec.walletmesh.com/api/v1/public';
 
   // Use modal-react hooks for wallet management
   const { aztecWallet } = useAztecWallet();
@@ -53,52 +51,46 @@ const DApp: React.FC = () => {
 
   const { executeBatch, isExecuting: isBatchExecuting, progress: batchProgress } = useAztecBatch();
   const { toAztecAddress, toAddressString } = useAztecAddress();
-  const { isProving, activeEntries } = useAztecProvingStatus();
+  const {
+    executeSync,
+    execute: executeAsync,
+    activeTransaction,
+    backgroundTransactions,
+  } = useAztecTransaction();
 
   // Use contract hooks for Token and Counter contracts
   const {
     contract: tokenContract,
     isLoading: isTokenContractLoading,
     error: tokenContractError,
-  } = useAztecContract<any>(
-    tokenAddress,
-    tokenAddress ? (TokenContractArtifact as any) : null,
-  );
+  } = useAztecContract<any>(tokenAddress, tokenAddress ? (TokenContractArtifact as any) : null);
 
   const {
     contract: counterContract,
     isLoading: isCounterContractLoading,
     error: counterContractError,
-  } = useAztecContract<any>(
-    counterAddress,
-    counterAddress ? (CounterContractArtifact as any) : null,
-  );
+  } = useAztecContract<any>(counterAddress, counterAddress ? (CounterContractArtifact as any) : null);
 
   // State for UI display and transaction status
   const [tokenBalance, setTokenBalance] = useState<string>('');
   const [isRefreshingBalance, setIsRefreshingBalance] = useState<boolean>(false);
   const [counterValue, setCounterValue] = useState<string>('');
-  const [isExecutingTx, setIsExecutingTx] = useState<'token' | 'counter' | null>(null);
   const [isFetchingCounterValue, setIsFetchingCounterValue] = useState<boolean>(false);
-  const previousIsProvingRef = useRef<boolean>(isProving);
-  const previousActiveCountRef = useRef<number>(activeEntries.length);
 
-  useEffect(() => {
-    const previousIsProving = previousIsProvingRef.current;
-    if (!previousIsProving && isProving) {
-      showInfo('Generating a zero-knowledge proof. This can take a minute or two.');
-    } else if (previousIsProving && !isProving) {
-      showSuccess('Proof generation finished. Your transaction can now be sent.');
-    }
-    previousIsProvingRef.current = isProving;
-  }, [isProving, showInfo, showSuccess]);
-
-  useEffect(() => {
-    previousActiveCountRef.current = activeEntries.length;
-  }, [activeEntries.length]);
+  // Derive transaction execution state from the hook
+  const isMintExecuting =
+    activeTransaction?.status === 'simulating' ||
+    activeTransaction?.status === 'proving' ||
+    activeTransaction?.status === 'sending';
+  const hasBackgroundTransactions = backgroundTransactions.length > 0;
 
   const simulateUsingExternalRpc = useCallback(
-    async <T,>(contractAddress: string, artifact: unknown, methodName: string, args: unknown[]): Promise<T> => {
+    async <T,>(
+      contractAddress: string,
+      artifact: unknown,
+      methodName: string,
+      args: unknown[],
+    ): Promise<T> => {
       if (!externalAztecRpcUrl) {
         throw new Error('External RPC URL not configured');
       }
@@ -135,9 +127,7 @@ const DApp: React.FC = () => {
     const ownerAddressHex = toAddressString(address);
 
     const fallbackSimulation = async () => {
-      const balance = await simulateInteraction(
-        tokenContract.methods.balance_of_public(ownerAddressHex),
-      );
+      const balance = await simulateInteraction(tokenContract.methods.balance_of_public(ownerAddressHex));
       const balanceStr = String(balance);
       setTokenBalance(balanceStr);
       return balanceStr;
@@ -153,9 +143,10 @@ const DApp: React.FC = () => {
             'balance_of_public',
             [ownerAddressHex],
           );
-          const balanceStr = balance !== null && typeof (balance as any)?.toString === 'function'
-            ? (balance as any).toString()
-            : String(balance);
+          const balanceStr =
+            balance !== null && typeof (balance as any)?.toString === 'function'
+              ? (balance as any).toString()
+              : String(balance);
           setTokenBalance(balanceStr);
           return balanceStr;
         } catch (error) {
@@ -172,7 +163,15 @@ const DApp: React.FC = () => {
     } finally {
       setIsRefreshingBalance(false);
     }
-  }, [tokenContract, tokenAddress, address, simulateInteraction, toAddressString, externalAztecRpcUrl, simulateUsingExternalRpc]);
+  }, [
+    tokenContract,
+    tokenAddress,
+    address,
+    simulateInteraction,
+    toAddressString,
+    externalAztecRpcUrl,
+    simulateUsingExternalRpc,
+  ]);
 
   useEffect(() => {
     if (!tokenAddress) {
@@ -197,19 +196,15 @@ const DApp: React.FC = () => {
 
     try {
       // Hook now handles artifact compatibility internally
-      await deployToken(
-        TokenContractArtifact as any,
-        [address, 'TokenName', 'TKN', 18],
-        {
-          onSuccess: (deployedAddress) => {
-            showSuccess(`Token deployed at ${deployedAddress.toString()}`);
-            setTokenBalance('');
-          },
-          onError: (error) => {
-            showError(`Token deployment failed: ${error.message}`);
-          },
+      await deployToken(TokenContractArtifact as any, [address, 'TokenName', 'TKN', 18], {
+        onSuccess: (deployedAddress) => {
+          showSuccess(`Token deployed at ${deployedAddress.toString()}`);
+          setTokenBalance('');
         },
-      );
+        onError: (error) => {
+          showError(`Token deployment failed: ${error.message}`);
+        },
+      });
     } catch (error) {
       console.error('Token deployment failed:', error);
       if (error instanceof Error) {
@@ -229,18 +224,14 @@ const DApp: React.FC = () => {
 
     try {
       // Hook now handles artifact compatibility internally
-      await deployCounter(
-        CounterContractArtifact as any,
-        [0, address],
-        {
-          onSuccess: (deployedAddress) => {
-            showSuccess(`Counter deployed at ${deployedAddress.toString()}`);
-          },
-          onError: (error) => {
-            showError(`Counter deployment failed: ${error.message}`);
-          },
+      await deployCounter(CounterContractArtifact as any, [0, address], {
+        onSuccess: (deployedAddress) => {
+          showSuccess(`Counter deployed at ${deployedAddress.toString()}`);
         },
-      );
+        onError: (error) => {
+          showError(`Counter deployment failed: ${error.message}`);
+        },
+      });
     } catch (error) {
       console.error('Counter deployment failed:', error);
       if (error instanceof Error) {
@@ -251,6 +242,7 @@ const DApp: React.FC = () => {
 
   /**
    * Mints tokens to the connected account using the deployed Token contract.
+   * Uses sync mode (blocking with overlay).
    */
 <<<<<<< HEAD
   const mintTokens = async () => {
@@ -280,28 +272,30 @@ const DApp: React.FC = () => {
       return;
     }
 
-    setIsExecutingTx('token');
     try {
       showInfo('Minting tokens, please wait for confirmation...');
       const ownerAddress = toAztecAddress(address);
       const ownerAddressHex = ownerAddress.toString();
       const interaction = tokenContract.methods.mint_to_public(ownerAddressHex, 10000000000000000000000n);
-      const sentTx = await executeAztecTx(aztecWallet, interaction);
-      const receipt = await sentTx.wait();
-      console.log('Mint receipt:', receipt);
-      showSuccess('Tokens minted successfully! You can now check your balance.');
+
+      // Use executeSync for blocking behavior with overlay
+      await executeSync(interaction);
+
+      // Automatically refresh balance after successful mint
+      await refreshTokenBalance();
+
+      showSuccess('Tokens minted successfully! You can now transfer them.');
     } catch (error) {
       console.error('Mint transaction failed:', error);
       if (error instanceof Error) {
         showError(`Transaction failed: ${error.message}`);
       }
-    } finally {
-      setIsExecutingTx((current) => (current === 'token' ? null : current));
     }
   };
 
   /**
    * Transfers tokens from the connected account to a test account.
+   * Uses async mode (background execution with callbacks).
    */
 <<<<<<< HEAD
   const transferTokens = async () => {
@@ -335,7 +329,6 @@ const DApp: React.FC = () => {
       return;
     }
 
-    setIsExecutingTx('token');
     try {
       const to = await getInitialTestAccounts().then((accounts) => toAztecAddress(accounts[1].address));
       const ownerAddress = toAztecAddress(address);
@@ -345,15 +338,22 @@ const DApp: React.FC = () => {
         100000n,
         0n,
       );
-      const sentTx = await executeAztecTx(aztecWallet, interaction);
-      await sentTx.wait();
-      showSuccess('Transferred tokens to test account');
+
+      // Use executeAsync for background execution
+      await executeAsync(interaction, {
+        onSuccess: () => {
+          showSuccess('Transferred tokens to test account');
+        },
+        onError: (error) => {
+          showError(`Transaction failed: ${error.message}`);
+        },
+      });
+
+      showInfo('Transfer started in background. Check the indicator for progress.');
     } catch (error) {
       if (error instanceof Error) {
         showError(`Transaction failed: ${error.message}`);
       }
-    } finally {
-      setIsExecutingTx((current) => (current === 'token' ? null : current));
     }
   };
 
@@ -397,6 +397,7 @@ const DApp: React.FC = () => {
 
   /**
    * Increments the value in the deployed Counter contract.
+   * Uses async mode (background execution with callbacks).
    */
   const handleIncrementCounter = async () => {
     if (!aztecWallet || !counterContract || !address) {
@@ -404,22 +405,25 @@ const DApp: React.FC = () => {
       return;
     }
 
-    setIsExecutingTx('counter');
     try {
       const ownerAddress = toAztecAddress(address);
-      const interaction = counterContract.methods.increment(
-        ownerAddress.toString(),
-        ownerAddress.toString(),
-      );
-      const sentTx = await executeAztecTx(aztecWallet, interaction);
-      await sentTx.wait();
-      showSuccess('Counter incremented');
+      const interaction = counterContract.methods.increment(ownerAddress.toString(), ownerAddress.toString());
+
+      // Use executeAsync for background execution
+      await executeAsync(interaction, {
+        onSuccess: () => {
+          showSuccess('Counter incremented');
+        },
+        onError: (error) => {
+          showError(`Transaction failed: ${error.message}`);
+        },
+      });
+
+      showInfo('Counter increment started in background. Check the indicator for progress.');
     } catch (error) {
       if (error instanceof Error) {
         showError(`Transaction failed: ${error.message}`);
       }
-    } finally {
-      setIsExecutingTx((current) => (current === 'counter' ? null : current));
     }
   };
 
@@ -549,37 +553,34 @@ const DApp: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleMintTokens}
-                    disabled={isExecutingTx === 'token' || isTokenContractLoading}
+                    disabled={isMintExecuting || isTokenContractLoading}
                   >
-                    {isExecutingTx === 'token' ? '⏳ Processing...' : 'Mint Tokens'}
+                    {isMintExecuting ? '⏳ Processing...' : 'Mint Tokens (Sync)'}
                   </button>
                   <button
                     type="button"
                     onClick={handleTransferTokens}
                     style={{ marginLeft: '5px' }}
                     disabled={
-                      isExecutingTx === 'token' ||
-                      isTokenContractLoading ||
-                      isRefreshingBalance ||
-                      !tokenBalance ||
-                      tokenBalance === '0'
+                      isTokenContractLoading || isRefreshingBalance || !tokenBalance || tokenBalance === '0'
                     }
                   >
-                    {isExecutingTx === 'token' ? '⏳ Processing...' : 'Transfer Tokens'}
+                    Transfer Tokens (Async)
                   </button>
                   <button
                     type="button"
                     onClick={handleGetTokenBalance}
                     style={{ marginLeft: '5px' }}
-                    disabled={
-                      isExecutingTx === 'token' ||
-                      isTokenContractLoading ||
-                      isRefreshingBalance
-                    }
+                    disabled={isMintExecuting || isTokenContractLoading || isRefreshingBalance}
                   >
                     {isRefreshingBalance ? '⏳ Fetching…' : 'Get Token Balance'}
                   </button>
                   {tokenBalance && <p>Balance: {tokenBalance}</p>}
+                  {hasBackgroundTransactions && (
+                    <p style={{ fontSize: '0.9em', color: '#1976d2' }}>
+                      ⚡ {backgroundTransactions.length} transaction(s) running in background
+                    </p>
+                  )}
                 </div>
               </>
             )}
@@ -605,11 +606,11 @@ const DApp: React.FC = () => {
                       padding: '8px 12px',
                       border: '1px solid #ccc',
                       borderRadius: '4px',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
                     }}
-                    disabled={isExecutingTx === 'counter' || isBatchExecuting || isCounterContractLoading}
+                    disabled={isBatchExecuting || isCounterContractLoading}
                   >
-                    {isExecutingTx === 'counter' ? '⏳ Processing...' : 'Increment Counter'}
+                    Increment Counter (Async)
                   </button>
                   <button
                     type="button"
@@ -619,11 +620,11 @@ const DApp: React.FC = () => {
                       padding: '8px 12px',
                       border: '1px solid #ccc',
                       borderRadius: '4px',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
                     }}
-                    disabled={isExecutingTx === 'counter' || isBatchExecuting || isCounterContractLoading}
+                    disabled={isBatchExecuting || isCounterContractLoading}
                   >
-                    {isBatchExecuting ? '⚡ Batch Processing...' : 'Increment Twice'}
+                    {isBatchExecuting ? '⚡ Batch Processing...' : 'Increment Twice (Batch)'}
                   </button>
                   <button
                     type="button"
@@ -632,9 +633,9 @@ const DApp: React.FC = () => {
                       padding: '8px 12px',
                       border: '1px solid #ccc',
                       borderRadius: '4px',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
                     }}
-                    disabled={isExecutingTx === 'counter' || isCounterContractLoading || isFetchingCounterValue}
+                    disabled={isCounterContractLoading || isFetchingCounterValue}
                   >
                     {isFetchingCounterValue ? '⏳ Simulating...' : 'Get Counter Value'}
                   </button>

@@ -151,9 +151,7 @@ export function createAutoMockedStore(initialState?: Partial<WalletMeshState>): 
       availableWalletIds: ['metamask'],
       discoveryErrors: [],
       transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+      backgroundTransactionIds: [],
     },
   };
 

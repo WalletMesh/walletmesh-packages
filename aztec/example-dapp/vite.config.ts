@@ -31,7 +31,7 @@ export default defineConfig(({ mode }: any) => {
           {
             src: './node_modules/@aztec/noir-acvm_js/web/acvm_js_bg.wasm',
             dest: 'assets',
-          }
+          },
         ],
       }),
     ],
@@ -50,8 +50,7 @@ export default defineConfig(({ mode }: any) => {
     define: {
       'process.env': JSON.stringify({
         LOG_LEVEL: env.LOG_LEVEL || 'info',
-        VITE_AZTEC_RPC_URL:
-          env.VITE_AZTEC_RPC_URL || 'https://sandbox.aztec.walletmesh.com/api/v1/public',
+        VITE_AZTEC_RPC_URL: env.VITE_AZTEC_RPC_URL || 'https://sandbox.aztec.walletmesh.com/api/v1/public',
       }),
     },
     build: {

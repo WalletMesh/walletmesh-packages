@@ -25,7 +25,7 @@ import type {
 import type { SecurityPolicy } from './types/security.js';
 import type { DiscoveryInitiatorConfig } from './types/testing.js';
 import { DISCOVERY_EVENTS, DISCOVERY_CONFIG, DISCOVERY_PROTOCOL_VERSION } from './core/constants.js';
-import { SECURITY_PRESETS } from './presets/security.js';
+import type { SECURITY_PRESETS } from './presets/security.js';
 import type { ProtocolState, StateTransitionEvent } from './core/ProtocolStateMachine.js';
 import { type Logger, defaultLogger } from './core/logger.js';
 import {

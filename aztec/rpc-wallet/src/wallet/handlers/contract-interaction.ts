@@ -16,7 +16,7 @@ import type { TxExecutionRequest, TxSimulationResult } from '@aztec/stdlib/tx';
 import { JSONRPCError } from '@walletmesh/jsonrpc';
 import type { AztecWalletMethodMap } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
-import { generateProvingId, notifyProvingStatus } from './provingNotifications.js';
+import { notifyTransactionStatus } from './transactionStatusNotifications.js';
 
 const logger = createLogger('aztec-rpc-wallet:contract-interaction:handler');
 
@@ -124,37 +124,55 @@ export function createContractInteractionHandlers() {
    * @internal
    * Helper function to execute a transaction from an {@link ExecutionPayload}.
    * This consolidates the common flow:
-   * 1. Create TxExecutionRequest (if needed, though typically done by `aztec_wmExecuteTx` caller or here).
-   * 2. Simulate transaction.
-   * 3. Prove transaction.
-   * 4. Send transaction.
+   * 1. Generate unique transaction status ID
+   * 2. Send 'initiated' notification
+   * 3. Create TxExecutionRequest and simulate transaction
+   * 4. Prove transaction
+   * 5. Send transaction
+   *
+   * Transaction status notifications (initiated/simulating/proving/sending/pending/failed) are
+   * automatically sent at each lifecycle stage. The backend generates a unique `txStatusId` that
+   * is returned along with the transaction hash to allow frontend correlation.
    *
    * @param ctx - The {@link AztecHandlerContext}.
    * @param executionPayload - The {@link ExecutionPayload} for the transaction.
-   * @returns A promise resolving to the {@link TxHash} of the sent transaction.
+   * @returns A promise resolving to an object containing both the blockchain tx hash and status tracking ID.
    */
   async function executeTransaction(
     ctx: AztecHandlerContext,
     executionPayload: ExecutionPayload,
-  ): Promise<TxHash> {
+  ): Promise<{ txHash: TxHash; txStatusId: string }> {
     const startTime = Date.now();
+
+    // Generate unique transaction status ID for tracking
+    const txStatusId = crypto.randomUUID();
+
     logger.debug(
-      `Starting transaction execution. Wallet: ${ctx.wallet.getAddress().toString()}, Payload: ${executionPayload.calls.length} calls`,
+      `Starting transaction execution. StatusId: ${txStatusId}, Wallet: ${ctx.wallet.getAddress().toString()}, Payload: ${executionPayload.calls.length} calls`,
     );
     logger.debug('Execution payload:', executionPayload);
 
-    const provingId = generateProvingId();
-    let provingCompleted = false;
-
     try {
+      // Stage 0: Initiated (transaction received, ID generated)
+      logger.debug('Transaction initiated, sending initial notification...');
+      await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
+
+      // Stage 1: Simulating (maps to Aztec's simulate())
+      logger.debug('Starting transaction simulation...');
+      await notifyTransactionStatus(ctx, { txStatusId, status: 'simulating' });
+
       const txRequest = await createTxExecutionRequest(ctx, executionPayload);
       const simulationResult = await simulateTransaction(ctx, executionPayload, txRequest);
+      logger.debug('Transaction simulation completed');
 
+      // Stage 2: Proving (zero-knowledge proof generation)
       logger.debug('Starting transaction proving...');
+      await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
+
       const proveStartTime = Date.now();
-      await notifyProvingStatus(ctx, { provingId, status: 'started' });
       const provingResult = await ctx.wallet.proveTx(txRequest, simulationResult.privateExecutionResult);
-      logger.debug(`Transaction proving completed in ${Date.now() - proveStartTime}ms`);
+      const provingTime = Date.now() - proveStartTime;
+      logger.debug(`Transaction proving completed in ${provingTime}ms`);
       logger.debug('Proving result:', provingResult);
 
       logger.debug('Creating transaction from proving result...');
@@ -170,30 +188,38 @@ export function createContractInteractionHandlers() {
         });
       }
 
-      await notifyProvingStatus(ctx, {
-        provingId,
-        status: 'completed',
-        ...(txHashString && { txHash: txHashString })
-      });
-      provingCompleted = true;
-
+      // Stage 3: Sending (maps to Aztec's send())
       logger.debug('Sending transaction to network...');
+      await notifyTransactionStatus(ctx, {
+        txStatusId,
+        status: 'sending',
+        ...(txHashString && { txHash: txHashString }), // ← Blockchain hash now available
+      });
+
       const sendStartTime = Date.now();
       const txHash = await ctx.wallet.sendTx(tx);
       logger.debug(`Transaction sent in ${Date.now() - sendStartTime}ms, hash: ${txHash.toString()}`);
 
-      return txHash;
+      // Stage 4: Pending (waiting for confirmation)
+      await notifyTransactionStatus(ctx, {
+        txStatusId, // ← Tracking ID for frontend coordination
+        status: 'pending',
+        txHash: txHash.toString(), // ← Blockchain hash
+      });
+
+      return { txHash, txStatusId };
     } catch (error) {
       const totalTime = Date.now() - startTime;
       logger.error(`Transaction execution failed after ${totalTime}ms}`);
       logger.error('Error details:', error);
-      if (!provingCompleted) {
-        await notifyProvingStatus(ctx, {
-          provingId,
-          status: 'failed',
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
+
+      // Send failed notification
+      await notifyTransactionStatus(ctx, {
+        txStatusId,
+        status: 'failed',
+        error: error instanceof Error ? error.message : String(error),
+      });
+
       throw error;
     }
   }
@@ -204,12 +230,17 @@ export function createContractInteractionHandlers() {
      * This WalletMesh-specific method takes an {@link ExecutionPayload} and handles
      * the full lifecycle of simulating, proving, and sending the transaction.
      *
+     * The backend automatically generates a unique `txStatusId` and sends status notifications
+     * (initiated/simulating/proving/sending/pending/failed) throughout the transaction lifecycle.
+     * The frontend can listen to `aztec_transactionStatus` events and correlate them using the
+     * returned `txStatusId`.
+     *
      * @param ctx - The {@link AztecHandlerContext}.
      * @param paramsTuple - A tuple containing the {@link ExecutionPayload}.
      *                      Defined by {@link AztecWalletMethodMap.aztec_wmExecuteTx.params}.
      * @param paramsTuple.0 - The {@link ExecutionPayload} to execute.
-     * @returns A promise that resolves to the {@link TxHash} of the sent transaction.
-     *          Type defined by {@link AztecWalletMethodMap.aztec_wmExecuteTx.result}.
+     * @returns A promise that resolves to an object containing the blockchain transaction hash
+     *          and the status tracking ID. Type defined by {@link AztecWalletMethodMap.aztec_wmExecuteTx.result}.
      */
     aztec_wmExecuteTx: async (
       ctx: AztecHandlerContext,
@@ -265,9 +296,18 @@ export function createContractInteractionHandlers() {
       const [params] = paramsTuple;
       const { artifact, args, constructorName } = params;
 
-      logger.debug(`aztec_wmDeployContract: deploying ${artifact.name} with ${args.length} args`);
+      // Generate unique transaction status ID for tracking
+      const txStatusId = crypto.randomUUID();
+
+      logger.debug(
+        `aztec_wmDeployContract: deploying ${artifact.name} with ${args.length} args. StatusId: ${txStatusId}`,
+      );
 
       try {
+        // Stage 0: Initiated (deployment request received, ID generated)
+        logger.debug('Deployment initiated, sending initial notification...');
+        await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
+
         // Create deployment method using the server-side wallet
         const deployMethod = Contract.deploy(ctx.wallet, artifact, args, constructorName);
 
@@ -293,6 +333,14 @@ export function createContractInteractionHandlers() {
           logger.debug(`Computed contract address: ${contractAddress.toString()}`);
         } catch (error) {
           logger.error(`Failed to compute contract address for ${artifact.name}:`, error);
+
+          // Send failed notification
+          await notifyTransactionStatus(ctx, {
+            txStatusId,
+            status: 'failed',
+            error: error instanceof Error ? error.message : String(error),
+          });
+
           throw new JSONRPCError(-32603, `Failed to compute contract address for ${artifact.name}`, {
             stage: 'address_computation',
             contractName: artifact.name,
@@ -307,12 +355,26 @@ export function createContractInteractionHandlers() {
           });
         }
 
+        // Stage 1: Proving (zero-knowledge proof generation)
+        logger.debug('Starting deployment proving...');
+        await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
+
         // Prove the deployment transaction
         let deployProvenTx: ProvenTx | undefined;
         try {
+          const proveStartTime = Date.now();
           deployProvenTx = await deployMethod.prove(opts);
+          logger.debug(`Deployment proving completed in ${Date.now() - proveStartTime}ms`);
         } catch (error) {
           logger.error(`Failed to prove deployment for ${artifact.name}:`, error);
+
+          // Send failed notification
+          await notifyTransactionStatus(ctx, {
+            txStatusId,
+            status: 'failed',
+            error: error instanceof Error ? error.message : String(error),
+          });
+
           throw new JSONRPCError(-32603, `Failed to prove contract deployment for ${artifact.name}`, {
             stage: 'proof_generation',
             contractName: artifact.name,
@@ -328,15 +390,30 @@ export function createContractInteractionHandlers() {
           });
         }
 
+        // Stage 2: Sending (submitting deployment transaction to network)
+        logger.debug('Sending deployment transaction to network...');
+        await notifyTransactionStatus(ctx, { txStatusId, status: 'sending' });
+
         // Send the deployment transaction
         let deploySentTx: SentTx | undefined;
         let txHash: TxHash | undefined;
         try {
+          const sendStartTime = Date.now();
           deploySentTx = await deployProvenTx.send();
           txHash = await deploySentTx.getTxHash();
-          logger.debug(`Contract deployed, hash: ${txHash.toString()}`);
+          logger.debug(
+            `Deployment transaction sent in ${Date.now() - sendStartTime}ms, hash: ${txHash.toString()}`,
+          );
         } catch (error) {
           logger.error(`Failed to send deployment transaction for ${artifact.name}:`, error);
+
+          // Send failed notification
+          await notifyTransactionStatus(ctx, {
+            txStatusId,
+            status: 'failed',
+            error: error instanceof Error ? error.message : String(error),
+          });
+
           throw new JSONRPCError(-32603, `Failed to send deployment transaction for ${artifact.name}`, {
             stage: 'transaction_send',
             contractName: artifact.name,
@@ -353,6 +430,13 @@ export function createContractInteractionHandlers() {
         }
 
         if (!txHash) {
+          // Send failed notification
+          await notifyTransactionStatus(ctx, {
+            txStatusId,
+            status: 'failed',
+            error: 'Failed to get transaction hash after deployment',
+          });
+
           throw new JSONRPCError(-32603, 'Failed to get transaction hash after deployment', {
             stage: 'transaction_hash',
             contractName: artifact.name,
@@ -360,9 +444,17 @@ export function createContractInteractionHandlers() {
           });
         }
 
+        // Stage 3: Pending (waiting for confirmation)
+        await notifyTransactionStatus(ctx, {
+          txStatusId,
+          status: 'pending',
+          txHash: txHash.toString(),
+        });
+
         return {
           txHash,
           contractAddress,
+          txStatusId,
         };
       } catch (error) {
         // If error is already a JSONRPCError, re-throw it
@@ -370,8 +462,15 @@ export function createContractInteractionHandlers() {
           throw error;
         }
 
-        // Otherwise wrap it with general deployment error
+        // Otherwise wrap it with general deployment error and send failed notification
         logger.error(`Contract deployment failed for ${artifact.name}:`, error);
+
+        await notifyTransactionStatus(ctx, {
+          txStatusId,
+          status: 'failed',
+          error: error instanceof Error ? error.message : String(error),
+        });
+
         throw new JSONRPCError(-32603, `Contract deployment failed for ${artifact.name}`, {
           stage: 'general',
           contractName: artifact.name,

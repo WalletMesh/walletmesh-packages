@@ -35,10 +35,10 @@ export const aztecAddressSchema = z.string().min(1, 'Aztec address cannot be emp
  */
 export const transactionStatusSchema = z.enum([
   'idle',
-  'preparing',
+  'simulating',
   'proving',
-  'signing',
-  'broadcasting',
+  'sending',
+  'pending',
   'confirming',
   'confirmed',
   'failed',

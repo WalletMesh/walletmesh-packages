@@ -1,126 +1,154 @@
 /**
- * Aztec transaction management hook
+ * Aztec transaction management hook with Wagmi pattern
  *
- * Provides a simplified interface for managing Aztec transactions with
- * automatic loading states, error handling, and optional notifications.
+ * Provides both synchronous (blocking with overlay) and asynchronous
+ * (background) transaction execution modes with full lifecycle tracking
+ * from simulation through confirmation.
  *
  * @module hooks/useAztecTransaction
  * @packageDocumentation
  */
 
-import { useCallback, useState } from 'react';
-import { ErrorFactory } from '@walletmesh/modal-core';
-import type { TxStatus } from '@aztec/aztec.js';
-import type { AztecSendOptions } from '@walletmesh/modal-core/providers/aztec';
-import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec/lazy';
-import { executeInteraction } from '@walletmesh/modal-core/providers/aztec';
+import { useCallback, useMemo } from 'react';
+import {
+  ErrorFactory,
+  type AztecTransactionManager,
+  type ContractFunctionInteraction,
+  type TransactionCallbacks,
+  type AztecTransactionResult,
+  type TransactionStatus,
+} from '@walletmesh/modal-core';
+import { createComponentLogger } from '../utils/logger.js';
+import { useStore, useStoreInstance } from './internal/useStore.js';
 import { useAztecWallet } from './useAztecWallet.js';
 
-/**
- * Transaction execution options
- *
- * @public
- */
-export interface TransactionOptions {
-  /** Callback when transaction is sent */
-  onSent?: (txHash: string) => void;
-  /** Callback when transaction succeeds */
-  onSuccess?: (receipt: unknown) => void;
-  /** Callback when transaction fails */
-  onError?: (error: Error) => void;
-  /** Callback for proving progress */
-  onProvingProgress?: (progress: number) => void;
-  /** Whether to automatically check status */
-  autoCheckStatus?: boolean;
-  /** Optional send options forwarded to the wallet */
-  sendOptions?: AztecSendOptions;
-}
+// Re-export types for convenience
+export type { TransactionCallbacks, AztecTransactionResult };
 
 /**
- * Transaction execution result
- *
- * @public
- */
-export interface TransactionResult {
-  /** Transaction hash */
-  hash: string;
-  /** Transaction receipt */
-  receipt: unknown;
-  /** Transaction status */
-  status: TxStatus | string;
-}
-
-/**
- * Transaction hook return type
+ * Hook return type following Wagmi pattern
  *
  * @public
  */
 export interface UseAztecTransactionReturn {
-  /** Execute a transaction with automatic handling. Pass a ContractFunctionInteraction from contract.methods.methodName(...) */
-  execute: (
-    interaction: ContractFunctionInteraction,
-    options?: TransactionOptions,
-  ) => Promise<TransactionResult>;
-  /** Whether a transaction is currently executing */
-  isExecuting: boolean;
+  // Methods
+  /** Execute transaction asynchronously in background (returns immediately with txId) */
+  execute: (interaction: ContractFunctionInteraction, callbacks?: TransactionCallbacks) => Promise<string>;
+  /** Execute transaction synchronously with blocking overlay (waits for completion) */
+  executeSync: (interaction: ContractFunctionInteraction) => Promise<unknown>;
+
+  // Active transaction state (for sync mode)
+  /** Currently active transaction (sync mode) */
+  activeTransaction: AztecTransactionResult | null;
+  /** Whether a sync transaction is currently executing */
+  isLoading: boolean;
   /** Current transaction status */
-  status: 'idle' | 'preparing' | 'proving' | 'sending' | 'confirming' | 'success' | 'error';
-  /** Any error that occurred */
+  status: TransactionStatus;
+  /** Error from last transaction */
   error: Error | null;
-  /** Reset the transaction state */
+
+  // Background transactions state (for async mode)
+  /** All background transactions (async mode) */
+  backgroundTransactions: AztecTransactionResult[];
+  /** Number of active background transactions */
+  backgroundCount: number;
+
+  // Utility
+  /** Get transaction by ID */
+  getTransaction: (txId: string) => AztecTransactionResult | undefined;
+  /** Reset error state */
   reset: () => void;
-  /** Last transaction result */
-  lastResult: TransactionResult | null;
-  /** Current proving progress (0-100) */
-  provingProgress: number;
 }
 
 /**
- * Hook for managing Aztec transactions
+ * Hook for managing Aztec transactions with Wagmi pattern
  *
- * This hook provides a simplified way to execute transactions with
- * automatic state management, error handling, and progress tracking.
+ * Provides two execution modes:
+ * - `executeSync()`: Blocking execution with UI overlay (like wagmi's writeContract)
+ * - `execute()`: Background execution with callbacks (like wagmi's writeContractAsync)
  *
  * @returns Transaction management utilities
  *
- * @since 1.0.0
+ * @since 3.0.0
  *
  * @remarks
- * The hook automatically handles:
- * - Loading states for each transaction phase
- * - Error handling with user-friendly messages
- * - Proving progress tracking
- * - Transaction receipt checking
- * - Success/failure callbacks
+ * This hook provides full transaction lifecycle tracking:
+ * 1. Preparing/Simulation
+ * 2. Proving (30-60 seconds for Aztec)
+ * 3. Signing
+ * 4. Broadcasting
+ * 5. Confirming
+ * 6. Confirmed/Failed
+ *
+ * Each stage is tracked with timing information for performance monitoring.
  *
  * @example
  * ```tsx
- * import { useAztecTransaction } from '@walletmesh/modal-react';
- * import { useAztecContract } from '@walletmesh/modal-react';
+ * // Sync mode (blocking with overlay)
+ * import { useAztecTransaction, useAztecContract } from '@walletmesh/modal-react';
  *
- * function TransactionExample({ tokenAddress, TokenArtifact }) {
- *   const { execute, isExecuting, status, error } = useAztecTransaction();
+ * function MintToken() {
+ *   const { executeSync, isLoading, status } = useAztecTransaction();
+ *   const { contract } = useAztecContract(tokenAddress, TokenArtifact);
+ *
+ *   const handleMint = async () => {
+ *     if (!contract) return;
+ *
+ *     try {
+ *       // Blocks until complete, shows overlay with progress
+ *       const receipt = await executeSync(
+ *         contract.methods.mint(recipient, amount)
+ *       );
+ *       console.log('Minted!', receipt);
+ *     } catch (error) {
+ *       console.error('Mint failed:', error);
+ *     }
+ *   };
+ *
+ *   return (
+ *     <button onClick={handleMint} disabled={isLoading}>
+ *       {isLoading ? `${status}...` : 'Mint Tokens'}
+ *     </button>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Async mode (background execution)
+ * import { useAztecTransaction, useAztecContract } from '@walletmesh/modal-react';
+ *
+ * function TransferToken() {
+ *   const { execute, backgroundCount } = useAztecTransaction();
  *   const { contract } = useAztecContract(tokenAddress, TokenArtifact);
  *
  *   const handleTransfer = async () => {
  *     if (!contract) return;
  *
- *     const result = await execute(
- *       contract.methods.transfer(recipient, amount),
- *       {
- *         onSent: (hash) => console.log('Transaction sent:', hash),
- *         onSuccess: (receipt) => console.log('Success:', receipt),
- *         onError: (err) => console.error('Failed:', err),
- *       }
- *     );
+ *     try {
+ *       // Returns immediately with txId, executes in background
+ *       const txId = await execute(
+ *         contract.methods.transfer(recipient, amount),
+ *         {
+ *           onSuccess: (tx) => console.log('Transfer complete!', tx),
+ *           onError: (error) => console.error('Transfer failed:', error),
+ *         }
+ *       );
+ *       console.log('Transaction started:', txId);
+ *       // User can continue working while proving happens
+ *     } catch (error) {
+ *       console.error('Failed to start transaction:', error);
+ *     }
  *   };
  *
  *   return (
  *     <div>
- *       <button onClick={handleTransfer} disabled={isExecuting}>
- *         {isExecuting ? `${status}...` : 'Send Transaction'}
+ *       <button onClick={handleTransfer}>
+ *         Transfer Tokens
  *       </button>
- *       {error && <div>Error: {error.message}</div>}
+ *       {backgroundCount > 0 && (
+ *         <p>{backgroundCount} background transaction(s) in progress</p>
+ *       )}
  *     </div>
  *   );
  * }
@@ -128,30 +156,40 @@ export interface UseAztecTransactionReturn {
  *
  * @example
  * ```tsx
- * // With proving progress tracking
- * function ContractInteraction() {
- *   const { execute, provingProgress, status } = useAztecTransaction();
- *   const { contract } = useAztecContract(contractAddress, ContractArtifact);
- *
- *   const handleMethod = async () => {
- *     if (!contract) return;
- *
- *     await execute(
- *       contract.methods.someMethod(param1, param2),
- *       {
- *         onProvingProgress: (progress) => {
- *           console.log(`Proving: ${progress}%`);
- *         },
- *       }
- *     );
- *   };
+ * // Monitoring transaction state
+ * function TransactionMonitor() {
+ *   const {
+ *     activeTransaction,
+ *     backgroundTransactions,
+ *     getTransaction,
+ *     status
+ *   } = useAztecTransaction();
  *
  *   return (
  *     <div>
- *       {status === 'proving' && (
- *         <progress value={provingProgress} max={100} />
+ *       {activeTransaction && (
+ *         <div>
+ *           <h3>Active Transaction</h3>
+ *           <p>Status: {activeTransaction.status}</p>
+ *           <p>Started: {new Date(activeTransaction.startTime).toLocaleTimeString()}</p>
+ *           {activeTransaction.stages.proving && (
+ *             <p>
+ *               Proving: {
+ *                 activeTransaction.stages.proving.end
+ *                   ? `${activeTransaction.stages.proving.end - activeTransaction.stages.proving.start}ms`
+ *                   : 'in progress...'
+ *               }
+ *             </p>
+ *           )}
+ *         </div>
  *       )}
- *       <button onClick={handleMethod}>Execute Method</button>
+ *
+ *       <h3>Background Transactions ({backgroundTransactions.length})</h3>
+ *       {backgroundTransactions.map(tx => (
+ *         <div key={tx.id}>
+ *           <p>{tx.id}: {tx.status}</p>
+ *         </div>
+ *       ))}
  *     </div>
  *   );
  * }
@@ -160,100 +198,140 @@ export interface UseAztecTransactionReturn {
  * @public
  */
 export function useAztecTransaction(): UseAztecTransactionReturn {
-  const { aztecWallet, isReady } = useAztecWallet();
-  const [isExecuting, setIsExecuting] = useState(false);
-  const [status, setStatus] = useState<UseAztecTransactionReturn['status']>('idle');
-  const [error, setError] = useState<Error | null>(null);
-  const [lastResult, setLastResult] = useState<TransactionResult | null>(null);
-  const [provingProgress, setProvingProgress] = useState(0);
+  const { aztecWallet, isReady, chain } = useAztecWallet();
+  const store = useStoreInstance();
+  const logger = useMemo(() => createComponentLogger('useAztecTransaction'), []);
 
-  const reset = useCallback(() => {
-    setIsExecuting(false);
-    setStatus('idle');
-    setError(null);
-    setProvingProgress(0);
-  }, []);
+  // Subscribe to active transaction (sync mode)
+  const activeTransactionId = useStore((state) => state.active?.transactionId);
+  const activeTransaction = useStore((state) => {
+    if (!activeTransactionId) return null;
+    const tx = state.entities.transactions[activeTransactionId];
+    return tx as AztecTransactionResult | null;
+  });
 
+  // Subscribe to background transactions (async mode)
+  const backgroundTransactions = useStore((state) => {
+    const backgroundTxIds = state.meta.backgroundTransactionIds || [];
+    return backgroundTxIds
+      .map((id: string) => state.entities.transactions[id])
+      .filter(Boolean) as AztecTransactionResult[];
+  });
+
+  // Subscribe to transaction status and error
+  const status = useStore((state) => state.meta.transactionStatus || 'idle');
+  const error = useStore((state) => state.ui.errors?.['transaction'] || null);
+
+  // Derive loading state
+  const isLoading = useMemo(() => {
+    return activeTransaction?.status !== 'confirmed' && activeTransaction?.status !== 'failed';
+  }, [activeTransaction]);
+
+  // Count active background transactions
+  const backgroundCount = useMemo(() => {
+    return backgroundTransactions.filter(
+      (tx) => tx.status !== 'confirmed' && tx.status !== 'failed',
+    ).length;
+  }, [backgroundTransactions]);
+
+  // Get or create transaction manager instance
+  const getTransactionManager = useCallback(
+    async (): Promise<AztecTransactionManager> => {
+      if (!isReady || !aztecWallet) {
+        throw ErrorFactory.connectionFailed('Aztec wallet is not ready. Please connect a wallet first.');
+      }
+
+      if (!chain) {
+        throw ErrorFactory.configurationError('No chain information available');
+      }
+
+      // Dynamically import the AztecTransactionManager
+      const { createAztecTransactionManager } = await import('@walletmesh/modal-core');
+
+      return createAztecTransactionManager({
+        store,
+        chainId: chain.chainId,
+        wallet: aztecWallet,
+      });
+    },
+    [isReady, aztecWallet, chain, store],
+  );
+
+  // Execute transaction synchronously (blocking with overlay)
+  const executeSync = useCallback(
+    async (interaction: ContractFunctionInteraction): Promise<unknown> => {
+      logger.debug('Executing transaction synchronously', { mode: 'sync' });
+
+      try {
+        const manager = await getTransactionManager();
+        const receipt = await manager.executeSync(interaction);
+        logger.debug('Transaction completed successfully', { mode: 'sync' });
+        return receipt;
+      } catch (err) {
+        logger.error('Transaction failed', err);
+        throw err;
+      }
+    },
+    [getTransactionManager, logger],
+  );
+
+  // Execute transaction asynchronously (background)
   const execute = useCallback(
     async (
       interaction: ContractFunctionInteraction,
-      options: TransactionOptions = {},
-    ): Promise<TransactionResult> => {
-      if (!isReady || !aztecWallet) {
-        const error = ErrorFactory.connectionFailed('Aztec wallet is not ready');
-        setError(error);
-        if (options.onError) {
-          options.onError(error);
-        }
-        throw error;
-      }
-
-      setIsExecuting(true);
-      setStatus('preparing');
-      setError(null);
-      setProvingProgress(0);
-      options.onProvingProgress?.(0);
+      callbacks?: TransactionCallbacks,
+    ): Promise<string> => {
+      logger.debug('Executing transaction asynchronously', { mode: 'async' });
 
       try {
-        setStatus('proving');
-
-        const progressInterval = setInterval(() => {
-          setProvingProgress((prev) => {
-            const next = prev >= 90 ? 90 : prev + 10;
-            options.onProvingProgress?.(next);
-            if (next >= 90) {
-              clearInterval(progressInterval);
-            }
-            return next;
-          });
-        }, 500);
-
-        try {
-          setStatus('sending');
-          const result = await executeInteraction(aztecWallet, interaction, {
-            ...(options.sendOptions && { sendOptions: options.sendOptions }),
-            onSent: (hash: string) => {
-              setStatus('confirming');
-              options.onSent?.(hash);
-            },
-          });
-
-          setProvingProgress(100);
-          options.onProvingProgress?.(100);
-          clearInterval(progressInterval);
-
-          setStatus('success');
-          setIsExecuting(false);
-          setLastResult(result);
-
-          options.onSuccess?.(result.receipt);
-          return result;
-        } finally {
-          clearInterval(progressInterval);
-        }
+        const manager = await getTransactionManager();
+        const txId = await manager.executeAsync(interaction, callbacks);
+        logger.debug('Transaction started in background', { mode: 'async', txId });
+        return txId;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err : ErrorFactory.transactionFailed('Transaction failed');
-        setError(errorMessage);
-        setStatus('error');
-        setIsExecuting(false);
-
-        if (options.onError) {
-          options.onError(errorMessage);
-        }
-
-        throw errorMessage;
+        logger.error('Failed to start transaction', err);
+        throw err;
       }
     },
-    [aztecWallet, isReady],
+    [getTransactionManager, logger],
   );
 
+  // Get transaction by ID
+  const getTransaction = useCallback(
+    (txId: string): AztecTransactionResult | undefined => {
+      const state = store.getState();
+      return state.entities.transactions[txId] as AztecTransactionResult | undefined;
+    },
+    [store],
+  );
+
+  // Reset error state
+  const reset = useCallback(() => {
+    const { uiActions } = require('./internal/useStore.js');
+    uiActions.clearError(store, 'transaction');
+  }, [store]);
+
   return {
+    // Methods
     execute,
-    isExecuting,
+    executeSync,
+
+    // Active transaction state (sync mode)
+    activeTransaction,
+    isLoading,
     status,
-    error,
+    error: error
+      ? error instanceof Error
+        ? error
+        : new Error(error.message || 'Transaction error')
+      : null,
+
+    // Background transactions state (async mode)
+    backgroundTransactions,
+    backgroundCount,
+
+    // Utility
+    getTransaction,
     reset,
-    lastResult,
-    provingProgress,
   };
 }

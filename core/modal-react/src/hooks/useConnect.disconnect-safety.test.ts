@@ -65,10 +65,10 @@ describe('useConnect - Disconnect Safety', () => {
   const createPendingTransaction = (
     id: string,
     walletId: string,
-    status: TransactionStatus = 'signing',
+    status: TransactionStatus = 'proving',
   ): TransactionResult => ({
-    id,
-    hash: `0x${id}`,
+    txStatusId: id,
+    txHash: `0x${id}`,
     status,
     walletId,
     chainId: 'eip155:1',
@@ -296,8 +296,8 @@ describe('useConnect - Disconnect Safety', () => {
         entities: {
           ...currentState.entities,
           transactions: {
-            tx1: createPendingTransaction('tx1', 'metamask', 'signing'),
-            tx2: createPendingTransaction('tx2', 'metamask', 'broadcasting'),
+            tx1: createPendingTransaction('tx1', 'metamask', 'proving'),
+            tx2: createPendingTransaction('tx2', 'metamask', 'sending'),
           },
         },
       });
@@ -323,8 +323,8 @@ describe('useConnect - Disconnect Safety', () => {
         entities: {
           ...currentState.entities,
           transactions: {
-            tx1: createPendingTransaction('tx1', 'metamask', 'signing'),
-            tx2: createPendingTransaction('tx2', 'metamask', 'broadcasting'),
+            tx1: createPendingTransaction('tx1', 'metamask', 'proving'),
+            tx2: createPendingTransaction('tx2', 'metamask', 'sending'),
           },
         },
       });
@@ -348,9 +348,9 @@ describe('useConnect - Disconnect Safety', () => {
         entities: {
           ...currentState.entities,
           transactions: {
-            tx1: createPendingTransaction('tx1', 'metamask', 'preparing'),
-            tx2: createPendingTransaction('tx2', 'metamask', 'signing'),
-            tx3: createPendingTransaction('tx3', 'metamask', 'broadcasting'),
+            tx1: createPendingTransaction('tx1', 'metamask', 'simulating'),
+            tx2: createPendingTransaction('tx2', 'metamask', 'proving'),
+            tx3: createPendingTransaction('tx3', 'metamask', 'sending'),
             tx4: createPendingTransaction('tx4', 'metamask', 'confirming'),
             tx5: createPendingTransaction('tx5', 'metamask', 'confirmed'), // Not pending
             tx6: createPendingTransaction('tx6', 'metamask', 'failed'), // Not pending
@@ -376,9 +376,9 @@ describe('useConnect - Disconnect Safety', () => {
         entities: {
           ...currentState.entities,
           transactions: {
-            tx1: createPendingTransaction('tx1', 'metamask', 'signing'),
-            tx2: createPendingTransaction('tx2', 'walletconnect', 'signing'), // Different wallet
-            tx3: createPendingTransaction('tx3', 'metamask', 'broadcasting'),
+            tx1: createPendingTransaction('tx1', 'metamask', 'proving'),
+            tx2: createPendingTransaction('tx2', 'walletconnect', 'proving'), // Different wallet
+            tx3: createPendingTransaction('tx3', 'metamask', 'sending'),
           },
         },
       });
@@ -403,8 +403,8 @@ describe('useConnect - Disconnect Safety', () => {
         entities: {
           ...currentState.entities,
           transactions: {
-            tx1: createPendingTransaction('tx1', 'metamask', 'signing'),
-            tx2: createPendingTransaction('tx2', 'walletconnect', 'broadcasting'),
+            tx1: createPendingTransaction('tx1', 'metamask', 'proving'),
+            tx2: createPendingTransaction('tx2', 'walletconnect', 'sending'),
             tx3: createPendingTransaction('tx3', 'phantom', 'confirming'),
           },
         },
@@ -431,8 +431,8 @@ describe('useConnect - Disconnect Safety', () => {
         entities: {
           ...currentState.entities,
           transactions: {
-            tx1: createPendingTransaction('tx1', 'metamask', 'signing'),
-            tx2: createPendingTransaction('tx2', 'walletconnect', 'broadcasting'),
+            tx1: createPendingTransaction('tx1', 'metamask', 'proving'),
+            tx2: createPendingTransaction('tx2', 'walletconnect', 'sending'),
           },
         },
       });
@@ -494,7 +494,7 @@ describe('useConnect - Disconnect Safety', () => {
           ...currentState.entities,
           transactions: {
             tx1: {
-              ...createPendingTransaction('tx1', 'unknown', 'signing'),
+              ...createPendingTransaction('tx1', 'unknown', 'proving'),
               walletId: 'unknown',
             },
           },

@@ -19,7 +19,6 @@ import type { ModalError } from '../internal/core/errors/types.js';
 import type { TransactionResult, TransactionStatus } from '../services/transaction/types.js';
 import type { ChainType, ModalView } from '../types.js';
 import type { WalletInfo } from '../types.js';
-import type { AztecProvingEntry, AztecProvingState } from '../providers/aztec/types.js';
 
 // Enable MapSet plugin for Immer (still needed for SessionState internals)
 enableMapSet();
@@ -113,8 +112,8 @@ export interface WalletMeshState {
     discoveryErrors: string[];
     // Transaction status
     transactionStatus: TransactionStatus;
-    // Aztec proving lifecycle entries
-    aztecProving: AztecProvingState;
+    // Background transaction IDs (async mode transactions)
+    backgroundTransactionIds: string[];
   };
 }
 
@@ -211,23 +210,6 @@ export const getTransactionHistory = (state: WalletMeshState): TransactionResult
 };
 
 /**
- * Get the complete Aztec proving state.
- */
-export const getAztecProvingState = (state: WalletMeshState): AztecProvingState => state.meta.aztecProving;
-
-/**
- * Get all active (in-flight) proving lifecycle entries.
- */
-export const getActiveAztecProvingEntries = (state: WalletMeshState): AztecProvingEntry[] =>
-  Object.values(state.meta.aztecProving.entries).filter((entry) => entry.status === 'started');
-
-/**
- * Determine whether any proving operations are currently running.
- */
-export const hasActiveAztecProving = (state: WalletMeshState): boolean =>
-  getActiveAztecProvingEntries(state).length > 0;
-
-/**
  * Check if wallet is available
  */
 export const isWalletAvailable = (state: WalletMeshState, walletId: string): boolean =>
@@ -275,6 +257,31 @@ export const getCurrentView = (state: WalletMeshState): ModalView => state.ui.cu
  */
 export const canGoBack = (state: WalletMeshState): boolean => state.ui.viewHistory.length > 0;
 
+/**
+ * Get all background transactions
+ */
+export const getBackgroundTransactions = (state: WalletMeshState): TransactionResult[] => {
+  return state.meta.backgroundTransactionIds
+    .map((id) => state.entities.transactions[id])
+    .filter(Boolean) as TransactionResult[];
+};
+
+/**
+ * Get count of active background transactions
+ */
+export const getBackgroundTransactionCount = (state: WalletMeshState): number => {
+  return getBackgroundTransactions(state).filter((tx) =>
+    tx.status !== 'confirmed' && tx.status !== 'failed'
+  ).length;
+};
+
+/**
+ * Check if a transaction is running in background mode
+ */
+export const isBackgroundTransaction = (state: WalletMeshState, txId: string): boolean => {
+  return state.meta.backgroundTransactionIds.includes(txId);
+};
+
 // ============================================================================
 // INITIAL STATE
 // ============================================================================
@@ -310,9 +317,7 @@ const createInitialState = (): WalletMeshState => ({
     availableWalletIds: [],
     discoveryErrors: [],
     transactionStatus: 'idle',
-    aztecProving: {
-      entries: {},
-    },
+    backgroundTransactionIds: [],
   },
 });
 

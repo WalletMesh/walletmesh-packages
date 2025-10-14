@@ -22,8 +22,8 @@ import { z } from 'zod';
 export interface AztecDappWallet {
   /** Deploy a contract to the Aztec network */
   deployContract(artifact: unknown, args: unknown[], constructorName?: string): Promise<DeploySentTx>;
-  /** Execute a transaction via WalletMesh helper */
-  wmExecuteTx?(interaction: ContractFunctionInteraction): Promise<unknown>;
+  /** Execute a transaction via WalletMesh helper - returns both txHash and txStatusId */
+  wmExecuteTx?(interaction: ContractFunctionInteraction): Promise<{ txHash: unknown; txStatusId: string }>;
   /** Simulate a transaction via WalletMesh helper */
   wmSimulateTx?(interaction: ContractFunctionInteraction): Promise<unknown>;
   /** Prove a transaction */
@@ -183,65 +183,59 @@ export interface CreateAztecWalletOptions {
 }
 
 /**
- * Lifecycle status values emitted while the wallet is generating proofs.
+ * Transaction status values for full lifecycle tracking.
+ *
+ * Uses Aztec-native terminology:
+ * - 'simulating' aligns with Aztec's simulate() method
+ * - 'proving' is unique to zero-knowledge systems
+ * - 'sending' aligns with Aztec's send() method
+ * - 'pending' is standard for awaiting confirmation
  */
-export const AZTEC_PROVING_STATUS_VALUES = ['started', 'completed', 'failed'] as const;
+export const TRANSACTION_STATUS_VALUES = [
+  'idle',
+  'simulating',
+  'proving',
+  'sending',
+  'pending',
+  'confirming',
+  'confirmed',
+  'failed',
+] as const;
 
 /**
- * Union of lifecycle status strings.
+ * Transaction status type.
  */
-export type AztecProvingLifecycleStatus = (typeof AZTEC_PROVING_STATUS_VALUES)[number];
+export type TransactionStatus = (typeof TRANSACTION_STATUS_VALUES)[number];
 
 /**
- * Schema describing the payload emitted via the `aztec_provingStatus` notification.
+ * Schema for transaction status notification payload.
+ *
+ * Note the distinction between txStatusId (internal tracking) and
+ * txHash (blockchain identifier).
  */
-export const aztecProvingStatusNotificationSchema = z.object({
-  provingId: z.string().min(1, 'provingId is required'),
-  status: z.enum(AZTEC_PROVING_STATUS_VALUES),
-  txHash: z.string().min(1).optional(),
-  timestamp: z.coerce.number().int().nonnegative().optional(),
+export const aztecTransactionStatusNotificationSchema = z.object({
+  txStatusId: z.string().min(1, 'txStatusId is required'),  // ← Internal tracking ID
+  status: z.enum(TRANSACTION_STATUS_VALUES),
+  txHash: z.string().optional(),  // ← Blockchain transaction hash
+  timestamp: z.number(),
   error: z.string().optional(),
 });
 
 /**
- * Parsed proving status notification payload.
+ * Parsed transaction status notification payload.
  */
-export type AztecProvingStatusNotification = z.infer<typeof aztecProvingStatusNotificationSchema>;
+export type AztecTransactionStatusNotification = z.infer<typeof aztecTransactionStatusNotificationSchema>;
 
 /**
- * Attempt to parse a proving status notification payload.
+ * Attempt to parse a transaction status notification payload.
  *
  * Returns `null` when the payload does not conform to the schema.
  */
-export function parseAztecProvingStatusNotification(
-  payload: unknown,
-): AztecProvingStatusNotification | null {
-  const candidate = Array.isArray(payload) ? payload[0] : payload;
-  const parsed = aztecProvingStatusNotificationSchema.safeParse(candidate);
-  if (!parsed.success) {
-    return null;
-  }
-  return parsed.data;
-}
-
-/**
- * Stored entry describing a proving lifecycle.
- */
-export interface AztecProvingEntry {
-  provingId: string;
-  status: AztecProvingLifecycleStatus;
-  startedAt: number;
-  lastUpdatedAt: number;
-  completedAt?: number;
-  txHash?: string;
-  error?: string;
-}
-
-/**
- * Aggregate Aztec proving state stored in modal-core.
- */
-export interface AztecProvingState {
-  entries: Record<string, AztecProvingEntry>;
+export function parseAztecTransactionStatusNotification(
+  params: unknown,
+): AztecTransactionStatusNotification | null {
+  const result = aztecTransactionStatusNotificationSchema.safeParse(params);
+  return result.success ? result.data : null;
 }
 
 // Function signatures for lazy loading

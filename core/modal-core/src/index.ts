@@ -474,9 +474,6 @@ export {
   getAllSessions,
   getAllTransactions,
   getTransactionHistory,
-  getAztecProvingState,
-  getActiveAztecProvingEntries,
-  hasActiveAztecProving,
   isWalletAvailable,
   getConnectionStatus,
   getConnectionTimestamp,
@@ -485,6 +482,9 @@ export {
   isModalOpen,
   getCurrentView,
   canGoBack,
+  getBackgroundTransactions,
+  getBackgroundTransactionCount,
+  isBackgroundTransaction,
   // Subscription utilities
   subscriptions,
   waitForState,
@@ -498,6 +498,16 @@ export {
   type ChainState,
   type SessionHistoryEntry,
   type WalletPermissions,
+  // Aztec transaction types
+  type TransactionMode,
+  type StageTiming,
+  type TransactionStages,
+  type AztecTransactionResult,
+  type TransactionCallbacks,
+  getStageDuration,
+  getTotalDuration,
+  isFinalStatus,
+  isActiveStatus,
 } from './state/index.js';
 
 /**
@@ -509,24 +519,21 @@ export {
   uiActions,
   connectionActions,
   transactionActions,
-  provingActions,
   actions,
   useStoreActions,
 } from './state/actions/index.js';
 
 /**
- * Aztec proving notification helpers
+ * Aztec transaction status notification helpers
  *
  * @public
  */
 export {
-  AZTEC_PROVING_STATUS_VALUES,
-  aztecProvingStatusNotificationSchema,
-  parseAztecProvingStatusNotification,
-  type AztecProvingLifecycleStatus,
-  type AztecProvingStatusNotification,
-  type AztecProvingEntry,
-  type AztecProvingState,
+  TRANSACTION_STATUS_VALUES,
+  aztecTransactionStatusNotificationSchema,
+  parseAztecTransactionStatusNotification,
+  type TransactionStatus as AztecTransactionStatus,
+  type AztecTransactionStatusNotification,
 } from './providers/aztec/types.js';
 
 /**
@@ -594,6 +601,11 @@ export {
   type WalletPreferenceServiceDependencies,
   type WalletHistoryEntry,
   DAppRpcService,
+  // Aztec transaction management
+  AztecTransactionManager,
+  createAztecTransactionManager,
+  type AztecTransactionManagerConfig,
+  type ContractFunctionInteraction,
   // Query utilities
   QueryManager,
   queryKeys,

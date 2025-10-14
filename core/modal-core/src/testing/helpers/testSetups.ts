@@ -110,9 +110,7 @@ export function createConnectedTestSetup(
       connectionTimestamps: {},
       discoveryErrors: [],
       transactionStatus: 'idle' as const,
-      aztecProving: {
-        entries: {},
-      },
+      backgroundTransactionIds: [],
     },
   });
 

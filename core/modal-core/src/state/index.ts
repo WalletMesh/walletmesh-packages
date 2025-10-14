@@ -13,9 +13,6 @@ export {
   getAllSessions,
   getAllTransactions,
   getTransactionHistory,
-  getAztecProvingState,
-  getActiveAztecProvingEntries,
-  hasActiveAztecProving,
   isWalletAvailable,
   getConnectionStatus,
   getConnectionTimestamp,
@@ -24,6 +21,10 @@ export {
   isModalOpen,
   getCurrentView,
   canGoBack,
+  // Background transaction selectors
+  getBackgroundTransactions,
+  getBackgroundTransactionCount,
+  isBackgroundTransaction,
   // Store instance getter
   getStoreInstance,
   getWalletMeshStore,
@@ -38,3 +39,14 @@ export {
   subscribeToAllChanges,
 } from './subscriptions.js';
 export type * from './types.js';
+
+// Aztec transaction lifecycle types
+export type {
+  TransactionMode,
+  StageTiming,
+  TransactionStages,
+  AztecTransactionResult,
+  TransactionCallbacks,
+  BackgroundTransactionsState,
+} from './types/aztecTransactions.js';
+export { getStageDuration, getTotalDuration, isFinalStatus, isActiveStatus } from './types/aztecTransactions.js';

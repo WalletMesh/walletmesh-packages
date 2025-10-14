@@ -13,7 +13,6 @@
  * @packageDocumentation
  */
 
-import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import type { WalletConnection } from '../../../api/types/connection.js';
 import type { WalletProvider } from '../../../api/types/providers.js';
 import { ChainType, type Transport } from '../../../types.js';
@@ -23,6 +22,7 @@ import { ErrorHandler } from '../../core/errors/errorHandler.js';
 import { modalLogger } from '../../core/logger/globalLogger.js';
 import { createDebugLogger } from '../../core/logger/logger.js';
 import { CrossWindowTransport } from '../../transports/cross-window/CrossWindowTransport.js';
+import { LazyAztecRouterProvider } from '../../../providers/aztec/lazy.js';
 import { AbstractWalletAdapter } from '../base/AbstractWalletAdapter.js';
 import type {
   ConnectOptions,
@@ -66,8 +66,15 @@ export interface AztecExampleWalletConfig {
  * Defined locally to avoid static import dependency
  */
 interface AztecRouterProviderInterface {
-  call: <M extends string>(chainId: string, call: { method: M; params?: unknown[] }, timeout?: number) => Promise<unknown>;
-  connect: (permissions: Record<string, string[]>, timeout?: number) => Promise<{ sessionId: string; permissions: unknown }>;
+  call: <M extends string>(
+    chainId: string,
+    call: { method: M; params?: unknown[] },
+    timeout?: number,
+  ) => Promise<unknown>;
+  connect: (
+    permissions: Record<string, string[]>,
+    timeout?: number,
+  ) => Promise<{ sessionId: string; permissions: unknown }>;
   disconnect: () => Promise<void>;
   on: (event: string, listener: (...args: unknown[]) => void) => void;
 }
@@ -693,40 +700,18 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
 
     const chainId = aztecChain.chainId;
 
-    // Create the Aztec router provider directly with dApp-specified chainId
-    modalLogger.info('🚀 Creating AztecRouterProvider with chainId', { chainId });
+    // Create LazyAztecRouterProvider which handles notifications automatically
+    modalLogger.info('🚀 Creating LazyAztecRouterProvider with chainId', { chainId });
     console.log('[AztecExampleWalletAdapter] Creating router provider with chainId:', chainId);
 
-    // Dynamically import AztecRouterProvider and registerAztecSerializers to avoid hard dependency
-    let AztecRouterProvider: new (
-      transport: JSONRPCTransport,
-      context?: Record<string, unknown>,
-      sessionId?: string
-    ) => AztecRouterProviderInterface;
-    let registerAztecSerializers: (provider: unknown) => void;
+    // LazyAztecRouterProvider handles:
+    // - Lazy loading of @walletmesh/aztec-rpc-wallet
+    // - Automatic proving status notification subscription
+    // - Aztec serializer registration
+    // - State management integration
+    this.routerProvider = new LazyAztecRouterProvider(jsonRpcTransport);
 
-    try {
-      const aztecModule = await import('@walletmesh/aztec-rpc-wallet');
-      AztecRouterProvider = aztecModule.AztecRouterProvider;
-      registerAztecSerializers = aztecModule.registerAztecSerializers as (provider: unknown) => void;
-    } catch (error) {
-      throw ErrorFactory.configurationError(
-        'Failed to load @walletmesh/aztec-rpc-wallet. Please install it to use Aztec wallets: npm install @walletmesh/aztec-rpc-wallet',
-        { walletId: this.id, originalError: error }
-      );
-    }
-
-    // Create AztecRouterProvider with the transport and session if we have one
-    this.routerProvider = new AztecRouterProvider(
-      jsonRpcTransport,
-      undefined, // context
-      this.sessionId || undefined, // Pass sessionId if we have it from persistence
-    );
-
-    // Register Aztec serializers for proper type handling
-    registerAztecSerializers(this.routerProvider);
-
-    modalLogger.info('✅ AztecRouterProvider created and configured');
+    modalLogger.info('✅ LazyAztecRouterProvider created and configured');
     console.log('[AztecExampleWalletAdapter] Router provider created successfully');
 
     // Check if we have a persisted session to restore

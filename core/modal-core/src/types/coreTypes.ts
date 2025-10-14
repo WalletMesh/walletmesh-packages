@@ -269,10 +269,10 @@ export const ERROR_CATEGORIES: readonly ErrorCategory[] = [
 
 export const TRANSACTION_STATUSES: readonly TransactionStatus[] = [
   'idle',
-  'preparing',
+  'simulating',
   'proving',
-  'signing',
-  'broadcasting',
+  'sending',
+  'pending',
   'confirming',
   'confirmed',
   'failed',

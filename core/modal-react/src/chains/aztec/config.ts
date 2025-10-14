@@ -237,9 +237,6 @@ export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig
     // Pass through wallet adapters (instances or classes)
     ...(config.wallets && { wallets: config.wallets }),
 
-    // Pass through Aztec proving overlay configuration
-    ...(config.aztecProvingOverlay !== undefined && { aztecProvingOverlay: config.aztecProvingOverlay }),
-
     // Optimized discovery configuration for Aztec
     discovery: discoveryConfig as any,
 

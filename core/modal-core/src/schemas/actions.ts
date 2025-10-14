@@ -232,10 +232,10 @@ export const sessionMetadataSchema = z.object({
  */
 export const transactionStatusSchema = z.enum([
   'idle',
-  'preparing',
+  'simulating',
   'proving',
-  'signing',
-  'broadcasting',
+  'sending',
+  'pending',
   'confirming',
   'confirmed',
   'failed',

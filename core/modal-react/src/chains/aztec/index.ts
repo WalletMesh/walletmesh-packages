@@ -30,8 +30,8 @@ export {
 export {
   useAztecTransaction,
   type UseAztecTransactionReturn,
-  type TransactionOptions,
-  type TransactionResult as AztecTransactionResult,
+  type TransactionCallbacks,
+  type AztecTransactionResult,
 } from '../../hooks/useAztecTransaction.js';
 
 export {
@@ -57,11 +57,6 @@ export {
 } from '../../hooks/useAztecBatch.js';
 
 export {
-  useAztecProvingStatus,
-  type UseAztecProvingStatusResult,
-} from '../../hooks/useAztecProvingStatus.js';
-
-export {
   executeTx,
   simulateTx,
   waitForTxReceipt,
@@ -80,9 +75,14 @@ export {
 } from '../../components/AztecConnectButton.js';
 
 export {
-  AztecProvingOverlay,
-  type AztecProvingOverlayProps,
-} from '../../components/AztecProvingOverlay.js';
+  AztecTransactionStatusOverlay,
+  type AztecTransactionStatusOverlayProps,
+} from '../../components/AztecTransactionStatusOverlay.js';
+
+export {
+  BackgroundTransactionIndicator,
+  type BackgroundTransactionIndicatorProps,
+} from '../../components/BackgroundTransactionIndicator.js';
 
 export {
   AztecWalletMeshProvider,

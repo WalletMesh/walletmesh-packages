@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { DiscoveryInitiator } from '../initiator.js';
+import type { DiscoveryInitiator } from '../initiator.js';
 import { DuplicateResponseError } from '../types/core.js';
 import { MockEventTarget } from './MockEventTarget.js';
 import {
