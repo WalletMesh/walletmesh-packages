@@ -1,5 +1,12 @@
 # @walletmesh/aztec-example-wallet
 
+## 0.5.5
+
+### Patch Changes
+
+- 997a6d4: remove wmExecuteTx in favor of using default aztec.js methods & fix auto approval bug in example wallet
+- d74340d: fix packaging for wallet
+
 ## 0.5.4
 
 ### Patch Changes
