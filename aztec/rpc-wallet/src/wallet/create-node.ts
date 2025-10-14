@@ -99,7 +99,7 @@ export function createAztecWalletNode(
   );
 
   // Expose the node's notify helper through the handler context so individual handlers
-  // can emit lifecycle events (e.g., proving status updates) without direct access to the node.
+  // can emit lifecycle events (e.g., transaction status updates) without direct access to the node.
   context.notify = async (method, params) => {
     await node.notify(method, params);
   };

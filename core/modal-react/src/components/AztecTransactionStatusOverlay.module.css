@@ -1,0 +1,258 @@
+/* Base overlay styles */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.content {
+  width: min(560px, 100%);
+  padding: 36px 32px;
+  border-radius: 20px;
+  background: rgba(9, 14, 26, 0.92);
+  color: #f8fafc;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.35);
+  text-align: center;
+}
+
+/* Spinner */
+.spinner {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  border: 4px solid rgba(148, 163, 184, 0.35);
+  border-top-color: #38bdf8;
+  animation: wm-aztec-spin 1s linear infinite;
+}
+
+/* Text styles */
+.headline {
+  margin: 0 0 12px;
+  font-size: 1.625rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+.description {
+  margin: 0;
+  font-size: 1.rem;
+  line-height: 1.55;
+  color: rgba(226, 232, 240, 0.92);
+}
+
+/* Stage progress indicator */
+.stagesContainer {
+  margin-top: 32px;
+  padding: 24px 0;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.stages {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  padding: 0 12px;
+}
+
+/* Connection line between stages */
+.stages::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  background: rgba(148, 163, 184, 0.2);
+  z-index: 0;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+  opacity: 0.4;
+}
+
+.stage--completed {
+  opacity: 0.7;
+}
+
+.stage--active {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.stage--failed {
+  opacity: 1;
+}
+
+.stageIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(148, 163, 184, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  transition: all 0.3s ease;
+}
+
+.stage--active .stageIcon {
+  background: rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+  animation: wm-pulse 2s ease-in-out infinite;
+}
+
+.stage--completed .stageIcon {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.stage--failed .stageIcon {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.stageLabel {
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.7);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  transition: color 0.3s ease;
+}
+
+.stage--active .stageLabel {
+  color: rgba(226, 232, 240, 1);
+  font-weight: 600;
+}
+
+.stage--completed .stageLabel {
+  color: rgba(34, 197, 94, 0.7);
+}
+
+.stage--failed .stageLabel {
+  color: rgba(239, 68, 68, 0.8);
+}
+
+/* Transactions list */
+.transactionsList {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transaction {
+  background: rgba(148, 163, 184, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.transaction:hover {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.transactionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.transactionHash {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(226, 232, 240, 0.95);
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+}
+
+.transactionDuration {
+  font-size: 0.75rem;
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.transactionStatus {
+  font-size: 0.8125rem;
+  color: rgba(226, 232, 240, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Multiple transactions notice */
+.multipleNotice {
+  margin-top: 16px;
+  font-size: 0.875rem;
+  color: rgba(148, 163, 184, 0.8);
+  padding: 12px;
+  background: rgba(56, 189, 248, 0.08);
+  border-radius: 8px;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+/* Animations */
+@keyframes wm-aztec-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wm-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(56, 189, 248, 0.05);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .content {
+    padding: 28px 24px;
+  }
+
+  .headline {
+    font-size: 1.375rem;
+  }
+
+  .stages {
+    gap: 4px;
+    padding: 0 6px;
+  }
+
+  .stageIcon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  .stageLabel {
+    font-size: 0.625rem;
+  }
+
+  .stage--active {
+    transform: scale(1.05);
+  }
+}

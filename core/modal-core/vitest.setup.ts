@@ -26,7 +26,7 @@ globalThis.SKIP_BROWSER_TESTS = isCI || isNode || process.env.SKIP_BROWSER_TESTS
 // Fix for vi.advanceTimersByTime not resolving promises in some environments
 // This ensures all implementations can use the same timer advancement approach
 if (typeof vi !== 'undefined' && typeof vi.advanceTimersByTimeAsync !== 'function') {
-  // @ts-ignore -- Adding polyfill for older vitest versions
+  // @ts-expect-error -- Adding polyfill for older vitest versions
   vi.advanceTimersByTimeAsync = async (ms) => {
     vi.advanceTimersByTime(ms);
     // Wait for any microtasks to complete using setImmediate or queueMicrotask
@@ -162,12 +162,12 @@ globalThis.mockWebSocket = () => {
 
 // Mock timer functions if not available
 if (typeof clearInterval === 'undefined') {
-  // @ts-ignore
+  // @ts-expect-error
   globalThis.clearInterval = () => {};
 }
 
 if (typeof setInterval === 'undefined') {
-  // @ts-ignore
+  // @ts-expect-error
   globalThis.setInterval = () => {};
 }
 

@@ -158,7 +158,7 @@ export const removeSession = (state: Draft<WalletMeshState>, sessionId: string) 
 };
 
 export const addTransaction = (state: Draft<WalletMeshState>, transaction: TransactionResult) => {
-  const txId = transaction.id || transaction.hash || String(Date.now());
+  const txId = transaction.txStatusId || transaction.txHash || String(Date.now());
   state.entities.transactions[txId] = transaction;
 };
 

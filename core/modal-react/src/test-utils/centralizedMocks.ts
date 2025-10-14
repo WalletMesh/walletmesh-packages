@@ -155,12 +155,6 @@ export const ReactGlobalMocks = {
 
       return {
         useStore,
-        getAztecProvingState: vi.fn(() => ({ entries: {} })),
-        getActiveAztecProvingEntries: vi.fn(() => []),
-        provingActions: {
-          handleNotification: vi.fn(),
-          clearAll: vi.fn(),
-        },
       };
     }),
 } as const;

@@ -1,7 +1,6 @@
 import { createLogger } from '@aztec/foundation/log';
 import type { AztecWalletMethodMap } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
-import { generateProvingId, notifyProvingStatus } from './provingNotifications.js';
 
 const logger = createLogger('aztec-rpc-wallet:transaction');
 
@@ -68,36 +67,8 @@ export function createTransactionHandlers() {
         logger.debug('[HANDLER] aztec_proveTx: privateExecutionResult obtained from simulation.');
       }
 
-      const provingId = generateProvingId();
-      await notifyProvingStatus(ctx, { provingId, status: 'started' });
-
-      try {
-        const provingResult = await ctx.wallet.proveTx(txRequest, privateExecutionResult);
-
-        let txHash: string | undefined;
-        try {
-          const tx = await provingResult.toTx();
-          txHash = tx?.getTxHash?.()?.toString?.();
-        } catch (hashError) {
-          logger.debug('Unable to derive tx hash from proving result', {
-            error: hashError instanceof Error ? hashError.message : hashError,
-          });
-        }
-
-        await notifyProvingStatus(ctx, {
-          provingId,
-          status: 'completed',
-          ...(txHash && { txHash })
-        });
-        return provingResult;
-      } catch (error) {
-        await notifyProvingStatus(ctx, {
-          provingId,
-          status: 'failed',
-          error: error instanceof Error ? error.message : String(error),
-        });
-        throw error;
-      }
+      const provingResult = await ctx.wallet.proveTx(txRequest, privateExecutionResult);
+      return provingResult;
     },
 
     /**

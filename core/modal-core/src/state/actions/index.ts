@@ -14,7 +14,7 @@
 export { uiActions } from './ui.js';
 export { connectionActions } from './connections.js';
 export { transactionActions } from './transactions.js';
-export { provingActions } from './proving.js';
+export { aztecTransactionActions } from './aztecTransactions.js';
 
 // Re-export action types for convenience
 export type {
@@ -24,7 +24,7 @@ export type {
 
 import { connectionActions } from './connections.js';
 import { transactionActions } from './transactions.js';
-import { provingActions } from './proving.js';
+import { aztecTransactionActions } from './aztecTransactions.js';
 /**
  * Combined actions object for convenience
  *
@@ -37,7 +37,7 @@ export const actions = {
   ui: uiActions,
   connections: connectionActions,
   transactions: transactionActions,
-  proving: provingActions,
+  aztecTransactions: aztecTransactionActions,
 };
 
 /**

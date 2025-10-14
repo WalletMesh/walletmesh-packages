@@ -381,7 +381,7 @@ export function useTransaction(): UseTransactionReturn {
         };
 
         const result = await transactionService.sendTransaction(sendParams);
-        logger.debug('Transaction sent successfully', { txHash: result.hash });
+        logger.debug('Transaction sent successfully', { txHash: result.txHash });
         return result;
       } catch (error) {
         logger.error('Transaction failed', error);
@@ -455,7 +455,7 @@ export function useTransaction(): UseTransactionReturn {
    */
   const getTransaction = useCallback(
     (hash: string): TransactionResult | undefined => {
-      return transactions.find((tx: TransactionResult) => tx.hash === hash);
+      return transactions.find((tx: TransactionResult) => tx.txHash === hash);
     },
     [transactions],
   );

@@ -35,7 +35,7 @@ export function TransactionDemo() {
   const isConfirming = status === 'confirming';
   const isConfirmed = status === 'confirmed';
   const isFailed = status === 'failed';
-  const txHash = currentTransaction?.hash;
+  const txHash = currentTransaction?.txHash;
 
   if (!isConnected) {
     return null;
@@ -176,8 +176,8 @@ export function TransactionDemo() {
 
             {currentTransaction && (
               <div style={{ fontSize: '12px', marginTop: '4px' }}>
-                <div>Transaction ID: {currentTransaction.id}</div>
-                <div>Hash: {currentTransaction.hash.substring(0, 10)}...</div>
+                <div>Transaction ID: {currentTransaction.txStatusId}</div>
+                <div>Hash: {currentTransaction.txHash.substring(0, 10)}...</div>
               </div>
             )}
 

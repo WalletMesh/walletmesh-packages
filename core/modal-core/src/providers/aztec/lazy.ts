@@ -12,12 +12,12 @@
 import type { JSONRPCSerializer, JSONRPCTransport } from '@walletmesh/jsonrpc';
 import type { StoreApi } from 'zustand';
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
-import { provingActions } from '../../state/actions/proving.js';
+import { aztecTransactionActions } from '../../state/actions/aztecTransactions.js';
 import { useStore } from '../../state/store.js';
 import { createLazyModule } from '../../utils/lazy/index.js';
 import type { WalletMeshState } from '../../state/store.js';
 import type { AztecProviderFunctions } from './types.js';
-import { parseAztecProvingStatusNotification } from './types.js';
+import { parseAztecTransactionStatusNotification } from './types.js';
 
 // Create lazy loader for the Aztec implementation
 const aztecModule = createLazyModule<typeof import('./utils.js')>(() => import('./utils.js'), {
@@ -264,8 +264,6 @@ type AztecRouterProviderInstance = {
 export class LazyAztecRouterProvider {
   private initPromise: Promise<void>;
   private realProvider: AztecRouterProviderInstance | null = null;
-  private pxeReadyPromise: Promise<void> | null = null;
-  private pxeReadyResolve: (() => void) | null = null;
   private notificationCleanup: Array<() => void> = [];
 
   constructor(transport: JSONRPCTransport, context?: Record<string, unknown>) {
@@ -285,6 +283,7 @@ export class LazyAztecRouterProvider {
   }
 
   private async initialize(transport: JSONRPCTransport, context?: Record<string, unknown>): Promise<void> {
+    console.log('[LazyAztecRouterProvider] Starting initialization...');
     const module = await aztecRouterModule.getModule();
     // Cast through unknown to avoid type checking issues with external module
     this.realProvider = new module.AztecRouterProvider(
@@ -292,15 +291,8 @@ export class LazyAztecRouterProvider {
       context,
     ) as unknown as AztecRouterProviderInstance;
 
-    // Listen for PXE readiness notifications (aztec_status)
+    // Listen for proving status notifications
     try {
-      const markReady = () => {
-        if (this.pxeReadyResolve) {
-          this.pxeReadyResolve();
-          this.pxeReadyResolve = null;
-        }
-      };
-
       const store = useStore as unknown as StoreApi<WalletMeshState>;
       this.cleanupNotificationHandlers();
 
@@ -314,35 +306,46 @@ export class LazyAztecRouterProvider {
         onNotification: (method: string, handler: (params: unknown) => void) => () => void;
       };
 
-      const removeStatus = providerWithNotifications.onNotification('aztec_status', (params) => {
+      // Subscribe to transaction status for full lifecycle tracking
+      const removeTxStatus = providerWithNotifications.onNotification('aztec_transactionStatus', (params) => {
+        console.log('[LazyAztecRouterProvider] Received aztec_transactionStatus notification:', params);
         try {
-          if (
-            params &&
-            typeof params === 'object' &&
-            (params as { pxeReady?: boolean }).pxeReady
-          ) {
-            markReady();
-          }
-        } catch (error) {
-          console.error('[LazyAztecRouterProvider] Error handling aztec_status notification', error);
-        }
-      });
-      this.notificationCleanup.push(removeStatus);
-
-      const removeProving = providerWithNotifications.onNotification('aztec_provingStatus', (params) => {
-        try {
-          const parsed = parseAztecProvingStatusNotification(params);
+          const parsed = parseAztecTransactionStatusNotification(params);
           if (parsed) {
-            provingActions.handleNotification(store, parsed);
+            console.log('[LazyAztecRouterProvider] Parsed transaction status notification:', parsed);
+
+            // Update transaction status in store
+            aztecTransactionActions.updateAztecTransactionStatus(
+              store,
+              parsed.txStatusId,  // ← Internal tracking ID
+              parsed.status // Types now match - no cast needed
+            );
+
+            // Update transaction hash if provided (blockchain identifier)
+            if (parsed.txHash) {
+              aztecTransactionActions.updateAztecTransaction(store, parsed.txStatusId, {
+                txHash: parsed.txHash,  // ← Blockchain hash
+              });
+            }
+
+            // Update error if provided
+            if (parsed.error) {
+              aztecTransactionActions.updateAztecTransaction(store, parsed.txStatusId, {
+                error: ErrorFactory.transactionFailed(parsed.error),
+              });
+            }
+          } else {
+            console.warn('[LazyAztecRouterProvider] Failed to parse transaction status notification');
           }
         } catch (error) {
-          console.error('[LazyAztecRouterProvider] Error handling aztec_provingStatus notification', error);
+          console.error('[LazyAztecRouterProvider] Error handling aztec_transactionStatus notification', error);
         }
       });
-      this.notificationCleanup.push(removeProving);
-    } catch (error) {
-      // Surface configuration issues immediately
-      throw error;
+      this.notificationCleanup.push(removeTxStatus);
+
+      console.log('[LazyAztecRouterProvider] Notification subscriptions ready');
+    } finally {
+      console.log('[LazyAztecRouterProvider] Initialization complete');
     }
   }
 
@@ -352,21 +355,6 @@ export class LazyAztecRouterProvider {
       throw ErrorFactory.configurationError('Failed to initialize AztecRouterProvider');
     }
     return this.realProvider;
-  }
-
-  private ensurePxeReady(): Promise<void> {
-    if (this.pxeReadyPromise) return this.pxeReadyPromise;
-    this.pxeReadyPromise = new Promise<void>((resolve) => {
-      this.pxeReadyResolve = resolve;
-    });
-    // Fallback timeout so app can proceed if status is never sent
-    setTimeout(() => {
-      if (this.pxeReadyResolve) {
-        this.pxeReadyResolve();
-        this.pxeReadyResolve = null;
-      }
-    }, 30000);
-    return this.pxeReadyPromise;
   }
 
   // Proxy all public methods to the real provider
@@ -399,17 +387,11 @@ export class LazyAztecRouterProvider {
 
   async call(chainId: string, call: MethodCall, timeout?: number): Promise<MethodResults> {
     const provider = await this.ensureInitialized();
-    if (call?.method?.startsWith?.('aztec_')) {
-      await this.ensurePxeReady();
-    }
     return provider.call(chainId, call, timeout);
   }
 
   async bulkCall(chainId: string, calls: MethodCall[], timeout?: number): Promise<MethodResults[]> {
     const provider = await this.ensureInitialized();
-    if (calls?.some?.((c) => c?.method?.startsWith?.('aztec_'))) {
-      await this.ensurePxeReady();
-    }
     return provider.bulkCall(chainId, calls, timeout);
   }
 

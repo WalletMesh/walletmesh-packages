@@ -83,9 +83,8 @@ const createMockState = (overrides?: Partial<WalletMeshState>): WalletMeshState 
     availableWalletIds: [],
     discoveryErrors: [],
     transactionStatus: 'idle' as const,
-    aztecProving: {
-      entries: {},
-    },
+    
+      backgroundTransactionIds: [],
   },
   ...overrides,
 });
@@ -718,11 +717,11 @@ describe('useConnect', () => {
               },
               transactions: {
                 'tx-1': {
-                  id: 'tx-1',
-                  hash: '0xabc',
+                  txStatusId: 'tx-1',
+                  txHash: '0xabc',
                   chainId: 'eip155:1',
                   walletId: 'metamask',
-                  status: 'signing' as const,
+                  status: 'proving' as const,
                   from: '0x1234567890123456789012345678901234567890',
                   chainType: ChainType.Evm,
                   request: {
@@ -747,10 +746,9 @@ describe('useConnect', () => {
               connectionTimestamps: {},
               availableWalletIds: [],
               discoveryErrors: [],
-              transactionStatus: 'signing' as const,
-              aztecProving: {
-                entries: {},
-              },
+              transactionStatus: 'proving' as const,
+
+      backgroundTransactionIds: [],
             },
           }),
         );
@@ -842,8 +840,8 @@ describe('useConnect', () => {
               },
               transactions: {
                 'tx-1': {
-                  id: 'tx-1',
-                  hash: '',
+                  txStatusId: 'tx-1',
+                  txHash: '',
                   chainId: 'aztec:mainnet',
                   walletId: 'aztec-wallet',
                   status: 'proving' as const,
@@ -872,9 +870,8 @@ describe('useConnect', () => {
               availableWalletIds: [],
               discoveryErrors: [],
               transactionStatus: 'proving' as const,
-              aztecProving: {
-                entries: {},
-              },
+              
+      backgroundTransactionIds: [],
             },
           }),
         );
@@ -966,8 +963,8 @@ describe('useConnect', () => {
               },
               transactions: {
                 'tx-1': {
-                  id: 'tx-1',
-                  hash: '0xabc',
+                  txStatusId: 'tx-1',
+                  txHash: '0xabc',
                   chainId: 'eip155:1',
                   walletId: 'metamask',
                   status: 'proving' as const,
@@ -996,9 +993,8 @@ describe('useConnect', () => {
               availableWalletIds: [],
               discoveryErrors: [],
               transactionStatus: 'proving' as const,
-              aztecProving: {
-                entries: {},
-              },
+              
+      backgroundTransactionIds: [],
             },
           }),
         );
@@ -1090,11 +1086,11 @@ describe('useConnect', () => {
               },
               transactions: {
                 'tx-1': {
-                  id: 'tx-1',
-                  hash: '0xabc',
+                  txStatusId: 'tx-1',
+                  txHash: '0xabc',
                   chainId: 'eip155:1',
                   walletId: 'metamask',
-                  status: 'preparing' as const,
+                  status: 'simulating' as const,
                   from: '0x1234567890123456789012345678901234567890',
                   chainType: ChainType.Evm,
                   request: {
@@ -1107,8 +1103,8 @@ describe('useConnect', () => {
                   // timestamp: Date.now(),
                 },
                 'tx-2': {
-                  id: 'tx-2',
-                  hash: '',
+                  txStatusId: 'tx-2',
+                  txHash: '',
                   chainId: 'aztec:mainnet',
                   walletId: 'metamask',
                   status: 'proving' as const,
@@ -1124,11 +1120,11 @@ describe('useConnect', () => {
                   // timestamp: Date.now(),
                 },
                 'tx-3': {
-                  id: 'tx-3',
-                  hash: '0xdef',
+                  txStatusId: 'tx-3',
+                  txHash: '0xdef',
                   chainId: 'eip155:1',
                   walletId: 'metamask',
-                  status: 'broadcasting' as const,
+                  status: 'sending' as const,
                   from: '0x1234567890123456789012345678901234567890',
                   chainType: ChainType.Evm,
                   request: {
@@ -1141,8 +1137,8 @@ describe('useConnect', () => {
                   // timestamp: Date.now(),
                 },
                 'tx-4': {
-                  id: 'tx-4',
-                  hash: '0xghi',
+                  txStatusId: 'tx-4',
+                  txHash: '0xghi',
                   chainId: 'eip155:1',
                   walletId: 'metamask',
                   status: 'confirming' as const,
@@ -1171,9 +1167,8 @@ describe('useConnect', () => {
               availableWalletIds: [],
               discoveryErrors: [],
               transactionStatus: 'idle' as const,
-              aztecProving: {
-                entries: {},
-              },
+              
+      backgroundTransactionIds: [],
             },
           }),
         );

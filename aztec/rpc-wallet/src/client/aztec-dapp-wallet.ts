@@ -953,6 +953,9 @@ export class AztecDappWallet implements Wallet {
    * to the `aztec_wmExecuteTx` method on the remote wallet.
    * The remote wallet is expected to handle fee configuration, proof generation, and submission.
    *
+   * The remote wallet automatically generates a unique `txStatusId` and sends status notifications
+   * (initiated/simulating/proving/sending/pending/failed) throughout the transaction lifecycle.
+   *
    * @param interaction - The {@link ContractFunctionInteraction} representing the desired contract call.
    * @returns A {@link SentTx} object that can be used to track the transaction.
    * @see {@link AztecWalletMethodMap.aztec_wmExecuteTx}
@@ -965,14 +968,17 @@ export class AztecDappWallet implements Wallet {
 
     // Send the high-level interaction details to the remote wallet
     // Note: opts is not sent - the server-side wallet will handle fee configuration
-    const result = await this.routerProvider.call(this.chainId, {
+    const result = (await this.routerProvider.call(this.chainId, {
       method: 'aztec_wmExecuteTx',
       params: {
         executionPayload,
       },
-    });
+    })) as { txHash: TxHash; txStatusId: string };
 
-    const txHashPromise = () => Promise.resolve(result as TxHash);
+    // Log the txStatusId for debugging/tracking purposes
+    logger.debug(`Transaction initiated with statusId: ${result.txStatusId}, txHash: ${result.txHash.toString()}`);
+
+    const txHashPromise = () => Promise.resolve(result.txHash);
     return new SentTx(this, txHashPromise);
   }
 
@@ -1033,7 +1039,12 @@ export class AztecDappWallet implements Wallet {
         args,
         constructorName,
       },
-    })) as { txHash: TxHash; contractAddress: AztecAddress };
+    })) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };
+
+    // Log the txStatusId for debugging/tracking purposes
+    logger.debug(
+      `Contract deployment initiated with statusId: ${result.txStatusId}, txHash: ${result.txHash.toString()}, contractAddress: ${result.contractAddress.toString()}`,
+    );
 
     // Create a promise that resolves with the transaction hash
     const txHashPromise = () => Promise.resolve(result.txHash);

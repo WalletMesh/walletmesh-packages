@@ -96,9 +96,8 @@ describe('useConfig', () => {
         availableWalletIds: [],
         discoveryErrors: [],
         transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
       },
     };
 

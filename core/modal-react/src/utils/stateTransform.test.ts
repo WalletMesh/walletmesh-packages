@@ -57,9 +57,8 @@ describe('stateTransform', () => {
       availableWalletIds: [],
       discoveryErrors: [],
       transactionStatus: 'idle' as const,
-      aztecProving: {
-        entries: {},
-      },
+      
+      backgroundTransactionIds: [],
       ...(overrides.meta || {}),
     },
   });
@@ -334,9 +333,8 @@ describe('stateTransform', () => {
           availableWalletIds: ['metamask', 'phantom'],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -397,9 +395,8 @@ describe('stateTransform', () => {
           connectionTimestamps: {},
           discoveryErrors: [],
           transactionStatus: 'idle' as const,
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -440,9 +437,8 @@ describe('stateTransform', () => {
           connectionTimestamps: {},
           discoveryErrors: [],
           transactionStatus: 'idle' as const,
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -482,9 +478,8 @@ describe('stateTransform', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -521,9 +516,8 @@ describe('stateTransform', () => {
           availableWalletIds: ['unknown-wallet'],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -564,9 +558,8 @@ describe('stateTransform', () => {
           availableWalletIds: ['metamask'],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -592,9 +585,8 @@ describe('stateTransform', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -632,9 +624,8 @@ describe('stateTransform', () => {
           availableWalletIds: ['metamask'],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -665,9 +656,8 @@ describe('stateTransform', () => {
           availableWalletIds: ['metamask'],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -693,9 +683,8 @@ describe('stateTransform', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -725,9 +714,8 @@ describe('stateTransform', () => {
           availableWalletIds: ['metamask'],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -782,9 +770,8 @@ describe('stateTransform', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 
@@ -813,9 +800,8 @@ describe('stateTransform', () => {
           availableWalletIds: [],
           discoveryErrors: [],
           transactionStatus: 'idle',
-          aztecProving: {
-            entries: {},
-          },
+          
+      backgroundTransactionIds: [],
         },
       });
 

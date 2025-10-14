@@ -1,5 +1,5 @@
 import type { ContractArtifact } from '@aztec/aztec.js';
-import { AuthWitness, AztecAddress, Fr } from '@aztec/aztec.js';
+import { AuthWitness, AztecAddress, Fr, TxHash } from '@aztec/aztec.js';
 import { ExecutionPayload } from '@aztec/entrypoints/payload';
 import { emptyFunctionArtifact, FunctionCall, FunctionSelector, FunctionType } from '@aztec/stdlib/abi';
 import { randomContractArtifact } from '@aztec/stdlib/testing';
@@ -202,5 +202,143 @@ describe('DeployContract Serialization', () => {
 
     // z.array(z.any()) should accept any values
     expect(result.args).toEqual(args);
+  });
+});
+
+describe('ExecuteTx Result Serialization', () => {
+  it('should serialize and deserialize aztec_wmExecuteTx result correctly', async () => {
+    // Create test data for the result
+    const txHash = TxHash.random();
+    const txStatusId = crypto.randomUUID();
+    const result = { txHash, txStatusId };
+
+    // Test result serialization
+    const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmExecuteTx', result);
+
+    // Test result deserialization
+    const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+      'aztec_wmExecuteTx',
+      serializedResult,
+    )) as { txHash: TxHash; txStatusId: string };
+
+    // Verify the structure is preserved
+    expect(deserializedResult).toBeDefined();
+    expect(deserializedResult.txHash).toBeDefined();
+    expect(deserializedResult.txStatusId).toBe(txStatusId);
+
+    // Verify TxHash is properly reconstructed
+    expect(deserializedResult.txHash.toString()).toBe(txHash.toString());
+  });
+
+  it('should handle different txStatusId formats', async () => {
+    const txHash = TxHash.random();
+
+    // Test with various UUID formats
+    const testCases = [
+      crypto.randomUUID(),
+      '550e8400-e29b-41d4-a716-446655440000',
+      'custom-status-id-123',
+    ];
+
+    for (const txStatusId of testCases) {
+      const result = { txHash, txStatusId };
+      const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmExecuteTx', result);
+      const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+        'aztec_wmExecuteTx',
+        serializedResult,
+      )) as { txHash: TxHash; txStatusId: string };
+
+      expect(deserializedResult.txStatusId).toBe(txStatusId);
+      expect(deserializedResult.txHash.toString()).toBe(txHash.toString());
+    }
+  });
+
+  it('should match the type definition from AztecWalletMethodMap', async () => {
+    // This test ensures the serializer produces a result that matches the type definition
+    const txHash = TxHash.random();
+    const txStatusId = crypto.randomUUID();
+    const result = { txHash, txStatusId };
+
+    const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmExecuteTx', result);
+    const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+      'aztec_wmExecuteTx',
+      serializedResult,
+    )) as { txHash: TxHash; txStatusId: string };
+
+    // Type assertion to ensure it matches the expected shape
+    const _typeCheck: { txHash: TxHash; txStatusId: string } = deserializedResult;
+    expect(_typeCheck).toBeDefined();
+  });
+});
+
+describe('DeployContract Result Serialization', () => {
+  it('should serialize and deserialize aztec_wmDeployContract result correctly', async () => {
+    // Create test data for the result
+    const txHash = TxHash.random();
+    const contractAddress = await AztecAddress.random();
+    const txStatusId = crypto.randomUUID();
+    const result = { txHash, contractAddress, txStatusId };
+
+    // Test result serialization
+    const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmDeployContract', result);
+
+    // Test result deserialization
+    const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+      'aztec_wmDeployContract',
+      serializedResult,
+    )) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };
+
+    // Verify the structure is preserved
+    expect(deserializedResult).toBeDefined();
+    expect(deserializedResult.txHash).toBeDefined();
+    expect(deserializedResult.contractAddress).toBeDefined();
+    expect(deserializedResult.txStatusId).toBe(txStatusId);
+
+    // Verify TxHash and AztecAddress are properly reconstructed
+    expect(deserializedResult.txHash.toString()).toBe(txHash.toString());
+    expect(deserializedResult.contractAddress.toString()).toBe(contractAddress.toString());
+  });
+
+  it('should handle different txStatusId formats', async () => {
+    const txHash = TxHash.random();
+    const contractAddress = await AztecAddress.random();
+
+    // Test with various UUID formats
+    const testCases = [
+      crypto.randomUUID(),
+      '550e8400-e29b-41d4-a716-446655440000',
+      'custom-deployment-id-456',
+    ];
+
+    for (const txStatusId of testCases) {
+      const result = { txHash, contractAddress, txStatusId };
+      const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmDeployContract', result);
+      const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+        'aztec_wmDeployContract',
+        serializedResult,
+      )) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };
+
+      expect(deserializedResult.txStatusId).toBe(txStatusId);
+      expect(deserializedResult.txHash.toString()).toBe(txHash.toString());
+      expect(deserializedResult.contractAddress.toString()).toBe(contractAddress.toString());
+    }
+  });
+
+  it('should match the type definition from AztecWalletMethodMap', async () => {
+    // This test ensures the serializer produces a result that matches the type definition
+    const txHash = TxHash.random();
+    const contractAddress = await AztecAddress.random();
+    const txStatusId = crypto.randomUUID();
+    const result = { txHash, contractAddress, txStatusId };
+
+    const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmDeployContract', result);
+    const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+      'aztec_wmDeployContract',
+      serializedResult,
+    )) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };
+
+    // Type assertion to ensure it matches the expected shape
+    const _typeCheck: { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string } = deserializedResult;
+    expect(_typeCheck).toBeDefined();
   });
 });

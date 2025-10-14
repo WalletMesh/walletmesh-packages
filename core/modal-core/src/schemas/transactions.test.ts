@@ -90,7 +90,7 @@ describe('Transaction Schemas', () => {
 
   describe('Transaction Status Schema', () => {
     it('should validate all transaction statuses', () => {
-      const statuses = ['idle', 'preparing', 'signing', 'broadcasting', 'confirming', 'confirmed', 'failed'];
+      const statuses = ['idle', 'simulating', 'proving', 'sending', 'pending', 'confirming', 'confirmed', 'failed'];
       for (const status of statuses) {
         expect(() => transactionStatusSchema.parse(status)).not.toThrow();
       }

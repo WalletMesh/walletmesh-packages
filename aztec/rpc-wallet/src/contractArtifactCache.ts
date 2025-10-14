@@ -1,5 +1,5 @@
 import type { AztecAddress, ContractArtifact, Wallet } from '@aztec/aztec.js';
-import { Fr } from '@aztec/foundation/fields';
+import type { Fr } from '@aztec/foundation/fields';
 import { getContractClassFromArtifact } from '@aztec/stdlib/contract';
 
 import { AztecWalletError } from './errors.js';

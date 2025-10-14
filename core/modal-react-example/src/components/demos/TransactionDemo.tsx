@@ -84,7 +84,7 @@ export function TransactionDemo() {
       });
 
       updateInHistory(txId, {
-        hash: result.hash,
+        hash: result.txHash,
         status: 'confirmed',
       });
 
@@ -122,7 +122,7 @@ export function TransactionDemo() {
       });
 
       updateInHistory(txId, {
-        hash: result.hash,
+        hash: result.txHash,
         status: 'confirmed',
       });
 
@@ -160,7 +160,7 @@ export function TransactionDemo() {
       });
 
       updateInHistory(txId, {
-        hash: result.hash,
+        hash: result.txHash,
         status: 'confirmed',
       });
 
@@ -200,7 +200,7 @@ export function TransactionDemo() {
       });
 
       updateInHistory(txId, {
-        hash: result.hash,
+        hash: result.txHash,
         status: 'confirmed',
       });
 
@@ -423,18 +423,18 @@ export function TransactionDemo() {
                 type="button"
                 onClick={handleEvmSendTransaction}
                 disabled={
-                  status === 'preparing' ||
-                  status === 'signing' ||
-                  status === 'broadcasting' ||
+                  status === 'simulating' ||
+                  status === 'proving' ||
+                  status === 'sending' ||
                   status === 'confirming' ||
                   !evmRecipient ||
                   !evmAmount
                 }
                 className={styles.submitButton}
               >
-                {status === 'preparing' ||
-                status === 'signing' ||
-                status === 'broadcasting' ||
+                {status === 'simulating' ||
+                status === 'proving' ||
+                status === 'sending' ||
                 status === 'confirming'
                   ? 'Sending...'
                   : 'Send ETH Transaction'}
@@ -480,18 +480,18 @@ export function TransactionDemo() {
                 type="button"
                 onClick={handleSolanaSendTransaction}
                 disabled={
-                  status === 'preparing' ||
-                  status === 'signing' ||
-                  status === 'broadcasting' ||
+                  status === 'simulating' ||
+                  status === 'proving' ||
+                  status === 'sending' ||
                   status === 'confirming' ||
                   !solanaRecipient ||
                   !solanaAmount
                 }
                 className={styles.submitButton}
               >
-                {status === 'preparing' ||
-                status === 'signing' ||
-                status === 'broadcasting' ||
+                {status === 'simulating' ||
+                status === 'proving' ||
+                status === 'sending' ||
                 status === 'confirming'
                   ? 'Sending...'
                   : 'Send SOL Transaction'}
@@ -533,18 +533,18 @@ export function TransactionDemo() {
                 type="button"
                 onClick={handleEvmContractTransaction}
                 disabled={
-                  status === 'preparing' ||
-                  status === 'signing' ||
-                  status === 'broadcasting' ||
+                  status === 'simulating' ||
+                  status === 'proving' ||
+                  status === 'sending' ||
                   status === 'confirming' ||
                   !evmContractAddress ||
                   !evmContractData
                 }
                 className={styles.submitButton}
               >
-                {status === 'preparing' ||
-                status === 'signing' ||
-                status === 'broadcasting' ||
+                {status === 'simulating' ||
+                status === 'proving' ||
+                status === 'sending' ||
                 status === 'confirming'
                   ? 'Sending...'
                   : 'Send Contract Transaction'}
@@ -586,18 +586,18 @@ export function TransactionDemo() {
                 type="button"
                 onClick={handleSolanaProgramTransaction}
                 disabled={
-                  status === 'preparing' ||
-                  status === 'signing' ||
-                  status === 'broadcasting' ||
+                  status === 'simulating' ||
+                  status === 'proving' ||
+                  status === 'sending' ||
                   status === 'confirming' ||
                   !solanaProgramId ||
                   !solanaInstruction
                 }
                 className={styles.submitButton}
               >
-                {status === 'preparing' ||
-                status === 'signing' ||
-                status === 'broadcasting' ||
+                {status === 'simulating' ||
+                status === 'proving' ||
+                status === 'sending' ||
                 status === 'confirming'
                   ? 'Sending...'
                   : 'Send Program Transaction'}

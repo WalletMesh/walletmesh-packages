@@ -836,11 +836,11 @@ describe('TransactionService', () => {
     });
 
     it('should compute loading state for different transaction statuses', () => {
-      // Test individual statuses
-      expect((service as unknown).computeLoadingState('preparing')).toBe(true);
+      // Test individual statuses with Aztec-native terminology
+      expect((service as unknown).computeLoadingState('simulating')).toBe(true);
       expect((service as unknown).computeLoadingState('proving')).toBe(true);
-      expect((service as unknown).computeLoadingState('signing')).toBe(true);
-      expect((service as unknown).computeLoadingState('broadcasting')).toBe(true);
+      expect((service as unknown).computeLoadingState('sending')).toBe(true);
+      expect((service as unknown).computeLoadingState('pending')).toBe(true);
       expect((service as unknown).computeLoadingState('confirming')).toBe(false);
       expect((service as unknown).computeLoadingState('confirmed')).toBe(false);
       expect((service as unknown).computeLoadingState('failed')).toBe(false);
