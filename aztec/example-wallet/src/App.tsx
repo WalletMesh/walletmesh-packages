@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
 import Wallet from './components/Wallet.js';
 import { CustomPermissionManager } from './components/CustomPermissionManager.js';
 import { AllowAskDenyState } from '@walletmesh/router/permissions';
-import { ToastProvider } from './contexts/ToastContext.js';
+import { ToastProvider, useToast } from './contexts/ToastContext.js';
+import type { HumanReadableChainPermissions } from '@walletmesh/router';
 
 interface ApprovalRequest {
   origin: string;
@@ -16,14 +18,7 @@ interface ApprovalRequest {
 function App() {
   const [pendingApproval, setPendingApproval] = useState<ApprovalRequest | null>(null);
   const [autoApprove, setAutoApprove] = useState(false);
-  const permissionManagerRef = useRef<CustomPermissionManager | null>(null);
-
-  // Update the permission manager when auto-approve state changes
-  useEffect(() => {
-    if (permissionManagerRef.current) {
-      permissionManagerRef.current.setAutoApprove(autoApprove);
-    }
-  }, [autoApprove]);
+  const { showError } = useToast();
 
   const handleApprovalRequest = async (request: {
     origin: string;
@@ -48,6 +43,110 @@ function App() {
     });
   };
 
+  const permissionManager = useRef(
+    new CustomPermissionManager(
+      // approvePermissionsCallback: Handle initial connection permissions
+      async (context, permissionRequest) => {
+        const origin = context.origin || 'unknown';
+        const chainIds = Object.keys(permissionRequest).join(', ');
+
+        const userApproved = await handleApprovalRequest({
+          origin,
+          chainId: chainIds,
+          method: 'wm_connect',
+          params: permissionRequest,
+        });
+
+        if (!userApproved) {
+          showError('Connection request denied.');
+          return {}; // Return empty permissions if denied
+        }
+
+        const result: HumanReadableChainPermissions = {};
+        for (const [chainId, methods] of Object.entries(permissionRequest)) {
+          result[chainId] = {};
+          for (const method of methods) {
+            result[chainId][method] = {
+              allowed: true,
+              shortDescription: 'allowed',
+            };
+          }
+        }
+        return result;
+      },
+      // askCallback: Handle individual method calls in ASK state
+      async (context, request) => {
+        const origin = context.origin || 'unknown';
+
+        let chainId = '';
+        let method = '';
+        let params: unknown;
+
+        if (request.method === 'wm_call' && request.params) {
+          const callParams = request.params as any;
+          chainId = callParams.chainId;
+          method = callParams.call?.method;
+          params = callParams.call?.params;
+        } else if (request.method === 'wm_bulkCall' && request.params) {
+          const bulkParams = request.params as any;
+          chainId = bulkParams.chainId;
+          method = 'bulk_call'; // Simplified for UI
+          params = bulkParams.calls;
+        }
+
+        return handleApprovalRequest({
+          origin,
+          chainId,
+          method,
+          params,
+        });
+      },
+      // initialState
+      new Map([
+        [
+          'aztec:31337',
+          new Map([
+            ['aztec_sendTx', AllowAskDenyState.ASK],
+            ['aztec_proveTx', AllowAskDenyState.ASK],
+            ['aztec_contractInteraction', AllowAskDenyState.ASK],
+            ['aztec_registerContract', AllowAskDenyState.ASK],
+            ['aztec_registerContractClass', AllowAskDenyState.ASK],
+            ['aztec_registerSender', AllowAskDenyState.ASK],
+            ['aztec_createAuthWit', AllowAskDenyState.ASK],
+            ['aztec_profileTx', AllowAskDenyState.ASK],
+            ['aztec_simulateTx', AllowAskDenyState.ASK],
+            ['aztec_simulateUtility', AllowAskDenyState.ASK],
+            ['aztec_wmDeployContract', AllowAskDenyState.ASK],
+            ['aztec_wmExecuteTx', AllowAskDenyState.ASK],
+            ['aztec_wmSimulateTx', AllowAskDenyState.ASK],
+            ['aztec_getAddress', AllowAskDenyState.ALLOW],
+            ['aztec_getCompleteAddress', AllowAskDenyState.ALLOW],
+            ['aztec_getChainId', AllowAskDenyState.ALLOW],
+            ['aztec_getVersion', AllowAskDenyState.ALLOW],
+            ['aztec_getNodeInfo', AllowAskDenyState.ALLOW],
+            ['aztec_getPublicEvents', AllowAskDenyState.ALLOW],
+            ['aztec_getContractMetadata', AllowAskDenyState.ALLOW],
+            ['aztec_getContractClassMetadata', AllowAskDenyState.ALLOW],
+            ['aztec_getTxReceipt', AllowAskDenyState.ALLOW],
+            ['aztec_getBlock', AllowAskDenyState.ALLOW],
+            ['aztec_getBlockNumber', AllowAskDenyState.ALLOW],
+            ['aztec_getCurrentBaseFees', AllowAskDenyState.ALLOW],
+            ['aztec_getPXEInfo', AllowAskDenyState.ALLOW],
+            ['aztec_removeSender', AllowAskDenyState.DENY],
+            ['aztec_getSenders', AllowAskDenyState.DENY],
+            ['aztec_getPrivateEvents', AllowAskDenyState.DENY],
+            ['aztec_getContracts', AllowAskDenyState.DENY],
+          ]),
+        ],
+      ]),
+    ),
+  );
+
+  // Update the permission manager when auto-approve state changes
+  useEffect(() => {
+    permissionManager.current.setAutoApprove(autoApprove);
+  }, [autoApprove, permissionManager]);
+
   const handleApprovalResponse = (approved: boolean) => {
     if (pendingApproval) {
       pendingApproval.resolve(approved);
@@ -55,61 +154,54 @@ function App() {
   };
 
   const handleAlwaysAllow = () => {
-    if (pendingApproval && permissionManagerRef.current) {
-      // Update the permission state to ALLOW
-      permissionManagerRef.current.updatePermissionState(
+    if (pendingApproval) {
+      permissionManager.current.updatePermissionState(
         pendingApproval.chainId as any,
         pendingApproval.method,
-        AllowAskDenyState.ALLOW
+        AllowAskDenyState.ALLOW,
       );
-
-      // Resolve the approval as true
       pendingApproval.resolve(true);
     }
   };
 
   const handleEnableAutoApprove = () => {
-    // Enable auto-approve globally
     setAutoApprove(true);
-
-    // If there's a pending approval, approve it immediately
     if (pendingApproval) {
       pendingApproval.resolve(true);
     }
   };
 
   return (
-    <ToastProvider>
-      <div className="App">
-        <h1>WalletMesh Aztec Wallet</h1>
+    <div className="App">
+      <h1>WalletMesh Aztec Wallet</h1>
 
-        <div className="auto-approve-toggle">
-          <label>
-            <input
-              type="checkbox"
-              checked={autoApprove}
-              onChange={(e) => setAutoApprove(e.target.checked)}
-            />
-            Auto Approve All Requests
-          </label>
-          {autoApprove && (
-            <p className="auto-approve-warning">
-              ⚠️ Warning: All requests will be automatically approved without user confirmation.
-            </p>
-          )}
-        </div>
-
-        <Wallet
-          pendingApproval={pendingApproval}
-          onApprovalResponse={handleApprovalResponse}
-          onApprovalRequest={handleApprovalRequest}
-          onAlwaysAllow={handleAlwaysAllow}
-          onEnableAutoApprove={handleEnableAutoApprove}
-          permissionManagerRef={permissionManagerRef}
-        />
+      <div className="auto-approve-toggle">
+        <label>
+          <input type="checkbox" checked={autoApprove} onChange={(e) => setAutoApprove(e.target.checked)} />
+          Auto Approve All Requests
+        </label>
+        {autoApprove && (
+          <p className="auto-approve-warning">
+            ⚠️ Warning: All requests will be automatically approved without user confirmation.
+          </p>
+        )}
       </div>
-    </ToastProvider>
+
+      <Wallet
+        pendingApproval={pendingApproval}
+        onApprovalResponse={handleApprovalResponse}
+        onAlwaysAllow={handleAlwaysAllow}
+        onEnableAutoApprove={handleEnableAutoApprove}
+        permissionManager={permissionManager.current}
+      />
+    </div>
   );
 }
 
-export default App;
+const WrappedApp = () => (
+  <ToastProvider>
+    <App />
+  </ToastProvider>
+);
+
+export default WrappedApp;

@@ -9,7 +9,6 @@ import {
   type ChainId,
   createLocalTransportPair,
   type WalletRouterConfig,
-  type HumanReadableChainPermissions,
 } from '@walletmesh/router'
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { getInitialTestAccounts } from '@aztec/accounts/testing';
@@ -20,7 +19,6 @@ import Approve from './Approve.js';
 import './Wallet.css';
 import FunctionCallDisplay from './FunctionCallDisplay.js';
 import ParameterDisplay from './ParameterDisplay.js';
-import { AllowAskDenyState } from '@walletmesh/router/permissions';
 import { createOriginMiddleware } from '../middlewares/originMiddleware.js';
 import { createFunctionArgNamesMiddleware } from '../middlewares/functionArgNamesMiddleware.js';
 import { createHistoryMiddleware, type HistoryEntry } from '../middlewares/historyMiddleware.js';
@@ -184,8 +182,8 @@ interface WalletProps {
   onAlwaysAllow?: () => void;
   /** Callback invoked when the user enables auto-approve from an approval prompt. */
   onEnableAutoApprove?: () => void;
-  /** Reference to the permission manager for updating permission states. */
-  permissionManagerRef?: React.MutableRefObject<CustomPermissionManager | null>;
+  /** Instance of the permission manager for the router. */
+  permissionManager: CustomPermissionManager;
 }
 
 
@@ -198,7 +196,13 @@ interface WalletProps {
  * - Communicates with DApps via cross-window postMessage
  * - Displays a history of requests and manages UI for pending approvals
  */
-const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, onApprovalRequest, onAlwaysAllow, onEnableAutoApprove, permissionManagerRef }) => {
+const Wallet: React.FC<WalletProps> = ({
+  pendingApproval,
+  onApprovalResponse,
+  onAlwaysAllow,
+  onEnableAutoApprove,
+  permissionManager,
+}) => {
   /** State for storing and displaying the history of requests received by the router. */
   const [requestHistory, setRequestHistory] = useState<HistoryEntry[]>([]);
   /** State indicating if the wallet router and underlying services are initialized. */
@@ -279,7 +283,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
 
         // Add middleware to the wallet node for function arg names and history
         aztecWalletNode.addMiddleware(createFunctionArgNamesMiddleware(pxe));
-                aztecWalletNode.addMiddleware(createHistoryMiddleware((entries) => {
+        aztecWalletNode.addMiddleware(createHistoryMiddleware((entries) => {
           setRequestHistory(entries as HistoryEntry[]);
 
           // Update transaction statistics
@@ -303,7 +307,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
             .forEach(entry => {
               const method = entry.method;
               const duration = entry.duration as number;
-              
+
               if (!newTimingStats[method]) {
                 newTimingStats[method] = {
                   count: 0,
@@ -314,7 +318,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
                   times: [],
                 };
               }
-              
+
               newTimingStats[method].times.push(duration);
             });
 
@@ -322,12 +326,12 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
           Object.keys(newTimingStats).forEach(method => {
             const stats = newTimingStats[method];
             const times = stats.times;
-            
+
             stats.count = times.length;
             stats.min = Math.min(...times);
             stats.max = Math.max(...times);
             stats.avg = times.reduce((a, b) => a + b, 0) / times.length;
-            
+
             // Calculate standard deviation
             const variance = times.reduce((acc, time) => {
               return acc + Math.pow(time - stats.avg, 2);
@@ -385,110 +389,6 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
 
         const routerTransport = createDappToWalletTransport(dappWindow, dappOrigin);
 
-                // Create permission manager with CustomPermissionManager
-        const permissionManager = new CustomPermissionManager(
-          // approvePermissionsCallback: Handle initial connection permissions
-          async (context, permissionRequest) => {
-            const origin = context.origin || 'unknown';
-            const chainIds = Object.keys(permissionRequest).join(', ');
-
-            // Prompt user for initial connection approval
-            const userApproved = await (onApprovalRequest || (async () => true))({
-              origin,
-              chainId: chainIds,
-              method: 'wm_connect',
-              params: permissionRequest
-            });
-
-            if (!userApproved) {
-              return {}; // Return empty permissions if denied
-            }
-
-            // If approved, convert to human-readable format
-            const result: HumanReadableChainPermissions = {};
-            for (const [chainId, methods] of Object.entries(permissionRequest)) {
-              result[chainId] = {};
-              for (const method of methods) {
-                result[chainId][method] = {
-                  allowed: true,
-                  shortDescription: 'allowed',
-                };
-              }
-            }
-            return result;
-          },
-                              // askCallback: Handle individual method calls in ASK state
-          async (context, request) => {
-            const origin = context.origin || 'unknown';
-
-            // Extract method details from the request
-            let chainId = '';
-            let method = '';
-            let params: unknown;
-
-            if (request.method === 'wm_call' && request.params) {
-              const callParams = request.params as any;
-              chainId = callParams.chainId;
-              method = callParams.call?.method;
-              params = callParams.call?.params;
-            } else if (request.method === 'wm_bulkCall' && request.params) {
-              const bulkParams = request.params as any;
-              chainId = bulkParams.chainId;
-              method = 'bulk_call'; // Simplified for UI
-              params = bulkParams.calls;
-            }
-
-            // Now we can use the async approval flow
-            return await (onApprovalRequest || (async () => true))({
-              origin,
-              chainId,
-              method,
-              params
-            });
-          },
-          // initialState: Define initial permission states
-          new Map([
-            ['aztec:31337', new Map([
-              // Methods that require approval each time (ASK state)
-              ['aztec_sendTx', AllowAskDenyState.ASK],
-              ['aztec_proveTx', AllowAskDenyState.ASK],
-              ['aztec_contractInteraction', AllowAskDenyState.ASK],
-              ['aztec_registerContract', AllowAskDenyState.ASK],
-              ['aztec_registerContractClass', AllowAskDenyState.ASK],
-              ['aztec_registerSender', AllowAskDenyState.ASK],
-              ['aztec_createAuthWit', AllowAskDenyState.ASK],
-              ['aztec_profileTx', AllowAskDenyState.ASK],
-              ['aztec_simulateTx', AllowAskDenyState.ASK],
-              ['aztec_simulateUtility', AllowAskDenyState.ASK],
-              ['aztec_wmDeployContract', AllowAskDenyState.ASK],
-              ['aztec_wmExecuteTx', AllowAskDenyState.ASK],
-              ['aztec_wmSimulateTx', AllowAskDenyState.ASK],
-
-              // Methods that are always allowed (ALLOW state)
-              ['aztec_getAddress', AllowAskDenyState.ALLOW],
-              ['aztec_getCompleteAddress', AllowAskDenyState.ALLOW],
-              ['aztec_getChainId', AllowAskDenyState.ALLOW],
-              ['aztec_getVersion', AllowAskDenyState.ALLOW],
-              ['aztec_getNodeInfo', AllowAskDenyState.ALLOW],
-              ['aztec_getPublicEvents', AllowAskDenyState.ALLOW],
-              ['aztec_getContractMetadata', AllowAskDenyState.ALLOW],
-              ['aztec_getContractClassMetadata', AllowAskDenyState.ALLOW],
-              ['aztec_getTxReceipt', AllowAskDenyState.ALLOW],
-              ['aztec_getBlock', AllowAskDenyState.ALLOW],
-              ['aztec_getBlockNumber', AllowAskDenyState.ALLOW],
-              ['aztec_getCurrentBaseFees', AllowAskDenyState.ALLOW],
-              ['aztec_getPXEInfo', AllowAskDenyState.ALLOW],
-
-              // Methods that are always denied (DENY state) - if any
-              // ['some_risky_method', AllowAskDenyState.DENY],
-              ['aztec_removeSender', AllowAskDenyState.DENY],
-              ['aztec_getSenders', AllowAskDenyState.DENY],
-              ['aztec_getPrivateEvents', AllowAskDenyState.DENY],
-              ['aztec_getContracts', AllowAskDenyState.DENY],
-            ])]
-          ])
-        );
-
         // Create wallets map with the client transport
         const wallets = new Map<ChainId, import('@walletmesh/jsonrpc').JSONRPCTransport>([
           ['aztec:31337', clientTransport]
@@ -506,12 +406,6 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
 
         // Create the router with transports
         const router = new WalletRouter(routerTransport, wallets, permissionManager, routerConfig);
-
-        // Set the permission manager reference for the App component
-        if (permissionManagerRef) {
-          permissionManagerRef.current = permissionManager;
-        }
-
 
         // Add origin middleware to provide proper origin context
         router.addMiddleware(createOriginMiddleware(detectedOrigin));
@@ -536,7 +430,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
     // Initialize
     setupWalletRouter();
 
-  }, [onApprovalRequest, showError, showSuccess]);
+  }, [permissionManager, showError, showSuccess]);
 
   /** Handles the "Approve" action from the approval UI. */
   const handleApprove = () => {
@@ -568,13 +462,13 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
   /** Sort timing statistics based on current sort configuration */
   const getSortedTimingStats = () => {
     const entries = Object.entries(timingStats);
-    
+
     return entries.sort((a, b) => {
       const [methodA, statsA] = a;
       const [methodB, statsB] = b;
-      
+
       let comparison = 0;
-      
+
       switch (timingSortConfig.column) {
         case 'method':
           comparison = methodA.localeCompare(methodB);
@@ -595,7 +489,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
           comparison = statsA.stdDev - statsB.stdDev;
           break;
       }
-      
+
       return timingSortConfig.direction === 'asc' ? comparison : -comparison;
     });
   };
@@ -663,10 +557,10 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
               </div>
             </div>
           </div>
-          
+
           {/* Timing Statistics Section */}
           <div className="timing-stats-container">
-            <button 
+            <button
               className="timing-stats-toggle"
               onClick={() => setShowTimingStats(!showTimingStats)}
               aria-expanded={showTimingStats}
@@ -675,7 +569,7 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
               Processing Time Statistics
               <span className="stats-count">({Object.keys(timingStats).length} methods)</span>
             </button>
-            
+
             {showTimingStats && (
               <div className="timing-stats-content">
                 {Object.keys(timingStats).length === 0 ? (
@@ -685,37 +579,37 @@ const Wallet: React.FC<WalletProps> = ({ pendingApproval, onApprovalResponse, on
                     <table className="timing-stats-table">
                       <thead>
                         <tr>
-                          <th 
+                          <th
                             className="sortable-header"
                             onClick={() => handleSort('method')}
                           >
                             Method{getSortIndicator('method')}
                           </th>
-                          <th 
+                          <th
                             className="sortable-header"
                             onClick={() => handleSort('count')}
                           >
                             Count{getSortIndicator('count')}
                           </th>
-                          <th 
+                          <th
                             className="sortable-header"
                             onClick={() => handleSort('min')}
                           >
                             Min{getSortIndicator('min')}
                           </th>
-                          <th 
+                          <th
                             className="sortable-header"
                             onClick={() => handleSort('max')}
                           >
                             Max{getSortIndicator('max')}
                           </th>
-                          <th 
+                          <th
                             className="sortable-header"
                             onClick={() => handleSort('avg')}
                           >
                             Avg{getSortIndicator('avg')}
                           </th>
-                          <th 
+                          <th
                             className="sortable-header"
                             onClick={() => handleSort('stdDev')}
                           >

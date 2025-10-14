@@ -215,9 +215,8 @@ const DApp: React.FC = () => {
       setIsMinting(true);
       try {
         const tokenContract = await Contract.at(tokenAddress, TokenContractArtifact, wallet);
-        const interaction = tokenContract.methods.mint_to_public(account, 10000000000000000000000n);
-        const sentTx = await wallet.wmExecuteTx(interaction);
-        const receipt = await sentTx.wait();
+        const tx = tokenContract.methods.mint_to_public(account, 10000000000000000000000n).send({ from: wallet.getAddress() });
+        const receipt = await tx.wait();
         if (receipt.status !== TxStatus.SUCCESS) {
           showError(`Minting failed: ${receipt.error}`);
           throw new Error(`Minting failed: ${receipt.error}`);
@@ -243,9 +242,8 @@ const DApp: React.FC = () => {
       try {
         const tokenContract = await Contract.at(tokenAddress, TokenContractArtifact, wallet);
         const to = await getInitialTestAccounts().then(accounts => accounts[1].address);
-        const interaction = tokenContract.methods.transfer_in_public(account, to.toString(), 100000n, 0n);
-        const sentTx = await wallet.wmExecuteTx(interaction);
-        const receipt = await sentTx.wait();
+        const tx = tokenContract.methods.transfer_in_public(account, to.toString(), 100000n, 0n).send({ from: wallet.getAddress() });
+        const receipt = await tx.wait();
         if (receipt.status != TxStatus.SUCCESS) {
           throw new Error(`Transfer failed: ${receipt.error}`);
         }
@@ -268,7 +266,6 @@ const DApp: React.FC = () => {
       setIsCheckingBalance(true);
       try {
         const tokenContract = await Contract.at(tokenAddress, TokenContractArtifact, wallet);
-        // TODO(twt): Switch to using `wallet.wmSimulateTx` once it returns a higher-level result
         const balance = await tokenContract.methods.balance_of_public(account).simulate({ from: wallet.getAddress() });
         setTokenBalance(balance.toString());
         showInfo(`Token balance: ${balance.toString()}`);

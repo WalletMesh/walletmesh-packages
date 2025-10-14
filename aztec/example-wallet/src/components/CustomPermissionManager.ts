@@ -1,7 +1,11 @@
-import { AllowAskDenyManager } from '@walletmesh/router/permissions';
-import type { AllowAskDenyState } from '@walletmesh/router/permissions';
-import type { RouterMethodMap, RouterContext, ChainId } from '@walletmesh/router';
 import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
+import type { ChainId, PermissionApprovalCallback, RouterContext, RouterMethodMap } from '@walletmesh/router';
+import type {
+  AllowAskDenyChainPermissions,
+  AllowAskDenyState,
+  AskCallback,
+} from '@walletmesh/router/permissions';
+import { AllowAskDenyManager } from '@walletmesh/router/permissions';
 
 /**
  * Custom permission manager that extends AllowAskDenyManager to add
@@ -9,6 +13,61 @@ import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
  */
 export class CustomPermissionManager extends AllowAskDenyManager<RouterMethodMap, RouterContext> {
   private autoApproveEnabled = false;
+
+  /**
+   * Explicitly declare the approvePermissions property to ensure proper override.
+   * Without this declaration, TypeScript may not properly recognize the override in the constructor.
+   */
+  public approvePermissions: PermissionApprovalCallback<RouterContext>;
+
+  /**
+   * Explicitly declare the askPermissions property to ensure proper override.
+   * This handles individual method approval prompts in ASK state.
+   */
+  public askPermissions: AskCallback<RouterMethodMap, RouterContext>;
+
+  /**
+   * Creates a new CustomPermissionManager instance.
+   * Overrides the approvePermissions callback to check auto-approve state in real-time,
+   * fixing the closure problem where the callback captured stale state.
+   *
+   * @param approvePermissionsCallback - Original callback for handling new permission requests
+   * @param askCallback - Callback for prompting user about methods in ASK state
+   * @param initialState - Initial permission states for chains and methods
+   */
+  constructor(
+    approvePermissionsCallback: PermissionApprovalCallback<RouterContext>,
+    askCallback: AskCallback<RouterMethodMap, RouterContext>,
+    initialState: AllowAskDenyChainPermissions<RouterMethodMap> = new Map(),
+  ) {
+    super(approvePermissionsCallback, askCallback, initialState);
+
+    // Override the approvePermissions property to check auto-approve in real-time
+    // This fixes the closure problem where the callback would capture stale autoApprove state
+    this.approvePermissions = async (context, permissionRequest) => {
+      // If auto-approve is enabled, automatically approve all connections
+      if (this.autoApproveEnabled) {
+        // Let the original approvePermissions callback handle the approval
+        // and return the correct HumanReadableChainPermissions structure
+        return approvePermissionsCallback(context, permissionRequest);
+      }
+
+      // Otherwise, use the original callback
+      return approvePermissionsCallback(context, permissionRequest);
+    };
+
+    // Override the askPermissions property to check auto-approve for individual method calls
+    // This handles approval prompts for methods in ASK state
+    this.askPermissions = async (context, request) => {
+      // If auto-approve is enabled, automatically approve all method calls
+      if (this.autoApproveEnabled) {
+        return true;
+      }
+
+      // Otherwise, use the original callback
+      return askCallback(context, request);
+    };
+  }
 
   /**
    * Enables or disables auto-approval mode.
