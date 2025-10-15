@@ -199,24 +199,42 @@ export function WalletMeshModal(): React.ReactElement | null {
   useEffect(() => {
     if (!isBrowser) return;
 
-    // Create a dedicated portal root for the modal
-    const portalRoot = document.createElement('div');
-    portalRoot.id = 'walletmesh-modal-portal';
-    portalRoot.style.position = 'fixed';
-    portalRoot.style.top = '0';
-    portalRoot.style.left = '0';
-    portalRoot.style.width = '100%';
-    portalRoot.style.height = '100%';
-    portalRoot.style.zIndex = '9999';
-    portalRoot.style.pointerEvents = 'none'; // Initial state, will be updated by separate effect
+    // Check if portal root already exists (e.g., from previous component instance)
+    let portalRoot = document.getElementById('walletmesh-modal-portal') as HTMLDivElement | null;
 
-    document.body.appendChild(portalRoot);
-    portalRootRef.current = portalRoot;
+    if (portalRoot) {
+      // Reuse existing portal root
+      logger.debug('Reusing existing portal root');
+      portalRootRef.current = portalRoot;
+    } else {
+      // Create a dedicated portal root for the modal
+      portalRoot = document.createElement('div');
+      portalRoot.id = 'walletmesh-modal-portal';
+      portalRoot.style.position = 'fixed';
+      portalRoot.style.top = '0';
+      portalRoot.style.left = '0';
+      portalRoot.style.width = '100%';
+      portalRoot.style.height = '100%';
+      portalRoot.style.zIndex = '9999';
+      portalRoot.style.pointerEvents = 'none'; // Initial state, will be updated by separate effect
+
+      document.body.appendChild(portalRoot);
+      portalRootRef.current = portalRoot;
+      logger.debug('Created new portal root');
+    }
 
     return () => {
       // Cleanup: remove portal root when component unmounts
+      // Only remove if there are no other components using it
       if (portalRootRef.current?.parentNode) {
-        portalRootRef.current.parentNode.removeChild(portalRootRef.current);
+        // Check if this is the last component using this portal
+        // by checking if the portal has any React-rendered content
+        if (portalRootRef.current.childNodes.length === 0) {
+          portalRootRef.current.parentNode.removeChild(portalRootRef.current);
+          logger.debug('Removed portal root (no content)');
+        } else {
+          logger.debug('Portal root still has content, keeping it');
+        }
       }
       portalRootRef.current = null;
     };
@@ -423,11 +441,11 @@ export function WalletMeshModal(): React.ReactElement | null {
 
     console.log('[WalletMeshModal] Wallet selection view data:', {
       totalWallets: wallets.length,
-      walletIds: wallets.map(w => w.id),
+      walletIds: wallets.map((w) => w.id),
       filteredWallets: filteredWallets.length,
-      filteredWalletIds: filteredWallets.map(w => w.id),
+      filteredWalletIds: filteredWallets.map((w) => w.id),
       targetChainType,
-      isDiscovering
+      isDiscovering,
     });
 
     return (
@@ -495,7 +513,7 @@ export function WalletMeshModal(): React.ReactElement | null {
                         '<rect x="2" y="5" width="20" height="14" rx="2" ry="2" fill="#f3f4f6" stroke="#6b7280"/>' +
                         '<path d="M16 12h2" stroke="#6b7280"/>' +
                         '<circle cx="17.5" cy="12" r="1.5" fill="#6b7280"/>' +
-                      '</svg>'
+                        '</svg>',
                     )
                   }
                 />

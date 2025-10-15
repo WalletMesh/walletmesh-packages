@@ -243,7 +243,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: rgba(226, 232, 240, 0.95);
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -12,7 +12,7 @@ import type { AztecAddress } from '@aztec/aztec.js';
 import { ErrorFactory } from '@walletmesh/modal-core';
 import type { AztecContractArtifact, AztecDeploymentStage } from '@walletmesh/modal-core/providers/aztec';
 import { ensureContractClassRegistered, normalizeArtifact } from '@walletmesh/modal-core/providers/aztec';
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { useAztecWallet } from './useAztecWallet.js';
 
 /**
@@ -32,7 +32,15 @@ export type ContractArtifact = AztecContractArtifact;
 export interface DeploymentOptions {
   /** Callback when deployment starts */
   onStart?: () => void;
-  /** Callback when deployment succeeds */
+  /**
+   * Callback when deployment succeeds.
+   *
+   * IMPORTANT: For async deploy(), onSuccess fires when deployment is SUBMITTED (not confirmed).
+   * For deploySync(), onSuccess fires when deployment is CONFIRMED and contract is accessible.
+   *
+   * If you need to know when the contract is confirmed with async deploy(), monitor
+   * aztec_transactionStatus events or use deploySync() instead.
+   */
   onSuccess?: (address: AztecAddress | string) => void;
   /** Callback when deployment fails */
   onError?: (error: Error) => void;
@@ -62,8 +70,18 @@ export interface DeploymentResult {
  * @public
  */
 export interface UseAztecDeployReturn {
-  /** Deploy a contract with the given artifact and arguments */
-  deploy: (
+  /**
+   * Deploy a contract asynchronously (non-blocking)
+   * Returns txStatusId immediately for background tracking
+   * Transaction status notifications can be monitored via aztec_transactionStatus events
+   */
+  deploy: (artifact: ContractArtifact, args: unknown[], options?: DeploymentOptions) => Promise<string>; // Returns txStatusId
+  /**
+   * Deploy a contract synchronously (blocking)
+   * Waits for deployment to complete and displays transaction overlay
+   * Returns full deployment result with address, contract instance, and receipt
+   */
+  deploySync: (
     artifact: ContractArtifact,
     args: unknown[],
     options?: DeploymentOptions,
@@ -74,6 +92,8 @@ export interface UseAztecDeployReturn {
   stage: AztecDeploymentStage;
   /** Any error that occurred during deployment */
   error: Error | null;
+  /** Transaction status ID for tracking the current/last deployment */
+  txStatusId: string | null;
   /** Last deployed contract address */
   deployedAddress: AztecAddress | string | null;
   /** Last deployment result */
@@ -103,15 +123,49 @@ export interface UseAztecDeployReturn {
  *
  * @example
  * ```tsx
+ * // Async mode (non-blocking) - returns txStatusId immediately
  * import { useAztecDeploy } from '@walletmesh/modal-react';
  * import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';
  *
- * function DeployToken() {
- *   const { deploy, isDeploying, stage, deployedAddress } = useAztecDeploy();
+ * function DeployTokenAsync() {
+ *   const { deploy, txStatusId, deployedAddress } = useAztecDeploy();
  *
  *   const handleDeploy = async () => {
- *     // No need for type conversion - hook handles compatibility
- *     const result = await deploy(
+ *     // Returns txStatusId immediately, deployment runs in background
+ *     const statusId = await deploy(
+ *       TokenContractArtifact,
+ *       [ownerAddress, 'MyToken', 'MTK', 18],
+ *       {
+ *         onStart: () => console.log('Deployment initiated'),
+ *         onError: (error) => console.error('Deployment failed:', error),
+ *       }
+ *     );
+ *     console.log('Track deployment with statusId:', statusId);
+ *     // Listen to aztec_transactionStatus events for progress updates
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <button onClick={handleDeploy}>Deploy Token (Async)</button>
+ *       {txStatusId && <p>Tracking: {txStatusId}</p>}
+ *       {deployedAddress && <p>Deployed at: {deployedAddress.toString()}</p>}
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Sync mode (blocking) - waits for completion with overlay
+ * import { useAztecDeploy } from '@walletmesh/modal-react';
+ * import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';
+ *
+ * function DeployTokenSync() {
+ *   const { deploySync, isDeploying, stage, deployedAddress } = useAztecDeploy();
+ *
+ *   const handleDeploy = async () => {
+ *     // Blocks until deployment completes, shows transaction overlay
+ *     const result = await deploySync(
  *       TokenContractArtifact,
  *       [ownerAddress, 'MyToken', 'MTK', 18],
  *       {
@@ -123,12 +177,13 @@ export interface UseAztecDeployReturn {
  *         },
  *       }
  *     );
+ *     console.log('Full result:', result);
  *   };
  *
  *   return (
  *     <div>
  *       <button onClick={handleDeploy} disabled={isDeploying}>
- *         {isDeploying ? `${stage}...` : 'Deploy Token'}
+ *         {isDeploying ? `${stage}...` : 'Deploy Token (Sync)'}
  *       </button>
  *       {deployedAddress && (
  *         <p>Deployed at: {deployedAddress.toString()}</p>
@@ -187,16 +242,140 @@ export function useAztecDeploy(): UseAztecDeployReturn {
   const [isDeploying, setIsDeploying] = useState(false);
   const [stage, setStage] = useState<AztecDeploymentStage>('idle');
   const [error, setError] = useState<Error | null>(null);
+  const [txStatusId, setTxStatusId] = useState<string | null>(null);
   const [deployedAddress, setDeployedAddress] = useState<AztecAddress | string | null>(null);
   const [lastDeployment, setLastDeployment] = useState<DeploymentResult | null>(null);
 
+  // Ref to track if component is mounted
+  const isMountedRef = useRef(true);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const reset = useCallback(() => {
+    if (!isMountedRef.current) return;
     setIsDeploying(false);
     setStage('idle');
     setError(null);
+    setTxStatusId(null);
   }, []);
 
+  /**
+   * Async deployment (non-blocking) - returns txStatusId immediately
+   */
   const deploy = useCallback(
+    async (artifact: ContractArtifact, args: unknown[], options: DeploymentOptions = {}): Promise<string> => {
+      if (!isReady || !aztecWallet || !address) {
+        const error = ErrorFactory.connectionFailed('Aztec wallet is not ready or no address available');
+        if (isMountedRef.current) {
+          setError(error);
+        }
+        if (options.onError) {
+          options.onError(error);
+        }
+        throw error;
+      }
+
+      // Check if wmDeployContract method is available
+      if (!aztecWallet.wmDeployContract) {
+        const error = ErrorFactory.configurationError(
+          'wmDeployContract method not available on wallet. Use deploySync() for legacy wallets.',
+        );
+
+        if (isMountedRef.current) {
+          setError(error);
+          setStage('error');
+          setIsDeploying(false);
+        }
+
+        if (options.onError) {
+          options.onError(error);
+        }
+
+        throw error;
+      }
+
+      if (isMountedRef.current) {
+        setIsDeploying(true);
+        setStage('preparing');
+        setError(null);
+        options.onProgress?.('preparing');
+      }
+
+      if (options.onStart) {
+        options.onStart();
+      }
+
+      try {
+        // Ensure artifact has the required notes property for compatibility
+        const compatibleArtifact = normalizeArtifact(artifact);
+
+        await ensureContractClassRegistered(aztecWallet, compatibleArtifact);
+
+        // Call wmDeployContract to get txStatusId immediately
+        const result = await aztecWallet.wmDeployContract(
+          compatibleArtifact as Parameters<typeof aztecWallet.wmDeployContract>[0],
+          args,
+        );
+
+        if (!isMountedRef.current) {
+          return result.txStatusId;
+        }
+
+        // Store txStatusId for tracking
+        setTxStatusId(result.txStatusId);
+        setDeployedAddress(result.contractAddress as AztecAddress);
+
+        // IMPORTANT: onSuccess fires here when deployment is SUBMITTED, not CONFIRMED.
+        // The contract address is computed but the deployment transaction is still processing.
+        // Users who need confirmation should use deploySync() or monitor transaction status events.
+        if (options.onSuccess) {
+          options.onSuccess(result.contractAddress as AztecAddress);
+        }
+
+        // Deployment is now running in background
+        // Transaction status notifications will be sent via aztec_transactionStatus events
+        setStage('proving');
+        setIsDeploying(false);
+
+        return result.txStatusId;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err : ErrorFactory.transactionFailed('Deployment failed');
+
+        const enhancedError = Object.assign(
+          ErrorFactory.transactionFailed(`Deployment failed: ${errorMessage.message}`),
+          {
+            originalError: err,
+            artifactName: artifact.name,
+            constructorArgs: args,
+            cause: errorMessage,
+          },
+        );
+
+        if (isMountedRef.current) {
+          setError(enhancedError);
+          setStage('error');
+          setIsDeploying(false);
+        }
+
+        if (options.onError) {
+          options.onError(enhancedError);
+        }
+
+        throw enhancedError;
+      }
+    },
+    [aztecWallet, isReady, address],
+  );
+
+  /**
+   * Sync deployment (blocking) - waits for completion
+   */
+  const deploySync = useCallback(
     async (
       artifact: ContractArtifact,
       args: unknown[],
@@ -204,17 +383,21 @@ export function useAztecDeploy(): UseAztecDeployReturn {
     ): Promise<DeploymentResult> => {
       if (!isReady || !aztecWallet || !address) {
         const error = ErrorFactory.connectionFailed('Aztec wallet is not ready or no address available');
-        setError(error);
+        if (isMountedRef.current) {
+          setError(error);
+        }
         if (options.onError) {
           options.onError(error);
         }
         throw error;
       }
 
-      setIsDeploying(true);
-      setStage('preparing');
-      setError(null);
-      options.onProgress?.('preparing');
+      if (isMountedRef.current) {
+        setIsDeploying(true);
+        setStage('preparing');
+        setError(null);
+        options.onProgress?.('preparing');
+      }
 
       if (options.onStart) {
         options.onStart();
@@ -222,15 +405,19 @@ export function useAztecDeploy(): UseAztecDeployReturn {
 
       try {
         // Prepare deployment
-        setStage('computing');
-        if (options.onProgress) {
-          options.onProgress('computing');
+        if (isMountedRef.current) {
+          setStage('computing');
+          if (options.onProgress) {
+            options.onProgress('computing');
+          }
         }
 
         // Deploy the contract
-        setStage('proving');
-        if (options.onProgress) {
-          options.onProgress('proving');
+        if (isMountedRef.current) {
+          setStage('proving');
+          if (options.onProgress) {
+            options.onProgress('proving');
+          }
         }
 
         // Ensure artifact has the required notes property for compatibility
@@ -243,17 +430,21 @@ export function useAztecDeploy(): UseAztecDeployReturn {
           args,
         );
 
-        setStage('sending');
-        if (options.onProgress) {
-          options.onProgress('sending');
+        if (isMountedRef.current) {
+          setStage('sending');
+          if (options.onProgress) {
+            options.onProgress('sending');
+          }
         }
 
         const txHash = deploySentTx.txHash || 'deployment';
 
         // Wait for deployment to complete
-        setStage('confirming');
-        if (options.onProgress) {
-          options.onProgress('confirming');
+        if (isMountedRef.current) {
+          setStage('confirming');
+          if (options.onProgress) {
+            options.onProgress('confirming');
+          }
         }
 
         const deployedContract = await deploySentTx.deployed();
@@ -269,10 +460,12 @@ export function useAztecDeploy(): UseAztecDeployReturn {
           txHash,
         };
 
-        setDeployedAddress(contractAddress);
-        setLastDeployment(result);
-        setStage('success');
-        setIsDeploying(false);
+        if (isMountedRef.current) {
+          setDeployedAddress(contractAddress);
+          setLastDeployment(result);
+          setStage('success');
+          setIsDeploying(false);
+        }
 
         if (options.onSuccess) {
           options.onSuccess(contractAddress);
@@ -291,12 +484,14 @@ export function useAztecDeploy(): UseAztecDeployReturn {
             artifactName: artifact.name,
             constructorArgs: args,
             cause: errorMessage,
-          }
+          },
         );
 
-        setError(enhancedError);
-        setStage('error');
-        setIsDeploying(false);
+        if (isMountedRef.current) {
+          setError(enhancedError);
+          setStage('error');
+          setIsDeploying(false);
+        }
 
         if (options.onError) {
           options.onError(enhancedError);
@@ -305,18 +500,19 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         throw enhancedError;
       }
     },
-    [aztecWallet, isReady, address],
+    [aztecWallet, isReady, address, stage],
   );
 
   return {
     deploy,
+    deploySync,
     isDeploying,
     stage,
     error,
+    txStatusId,
     deployedAddress,
     lastDeployment,
     reset,
   };
 }
 export { DEPLOYMENT_STAGE_LABELS, getDeploymentStageLabel } from '@walletmesh/modal-core/providers/aztec';
-

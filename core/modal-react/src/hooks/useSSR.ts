@@ -59,7 +59,9 @@ export function useSSR(): UseSSRReturn {
     // Schedule via requestAnimationFrame when available
     // Fallback to microtask if rAF is not available
     let cancelled = false;
-    const raf = (globalThis as any).requestAnimationFrame as undefined | ((cb: FrameRequestCallback) => number);
+    const raf = (globalThis as any).requestAnimationFrame as
+      | undefined
+      | ((cb: FrameRequestCallback) => number);
     let rafId: number | undefined;
     if (typeof raf === 'function') {
       rafId = raf(() => {

@@ -158,9 +158,9 @@ function ContractInteraction() {
     try {
       // Simulate calling a view function using standard Aztec flow
       const address = await aztecWallet.getAddress();
-      const interaction = (contract as unknown as { methods: { balance_of: (addr: unknown) => { request(): Promise<unknown> } } }).methods.balance_of(
-        address,
-      );
+      const interaction = (
+        contract as unknown as { methods: { balance_of: (addr: unknown) => { request(): Promise<unknown> } } }
+      ).methods.balance_of(address);
 
       // Extract the transaction request and simulate it
       const txRequest = await interaction.request();
@@ -170,7 +170,9 @@ function ContractInteraction() {
       );
 
       // Extract return values from simulation result
-      const balance = (simulationResult as { privateExecutionResult?: { returnValues?: unknown } }).privateExecutionResult?.returnValues || simulationResult;
+      const balance =
+        (simulationResult as { privateExecutionResult?: { returnValues?: unknown } }).privateExecutionResult
+          ?.returnValues || simulationResult;
 
       console.log('Balance:', balance);
       alert(`Balance: ${balance}`);

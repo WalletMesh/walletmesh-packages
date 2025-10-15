@@ -14,7 +14,7 @@ import type { AztecAddress } from '@aztec/aztec.js';
 import {
   isAztecAddressValue,
   normalizeAztecAddress,
-  formatAztecAddress
+  formatAztecAddress,
 } from '@walletmesh/modal-core/providers/aztec';
 import { useMemo } from 'react';
 

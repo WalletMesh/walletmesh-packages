@@ -96,9 +96,11 @@ export interface SwitchChainVariables {
  */
 export interface UseSwitchChainOptions {
   /** Callback fired before chain switch - return false to cancel */
-  onConfirm?: (data: { fromChain: SupportedChain; toChain: SupportedChain; walletId: string }) =>
-    | Promise<boolean>
-    | boolean;
+  onConfirm?: (data: {
+    fromChain: SupportedChain;
+    toChain: SupportedChain;
+    walletId: string;
+  }) => Promise<boolean> | boolean;
   /** Callback fired on successful switch */
   onSuccess?: (data: { fromChain: SupportedChain; toChain: SupportedChain; walletId: string }) => void;
   /** Callback fired on switch error */

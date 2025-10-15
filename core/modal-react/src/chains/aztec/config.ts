@@ -125,17 +125,14 @@ export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig
   // Validate that critical permissions are included
   const missingCritical = criticalPermissions.filter((perm) => !aztecMethods.includes(perm));
   if (missingCritical.length > 0) {
-    console.warn(
-      '⚠️ AZTEC CONFIG - Missing Critical Permissions',
-      {
-        warning: 'Critical permissions missing from configuration',
-        missing: missingCritical,
-        provided: aztecMethods,
-        impact: 'Wallet initialization may fail without these permissions',
-        solution: 'Add missing permissions to your config',
-        critical: criticalPermissions,
-      },
-    );
+    console.warn('⚠️ AZTEC CONFIG - Missing Critical Permissions', {
+      warning: 'Critical permissions missing from configuration',
+      missing: missingCritical,
+      provided: aztecMethods,
+      impact: 'Wallet initialization may fail without these permissions',
+      solution: 'Add missing permissions to your config',
+      critical: criticalPermissions,
+    });
     // Add missing critical permissions
     aztecMethods.push(...missingCritical);
   }

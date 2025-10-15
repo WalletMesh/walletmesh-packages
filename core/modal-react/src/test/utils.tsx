@@ -64,10 +64,7 @@ export function createWrapper(config = mockConfig) {
   };
 }
 
-export function renderWithProvider(
-  ui: React.ReactElement,
-  options?: RenderOptions,
-): RenderResult {
+export function renderWithProvider(ui: React.ReactElement, options?: RenderOptions): RenderResult {
   return render(ui, {
     wrapper: createWrapper(),
     ...options,

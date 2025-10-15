@@ -7,16 +7,8 @@
  * @module hooks/useConfig
  */
 
-import {
-  ChainType,
-  ErrorFactory,
-  type WalletMeshClient,
-} from '@walletmesh/modal-core';
-import type {
-  DiscoveryRequestOptions,
-  SupportedChain,
-  WalletInfo,
-} from '@walletmesh/modal-core';
+import { ChainType, ErrorFactory, type WalletMeshClient } from '@walletmesh/modal-core';
+import type { DiscoveryRequestOptions, SupportedChain, WalletInfo } from '@walletmesh/modal-core';
 import { useCallback, useMemo } from 'react';
 import { useWalletMeshContext } from '../WalletMeshContext.js';
 import { useStore, useStoreActions, useStoreInstance } from './internal/useStore.js';
@@ -44,9 +36,7 @@ function normalizeChainTypeInput(type: ChainType | string): ChainType | null {
   return null;
 }
 
-function createDiscoveryRequest(
-  options?: RefreshWalletsOptions,
-): DiscoveryRequestOptions | undefined {
+function createDiscoveryRequest(options?: RefreshWalletsOptions): DiscoveryRequestOptions | undefined {
   if (!options) {
     return undefined;
   }
@@ -274,7 +264,7 @@ export function useConfig(): UseConfigReturn {
     };
     console.log('[useConfig] Modal state update:', {
       ...stateData,
-      walletIds: stateData.wallets.map(w => w.id),
+      walletIds: stateData.wallets.map((w) => w.id),
       availableWalletIds: state.meta?.availableWalletIds || [],
     });
     return stateData;
@@ -352,8 +342,7 @@ export function useConfig(): UseConfigReturn {
           actions.connections.addDiscoveredWallet(store, walletInfo);
         }
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Unknown discovery failure';
+        const message = error instanceof Error ? error.message : 'Unknown discovery failure';
         actions.ui.addDiscoveryError(store, message);
       } finally {
         actions.ui.stopDiscovery(store);

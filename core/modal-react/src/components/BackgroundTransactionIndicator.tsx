@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { TransactionStatus } from '@walletmesh/modal-core';
 import { useStore } from '../hooks/internal/useStore.js';
@@ -96,6 +96,9 @@ export function BackgroundTransactionIndicator({
   const [isExpanded, setIsExpanded] = useState(false);
   const [completedTransactionIds, setCompletedTransactionIds] = useState<Set<string>>(new Set());
 
+  // Ref to track cleanup timers
+  const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
   // Get background transactions from store
   const backgroundTransactions = useStore((state) => {
     const backgroundTxIds = state.meta.backgroundTransactionIds || [];
@@ -125,24 +128,41 @@ export function BackgroundTransactionIndicator({
     // Set timers to remove completed transactions from the set
     newCompletedIds.forEach((id) => {
       if (!completedTransactionIds.has(id)) {
-        setTimeout(() => {
+        // Clear any existing timer for this id
+        const existingTimer = timersRef.current.get(id);
+        if (existingTimer) {
+          clearTimeout(existingTimer);
+        }
+
+        // Set new timer and store reference
+        const timer = setTimeout(() => {
           setCompletedTransactionIds((prev) => {
             const next = new Set(prev);
             next.delete(id);
             return next;
           });
+          // Clean up timer reference
+          timersRef.current.delete(id);
         }, completedDuration);
+
+        timersRef.current.set(id, timer);
       }
     });
 
     setCompletedTransactionIds(newCompletedIds);
-  }, [backgroundTransactions, completedDuration]);
+
+    // Cleanup function to clear all timers
+    return () => {
+      timersRef.current.forEach((timer) => clearTimeout(timer));
+      timersRef.current.clear();
+    };
+  }, [backgroundTransactions, completedDuration, completedTransactionIds]);
 
   // Filter transactions based on showCompleted setting
   const visibleTransactions = useMemo(() => {
     if (showCompleted) {
-      return backgroundTransactions.filter((tx) =>
-        completedTransactionIds.has(tx.id) || (tx.status !== 'confirmed' && tx.status !== 'failed')
+      return backgroundTransactions.filter(
+        (tx) => completedTransactionIds.has(tx.id) || (tx.status !== 'confirmed' && tx.status !== 'failed'),
       );
     }
     return backgroundTransactions.filter((tx) => tx.status !== 'confirmed' && tx.status !== 'failed');
@@ -187,9 +207,7 @@ export function BackgroundTransactionIndicator({
         aria-label={`${activeCount} background transaction${activeCount !== 1 ? 's' : ''}`}
         aria-expanded={isExpanded}
       >
-        <div className={styles['badgeIcon']}>
-          {activeCount > 0 ? '⚡' : '✓'}
-        </div>
+        <div className={styles['badgeIcon']}>{activeCount > 0 ? '⚡' : '✓'}</div>
         <div className={styles['badgeCount']}>
           {activeCount > 0 ? activeCount : visibleTransactions.length}
         </div>
@@ -213,9 +231,7 @@ export function BackgroundTransactionIndicator({
 
           <div className={styles['drawerContent']}>
             {visibleTransactions.length === 0 ? (
-              <div className={styles['emptyState']}>
-                No background transactions
-              </div>
+              <div className={styles['emptyState']}>No background transactions</div>
             ) : (
               <ul className={styles['transactionList']}>
                 {visibleTransactions.map((tx) => {
@@ -231,26 +247,16 @@ export function BackgroundTransactionIndicator({
                         onClick={() => onTransactionClick?.(tx.id)}
                         disabled={!onTransactionClick}
                       >
-                        <div className={styles['transactionIcon']}>
-                          {STATUS_ICONS[tx.status]}
-                        </div>
+                        <div className={styles['transactionIcon']}>{STATUS_ICONS[tx.status]}</div>
 
                         <div className={styles['transactionDetails']}>
-                          <div className={styles['transactionHash']}>
-                            {shorten(tx.hash)}
-                          </div>
-                          <div className={styles['transactionStatus']}>
-                            {STATUS_LABELS[tx.status]}
-                          </div>
+                          <div className={styles['transactionHash']}>{shorten(tx.hash)}</div>
+                          <div className={styles['transactionStatus']}>{STATUS_LABELS[tx.status]}</div>
                         </div>
 
                         <div className={styles['transactionMeta']}>
-                          <div className={styles['transactionDuration']}>
-                            {formatDuration(duration)}
-                          </div>
-                          {!isCompleted && (
-                            <div className={styles['transactionSpinner']} />
-                          )}
+                          <div className={styles['transactionDuration']}>{formatDuration(duration)}</div>
+                          {!isCompleted && <div className={styles['transactionSpinner']} />}
                         </div>
                       </button>
                     </li>

@@ -330,6 +330,11 @@ export function useConnect(): UseConnectReturn {
   useEffect(() => {
     return () => {
       isMountedRef.current = false;
+      // Clear progress timer if still running
+      if (progressTimerRef.current) {
+        clearTimeout(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
     };
   }, []);
 
@@ -349,7 +354,7 @@ export function useConnect(): UseConnectReturn {
     const walletsFromStore = Object.values(state.entities?.wallets || {});
     console.log('[useConnect] Wallets from store:', {
       count: walletsFromStore.length,
-      walletIds: walletsFromStore.map(w => w.id),
+      walletIds: walletsFromStore.map((w) => w.id),
       availableWalletIds: state.meta?.availableWalletIds || [],
       entities: Object.keys(state.entities?.wallets || {}),
     });
@@ -413,6 +418,9 @@ export function useConnect(): UseConnectReturn {
     }
     return undefined;
   }, [connectionState.isConnecting, connectionState.activeWallet]);
+
+  // Ref to track cleanup timers
+  const progressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Connect method
   const connect = useCallback(
@@ -481,11 +489,17 @@ export function useConnect(): UseConnectReturn {
         });
         throw error;
       } finally {
+        // Clear any existing progress timer
+        if (progressTimerRef.current) {
+          clearTimeout(progressTimerRef.current);
+        }
+
         // Clear progress after a delay
-        setTimeout(() => {
+        progressTimerRef.current = setTimeout(() => {
           if (isMountedRef.current) {
             setConnectionProgress(null);
           }
+          progressTimerRef.current = null;
         }, 1000);
       }
     },

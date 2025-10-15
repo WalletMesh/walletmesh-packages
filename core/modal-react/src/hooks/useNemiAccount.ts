@@ -21,36 +21,36 @@ type NemiAccount = unknown;
  * @public
  */
 export interface UseNemiAccountReturn {
-	/**
-	 * The nemi SDK-compatible Account instance
-	 * null if not connected or still loading
-	 */
-	account: NemiAccount | null;
+  /**
+   * The nemi SDK-compatible Account instance
+   * null if not connected or still loading
+   */
+  account: NemiAccount | null;
 
-	/**
-	 * Whether the account is currently being created
-	 */
-	isLoading: boolean;
+  /**
+   * Whether the account is currently being created
+   */
+  isLoading: boolean;
 
-	/**
-	 * Error that occurred during account creation
-	 */
-	error: Error | null;
+  /**
+   * Error that occurred during account creation
+   */
+  error: Error | null;
 
-	/**
-	 * Whether an account is available and ready to use
-	 */
-	isReady: boolean;
+  /**
+   * Whether an account is available and ready to use
+   */
+  isReady: boolean;
 
-	/**
-	 * Whether connected to a wallet
-	 */
-	isConnected: boolean;
+  /**
+   * Whether connected to a wallet
+   */
+  isConnected: boolean;
 
-	/**
-	 * Manually refresh the account (e.g., after chain switch)
-	 */
-	refresh: () => Promise<void>;
+  /**
+   * Manually refresh the account (e.g., after chain switch)
+   */
+  refresh: () => Promise<void>;
 }
 
 /**
@@ -116,67 +116,64 @@ export interface UseNemiAccountReturn {
  * @public
  */
 export function useNemiAccount(chainId?: string): UseNemiAccountReturn {
-	const { client } = useWalletMeshContext();
-	const { isConnected, chain } = useAccount();
+  const { client } = useWalletMeshContext();
+  const { isConnected, chain } = useAccount();
 
-	const [account, setAccount] = useState<NemiAccount | null>(null);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState<Error | null>(null);
+  const [account, setAccount] = useState<NemiAccount | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-	// Determine which chain to use
-	const targetChainId = chainId || chain?.chainId;
+  // Determine which chain to use
+  const targetChainId = chainId || chain?.chainId;
 
-	// Check if on Aztec chain
-	const isAztecChain = chain?.chainType === 'aztec';
+  // Check if on Aztec chain
+  const isAztecChain = chain?.chainType === 'aztec';
 
-	// Create account when connected
-	const createAccount = useCallback(async () => {
-		if (!isConnected || !isAztecChain || !targetChainId || !client) {
-			setAccount(null);
-			return;
-		}
+  // Create account when connected
+  const createAccount = useCallback(async () => {
+    if (!isConnected || !isAztecChain || !targetChainId || !client) {
+      setAccount(null);
+      return;
+    }
 
-		setIsLoading(true);
-		setError(null);
+    setIsLoading(true);
+    setError(null);
 
-		try {
-			// Dynamically import the factory function
-			const { createWalletMeshAccount } = await import(
-				'@walletmesh/modal-core/providers/nemi-account'
-			);
+    try {
+      // Dynamically import the factory function
+      const { createWalletMeshAccount } = await import('@walletmesh/modal-core/providers/nemi-account');
 
-			const newAccount = await createWalletMeshAccount(client, targetChainId);
-			setAccount(newAccount);
-		} catch (err) {
-			const errorMessage =
-				err instanceof Error ? err : new Error('Failed to create nemi account');
-			setError(errorMessage);
-			setAccount(null);
-		} finally {
-			setIsLoading(false);
-		}
-	}, [isConnected, isAztecChain, targetChainId, client]);
+      const newAccount = await createWalletMeshAccount(client, targetChainId);
+      setAccount(newAccount);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err : new Error('Failed to create nemi account');
+      setError(errorMessage);
+      setAccount(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isConnected, isAztecChain, targetChainId, client]);
 
-	// Create account on mount and when connection changes
-	useEffect(() => {
-		createAccount();
+  // Create account on mount and when connection changes
+  useEffect(() => {
+    createAccount();
 
-		// Cleanup: dispose account if it has a dispose method
-		return () => {
-			if (account && typeof (account as { dispose?: () => void }).dispose === 'function') {
-				(account as { dispose: () => void }).dispose();
-			}
-		};
-	}, [createAccount, account]);
+    // Cleanup: dispose account if it has a dispose method
+    return () => {
+      if (account && typeof (account as { dispose?: () => void }).dispose === 'function') {
+        (account as { dispose: () => void }).dispose();
+      }
+    };
+  }, [createAccount, account]);
 
-	return {
-		account,
-		isLoading,
-		error,
-		isReady: Boolean(account && isConnected && isAztecChain),
-		isConnected,
-		refresh: createAccount,
-	};
+  return {
+    account,
+    isLoading,
+    error,
+    isReady: Boolean(account && isConnected && isAztecChain),
+    isConnected,
+    refresh: createAccount,
+  };
 }
 
 /**
@@ -208,24 +205,24 @@ export function useNemiAccount(chainId?: string): UseNemiAccountReturn {
  * @public
  */
 export function useNemiAccountRequired(
-	chainId?: string,
+  chainId?: string,
 ): Required<Pick<UseNemiAccountReturn, 'account'>> & UseNemiAccountReturn {
-	const result = useNemiAccount(chainId);
+  const result = useNemiAccount(chainId);
 
-	if (!result.isReady || !result.account) {
-		const message = !result.isConnected
-			? 'Nemi account requires wallet connection. Call connect() first.'
-			: result.error
-				? `Failed to create nemi account: ${result.error.message}`
-				: result.isLoading
-					? 'Nemi account is still being created'
-					: 'No Aztec chain connected';
+  if (!result.isReady || !result.account) {
+    const message = !result.isConnected
+      ? 'Nemi account requires wallet connection. Call connect() first.'
+      : result.error
+        ? `Failed to create nemi account: ${result.error.message}`
+        : result.isLoading
+          ? 'Nemi account is still being created'
+          : 'No Aztec chain connected';
 
-		throw new Error(message);
-	}
+    throw new Error(message);
+  }
 
-	return {
-		...result,
-		account: result.account,
-	};
+  return {
+    ...result,
+    account: result.account,
+  };
 }

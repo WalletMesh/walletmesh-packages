@@ -58,7 +58,11 @@ const ErrorTypeComponent = ({ errorType }: { errorType: string }) => {
 const CustomFallbackComponent = ({
   error,
   resetError,
-}: { error: unknown; errorInfo: React.ErrorInfo | null; resetError: () => void }) => (
+}: {
+  error: unknown;
+  errorInfo: React.ErrorInfo | null;
+  resetError: () => void;
+}) => (
   <div>
     <h1>Custom Error UI</h1>
     <p>Error: {error instanceof Error ? error.message : String(error)}</p>
@@ -200,9 +204,11 @@ describe('WalletMeshErrorBoundary', () => {
     it('should render fallback as function', () => {
       const FallbackFunction = ({
         error,
-      }: { error: unknown; errorInfo: React.ErrorInfo | null; resetError: () => void }) => (
-        <div>Function fallback: {error instanceof Error ? error.message : String(error)}</div>
-      );
+      }: {
+        error: unknown;
+        errorInfo: React.ErrorInfo | null;
+        resetError: () => void;
+      }) => <div>Function fallback: {error instanceof Error ? error.message : String(error)}</div>;
 
       render(
         <WalletMeshErrorBoundary fallback={FallbackFunction}>

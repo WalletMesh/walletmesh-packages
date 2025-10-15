@@ -295,7 +295,7 @@ const DApp: React.FC = () => {
 
   /**
    * Transfers tokens from the connected account to a test account.
-   * Uses async mode (background execution with callbacks).
+   * Uses sync mode (blocking with overlay).
    */
 <<<<<<< HEAD
   const transferTokens = async () => {
@@ -330,6 +330,7 @@ const DApp: React.FC = () => {
     }
 
     try {
+      showInfo('Transferring tokens, please wait for confirmation...');
       const to = await getInitialTestAccounts().then((accounts) => toAztecAddress(accounts[1].address));
       const ownerAddress = toAztecAddress(address);
       const interaction = tokenContract.methods.transfer_in_public(
@@ -339,18 +340,15 @@ const DApp: React.FC = () => {
         0n,
       );
 
-      // Use executeAsync for background execution
-      await executeAsync(interaction, {
-        onSuccess: () => {
-          showSuccess('Transferred tokens to test account');
-        },
-        onError: (error) => {
-          showError(`Transaction failed: ${error.message}`);
-        },
-      });
+      // Use executeSync for blocking behavior with overlay
+      await executeSync(interaction);
 
-      showInfo('Transfer started in background. Check the indicator for progress.');
+      // Automatically refresh balance after successful transfer
+      await refreshTokenBalance();
+
+      showSuccess('Tokens transferred successfully!');
     } catch (error) {
+      console.error('Transfer transaction failed:', error);
       if (error instanceof Error) {
         showError(`Transaction failed: ${error.message}`);
       }
@@ -565,7 +563,7 @@ const DApp: React.FC = () => {
                       isTokenContractLoading || isRefreshingBalance || !tokenBalance || tokenBalance === '0'
                     }
                   >
-                    Transfer Tokens (Async)
+                    Transfer Tokens (Sync)
                   </button>
                   <button
                     type="button"

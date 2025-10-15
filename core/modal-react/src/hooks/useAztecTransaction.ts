@@ -229,33 +229,28 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
 
   // Count active background transactions
   const backgroundCount = useMemo(() => {
-    return backgroundTransactions.filter(
-      (tx) => tx.status !== 'confirmed' && tx.status !== 'failed',
-    ).length;
+    return backgroundTransactions.filter((tx) => tx.status !== 'confirmed' && tx.status !== 'failed').length;
   }, [backgroundTransactions]);
 
   // Get or create transaction manager instance
-  const getTransactionManager = useCallback(
-    async (): Promise<AztecTransactionManager> => {
-      if (!isReady || !aztecWallet) {
-        throw ErrorFactory.connectionFailed('Aztec wallet is not ready. Please connect a wallet first.');
-      }
+  const getTransactionManager = useCallback(async (): Promise<AztecTransactionManager> => {
+    if (!isReady || !aztecWallet) {
+      throw ErrorFactory.connectionFailed('Aztec wallet is not ready. Please connect a wallet first.');
+    }
 
-      if (!chain) {
-        throw ErrorFactory.configurationError('No chain information available');
-      }
+    if (!chain) {
+      throw ErrorFactory.configurationError('No chain information available');
+    }
 
-      // Dynamically import the AztecTransactionManager
-      const { createAztecTransactionManager } = await import('@walletmesh/modal-core');
+    // Dynamically import the AztecTransactionManager
+    const { createAztecTransactionManager } = await import('@walletmesh/modal-core');
 
-      return createAztecTransactionManager({
-        store,
-        chainId: chain.chainId,
-        wallet: aztecWallet,
-      });
-    },
-    [isReady, aztecWallet, chain, store],
-  );
+    return createAztecTransactionManager({
+      store,
+      chainId: chain.chainId,
+      wallet: aztecWallet,
+    });
+  }, [isReady, aztecWallet, chain, store]);
 
   // Execute transaction synchronously (blocking with overlay)
   const executeSync = useCallback(
@@ -277,10 +272,7 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
 
   // Execute transaction asynchronously (background)
   const execute = useCallback(
-    async (
-      interaction: ContractFunctionInteraction,
-      callbacks?: TransactionCallbacks,
-    ): Promise<string> => {
+    async (interaction: ContractFunctionInteraction, callbacks?: TransactionCallbacks): Promise<string> => {
       logger.debug('Executing transaction asynchronously', { mode: 'async' });
 
       try {
@@ -320,11 +312,7 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
     activeTransaction,
     isLoading,
     status,
-    error: error
-      ? error instanceof Error
-        ? error
-        : new Error(error.message || 'Transaction error')
-      : null,
+    error: error ? (error instanceof Error ? error : new Error(error.message || 'Transaction error')) : null,
 
     // Background transactions state (async mode)
     backgroundTransactions,

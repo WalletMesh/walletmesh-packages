@@ -43,7 +43,7 @@
 
 .description {
   margin: 0;
-  font-size: 1.rem;
+  font-size: 1rem;
   line-height: 1.55;
   color: rgba(226, 232, 240, 0.92);
 }
@@ -67,7 +67,7 @@
 
 /* Connection line between stages */
 .stages::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 18px;
   left: 12px;
@@ -184,7 +184,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: rgba(226, 232, 240, 0.95);
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace;
 }
 
 .transactionDuration {
@@ -219,7 +219,8 @@
 }
 
 @keyframes wm-pulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
   }
   50% {

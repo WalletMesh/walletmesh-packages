@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { TransactionStatus } from '@walletmesh/modal-core';
 import { useStore } from '../hooks/internal/useStore.js';
@@ -119,6 +119,8 @@ export function AztecTransactionStatusOverlay({
   showBackgroundTransactions = false,
 }: AztecTransactionStatusOverlayProps): React.ReactPortal | null {
   const [target, setTarget] = useState<Element | null>(null);
+  // Track dismissed transaction IDs to enable graceful closure after success/failure
+  const [dismissedTxIds, setDismissedTxIds] = useState<Set<string>>(new Set());
 
   // Get active transaction (sync mode)
   const activeTransactionId = useStore((state) => state.active?.transactionId);
@@ -130,9 +132,7 @@ export function AztecTransactionStatusOverlay({
   // Get background transactions (async mode)
   const backgroundTransactions = useStore((state) => {
     const backgroundTxIds = state.meta.backgroundTransactionIds || [];
-    return backgroundTxIds
-      .map((id: string) => state.entities.transactions[id])
-      .filter(Boolean);
+    return backgroundTxIds.map((id: string) => state.entities.transactions[id]).filter(Boolean);
   });
 
   // Determine which transaction(s) to show
@@ -149,15 +149,56 @@ export function AztecTransactionStatusOverlay({
       txs.push(...backgroundTransactions);
     }
 
-    // Filter to only show transactions that are in progress
+    // Filter to show all transactions including confirmed/failed (for brief success display)
+    // Only exclude transactions that have been locally dismissed
     return txs.filter((tx) => {
       const status = tx?.status as TransactionStatus;
-      return status && status !== 'confirmed' && status !== 'failed';
+      const txId = tx?.txStatusId;
+      // Show transaction if it has a valid status and hasn't been dismissed
+      return status && txId && !dismissedTxIds.has(txId);
     });
-  }, [activeTransaction, backgroundTransactions, showBackgroundTransactions]);
+  }, [activeTransaction, backgroundTransactions, showBackgroundTransactions, dismissedTxIds]);
 
   // Determine if overlay should be visible
   const shouldShowOverlay = transactionsToShow.length > 0;
+
+  // Track timers for auto-dismiss
+  const dismissTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+
+  // Auto-dismiss confirmed/failed transactions after a delay to show success/error state
+  useEffect(() => {
+    const AUTO_DISMISS_DELAY = 2500; // 2.5 seconds to show success/error state
+
+    transactionsToShow.forEach((tx) => {
+      const status = tx?.status as TransactionStatus;
+      const txId = tx?.txStatusId;
+
+      // If transaction reached terminal state (confirmed or failed) and not already dismissed
+      if ((status === 'confirmed' || status === 'failed') && txId && !dismissedTxIds.has(txId)) {
+        // Check if timer already exists for this transaction
+        if (!dismissTimersRef.current.has(txId)) {
+          // Set up auto-dismiss timer
+          const timer = setTimeout(() => {
+            setDismissedTxIds((prev) => {
+              const next = new Set(prev);
+              next.add(txId);
+              return next;
+            });
+            // Clean up timer reference
+            dismissTimersRef.current.delete(txId);
+          }, AUTO_DISMISS_DELAY);
+
+          dismissTimersRef.current.set(txId, timer);
+        }
+      }
+    });
+
+    // Cleanup all timers on unmount
+    return () => {
+      dismissTimersRef.current.forEach((timer) => clearTimeout(timer));
+      dismissTimersRef.current.clear();
+    };
+  }, [transactionsToShow, dismissedTxIds]);
 
   // Current status for headline
   const currentStatus = useMemo(() => {
@@ -208,17 +249,19 @@ export function AztecTransactionStatusOverlay({
         <div className={styles['spinner']} aria-hidden="true" />
 
         {/* Main headline and description */}
-        <h2 className={styles['headline']}>
-          {headline || defaultHeadline}
-        </h2>
-        <p className={styles['description']}>
-          {description || defaultDescription}
-        </p>
+        <h2 className={styles['headline']}>{headline || defaultHeadline}</h2>
+        <p className={styles['description']}>{description || defaultDescription}</p>
 
         {/* Progress indicator for stages */}
         {currentStatus && (
           <div className={styles['stagesContainer']}>
-            <div className={styles['stages']} role="progressbar" aria-valuenow={STAGE_ORDER.indexOf(currentStatus)} aria-valuemin={0} aria-valuemax={STAGE_ORDER.length - 1}>
+            <div
+              className={styles['stages']}
+              role="progressbar"
+              aria-valuenow={STAGE_ORDER.indexOf(currentStatus)}
+              aria-valuemin={0}
+              aria-valuemax={STAGE_ORDER.length - 1}
+            >
               {STAGE_ORDER.map((stage) => {
                 const isCurrentStage = stage === currentStatus;
                 const currentIndex = STAGE_ORDER.indexOf(currentStatus);
@@ -232,12 +275,8 @@ export function AztecTransactionStatusOverlay({
                     className={`${styles['stage']} ${isCurrentStage ? styles['stage--active'] : ''} ${isCompleted ? styles['stage--completed'] : ''} ${isFailed ? styles['stage--failed'] : ''}`}
                     data-stage={stage}
                   >
-                    <div className={styles['stageIcon']}>
-                      {STAGE_INFO[stage].icon}
-                    </div>
-                    <div className={styles['stageLabel']}>
-                      {STAGE_INFO[stage].label}
-                    </div>
+                    <div className={styles['stageIcon']}>{STAGE_INFO[stage].icon}</div>
+                    <div className={styles['stageLabel']}>{STAGE_INFO[stage].label}</div>
                   </div>
                 );
               })}
@@ -259,9 +298,7 @@ export function AztecTransactionStatusOverlay({
                     <span className={styles['transactionHash']}>
                       {hash ? shorten(hash) : 'Processing...'}
                     </span>
-                    <span className={styles['transactionDuration']}>
-                      {formatDuration(duration)}
-                    </span>
+                    <span className={styles['transactionDuration']}>{formatDuration(duration)}</span>
                   </div>
                   <div className={styles['transactionStatus']}>
                     {STAGE_INFO[txStatus]?.icon} {STAGE_INFO[txStatus]?.label}
@@ -274,9 +311,7 @@ export function AztecTransactionStatusOverlay({
 
         {/* Multiple transactions notice */}
         {transactionsToShow.length > 1 && (
-          <p className={styles['multipleNotice']}>
-            Processing {transactionsToShow.length} transactions
-          </p>
+          <p className={styles['multipleNotice']}>Processing {transactionsToShow.length} transactions</p>
         )}
       </div>
     </div>,

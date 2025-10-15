@@ -22,6 +22,12 @@ import { z } from 'zod';
 export interface AztecDappWallet {
   /** Deploy a contract to the Aztec network */
   deployContract(artifact: unknown, args: unknown[], constructorName?: string): Promise<DeploySentTx>;
+  /** Deploy a contract via WalletMesh helper - returns txHash, contractAddress, and txStatusId for tracking */
+  wmDeployContract?(
+    artifact: unknown,
+    args: unknown[],
+    constructorName?: string,
+  ): Promise<{ txHash: unknown; contractAddress: unknown; txStatusId: string }>;
   /** Execute a transaction via WalletMesh helper - returns both txHash and txStatusId */
   wmExecuteTx?(interaction: ContractFunctionInteraction): Promise<{ txHash: unknown; txStatusId: string }>;
   /** Simulate a transaction via WalletMesh helper */
@@ -236,6 +242,45 @@ export function parseAztecTransactionStatusNotification(
 ): AztecTransactionStatusNotification | null {
   const result = aztecTransactionStatusNotificationSchema.safeParse(params);
   return result.success ? result.data : null;
+}
+
+/**
+ * Parse result with diagnostic information for debugging.
+ *
+ * @public
+ */
+export interface ParseResult {
+  success: boolean;
+  data?: AztecTransactionStatusNotification;
+  error?: string;
+  rawParams?: unknown;
+}
+
+/**
+ * Attempt to parse a transaction status notification with detailed error information.
+ *
+ * Returns diagnostic information including validation errors for debugging.
+ *
+ * @public
+ */
+export function parseAztecTransactionStatusWithDiagnostics(params: unknown): ParseResult {
+  const result = aztecTransactionStatusNotificationSchema.safeParse(params);
+
+  if (result.success) {
+    return {
+      success: true,
+      data: result.data,
+    };
+  }
+
+  // Extract validation errors from Zod
+  const errorMessages = result.error.errors.map((err) => `${err.path.join('.')}: ${err.message}`).join(', ');
+
+  return {
+    success: false,
+    error: errorMessages,
+    rawParams: params,
+  };
 }
 
 // Function signatures for lazy loading
