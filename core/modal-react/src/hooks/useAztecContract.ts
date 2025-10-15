@@ -14,6 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ensureContractClassRegistered, normalizeArtifact } from '@walletmesh/modal-core/providers/aztec';
 import type { ContractArtifact } from './useAztecDeploy.js';
 import { useAztecWallet } from './useAztecWallet.js';
+import { useStore } from './internal/useStore.js';
 
 /**
  * Contract hook return type
@@ -27,6 +28,8 @@ export interface UseAztecContractReturn<T = unknown> {
   isLoading: boolean;
   /** Any error that occurred while loading */
   error: Error | null;
+  /** Whether a deployment for this address is pending confirmation */
+  isDeploymentPending: boolean;
   /** Refetch the contract instance */
   refetch: () => Promise<void>;
 }
@@ -139,60 +142,146 @@ export function useAztecContract<T = unknown>(
   const [contract, setContract] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [isDeploymentPending, setIsDeploymentPending] = useState(false);
 
   // Cache key to detect when we need to re-fetch
   const cacheKeyRef = useRef<string>('');
+  // Retry tracking
+  const retryCountRef = useRef<number>(0);
+  const retryTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const fetchContract = useCallback(async () => {
-    // Can't load without both address and artifact
-    if (!address || !artifact || !aztecWallet || !isAvailable) {
-      setContract(null);
-      setIsLoading(false);
+  // Get pending transactions to check for deployments
+  const hasPendingDeployments = useStore((state) => {
+    const transactions = Object.values(state.entities.transactions || {});
+    return transactions.some(
+      (tx) => tx && (tx.status === 'proving' || tx.status === 'sending' || tx.status === 'pending'),
+    );
+  });
+
+  const fetchContract = useCallback(
+    async (isRetry = false) => {
+      // Clear any existing retry timer
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+
+      // Can't load without both address and artifact
+      if (!address || !artifact || !aztecWallet || !isAvailable) {
+        setContract(null);
+        setIsLoading(false);
+        setError(null);
+        setIsDeploymentPending(false);
+        retryCountRef.current = 0;
+        return;
+      }
+
+      const newCacheKey = `${address?.toString()}-${artifact.name}`;
+
+      // Skip if we already have this contract cached
+      if (cacheKeyRef.current === newCacheKey && !isRetry) {
+        return;
+      }
+
+      setIsLoading(true);
       setError(null);
-      return;
-    }
 
-    const newCacheKey = `${address?.toString()}-${artifact.name}`;
+      try {
+        // Ensure artifact has required properties for compatibility
+        const compatibleArtifact = normalizeArtifact(artifact);
 
-    // Skip if we already have this contract cached
-    if (cacheKeyRef.current === newCacheKey) {
-      return;
-    }
+        await ensureContractClassRegistered(aztecWallet, compatibleArtifact);
 
-    setIsLoading(true);
-    setError(null);
+        const contractInstance = await getContractAt(
+          aztecWallet,
+          address,
+          compatibleArtifact as Parameters<typeof getContractAt>[2],
+        );
 
-    try {
-      // Ensure artifact has required properties for compatibility
-      const compatibleArtifact = normalizeArtifact(artifact);
+        // Success! Reset retry count and cache
+        setContract(contractInstance as T);
+        cacheKeyRef.current = newCacheKey;
+        retryCountRef.current = 0;
+        setIsDeploymentPending(false);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to load contract');
 
-      await ensureContractClassRegistered(aztecWallet, compatibleArtifact);
+        // Check if this looks like a "contract not found" error and there are pending deployments
+        const isContractNotFound =
+          errorMessage.message.includes('Failed to get contract at address') ||
+          errorMessage.message.includes('Contract not found');
 
-      const contractInstance = await getContractAt(
-        aztecWallet,
-        address,
-        compatibleArtifact as Parameters<typeof getContractAt>[2],
-      );
-      setContract(contractInstance as T);
-      cacheKeyRef.current = newCacheKey;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to load contract');
-      setError(errorMessage);
-      setContract(null);
-      console.error('Failed to load contract:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [address, artifact, aztecWallet, isAvailable]);
+        if (isContractNotFound && hasPendingDeployments) {
+          // This is likely a race condition - deployment hasn't confirmed yet
+          const maxRetries = 10; // Max 10 retries
+          const baseDelay = 2000; // Start with 2 seconds
+
+          if (retryCountRef.current < maxRetries) {
+            retryCountRef.current += 1;
+            const delay = baseDelay * Math.pow(1.5, retryCountRef.current - 1); // Exponential backoff
+
+            console.log(
+              `[useAztecContract] Contract not yet available (attempt ${retryCountRef.current}/${maxRetries}), retrying in ${delay}ms...`,
+            );
+
+            setIsDeploymentPending(true);
+            setIsLoading(false);
+            setError(
+              ErrorFactory.unknownError(
+                `Contract deployment in progress (attempt ${retryCountRef.current}/${maxRetries})...`,
+              ),
+            );
+
+            // Schedule retry
+            retryTimerRef.current = setTimeout(() => {
+              fetchContract(true);
+            }, delay);
+
+            return;
+          }
+
+          // Max retries exceeded
+          setError(
+            ErrorFactory.unknownError(
+              'Contract deployment taking longer than expected. Please try refreshing manually.',
+            ),
+          );
+          setIsDeploymentPending(true);
+        } else {
+          // Some other error
+          setError(errorMessage);
+          setIsDeploymentPending(false);
+        }
+
+        setContract(null);
+        console.error('Failed to load contract:', err);
+      } finally {
+        // Only set loading to false if we're not scheduling a retry
+        if (!retryTimerRef.current) {
+          setIsLoading(false);
+        }
+      }
+    },
+    [address, artifact, aztecWallet, isAvailable, hasPendingDeployments],
+  );
 
   // Fetch contract when dependencies change
   useEffect(() => {
     fetchContract();
+
+    // Cleanup retry timer on unmount or when dependencies change
+    return () => {
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
   }, [fetchContract]);
 
   // Manual refetch function
   const refetch = useCallback(async () => {
     cacheKeyRef.current = ''; // Clear cache to force refetch
+    retryCountRef.current = 0; // Reset retry count
     await fetchContract();
   }, [fetchContract]);
 
@@ -200,6 +289,7 @@ export function useAztecContract<T = unknown>(
     contract,
     isLoading,
     error,
+    isDeploymentPending,
     refetch,
   };
 }

@@ -17,7 +17,7 @@ import { useStore } from '../../state/store.js';
 import { createLazyModule } from '../../utils/lazy/index.js';
 import type { WalletMeshState } from '../../state/store.js';
 import type { AztecProviderFunctions } from './types.js';
-import { parseAztecTransactionStatusNotification } from './types.js';
+import { parseAztecTransactionStatusWithDiagnostics } from './types.js';
 
 // Create lazy loader for the Aztec implementation
 const aztecModule = createLazyModule<typeof import('./utils.js')>(() => import('./utils.js'), {
@@ -310,32 +310,38 @@ export class LazyAztecRouterProvider {
       const removeTxStatus = providerWithNotifications.onNotification('aztec_transactionStatus', (params) => {
         console.log('[LazyAztecRouterProvider] Received aztec_transactionStatus notification:', params);
         try {
-          const parsed = parseAztecTransactionStatusNotification(params);
-          if (parsed) {
-            console.log('[LazyAztecRouterProvider] Parsed transaction status notification:', parsed);
+          const parseResult = parseAztecTransactionStatusWithDiagnostics(params);
+
+          if (parseResult.success && parseResult.data) {
+            console.log('[LazyAztecRouterProvider] Parsed transaction status notification:', parseResult.data);
 
             // Update transaction status in store
             aztecTransactionActions.updateAztecTransactionStatus(
               store,
-              parsed.txStatusId,  // ← Internal tracking ID
-              parsed.status // Types now match - no cast needed
+              parseResult.data.txStatusId,  // ← Internal tracking ID
+              parseResult.data.status // Types now match - no cast needed
             );
 
             // Update transaction hash if provided (blockchain identifier)
-            if (parsed.txHash) {
-              aztecTransactionActions.updateAztecTransaction(store, parsed.txStatusId, {
-                txHash: parsed.txHash,  // ← Blockchain hash
+            if (parseResult.data.txHash) {
+              aztecTransactionActions.updateAztecTransaction(store, parseResult.data.txStatusId, {
+                txHash: parseResult.data.txHash,  // ← Blockchain hash
               });
             }
 
             // Update error if provided
-            if (parsed.error) {
-              aztecTransactionActions.updateAztecTransaction(store, parsed.txStatusId, {
-                error: ErrorFactory.transactionFailed(parsed.error),
+            if (parseResult.data.error) {
+              aztecTransactionActions.updateAztecTransaction(store, parseResult.data.txStatusId, {
+                error: ErrorFactory.transactionFailed(parseResult.data.error),
               });
             }
           } else {
-            console.warn('[LazyAztecRouterProvider] Failed to parse transaction status notification');
+            // Log detailed validation errors for debugging
+            console.warn(
+              '[LazyAztecRouterProvider] Failed to parse transaction status notification. ' +
+                `Validation errors: ${parseResult.error || 'Unknown error'}`,
+            );
+            console.warn('[LazyAztecRouterProvider] Raw notification params:', parseResult.rawParams);
           }
         } catch (error) {
           console.error('[LazyAztecRouterProvider] Error handling aztec_transactionStatus notification', error);

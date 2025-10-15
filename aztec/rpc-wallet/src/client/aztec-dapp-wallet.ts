@@ -1016,6 +1016,43 @@ export class AztecDappWallet implements Wallet {
 
   /**
    * Deploys a contract using its artifact and constructor arguments.
+   * This WalletMesh-specific helper method returns the raw RPC result including txStatusId
+   * for transaction status tracking. Useful for React hooks that need to track deployment status.
+   *
+   * The remote wallet automatically generates a unique `txStatusId` and sends status notifications
+   * (initiated/simulating/proving/sending/pending/failed) throughout the deployment lifecycle.
+   *
+   * @param artifact - The {@link ContractArtifact} of the contract to deploy.
+   * @param args - An array of arguments for the contract's constructor.
+   * @param constructorName - Optional name of the constructor function if the artifact has multiple.
+   * @returns An object containing txHash, contractAddress, and txStatusId for tracking.
+   * @see {@link AztecWalletMethodMap.aztec_wmDeployContract}
+   */
+  async wmDeployContract(
+    artifact: ContractArtifact,
+    args: unknown[],
+    constructorName?: string,
+  ): Promise<{ txHash: TxHash; contractAddress: AztecAddress; txStatusId: string }> {
+    // Send the deployment request to the remote wallet
+    const result = (await this.routerProvider.call(this.chainId, {
+      method: 'aztec_wmDeployContract',
+      params: {
+        artifact,
+        args,
+        constructorName,
+      },
+    })) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };
+
+    // Log the txStatusId for debugging/tracking purposes
+    logger.debug(
+      `Contract deployment initiated with statusId: ${result.txStatusId}, txHash: ${result.txHash.toString()}, contractAddress: ${result.contractAddress.toString()}`,
+    );
+
+    return result;
+  }
+
+  /**
+   * Deploys a contract using its artifact and constructor arguments.
    * This WalletMesh-specific helper method makes an RPC call to the `aztec_wmDeployContract`
    * method on the remote wallet. The remote wallet handles the deployment process.
    *

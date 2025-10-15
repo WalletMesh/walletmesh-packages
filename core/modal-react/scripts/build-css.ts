@@ -47,7 +47,7 @@ function getCSSFiles(): CSSFile[] {
         files.push({
           src: itemPath,
           relative: path.relative(SRC_COMPONENTS, itemPath),
-          isModule: item.endsWith('.module.css')
+          isModule: item.endsWith('.module.css'),
         });
       }
     }

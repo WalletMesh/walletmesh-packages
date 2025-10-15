@@ -10,8 +10,11 @@
 import { ErrorFactory } from '@walletmesh/modal-core';
 import type { ContractFunctionInteraction, TxReceipt } from '@walletmesh/modal-core/providers/aztec/lazy';
 import type { AztecSendOptions } from '@walletmesh/modal-core/providers/aztec';
-import { executeBatchInteractions, type ExecuteInteractionResult } from '@walletmesh/modal-core/providers/aztec';
-import { useCallback, useState } from 'react';
+import {
+  executeBatchInteractions,
+  type ExecuteInteractionResult,
+} from '@walletmesh/modal-core/providers/aztec';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { useAztecWallet } from './useAztecWallet.js';
 
 /**
@@ -44,7 +47,10 @@ export type BatchSendOptions = AztecSendOptions;
  */
 export interface UseAztecBatchReturn {
   /** Execute a batch of transactions */
-  executeBatch: (interactions: ContractFunctionInteraction[], options?: BatchSendOptions) => Promise<TxReceipt[]>;
+  executeBatch: (
+    interactions: ContractFunctionInteraction[],
+    options?: BatchSendOptions,
+  ) => Promise<TxReceipt[]>;
   /** Status of each transaction in the current/last batch */
   transactionStatuses: BatchTransactionStatus[];
   /** Whether a batch is currently executing */
@@ -179,6 +185,16 @@ export function useAztecBatch(): UseAztecBatchReturn {
   const [isExecuting, setIsExecuting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Ref to track if component is mounted
+  const isMountedRef = useRef(true);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   // Calculate derived values
   const totalTransactions = transactionStatuses.length;
   const completedTransactions = transactionStatuses.filter(
@@ -201,90 +217,94 @@ export function useAztecBatch(): UseAztecBatchReturn {
         throw ErrorFactory.invalidParams('No interactions provided');
       }
 
-      setIsExecuting(true);
-      setError(null);
+      if (isMountedRef.current) {
+        setIsExecuting(true);
+        setError(null);
 
-      // Initialize statuses
-      const initialStatuses: BatchTransactionStatus[] = interactions.map((_, index) => ({
-        index,
-        status: 'pending' as const,
-      }));
-      setTransactionStatuses(initialStatuses);
+        // Initialize statuses
+        const initialStatuses: BatchTransactionStatus[] = interactions.map((_, index) => ({
+          index,
+          status: 'pending' as const,
+        }));
+        setTransactionStatuses(initialStatuses);
+      }
 
       try {
         // Use modal-core batch execution with callbacks for React state updates
-        const { receipts, errors } = await executeBatchInteractions(
-          aztecWallet,
-          interactions,
-          {
-            sendOptions: options,
-            callbacks: {
-              onSending: (index: number) => {
-                setTransactionStatuses((prev) => {
-                  const updated = [...prev];
-                  const current = updated[index];
-                  if (current) {
-                    updated[index] = {
-                      ...current,
-                      status: 'sending',
-                    };
-                  }
-                  return updated;
-                });
-              },
-              onSent: (index: number, hash: string) => {
-                setTransactionStatuses((prev) => {
-                  const updated = [...prev];
-                  const current = updated[index];
-                  if (current) {
-                    updated[index] = {
-                      ...current,
-                      status: 'confirming',
-                      hash,
-                    };
-                  }
-                  return updated;
-                });
-              },
-              onSuccess: (index: number, result: ExecuteInteractionResult) => {
-                setTransactionStatuses((prev) => {
-                  const updated = [...prev];
-                  const current = updated[index];
-                  if (current) {
-                    updated[index] = {
-                      ...current,
-                      status: 'success',
-                      hash: result.hash,
-                      receipt: result.receipt,
-                    };
-                  }
-                  return updated;
-                });
-              },
-              onError: (index: number, txError: Error) => {
-                setTransactionStatuses((prev) => {
-                  const updated = [...prev];
-                  const current = updated[index];
-                  if (current) {
-                    updated[index] = {
-                      ...current,
-                      status: 'error',
-                      error: txError,
-                    };
-                  }
-                  return updated;
-                });
-              },
+        const { receipts, errors } = await executeBatchInteractions(aztecWallet, interactions, {
+          sendOptions: options,
+          callbacks: {
+            onSending: (index: number) => {
+              if (!isMountedRef.current) return;
+              setTransactionStatuses((prev) => {
+                const updated = [...prev];
+                const current = updated[index];
+                if (current) {
+                  updated[index] = {
+                    ...current,
+                    status: 'sending',
+                  };
+                }
+                return updated;
+              });
+            },
+            onSent: (index: number, hash: string) => {
+              if (!isMountedRef.current) return;
+              setTransactionStatuses((prev) => {
+                const updated = [...prev];
+                const current = updated[index];
+                if (current) {
+                  updated[index] = {
+                    ...current,
+                    status: 'confirming',
+                    hash,
+                  };
+                }
+                return updated;
+              });
+            },
+            onSuccess: (index: number, result: ExecuteInteractionResult) => {
+              if (!isMountedRef.current) return;
+              setTransactionStatuses((prev) => {
+                const updated = [...prev];
+                const current = updated[index];
+                if (current) {
+                  updated[index] = {
+                    ...current,
+                    status: 'success',
+                    hash: result.hash,
+                    receipt: result.receipt,
+                  };
+                }
+                return updated;
+              });
+            },
+            onError: (index: number, txError: Error) => {
+              if (!isMountedRef.current) return;
+              setTransactionStatuses((prev) => {
+                const updated = [...prev];
+                const current = updated[index];
+                if (current) {
+                  updated[index] = {
+                    ...current,
+                    status: 'error',
+                    error: txError,
+                  };
+                }
+                return updated;
+              });
             },
           },
-        );
+        });
 
         // Check if all failed
         if (errors.length === interactions.length) {
           const batchError = ErrorFactory.transactionFailed(
             `All ${interactions.length} transactions failed. First error: ${errors[0]?.error.message}`,
           );
-          setError(batchError);
+          if (isMountedRef.current) {
+            setError(batchError);
+          }
           throw batchError;
         }
 
@@ -298,11 +318,16 @@ export function useAztecBatch(): UseAztecBatchReturn {
         return receipts;
       } catch (err) {
         // Handle unexpected errors
-        const batchError = err instanceof Error ? err : ErrorFactory.transactionFailed('Batch execution failed');
-        setError(batchError);
+        const batchError =
+          err instanceof Error ? err : ErrorFactory.transactionFailed('Batch execution failed');
+        if (isMountedRef.current) {
+          setError(batchError);
+        }
         throw batchError;
       } finally {
-        setIsExecuting(false);
+        if (isMountedRef.current) {
+          setIsExecuting(false);
+        }
       }
     },
     [aztecWallet, isAvailable],

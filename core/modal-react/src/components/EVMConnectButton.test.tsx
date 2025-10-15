@@ -40,7 +40,6 @@ describe('EVMConnectButton', async () => {
     (await import('./WalletMeshConnectButton.js')).WalletMeshConnectButton,
   );
 
-
   const defaultMockEvmWallet = {
     // Account information
     isConnected: false,

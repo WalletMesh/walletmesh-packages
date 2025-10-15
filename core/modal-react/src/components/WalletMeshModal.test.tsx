@@ -230,7 +230,7 @@ describe('WalletMeshModal (Simplified)', () => {
       availableWalletIds: [],
       discoveryErrors: [],
       transactionStatus: 'idle',
-          
+
       backgroundTransactionIds: [],
     },
   };

@@ -3,8 +3,7 @@ import { AztecAddress } from '@aztec/aztec.js';
 import { describe, expect, it } from 'vitest';
 import { useAztecAddress } from './useAztecAddress.js';
 
-const SAMPLE_ADDRESS =
-  '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+const SAMPLE_ADDRESS = '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
 describe('useAztecAddress', () => {
   it('returns nulls when no value provided', () => {

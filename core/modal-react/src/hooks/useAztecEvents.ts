@@ -215,7 +215,8 @@ export function useAztecEvents(
 
       unsubscribeRef.current = unsubscribeFn;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to subscribe to events');
+      const errorMessage =
+        err instanceof Error ? err : ErrorFactory.unknownError('Failed to subscribe to events');
       setError(errorMessage);
       setIsListening(false);
       console.error('Failed to subscribe to events:', err);
@@ -284,7 +285,8 @@ export function useAztecEvents(
 
         return privateEvents;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to query private events');
+        const errorMessage =
+          err instanceof Error ? err : ErrorFactory.unknownError('Failed to query private events');
         setError(errorMessage);
         throw errorMessage;
       } finally {

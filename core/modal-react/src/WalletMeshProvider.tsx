@@ -462,24 +462,24 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
     };
 
     // Create config object for createWalletMeshClient with exact optional property handling
-  const clientConfig: {
-    appName: string;
-    appDescription?: string;
-    appUrl?: string;
-    appIcon?: string;
-    appMetadata?: typeof appMetadata;
-    chains: { chainId: string; chainType: ChainType; name: string; required: boolean }[];
-    wallets?: Array<unknown>;
-    debug?: boolean;
-    projectId?: string;
-    handleRehydration?: boolean;
-    discovery?: typeof config.discovery;
-    permissions?: typeof config.permissions;
-  } = {
-    appName: config['appName'] || 'DApp',
-    chains: transformedChains,
-    // Enable client-side rehydration for automatic wallet reconnection
-    handleRehydration: true,
+    const clientConfig: {
+      appName: string;
+      appDescription?: string;
+      appUrl?: string;
+      appIcon?: string;
+      appMetadata?: typeof appMetadata;
+      chains: { chainId: string; chainType: ChainType; name: string; required: boolean }[];
+      wallets?: Array<unknown>;
+      debug?: boolean;
+      projectId?: string;
+      handleRehydration?: boolean;
+      discovery?: typeof config.discovery;
+      permissions?: typeof config.permissions;
+    } = {
+      appName: config['appName'] || 'DApp',
+      chains: transformedChains,
+      // Enable client-side rehydration for automatic wallet reconnection
+      handleRehydration: true,
     };
 
     // Only add properties that are actually defined to satisfy exactOptionalPropertyTypes

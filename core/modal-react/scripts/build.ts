@@ -47,7 +47,7 @@ function runCommand(command: string, description: string): boolean {
   try {
     execSync(command, {
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
+      cwd: path.join(__dirname, '..'),
     });
     return true;
   } catch (error) {
@@ -69,7 +69,7 @@ function build(): void {
     // Run TypeScript build with incremental flag
     execSync('pnpm build:ts', {
       stdio: 'inherit',
-      cwd: path.join(__dirname, '..')
+      cwd: path.join(__dirname, '..'),
     });
   } catch (error) {
     // TypeScript might exit with non-zero if there are type errors

@@ -345,7 +345,9 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
         } catch (error) {
           console.error('[useAztecProvider] Global initialization error:', error);
           if (!cancelled) {
-            setInitError(error instanceof Error ? error : ErrorFactory.unknownError('Global initialization failed'));
+            setInitError(
+              error instanceof Error ? error : ErrorFactory.unknownError('Global initialization failed'),
+            );
             setIsLoading(false);
           }
         }
@@ -374,58 +376,58 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
 
           if (cancelled) return null;
 
-        // Get permissions from config for the target chain
-        const permissionsConfig = (config as { permissions?: Record<string, string[]> }).permissions;
-        const permissions = permissionsConfig?.[targetChain.chainId] || undefined;
+          // Get permissions from config for the target chain
+          const permissionsConfig = (config as { permissions?: Record<string, string[]> }).permissions;
+          const permissions = permissionsConfig?.[targetChain.chainId] || undefined;
 
-        // 🔗 REACT-LEVEL PERMISSION LOG: Show what permissions React hook is using
-        if (permissions && permissions.length > 0) {
-          const hasCompleteAddress = permissions.includes('aztec_getCompleteAddress');
-          console.log('⚛️ REACT HOOK - Permission Usage', {
-            source: 'React useAztecWallet hook',
-            chainId: targetChain.chainId,
-            targetChain: targetChain.name,
-            hook: 'useAztecWallet',
-            permissionsFromConfig: permissions,
-            permissionCount: permissions.length,
-            hasCompleteAddress: hasCompleteAddress,
-            message: hasCompleteAddress
-              ? '✅ React hook has aztec_getCompleteAddress permission'
-              : '⚠️ aztec_getCompleteAddress missing - wallet initialization may fail',
-            dataFlow: 'AztecWalletMeshProvider config.permissions → useAztecWallet → createAztecWallet',
-            troubleshooting: {
-              location: 'These permissions come from your AztecWalletMeshProvider config',
-              validation: 'React hook validates config.permissions exists before using',
-              categories: categorizeReactPermissions(permissions),
+          // 🔗 REACT-LEVEL PERMISSION LOG: Show what permissions React hook is using
+          if (permissions && permissions.length > 0) {
+            const hasCompleteAddress = permissions.includes('aztec_getCompleteAddress');
+            console.log('⚛️ REACT HOOK - Permission Usage', {
+              source: 'React useAztecWallet hook',
+              chainId: targetChain.chainId,
+              targetChain: targetChain.name,
+              hook: 'useAztecWallet',
+              permissionsFromConfig: permissions,
+              permissionCount: permissions.length,
+              hasCompleteAddress: hasCompleteAddress,
+              message: hasCompleteAddress
+                ? '✅ React hook has aztec_getCompleteAddress permission'
+                : '⚠️ aztec_getCompleteAddress missing - wallet initialization may fail',
+              dataFlow: 'AztecWalletMeshProvider config.permissions → useAztecWallet → createAztecWallet',
+              troubleshooting: {
+                location: 'These permissions come from your AztecWalletMeshProvider config',
+                validation: 'React hook validates config.permissions exists before using',
+                categories: categorizeReactPermissions(permissions),
+                availableChains: permissionsConfig ? Object.keys(permissionsConfig) : [],
+              },
+            });
+          } else {
+            console.warn('⚠️ REACT HOOK - No Permissions Found in Config', {
+              source: 'React useAztecWallet hook',
+              chainId: targetChain.chainId,
+              targetChain: targetChain.name,
+              hook: 'useAztecWallet',
+              issue: 'No permissions found in React provider config for this chain',
+              allPermissions: permissionsConfig,
               availableChains: permissionsConfig ? Object.keys(permissionsConfig) : [],
-            },
-          });
-        } else {
-          console.warn('⚠️ REACT HOOK - No Permissions Found in Config', {
-            source: 'React useAztecWallet hook',
-            chainId: targetChain.chainId,
-            targetChain: targetChain.name,
-            hook: 'useAztecWallet',
-            issue: 'No permissions found in React provider config for this chain',
-            allPermissions: permissionsConfig,
-            availableChains: permissionsConfig ? Object.keys(permissionsConfig) : [],
-            lookingForChain: targetChain.chainId,
-            impact: 'createAztecWallet will be called without specific permissions',
-            solution: 'Ensure permissions are defined for the correct chain ID',
-            example: `permissions: { '${targetChain.chainId}': ['aztec_getCompleteAddress', ...] }`,
-          });
-        }
+              lookingForChain: targetChain.chainId,
+              impact: 'createAztecWallet will be called without specific permissions',
+              solution: 'Ensure permissions are defined for the correct chain ID',
+              example: `permissions: { '${targetChain.chainId}': ['aztec_getCompleteAddress', ...] }`,
+            });
+          }
 
-        // Use the existing provider directly - no new provider creation
-        console.log(
-          '[useAztecProvider] Creating Aztec wallet wrapper for existing provider',
-          'provider type:',
-          provider.constructor.name,
-          'chainId:',
-          targetChain.chainId,
-          'isAvailable:',
-          isAvailable,
-        );
+          // Use the existing provider directly - no new provider creation
+          console.log(
+            '[useAztecProvider] Creating Aztec wallet wrapper for existing provider',
+            'provider type:',
+            provider.constructor.name,
+            'chainId:',
+            targetChain.chainId,
+            'isAvailable:',
+            isAvailable,
+          );
 
           const wallet = await createAztecWallet(provider, {
             chainId: targetChain.chainId,
@@ -456,10 +458,11 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
         } finally {
           // Reset LOCAL initialization tracking in the ref
           initializationRef.current.isInitializing = false;
-          // Clean up global tracking after a longer delay to ensure all waiting components get the wallet
+          // Clean up global tracking after a short delay to ensure all waiting components get the wallet
+          // 500ms is sufficient for React's concurrent rendering while preventing long-term memory leaks
           setTimeout(() => {
             globalInitializationTracker.delete(globalKey);
-          }, 5000); // Increased from 100ms to 5 seconds
+          }, 500); // Balanced delay: prevents race conditions while avoiding long-term memory buildup
         }
       })();
 
@@ -489,9 +492,17 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
       if (aztecWallet && provider) {
         try {
           // Clear the cached wallet instance for this provider
-          import('@walletmesh/modal-core/providers/aztec/lazy').then((module) => {
-            module.clearAztecWalletCache(provider as Parameters<typeof module.clearAztecWalletCache>[0]);
-          });
+          import('@walletmesh/modal-core/providers/aztec/lazy')
+            .then((module) => {
+              module.clearAztecWalletCache(provider as Parameters<typeof module.clearAztecWalletCache>[0]);
+            })
+            .catch((cacheError) => {
+              // Log cache clearing error but don't throw as it's in cleanup
+              console.error(
+                '[useAztecProvider] Failed to clear wallet cache during cleanup:',
+                cacheError instanceof Error ? cacheError.message : String(cacheError),
+              );
+            });
 
           // If the wallet has a dispose method, call it
           const walletWithDispose = aztecWallet as AztecDappWallet & { dispose?: () => void };
@@ -499,7 +510,28 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
             walletWithDispose.dispose();
           }
         } catch (error) {
-          console.warn('[useAztecProvider] Error disposing wallet instance on unmount:', error);
+          // Log cleanup errors prominently to help debug resource leaks
+          console.error(
+            '[useAztecProvider] Error disposing wallet instance on unmount:',
+            error instanceof Error
+              ? {
+                  message: error.message,
+                  stack: error.stack,
+                  name: error.name,
+                }
+              : error,
+          );
+
+          // If error tracking is available (e.g., Sentry), report it
+          // This helps identify cleanup issues in production
+          if (typeof window !== 'undefined' && (window as any).Sentry) {
+            (window as any).Sentry.captureException(error, {
+              tags: {
+                component: 'useAztecWallet',
+                phase: 'cleanup',
+              },
+            });
+          }
         }
       }
     };
@@ -587,7 +619,8 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
         // Refresh accounts after switching
         await fetchAccounts();
       } catch (err) {
-        const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to switch account');
+        const errorMessage =
+          err instanceof Error ? err : ErrorFactory.unknownError('Failed to switch account');
         setAccountError(errorMessage);
         throw errorMessage;
       }

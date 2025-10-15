@@ -83,8 +83,8 @@ const createMockState = (overrides?: Partial<WalletMeshState>): WalletMeshState 
     availableWalletIds: [],
     discoveryErrors: [],
     transactionStatus: 'idle' as const,
-    
-      backgroundTransactionIds: [],
+
+    backgroundTransactionIds: [],
   },
   ...overrides,
 });
@@ -748,7 +748,7 @@ describe('useConnect', () => {
               discoveryErrors: [],
               transactionStatus: 'proving' as const,
 
-      backgroundTransactionIds: [],
+              backgroundTransactionIds: [],
             },
           }),
         );
@@ -870,8 +870,8 @@ describe('useConnect', () => {
               availableWalletIds: [],
               discoveryErrors: [],
               transactionStatus: 'proving' as const,
-              
-      backgroundTransactionIds: [],
+
+              backgroundTransactionIds: [],
             },
           }),
         );
@@ -993,8 +993,8 @@ describe('useConnect', () => {
               availableWalletIds: [],
               discoveryErrors: [],
               transactionStatus: 'proving' as const,
-              
-      backgroundTransactionIds: [],
+
+              backgroundTransactionIds: [],
             },
           }),
         );
@@ -1167,8 +1167,8 @@ describe('useConnect', () => {
               availableWalletIds: [],
               discoveryErrors: [],
               transactionStatus: 'idle' as const,
-              
-      backgroundTransactionIds: [],
+
+              backgroundTransactionIds: [],
             },
           }),
         );

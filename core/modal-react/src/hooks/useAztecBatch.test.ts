@@ -69,7 +69,7 @@ function createMockInteraction(
   method: string,
   args: unknown[],
   txHash = '0xmockhash',
-  receipt: MockTxReceipt = { txHash, status: 'success' }
+  receipt: MockTxReceipt = { txHash, status: 'success' },
 ): MockContractFunctionInteraction {
   return {
     id,
@@ -94,7 +94,7 @@ function mockBatchSuccess(receipts: MockTxReceipt[], hashes?: string[]) {
       options?.callbacks?.onSuccess?.(index, {
         hash,
         receipt: receipts[index] || { txHash: hash, status: 'success' },
-        status: 'success'
+        status: 'success',
       });
     }
     return { receipts, errors: [] };
@@ -105,13 +105,13 @@ function mockBatchSuccess(receipts: MockTxReceipt[], hashes?: string[]) {
 function mockBatchPartialFailure(
   receipts: MockTxReceipt[],
   errors: Array<{ index: number; error: Error }>,
-  hashes?: string[]
+  hashes?: string[],
 ) {
   mockExecuteBatchInteractions.mockImplementationOnce(async (_wallet, interactions, options) => {
-    const errorIndices = new Set(errors.map(e => e.index));
+    const errorIndices = new Set(errors.map((e) => e.index));
     for (let index = 0; index < interactions.length; index++) {
       if (errorIndices.has(index)) {
-        const error = errors.find(e => e.index === index)?.error;
+        const error = errors.find((e) => e.index === index)?.error;
         options?.callbacks?.onSending?.(index);
         options?.callbacks?.onError?.(index, error || new Error('Mock error'));
       } else {
@@ -121,7 +121,7 @@ function mockBatchPartialFailure(
         options?.callbacks?.onSuccess?.(index, {
           hash,
           receipt: receipts[index] || { txHash: hash, status: 'success' },
-          status: 'success'
+          status: 'success',
         });
       }
     }
@@ -295,10 +295,9 @@ describe('useAztecBatch', () => {
     const options = { txNonce: 42 } as const;
 
     await act(async () => {
-      await result.current.executeBatch(
-        interactions as unknown as ContractFunctionInteraction[],
-        { ...options },
-      );
+      await result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[], {
+        ...options,
+      });
     });
 
     expect(mockExecuteBatchInteractions).toHaveBeenCalledWith(

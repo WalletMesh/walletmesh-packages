@@ -96,8 +96,8 @@ describe('useConfig', () => {
         availableWalletIds: [],
         discoveryErrors: [],
         transactionStatus: 'idle',
-          
-      backgroundTransactionIds: [],
+
+        backgroundTransactionIds: [],
       },
     };
 
