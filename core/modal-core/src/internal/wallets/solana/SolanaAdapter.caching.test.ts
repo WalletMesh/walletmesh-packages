@@ -52,7 +52,7 @@ describe('SolanaAdapter Caching', () => {
     // First connection
     const connection1 = await adapter.connect();
     expect(connection1.address).toBe('11111111111111111111111111111111');
-    expect(connection1.chain.chainId).toBe('mainnet-beta');
+    expect(connection1.chain.chainId).toBe('solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'); // CAIP-2 format for mainnet
 
     // Verify that connect was called
     expect(mockSolanaWallet.connect).toHaveBeenCalledTimes(1);
@@ -63,7 +63,7 @@ describe('SolanaAdapter Caching', () => {
     // Second connection should use cached provider
     const connection2 = await adapter.connect();
     expect(connection2.address).toBe('11111111111111111111111111111111');
-    expect(connection2.chain.chainId).toBe('mainnet-beta');
+    expect(connection2.chain.chainId).toBe('solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'); // CAIP-2 format for mainnet
 
     // Verify that connect was NOT called again (using cached provider)
     expect(mockSolanaWallet.connect).toHaveBeenCalledTimes(1);
@@ -141,7 +141,7 @@ describe('SolanaAdapter Caching', () => {
 
     // First connection with default chain
     const connection1 = await adapter.connect();
-    expect(connection1.chain.chainId).toBe('mainnet-beta');
+    expect(connection1.chain.chainId).toBe('solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'); // CAIP-2 format for mainnet
 
     // Second connection with different chain specified
     const connection2 = await adapter.connect({

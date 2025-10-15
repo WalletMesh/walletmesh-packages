@@ -75,6 +75,9 @@ const mockStore = {
     loading: { connection: false, discovery: false, transaction: false },
     targetChainType: null,
   },
+  meta: {
+    backgroundTransactionIds: [] as string[],
+  },
 };
 
 vi.mock('./internal/useStore.js', () => ({

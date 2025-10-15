@@ -56,6 +56,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Customizable fallback UI
 - Error reporting callbacks
 
+**Transaction Status Overlays** (Auto-injected by default)
+- **AztecTransactionStatusOverlay** (`src/components/AztecTransactionStatusOverlay.tsx`)
+  - Full-screen blocking overlay for sync transactions (executeSync)
+  - Shows complete transaction lifecycle: idle → simulating → proving → sending → pending → confirming → confirmed/failed
+  - Auto-dismisses 2.5 seconds after showing success/failure state
+  - Includes navigation guard to prevent accidental tab closure
+  - Automatically injected by provider (no manual rendering required)
+
+- **BackgroundTransactionIndicator** (`src/components/BackgroundTransactionIndicator.tsx`)
+  - Floating badge for async (background) transactions (execute)
+  - Non-blocking UI that allows users to continue working
+  - Expandable drawer showing transaction details
+  - Automatically tracks and displays active transactions
+  - Automatically injected by provider (no manual rendering required)
+
 ### Simplified Hook System (10 Core Hooks)
 
 **Connection & Account Management**

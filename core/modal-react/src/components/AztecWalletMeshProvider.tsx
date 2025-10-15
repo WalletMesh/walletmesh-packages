@@ -129,6 +129,51 @@ export interface AztecProviderConfig {
    * When omitted, sensible Aztec defaults are applied.
    */
   discovery?: WalletMeshConfig['discovery'];
+
+  /**
+   * Whether to auto-inject transaction overlays (default: true)
+   *
+   * When enabled, transaction status overlays are automatically rendered:
+   * - AztecTransactionStatusOverlay for sync transactions (executeSync)
+   * - BackgroundTransactionIndicator for async transactions (execute)
+   */
+  autoInjectTransactionOverlays?: boolean;
+
+  /**
+   * Configuration for the full-screen transaction status overlay
+   *
+   * Shows detailed transaction progress for synchronous transactions including
+   * simulation, proof generation, sending, and confirmation stages.
+   */
+  transactionOverlay?: {
+    /** Whether to enable the overlay (default: true) */
+    enabled?: boolean;
+    /** Disable the navigation guard that warns before closing tab (default: false) */
+    disableNavigationGuard?: boolean;
+    /** Custom headline text */
+    headline?: string;
+    /** Custom description text */
+    description?: string;
+    /** Show background transactions in this overlay too (default: false) */
+    showBackgroundTransactions?: boolean;
+  };
+
+  /**
+   * Configuration for the floating background transaction indicator
+   *
+   * Shows a non-blocking floating badge for asynchronous transactions that allows
+   * users to continue working while transactions process in the background.
+   */
+  backgroundTransactionIndicator?: {
+    /** Whether to enable the indicator (default: true) */
+    enabled?: boolean;
+    /** Position of the indicator (default: 'bottom-right') */
+    position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    /** Show completed transactions briefly before dismissing (default: false) */
+    showCompleted?: boolean;
+    /** Duration to show completed state in milliseconds (default: 2000) */
+    completedDuration?: number;
+  };
 }
 
 /**

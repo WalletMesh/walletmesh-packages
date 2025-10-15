@@ -369,6 +369,123 @@ export interface WalletMeshReactConfig extends WalletMeshConfig {
    * ```
    */
   permissions?: Record<string, string[]>;
+
+  /**
+   * Whether to automatically inject transaction status overlays.
+   *
+   * When `true` (default), the AztecTransactionStatusOverlay and
+   * BackgroundTransactionIndicator components are automatically rendered
+   * as children of the provider. These overlays provide visual feedback
+   * during transaction execution:
+   * - Sync transactions show a full-screen blocking overlay
+   * - Async transactions show a non-blocking floating badge
+   *
+   * Set to `false` if you want to render the overlays manually or use
+   * custom transaction UI components.
+   *
+   * @defaultValue true
+   * @since 3.1.0
+   */
+  autoInjectTransactionOverlays?: boolean;
+
+  /**
+   * Configuration for the transaction status overlay (blocking, for sync transactions).
+   *
+   * This overlay shows the full transaction lifecycle with stages:
+   * idle → simulating → proving → sending → pending → confirming → confirmed/failed
+   *
+   * The overlay automatically shows during sync transactions (executeSync) and
+   * dismisses 2.5 seconds after displaying the success/failure state.
+   *
+   * @example
+   * ```tsx
+   * transactionOverlay: {
+   *   enabled: true, // default
+   *   disableNavigationGuard: false, // default - warns before closing tab
+   *   headline: 'Processing Your Transaction', // optional override
+   *   description: 'Please wait...', // optional override
+   *   showBackgroundTransactions: false // default - only show active (sync) transactions
+   * }
+   * ```
+   *
+   * @since 3.1.0
+   */
+  transactionOverlay?: {
+    /**
+     * Disable the overlay entirely while still allowing background indicator.
+     * @defaultValue true
+     */
+    enabled?: boolean;
+
+    /**
+     * Disable the beforeunload navigation guard that warns users before closing the tab.
+     * By default, the guard is enabled to prevent accidental tab closure during transactions.
+     * @defaultValue false
+     */
+    disableNavigationGuard?: boolean;
+
+    /**
+     * Custom headline text to display instead of the default stage-based headline.
+     */
+    headline?: string;
+
+    /**
+     * Custom description text to display instead of the default stage-based description.
+     */
+    description?: string;
+
+    /**
+     * Show background (async) transactions in addition to sync transactions.
+     * By default, only the active sync transaction is shown in the full-screen overlay.
+     * @defaultValue false
+     */
+    showBackgroundTransactions?: boolean;
+  };
+
+  /**
+   * Configuration for the background transaction indicator (non-blocking, for async transactions).
+   *
+   * Shows a floating badge that allows users to continue working while
+   * transactions process in the background. The badge displays the count
+   * of active transactions and can be expanded to show details.
+   *
+   * @example
+   * ```tsx
+   * backgroundTransactionIndicator: {
+   *   enabled: true, // default
+   *   position: 'bottom-right', // default
+   *   showCompleted: true, // default - briefly show completed transactions
+   *   completedDuration: 3000 // default - 3 seconds
+   * }
+   * ```
+   *
+   * @since 3.1.0
+   */
+  backgroundTransactionIndicator?: {
+    /**
+     * Disable the indicator entirely while still allowing the full-screen overlay.
+     * @defaultValue true
+     */
+    enabled?: boolean;
+
+    /**
+     * Position of the indicator on the screen.
+     * @defaultValue 'bottom-right'
+     */
+    position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+
+    /**
+     * Show completed transactions briefly before hiding them.
+     * @defaultValue true
+     */
+    showCompleted?: boolean;
+
+    /**
+     * Duration in milliseconds to show completed transactions before auto-hiding.
+     * @defaultValue 3000
+     */
+    completedDuration?: number;
+  };
 }
 
 /**

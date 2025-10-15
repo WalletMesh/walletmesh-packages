@@ -62,7 +62,7 @@
     "type-check": "tsc --noEmit",
     "clean": "rimraf dist tsconfig.build.tsbuildinfo tsconfig.tsbuildinfo",
     "rebuild": "pnpm clean && pnpm build",
-    "test": "vitest run",
+    "test": "NODE_OPTIONS='--max-old-space-size=4096' vitest run --pool=forks --poolOptions.forks.singleFork=true",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "biome lint",

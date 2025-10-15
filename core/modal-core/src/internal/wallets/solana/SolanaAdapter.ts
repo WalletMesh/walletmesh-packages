@@ -98,6 +98,11 @@ export class SolanaAdapter extends AbstractWalletAdapter {
   private cachedTransport: JSONRPCTransport | null = null;
 
   /**
+   * Registered event handlers for proper cleanup
+   */
+  private registeredEventHandlers = new Map<string, ((...args: unknown[]) => void)[]>();
+
+  /**
    * Set a discovered provider from the discovery service
    * This allows the adapter to use wallets found by SolanaDiscoveryService
    */
@@ -131,53 +136,67 @@ export class SolanaAdapter extends AbstractWalletAdapter {
    * Detect if Solana wallet is available
    */
   async detect(): Promise<DetectionResult> {
-    // Check if we have a discovered provider
-    if (this.discoveredProvider) {
-      return {
-        isInstalled: true,
-        isReady: true,
-        metadata: {
-          type: 'injected',
-          provider: 'discovered',
-        },
-      };
-    }
-
-    // Check if we can get a Solana wallet from global injection
     try {
-      // Inline wallet detection (was getSolanaWallet)
-      let wallet: SolanaWallet | undefined;
-      if (typeof window !== 'undefined') {
-        const globalAny = window as {
-          solana?: SolanaWallet;
-          solflare?: SolanaWallet;
-          backpack?: { solana?: SolanaWallet };
+      // Check if we have a discovered provider
+      if (this.discoveredProvider) {
+        return {
+          isInstalled: true,
+          isReady: true,
+          metadata: {
+            type: 'injected',
+            provider: 'discovered',
+          },
         };
-
-        // Check common wallet properties
-        if (globalAny.solana) wallet = globalAny.solana;
-        else if (globalAny.solflare) wallet = globalAny.solflare;
-        else if (globalAny.backpack?.solana) wallet = globalAny.backpack.solana;
       }
 
-      const version = (wallet as { version?: string })?.version;
-      return {
-        isInstalled: wallet !== undefined,
-        isReady: wallet !== undefined,
-        ...(version && { version }),
-        metadata: {
-          type: 'injected',
-          provider: 'global',
-        },
-      };
+      // Check if we can get a Solana wallet from global injection
+      try {
+        // Inline wallet detection (was getSolanaWallet)
+        let wallet: SolanaWallet | undefined;
+        if (typeof window !== 'undefined') {
+          const globalAny = window as {
+            solana?: SolanaWallet;
+            solflare?: SolanaWallet;
+            backpack?: { solana?: SolanaWallet };
+          };
+
+          // Check common wallet properties
+          if (globalAny.solana) wallet = globalAny.solana;
+          else if (globalAny.solflare) wallet = globalAny.solflare;
+          else if (globalAny.backpack?.solana) wallet = globalAny.backpack.solana;
+        }
+
+        const version = (wallet as { version?: string })?.version;
+        return {
+          isInstalled: wallet !== undefined,
+          isReady: wallet !== undefined,
+          ...(version && { version }),
+          metadata: {
+            type: 'injected',
+            provider: 'global',
+          },
+        };
+      } catch (error) {
+        return {
+          isInstalled: false,
+          isReady: false,
+          metadata: {
+            type: 'injected',
+            provider: 'none',
+            error: error instanceof Error ? error.message : 'Unknown error',
+          },
+        };
+      }
     } catch (error) {
+      // Outer catch for any unexpected errors
+      this.log('error', 'Unexpected error during wallet detection', error);
       return {
         isInstalled: false,
         isReady: false,
         metadata: {
           type: 'injected',
           provider: 'none',
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : 'Unexpected detection error',
         },
       };
     }
@@ -198,9 +217,13 @@ export class SolanaAdapter extends AbstractWalletAdapter {
             const publicKeyStr = this.solanaWallet.publicKey.toString();
             const accounts = [publicKeyStr];
 
-            // Get chain ID - use provided or default to mainnet
-            const chainId =
-              (options?.['chainId'] as string) || options?.chains?.[0]?.chainId || 'mainnet-beta';
+            // Get chain ID - use provided or default to mainnet (CAIP-2 format)
+            let chainId = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'; // Default to mainnet
+            if (options?.['chainId']) {
+              chainId = options['chainId'] as string;
+            } else if (options?.chains && Array.isArray(options.chains) && options.chains.length > 0) {
+              chainId = options.chains[0]?.chainId || chainId;
+            }
 
             // Return connection with cached provider
             const connection = await this.createConnection({
@@ -254,8 +277,13 @@ export class SolanaAdapter extends AbstractWalletAdapter {
       const publicKeyStr = response.publicKey.toString();
       const accounts = [publicKeyStr];
 
-      // Get chain ID - use provided or default to mainnet
-      const chainId = (options?.['chainId'] as string) || options?.chains?.[0]?.chainId || 'mainnet-beta';
+      // Get chain ID - use provided or default to mainnet (CAIP-2 format)
+      let chainId = 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'; // Default to mainnet
+      if (options?.['chainId']) {
+        chainId = options['chainId'] as string;
+      } else if (options?.chains && Array.isArray(options.chains) && options.chains.length > 0) {
+        chainId = options.chains[0]?.chainId || chainId;
+      }
 
       // Create transport
       const transport: JSONRPCTransport = {
@@ -296,7 +324,7 @@ export class SolanaAdapter extends AbstractWalletAdapter {
           }
 
           // Set up event listeners for common Solana wallet events
-          const eventHandlers = {
+          const eventHandlers: Record<string, (...args: unknown[]) => void> = {
             message: (data: unknown) => {
               this.log('debug', 'Received message from Solana wallet', { data });
               handler(data);
@@ -315,18 +343,44 @@ export class SolanaAdapter extends AbstractWalletAdapter {
             },
           };
 
-          // Register event handlers
+          // Register event handlers and track them
           for (const [event, eventHandler] of Object.entries(eventHandlers)) {
             wallet.on?.(event, eventHandler);
+
+            // Track handlers for cleanup
+            const handlers = this.registeredEventHandlers.get(event) || [];
+            handlers.push(eventHandler);
+            this.registeredEventHandlers.set(event, handlers);
           }
 
           // Return cleanup function to remove event listeners
           return () => {
-            for (const [event] of Object.entries(eventHandlers)) {
+            for (const [event, eventHandler] of Object.entries(eventHandlers)) {
               try {
-                // Note: Most wallets don't provide removeListener, so we use removeAllListeners
-                // This is acceptable since we clean up in disconnect()
-                this.log('debug', `Cleaning up ${event} event listener`);
+                // Try to remove specific listener if wallet supports it
+                if (wallet && 'removeListener' in wallet && typeof wallet.removeListener === 'function') {
+                  (wallet as { removeListener: (event: string, handler: (...args: unknown[]) => void) => void })
+                    .removeListener(event, eventHandler);
+                  this.log('debug', `Removed ${event} event listener using removeListener`);
+                } else if (wallet && 'off' in wallet && typeof wallet.off === 'function') {
+                  (wallet as { off: (event: string, handler: (...args: unknown[]) => void) => void })
+                    .off(event, eventHandler);
+                  this.log('debug', `Removed ${event} event listener using off`);
+                } else {
+                  this.log('debug', `Wallet doesn't support removeListener or off for ${event}, will use removeAllListeners in disconnect`);
+                }
+
+                // Remove from tracked handlers
+                const handlers = this.registeredEventHandlers.get(event) || [];
+                const index = handlers.indexOf(eventHandler);
+                if (index > -1) {
+                  handlers.splice(index, 1);
+                  if (handlers.length === 0) {
+                    this.registeredEventHandlers.delete(event);
+                  } else {
+                    this.registeredEventHandlers.set(event, handlers);
+                  }
+                }
               } catch (error) {
                 this.log('warn', `Failed to clean up ${event} event listener`, error);
               }
@@ -430,37 +484,95 @@ export class SolanaAdapter extends AbstractWalletAdapter {
   private setupWalletEventListeners(): void {
     if (!this.solanaWallet?.on) return;
 
-    // Listen for account changes
-    this.solanaWallet.on('accountChanged', (publicKey: unknown) => {
+    // Define account changed handler
+    const accountChangedHandler = (publicKey: unknown) => {
       const typedPublicKey = publicKey as { toString: () => string } | null;
       if (typedPublicKey) {
+        const publicKeyStr = typedPublicKey.toString();
+
+        // Update provider state
+        if (this.cachedProvider) {
+          this.cachedProvider.updatePublicKey(publicKeyStr);
+        }
+
         // Emit blockchain event for account change
         this.emitBlockchainEvent('accountsChanged', {
-          accounts: [typedPublicKey.toString()],
+          accounts: [publicKeyStr],
           chainType: ChainType.Solana,
         });
       } else {
+        // Update provider state to disconnected
+        if (this.cachedProvider) {
+          this.cachedProvider.updatePublicKey(null);
+        }
+
         // Account was disconnected
         this.emitBlockchainEvent('disconnected', {
           reason: 'Account disconnected',
         });
       }
-    });
+    };
 
-    // Listen for disconnect
-    this.solanaWallet.on('disconnect', () => {
+    // Define disconnect handler
+    const disconnectHandler = () => {
       this.emitBlockchainEvent('disconnected', {
-        reason: 'Account disconnected',
+        reason: 'Wallet disconnected',
       });
-    });
+      // Clear cached provider and transport on external disconnect
+      this.cachedProvider = null;
+      this.cachedTransport = null;
+    };
+
+    // Register handlers
+    this.solanaWallet.on('accountChanged', accountChangedHandler);
+    this.solanaWallet.on('disconnect', disconnectHandler);
+
+    // Track handlers for cleanup
+    const accountHandlers = this.registeredEventHandlers.get('accountChanged') || [];
+    accountHandlers.push(accountChangedHandler);
+    this.registeredEventHandlers.set('accountChanged', accountHandlers);
+
+    const disconnectHandlers = this.registeredEventHandlers.get('disconnect') || [];
+    disconnectHandlers.push(disconnectHandler);
+    this.registeredEventHandlers.set('disconnect', disconnectHandlers);
   }
 
   /**
    * Remove wallet event listeners
    */
   private removeWalletEventListeners(): void {
-    if (this.solanaWallet?.removeAllListeners) {
-      this.solanaWallet.removeAllListeners();
+    if (!this.solanaWallet) return;
+
+    // Try to remove individual listeners first (more precise)
+    for (const [event, handlers] of this.registeredEventHandlers.entries()) {
+      for (const handler of handlers) {
+        try {
+          if ('removeListener' in this.solanaWallet && typeof this.solanaWallet.removeListener === 'function') {
+            (this.solanaWallet as { removeListener: (event: string, handler: (...args: unknown[]) => void) => void })
+              .removeListener(event, handler);
+            this.log('debug', `Removed ${event} event listener using removeListener`);
+          } else if ('off' in this.solanaWallet && typeof this.solanaWallet.off === 'function') {
+            (this.solanaWallet as { off: (event: string, handler: (...args: unknown[]) => void) => void })
+              .off(event, handler);
+            this.log('debug', `Removed ${event} event listener using off`);
+          }
+        } catch (error) {
+          this.log('warn', `Failed to remove ${event} listener`, error);
+        }
+      }
+    }
+
+    // Clear tracked handlers
+    this.registeredEventHandlers.clear();
+
+    // Fall back to removeAllListeners if available (less precise but ensures cleanup)
+    if ('removeAllListeners' in this.solanaWallet && typeof this.solanaWallet.removeAllListeners === 'function') {
+      try {
+        this.solanaWallet.removeAllListeners();
+        this.log('debug', 'Called removeAllListeners as final cleanup');
+      } catch (error) {
+        this.log('warn', 'Failed to call removeAllListeners', error);
+      }
     }
   }
 }

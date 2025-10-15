@@ -1,15 +1,12 @@
 import './App.css';
 import {
   AztecExampleWalletAdapter,
-  AztecTransactionStatusOverlay,
-  BackgroundTransactionIndicator,
   AztecWalletMeshProvider,
   ChainType,
   WalletMeshErrorBoundary,
   WalletMeshErrorRecovery,
 } from '@walletmesh/modal-react/aztec';
 import DApp from './components/DApp.js';
-import TransactionStatusOverlay from './components/TransactionStatusOverlay.js';
 import { ToastProvider } from './contexts/ToastContext.js';
 
 function App() {
@@ -110,17 +107,17 @@ function App() {
             <DApp />
           </div>
           {/*
-            TransactionStatusOverlay shows the full transaction lifecycle for SYNC transactions (executeSync).
-            It replaces the legacy ProvingOverlay, providing comprehensive tracking with 8 stages:
-            idle → preparing → proving → signing → broadcasting → confirming → confirmed/failed
+            Transaction overlays are now automatically injected by AztecWalletMeshProvider!
 
-            For ASYNC transactions (execute), this overlay does NOT appear.
-            Instead, BackgroundTransactionIndicator provides a non-intrusive floating badge,
-            allowing users to continue working while transactions process in the background.
+            - AztecTransactionStatusOverlay: Shows full-screen blocking overlay for sync transactions (executeSync)
+            - BackgroundTransactionIndicator: Shows floating badge for async transactions (execute)
+
+            No manual rendering required - they automatically respond to transaction state.
+            To customize or disable, use the provider config:
+
+            transactionOverlay: { enabled: true, ... }
+            backgroundTransactionIndicator: { enabled: true, position: 'bottom-right', ... }
           */}
-          <TransactionStatusOverlay />
-          <AztecTransactionStatusOverlay />
-          <BackgroundTransactionIndicator position="bottom-right" />
         </ToastProvider>
       </AztecWalletMeshProvider>
     </WalletMeshErrorBoundary>

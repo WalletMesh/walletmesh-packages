@@ -36,6 +36,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorFactory, createWalletMesh } from '@walletmesh/modal-core';
 import type { ChainType, QueryManager, WalletMeshConfig } from '@walletmesh/modal-core';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AztecTransactionStatusOverlay } from './components/AztecTransactionStatusOverlay.js';
+import { BackgroundTransactionIndicator } from './components/BackgroundTransactionIndicator.js';
 import { WalletMeshModal } from './components/WalletMeshModal.js';
 
 import { WalletMeshContext } from './WalletMeshContext.js';
@@ -781,6 +783,40 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
       <WalletMeshContext.Provider value={contextValue}>
         {children}
         {config.autoInjectModal !== false && <WalletMeshModal />}
+
+        {/* Auto-inject transaction overlays */}
+        {config.autoInjectTransactionOverlays !== false && (
+          <>
+            {/* Sync transaction overlay (blocking, full-screen with auto-dismiss) */}
+            {config.transactionOverlay?.enabled !== false && (
+              <AztecTransactionStatusOverlay
+                {...(config.transactionOverlay?.headline && { headline: config.transactionOverlay.headline })}
+                {...(config.transactionOverlay?.description && {
+                  description: config.transactionOverlay.description,
+                })}
+                {...(config.transactionOverlay?.disableNavigationGuard && {
+                  disableNavigationGuard: config.transactionOverlay.disableNavigationGuard,
+                })}
+                {...(config.transactionOverlay?.showBackgroundTransactions && {
+                  showBackgroundTransactions: config.transactionOverlay.showBackgroundTransactions,
+                })}
+              />
+            )}
+
+            {/* Background transaction indicator (non-blocking, floating badge) */}
+            {config.backgroundTransactionIndicator?.enabled !== false && (
+              <BackgroundTransactionIndicator
+                position={config.backgroundTransactionIndicator?.position || 'bottom-right'}
+                {...(config.backgroundTransactionIndicator?.showCompleted !== undefined && {
+                  showCompleted: config.backgroundTransactionIndicator.showCompleted,
+                })}
+                {...(config.backgroundTransactionIndicator?.completedDuration && {
+                  completedDuration: config.backgroundTransactionIndicator.completedDuration,
+                })}
+              />
+            )}
+          </>
+        )}
       </WalletMeshContext.Provider>
     );
 

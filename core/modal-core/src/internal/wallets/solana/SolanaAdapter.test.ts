@@ -10,6 +10,7 @@ import { ErrorFactory } from '../../core/errors/errorFactory.js';
 import { Logger } from '../../core/logger/logger.js';
 import type { AdapterContext } from '../base/WalletAdapter.js';
 import { SolanaAdapter } from './SolanaAdapter.js';
+import { SolanaProvider } from '../../providers/solana/SolanaProvider.js';
 
 // Install domain-specific matchers
 installCustomMatchers();
@@ -31,13 +32,7 @@ vi.mock('../../core/logger/logger.js', () => ({
 }));
 
 // Mock the providers
-vi.mock('../../providers/solana/SolanaProvider.js', () => ({
-  SolanaProvider: vi.fn().mockImplementation(() => ({
-    chainType: ChainType.Solana,
-    on: vi.fn(),
-    disconnect: vi.fn(),
-  })),
-}));
+vi.mock('../../providers/solana/SolanaProvider.js');
 
 describe('SolanaAdapter', () => {
   let adapter: SolanaAdapter;
@@ -76,6 +71,17 @@ describe('SolanaAdapter', () => {
     // Add Solana wallet to window
     Object.assign(window, { solana: mockSolana });
 
+    // Mock SolanaProvider to return a simple mock object with all required methods
+    vi.mocked(SolanaProvider).mockImplementation(() => ({
+      chainType: ChainType.Solana,
+      on: vi.fn(),
+      off: vi.fn(),
+      disconnect: vi.fn(),
+      getAccounts: vi.fn(),
+      getChainId: vi.fn(),
+      updatePublicKey: vi.fn(),
+    }) as unknown as SolanaProvider);
+
     adapter = new SolanaAdapter();
   });
 
@@ -110,7 +116,7 @@ describe('SolanaAdapter', () => {
         expect(mockSolana.connect).toHaveBeenCalled();
         expect(connection.accounts).toEqual(['7EYnhQoR9YM3N7UoaKRoA44Uy8JeaZV3qyouov87awMs']);
         expect(connection.chain.chainType).toBe(ChainType.Solana);
-        expect(connection.chain.chainId).toBe('mainnet-beta');
+        expect(connection.chain.chainId).toBe('solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'); // CAIP-2 format for mainnet
         expect(connection.provider).toBeDefined();
       } catch (error) {
         console.error('Test failed with error:', error);
@@ -227,7 +233,7 @@ describe('SolanaAdapter', () => {
       disconnectHandler();
 
       expect(eventHandler).toHaveBeenCalledWith({
-        reason: 'Account disconnected',
+        reason: 'Wallet disconnected',
       });
     });
   });

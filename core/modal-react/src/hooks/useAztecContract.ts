@@ -218,7 +218,7 @@ export function useAztecContract<T = unknown>(
 
           if (retryCountRef.current < maxRetries) {
             retryCountRef.current += 1;
-            const delay = baseDelay * Math.pow(1.5, retryCountRef.current - 1); // Exponential backoff
+            const delay = baseDelay * 1.5 ** (retryCountRef.current - 1); // Exponential backoff
 
             console.log(
               `[useAztecContract] Contract not yet available (attempt ${retryCountRef.current}/${maxRetries}), retrying in ${delay}ms...`,

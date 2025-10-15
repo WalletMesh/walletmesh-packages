@@ -300,6 +300,12 @@ export interface SolanaWalletProvider extends BaseWalletProvider {
   signTransaction(transaction: unknown): Promise<string>;
 
   /**
+   * Update the public key (called by adapter when wallet events occur)
+   * @internal
+   */
+  updatePublicKey(publicKey: string | null): void;
+
+  /**
    * Check if the wallet is connected (Solana Wallet Standard)
    */
   readonly connected?: boolean;

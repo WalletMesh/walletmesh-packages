@@ -237,6 +237,15 @@ export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig
     // Optimized discovery configuration for Aztec
     discovery: discoveryConfig as any,
 
+    // Transaction overlay configuration
+    ...(config.autoInjectTransactionOverlays !== undefined && {
+      autoInjectTransactionOverlays: config.autoInjectTransactionOverlays,
+    }),
+    ...(config.transactionOverlay && { transactionOverlay: config.transactionOverlay }),
+    ...(config.backgroundTransactionIndicator && {
+      backgroundTransactionIndicator: config.backgroundTransactionIndicator,
+    }),
+
     // Enhanced logging for development
     debug: config.debug ?? isDevelopment,
     logger: {

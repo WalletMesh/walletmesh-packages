@@ -124,17 +124,29 @@ export class AztecAdapter extends AbstractWalletAdapter {
    * Detect if Aztec wallet is available
    */
   async detect(): Promise<DetectionResult> {
-    // For Aztec wallets, detection depends on transport availability
-    const isAvailable = !!this.transport || !!this.config.transport;
+    try {
+      // For Aztec wallets, detection depends on transport availability
+      const isAvailable = !!this.transport || !!this.config.transport;
 
-    return {
-      isInstalled: isAvailable,
-      isReady: isAvailable,
-      metadata: {
-        type: 'aztec',
-        transport: this.transport || this.config.transport,
-      },
-    };
+      return {
+        isInstalled: isAvailable,
+        isReady: isAvailable,
+        metadata: {
+          type: 'aztec',
+          transport: this.transport || this.config.transport,
+        },
+      };
+    } catch (error) {
+      this.log('error', 'Unexpected error during Aztec wallet detection', error);
+      return {
+        isInstalled: false,
+        isReady: false,
+        metadata: {
+          type: 'aztec',
+          error: error instanceof Error ? error.message : 'Unexpected detection error',
+        },
+      };
+    }
   }
 
   /**
@@ -239,15 +251,33 @@ export class AztecAdapter extends AbstractWalletAdapter {
         await transport.send(message);
       },
       onMessage: (callback: (message: unknown) => void) => {
+        // Clean up existing subscription before creating a new one
         if (this.jsonrpcUnsubscribe) {
-          this.jsonrpcUnsubscribe();
+          try {
+            this.jsonrpcUnsubscribe();
+          } catch (error) {
+            this.log('warn', 'Failed to cleanup previous JSON-RPC subscription', error);
+          }
           this.jsonrpcUnsubscribe = null;
         }
 
+        // Create new subscription
         this.jsonrpcUnsubscribe = transport.on('message', (event: TransportEvent) => {
           const messageEvent = event as TransportMessageEvent;
           callback(messageEvent.data);
         });
+
+        // Return cleanup function for this specific subscription
+        return () => {
+          if (this.jsonrpcUnsubscribe) {
+            try {
+              this.jsonrpcUnsubscribe();
+            } catch (error) {
+              this.log('warn', 'Failed to cleanup JSON-RPC subscription', error);
+            }
+            this.jsonrpcUnsubscribe = null;
+          }
+        };
       },
     };
   }

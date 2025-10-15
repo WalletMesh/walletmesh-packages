@@ -93,6 +93,20 @@ export class SolanaProvider extends BaseWalletProvider implements SolanaWalletPr
   }
 
   /**
+   * Update the public key (called by adapter when wallet events occur)
+   *
+   * @param publicKey - New public key or null if disconnected
+   * @internal
+   */
+  updatePublicKey(publicKey: string | null): void {
+    this.publicKey = publicKey;
+    this.updateContext({
+      accounts: publicKey ? [publicKey] : [],
+      isConnected: publicKey !== null,
+    });
+  }
+
+  /**
    * Sign a Solana transaction
    *
    * @param transaction - Solana transaction object to sign
@@ -102,6 +116,11 @@ export class SolanaProvider extends BaseWalletProvider implements SolanaWalletPr
   async signTransaction(transaction: SolanaTransaction): Promise<string> {
     if (!this.context.isConnected || !this.publicKey) {
       throw ErrorFactory.connectionFailed('Solana provider not connected');
+    }
+
+    // Validate transaction input
+    if (!transaction || typeof transaction !== 'object') {
+      throw ErrorFactory.transportError('Invalid transaction object provided for signing');
     }
 
     try {
@@ -116,13 +135,28 @@ export class SolanaProvider extends BaseWalletProvider implements SolanaWalletPr
   /**
    * Sign a message with the connected account
    *
-   * @param message - Message to sign
+   * @param message - Message to sign (string or Uint8Array)
    * @returns Promise resolving to signature string
-   * @throws If signing fails or user rejects
+   * @throws If signing fails or user rejects or message is invalid
    */
   async signMessage(message: string): Promise<string> {
     if (!this.context.isConnected || !this.publicKey) {
       throw ErrorFactory.connectionFailed('Solana provider not connected');
+    }
+
+    // Validate message input
+    if (message === null || message === undefined) {
+      throw ErrorFactory.transportError('Message parameter is required for signing');
+    }
+
+    if (typeof message !== 'string') {
+      throw ErrorFactory.transportError(
+        `Invalid message type: expected string, got ${typeof message}`,
+      );
+    }
+
+    if (message.length === 0) {
+      throw ErrorFactory.transportError('Message cannot be empty');
     }
 
     try {

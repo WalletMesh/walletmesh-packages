@@ -134,43 +134,56 @@ export class EvmAdapter extends AbstractWalletAdapter {
    * Detect if EVM wallet is available
    */
   async detect(): Promise<DetectionResult> {
-    // Check if we have an ethereum provider
-    if (this.ethereum) {
-      return {
-        isInstalled: true,
-        isReady: true,
-        ...((this.ethereum['version'] as string) ? { version: this.ethereum['version'] as string } : {}),
-        metadata: {
-          type: 'injected',
-          provider: 'configured',
-        },
-      };
-    }
-
-    // Check if window.ethereum is available
-    if (typeof window !== 'undefined') {
-      const ethereum = (window as { ethereum?: Record<string, unknown> }).ethereum;
-      if (ethereum) {
+    try {
+      // Check if we have an ethereum provider
+      if (this.ethereum) {
         return {
           isInstalled: true,
           isReady: true,
-          ...((ethereum['version'] as string) ? { version: ethereum['version'] as string } : {}),
+          ...((this.ethereum['version'] as string) ? { version: this.ethereum['version'] as string } : {}),
           metadata: {
             type: 'injected',
-            provider: 'window.ethereum',
+            provider: 'configured',
           },
         };
       }
-    }
 
-    return {
-      isInstalled: false,
-      isReady: false,
-      metadata: {
-        type: 'injected',
-        provider: 'none',
-      },
-    };
+      // Check if window.ethereum is available
+      if (typeof window !== 'undefined') {
+        const ethereum = (window as { ethereum?: Record<string, unknown> }).ethereum;
+        if (ethereum) {
+          return {
+            isInstalled: true,
+            isReady: true,
+            ...((ethereum['version'] as string) ? { version: ethereum['version'] as string } : {}),
+            metadata: {
+              type: 'injected',
+              provider: 'window.ethereum',
+            },
+          };
+        }
+      }
+
+      return {
+        isInstalled: false,
+        isReady: false,
+        metadata: {
+          type: 'injected',
+          provider: 'none',
+        },
+      };
+    } catch (error) {
+      this.log('error', 'Unexpected error during EVM wallet detection', error);
+      return {
+        isInstalled: false,
+        isReady: false,
+        metadata: {
+          type: 'injected',
+          provider: 'none',
+          error: error instanceof Error ? error.message : 'Unexpected detection error',
+        },
+      };
+    }
   }
 
   /**
@@ -272,16 +285,125 @@ export class EvmAdapter extends AbstractWalletAdapter {
       const chainIdNum = Number.parseInt(chainIdHex, 16);
       const chainIdCAIP2 = `eip155:${chainIdNum}`;
 
+      // Capture this context for use in transport object
+      const self = this;
+
       // Create an EVM-specific transport that wraps window.ethereum
       const transport: unknown = {
-        async send(_message: unknown): Promise<void> {
-          // EVM providers don't use JSON-RPC messages directly
-          // This is a compatibility layer
-          throw ErrorFactory.configurationError('Direct send not supported for EVM provider');
+        async send(message: unknown): Promise<void> {
+          // EVM providers use JSON-RPC request/response pattern
+          // The send method forwards messages to window.ethereum.request()
+          const ethereum = (window as { ethereum?: Record<string, unknown> }).ethereum;
+          if (!ethereum) {
+            throw ErrorFactory.connectionFailed('EVM provider not available');
+          }
+
+          if (typeof message === 'object' && message !== null && 'method' in message) {
+            const request = message as { method: string; params?: unknown[] };
+            try {
+              await (
+                ethereum as { request: (req: { method: string; params?: unknown[] }) => Promise<unknown> }
+              ).request({
+                method: request.method,
+                ...(request.params && { params: request.params }),
+              });
+            } catch (error) {
+              throw ErrorFactory.transportError(
+                `Failed to send EVM request: ${error instanceof Error ? error.message : String(error)}`,
+              );
+            }
+          } else {
+            throw ErrorFactory.transportError('Invalid message format for EVM transport');
+          }
         },
-        onMessage(_callback: (message: unknown) => void): void {
-          // EVM providers don't support message subscriptions in this way
-          // Events are handled differently
+        onMessage(callback: (message: unknown) => void): (() => void) {
+          // EVM wallets use EIP-1193 provider events for notifications
+          // Set up event listeners that forward events to the callback
+          const ethereum = (window as { ethereum?: Record<string, unknown> }).ethereum;
+          if (!ethereum) {
+            self.log('warn', 'EVM provider not available for event listening');
+            return () => {}; // Return no-op cleanup
+          }
+
+          const provider = ethereum as {
+            on?: (event: string, handler: (...args: unknown[]) => void) => void;
+            removeListener?: (event: string, handler: (...args: unknown[]) => void) => void;
+            off?: (event: string, handler: (...args: unknown[]) => void) => void;
+          };
+
+          if (!provider.on) {
+            self.log('warn', 'EVM provider does not support event listening');
+            return () => {}; // Return no-op cleanup
+          }
+
+          // Define event handlers
+          const accountsChangedHandler = (accounts: unknown) => {
+            callback({
+              jsonrpc: '2.0',
+              event: 'accountsChanged',
+              params: accounts,
+            });
+          };
+
+          const chainChangedHandler = (chainId: unknown) => {
+            callback({
+              jsonrpc: '2.0',
+              event: 'chainChanged',
+              params: { chainId },
+            });
+          };
+
+          const connectHandler = (connectInfo: unknown) => {
+            callback({
+              jsonrpc: '2.0',
+              event: 'connect',
+              params: connectInfo,
+            });
+          };
+
+          const disconnectHandler = (error: unknown) => {
+            callback({
+              jsonrpc: '2.0',
+              event: 'disconnect',
+              params: { error },
+            });
+          };
+
+          const messageHandler = (message: unknown) => {
+            callback({
+              jsonrpc: '2.0',
+              event: 'message',
+              params: message,
+            });
+          };
+
+          // Register event handlers
+          provider.on('accountsChanged', accountsChangedHandler);
+          provider.on('chainChanged', chainChangedHandler);
+          provider.on('connect', connectHandler);
+          provider.on('disconnect', disconnectHandler);
+          provider.on('message', messageHandler);
+
+          // Return cleanup function
+          return () => {
+            try {
+              if (provider.removeListener) {
+                provider.removeListener('accountsChanged', accountsChangedHandler);
+                provider.removeListener('chainChanged', chainChangedHandler);
+                provider.removeListener('connect', connectHandler);
+                provider.removeListener('disconnect', disconnectHandler);
+                provider.removeListener('message', messageHandler);
+              } else if (provider.off) {
+                provider.off('accountsChanged', accountsChangedHandler);
+                provider.off('chainChanged', chainChangedHandler);
+                provider.off('connect', connectHandler);
+                provider.off('disconnect', disconnectHandler);
+                provider.off('message', messageHandler);
+              }
+            } catch (error) {
+              self.log('warn', 'Failed to remove EVM event listeners', error);
+            }
+          };
         },
         // Add custom request method for EVM compatibility
         async request(method: string, params?: unknown[]): Promise<unknown> {
