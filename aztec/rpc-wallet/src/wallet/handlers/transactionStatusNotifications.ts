@@ -46,7 +46,7 @@ export async function notifyTransactionStatus(
     logger.debug('Successfully sent aztec_transactionStatus notification', {
       txStatusId: payload.txStatusId,
       status: payload.status,
-      txHash: payload.txHash,  // Log blockchain hash if available
+      txHash: payload.txHash, // Log blockchain hash if available
     });
   } catch (error) {
     logger.warn('Failed to emit aztec_transactionStatus notification', {

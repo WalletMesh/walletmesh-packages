@@ -56,6 +56,7 @@ export {
   executeTx,
   executeInteraction,
   executeBatchInteractions,
+  executeAtomicBatch,
   simulateTx,
   simulateInteraction,
   waitForTxReceipt,

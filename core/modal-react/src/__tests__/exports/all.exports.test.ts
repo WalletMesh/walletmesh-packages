@@ -16,9 +16,13 @@ describe('@walletmesh/modal-react/all exports', () => {
       await testCoreExportsPresent(modulePath);
     });
 
-    it('should include chain-aware core hooks', async () => {
-      await testExports(modulePath, ['useAccount', 'useConnect', 'useSwitchChain']);
-    });
+    it(
+      'should include chain-aware core hooks',
+      async () => {
+        await testExports(modulePath, ['useAccount', 'useConnect', 'useSwitchChain']);
+      },
+      10000,
+    ); // Increase timeout to 10s for dynamic import
   });
 
   describe('Aztec functionality', () => {

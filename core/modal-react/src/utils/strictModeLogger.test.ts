@@ -27,7 +27,6 @@ describe('strictModeLogger', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
     // Restore original NODE_ENV
     process.env['NODE_ENV'] = originalNodeEnv;

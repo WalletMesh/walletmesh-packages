@@ -127,7 +127,6 @@ describe('DeployContract Serialization', () => {
       constructorName?: string;
     };
 
-
     // Verify the artifact structure
     expect(result.artifact).toBeDefined();
     expect(result.artifact.name).toBe(artifact.name);
@@ -234,11 +233,7 @@ describe('ExecuteTx Result Serialization', () => {
     const txHash = TxHash.random();
 
     // Test with various UUID formats
-    const testCases = [
-      crypto.randomUUID(),
-      '550e8400-e29b-41d4-a716-446655440000',
-      'custom-status-id-123',
-    ];
+    const testCases = [crypto.randomUUID(), '550e8400-e29b-41d4-a716-446655440000', 'custom-status-id-123'];
 
     for (const txStatusId of testCases) {
       const result = { txHash, txStatusId };
@@ -312,7 +307,10 @@ describe('DeployContract Result Serialization', () => {
 
     for (const txStatusId of testCases) {
       const result = { txHash, contractAddress, txStatusId };
-      const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmDeployContract', result);
+      const serializedResult = await AztecWalletSerializer.result!.serialize(
+        'aztec_wmDeployContract',
+        result,
+      );
       const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
         'aztec_wmDeployContract',
         serializedResult,
@@ -338,7 +336,8 @@ describe('DeployContract Result Serialization', () => {
     )) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };
 
     // Type assertion to ensure it matches the expected shape
-    const _typeCheck: { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string } = deserializedResult;
+    const _typeCheck: { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string } =
+      deserializedResult;
     expect(_typeCheck).toBeDefined();
   });
 });

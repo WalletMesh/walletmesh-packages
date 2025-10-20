@@ -12,19 +12,23 @@ describe('@walletmesh/modal-react/core exports', () => {
   const modulePath = '../../core.js';
 
   describe('Core functionality exports', () => {
-    it('should export chain-agnostic provider and context', async () => {
-      await testExports(modulePath, [
-        // Provider and context
-        'WalletMeshProvider',
-        'WalletMeshContext',
-        'useWalletMeshContext',
-        'useHasWalletMeshProvider',
-        'useWalletMeshServices',
+    it(
+      'should export chain-agnostic provider and context',
+      async () => {
+        await testExports(modulePath, [
+          // Provider and context
+          'WalletMeshProvider',
+          'WalletMeshContext',
+          'useWalletMeshContext',
+          'useHasWalletMeshProvider',
+          'useWalletMeshServices',
 
-        // Modal component
-        'WalletMeshModal',
-      ]);
-    });
+          // Modal component
+          'WalletMeshModal',
+        ]);
+      },
+      10000,
+    ); // Increase timeout to 10s for dynamic import
 
     it('should export chain-agnostic hooks', async () => {
       await testExports(modulePath, [

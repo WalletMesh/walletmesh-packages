@@ -10,11 +10,12 @@ vi.mock('@walletmesh/modal-core/providers/aztec', async () => {
   return {
     ...actual,
     executeBatchInteractions: vi.fn(),
+    executeAtomicBatch: vi.fn(),
   };
 });
 
 import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec/lazy';
-import { executeBatchInteractions } from '@walletmesh/modal-core/providers/aztec';
+import { executeBatchInteractions, executeAtomicBatch } from '@walletmesh/modal-core/providers/aztec';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAztecBatch } from './useAztecBatch.js';
 
@@ -28,6 +29,7 @@ import { useAztecWallet } from './useAztecWallet.js';
 
 const mockUseAztecWallet = vi.mocked(useAztecWallet);
 const mockExecuteBatchInteractions = vi.mocked(executeBatchInteractions);
+const mockExecuteAtomicBatch = vi.mocked(executeAtomicBatch);
 
 const mockWallet = {
   wmExecuteTx: vi.fn(),
@@ -134,6 +136,7 @@ describe('useAztecBatch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExecuteBatchInteractions.mockReset();
+    mockExecuteAtomicBatch.mockReset();
     // Reset mock wallet state
     mockWallet.proveTx.mockClear();
     mockWallet.sendTx.mockClear();
@@ -628,5 +631,258 @@ describe('useAztecBatch', () => {
     expect(result.current.isExecuting).toBe(false);
     expect(result.current.error).toBeTruthy();
     expect(result.current.error?.message).toBe('Unexpected batch error');
+  });
+
+  describe('Atomic Mode', () => {
+    it('should execute batch in atomic mode when atomic option is true', async () => {
+      const mockReceipt: MockTxReceipt = {
+        txHash: '0xatomic123',
+        status: 'success',
+      };
+
+      mockExecuteAtomicBatch.mockResolvedValueOnce({
+        txHash: '0xatomic123',
+        wait: vi.fn().mockResolvedValue(mockReceipt),
+      });
+
+      const { result } = renderHook(() => useAztecBatch());
+
+      const interactions: MockContractFunctionInteraction[] = [
+        createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xatomic123', mockReceipt),
+        createMockInteraction('tx2', 'approve', ['0x456', 200], '0xatomic123', mockReceipt),
+      ];
+
+      let receipts: MockTxReceipt[] = [];
+      await act(async () => {
+        receipts = await result.current.executeBatch(
+          interactions as unknown as ContractFunctionInteraction[],
+          {
+            atomic: true,
+          },
+        );
+      });
+
+      // Verify executeAtomicBatch was called instead of executeBatchInteractions
+      expect(mockExecuteAtomicBatch).toHaveBeenCalledTimes(1);
+      expect(mockExecuteBatchInteractions).not.toHaveBeenCalled();
+
+      // Verify result - all interactions get the same receipt (atomic)
+      expect(receipts).toHaveLength(2);
+      expect(receipts[0]).toEqual(mockReceipt);
+      expect(receipts[1]).toEqual(mockReceipt);
+
+      // Verify all transactions share the same hash and receipt
+      expect(result.current.transactionStatuses).toHaveLength(2);
+      expect(result.current.transactionStatuses[0]?.hash).toBe('0xatomic123');
+      expect(result.current.transactionStatuses[1]?.hash).toBe('0xatomic123');
+      expect(result.current.transactionStatuses[0]?.status).toBe('success');
+      expect(result.current.transactionStatuses[1]?.status).toBe('success');
+    });
+
+    it('should use sequential mode by default when atomic option is not provided', async () => {
+      const mockReceipts: MockTxReceipt[] = [
+        { txHash: '0xseq1', status: 'success' },
+        { txHash: '0xseq2', status: 'success' },
+      ];
+
+      mockBatchSuccess(mockReceipts);
+
+      const { result } = renderHook(() => useAztecBatch());
+
+      const interactions: MockContractFunctionInteraction[] = [
+        createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xseq1', mockReceipts[0]),
+        createMockInteraction('tx2', 'approve', ['0x456', 200], '0xseq2', mockReceipts[1]),
+      ];
+
+      await act(async () => {
+        await result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[]);
+      });
+
+      // Verify executeBatchInteractions was called (sequential mode)
+      expect(mockExecuteBatchInteractions).toHaveBeenCalledTimes(1);
+      expect(mockExecuteAtomicBatch).not.toHaveBeenCalled();
+    });
+
+    it('should use sequential mode when atomic option is false', async () => {
+      const mockReceipts: MockTxReceipt[] = [{ txHash: '0xseq1', status: 'success' }];
+
+      mockBatchSuccess(mockReceipts);
+
+      const { result } = renderHook(() => useAztecBatch());
+
+      const interactions: MockContractFunctionInteraction[] = [
+        createMockInteraction('tx1', 'transfer', ['0x123', 100]),
+      ];
+
+      await act(async () => {
+        await result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[], {
+          atomic: false,
+        });
+      });
+
+      // Verify executeBatchInteractions was called
+      expect(mockExecuteBatchInteractions).toHaveBeenCalledTimes(1);
+      expect(mockExecuteAtomicBatch).not.toHaveBeenCalled();
+    });
+
+    it('should pass send options correctly in atomic mode', async () => {
+      const mockReceipt: MockTxReceipt = {
+        txHash: '0xatomic456',
+        status: 'success',
+      };
+
+      mockExecuteAtomicBatch.mockResolvedValueOnce({
+        txHash: '0xatomic456',
+        wait: vi.fn().mockResolvedValue(mockReceipt),
+      });
+
+      const { result } = renderHook(() => useAztecBatch());
+
+      const interactions: MockContractFunctionInteraction[] = [
+        createMockInteraction('tx1', 'transfer', ['0x123', 100]),
+      ];
+
+      const sendOptions = { txNonce: 42, fee: 100 };
+
+      await act(async () => {
+        await result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[], {
+          atomic: true,
+          ...sendOptions,
+        });
+      });
+
+      // Verify send options were passed (without atomic flag)
+      expect(mockExecuteAtomicBatch).toHaveBeenCalledWith(
+        mockWallet,
+        interactions as unknown as ContractFunctionInteraction[],
+        sendOptions,
+      );
+    });
+
+    it('should handle atomic batch failure', async () => {
+      const errorMessage = 'Atomic batch failed';
+
+      mockExecuteAtomicBatch.mockRejectedValueOnce(new Error(errorMessage));
+
+      const { result } = renderHook(() => useAztecBatch());
+
+      const interactions: MockContractFunctionInteraction[] = [
+        createMockInteraction('tx1', 'transfer', ['0x123', 100]),
+        createMockInteraction('tx2', 'approve', ['0x456', 200]),
+      ];
+
+      await act(async () => {
+        await expect(
+          result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[], {
+            atomic: true,
+          }),
+        ).rejects.toThrow();
+      });
+
+      // Verify error state
+      expect(result.current.isExecuting).toBe(false);
+      expect(result.current.error).toBeTruthy();
+    });
+
+    it('should update all transaction statuses to same state in atomic mode', async () => {
+      const mockReceipt: MockTxReceipt = {
+        txHash: '0xatomic789',
+        status: 'success',
+      };
+
+      const mockWait = vi.fn().mockResolvedValue(mockReceipt);
+      mockExecuteAtomicBatch.mockResolvedValueOnce({
+        txHash: '0xatomic789',
+        wait: mockWait,
+      });
+
+      const { result } = renderHook(() => useAztecBatch());
+
+      const interactions: MockContractFunctionInteraction[] = [
+        createMockInteraction('tx1', 'transfer', ['0x123', 100]),
+        createMockInteraction('tx2', 'approve', ['0x456', 200]),
+        createMockInteraction('tx3', 'mint', ['0x789', 300]),
+      ];
+
+      await act(async () => {
+        await result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[], {
+          atomic: true,
+        });
+      });
+
+      // All transactions should have same hash and status
+      const statuses = result.current.transactionStatuses;
+      expect(statuses).toHaveLength(3);
+
+      statuses.forEach((status) => {
+        expect(status.hash).toBe('0xatomic789');
+        expect(status.status).toBe('success');
+        expect(status.receipt).toEqual(mockReceipt);
+      });
+
+      // Verify progress
+      expect(result.current.progress).toBe(100);
+      expect(result.current.completedTransactions).toBe(3);
+      expect(result.current.failedTransactions).toBe(0);
+    });
+
+    it('should handle single transaction in atomic mode', async () => {
+      const mockReceipt: MockTxReceipt = {
+        txHash: '0xsingle123',
+        status: 'success',
+      };
+
+      mockExecuteAtomicBatch.mockResolvedValueOnce({
+        txHash: '0xsingle123',
+        wait: vi.fn().mockResolvedValue(mockReceipt),
+      });
+
+      const { result } = renderHook(() => useAztecBatch());
+
+      const interactions: MockContractFunctionInteraction[] = [
+        createMockInteraction('tx1', 'transfer', ['0x123', 100]),
+      ];
+
+      await act(async () => {
+        await result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[], {
+          atomic: true,
+        });
+      });
+
+      expect(mockExecuteAtomicBatch).toHaveBeenCalledTimes(1);
+      expect(result.current.transactionStatuses).toHaveLength(1);
+      expect(result.current.transactionStatuses[0]?.status).toBe('success');
+    });
+
+    it('should set correct intermediate statuses in atomic mode', async () => {
+      const mockReceipt: MockTxReceipt = {
+        txHash: '0xintermediate123',
+        status: 'success',
+      };
+
+      mockExecuteAtomicBatch.mockResolvedValueOnce({
+        txHash: '0xintermediate123',
+        wait: vi.fn().mockResolvedValue(mockReceipt),
+      });
+
+      const { result } = renderHook(() => useAztecBatch());
+
+      const interactions: MockContractFunctionInteraction[] = [
+        createMockInteraction('tx1', 'transfer', ['0x123', 100]),
+        createMockInteraction('tx2', 'approve', ['0x456', 200]),
+      ];
+
+      await act(async () => {
+        await result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[], {
+          atomic: true,
+        });
+      });
+
+      // Final state should be success for both
+      expect(result.current.transactionStatuses[0]?.status).toBe('success');
+      expect(result.current.transactionStatuses[1]?.status).toBe('success');
+      expect(result.current.transactionStatuses[0]?.hash).toBe('0xintermediate123');
+      expect(result.current.transactionStatuses[1]?.hash).toBe('0xintermediate123');
+    });
   });
 });

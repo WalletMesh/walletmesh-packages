@@ -128,6 +128,12 @@ const ExecuteTxResultSchema = z.object({
   txStatusId: z.string(),
 });
 
+const BatchExecuteResultSchema = z.object({
+  txHash: TxHash.schema,
+  receipt: TxReceipt.schema,
+  txStatusId: z.string(),
+});
+
 const logger = createLogger('aztec-rpc-wallet:serializers');
 
 async function jsonParseWithSchemaAsync<T>(json: string, schema: ZodTypeAny): Promise<T> {
@@ -149,7 +155,6 @@ function createResultSerializer<R>(resultSchema?: ZodTypeAny): Pick<JSONRPCSeria
     },
   };
 }
-
 
 function serializeTx(tx: Tx): string {
   return tx.toBuffer().toString('base64');
@@ -224,13 +229,20 @@ const RESULT_SERIALIZERS: Partial<
     },
   },
   aztec_wmExecuteTx: createResultSerializer<{ txHash: TxHash; txStatusId: string }>(ExecuteTxResultSchema),
+  aztec_wmBatchExecute: createResultSerializer<{ txHash: TxHash; receipt: TxReceipt; txStatusId: string }>(
+    BatchExecuteResultSchema,
+  ),
   aztec_wmSimulateTx: createResultSerializer<TxSimulationResult>(TxSimulationResult.schema),
   aztec_wmDeployContract: {
     result: {
-      serialize: async (method: string, value: { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string }) => {
+      serialize: async (
+        method: string,
+        value: { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string },
+      ) => {
         // Convert AztecAddress to string before jsonStringify (like aztec_getSenders does)
         // Check if contractAddress itself is a Promise and await it
-        const address = value.contractAddress instanceof Promise ? await value.contractAddress : value.contractAddress;
+        const address =
+          value.contractAddress instanceof Promise ? await value.contractAddress : value.contractAddress;
         const addressString = address.toString();
         const serialized = jsonStringify({
           txHash: value.txHash,
@@ -512,7 +524,9 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
           const toStr = ensureParam<string>(dAppParams, 'to', 'string');
           const to = AztecAddress.fromString(toStr);
           const authWitsRaw = getOptionalParam<Record<string, unknown>[]>(dAppParams, 'authWits');
-          const authWits = authWitsRaw ? await Promise.all(authWitsRaw.map((aw) => AuthWitness.schema.parseAsync(aw))) : undefined; // Use AuthWitness from @aztec/aztec.js
+          const authWits = authWitsRaw
+            ? await Promise.all(authWitsRaw.map((aw) => AuthWitness.schema.parseAsync(aw)))
+            : undefined; // Use AuthWitness from @aztec/aztec.js
           const fromStr = getOptionalParam<string>(dAppParams, 'from', 'string');
           const from = fromStr ? AztecAddress.fromString(fromStr) : undefined;
           const scopesRaw = getOptionalParam<string[]>(dAppParams, 'scopes');
@@ -547,6 +561,18 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
           const executionPayloadRaw = ensureParam<Record<string, unknown>>(dAppParams, 'executionPayload');
           const executionPayload = await ExecutionPayloadSchema.parseAsync(executionPayloadRaw);
           return [executionPayload];
+        }
+        case 'aztec_wmBatchExecute': {
+          const executionPayloadsRaw = ensureParam<Record<string, unknown>[]>(
+            dAppParams,
+            'executionPayloads',
+          );
+          const executionPayloads = await Promise.all(
+            executionPayloadsRaw.map((payload) => ExecutionPayloadSchema.parseAsync(payload)),
+          );
+          const sendOptions = getOptionalParam<Record<string, unknown>>(dAppParams, 'sendOptions');
+          // AztecSendOptions is a simple object from modal-core, pass through without schema validation
+          return [executionPayloads, sendOptions];
         }
         case 'aztec_wmSimulateTx': {
           const executionPayloadRaw = ensureParam<Record<string, unknown>>(dAppParams, 'executionPayload');
@@ -637,6 +663,7 @@ export function registerAztecSerializers(node: JSONRPCNode<AztecWalletMethodMap>
     'aztec_getPrivateEvents',
     'aztec_getPublicEvents',
     'aztec_wmExecuteTx',
+    'aztec_wmBatchExecute',
     'aztec_wmSimulateTx',
     'aztec_wmDeployContract',
   ];

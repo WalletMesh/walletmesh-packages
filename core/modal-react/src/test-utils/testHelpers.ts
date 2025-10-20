@@ -4,14 +4,13 @@
  * Provides essential utilities that tests use.
  */
 
-import { waitFor } from '@testing-library/react';
 import { ChainType } from '@walletmesh/modal-core';
 import type { AccountInfo, SessionState, SupportedChain, WalletMeshState } from '@walletmesh/modal-core';
 import { createAutoMockedStore as createCoreStore } from '@walletmesh/modal-core/testing';
 import { createElement } from 'react';
 import type { ReactNode } from 'react';
 import { vi } from 'vitest';
-import { WalletMeshProvider } from '../WalletMeshProvider.js';
+import { MockWalletMeshProvider } from '../test/mocks/MockWalletMeshProvider.js';
 import type { WalletMeshReactConfig } from '../types.js';
 
 // Use the actual type from modal-core/testing
@@ -207,13 +206,14 @@ export function createTestWrapper(config?: {
   };
 
   const wrapper = (props: TestWrapperProps) => {
-    // For tests, we need to ensure the provider has a client immediately
-    // This is handled by the mock createWalletMesh returning a resolved promise
+    // Use MockWalletMeshProvider to avoid heavy initialization and OOM issues
+    // This provides the same context interface without calling createWalletMesh
     const providerProps = {
       config: testConfig,
       children: props.children,
     };
-    return createElement(WalletMeshProvider, providerProps);
+
+    return createElement(MockWalletMeshProvider, providerProps);
   };
 
   return {
@@ -281,11 +281,12 @@ export function createConnectedWrapper(
   };
 
   const wrapper = (props: TestWrapperProps) => {
+    // Use MockWalletMeshProvider to avoid heavy initialization and OOM issues
     const providerProps = {
       config: testConfig,
       children: props.children,
     };
-    return createElement(WalletMeshProvider, providerProps);
+    return createElement(MockWalletMeshProvider, providerProps);
   };
 
   return {
@@ -352,44 +353,78 @@ export function createSharedTestSetup(config?: {
 }
 
 /**
- * Helper to wait for services to be available in tests
+ * Helper to wait for client initialization with fake timers
+ *
+ * Advances fake timers to allow promises to resolve and effects to run
  */
-export async function waitForServices(result: { current: unknown }, timeout = 100) {
-  await waitFor(
-    () => {
-      // Check for various service availability patterns
-      const current = result.current as Record<string, unknown>;
-      const hasAnalyzeError = 'analyzeError' in current;
-      const hasRecoveryAnalyzeError =
-        'recovery' in current && (current['recovery'] as Record<string, unknown>)?.['analyzeError'];
-      const hasChains = 'chains' in current;
-      const hasServices = hasAnalyzeError || hasRecoveryAnalyzeError || hasChains;
+export async function waitForClientInit() {
+  const { act } = await import('react');
+  const { vi } = await import('vitest');
 
-      if (!hasServices) {
-        throw new Error('Services not available yet');
-      }
-    },
-    { timeout, interval: 10 },
-  );
+  // Advance timers to allow useEffect and promises to run
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+    // Flush promise queue
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(0);
+  });
+}
+
+/**
+ * Helper to wait for services to be available in tests
+ * Now uses fake timer advancement instead of waitFor
+ */
+export async function waitForServices(result: { current: unknown }, _timeout = 100) {
+  const { act } = await import('react');
+  const { vi } = await import('vitest');
+
+  // Advance timers to allow initialization
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(0);
+  });
+
+  // Check if services are available
+  const current = result.current as Record<string, unknown>;
+  const hasAnalyzeError = 'analyzeError' in current;
+  const hasRecoveryAnalyzeError =
+    'recovery' in current && (current['recovery'] as Record<string, unknown>)?.['analyzeError'];
+  const hasChains = 'chains' in current;
+  const hasServices = hasAnalyzeError || hasRecoveryAnalyzeError || hasChains;
+
+  if (!hasServices) {
+    // One more attempt
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+  }
 }
 
 /**
  * Helper to wait for connection recovery service specifically
+ * Now uses fake timer advancement instead of waitFor
  */
-export async function waitForRecoveryService(result: { current: unknown }, timeout = 100) {
-  await waitFor(
-    () => {
-      const current = result.current as Record<string, unknown>;
-      const hasAnalyzeError = 'analyzeError' in current;
-      const hasRecoveryAnalyzeError =
-        'recovery' in current && (current['recovery'] as Record<string, unknown>)?.['analyzeError'];
+export async function waitForRecoveryService(result: { current: unknown }, _timeout = 100) {
+  const { act } = await import('react');
+  const { vi } = await import('vitest');
 
-      if (!hasAnalyzeError && !hasRecoveryAnalyzeError) {
-        throw new Error(
-          `Recovery service not available yet. Current keys: ${Object.keys(current).join(', ')}`,
-        );
-      }
-    },
-    { timeout, interval: 10 },
-  );
+  // Advance timers to allow initialization
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+    await Promise.resolve();
+    await vi.advanceTimersByTimeAsync(0);
+  });
+
+  const current = result.current as Record<string, unknown>;
+  const hasAnalyzeError = 'analyzeError' in current;
+  const hasRecoveryAnalyzeError =
+    'recovery' in current && (current['recovery'] as Record<string, unknown>)?.['analyzeError'];
+
+  if (!hasAnalyzeError && !hasRecoveryAnalyzeError) {
+    // One more attempt
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+  }
 }

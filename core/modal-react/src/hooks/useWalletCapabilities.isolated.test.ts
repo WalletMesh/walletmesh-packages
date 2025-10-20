@@ -74,7 +74,6 @@ describe('useWalletCapabilities - Isolated Tests', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 

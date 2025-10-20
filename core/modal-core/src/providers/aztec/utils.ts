@@ -273,7 +273,7 @@ export async function executeTx(
     };
 
     if (typeof sendableInteraction.send === 'function') {
-      const nativeTx = await sendableInteraction.send(options) as NativeSentTx;
+      const nativeTx = (await sendableInteraction.send(options)) as NativeSentTx;
       const txHash = await resolveNativeHash(nativeTx);
 
       return {
@@ -315,6 +315,114 @@ export async function executeTx(
   } catch (error) {
     throw ErrorFactory.transportError(
       `Failed to execute transaction: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
+}
+
+/**
+ * Execute multiple contract interactions as a single atomic batch transaction
+ *
+ * This function uses Aztec's native BatchCall to execute all interactions
+ * atomically - all operations succeed together or all fail together. This is
+ * more efficient than sequential execution and provides better UX by allowing
+ * users to approve all operations at once.
+ *
+ * @param wallet - The Aztec wallet instance
+ * @param interactions - Array of contract function interactions to batch
+ * @param options - Optional send options for the batch transaction
+ * @returns A SentTx object for tracking the batch transaction
+ *
+ * @example
+ * ```typescript
+ * const contract = await Contract.at(address, artifact, wallet);
+ * const batchTx = await executeAtomicBatch(wallet, [
+ *   contract.methods.transfer(recipient1, amount1),
+ *   contract.methods.approve(spender, amount2),
+ *   contract.methods.mint(recipient3, amount3)
+ * ]);
+ * const receipt = await batchTx.wait();
+ * console.log('All operations completed atomically:', receipt);
+ * ```
+ *
+ * @public
+ */
+export async function executeAtomicBatch(
+  wallet: AztecDappWallet | null,
+  interactions: ContractFunctionInteraction[],
+  options?: AztecSendOptions,
+): Promise<SentTx> {
+  if (!wallet) {
+    throw ErrorFactory.connectionFailed('No Aztec wallet available');
+  }
+
+  if (!Array.isArray(interactions) || interactions.length === 0) {
+    throw ErrorFactory.invalidParams('No interactions provided for atomic batch execution');
+  }
+
+  try {
+    // Check if wallet supports atomic batch execution
+    if (typeof wallet.wmBatchExecute !== 'function') {
+      throw ErrorFactory.transportError(
+        'Wallet does not support atomic batch execution (wmBatchExecute method not available)',
+      );
+    }
+
+    // Convert interactions to execution payloads
+    const executionPayloads: unknown[] = [];
+    for (let i = 0; i < interactions.length; i++) {
+      const interaction = interactions[i];
+      if (!interaction) continue;
+
+      const contractInteraction = interaction as ContractFunctionInteraction & {
+        request(): Promise<unknown>;
+      };
+
+      if (typeof contractInteraction.request !== 'function') {
+        throw ErrorFactory.invalidParams(`Interaction at index ${i} does not have a request() method`);
+      }
+
+      const payload = await contractInteraction.request();
+      executionPayloads.push(payload);
+    }
+
+    if (executionPayloads.length === 0) {
+      throw ErrorFactory.invalidParams('No valid execution payloads could be created from interactions');
+    }
+
+    // Execute the atomic batch using wmBatchExecute
+    const result = await wallet.wmBatchExecute(executionPayloads, options);
+    const txHash = normalizeHash(result.txHash);
+
+    if (!txHash) {
+      throw ErrorFactory.transactionFailed('Transaction hash unavailable from wmBatchExecute');
+    }
+
+    // Return SentTx compatible object
+    // The receipt is already available from the batch execution
+    return {
+      txHash,
+      wait: async (): Promise<TxReceipt> => {
+        // Normalize the receipt
+        const receipt = normalizeReceipt(result.receipt as TxReceiptLike, txHash);
+
+        // Check for explicit error message (mirrors executeInteraction validation)
+        if (receipt.error) {
+          throw ErrorFactory.transactionFailed(`Atomic batch failed: ${receipt.error}`);
+        }
+
+        // Check for failure status codes (mirrors executeInteraction validation)
+        const status = receipt.status ?? 'SUCCESS';
+        const normalizedStatus = typeof status === 'string' ? status.toUpperCase() : status;
+        if (normalizedStatus === '0' || normalizedStatus === '0X0' || normalizedStatus === 'FAILED') {
+          throw ErrorFactory.transactionFailed(`Atomic batch failed with status: ${status}`);
+        }
+
+        return receipt;
+      },
+    } satisfies SentTx;
+  } catch (error) {
+    throw ErrorFactory.transportError(
+      `Failed to execute atomic batch: ${error instanceof Error ? error.message : 'Unknown error'}`,
     );
   }
 }
@@ -408,9 +516,7 @@ export async function executeBatchInteractions(
       receipts.push(result.receipt);
       callbacks?.onSuccess?.(index, result);
     } catch (error) {
-      const err = error instanceof Error
-        ? error
-        : ErrorFactory.transactionFailed('Transaction failed');
+      const err = error instanceof Error ? error : ErrorFactory.transactionFailed('Transaction failed');
       errors.push({ index, error: err });
       callbacks?.onError?.(index, err);
     }
@@ -461,9 +567,11 @@ export async function simulateTx(
     if (preparedExecutionPayload !== null) {
       return preparedExecutionPayload;
     }
-    const requestFn = (interactionInternal as ContractFunctionInteraction & {
-      request?: () => Promise<unknown>;
-    }).request;
+    const requestFn = (
+      interactionInternal as ContractFunctionInteraction & {
+        request?: () => Promise<unknown>;
+      }
+    ).request;
     if (typeof requestFn !== 'function') {
       preparedExecutionPayload = undefined;
       return undefined;
@@ -490,8 +598,7 @@ export async function simulateTx(
     }
   }
 
-  const isUtilityFunction =
-    functionType === FunctionType.UTILITY || functionType === 'utility';
+  const isUtilityFunction = functionType === FunctionType.UTILITY || functionType === 'utility';
 
   if (!isUtilityFunction && typeof wallet.wmSimulateTx === 'function') {
     try {

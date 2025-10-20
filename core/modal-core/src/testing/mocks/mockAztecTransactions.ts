@@ -78,7 +78,9 @@ export interface MockAztecNotificationEmitter {
   /**
    * Emit a transaction status notification
    */
-  emitTransactionStatus(notification: Omit<AztecTransactionStatusNotification, 'timestamp'> & { timestamp?: number }): void;
+  emitTransactionStatus(
+    notification: Omit<AztecTransactionStatusNotification, 'timestamp'> & { timestamp?: number },
+  ): void;
 
   /**
    * Simulate a complete transaction lifecycle with automatic stage progression
@@ -291,18 +293,20 @@ export function createMockAztecRouterProvider() {
   const emitter = createMockAztecNotificationEmitter();
 
   const provider = {
-    call: vi.fn().mockImplementation(async (_chainId: string, request: { method: string; params?: unknown }) => {
-      // Simulate aztec_wmExecuteTx method
-      if (request.method === 'aztec_wmExecuteTx') {
-        const txStatusId = `tx-${Date.now()}`;
-        const txHash = AZTEC_TEST_TX_HASH;
+    call: vi
+      .fn()
+      .mockImplementation(async (_chainId: string, request: { method: string; params?: unknown }) => {
+        // Simulate aztec_wmExecuteTx method
+        if (request.method === 'aztec_wmExecuteTx') {
+          const txStatusId = `tx-${Date.now()}`;
+          const txHash = AZTEC_TEST_TX_HASH;
 
-        // Return result matching AztecDappWallet.wmExecuteTx
-        return { txHash, txStatusId };
-      }
+          // Return result matching AztecDappWallet.wmExecuteTx
+          return { txHash, txStatusId };
+        }
 
-      throw new Error(`Unmocked method: ${request.method}`);
-    }),
+        throw new Error(`Unmocked method: ${request.method}`);
+      }),
     onNotification: emitter.onNotification.bind(emitter),
     off: vi.fn(),
     removeAllListeners: vi.fn(),
@@ -331,7 +335,8 @@ export function createMockAztecRouterProvider() {
  * ```
  */
 export function createTransactionStatusNotification(
-  overrides: Partial<AztecTransactionStatusNotification> & Pick<AztecTransactionStatusNotification, 'txStatusId'>,
+  overrides: Partial<AztecTransactionStatusNotification> &
+    Pick<AztecTransactionStatusNotification, 'txStatusId'>,
 ): AztecTransactionStatusNotification {
   return {
     status: 'idle',

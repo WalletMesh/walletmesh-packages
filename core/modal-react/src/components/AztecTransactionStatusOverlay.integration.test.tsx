@@ -8,7 +8,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, screen, act, cleanup } from '@testing-library/react';
 import { AztecTransactionStatusOverlay } from './AztecTransactionStatusOverlay.js';
-import type { WalletMeshState, TransactionResult, TransactionStatus, ChainType } from '@walletmesh/modal-core';
+import type {
+  WalletMeshState,
+  TransactionResult,
+  TransactionStatus,
+  ChainType,
+} from '@walletmesh/modal-core';
 
 // Mock useStore hook with transaction state
 let mockState: WalletMeshState;
@@ -26,7 +31,7 @@ vi.mock('../hooks/internal/useStore.js', () => ({
 function createMockTransaction(
   txId: string,
   status: TransactionStatus,
-  overrides: Partial<TransactionResult> = {}
+  overrides: Partial<TransactionResult> = {},
 ): TransactionResult {
   return {
     txStatusId: txId,
@@ -86,7 +91,6 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
 
   afterEach(() => {
     cleanup(); // Properly cleanup React components
-    vi.useRealTimers();
     vi.clearAllTimers();
   });
 
@@ -182,7 +186,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should auto-dismiss after confirmed transaction', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirming', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirming', {
+        startTime: Date.now(),
+      });
 
       const { rerender } = render(<AztecTransactionStatusOverlay />);
 
@@ -209,7 +215,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should auto-dismiss after failed transaction', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
       const { rerender } = render(<AztecTransactionStatusOverlay />);
 
@@ -232,7 +240,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should NOT auto-dismiss during active stages', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay />);
 
@@ -253,7 +263,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
 
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay />);
 
@@ -266,7 +278,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
 
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
       const { rerender, unmount } = render(<AztecTransactionStatusOverlay />);
 
@@ -292,7 +306,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
 
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay disableNavigationGuard={true} />);
 
@@ -305,7 +321,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should trap focus within overlay', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay />);
 
@@ -320,7 +338,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should allow ESC key to close when transaction completes', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed', {
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay />);
 
@@ -345,7 +365,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should NOT allow ESC key during active stages', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay />);
 
@@ -366,7 +388,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should disable focus trap when requested', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay disableFocusTrap={true} />);
 
@@ -381,7 +405,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should disable ESC key when requested', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed', {
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay allowEscapeKeyClose={false} />);
 
@@ -434,8 +460,14 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
 
       mockState.active.transactionId = tx1;
       mockState.meta.backgroundTransactionIds = [tx2];
-      mockState.entities.transactions[tx1] = createMockTransaction(tx1, 'proving', { txHash: '0xabc', startTime: Date.now() });
-      mockState.entities.transactions[tx2] = createMockTransaction(tx2, 'sending', { txHash: '0xdef', startTime: Date.now() });
+      mockState.entities.transactions[tx1] = createMockTransaction(tx1, 'proving', {
+        txHash: '0xabc',
+        startTime: Date.now(),
+      });
+      mockState.entities.transactions[tx2] = createMockTransaction(tx2, 'sending', {
+        txHash: '0xdef',
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay showBackgroundTransactions={true} />);
 
@@ -457,14 +489,11 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should use custom headline and description', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
-      render(
-        <AztecTransactionStatusOverlay
-          headline="Custom Headline"
-          description="Custom Description"
-        />
-      );
+      render(<AztecTransactionStatusOverlay headline="Custom Headline" description="Custom Description" />);
 
       // Advance timers to trigger useEffect and render
       await act(async () => {
@@ -486,7 +515,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
 
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay container={customContainer} />);
 
@@ -502,7 +533,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should have proper ARIA attributes', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
+        startTime: Date.now(),
+      });
 
       render(<AztecTransactionStatusOverlay />);
 
@@ -572,7 +605,9 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
 
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed', { startTime: Date.now() });
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed', {
+        startTime: Date.now(),
+      });
 
       const { unmount } = render(<AztecTransactionStatusOverlay />);
 

@@ -118,7 +118,6 @@ describe('useSwitchChain - Isolated Tests', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 

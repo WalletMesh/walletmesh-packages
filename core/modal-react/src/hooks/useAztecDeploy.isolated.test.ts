@@ -68,7 +68,6 @@ describe('useAztecDeploy - Isolated Tests', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 

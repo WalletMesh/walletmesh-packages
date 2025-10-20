@@ -185,7 +185,6 @@ describe('useWalletTransport - Isolated Tests', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 

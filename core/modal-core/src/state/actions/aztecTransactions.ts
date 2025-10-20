@@ -252,9 +252,7 @@ export const aztecTransactionActions = {
 /**
  * Helper to map transaction status to stage name
  */
-function getStageFromStatus(
-  status: TransactionStatus,
-): keyof AztecTransactionResult['stages'] | null {
+function getStageFromStatus(status: TransactionStatus): keyof AztecTransactionResult['stages'] | null {
   const stageMap: Record<TransactionStatus, keyof AztecTransactionResult['stages'] | null> = {
     idle: null,
     simulating: 'simulating',

@@ -976,10 +976,51 @@ export class AztecDappWallet implements Wallet {
     })) as { txHash: TxHash; txStatusId: string };
 
     // Log the txStatusId for debugging/tracking purposes
-    logger.debug(`Transaction initiated with statusId: ${result.txStatusId}, txHash: ${result.txHash.toString()}`);
+    logger.debug(
+      `Transaction initiated with statusId: ${result.txStatusId}, txHash: ${result.txHash.toString()}`,
+    );
 
     const txHashPromise = () => Promise.resolve(result.txHash);
     return new SentTx(this, txHashPromise);
+  }
+
+  /**
+   * Execute multiple contract interactions as a single atomic batch transaction.
+   * This WalletMesh-specific helper method sends multiple execution payloads to be
+   * executed atomically using Aztec's native BatchCall functionality. All operations
+   * succeed together or all fail together.
+   *
+   * The remote wallet automatically generates a unique `txStatusId` and sends status notifications
+   * (initiated/simulating/proving/sending/pending/failed) throughout the batch transaction lifecycle.
+   *
+   * @param executionPayloads - Array of {@link ExecutionPayload} objects to execute as a batch
+   * @param sendOptions - Optional send options for fee configuration
+   * @returns An object containing txHash, receipt, and txStatusId for tracking
+   * @see {@link AztecWalletMethodMap.aztec_wmBatchExecute}
+   */
+  async wmBatchExecute(
+    executionPayloads: ExecutionPayload[],
+    sendOptions?: unknown,
+  ): Promise<{ txHash: TxHash; receipt: TxReceipt; txStatusId: string }> {
+    const params: { executionPayloads: ExecutionPayload[]; sendOptions?: unknown } = {
+      executionPayloads,
+    };
+    if (sendOptions !== undefined) {
+      params.sendOptions = sendOptions;
+    }
+
+    // Send the batch execution request to the remote wallet
+    const result = (await this.routerProvider.call(this.chainId, {
+      method: 'aztec_wmBatchExecute',
+      params,
+    })) as { txHash: TxHash; receipt: TxReceipt; txStatusId: string };
+
+    // Log the txStatusId for debugging/tracking purposes
+    logger.debug(
+      `Atomic batch transaction initiated with statusId: ${result.txStatusId}, txHash: ${result.txHash.toString()}, operations: ${executionPayloads.length}`,
+    );
+
+    return result;
   }
 
   /**

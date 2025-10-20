@@ -12,6 +12,7 @@ import type { ContractFunctionInteraction, TxReceipt } from '@walletmesh/modal-c
 import type { AztecSendOptions } from '@walletmesh/modal-core/providers/aztec';
 import {
   executeBatchInteractions,
+  executeAtomicBatch,
   type ExecuteInteractionResult,
 } from '@walletmesh/modal-core/providers/aztec';
 import { useCallback, useState, useRef, useEffect } from 'react';
@@ -36,9 +37,30 @@ export interface BatchTransactionStatus {
 }
 
 /**
- * Options forwarded to each interaction's send() call during batch execution.
+ * Options for batch transaction execution.
+ *
+ * @public
  */
-export type BatchSendOptions = AztecSendOptions;
+export interface BatchSendOptions extends AztecSendOptions {
+  /**
+   * Enable atomic batch execution using Aztec's native BatchCall.
+   *
+   * When enabled:
+   * - All operations execute as a single transaction with one proof
+   * - All operations succeed together or all fail together (atomicity)
+   * - More efficient than sequential execution
+   * - Single transaction status instead of multiple
+   *
+   * When disabled (default):
+   * - Operations execute sequentially one-by-one
+   * - Each operation has its own transaction and proof
+   * - Individual operations can fail independently
+   * - Progress tracking for each transaction
+   *
+   * @default false
+   */
+  atomic?: boolean;
+}
 
 /**
  * Batch transaction hook return type
@@ -82,15 +104,26 @@ export interface UseAztecBatchReturn {
  * @since 1.0.0
  *
  * @remarks
- * The hook provides:
- * - Batch transaction execution
- * - Individual transaction status tracking
- * - Progress calculation
- * - Error handling per transaction
- * - Success/failure counting
+ * The hook provides two execution modes:
  *
- * Transactions are executed sequentially to avoid nonce issues,
- * but the entire batch is tracked as a single operation.
+ * **Sequential Mode (default)**:
+ * - Transactions execute one-by-one
+ * - Each transaction gets its own proof
+ * - Individual transactions can fail independently
+ * - Detailed progress tracking for each transaction
+ *
+ * **Atomic Mode** (via `{ atomic: true }` option):
+ * - All transactions execute as a single atomic batch
+ * - Single proof for all operations (more efficient)
+ * - All operations succeed together or all fail together
+ * - Uses Aztec's native BatchCall functionality
+ *
+ * Features:
+ * - Batch transaction execution
+ * - Individual/unified transaction status tracking
+ * - Progress calculation
+ * - Error handling
+ * - Success/failure counting
  *
  * @example
  * ```tsx
@@ -136,6 +169,43 @@ export interface UseAztecBatchReturn {
  *           ))}
  *         </div>
  *       )}
+ *     </div>
+ *   );
+ * }
+ * ```
+ *
+ * @example
+ * ```tsx
+ * // Atomic batch execution (all succeed or all fail together)
+ * function AtomicBatchTransfer({ tokenAddress, TokenArtifact }) {
+ *   const { executeBatch, progress, error } = useAztecBatch();
+ *   const { contract: tokenContract } = useAztecContract(tokenAddress, TokenArtifact);
+ *
+ *   const handleAtomicBatch = async () => {
+ *     if (!tokenContract) return;
+ *
+ *     const interactions = [
+ *       tokenContract.methods.transfer(address1, amount1),
+ *       tokenContract.methods.transfer(address2, amount2),
+ *       tokenContract.methods.transfer(address3, amount3),
+ *     ];
+ *
+ *     try {
+ *       // Execute as atomic batch - single transaction with one proof
+ *       const receipts = await executeBatch(interactions, { atomic: true });
+ *       console.log('All transfers completed atomically:', receipts);
+ *     } catch (error) {
+ *       console.error('Entire batch failed:', error);
+ *       // If any operation fails, ALL operations are reverted
+ *     }
+ *   };
+ *
+ *   return (
+ *     <div>
+ *       <button onClick={handleAtomicBatch} disabled={!tokenContract}>
+ *         Send Atomic Batch (All or Nothing)
+ *       </button>
+ *       {error && <p>Batch failed: {error.message}</p>}
  *     </div>
  *   );
  * }
@@ -217,6 +287,8 @@ export function useAztecBatch(): UseAztecBatchReturn {
         throw ErrorFactory.invalidParams('No interactions provided');
       }
 
+      const { atomic, ...sendOptions } = options;
+
       if (isMountedRef.current) {
         setIsExecuting(true);
         setError(null);
@@ -230,9 +302,56 @@ export function useAztecBatch(): UseAztecBatchReturn {
       }
 
       try {
+        // ATOMIC MODE: Execute all as single transaction
+        if (atomic) {
+          if (isMountedRef.current) {
+            // Set all transactions to 'sending' since they're in a single batch
+            setTransactionStatuses((prev) =>
+              prev.map((status) => ({
+                ...status,
+                status: 'sending',
+              })),
+            );
+          }
+
+          // Execute atomic batch
+          const sentTx = await executeAtomicBatch(aztecWallet, interactions, sendOptions);
+          const hash = sentTx.txHash;
+
+          if (isMountedRef.current) {
+            // All transactions now confirming as single batch
+            setTransactionStatuses((prev) =>
+              prev.map((status) => ({
+                ...status,
+                status: 'confirming',
+                hash,
+              })),
+            );
+          }
+
+          // Wait for receipt
+          const receipt = await sentTx.wait();
+
+          if (isMountedRef.current) {
+            // Mark all as successful
+            setTransactionStatuses((prev) =>
+              prev.map((status) => ({
+                ...status,
+                status: 'success',
+                hash,
+                receipt,
+              })),
+            );
+          }
+
+          // Return the same receipt for all interactions since they were atomic
+          return Array(interactions.length).fill(receipt);
+        }
+
+        // SEQUENTIAL MODE: Execute one-by-one (existing behavior)
         // Use modal-core batch execution with callbacks for React state updates
         const { receipts, errors } = await executeBatchInteractions(aztecWallet, interactions, {
-          sendOptions: options,
+          sendOptions,
           callbacks: {
             onSending: (index: number) => {
               if (!isMountedRef.current) return;

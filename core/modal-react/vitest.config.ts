@@ -23,15 +23,14 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     testTimeout: 5000,
     hookTimeout: 5000,
-    teardownTimeout: 2000,
-    // No special env needed; jsdom handles teardown cleanly
-    // Isolate each test file to prevent timer accumulation
-    isolate: true,
-    // Pool options to better handle async operations
-    pool: 'forks',
+    teardownTimeout: 1000, // Reduced - fake timers make cleanup instant
+    // Minimal isolation with optimized pool for best performance
+    isolate: true, // Keep isolation for test reliability
+    pool: 'forks', // forks pool is faster than vmForks and more stable
+    maxConcurrency: 5, // Limit concurrent tests to reduce memory usage
     poolOptions: {
       forks: {
-        singleFork: false,
+        singleFork: false, // Use multiple forks for parallelization
       },
     },
     // Reduce noise from expected errors in tests

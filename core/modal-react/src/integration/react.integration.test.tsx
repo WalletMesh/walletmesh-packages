@@ -9,9 +9,9 @@ import { render, renderHook, screen } from '@testing-library/react';
 import { ChainType, type SupportedChain } from '@walletmesh/modal-core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WalletMeshModal } from '../components/WalletMeshModal.js';
+import { MockWalletMeshProvider } from '../test/mocks/MockWalletMeshProvider.js';
 import {
   WalletMeshConnectButton,
-  WalletMeshProvider,
   useAccount,
   useBalance,
   useConfig,
@@ -60,7 +60,7 @@ describe('WalletMesh React Integration', () => {
   describe('Provider and Context', () => {
     it('should provide context to children', () => {
       render(
-        <WalletMeshProvider
+        <MockWalletMeshProvider
           config={{
             appName: 'Test App',
             chains: [
@@ -74,7 +74,7 @@ describe('WalletMesh React Integration', () => {
           }}
         >
           <div>Test Content</div>
-        </WalletMeshProvider>,
+        </MockWalletMeshProvider>,
       );
 
       expect(screen.getByText('Test Content')).toBeInTheDocument();

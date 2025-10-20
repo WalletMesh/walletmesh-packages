@@ -191,7 +191,9 @@ export function AztecTransactionStatusOverlay({
 
     // Build set of current transaction IDs for efficient lookup
     const currentTxIds = new Set(
-      transactionsToShow.filter((tx): tx is NonNullable<typeof tx> => tx?.txStatusId != null).map((tx) => tx.txStatusId),
+      transactionsToShow
+        .filter((tx): tx is NonNullable<typeof tx> => tx?.txStatusId != null)
+        .map((tx) => tx.txStatusId),
     );
 
     // Clean up timers for transactions no longer in view (prevents memory leak)

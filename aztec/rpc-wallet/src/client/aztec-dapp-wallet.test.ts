@@ -550,7 +550,7 @@ describe('AztecDappWallet', () => {
       const simulatedTx = { tx: txRequest, privateReturnValues: [] };
       provider.call.mockResolvedValue(simulatedTx);
 
-      const result = await wallet.simulateTx(txRequest, true, false, false );
+      const result = await wallet.simulateTx(txRequest, true, false, false);
 
       expect(provider.call).toHaveBeenCalledWith(testChainId, {
         method: 'aztec_simulateTx',

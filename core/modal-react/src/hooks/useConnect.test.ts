@@ -246,7 +246,6 @@ describe('useConnect', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 

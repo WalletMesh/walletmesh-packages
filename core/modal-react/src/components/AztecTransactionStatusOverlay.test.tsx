@@ -23,7 +23,7 @@ function createMockTransaction(overrides: Partial<TransactionResult>): Transacti
     from: '0x1234567890123456789012345678901234567890',
     request: {} as any,
     startTime: Date.now() - 5000,
-    wait: async () => ({} as any),
+    wait: async () => ({}) as any,
     ...overrides,
   } as TransactionResult;
 }
@@ -103,7 +103,6 @@ describe('AztecTransactionStatusOverlay', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
   });
 
   describe('Focus Trapping', () => {
@@ -164,12 +163,7 @@ describe('AztecTransactionStatusOverlay', () => {
     });
 
     it('should display custom headline and description', async () => {
-      render(
-        <AztecTransactionStatusOverlay
-          headline="Custom Headline"
-          description="Custom Description"
-        />,
-      );
+      render(<AztecTransactionStatusOverlay headline="Custom Headline" description="Custom Description" />);
 
       // Advance timers to allow React to flush updates
       await vi.advanceTimersByTimeAsync(0);
@@ -327,9 +321,7 @@ describe('AztecTransactionStatusOverlay', () => {
       await vi.advanceTimersByTimeAsync(0);
 
       // Should not add beforeunload listener
-      const beforeUnloadCalls = beforeUnloadSpy.mock.calls.filter(
-        ([event]) => event === 'beforeunload',
-      );
+      const beforeUnloadCalls = beforeUnloadSpy.mock.calls.filter(([event]) => event === 'beforeunload');
       expect(beforeUnloadCalls.length).toBe(0);
 
       beforeUnloadSpy.mockRestore();

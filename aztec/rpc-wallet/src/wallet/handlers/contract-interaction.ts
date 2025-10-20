@@ -10,9 +10,10 @@ import {
 } from '@aztec/aztec.js';
 import type { FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfaces';
 import type { ExecutionPayload } from '@aztec/entrypoints/payload';
+import type { AztecSendOptions } from '../../types.js';
 import { createLogger } from '@aztec/foundation/log';
 import { GasSettings } from '@aztec/stdlib/gas';
-import type { TxExecutionRequest, TxSimulationResult } from '@aztec/stdlib/tx';
+import type { TxExecutionRequest, TxReceipt, TxSimulationResult } from '@aztec/stdlib/tx';
 import { JSONRPCError } from '@walletmesh/jsonrpc';
 import type { AztecWalletMethodMap } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
@@ -224,6 +225,197 @@ export function createContractInteractionHandlers() {
     }
   }
 
+  /**
+   * @internal
+   * Validates an array of {@link ExecutionPayload} objects for batch execution.
+   * Throws an error if the batch is invalid (e.g., empty array, inconsistent state).
+   *
+   * @param executionPayloads - Array of {@link ExecutionPayload} objects to validate.
+   * @throws {JSONRPCError} If validation fails.
+   */
+  function validateBatchPayloads(executionPayloads: ExecutionPayload[]): void {
+    if (!Array.isArray(executionPayloads)) {
+      throw new JSONRPCError(-32602, 'Invalid params: executionPayloads must be an array');
+    }
+
+    if (executionPayloads.length === 0) {
+      throw new JSONRPCError(-32602, 'Invalid params: executionPayloads array cannot be empty');
+    }
+
+    // Validate each payload has required fields
+    for (let i = 0; i < executionPayloads.length; i++) {
+      const payload = executionPayloads[i];
+      if (!payload || typeof payload !== 'object') {
+        throw new JSONRPCError(-32602, `Invalid params: executionPayloads[${i}] must be an object`);
+      }
+      if (!Array.isArray(payload.calls)) {
+        throw new JSONRPCError(-32602, `Invalid params: executionPayloads[${i}].calls must be an array`);
+      }
+      if (payload.calls.length === 0) {
+        throw new JSONRPCError(-32602, `Invalid params: executionPayloads[${i}].calls array cannot be empty`);
+      }
+    }
+
+    logger.debug(`Validated ${executionPayloads.length} execution payloads`);
+  }
+
+  /**
+   * @internal
+   * Merges multiple {@link ExecutionPayload} objects into a single payload suitable
+   * for atomic batch execution using Aztec's BatchCall.
+   *
+   * The merge strategy follows the plan's payload merging specification:
+   * - Concatenates all calls arrays
+   * - Concatenates all authWitnesses arrays
+   * - Concatenates all capsules arrays
+   * - Concatenates all extraHashedArgs arrays
+   *
+   * @param executionPayloads - Array of {@link ExecutionPayload} objects to merge.
+   * @returns A single merged {@link ExecutionPayload}.
+   */
+  function mergeExecutionPayloads(executionPayloads: ExecutionPayload[]): ExecutionPayload {
+    logger.debug(`Merging ${executionPayloads.length} execution payloads into atomic batch`);
+
+    const mergedPayload: ExecutionPayload = {
+      calls: [],
+      authWitnesses: [],
+      capsules: [],
+      extraHashedArgs: [],
+    };
+
+    for (const payload of executionPayloads) {
+      mergedPayload.calls.push(...payload.calls);
+      mergedPayload.authWitnesses.push(...payload.authWitnesses);
+      mergedPayload.capsules.push(...payload.capsules);
+      mergedPayload.extraHashedArgs.push(...(payload.extraHashedArgs ?? []));
+    }
+
+    logger.debug(
+      `Merged payload: ${mergedPayload.calls.length} calls, ${mergedPayload.authWitnesses.length} authWitnesses, ${mergedPayload.capsules.length} capsules, ${mergedPayload.extraHashedArgs.length} extraHashedArgs`,
+    );
+
+    return mergedPayload;
+  }
+
+  /**
+   * @internal
+   * Helper function to execute a batch of transactions atomically from multiple {@link ExecutionPayload} objects.
+   * This consolidates the batch flow:
+   * 1. Generate unique transaction status ID
+   * 2. Send 'initiated' notification
+   * 3. Validate all payloads
+   * 4. Merge payloads into single atomic batch
+   * 5. Create TxExecutionRequest using BatchCall
+   * 6. Simulate, prove, and send the batch transaction
+   * 7. Wait for receipt
+   *
+   * All operations succeed together or all fail together (atomic execution).
+   *
+   * @param ctx - The {@link AztecHandlerContext}.
+   * @param executionPayloads - Array of {@link ExecutionPayload} objects to execute as batch.
+   * @param sendOptions - Optional {@link AztecSendOptions} for fee configuration.
+   * @returns A promise resolving to an object containing the blockchain tx hash, receipt, and status tracking ID.
+   */
+  async function executeBatchTransaction(
+    ctx: AztecHandlerContext,
+    executionPayloads: ExecutionPayload[],
+    _sendOptions?: AztecSendOptions,
+  ): Promise<{ txHash: TxHash; receipt: TxReceipt; txStatusId: string }> {
+    const startTime = Date.now();
+
+    // Generate unique transaction status ID for tracking
+    const txStatusId = crypto.randomUUID();
+
+    logger.debug(
+      `Starting batch transaction execution. StatusId: ${txStatusId}, Wallet: ${ctx.wallet.getAddress().toString()}, Payloads: ${executionPayloads.length}`,
+    );
+    logger.debug('Execution payloads:', executionPayloads);
+
+    try {
+      // Stage 0: Initiated (batch received, ID generated)
+      logger.debug('Batch transaction initiated, sending initial notification...');
+      await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
+
+      // Validate all payloads
+      validateBatchPayloads(executionPayloads);
+
+      // Merge payloads into single atomic batch
+      const mergedPayload = mergeExecutionPayloads(executionPayloads);
+
+      // Stage 1: Simulating (maps to Aztec's simulate())
+      logger.debug('Starting batch transaction simulation...');
+      await notifyTransactionStatus(ctx, { txStatusId, status: 'simulating' });
+
+      const txRequest = await createTxExecutionRequest(ctx, mergedPayload);
+      const simulationResult = await simulateTransaction(ctx, mergedPayload, txRequest);
+      logger.debug('Batch transaction simulation completed');
+
+      // Stage 2: Proving (zero-knowledge proof generation for entire batch)
+      logger.debug('Starting batch transaction proving...');
+      await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
+
+      const proveStartTime = Date.now();
+      const provingResult = await ctx.wallet.proveTx(txRequest, simulationResult.privateExecutionResult);
+      const provingTime = Date.now() - proveStartTime;
+      logger.debug(
+        `Batch transaction proving completed in ${provingTime}ms (single proof for all operations)`,
+      );
+      logger.debug('Proving result:', provingResult);
+
+      logger.debug('Creating transaction from proving result...');
+      const tx = await provingResult.toTx();
+      logger.debug('Transaction created:', tx);
+
+      let txHashString: string | undefined;
+      try {
+        txHashString = tx?.getTxHash?.()?.toString?.();
+      } catch (hashError) {
+        logger.debug('Unable to derive tx hash after proving', {
+          error: hashError instanceof Error ? hashError.message : hashError,
+        });
+      }
+
+      // Stage 3: Sending (maps to Aztec's send())
+      logger.debug('Sending batch transaction to network...');
+      await notifyTransactionStatus(ctx, {
+        txStatusId,
+        status: 'sending',
+        ...(txHashString && { txHash: txHashString }),
+      });
+
+      const sendStartTime = Date.now();
+      const txHash = await ctx.wallet.sendTx(tx);
+      logger.debug(`Batch transaction sent in ${Date.now() - sendStartTime}ms, hash: ${txHash.toString()}`);
+
+      // Stage 4: Pending (waiting for confirmation)
+      await notifyTransactionStatus(ctx, {
+        txStatusId,
+        status: 'pending',
+        txHash: txHash.toString(),
+      });
+
+      // Wait for transaction receipt
+      logger.debug('Waiting for batch transaction receipt...');
+      const receipt = await ctx.wallet.getTxReceipt(txHash);
+      logger.debug('Batch transaction receipt received:', receipt);
+
+      return { txHash, receipt, txStatusId };
+    } catch (error) {
+      const totalTime = Date.now() - startTime;
+      logger.error(`Batch transaction execution failed after ${totalTime}ms}`);
+      logger.error('Error details:', error);
+
+      // Send failed notification
+      await notifyTransactionStatus(ctx, {
+        txStatusId,
+        status: 'failed',
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      throw error;
+    }
+  }
+
   return {
     /**
      * Handles the "aztec_wmExecuteTx" JSON-RPC method.
@@ -248,6 +440,38 @@ export function createContractInteractionHandlers() {
     ): Promise<AztecWalletMethodMap['aztec_wmExecuteTx']['result']> => {
       const [executionPayload] = paramsTuple;
       return executeTransaction(ctx, executionPayload);
+    },
+
+    /**
+     * Handles the "aztec_wmBatchExecute" JSON-RPC method.
+     * This WalletMesh-specific method executes multiple contract interactions as a single atomic batch.
+     *
+     * Uses Aztec's native batch execution to create one transaction with one proof for all operations.
+     * All operations succeed together or all fail together (atomic execution).
+     *
+     * The wallet receives the complete batch upfront, allowing it to display all operations
+     * to the user for approval before execution. This provides better security UX compared
+     * to approving operations one-by-one.
+     *
+     * The backend automatically generates a unique `txStatusId` and sends status notifications
+     * (initiated/simulating/proving/sending/pending/failed) throughout the batch lifecycle.
+     * The frontend can listen to `aztec_transactionStatus` events and correlate them using the
+     * returned `txStatusId`.
+     *
+     * @param ctx - The {@link AztecHandlerContext}.
+     * @param paramsTuple - A tuple containing an array of {@link ExecutionPayload} objects and optional {@link AztecSendOptions}.
+     *                      Defined by {@link AztecWalletMethodMap.aztec_wmBatchExecute.params}.
+     * @param paramsTuple.0 executionPayloads - Array of {@link ExecutionPayload} objects to execute as batch.
+     * @param paramsTuple.1 sendOptions - Optional {@link AztecSendOptions} for fee configuration.
+     * @returns A promise that resolves to an object containing the blockchain transaction hash,
+     *          receipt, and status tracking ID. Type defined by {@link AztecWalletMethodMap.aztec_wmBatchExecute.result}.
+     */
+    aztec_wmBatchExecute: async (
+      ctx: AztecHandlerContext,
+      paramsTuple: AztecWalletMethodMap['aztec_wmBatchExecute']['params'],
+    ): Promise<AztecWalletMethodMap['aztec_wmBatchExecute']['result']> => {
+      const [executionPayloads, sendOptions] = paramsTuple;
+      return executeBatchTransaction(ctx, executionPayloads, sendOptions);
     },
 
     /**

@@ -10,6 +10,10 @@
  */
 
 import { z } from 'zod';
+import type { AztecSendOptions } from '@walletmesh/aztec-rpc-wallet';
+
+// Re-export for convenience
+export type { AztecSendOptions };
 
 /**
  * Aztec wallet interface for dApp interactions
@@ -30,6 +34,14 @@ export interface AztecDappWallet {
   ): Promise<{ txHash: unknown; contractAddress: unknown; txStatusId: string }>;
   /** Execute a transaction via WalletMesh helper - returns both txHash and txStatusId */
   wmExecuteTx?(interaction: ContractFunctionInteraction): Promise<{ txHash: unknown; txStatusId: string }>;
+  /**
+   * Execute multiple contract interactions as a single atomic batch via WalletMesh helper.
+   * Returns txHash, receipt, and txStatusId for tracking the unified batch transaction.
+   */
+  wmBatchExecute?(
+    executionPayloads: unknown[],
+    sendOptions?: AztecSendOptions,
+  ): Promise<{ txHash: unknown; receipt: TxReceipt; txStatusId: string }>;
   /** Simulate a transaction via WalletMesh helper */
   wmSimulateTx?(interaction: ContractFunctionInteraction): Promise<unknown>;
   /** Prove a transaction */
@@ -96,19 +108,6 @@ export interface SentTx {
  *
  * @public
  */
-
-/**
- * Options for sending Aztec transactions.
- *
- * @public
- */
-export interface AztecSendOptions {
-  from?: unknown;
-  fee?: unknown;
-  txNonce?: unknown;
-  cancellable?: boolean;
-}
-
 export interface TxReceipt {
   /** Transaction status */
   status: string;
@@ -184,8 +183,6 @@ export type TxStatus = (typeof TX_STATUS)[keyof typeof TX_STATUS];
 export interface CreateAztecWalletOptions {
   /** The Aztec chain ID (e.g., 'aztec:sandbox', 'aztec:testnet') */
   chainId?: string;
-  /** Custom chain ID options to request permissions for */
-  permissions?: Record<string, string[]>;
 }
 
 /**
@@ -220,9 +217,9 @@ export type TransactionStatus = (typeof TRANSACTION_STATUS_VALUES)[number];
  * txHash (blockchain identifier).
  */
 export const aztecTransactionStatusNotificationSchema = z.object({
-  txStatusId: z.string().min(1, 'txStatusId is required'),  // ← Internal tracking ID
+  txStatusId: z.string().min(1, 'txStatusId is required'), // ← Internal tracking ID
   status: z.enum(TRANSACTION_STATUS_VALUES),
-  txHash: z.string().optional(),  // ← Blockchain transaction hash
+  txHash: z.string().optional(), // ← Blockchain transaction hash
   timestamp: z.number(),
   error: z.string().optional(),
 });

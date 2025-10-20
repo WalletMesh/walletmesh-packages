@@ -206,7 +206,14 @@ describe('LazyAztecRouterProvider - Notification Integration', () => {
     it('should progress through full transaction lifecycle', async () => {
       expect(notificationHandler).not.toBeNull();
 
-      const stages: TransactionStatus[] = ['idle', 'simulating', 'proving', 'sending', 'pending', 'confirmed'];
+      const stages: TransactionStatus[] = [
+        'idle',
+        'simulating',
+        'proving',
+        'sending',
+        'pending',
+        'confirmed',
+      ];
 
       for (const status of stages) {
         const notification = {
@@ -344,7 +351,9 @@ describe('LazyAztecRouterProvider - Notification Integration', () => {
         const notification = {
           ...tx,
           timestamp: Date.now(),
-          ...(tx.status === 'sending' || tx.status === 'confirmed' ? { txHash: `0x${tx.txStatusId}hash` } : {}),
+          ...(tx.status === 'sending' || tx.status === 'confirmed'
+            ? { txHash: `0x${tx.txStatusId}hash` }
+            : {}),
         };
 
         // Clear previous calls

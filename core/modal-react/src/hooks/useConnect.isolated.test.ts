@@ -74,7 +74,6 @@ describe('useConnect - Isolated Tests', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 

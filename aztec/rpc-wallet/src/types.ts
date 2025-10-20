@@ -47,6 +47,18 @@ import type { WalletMethodMap } from '@walletmesh/router';
 import type { ContractArtifactCache } from './contractArtifactCache.js';
 
 /**
+ * Options for sending Aztec transactions.
+ *
+ * @public
+ */
+export interface AztecSendOptions {
+  from?: unknown;
+  fee?: unknown;
+  txNonce?: unknown;
+  cancellable?: boolean;
+}
+
+/**
  * Type-safe Aztec chain ID format following the CAIP-2 standard.
  *
  * Format: `aztec:{reference}` where reference is typically:
@@ -504,6 +516,35 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
     params: [executionPayload: ExecutionPayload];
     result: {
       txHash: TxHash;
+      txStatusId: string;
+    };
+  };
+
+  /**
+   * WalletMesh specific: Executes multiple contract interactions as a single atomic batch.
+   *
+   * Uses Aztec's native BatchCall to create one transaction with one proof for all operations.
+   * All operations succeed together or all fail together (atomic execution).
+   *
+   * The wallet receives the complete batch upfront, allowing it to display all operations
+   * to the user for approval before execution. This provides better security UX compared
+   * to approving operations one-by-one.
+   *
+   * The backend automatically generates a unique `txStatusId` and sends status notifications
+   * (initiated/simulating/proving/sending/pending/failed) throughout the batch lifecycle.
+   * The frontend can listen to `aztec_transactionStatus` events and correlate them using the
+   * returned `txStatusId`.
+   *
+   * @param params - Tuple containing array of execution payloads and optional send options
+   * @param params.0 executionPayloads - Array of {@link ExecutionPayload} objects to batch
+   * @param params.1 sendOptions - Optional {@link AztecSendOptions} for fee configuration
+   * @returns result - Object containing transaction hash, receipt, and status tracking ID
+   */
+  aztec_wmBatchExecute: {
+    params: [executionPayloads: ExecutionPayload[], sendOptions?: AztecSendOptions];
+    result: {
+      txHash: TxHash;
+      receipt: TxReceipt;
       txStatusId: string;
     };
   };

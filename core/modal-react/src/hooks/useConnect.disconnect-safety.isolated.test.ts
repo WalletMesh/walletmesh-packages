@@ -129,7 +129,6 @@ describe('useConnect - Disconnect Safety (Isolated)', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 

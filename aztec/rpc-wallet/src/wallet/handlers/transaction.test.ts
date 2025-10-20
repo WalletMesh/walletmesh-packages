@@ -196,11 +196,13 @@ describe('Transaction Handlers', () => {
       vi.mocked(mockWallet.simulateTx).mockResolvedValue(expectedSimulation);
 
       const overrides = {
-        msgSender: AztecAddress.fromString('0x1234567890123456789012345678901234567890123456789012345678901234')
+        msgSender: AztecAddress.fromString(
+          '0x1234567890123456789012345678901234567890123456789012345678901234',
+        ),
       } as SimulationOverrides;
       const scopes = [
         AztecAddress.fromString('0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'),
-        AztecAddress.fromString('0x9876543210987654321098765432109876543210987654321098765432109876')
+        AztecAddress.fromString('0x9876543210987654321098765432109876543210987654321098765432109876'),
       ];
 
       const result = await handlers.aztec_simulateTx(context, [
@@ -245,7 +247,14 @@ describe('Transaction Handlers', () => {
         undefined,
       ]);
 
-      expect(mockWallet.simulateTx).toHaveBeenCalledWith(txRequest, false, undefined, false, undefined, undefined);
+      expect(mockWallet.simulateTx).toHaveBeenCalledWith(
+        txRequest,
+        false,
+        undefined,
+        false,
+        undefined,
+        undefined,
+      );
       expect(result).toBe(expectedSimulation);
     });
 
@@ -255,7 +264,14 @@ describe('Transaction Handlers', () => {
       vi.mocked(mockWallet.simulateTx).mockRejectedValue(error);
 
       await expect(
-        handlers.aztec_simulateTx(context, [txRequest, undefined, undefined, undefined, undefined, undefined]),
+        handlers.aztec_simulateTx(context, [
+          txRequest,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+        ]),
       ).rejects.toThrow('Simulation failed');
       expect(mockWallet.simulateTx).toHaveBeenCalledOnce();
     });
@@ -343,9 +359,23 @@ describe('Transaction Handlers', () => {
 
       vi.mocked(mockWallet.simulateUtility).mockResolvedValue(expectedResult);
 
-      const result = await handlers.aztec_simulateUtility(context, [functionName, args, to, authWits, from, undefined]);
+      const result = await handlers.aztec_simulateUtility(context, [
+        functionName,
+        args,
+        to,
+        authWits,
+        from,
+        undefined,
+      ]);
 
-      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(functionName, args, to, authWits, from, undefined);
+      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(
+        functionName,
+        args,
+        to,
+        authWits,
+        from,
+        undefined,
+      );
       expect(result).toBe(expectedResult);
     });
 
@@ -371,7 +401,14 @@ describe('Transaction Handlers', () => {
         undefined,
       ]);
 
-      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(functionName, args, to, undefined, undefined, undefined);
+      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(
+        functionName,
+        args,
+        to,
+        undefined,
+        undefined,
+        undefined,
+      );
       expect(result).toBe(expectedResult);
     });
 
@@ -385,7 +422,14 @@ describe('Transaction Handlers', () => {
       await expect(
         handlers.aztec_simulateUtility(context, [functionName, args, to, undefined, undefined, undefined]),
       ).rejects.toThrow('Utility simulation failed');
-      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(functionName, args, to, undefined, undefined, undefined);
+      expect(mockWallet.simulateUtility).toHaveBeenCalledWith(
+        functionName,
+        args,
+        to,
+        undefined,
+        undefined,
+        undefined,
+      );
     });
   });
 });

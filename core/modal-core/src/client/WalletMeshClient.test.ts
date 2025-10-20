@@ -1188,7 +1188,7 @@ describe('WalletMeshClient', () => {
     });
 
     describe('sessionToWalletConnection validation', () => {
-      it('should throw when Aztec provider missing call method', () => {
+      it('should throw when Aztec provider missing call method', async () => {
         const mockSession = {
           sessionId: 'test-session',
           walletId: 'aztec-wallet',
@@ -1207,13 +1207,13 @@ describe('WalletMeshClient', () => {
           },
         };
 
-        expect(() => {
+        await expect(async () => {
           // @ts-expect-error - Accessing private method for testing
-          client['sessionToWalletConnection'](mockSession);
-        }).toThrow('Provider does not implement required');
+          await client['sessionToWalletConnection'](mockSession);
+        }).rejects.toThrow('Provider does not implement required');
       });
 
-      it('should throw when EVM provider missing request method', () => {
+      it('should throw when EVM provider missing request method', async () => {
         const mockSession = {
           sessionId: 'test-session',
           walletId: 'metamask',
@@ -1232,13 +1232,13 @@ describe('WalletMeshClient', () => {
           },
         };
 
-        expect(() => {
+        await expect(async () => {
           // @ts-expect-error - Accessing private method for testing
-          client['sessionToWalletConnection'](mockSession);
-        }).toThrow('Provider does not implement required');
+          await client['sessionToWalletConnection'](mockSession);
+        }).rejects.toThrow('Provider does not implement required');
       });
 
-      it('should throw when Solana provider missing transaction methods', () => {
+      it('should throw when Solana provider missing transaction methods', async () => {
         const mockSession = {
           sessionId: 'test-session',
           walletId: 'phantom',
@@ -1257,13 +1257,13 @@ describe('WalletMeshClient', () => {
           },
         };
 
-        expect(() => {
+        await expect(async () => {
           // @ts-expect-error - Accessing private method for testing
-          client['sessionToWalletConnection'](mockSession);
-        }).toThrow('Provider does not implement required');
+          await client['sessionToWalletConnection'](mockSession);
+        }).rejects.toThrow('Provider does not implement required');
       });
 
-      it('should succeed with valid Aztec provider', () => {
+      it('should succeed with valid Aztec provider', async () => {
         const mockProvider = { call: vi.fn(), disconnect: vi.fn() };
         const mockSession = {
           sessionId: 'test-session',
@@ -1290,7 +1290,7 @@ describe('WalletMeshClient', () => {
         };
 
         // @ts-expect-error - Accessing private method for testing
-        const connection = client['sessionToWalletConnection'](mockSession);
+        const connection = await client['sessionToWalletConnection'](mockSession);
 
         expect(connection).toMatchObject({
           walletId: 'aztec-wallet',
@@ -1299,7 +1299,7 @@ describe('WalletMeshClient', () => {
         });
       });
 
-      it('should succeed with valid EVM provider', () => {
+      it('should succeed with valid EVM provider', async () => {
         const mockProvider = { request: vi.fn() };
         const mockSession = {
           sessionId: 'test-session',
@@ -1326,7 +1326,7 @@ describe('WalletMeshClient', () => {
         };
 
         // @ts-expect-error - Accessing private method for testing
-        const connection = client['sessionToWalletConnection'](mockSession);
+        const connection = await client['sessionToWalletConnection'](mockSession);
 
         expect(connection).toMatchObject({
           walletId: 'metamask',
@@ -1335,7 +1335,7 @@ describe('WalletMeshClient', () => {
         });
       });
 
-      it('should succeed with valid Solana provider (signAndSendTransaction)', () => {
+      it('should succeed with valid Solana provider (signAndSendTransaction)', async () => {
         const mockProvider = { signAndSendTransaction: vi.fn() };
         const mockSession = {
           sessionId: 'test-session',
@@ -1362,7 +1362,7 @@ describe('WalletMeshClient', () => {
         };
 
         // @ts-expect-error - Accessing private method for testing
-        const connection = client['sessionToWalletConnection'](mockSession);
+        const connection = await client['sessionToWalletConnection'](mockSession);
 
         expect(connection).toMatchObject({
           walletId: 'phantom',
@@ -1371,7 +1371,7 @@ describe('WalletMeshClient', () => {
         });
       });
 
-      it('should succeed with valid Solana provider (sendTransaction)', () => {
+      it('should succeed with valid Solana provider (sendTransaction)', async () => {
         const mockProvider = { sendTransaction: vi.fn() };
         const mockSession = {
           sessionId: 'test-session',
@@ -1398,7 +1398,7 @@ describe('WalletMeshClient', () => {
         };
 
         // @ts-expect-error - Accessing private method for testing
-        const connection = client['sessionToWalletConnection'](mockSession);
+        const connection = await client['sessionToWalletConnection'](mockSession);
 
         expect(connection).toMatchObject({
           walletId: 'phantom',

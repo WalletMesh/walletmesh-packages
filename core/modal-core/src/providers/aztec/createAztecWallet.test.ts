@@ -33,27 +33,31 @@ describe('createAztecWallet - Async Import Error Handling', () => {
   });
 
   describe('Module Import Success', () => {
-    it('should successfully create wallet when module imports correctly', async () => {
-      // This test verifies the happy path when @walletmesh/aztec-rpc-wallet is available
-      try {
-        const wallet = await createAztecWallet(mockProvider, { chainId: 'aztec:31337' });
+    it(
+      'should successfully create wallet when module imports correctly',
+      async () => {
+        // This test verifies the happy path when @walletmesh/aztec-rpc-wallet is available
+        try {
+          const wallet = await createAztecWallet(mockProvider, { chainId: 'aztec:31337' });
 
-        // If we got here, the module imported successfully
-        expect(wallet).toBeDefined();
-      } catch (error) {
-        // If module is not available, verify error is from module loading
-        // The error should be wrapped with helpful context
-        expect(error).toBeDefined();
-        if (error && typeof error === 'object' && 'message' in error) {
-          const errorMessage = (error as { message: string }).message;
-          // Should contain either the helpful error message OR a connection error
-          expect(
-            errorMessage.includes('Failed to load @walletmesh/aztec-rpc-wallet') ||
-              errorMessage.includes('Failed to create Aztec wallet'),
-          ).toBe(true);
+          // If we got here, the module imported successfully
+          expect(wallet).toBeDefined();
+        } catch (error) {
+          // If module is not available, verify error is from module loading
+          // The error should be wrapped with helpful context
+          expect(error).toBeDefined();
+          if (error && typeof error === 'object' && 'message' in error) {
+            const errorMessage = (error as { message: string }).message;
+            // Should contain either the helpful error message OR a connection error
+            expect(
+              errorMessage.includes('Failed to load @walletmesh/aztec-rpc-wallet') ||
+                errorMessage.includes('Failed to create Aztec wallet'),
+            ).toBe(true);
+          }
         }
-      }
-    });
+      },
+      10000,
+    ); // Increase timeout to 10s for dynamic import
 
     it('should cache module after successful import', async () => {
       // First call
@@ -159,28 +163,6 @@ describe('createAztecWallet - Async Import Error Handling', () => {
       } as unknown as WalletProvider;
 
       await expect(createAztecWallet(invalidProvider, { chainId: 'aztec:31337' })).rejects.toThrow();
-    });
-  });
-
-  describe('Permissions Warning', () => {
-    it('should warn when permissions parameter is provided', async () => {
-      // Mock logger to capture warning
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-      try {
-        await createAztecWallet(mockProvider, {
-          chainId: 'aztec:31337',
-          permissions: { 'aztec:31337': ['aztec_getAddress'] },
-        });
-      } catch {
-        // Ignore errors - we're just testing the warning
-      }
-
-      // Note: The actual warning is through modalLogger, not console
-      // This test verifies the parameter is accepted without crashing
-      expect(consoleWarnSpy).toBeDefined();
-
-      consoleWarnSpy.mockRestore();
     });
   });
 

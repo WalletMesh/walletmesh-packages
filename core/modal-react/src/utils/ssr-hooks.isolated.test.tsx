@@ -34,7 +34,6 @@ describe('SSR Utilities - Isolated Tests', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 

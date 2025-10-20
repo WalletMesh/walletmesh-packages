@@ -133,44 +133,10 @@ afterEach(async () => {
 
   try {
     if (vi.isFakeTimers()) {
-      // Run timers twice to flush chained callbacks
-      vi.runAllTimers();
-      vi.runAllTimers();
+      // Use runOnlyPendingTimers to avoid infinite loops, then clear
+      // This is safer than runAllTimers which can hang on intervals
+      vi.runOnlyPendingTimers();
       vi.clearAllTimers();
-    } else if (typeof window !== 'undefined') {
-      const w: any = window as any;
-      // Drain a frame if rAF exists
-      const originalRaf = w.requestAnimationFrame?.bind(w);
-      if (originalRaf) {
-        await new Promise<void>((resolve) => originalRaf(() => resolve()));
-      }
-      // Best-effort macrotask flush
-      await new Promise<void>((resolve) => w.setTimeout(resolve, 0));
-
-      // Install guards so no new tasks schedule DOM work during teardown
-      if (!w.__WM_ORIGINAL_RAF__) w.__WM_ORIGINAL_RAF__ = w.requestAnimationFrame?.bind(w);
-      if (!w.__WM_ORIGINAL_CAF__) w.__WM_ORIGINAL_CAF__ = w.cancelAnimationFrame?.bind(w);
-      if (!w.__WM_ORIGINAL_SET_TIMEOUT__) w.__WM_ORIGINAL_SET_TIMEOUT__ = w.setTimeout.bind(w);
-      if (!w.__WM_ORIGINAL_CLEAR_TIMEOUT__) w.__WM_ORIGINAL_CLEAR_TIMEOUT__ = w.clearTimeout.bind(w);
-
-      let blocked = false;
-      // Helper kept for clarity in previous logic; use inline assignment instead of separate function
-      w.requestAnimationFrame = (cb: FrameRequestCallback) => {
-        if (blocked) return -1;
-        return (w.__WM_ORIGINAL_RAF__ ?? ((fn: any) => setTimeout(fn, 16)))(cb);
-      };
-      w.cancelAnimationFrame = (id: number) => {
-        return (w.__WM_ORIGINAL_CAF__ ?? clearTimeout)(id as unknown as NodeJS.Timeout);
-      };
-      w.setTimeout = ((...args: any[]) => {
-        if (blocked) return -1 as unknown as NodeJS.Timeout;
-        return w.__WM_ORIGINAL_SET_TIMEOUT__(...args);
-      }) as typeof setTimeout;
-      w.clearTimeout = ((id: any) => w.__WM_ORIGINAL_CLEAR_TIMEOUT__(id)) as typeof clearTimeout;
-
-      // Activate block after giving a final tick
-      await Promise.resolve();
-      blocked = true;
     }
   } catch {
     // ignore
@@ -385,10 +351,20 @@ vi.mock('@walletmesh/modal-core', () => {
     (global as Record<string, unknown>)['__TEST_WALLET_MESH_CLIENT__'] = mockClient;
   }
 
+  // Guard against accidental real client creation - this should NEVER be called
+  const guardedCreateWalletMesh = vi.fn().mockImplementation(() => {
+    console.warn(
+      '[TEST WARNING] createWalletMesh was called! This should not happen in tests and may cause OOM. ' +
+        'Use MockWalletMeshProvider in your tests instead.'
+    );
+    // Return the mock client immediately to prevent heavy initialization
+    return Promise.resolve(mockClient);
+  });
+
   return {
-    // Client creation functions
-    createWalletMesh: vi.fn().mockResolvedValue(mockClient),
-    createWalletMeshClient: vi.fn().mockResolvedValue(mockClient),
+    // Client creation functions - all guarded to prevent OOM
+    createWalletMesh: guardedCreateWalletMesh,
+    createWalletMeshClient: guardedCreateWalletMesh,
     createWalletMeshStore: vi.fn().mockReturnValue(mockStore),
     getWalletMeshStore: vi.fn().mockReturnValue(mockStore),
     getStoreInstance: vi.fn(() => mockStore),
@@ -1085,7 +1061,8 @@ afterEach(() => {
   // Clean up any pending async operations and timers
   try {
     vi.clearAllTimers();
-    vi.useRealTimers();
+    // Keep fake timers active - beforeEach will reset them for next test
+    // Removing vi.useRealTimers() prevents slow real timer delays during cleanup
   } catch (error) {
     // Ignore timer cleanup errors to prevent hanging
   }

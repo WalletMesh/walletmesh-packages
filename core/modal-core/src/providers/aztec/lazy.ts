@@ -296,7 +296,9 @@ export class LazyAztecRouterProvider {
       const store = useStore as unknown as StoreApi<WalletMeshState>;
       this.cleanupNotificationHandlers();
 
-      if (typeof (this.realProvider as unknown as { onNotification?: unknown }).onNotification !== 'function') {
+      if (
+        typeof (this.realProvider as unknown as { onNotification?: unknown }).onNotification !== 'function'
+      ) {
         throw ErrorFactory.configurationError(
           'AztecRouterProvider is missing onNotification support. Update to a compatible WalletMesh router version.',
         );
@@ -313,19 +315,22 @@ export class LazyAztecRouterProvider {
           const parseResult = parseAztecTransactionStatusWithDiagnostics(params);
 
           if (parseResult.success && parseResult.data) {
-            console.log('[LazyAztecRouterProvider] Parsed transaction status notification:', parseResult.data);
+            console.log(
+              '[LazyAztecRouterProvider] Parsed transaction status notification:',
+              parseResult.data,
+            );
 
             // Update transaction status in store
             aztecTransactionActions.updateAztecTransactionStatus(
               store,
-              parseResult.data.txStatusId,  // ← Internal tracking ID
-              parseResult.data.status // Types now match - no cast needed
+              parseResult.data.txStatusId, // ← Internal tracking ID
+              parseResult.data.status, // Types now match - no cast needed
             );
 
             // Update transaction hash if provided (blockchain identifier)
             if (parseResult.data.txHash) {
               aztecTransactionActions.updateAztecTransaction(store, parseResult.data.txStatusId, {
-                txHash: parseResult.data.txHash,  // ← Blockchain hash
+                txHash: parseResult.data.txHash, // ← Blockchain hash
               });
             }
 
@@ -344,7 +349,10 @@ export class LazyAztecRouterProvider {
             console.warn('[LazyAztecRouterProvider] Raw notification params:', parseResult.rawParams);
           }
         } catch (error) {
-          console.error('[LazyAztecRouterProvider] Error handling aztec_transactionStatus notification', error);
+          console.error(
+            '[LazyAztecRouterProvider] Error handling aztec_transactionStatus notification',
+            error,
+          );
         }
       });
       this.notificationCleanup.push(removeTxStatus);
@@ -361,6 +369,25 @@ export class LazyAztecRouterProvider {
       throw ErrorFactory.configurationError('Failed to initialize AztecRouterProvider');
     }
     return this.realProvider;
+  }
+
+  /**
+   * Check if provider is ready to use
+   * Exposed for validation purposes
+   *
+   * @public
+   */
+  public async ensureReady(): Promise<void> {
+    await this.initPromise;
+  }
+
+  /**
+   * Check initialization status without waiting
+   *
+   * @public
+   */
+  public get isInitialized(): boolean {
+    return this.realProvider !== null;
   }
 
   // Proxy all public methods to the real provider

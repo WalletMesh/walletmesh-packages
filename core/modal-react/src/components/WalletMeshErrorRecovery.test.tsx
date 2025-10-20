@@ -51,7 +51,6 @@ describe('WalletMeshErrorRecovery', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.clearAllMocks();
   });
 

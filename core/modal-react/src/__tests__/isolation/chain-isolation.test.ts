@@ -22,17 +22,21 @@ describe('Chain isolation', () => {
       }
     });
 
-    it('should not import Solana-specific code', async () => {
-      const aztecModule = await import('../../aztec.js');
-      const exports = Object.keys(aztecModule);
+    it(
+      'should not import Solana-specific code',
+      async () => {
+        const aztecModule = await import('../../aztec.js');
+        const exports = Object.keys(aztecModule);
 
-      // Check that no Solana-specific patterns are in the exports
-      const solanaPatterns = ['SolanaConnect', 'useSolanaWallet', 'solanaMainnet', 'solanaDevnet'];
-      for (const pattern of solanaPatterns) {
-        const hasSolanaExport = exports.some((exp) => exp.includes(pattern));
-        expect(hasSolanaExport, `Found unexpected Solana export containing "${pattern}"`).toBe(false);
-      }
-    });
+        // Check that no Solana-specific patterns are in the exports
+        const solanaPatterns = ['SolanaConnect', 'useSolanaWallet', 'solanaMainnet', 'solanaDevnet'];
+        for (const pattern of solanaPatterns) {
+          const hasSolanaExport = exports.some((exp) => exp.includes(pattern));
+          expect(hasSolanaExport, `Found unexpected Solana export containing "${pattern}"`).toBe(false);
+        }
+      },
+      15000,
+    ); // Increase timeout to 15s for dynamic import
   });
 
   describe('EVM isolation', () => {

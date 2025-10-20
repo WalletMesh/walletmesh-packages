@@ -43,6 +43,7 @@ import type {
 } from './WalletMeshClient.js';
 import type { ChainConfig } from './WalletMeshClient.js';
 import { SessionParamsBuilder } from './SessionParamsBuilder.js';
+import { ProviderValidator } from './providerValidator.js';
 
 /**
  * Core implementation of the WalletMesh client providing comprehensive wallet management.
@@ -163,6 +164,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
   };
 
   private providerLoader: ProviderLoader;
+  private providerValidator: ProviderValidator;
   private serviceRegistry: ServiceRegistry;
   private dappRpcIntegration: DAppRpcIntegration;
   private discoveryService?: import('../../client/DiscoveryService.js').DiscoveryService | undefined;
@@ -252,6 +254,9 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       ...(this.logger && { logger: this.logger }),
     };
     this.providerLoader = new ProviderLoader(providerConfig);
+
+    // Initialize provider validator with logger
+    this.providerValidator = new ProviderValidator(this.logger);
 
     // Multi-wallet functionality is now part of unified store
   }
@@ -1470,7 +1475,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       });
 
       // Convert session to WalletConnection format for compatibility
-      return this.sessionToWalletConnection(session);
+      return await this.sessionToWalletConnection(session);
     } catch (error) {
       // Invalidate adapter on connection error
       this.invalidateAdapter(
@@ -3351,7 +3356,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
    * @returns Wallet connection object
    * @private
    */
-  private sessionToWalletConnection(session: SessionState): WalletConnection {
+  private async sessionToWalletConnection(session: SessionState): Promise<WalletConnection> {
     this.logger?.debug('Converting session to wallet connection', {
       sessionId: session.sessionId,
       walletId: session.walletId,
@@ -3371,66 +3376,13 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       });
     }
 
-    // Validate provider interface for chain type
+    // Validate provider interface for chain type (handles lazy providers)
     const provider = session.provider.instance;
-    const sessionChainType = session.chain.chainType;
-
-    // Validate provider implements expected interface for chain type
-    if (sessionChainType === ChainType.Aztec) {
-      // Aztec providers must have call method
-      if (!('call' in provider) || typeof provider.call !== 'function') {
-        this.logger?.error('Provider missing required Aztec interface', {
-          sessionId: session.sessionId,
-          chainType: sessionChainType,
-          providerMethods: Object.keys(provider),
-        });
-        throw ErrorFactory.connectionFailed(
-          'Provider does not implement required Aztec interface (missing call method)',
-          {
-            sessionId: session.sessionId,
-            walletId: session.walletId,
-            chainType: sessionChainType,
-          }
-        );
-      }
-    } else if (sessionChainType === ChainType.Evm) {
-      // EVM providers must have request method (EIP-1193)
-      if (!('request' in provider) || typeof provider.request !== 'function') {
-        this.logger?.error('Provider missing required EVM interface', {
-          sessionId: session.sessionId,
-          chainType: sessionChainType,
-          providerMethods: Object.keys(provider),
-        });
-        throw ErrorFactory.connectionFailed(
-          'Provider does not implement required EVM interface (missing request method)',
-          {
-            sessionId: session.sessionId,
-            walletId: session.walletId,
-            chainType: sessionChainType,
-          }
-        );
-      }
-    } else if (sessionChainType === ChainType.Solana) {
-      // Solana providers must have signAndSendTransaction or sendTransaction method
-      const hasSignAndSend = 'signAndSendTransaction' in provider && typeof provider.signAndSendTransaction === 'function';
-      const hasSendTransaction = 'sendTransaction' in provider && typeof provider.sendTransaction === 'function';
-
-      if (!hasSignAndSend && !hasSendTransaction) {
-        this.logger?.error('Provider missing required Solana interface', {
-          sessionId: session.sessionId,
-          chainType: sessionChainType,
-          providerMethods: Object.keys(provider),
-        });
-        throw ErrorFactory.connectionFailed(
-          'Provider does not implement required Solana interface (missing signAndSendTransaction or sendTransaction method)',
-          {
-            sessionId: session.sessionId,
-            walletId: session.walletId,
-            chainType: sessionChainType,
-          }
-        );
-      }
-    }
+    await this.providerValidator.validate(provider, {
+      sessionId: session.sessionId,
+      walletId: session.walletId,
+      chainType: session.chain.chainType,
+    });
 
     return {
       walletId: session.walletId,

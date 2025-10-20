@@ -4,7 +4,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createWrapper } from '../test/utils.js';
+import { createTestWrapper } from '../test-utils/testHelpers.js';
 import { AztecConnectButton } from './AztecConnectButton.js';
 
 // Mock the CSS module
@@ -48,26 +48,30 @@ vi.mock('@walletmesh/modal-core', async () => {
 });
 
 describe('AztecConnectButton', () => {
+  let wrapper: ReturnType<typeof createTestWrapper>['wrapper'];
+
   beforeEach(() => {
     vi.clearAllMocks();
+    const testSetup = createTestWrapper();
+    wrapper = testSetup.wrapper;
   });
 
   it('renders with Aztec-specific label by default', () => {
-    render(<AztecConnectButton />, { wrapper: createWrapper() });
+    render(<AztecConnectButton />, { wrapper });
 
     expect(screen.getByText('Connect Aztec Wallet')).toBeInTheDocument();
   });
 
   it('allows custom labels', () => {
     render(<AztecConnectButton label="Custom Connect" connectedLabel="Custom Disconnect" />, {
-      wrapper: createWrapper(),
+      wrapper,
     });
 
     expect(screen.getByText('Custom Connect')).toBeInTheDocument();
   });
 
   it('applies Aztec styling class', () => {
-    render(<AztecConnectButton />, { wrapper: createWrapper() });
+    render(<AztecConnectButton />, { wrapper });
 
     const button = screen.getByRole('button');
     expect(button).toHaveClass('aztecButton');
@@ -75,7 +79,7 @@ describe('AztecConnectButton', () => {
 
   it('passes through props to WalletMeshConnectButton', () => {
     render(<AztecConnectButton size="lg" variant="primary" showAddress={true} showChain={true} />, {
-      wrapper: createWrapper(),
+      wrapper,
     });
 
     const button = screen.getByRole('button');
@@ -83,7 +87,7 @@ describe('AztecConnectButton', () => {
   });
 
   it('combines custom className with Aztec styles', () => {
-    render(<AztecConnectButton className="custom-class" />, { wrapper: createWrapper() });
+    render(<AztecConnectButton className="custom-class" />, { wrapper });
 
     const button = screen.getByRole('button');
     expect(button).toHaveClass('aztecButton');
@@ -91,7 +95,7 @@ describe('AztecConnectButton', () => {
   });
 
   it('does not show proving badge when disconnected', () => {
-    render(<AztecConnectButton showProvingStatus={true} />, { wrapper: createWrapper() });
+    render(<AztecConnectButton showProvingStatus={true} />, { wrapper });
 
     expect(screen.queryByText('Proving...')).not.toBeInTheDocument();
   });
@@ -100,7 +104,7 @@ describe('AztecConnectButton', () => {
     const onProvingStart = vi.fn();
 
     render(<AztecConnectButton onProvingStart={onProvingStart} showProvingStatus={true} />, {
-      wrapper: createWrapper(),
+      wrapper,
     });
 
     // Callback would be called when wallet emits proving:start event
@@ -111,7 +115,7 @@ describe('AztecConnectButton', () => {
     const onProvingComplete = vi.fn();
 
     render(<AztecConnectButton onProvingComplete={onProvingComplete} showProvingStatus={true} />, {
-      wrapper: createWrapper(),
+      wrapper,
     });
 
     // Callback would be called when wallet emits proving:complete event
@@ -119,7 +123,7 @@ describe('AztecConnectButton', () => {
   });
 
   it('disables proving status when showProvingStatus is false', () => {
-    render(<AztecConnectButton showProvingStatus={false} />, { wrapper: createWrapper() });
+    render(<AztecConnectButton showProvingStatus={false} />, { wrapper });
 
     expect(screen.queryByText('Proving...')).not.toBeInTheDocument();
   });

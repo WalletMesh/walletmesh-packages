@@ -95,27 +95,6 @@ export function clearAztecModuleCache(): void {
 export interface CreateAztecWalletOptions {
   /** The Aztec chain ID (e.g., 'aztec:sandbox', 'aztec:testnet') */
   chainId?: string;
-  /**
-   * Custom permissions to request from the wallet
-   *
-   * @deprecated This parameter is currently ignored. Permissions must be set during wallet
-   * connection (adapter.connect()), not wallet creation. Pass permissions via the adapter
-   * connect options instead:
-   *
-   * @example
-   * ```typescript
-   * await adapter.connect({
-   *   chains: [{ type: ChainType.Aztec, chainId: 'aztec:testnet' }],
-   *   aztecOptions: {
-   *     permissions: ['aztec_getAddress', 'aztec_sendTransaction', 'aztec_deployContract']
-   *   }
-   * });
-   *
-   * // Then create the wallet (permissions already granted during connection)
-   * const wallet = await createAztecWallet(provider, { chainId: 'aztec:testnet' });
-   * ```
-   */
-  permissions?: Record<string, string[]>;
 }
 
 /**
@@ -152,16 +131,6 @@ export async function createAztecWallet(
   if (!provider) {
     modalLogger.debug('No provider available for Aztec wallet creation');
     return null;
-  }
-
-  // Warn if permissions were provided (they are ignored)
-  if (options.permissions) {
-    modalLogger.warn(
-      'Permissions parameter is ignored in createAztecWallet(). ' +
-        'Permissions must be set during wallet connection via adapter.connect(). ' +
-        'Pass permissions through the aztecOptions parameter when connecting.',
-      { permissions: options.permissions }
-    );
   }
 
   // Extract session ID first for better cache key

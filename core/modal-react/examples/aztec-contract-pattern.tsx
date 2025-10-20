@@ -62,9 +62,9 @@ function TokenDApp() {
 
     try {
       // Call view function through wallet using standard flow
-      const interaction = (contract as unknown as { methods: { balance_of: (addr: string) => { request(): Promise<unknown> } } }).methods.balance_of(
-        address,
-      );
+      const interaction = (
+        contract as unknown as { methods: { balance_of: (addr: string) => { request(): Promise<unknown> } } }
+      ).methods.balance_of(address);
 
       // Extract the transaction request and simulate it
       const txRequest = await interaction.request();
@@ -74,7 +74,9 @@ function TokenDApp() {
       );
 
       // Extract return values from simulation result
-      const balance = (result as { privateExecutionResult?: { returnValues?: unknown } }).privateExecutionResult?.returnValues || result;
+      const balance =
+        (result as { privateExecutionResult?: { returnValues?: unknown } }).privateExecutionResult
+          ?.returnValues || result;
       setBalance(balance?.toString() || '');
     } catch (err) {
       console.error('Failed to check balance:', err);
@@ -89,7 +91,9 @@ function TokenDApp() {
     try {
       // Create the contract interaction
       const interaction = (
-        contract as unknown as { methods: { transfer: (to: string, amt: bigint) => { request(): Promise<unknown> } }
+        contract as unknown as {
+          methods: { transfer: (to: string, amt: bigint) => { request(): Promise<unknown> } };
+        }
       ).methods.transfer(recipient, BigInt(amount));
 
       // Execute through wallet using standard flow

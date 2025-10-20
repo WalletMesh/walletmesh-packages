@@ -61,6 +61,7 @@ export type {
   AztecChainId,
   AztecWalletContext,
   AztecWalletMethodMap,
+  AztecSendOptions,
   TransactionStatus,
   AztecTransactionStatusNotification,
   AztecWalletNotificationMap,

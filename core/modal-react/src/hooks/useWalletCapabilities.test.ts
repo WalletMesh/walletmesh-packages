@@ -51,7 +51,6 @@ describe('useWalletCapabilities', () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 

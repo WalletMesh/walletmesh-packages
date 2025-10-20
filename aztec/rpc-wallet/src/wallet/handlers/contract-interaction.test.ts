@@ -376,4 +376,220 @@ describe('createContractInteractionHandlers', () => {
       expect(callOrder.indexOf('prove') < callOrder.indexOf('send')).toBe(true);
     });
   });
+
+  describe('aztec_wmBatchExecute', () => {
+    const createMockPayload = (calls: unknown[] = []): ExecutionPayload =>
+      ({
+        calls,
+        authWitnesses: [],
+        packedArguments: [],
+        enqueuedPublicFunctions: [],
+        capsules: [],
+        extraHashedArgs: [],
+      }) as unknown as ExecutionPayload;
+
+    it('should execute atomic batch transaction successfully', async () => {
+      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
+      const payload2 = createMockPayload([{ to: mockAddress, selector: 'approve', args: [200] }]);
+
+      const result = await handlers.aztec_wmBatchExecute(mockContext, [[payload1, payload2]]);
+
+      expect(result).toEqual({
+        txHash: mockTxHash,
+        receipt: mockTxReceipt,
+        txStatusId: expect.any(String),
+      });
+
+      // Verify UUID format
+      expect(result.txStatusId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+
+      // Verify wallet methods were called
+      expect(mockContext.wallet.getCurrentBaseFees).toHaveBeenCalled();
+      expect(mockContext.wallet.createTxExecutionRequest).toHaveBeenCalled();
+      expect(mockContext.wallet.simulateTx).toHaveBeenCalled();
+      expect(mockContext.wallet.proveTx).toHaveBeenCalled();
+      expect(mockContext.wallet.sendTx).toHaveBeenCalled();
+      expect(mockContext.wallet.getTxReceipt).toHaveBeenCalled();
+    });
+
+    it('should merge multiple execution payloads correctly', async () => {
+      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
+      const payload2 = createMockPayload([{ to: mockAddress, selector: 'approve', args: [200] }]);
+      const payload3 = createMockPayload([{ to: mockAddress, selector: 'mint', args: [300] }]);
+
+      await handlers.aztec_wmBatchExecute(mockContext, [[payload1, payload2, payload3]]);
+
+      // Verify that createTxExecutionRequest was called with merged payload
+      const createTxCall = vi.mocked(mockContext.wallet.createTxExecutionRequest).mock.calls[0];
+      expect(createTxCall).toBeDefined();
+
+      const mergedPayload = createTxCall?.[0] as ExecutionPayload;
+      expect(mergedPayload.calls).toHaveLength(3);
+    });
+
+    it('should send transaction status notifications for all lifecycle stages', async () => {
+      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
+
+      const result = await handlers.aztec_wmBatchExecute(mockContext, [[payload1]]);
+
+      const notifyCalls = vi.mocked(mockContext.notify!).mock.calls;
+      const txStatusId = result.txStatusId;
+
+      // Should have notifications for: initiated, simulating, proving, sending, pending
+      expect(notifyCalls.length).toBeGreaterThanOrEqual(5);
+
+      // Verify initiated
+      const initiatedCall = notifyCalls.find(
+        (call) =>
+          call[0] === 'aztec_transactionStatus' &&
+          (call[1] as Record<string, unknown>)['status'] === 'initiated',
+      );
+      expect(initiatedCall?.[1]).toMatchObject({
+        txStatusId,
+        status: 'initiated',
+        timestamp: expect.any(Number),
+      });
+
+      // Verify simulating
+      const simulatingCall = notifyCalls.find(
+        (call) =>
+          call[0] === 'aztec_transactionStatus' &&
+          (call[1] as Record<string, unknown>)['status'] === 'simulating',
+      );
+      expect(simulatingCall?.[1]).toMatchObject({
+        txStatusId,
+        status: 'simulating',
+        timestamp: expect.any(Number),
+      });
+
+      // Verify proving
+      const provingCall = notifyCalls.find(
+        (call) =>
+          call[0] === 'aztec_transactionStatus' &&
+          (call[1] as Record<string, unknown>)['status'] === 'proving',
+      );
+      expect(provingCall?.[1]).toMatchObject({
+        txStatusId,
+        status: 'proving',
+        timestamp: expect.any(Number),
+      });
+
+      // Verify sending
+      const sendingCall = notifyCalls.find(
+        (call) =>
+          call[0] === 'aztec_transactionStatus' &&
+          (call[1] as Record<string, unknown>)['status'] === 'sending',
+      );
+      expect(sendingCall?.[1]).toMatchObject({
+        txStatusId,
+        status: 'sending',
+        timestamp: expect.any(Number),
+      });
+
+      // Verify pending (includes txHash)
+      const pendingCall = notifyCalls.find(
+        (call) =>
+          call[0] === 'aztec_transactionStatus' &&
+          (call[1] as Record<string, unknown>)['status'] === 'pending',
+      );
+      expect(pendingCall?.[1]).toMatchObject({
+        txStatusId,
+        status: 'pending',
+        txHash: mockTxHash.toString(),
+        timestamp: expect.any(Number),
+      });
+    });
+
+    it('should validate execution payloads and reject empty array', async () => {
+      await expect(handlers.aztec_wmBatchExecute(mockContext, [[]])).rejects.toThrow(
+        'executionPayloads array cannot be empty',
+      );
+    });
+
+    it('should validate execution payloads and reject invalid payloads', async () => {
+      const invalidPayload = null as unknown as ExecutionPayload;
+
+      await expect(handlers.aztec_wmBatchExecute(mockContext, [[invalidPayload]])).rejects.toThrow(
+        'executionPayloads[0] must be an object',
+      );
+    });
+
+    it('should validate execution payloads structure', async () => {
+      const invalidPayload = { invalid: 'structure' } as unknown as ExecutionPayload;
+
+      await expect(handlers.aztec_wmBatchExecute(mockContext, [[invalidPayload]])).rejects.toThrow(
+        'executionPayloads[0].calls must be an array',
+      );
+    });
+
+    it('should send failed notification when batch transaction fails', async () => {
+      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
+      const errorMessage = 'Simulation failed during batch';
+
+      // Make simulation fail
+      vi.mocked(mockContext.wallet.simulateTx).mockRejectedValueOnce(new Error(errorMessage));
+
+      await expect(handlers.aztec_wmBatchExecute(mockContext, [[payload1]])).rejects.toThrow();
+
+      // Verify error notification was sent
+      const notifyCalls = vi.mocked(mockContext.notify!).mock.calls;
+      const failedCall = notifyCalls.find(
+        (call) =>
+          call[0] === 'aztec_transactionStatus' &&
+          (call[1] as Record<string, unknown>)['status'] === 'failed',
+      );
+
+      expect(failedCall).toBeDefined();
+      expect(failedCall?.[1]).toMatchObject({
+        txStatusId: expect.any(String),
+        status: 'failed',
+        error: expect.stringContaining(errorMessage),
+        timestamp: expect.any(Number),
+      });
+    });
+
+    it('should handle custom send options', async () => {
+      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
+      const sendOptions = { txNonce: 42 };
+
+      await handlers.aztec_wmBatchExecute(mockContext, [[payload1], sendOptions]);
+
+      // Verify that the send options are passed through
+      // In this test, we can't directly verify send options are used,
+      // but we can ensure the function doesn't error and executes properly
+      expect(mockContext.wallet.createTxExecutionRequest).toHaveBeenCalled();
+    });
+
+    it('should continue batch execution even if notifications fail', async () => {
+      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
+
+      // Make notify fail
+      vi.mocked(mockContext.notify!).mockRejectedValue(new Error('Notification failed'));
+
+      // Transaction should still complete successfully
+      const result = await handlers.aztec_wmBatchExecute(mockContext, [[payload1]]);
+
+      expect(result).toEqual({
+        txHash: mockTxHash,
+        receipt: mockTxReceipt,
+        txStatusId: expect.any(String),
+      });
+
+      // Verify wallet methods were still called
+      expect(mockContext.wallet.simulateTx).toHaveBeenCalled();
+      expect(mockContext.wallet.proveTx).toHaveBeenCalled();
+      expect(mockContext.wallet.sendTx).toHaveBeenCalled();
+    });
+
+    it('should return receipt in the result for immediate use', async () => {
+      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
+
+      const result = await handlers.aztec_wmBatchExecute(mockContext, [[payload1]]);
+
+      // Verify receipt is included in the result
+      expect(result.receipt).toEqual(mockTxReceipt);
+      expect(result.receipt.txHash).toEqual(mockTxHash);
+      expect(result.receipt.status).toBe('success');
+    });
+  });
 });
