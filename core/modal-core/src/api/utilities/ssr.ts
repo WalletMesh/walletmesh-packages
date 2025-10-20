@@ -65,6 +65,11 @@ class SSRController implements WalletMeshClient {
     return;
   }
 
+  async connectWithModal(_options?: { chainType?: ChainType }): Promise<Connection | undefined> {
+    // No-op in SSR - cannot connect in server environment
+    return;
+  }
+
   async disconnect(_walletId?: string): Promise<void> {
     // No-op in SSR
   }

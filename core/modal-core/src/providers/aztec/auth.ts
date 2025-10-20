@@ -163,7 +163,7 @@ export async function createBatchAuthWit(
  * for off-chain verification.
  *
  * @param wallet - The Aztec wallet instance
- * @param message - The message to sign (string or buffer)
+ * @param message - The message to sign (string or Uint8Array)
  * @param description - Optional description
  * @returns Auth witness with metadata
  *
@@ -184,7 +184,7 @@ export async function createBatchAuthWit(
  */
 export async function createAuthWitForMessage(
   wallet: AztecDappWallet | null,
-  message: string | Buffer,
+  message: string | Uint8Array,
   description?: string,
 ): Promise<AuthWitnessWithMetadata> {
   if (!wallet) {
@@ -192,8 +192,9 @@ export async function createAuthWitForMessage(
   }
 
   try {
-    // Convert string to buffer if needed
-    const messageBuffer = typeof message === 'string' ? Buffer.from(message, 'utf-8') : message;
+    // Convert string to Uint8Array if needed
+    const encoder = new TextEncoder();
+    const messageBuffer = typeof message === 'string' ? encoder.encode(message) : message;
 
     // Create auth witness
     const witness = await wallet.createAuthWit(messageBuffer);

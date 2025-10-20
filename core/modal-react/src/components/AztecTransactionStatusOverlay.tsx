@@ -1,8 +1,9 @@
-import { useMemo, useEffect, useState, useRef } from 'react';
+import { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import type { TransactionStatus } from '@walletmesh/modal-core';
 import { useStore } from '../hooks/internal/useStore.js';
 import { isBrowser } from '../utils/ssr-walletmesh.js';
+import { useFocusTrap } from '../utils/useFocusTrap.js';
 import styles from './AztecTransactionStatusOverlay.module.css';
 
 export interface AztecTransactionStatusOverlayProps {
@@ -24,6 +25,16 @@ export interface AztecTransactionStatusOverlayProps {
    * Defaults to false (only shows sync/active transactions).
    */
   showBackgroundTransactions?: boolean;
+  /**
+   * Allow ESC key to close overlay when in terminal state (confirmed/failed).
+   * Defaults to true.
+   */
+  allowEscapeKeyClose?: boolean;
+  /**
+   * Disable focus trapping (for custom focus management).
+   * Defaults to false (focus trapping enabled).
+   */
+  disableFocusTrap?: boolean;
 }
 
 interface StageInfo {
@@ -117,10 +128,19 @@ export function AztecTransactionStatusOverlay({
   disableNavigationGuard = false,
   container,
   showBackgroundTransactions = false,
+  allowEscapeKeyClose = true,
+  disableFocusTrap = false,
 }: AztecTransactionStatusOverlayProps): React.ReactPortal | null {
   const [target, setTarget] = useState<Element | null>(null);
   // Track dismissed transaction IDs to enable graceful closure after success/failure
   const [dismissedTxIds, setDismissedTxIds] = useState<Set<string>>(new Set());
+
+  // Setup focus trap for the overlay content
+  const overlayContentRef = useFocusTrap<HTMLDivElement>({
+    enabled: !disableFocusTrap,
+    autoFocus: true,
+    restoreFocus: true,
+  });
 
   // Get active transaction (sync mode)
   const activeTransactionId = useStore((state) => state.active?.transactionId);
@@ -169,33 +189,51 @@ export function AztecTransactionStatusOverlay({
   useEffect(() => {
     const AUTO_DISMISS_DELAY = 2500; // 2.5 seconds to show success/error state
 
+    // Build set of current transaction IDs for efficient lookup
+    const currentTxIds = new Set(
+      transactionsToShow.filter((tx): tx is NonNullable<typeof tx> => tx?.txStatusId != null).map((tx) => tx.txStatusId),
+    );
+
+    // Clean up timers for transactions no longer in view (prevents memory leak)
+    dismissTimersRef.current.forEach((timer, txId) => {
+      if (!currentTxIds.has(txId)) {
+        clearTimeout(timer);
+        dismissTimersRef.current.delete(txId);
+      }
+    });
+
+    // Create timers only for terminal state transactions that aren't already dismissed
     transactionsToShow.forEach((tx) => {
       const status = tx?.status as TransactionStatus;
       const txId = tx?.txStatusId;
 
       // If transaction reached terminal state (confirmed or failed) and not already dismissed
-      if ((status === 'confirmed' || status === 'failed') && txId && !dismissedTxIds.has(txId)) {
-        // Check if timer already exists for this transaction
-        if (!dismissTimersRef.current.has(txId)) {
-          // Set up auto-dismiss timer
-          const timer = setTimeout(() => {
-            setDismissedTxIds((prev) => {
-              const next = new Set(prev);
-              next.add(txId);
-              return next;
-            });
-            // Clean up timer reference
-            dismissTimersRef.current.delete(txId);
-          }, AUTO_DISMISS_DELAY);
+      if (
+        (status === 'confirmed' || status === 'failed') &&
+        txId &&
+        !dismissedTxIds.has(txId) &&
+        !dismissTimersRef.current.has(txId)
+      ) {
+        // Set up auto-dismiss timer
+        const timer = setTimeout(() => {
+          setDismissedTxIds((prev) => {
+            const next = new Set(prev);
+            next.add(txId);
+            return next;
+          });
+          // Clean up timer reference
+          dismissTimersRef.current.delete(txId);
+        }, AUTO_DISMISS_DELAY);
 
-          dismissTimersRef.current.set(txId, timer);
-        }
+        dismissTimersRef.current.set(txId, timer);
       }
     });
 
     // Cleanup all timers on unmount
     return () => {
-      dismissTimersRef.current.forEach((timer) => clearTimeout(timer));
+      dismissTimersRef.current.forEach((timer) => {
+        clearTimeout(timer);
+      });
       dismissTimersRef.current.clear();
     };
   }, [transactionsToShow, dismissedTxIds]);
@@ -211,17 +249,22 @@ export function AztecTransactionStatusOverlay({
   const defaultDescription = currentStatus ? STAGE_INFO[currentStatus]?.description : 'Please wait...';
 
   useEffect(() => {
-    if (!isBrowser) return;
+    if (!isBrowser()) return;
     if (container) {
       setTarget(container);
     } else {
       setTarget(document.body);
     }
+
+    // Cleanup: reset target if container is removed
+    return () => {
+      setTarget(null);
+    };
   }, [container]);
 
   // Navigation guard
   useEffect(() => {
-    if (!shouldShowOverlay || disableNavigationGuard || !isBrowser) {
+    if (!shouldShowOverlay || disableNavigationGuard || !isBrowser()) {
       return;
     }
 
@@ -238,19 +281,74 @@ export function AztecTransactionStatusOverlay({
     };
   }, [shouldShowOverlay, disableNavigationGuard]);
 
-  if (!shouldShowOverlay || !isBrowser || !target) {
+  // ESC key handler - allow closing when in terminal state
+  const handleDismissAll = useCallback(() => {
+    // Dismiss all visible transactions
+    setDismissedTxIds((prev) => {
+      const next = new Set(prev);
+      transactionsToShow.forEach((tx) => {
+        if (tx?.txStatusId) {
+          next.add(tx.txStatusId);
+        }
+      });
+      return next;
+    });
+  }, [transactionsToShow]);
+
+  useEffect(() => {
+    if (!shouldShowOverlay || !allowEscapeKeyClose || !isBrowser()) {
+      return;
+    }
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        // Only allow ESC to close if all visible transactions are in terminal state
+        const allTerminal = transactionsToShow.every((tx) => {
+          const status = tx?.status as TransactionStatus;
+          return status === 'confirmed' || status === 'failed';
+        });
+
+        if (allTerminal) {
+          event.preventDefault();
+          handleDismissAll();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleEscapeKey);
+    return () => {
+      window.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [shouldShowOverlay, allowEscapeKeyClose, transactionsToShow, handleDismissAll]);
+
+  if (!shouldShowOverlay || !isBrowser() || !target) {
+    return null;
+  }
+
+  // Verify target is still in document to prevent portal cleanup errors
+  if (!document.body.contains(target as Node)) {
     return null;
   }
 
   return createPortal(
-    <div className={styles['overlay']} role="alert" aria-live="assertive">
-      <div className={styles['content']}>
+    <div
+      className={styles['overlay']}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tx-overlay-headline"
+      aria-describedby="tx-overlay-description"
+    >
+      <div ref={overlayContentRef} className={styles['content']} tabIndex={-1}>
         {/* Animated spinner */}
         <div className={styles['spinner']} aria-hidden="true" />
 
         {/* Main headline and description */}
-        <h2 className={styles['headline']}>{headline || defaultHeadline}</h2>
-        <p className={styles['description']}>{description || defaultDescription}</p>
+        <h2 id="tx-overlay-headline" className={styles['headline']}>
+          {headline || defaultHeadline}
+        </h2>
+        <p id="tx-overlay-description" className={styles['description']}>
+          {description || defaultDescription}
+        </p>
 
         {/* Progress indicator for stages */}
         {currentStatus && (

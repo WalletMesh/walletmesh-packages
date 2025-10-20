@@ -440,6 +440,22 @@ export interface WalletMeshReactConfig extends WalletMeshConfig {
      * @defaultValue false
      */
     showBackgroundTransactions?: boolean;
+
+    /**
+     * Allow ESC key to close overlay when all transactions are in terminal state (confirmed/failed).
+     * By default, ESC can close the overlay once all transactions have completed.
+     * Has no effect during active transactions.
+     * @defaultValue true
+     */
+    allowEscapeKeyClose?: boolean;
+
+    /**
+     * Disable focus trapping within the overlay.
+     * By default, focus is trapped within the overlay for accessibility.
+     * Only disable this if you're implementing custom focus management.
+     * @defaultValue false
+     */
+    disableFocusTrap?: boolean;
   };
 
   /**

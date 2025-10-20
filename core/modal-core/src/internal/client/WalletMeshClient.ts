@@ -35,7 +35,7 @@ export type Connection = WalletConnection;
 /**
  * Core WalletMesh client interface defining the contract for all implementations.
  *
- * This interface provides the essential methods needed for wallet management,
+ * This unified interface provides both public API methods and internal methods,
  * ensuring consistent behavior across different environments (browser, SSR, testing).
  * Framework adapters should program against this interface rather than concrete
  * implementations.
@@ -46,6 +46,8 @@ export type Connection = WalletConnection;
  * - `connect()` - Establish wallet connections with optional modal UI
  * - `disconnect()` - Terminate connections cleanly
  * - `disconnectAll()` - Bulk disconnection support
+ * - `getConnection?()` - Get specific wallet connection (optional, internal)
+ * - `getConnections?()` - Get all connected wallets (optional, internal)
  *
  * ### State Management
  * - `getState()` - Synchronous state access
@@ -58,9 +60,10 @@ export type Connection = WalletConnection;
  * - `modal` - Direct modal access for advanced use
  *
  * ### Optional Features
- * - `switchChain()` - Cross-chain operations
+ * - `switchChain?()` - Cross-chain operations
  * - `getServices()` - Business logic services
- * - `initialize()` - Async initialization
+ * - `initialize?()` - Async initialization
+ * - Internal methods - Marked as optional for SSR compatibility
  *
  * @example
  * ```typescript
@@ -87,14 +90,16 @@ export type Connection = WalletConnection;
  * @since 1.0.0
  */
 export interface WalletMeshClient {
-  // Core headless modal access
+  // Core modal access
   /**
-   * Headless modal instance for programmatic control.
-   * Provides access to modal state and actions without UI dependencies.
+   * Modal instance for programmatic control.
+   * Provides access to modal state, actions, and UI without dependencies.
+   * Optional to support two-phase construction pattern.
    *
-   * @readonly
+   * SSR clients use HeadlessModal (subset of functionality).
+   * Browser clients use ModalController (full functionality).
    */
-  readonly modal: HeadlessModal;
+  modal?: HeadlessModal | ModalController;
 
   // State management (headless)
   /**
@@ -127,6 +132,30 @@ export interface WalletMeshClient {
    * @returns Promise resolving to connection details or undefined
    */
   connect(walletId?: string, options?: unknown): Promise<Connection | undefined>;
+
+  /**
+   * Connects to a wallet by opening the modal and waiting for user selection.
+   *
+   * This is a convenience method that combines `openModal()` and `connect()` into a single call,
+   * simplifying the most common wallet connection pattern. The modal is automatically opened,
+   * and the method waits for the user to select and connect to a wallet.
+   *
+   * @param options - Optional connection options
+   * @param options.chainType - Filter wallets by chain type (e.g., 'evm', 'solana')
+   * @returns Promise resolving to connection details or undefined if cancelled
+   *
+   * @example
+   * ```typescript
+   * // Simple connection with modal
+   * const connection = await client.connectWithModal();
+   *
+   * // Filter to EVM wallets only
+   * const connection = await client.connectWithModal({ chainType: ChainType.Evm });
+   * ```
+   *
+   * @since 1.1.0
+   */
+  connectWithModal(options?: { chainType?: ChainType }): Promise<Connection | undefined>;
 
   /**
    * Disconnects from wallet(s).
@@ -364,6 +393,109 @@ export interface WalletMeshClient {
    * ```
    */
   discoverWallets(options?: any): Promise<any[]>;
+
+  // Internal Methods (Optional - SSR clients don't implement these)
+
+  /**
+   * Get a specific wallet connection by ID.
+   *
+   * Optional method for internal use. SSR clients may not implement this.
+   *
+   * @param walletId - ID of the wallet
+   * @returns The wallet adapter if connected, undefined otherwise
+   * @internal
+   */
+  getConnection?(walletId: string): WalletAdapter | undefined;
+
+  /**
+   * Get all connected wallet adapters.
+   *
+   * Optional method for internal use. SSR clients may not implement this.
+   *
+   * @returns Array of connected wallet adapters
+   * @internal
+   */
+  getConnections?(): WalletAdapter[];
+
+  /**
+   * Get all wallet connections with full connection details.
+   *
+   * Optional method for internal use. SSR clients may not implement this.
+   *
+   * @returns Array of wallet connection objects
+   * @internal
+   */
+  getAllConnections?(): WalletConnection[];
+
+  /**
+   * Get a specific wallet adapter by ID.
+   *
+   * Optional method for internal use. SSR clients may not implement this.
+   *
+   * @param walletId - ID of the wallet
+   * @returns The wallet adapter if registered, undefined otherwise
+   * @internal
+   */
+  getWallet?(walletId: string): WalletAdapter | undefined;
+
+  /**
+   * Get all registered wallet adapters.
+   *
+   * Optional method for internal use. SSR clients may not implement this.
+   *
+   * @returns Array of all registered wallet adapters
+   * @internal
+   */
+  getAllWallets?(): WalletAdapter[];
+
+  /**
+   * Set the active wallet for operations.
+   *
+   * Optional method for internal use. SSR clients may not implement this.
+   *
+   * @param walletId - ID of the wallet to make active
+   * @throws {Error} If wallet is not connected
+   * @internal
+   */
+  setActiveWallet?(walletId: string): void;
+
+  /**
+   * Get the currently active wallet ID.
+   *
+   * Optional method for internal use. SSR clients may not implement this.
+   *
+   * @returns The active wallet ID or null if none active
+   * @internal
+   */
+  getActiveWallet?(): string | null;
+
+  /**
+   * Get the maximum number of concurrent connections allowed.
+   *
+   * Optional method for internal use. SSR clients may not implement this.
+   *
+   * @returns Maximum connection limit
+   * @internal
+   */
+  getMaxConnections?(): number;
+
+  /**
+   * Wallet registry for managing wallet adapters.
+   *
+   * Optional property for internal use. SSR clients may not have this.
+   *
+   * @internal
+   */
+  registry?: WalletRegistry;
+
+  /**
+   * Initialize modal event handlers.
+   *
+   * Optional method for internal use. Called during client initialization.
+   *
+   * @internal
+   */
+  initializeModalHandlers?(): void;
 }
 
 /**
@@ -742,225 +874,10 @@ export interface AvailableWallet {
 }
 
 /**
- * Comprehensive WalletMesh client interface for managing wallet connections.
+ * Type alias for backwards compatibility.
+ * Use WalletMeshClient instead.
  *
- * This interface provides comprehensive wallet management capabilities including
- * connection handling, chain management, wallet discovery, and event subscriptions.
- *
- * @example
- * ```typescript
- * const client = createWalletMesh(config);
- *
- * // Connect to a wallet
- * const connection = await client.connect('metamask');
- *
- * // Switch chains
- * await client.switchChain('137', 'metamask');
- *
- * // Listen for state changes
- * client.subscribe((state) => {
- *   console.log('State changed:', state);
- * });
- * ```
- *
- * @interface
+ * @deprecated Use WalletMeshClient directly. This alias will be removed in a future version.
  * @since 1.0.0
  */
-export interface InternalWalletMeshClient {
-  // Connection Management
-
-  /**
-   * Connect to a wallet.
-   *
-   * @param walletId - Optional ID of specific wallet to connect. If not provided, shows modal.
-   * @param options - Optional connection options specific to the wallet.
-   * @returns Promise resolving to the wallet connection.
-   * @throws {Error} If connection fails or is rejected by user.
-   *
-   * @example
-   * ```typescript
-   * // Show modal for user to select wallet
-   * const connection = await client.connect();
-   *
-   * // Connect to specific wallet
-   * const connection = await client.connect('metamask');
-   * ```
-   */
-  connect(walletId?: string, options?: unknown): Promise<WalletConnection>;
-
-  /**
-   * Disconnect from a specific wallet.
-   *
-   * @param walletId - ID of the wallet to disconnect.
-   * @returns Promise that resolves when disconnected.
-   * @throws {Error} If wallet is not connected or disconnect fails.
-   */
-  disconnect(walletId: string): Promise<void>;
-
-  /**
-   * Disconnect from all connected wallets.
-   *
-   * @returns Promise that resolves when all wallets are disconnected.
-   */
-  disconnectAll(): Promise<void>;
-
-  // Chain Management
-
-  /**
-   * Switch to a different blockchain network.
-   *
-   * @param chainId - ID of the chain to switch to.
-   * @param walletId - Optional wallet ID. Uses active wallet if not specified.
-   * @returns Promise resolving to chain switch details.
-   * @throws {Error} If chain is not supported or switch fails.
-   *
-   * @example
-   * ```typescript
-   * const result = await client.switchChain('137'); // Switch to Polygon
-   * console.log(`Switched from ${result.previousChainId} to ${result.chainId}`);
-   * ```
-   */
-  switchChain(
-    chainId: string,
-    walletId?: string,
-  ): Promise<{
-    provider: unknown;
-    chainType: ChainType;
-    chainId: string;
-    previousChainId: string;
-  }>;
-
-  // Get Connections
-
-  /**
-   * Get a specific wallet connection by ID.
-   *
-   * @param walletId - ID of the wallet.
-   * @returns The wallet adapter if connected, undefined otherwise.
-   */
-  getConnection(walletId: string): WalletAdapter | undefined;
-
-  /**
-   * Get all connected wallet adapters.
-   *
-   * @returns Array of connected wallet adapters.
-   */
-  getConnections(): WalletAdapter[];
-
-  /**
-   * Get all wallet connections with full connection details.
-   *
-   * @returns Array of wallet connection objects.
-   */
-  getAllConnections(): WalletConnection[];
-
-  // Wallet Discovery
-
-  /**
-   * Detect all available wallets in the user's environment.
-   *
-   * @param options - Optional discovery request options to filter wallets
-   * @returns Promise resolving to array of detected wallets with availability status.
-   *
-   * @example
-   * ```typescript
-   * const wallets = await client.discoverWallets();
-   * const installed = wallets.filter(w => w.available);
-   * ```
-   */
-  discoverWallets(options?: any): Promise<AvailableWallet[]>;
-
-  /**
-   * Get a specific wallet adapter by ID.
-   *
-   * @param walletId - ID of the wallet.
-   * @returns The wallet adapter if registered, undefined otherwise.
-   */
-  getWallet(walletId: string): WalletAdapter | undefined;
-
-  /**
-   * Get all registered wallet adapters.
-   *
-   * @returns Array of all registered wallet adapters.
-   */
-  getAllWallets(): WalletAdapter[];
-
-  // Events
-
-  // Event methods have been removed - use subscribe() for state changes instead
-
-  // Modal Control (for advanced usage)
-
-  /**
-   * Open the wallet selection modal.
-   *
-   * @param options - Optional parameters including targetChainType for filtering wallets
-   * @returns Promise that resolves when modal is opened.
-   */
-  openModal(options?: { targetChainType?: import('../../types.js').ChainType }): Promise<void>;
-
-  /**
-   * Close the wallet selection modal.
-   */
-  closeModal(): void;
-
-  // Sub-components
-
-  /**
-   * Modal controller for UI interactions.
-   */
-  modal: ModalController;
-
-  /**
-   * Wallet registry for managing wallet adapters.
-   */
-  registry: WalletRegistry;
-
-  // Properties
-
-  /**
-   * Whether any wallet is currently connected.
-   * @readonly
-   */
-  readonly isConnected: boolean;
-
-  // Multi-wallet support
-
-  /**
-   * Set the active wallet for operations.
-   *
-   * @param walletId - ID of the wallet to make active.
-   * @throws {Error} If wallet is not connected.
-   */
-  setActiveWallet(walletId: string): void;
-
-  /**
-   * Get the currently active wallet ID.
-   *
-   * @returns The active wallet ID or null if none active.
-   */
-  getActiveWallet(): string | null;
-
-  /**
-   * Get the maximum number of concurrent connections allowed.
-   *
-   * @returns Maximum connection limit.
-   */
-  getMaxConnections(): number;
-
-  // Lifecycle
-
-  /**
-   * Destroy the client and clean up all resources.
-   * Call this when unmounting or disposing of the client.
-   */
-  destroy(): void;
-
-  // Internal initialization
-
-  /**
-   * Initialize modal event handlers.
-   * @internal
-   */
-  initializeModalHandlers(): void;
-}
+export type InternalWalletMeshClient = WalletMeshClient;

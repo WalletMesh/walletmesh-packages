@@ -221,9 +221,8 @@ export function useHasThemeProvider(): boolean {
 export function withTheme<P extends object>(
   Component: React.ComponentType<P>,
 ): React.ComponentType<P & ThemeProviderConfig> {
-  return function WithThemeComponent(props: P & ThemeProviderConfig & { children?: ReactNode }) {
+  return function WithThemeComponent(props: P & ThemeProviderConfig) {
     const {
-      children,
       mode,
       persist,
       customization,
@@ -233,8 +232,7 @@ export function withTheme<P extends object>(
       ...componentProps
     } = props;
 
-    const themeProps: ThemeProviderProps = {
-      children,
+    const themeProps: ThemeProviderConfig = {
       ...(mode !== undefined && { mode }),
       ...(persist !== undefined && { persist }),
       ...(customization !== undefined && { customization }),

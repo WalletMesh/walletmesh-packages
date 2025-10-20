@@ -800,6 +800,12 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
                 {...(config.transactionOverlay?.showBackgroundTransactions && {
                   showBackgroundTransactions: config.transactionOverlay.showBackgroundTransactions,
                 })}
+                {...(config.transactionOverlay?.allowEscapeKeyClose !== undefined && {
+                  allowEscapeKeyClose: config.transactionOverlay.allowEscapeKeyClose,
+                })}
+                {...(config.transactionOverlay?.disableFocusTrap && {
+                  disableFocusTrap: config.transactionOverlay.disableFocusTrap,
+                })}
               />
             )}
 

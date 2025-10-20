@@ -83,6 +83,17 @@ describe('Theme Types', () => {
         focusRing: 'rgba(79, 70, 229, 0.2)',
         disabled: '#f3f4f6',
         disabledText: '#9ca3af',
+
+        // Transaction overlay tokens
+        overlayBg: 'rgba(0, 0, 0, 0.8)',
+        overlayCardBg: '#ffffff',
+        overlayCardBorder: '#e5e7eb',
+        overlayTextPrimary: '#1f2937',
+        overlayTextSecondary: '#6b7280',
+        overlaySpinnerPrimary: '#4f46e5',
+        overlayStageActive: 'rgba(79, 70, 229, 0.1)',
+        overlayStageCompleted: 'rgba(16, 185, 129, 0.1)',
+        overlayStageIcon: 'rgba(107, 114, 128, 0.1)',
       };
 
       // Verify all properties are strings
@@ -287,6 +298,16 @@ describe('Theme Types', () => {
           focusRing: '#000',
           disabled: '#000',
           disabledText: '#000',
+          // Transaction overlay tokens
+          overlayBg: 'rgba(0, 0, 0, 0.8)',
+          overlayCardBg: '#fff',
+          overlayCardBorder: '#000',
+          overlayTextPrimary: '#000',
+          overlayTextSecondary: '#000',
+          overlaySpinnerPrimary: '#000',
+          overlayStageActive: 'rgba(0, 0, 0, 0.1)',
+          overlayStageCompleted: 'rgba(0, 0, 0, 0.1)',
+          overlayStageIcon: 'rgba(0, 0, 0, 0.1)',
         },
         shadows: {
           none: 'none',
@@ -547,6 +568,17 @@ describe('Theme Types', () => {
         focusRing: 'rgba(0, 0, 0, 0.2)',
         disabled: '#f5f5f5',
         disabledText: '#999999',
+
+        // Transaction overlay tokens
+        overlayBg: 'rgba(0, 0, 0, 0.8)',
+        overlayCardBg: '#ffffff',
+        overlayCardBorder: '#e0e0e0',
+        overlayTextPrimary: '#000000',
+        overlayTextSecondary: '#666666',
+        overlaySpinnerPrimary: '#000000',
+        overlayStageActive: 'rgba(0, 0, 0, 0.1)',
+        overlayStageCompleted: 'rgba(0, 0, 0, 0.1)',
+        overlayStageIcon: 'rgba(0, 0, 0, 0.1)',
       };
       const spacing: ThemeSpacing = {
         xs: '4px',
@@ -633,6 +665,17 @@ describe('Theme Types', () => {
         focusRing: 'rgba(0, 0, 0, 0.2)',
         disabled: '#f5f5f5',
         disabledText: '#999999',
+
+        // Transaction overlay tokens
+        overlayBg: 'rgba(0, 0, 0, 0.8)',
+        overlayCardBg: '#ffffff',
+        overlayCardBorder: '#e0e0e0',
+        overlayTextPrimary: '#000000',
+        overlayTextSecondary: '#666666',
+        overlaySpinnerPrimary: '#000000',
+        overlayStageActive: 'rgba(0, 0, 0, 0.1)',
+        overlayStageCompleted: 'rgba(0, 0, 0, 0.1)',
+        overlayStageIcon: 'rgba(0, 0, 0, 0.1)',
       };
       const primary = getThemeProperty(colors, 'primary');
 

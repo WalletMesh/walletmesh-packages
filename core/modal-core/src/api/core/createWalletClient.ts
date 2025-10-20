@@ -4,7 +4,7 @@ import type {
   WalletMeshClient,
   WalletMeshConfig,
 } from '../../internal/client/WalletMeshClient.js';
-import type { ModalController, SupportedChain, WalletInfo } from '../../types.js';
+import type { SupportedChain, WalletInfo } from '../../types.js';
 import { ChainType } from '../../types.js';
 
 // Re-export types that are part of the public API
@@ -17,9 +17,10 @@ import { WalletRegistry } from '../../internal/registries/wallets/WalletRegistry
 import { createModal } from '../core/modal.js';
 import { createSSRController, isServer } from '../utilities/ssr.js';
 
-// Import built-in adapters (non-Aztec to avoid bundling issues)
+// Import built-in adapters
 import { EvmAdapter } from '../../internal/wallets/evm/EvmAdapter.js';
 import { SolanaAdapter } from '../../internal/wallets/solana/SolanaAdapter.js';
+import { AztecAdapter } from '../../internal/wallets/aztec/AztecAdapter.js';
 // DebugWallet is not imported by default - import from '@walletmesh/modal-core' to use it for testing
 // AztecExampleWalletAdapter is not imported by default - loaded only when needed for Aztec dApps
 
@@ -71,6 +72,16 @@ function configHasSolanaChain(config: WalletMeshConfig): boolean {
   });
 }
 
+function configHasAztecChain(config: WalletMeshConfig): boolean {
+  return (config.chains ?? []).some((chain) => {
+    const chainType = chain.chainType;
+    if (typeof chainType === 'string') {
+      return chainType.toLowerCase() === 'aztec';
+    }
+    return chainType === ChainType.Aztec;
+  });
+}
+
 function shouldIncludeDefaultEvmAdapter(
   config: WalletMeshConfig,
   options: { walletIds?: string[]; walletConfig?: WalletConfig | undefined } = {},
@@ -113,6 +124,30 @@ function shouldIncludeDefaultSolanaAdapter(
   }
 
   if (walletConfig?.custom && walletConfig.custom.some((adapter) => adapter.id === 'solana-wallet')) {
+    return true;
+  }
+
+  return false;
+}
+
+function shouldIncludeDefaultAztecAdapter(
+  config: WalletMeshConfig,
+  options: { walletIds?: string[]; walletConfig?: WalletConfig | undefined } = {},
+): boolean {
+  if (configHasAztecChain(config)) {
+    return true;
+  }
+
+  if (options.walletIds?.includes('aztec-wallet')) {
+    return true;
+  }
+
+  const walletConfig = options.walletConfig;
+  if (walletConfig?.include && walletConfig.include.includes('aztec-wallet')) {
+    return true;
+  }
+
+  if (walletConfig?.custom && walletConfig.custom.some((adapter) => adapter.id === 'aztec-wallet')) {
     return true;
   }
 
@@ -363,9 +398,9 @@ export async function createWalletMesh(
     if (shouldIncludeDefaultSolanaAdapter(config, { walletIds })) {
       defaultAdapters.push(new SolanaAdapter());
     }
-
-    // Note: AztecExampleWalletAdapter is not loaded by default
-    // It should be explicitly added via wallet configuration for Aztec dApps
+    if (shouldIncludeDefaultAztecAdapter(config, { walletIds })) {
+      defaultAdapters.push(new AztecAdapter());
+    }
     logger.debug('Default adapters available', {
       adapters: defaultAdapters.map((a) => ({ id: a.id, name: a.metadata.name })),
     });
@@ -419,8 +454,10 @@ export async function createWalletMesh(
     if (shouldIncludeDefaultSolanaAdapter(config, { walletConfig })) {
       defaultAdapters.push(new SolanaAdapter());
     }
+    if (shouldIncludeDefaultAztecAdapter(config, { walletConfig })) {
+      defaultAdapters.push(new AztecAdapter());
+    }
     // DebugWallet not included by default - can be added via config.wallets.custom
-    // AztecExampleWalletAdapter not included by default - should be added via config for Aztec dApps
 
     // Check if custom adapters are provided in the config
     modalLogger.debug('Checking for custom adapters', {
@@ -569,37 +606,11 @@ export async function createWalletMesh(
 
   // Modal is now headless - no framework adapter needed
 
-  // Create a placeholder modal controller that will be replaced
-  // This proxy pattern allows us to create the client before the modal,
-  // avoiding circular dependencies while maintaining proper initialization order
-  let modalRef: ModalController | null = null;
-  const placeholderModal = new Proxy({} as ModalController, {
-    get(_target, prop: string | symbol) {
-      if (modalRef) {
-        return modalRef[prop as keyof ModalController];
-      }
-      // Return no-op functions for methods until modal is ready
-      // This prevents errors if methods are called during initialization
-      if (
-        typeof prop === 'string' &&
-        ['open', 'close', 'off', 'getState', 'subscribe', 'getActions', 'cleanup'].includes(prop)
-      ) {
-        return () => {};
-      }
-      return undefined;
-    },
-  });
+  // Two-phase construction to eliminate circular dependency:
+  // Phase 1: Create client without modal
+  const walletMeshClient = new WalletMeshClientImpl(config, registry, logger);
 
-  // Create the WalletMeshClient first with a placeholder modal
-  const walletMeshClient = new WalletMeshClientImpl(
-    config,
-    registry,
-    placeholderModal as import('../../internal/modal/controller.js').ModalController,
-    logger,
-  );
-
-  // Now create the headless modal with the client
-  // The modal handles state management, UI frameworks handle rendering
+  // Phase 2: Create modal with real client reference
   modalLogger.info('Creating modal with wallets', {
     wallets: walletsForModal.map((w) => ({ id: w.id, name: w.name })),
   });
@@ -610,8 +621,12 @@ export async function createWalletMesh(
   const modal = createModal({ wallets: mutableWalletsForModal, client: walletMeshClient });
   modalLogger.debug('Modal created successfully');
 
-  // Update the modal reference for the proxy to activate it
-  modalRef = modal;
+  // Phase 3: Wire up client-modal connection
+  if ('setModal' in walletMeshClient && typeof walletMeshClient.setModal === 'function') {
+    // Type assertion needed because createModal returns public interface type
+    // but setModal expects internal class type (they are compatible)
+    walletMeshClient.setModal(modal as never);
+  }
 
   // Initialize modal event handlers now that modal is available
   // This sets up the bidirectional communication between client and modal

@@ -969,6 +969,283 @@ const mockProvider = {
 - `createMockJSONRPCTransport()` - JSON-RPC transport layer
 - `createMockJSONRPCNode()` - JSON-RPC node with method/event handling
 
+**Aztec Transaction Testing Utilities:**
+- `createMockAztecNotificationEmitter()` - Simulate Aztec transaction notifications and lifecycle
+- `createMockAztecRouterProvider()` - Mock AztecRouterProvider with notification support
+- `createTransactionStatusNotification()` - Create notification objects with defaults
+- `createMultipleTransactions()` - Generate multiple transaction notifications for batch testing
+- `simulateTransactionWithFakeTimers()` - Helper for using fake timers with transaction simulation
+
+#### **Aztec Transaction Testing**
+
+The testing module provides comprehensive utilities for simulating Aztec transaction lifecycles and testing notification-based transaction status updates.
+
+**Basic Notification Emitter Usage:**
+```typescript
+import {
+  createMockAztecNotificationEmitter,
+  type AztecTransactionStatusNotification
+} from '@walletmesh/modal-core/testing';
+import { vi } from 'vitest';
+
+describe('Aztec Transaction Tests', () => {
+  let emitter: ReturnType<typeof createMockAztecNotificationEmitter>;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    emitter = createMockAztecNotificationEmitter();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('should handle transaction lifecycle', async () => {
+    const notifications: AztecTransactionStatusNotification[] = [];
+
+    // Register listener
+    const unsubscribe = emitter.onNotification('aztec_transactionStatus', (notification) => {
+      notifications.push(notification);
+    });
+
+    // Simulate full transaction lifecycle
+    await emitter.simulateTransaction('tx-1', {
+      stages: ['idle', 'simulating', 'proving', 'sending', 'confirmed'],
+      stageDelay: 0, // Instant for tests
+      txHash: '0xabc123',
+    });
+
+    expect(notifications).toHaveLength(5);
+    expect(notifications[0].status).toBe('idle');
+    expect(notifications[4].status).toBe('confirmed');
+    expect(notifications[4].txHash).toBe('0xabc123');
+
+    unsubscribe();
+  });
+});
+```
+
+**Simulating Transaction Failures:**
+```typescript
+it('should handle transaction failures', async () => {
+  const emitter = createMockAztecNotificationEmitter();
+  const errors: AztecTransactionStatusNotification[] = [];
+
+  emitter.onNotification('aztec_transactionStatus', (notification) => {
+    if (notification.status === 'failed') {
+      errors.push(notification);
+    }
+  });
+
+  // Fail at proving stage
+  await emitter.simulateTransaction('tx-fail', {
+    failAt: 'proving',
+    errorMessage: 'Proof generation failed',
+  });
+
+  expect(errors).toHaveLength(1);
+  expect(errors[0].error).toBe('Proof generation failed');
+});
+```
+
+**Mock AztecRouterProvider Integration:**
+```typescript
+import { createMockAztecRouterProvider } from '@walletmesh/modal-core/testing';
+
+it('should integrate with LazyAztecRouterProvider', async () => {
+  const { provider, emitter } = createMockAztecRouterProvider();
+
+  // Register notification handler (like LazyAztecRouterProvider does)
+  const notifications: AztecTransactionStatusNotification[] = [];
+  provider.onNotification('aztec_transactionStatus', (params) => {
+    notifications.push(params as AztecTransactionStatusNotification);
+  });
+
+  // Call provider method to get transaction ID
+  const result = await provider.call('31337', {
+    method: 'aztec_wmExecuteTx',
+    params: [/* ... */]
+  });
+
+  // Simulate transaction progress using emitter
+  await emitter.simulateTransaction(result.txStatusId, {
+    stages: ['proving', 'sending', 'confirmed'],
+  });
+
+  expect(notifications).toHaveLength(3);
+  expect(notifications[2].status).toBe('confirmed');
+});
+```
+
+**Testing with Fake Timers:**
+```typescript
+import { simulateTransactionWithFakeTimers } from '@walletmesh/modal-core/testing';
+
+it('should progress through stages with delays', async () => {
+  vi.useFakeTimers();
+  const emitter = createMockAztecNotificationEmitter();
+  const stages: string[] = [];
+
+  emitter.onNotification('aztec_transactionStatus', (notification) => {
+    stages.push(notification.status);
+  });
+
+  // Start simulation with delays
+  const promise = simulateTransactionWithFakeTimers(emitter, 'tx-timed', {
+    stageDelay: 1000, // 1 second between stages
+    stages: ['idle', 'simulating', 'proving'],
+  });
+
+  // Manually advance through each stage
+  await vi.advanceTimersByTimeAsync(100); // Process 'idle'
+  expect(stages).toEqual(['idle']);
+
+  await vi.advanceTimersByTimeAsync(1000); // Process 'simulating'
+  expect(stages).toEqual(['idle', 'simulating']);
+
+  await vi.advanceTimersByTimeAsync(1000); // Process 'proving'
+  expect(stages).toEqual(['idle', 'simulating', 'proving']);
+
+  await promise; // Wait for completion
+  vi.useRealTimers();
+});
+```
+
+**Creating Notifications with Defaults:**
+```typescript
+import {
+  createTransactionStatusNotification,
+  createMultipleTransactions
+} from '@walletmesh/modal-core/testing';
+
+it('should create notifications with sensible defaults', () => {
+  const notification = createTransactionStatusNotification({
+    txStatusId: 'tx-1',
+    status: 'proving',
+    // timestamp is auto-generated
+  });
+
+  expect(notification.txStatusId).toBe('tx-1');
+  expect(notification.status).toBe('proving');
+  expect(notification.timestamp).toBeGreaterThan(0);
+});
+
+it('should create multiple transactions for batch testing', () => {
+  const transactions = createMultipleTransactions(3, [
+    { status: 'proving' },
+    { status: 'sending', txHash: '0x123' },
+    { status: 'confirmed', txHash: '0x456' },
+  ]);
+
+  expect(transactions).toHaveLength(3);
+  expect(transactions[0].txStatusId).toBe('tx-1');
+  expect(transactions[1].notification.status).toBe('sending');
+  expect(transactions[2].notification.txHash).toBe('0x456');
+});
+```
+
+**Manual Notification Emission:**
+```typescript
+it('should emit individual notifications manually', () => {
+  const emitter = createMockAztecNotificationEmitter();
+  const received: AztecTransactionStatusNotification[] = [];
+
+  emitter.onNotification('aztec_transactionStatus', (notification) => {
+    received.push(notification);
+  });
+
+  // Emit notifications individually
+  emitter.emitTransactionStatus({
+    txStatusId: 'tx-manual',
+    status: 'proving',
+    // timestamp is optional, auto-generated if omitted
+  });
+
+  emitter.emitTransactionStatus({
+    txStatusId: 'tx-manual',
+    status: 'sending',
+    txHash: '0xabc',
+  });
+
+  expect(received).toHaveLength(2);
+  expect(emitter.getCurrentStatus('tx-manual')).toBe('sending');
+});
+```
+
+**Notification History and Queries:**
+```typescript
+it('should track notification history', () => {
+  const emitter = createMockAztecNotificationEmitter();
+
+  // Simulate multiple transactions
+  emitter.emitTransactionStatus({ txStatusId: 'tx-1', status: 'proving' });
+  emitter.emitTransactionStatus({ txStatusId: 'tx-2', status: 'sending' });
+  emitter.emitTransactionStatus({ txStatusId: 'tx-1', status: 'confirmed' });
+
+  // Get notifications for specific transaction
+  const tx1Notifications = emitter.getNotifications('tx-1');
+  expect(tx1Notifications).toHaveLength(2);
+  expect(tx1Notifications[0].status).toBe('proving');
+  expect(tx1Notifications[1].status).toBe('confirmed');
+
+  // Get all notifications
+  const allNotifications = emitter.getAllNotifications();
+  expect(allNotifications).toHaveLength(3);
+
+  // Get current status
+  expect(emitter.getCurrentStatus('tx-1')).toBe('confirmed');
+  expect(emitter.getCurrentStatus('tx-2')).toBe('sending');
+
+  // Clear history
+  emitter.clearNotifications();
+  expect(emitter.getAllNotifications()).toHaveLength(0);
+  expect(emitter.getCurrentStatus('tx-1')).toBeNull();
+});
+```
+
+**Integration with React Testing:**
+```typescript
+import { render, screen, waitFor } from '@testing-library/react';
+import { createMockAztecNotificationEmitter } from '@walletmesh/modal-core/testing';
+
+it('should update UI based on transaction notifications', async () => {
+  const emitter = createMockAztecNotificationEmitter();
+
+  // Render component that listens to notifications
+  const { container } = render(<TransactionStatusOverlay />);
+
+  // Simulate transaction progress
+  await emitter.simulateTransaction('tx-ui', {
+    stages: ['simulating', 'proving', 'confirmed'],
+    onStatus: (notification) => {
+      // Component should update for each status
+    },
+  });
+
+  await waitFor(() => {
+    expect(screen.getByText('Transaction Confirmed')).toBeInTheDocument();
+  });
+});
+```
+
+**Available Transaction Stages:**
+- `idle` - Transaction initialized but not started
+- `simulating` - Transaction simulation in progress
+- `proving` - Zero-knowledge proof generation in progress
+- `sending` - Transaction being sent to network
+- `pending` - Transaction sent, waiting for inclusion
+- `confirming` - Transaction included, waiting for confirmations
+- `confirmed` - Transaction confirmed on chain
+- `failed` - Transaction failed at any stage
+
+**Best Practices:**
+1. Always use `vi.useFakeTimers()` to prevent slow test execution
+2. Use `stageDelay: 0` in tests for instant progression
+3. Clean up subscriptions with the returned unsubscribe function
+4. Use `onStatus` callback for testing side effects during simulation
+5. Clear notification history between tests with `emitter.clearNotifications()`
+6. Test both success and failure paths with `failAt` option
+
 #### **Enhanced Provider Mock Configuration**
 ```typescript
 // ✅ Configure provider behavior with custom responses

@@ -11,8 +11,7 @@
 import type { InternalWalletMeshClient, WalletMeshConfig } from '../internal/client/WalletMeshClient.js';
 import { WalletMeshClient as WalletMeshClientImpl } from '../internal/client/WalletMeshClientImpl.js';
 import type { Logger } from '../internal/core/logger/logger.js';
-import { createDebugLogger } from '../internal/core/logger/logger.js';
-import type { ModalController, WalletInfo } from '../types.js';
+import type { ModalController } from '../types.js';
 import { ChainType } from '../types.js';
 import type {
   WalletMeshClient as PublicWalletMeshClient,
@@ -21,13 +20,15 @@ import type {
 
 import { createModal } from '../api/core/modal.js';
 import { isServer } from '../api/utilities/ssr.js';
-import { ErrorFactory } from '../internal/core/errors/errorFactory.js';
 import { createComponentServices } from '../internal/core/factories/serviceFactory.js';
 import { WalletRegistry } from '../internal/registries/wallets/WalletRegistry.js';
 
-import type { WalletAdapter } from '../internal/wallets/base/WalletAdapter.js';
-// Import built-in adapters
-import { EvmAdapter } from '../internal/wallets/evm/EvmAdapter.js';
+// Import factory helpers
+import { createSSRSafeClient } from './factories/ssr.js';
+import { configureLogger } from './factories/loggerConfiguration.js';
+import { validateClientConfig } from './factories/configValidation.js';
+import { registerBuiltinAdapters, registerCustomAdapters } from './factories/adapterRegistration.js';
+import { getWalletsForModal } from './factories/walletFiltering.js';
 
 /**
  * Options for creating a WalletMeshClient
@@ -45,6 +46,8 @@ export interface CreateWalletMeshClientOptions {
   logger?: Logger;
   /** Whether to register built-in adapters */
   registerBuiltinAdapters?: boolean;
+  /** Whether to automatically call initialize() after creation (default: false for sync compatibility) */
+  autoInitialize?: boolean;
 }
 
 /**
@@ -100,29 +103,14 @@ export function createWalletMeshClientWithConfig(
   config: WalletMeshClientConfig,
   options: CreateWalletMeshClientOptions = {},
 ): PublicWalletMeshClient {
-  // Create services for logging
+  // Create and configure logger
   const services = createComponentServices('WalletMeshClient');
-  let logger = options.logger || services.logger;
-
-  // Configure logger based on config.logger settings
-  if (config.logger) {
-    const debugMode = config.logger.debug ?? config.debug ?? false;
-    const prefix = config.logger.prefix ?? 'WalletMeshClient';
-    logger = createDebugLogger(prefix, debugMode);
-
-    // Set log level if specified
-    if (config.logger.level) {
-      const levelMap = { debug: 0, info: 1, warn: 2, error: 3, silent: 4 };
-      logger.setLevel(levelMap[config.logger.level]);
-    }
-  }
+  const logger = configureLogger(config, options.logger || services.logger);
 
   logger.debug('Creating WalletMeshClient', { config, options });
 
   // Validate configuration
-  if (!config.appName) {
-    throw ErrorFactory.configurationError('appName is required in WalletMeshClient configuration');
-  }
+  validateClientConfig(config);
 
   // Check if we should use SSR mode
   const shouldUseSSR = options.ssr || isServer();
@@ -130,9 +118,7 @@ export function createWalletMeshClientWithConfig(
 
   if (shouldUseSSR) {
     logger.info('SSR environment detected - returning SSR-safe controller');
-    // For SSR, we need to return a client that implements the same interface
-    // but provides safe no-op implementations
-    return createSSRSafeClient(config, logger);
+    return createSSRSafeClient(logger);
   }
 
   // Create or use provided registry
@@ -144,59 +130,10 @@ export function createWalletMeshClientWithConfig(
   }
 
   // Register custom adapters if provided
-  let customAdapters: Array<WalletAdapter | unknown> | undefined;
-
-  // Handle both new array format and old custom format
-  if (Array.isArray(config.wallets)) {
-    // Direct array of adapters/classes (unless it's WalletInfo[])
-    const firstItem = config.wallets[0];
-    if (
-      firstItem &&
-      (typeof firstItem === 'function' ||
-        (typeof firstItem === 'object' && 'id' in firstItem && 'metadata' in firstItem))
-    ) {
-      customAdapters = config.wallets as Array<WalletAdapter | unknown>;
-    }
-  } else if (config.wallets && typeof config.wallets === 'object' && 'custom' in config.wallets) {
-    customAdapters = (config.wallets as { custom: Array<WalletAdapter | unknown> }).custom;
-  }
-
-  if (customAdapters && Array.isArray(customAdapters)) {
-    logger.debug('Registering custom adapters', {
-      count: customAdapters.length,
-    });
-
-    for (const adapterOrClass of customAdapters) {
-      // Check if it's a class (has getWalletInfo static method) or an instance
-      if (typeof adapterOrClass === 'function' && 'getWalletInfo' in adapterOrClass) {
-        // It's a class - get wallet info without instantiation
-        const walletInfo = (adapterOrClass as { getWalletInfo(): WalletInfo }).getWalletInfo();
-        logger.debug('Registering wallet adapter class', {
-          id: walletInfo.id,
-          name: walletInfo.name,
-          chains: walletInfo.chains,
-        });
-
-        // Store the class for lazy instantiation
-        // The registry will instantiate when needed
-        registry.registerClass(adapterOrClass as never, walletInfo);
-      } else if (typeof adapterOrClass === 'object' && adapterOrClass !== null && 'id' in adapterOrClass) {
-        // It's an instance - register directly (backward compatibility)
-        const adapter = adapterOrClass as WalletAdapter;
-        registry.register(adapter);
-        logger.debug('Registered custom adapter instance', {
-          id: adapter.id,
-          name: adapter.metadata.name,
-          chains: adapter.capabilities.chains.map((c) => c.type),
-        });
-      }
-    }
-  }
+  registerCustomAdapters(registry, config, logger);
 
   // Determine wallets for modal
   const walletsForModal = getWalletsForModal(config, registry, logger);
-
-  // Modal is now headless - no adapter needed
 
   // Create the WalletMeshClient (convert config to internal format)
   const internalConfig = {
@@ -209,24 +146,24 @@ export function createWalletMeshClientWithConfig(
     wallets: config.wallets,
     debug: config.debug,
   } as WalletMeshConfig;
-  // Create modal controller now that we have the client structure
-  let modal = options.modal;
 
-  if (!modal) {
-    // Create a placeholder client that will be updated later
-    const placeholderClient = {} as InternalWalletMeshClient;
-    modal = createModal({
+  // Two-phase construction to eliminate circular dependency:
+  // Phase 1: Create client without modal
+  const client = new WalletMeshClientImpl(internalConfig, registry, logger);
+
+  // Phase 2: Create or use provided modal with real client reference
+  const modal =
+    options.modal ||
+    createModal({
       wallets: walletsForModal,
-      client: placeholderClient,
+      client: client as InternalWalletMeshClient,
     });
-  }
 
-  const client = new WalletMeshClientImpl(internalConfig, registry, modal as never, logger);
-
-  // Now update the modal with the actual client reference if we created it
-  if (!options.modal && typeof modal === 'object' && modal !== null && 'client' in modal) {
-    const modalWithClient = modal as { client: InternalWalletMeshClient };
-    modalWithClient.client = client as InternalWalletMeshClient;
+  // Phase 3: Wire up client-modal connection
+  if ('setModal' in client && typeof client.setModal === 'function') {
+    // Type assertion needed because createModal returns public interface type
+    // but setModal expects internal class type (they are compatible)
+    client.setModal(modal as never);
   }
 
   logger.debug('WalletMeshClient created successfully', {
@@ -239,305 +176,90 @@ export function createWalletMeshClientWithConfig(
 }
 
 /**
- * Creates an SSR-safe client that provides no-op implementations
+ * Creates a WalletMeshClient instance with sensible defaults and automatic initialization.
  *
- * @param config - Client configuration
- * @param logger - Logger instance
- * @returns SSR-safe client implementation
- * @private
- */
-function createSSRSafeClient(_config: WalletMeshClientConfig, logger: Logger): PublicWalletMeshClient {
-  logger.debug('Creating SSR-safe client');
-
-  // Create a proxy that implements the WalletMeshClient interface
-  // but provides safe no-op implementations for all methods
-  return new Proxy({} as PublicWalletMeshClient, {
-    get(_target, prop: string | symbol) {
-      if (typeof prop === 'string') {
-        switch (prop) {
-          case 'initialize':
-            return async () => {
-              logger.debug('SSR: initialize() called - no-op');
-            };
-
-          case 'connect':
-            return async () => {
-              logger.warn('SSR: connect() called - returning mock connection');
-              return createMockConnection();
-            };
-
-          case 'disconnect':
-          case 'disconnectAll':
-            return async () => {
-              logger.debug(`SSR: ${prop}() called - no-op`);
-            };
-
-          case 'switchChain':
-            return async () => {
-              logger.warn('SSR: switchChain() called - returning mock result');
-              return {
-                provider: null,
-                chainType: 'evm' as const,
-                chainId: '1',
-                previousChainId: '1',
-              };
-            };
-
-          case 'getConnection':
-          case 'getWallet':
-            return () => undefined;
-
-          case 'getConnections':
-          case 'getAllConnections':
-          case 'getAllWallets':
-            return () => [];
-
-          case 'discoverWallets':
-            return async () => {
-              logger.debug('SSR: discoverWallets() called - returning empty array');
-              return [];
-            };
-
-          case 'openModal':
-            return async () => {
-              logger.debug('SSR: openModal() called - no-op');
-            };
-
-          case 'closeModal':
-          case 'destroy':
-            return () => {
-              logger.debug(`SSR: ${prop}() called - no-op`);
-            };
-
-          case 'isConnected':
-            return false;
-
-          case 'getActiveWallet':
-            return () => null;
-
-          case 'setActiveWallet':
-            return () => {
-              logger.debug(`SSR: ${prop}() called - no-op`);
-            };
-
-          case 'getMaxConnections':
-            return () => 5;
-
-          case 'getState':
-            return () => ({
-              connection: { state: 'idle' },
-              wallets: [],
-              isOpen: false,
-            });
-
-          case 'subscribe':
-          case 'on':
-          case 'once':
-            return () => () => {}; // Return unsubscribe function
-
-          case 'getActions':
-            return () => ({
-              openModal: () => {},
-              closeModal: () => {},
-              selectWallet: async () => {},
-              connect: async () => {},
-              disconnect: async () => {},
-              retry: async () => {},
-            });
-
-          default:
-            logger.debug(`SSR: Unknown property ${prop} accessed - returning undefined`);
-            return undefined;
-        }
-      }
-      return undefined;
-    },
-  });
-}
-
-/**
- * Creates a mock connection for SSR environments
+ * **This is the recommended API for most use cases.** The client is automatically initialized
+ * and ready to use immediately after the promise resolves.
  *
- * @returns Mock wallet connection
- * @private
- */
-function createMockConnection() {
-  return {
-    walletId: 'ssr-mock',
-    address: '0x0000000000000000000000000000000000000000',
-    accounts: ['0x0000000000000000000000000000000000000000'],
-    chainId: '1',
-    chainType: 'evm' as const,
-    provider: null,
-    walletInfo: {
-      id: 'ssr-mock',
-      name: 'SSR Mock Wallet',
-      icon: '',
-      description: 'Mock wallet for SSR environments',
-      chains: ['evm' as const],
-    },
-  };
-}
-
-/**
- * Registers built-in wallet adapters with the registry
- *
- * @param registry - Wallet registry to register adapters with
- * @param config - Client configuration
- * @param logger - Logger instance
- * @private
- */
-function registerBuiltinAdapters(
-  registry: WalletRegistry,
-  config: WalletMeshClientConfig,
-  logger: Logger,
-): void {
-  logger.debug('Registering built-in adapters');
-
-  // Create default adapters
-  const defaultAdapters = [
-    new EvmAdapter(),
-    // Additional built-in adapters can be added here
-  ];
-
-  // Apply wallet filters if config.wallets is a configuration object
-  let adaptersToRegister = defaultAdapters;
-
-  if (!Array.isArray(config.wallets)) {
-    const walletConfig = config.wallets;
-
-    if (walletConfig?.filter) {
-      adaptersToRegister = adaptersToRegister.filter(walletConfig.filter);
-      logger.debug('Applied wallet filter', {
-        originalCount: defaultAdapters.length,
-        filteredCount: adaptersToRegister.length,
-      });
-    }
-
-    if (walletConfig?.include) {
-      adaptersToRegister = adaptersToRegister.filter(
-        (adapter) => walletConfig.include?.includes(adapter.id) ?? false,
-      );
-      logger.debug('Applied wallet include filter', {
-        includeList: walletConfig.include,
-        filteredCount: adaptersToRegister.length,
-      });
-    }
-
-    if (walletConfig?.exclude) {
-      adaptersToRegister = adaptersToRegister.filter(
-        (adapter) => !(walletConfig.exclude?.includes(adapter.id) ?? false),
-      );
-      logger.debug('Applied wallet exclude filter', {
-        excludeList: walletConfig.exclude,
-        filteredCount: adaptersToRegister.length,
-      });
-    }
-  }
-
-  // Register the filtered adapters
-  for (const adapter of adaptersToRegister) {
-    registry.register(adapter);
-    logger.debug('Registered adapter', {
-      id: adapter.id,
-      name: adapter.metadata.name,
-    });
-  }
-
-  logger.info('Built-in adapters registered', {
-    count: adaptersToRegister.length,
-    adapters: adaptersToRegister.map((a) => a.id),
-  });
-}
-
-/**
- * Determines the wallet list for modal based on configuration
- *
- * @param config - Client configuration
- * @param registry - Wallet registry
- * @param logger - Logger instance
- * @returns Array of wallet info for modal
- * @private
- */
-function getWalletsForModal(
-  config: WalletMeshClientConfig,
-  registry: WalletRegistry,
-  logger: Logger,
-): WalletInfo[] {
-  if (Array.isArray(config.wallets)) {
-    // Check if it's a WalletInfo array (has id and chains properties)
-    const firstItem = config.wallets[0];
-    if (firstItem && typeof firstItem === 'object' && 'id' in firstItem && 'chains' in firstItem) {
-      // Direct wallet info array provided
-      const walletInfos = config.wallets as WalletInfo[];
-      logger.debug('Using direct wallet info from config', {
-        walletCount: walletInfos.length,
-        walletIds: walletInfos.map((w) => w.id),
-      });
-      return walletInfos;
-    }
-    // Otherwise it's an array of adapters/classes, fall through to use registry
-  }
-
-  // Get wallet info from registry (includes non-instantiated classes)
-  const walletsForModal = registry.getAllWalletInfo();
-
-  // Apply ordering if specified
-  if (!Array.isArray(config.wallets) && config.wallets?.order) {
-    const order = config.wallets.order;
-    walletsForModal.sort((a, b) => {
-      const aIndex = order.indexOf(a.id);
-      const bIndex = order.indexOf(b.id);
-
-      // Items in order list come first
-      if (aIndex !== -1 && bIndex !== -1) {
-        return aIndex - bIndex;
-      }
-      if (aIndex !== -1) return -1;
-      if (bIndex !== -1) return 1;
-
-      // Items not in order list maintain relative order
-      return 0;
-    });
-
-    logger.debug('Applied wallet ordering', {
-      order,
-      finalOrder: walletsForModal.map((w) => w.id),
-    });
-  }
-
-  logger.debug('Generated wallet list for modal', {
-    count: walletsForModal.length,
-    wallets: walletsForModal.map((w) => ({ id: w.id, name: w.name })),
-  });
-
-  return walletsForModal;
-}
-
-/**
- * Creates a WalletMeshClient instance with sensible defaults
- *
- * This is a convenience function that provides commonly used configurations
- * for typical dApp scenarios.
+ * This async function:
+ * - Creates the client with sensible defaults
+ * - Automatically calls `initialize()`
+ * - Returns a fully initialized, ready-to-use client
  *
  * @param appName - Name of the application
  * @param additionalConfig - Additional configuration options
- * @returns Configured WalletMeshClient instance
+ * @returns Promise resolving to a fully initialized WalletMeshClient instance
  *
  * @example
  * ```typescript
- * // Quick setup for development
- * const client = createWalletMeshClient('My DApp', {
+ * // Recommended: Async with auto-initialization
+ * const client = await createWalletMeshClient('My DApp', {
  *   chains: [
  *     { chainId: '1', chainType: 'evm', name: 'Ethereum' },
  *     { chainId: '137', chainType: 'evm', name: 'Polygon' }
  *   ]
  * });
+ * // Client is ready to use immediately
+ * const connection = await client.connectWithModal();
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // For advanced users who need manual control, use createWalletMeshClientSync
+ * const client = createWalletMeshClientSync('My DApp', config);
+ * await client.initialize(); // Manual initialization
  * ```
  *
  * @public
+ * @since 1.1.0
  */
-export function createWalletMeshClient(
+export async function createWalletMeshClient(
+  appName: string,
+  additionalConfig: Partial<WalletMeshClientConfig> = {},
+): Promise<PublicWalletMeshClient> {
+  // Create client synchronously first
+  const client = createWalletMeshClientSync(appName, additionalConfig);
+
+  // Auto-initialize if not in SSR mode
+  // SSR clients don't need initialization
+  if ('initialize' in client && typeof client.initialize === 'function') {
+    await client.initialize();
+  }
+
+  return client;
+}
+
+/**
+ * Creates a WalletMeshClient instance synchronously without auto-initialization.
+ *
+ * **For advanced users only.** This function creates the client but does NOT call
+ * `initialize()`. You must call `client.initialize()` manually before using most features.
+ *
+ * Most developers should use the async `createWalletMeshClient()` instead, which handles
+ * initialization automatically.
+ *
+ * @param appName - Name of the application
+ * @param additionalConfig - Additional configuration options
+ * @returns WalletMeshClient instance (not yet initialized)
+ *
+ * @example
+ * ```typescript
+ * // Manual initialization control
+ * const client = createWalletMeshClientSync('My DApp', {
+ *   chains: [{ chainId: '1', chainType: 'evm', name: 'Ethereum' }]
+ * });
+ *
+ * // Must call initialize before using the client
+ * await client.initialize();
+ *
+ * // Now ready to use
+ * await client.connect();
+ * ```
+ *
+ * @public
+ * @since 1.1.0
+ */
+export function createWalletMeshClientSync(
   appName: string,
   additionalConfig: Partial<WalletMeshClientConfig> = {},
 ): PublicWalletMeshClient {

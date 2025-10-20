@@ -83,8 +83,6 @@ export function createAutoMockedWalletMeshClient(
     clientConfig,
     // biome-ignore lint/suspicious/noExplicitAny: Mock client requires flexible registry
     {} as any, // registry
-    // biome-ignore lint/suspicious/noExplicitAny: Mock client requires flexible modal
-    {} as any, // modal
     // biome-ignore lint/suspicious/noExplicitAny: Mock client requires flexible logger
     {} as any, // logger
   );
@@ -239,8 +237,6 @@ export function createSpiedWalletMeshClient(
     clientConfig,
     // biome-ignore lint/suspicious/noExplicitAny: Spy client requires flexible registry
     {} as any, // registry
-    // biome-ignore lint/suspicious/noExplicitAny: Spy client requires flexible modal
-    {} as any, // modal
     // biome-ignore lint/suspicious/noExplicitAny: Spy client requires flexible logger
     {} as any, // logger
   );

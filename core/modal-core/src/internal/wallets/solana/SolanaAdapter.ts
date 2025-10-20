@@ -285,38 +285,108 @@ export class SolanaAdapter extends AbstractWalletAdapter {
         chainId = options.chains[0]?.chainId || chainId;
       }
 
+      // Store the onMessage handler for sending responses
+      let messageHandler: ((data: unknown) => void) | null = null;
+
       // Create transport
       const transport: JSONRPCTransport = {
         request: async (method: string, params?: unknown[]): Promise<unknown> => {
           switch (method) {
-            case 'signTransaction':
+            case 'solana_signTransaction':
               return wallet.signTransaction(params?.[0] as unknown);
-            case 'signAllTransactions':
+            case 'solana_signAllTransactions':
               return wallet.signAllTransactions(params?.[0] as unknown[]);
-            case 'signMessage':
+            case 'solana_signMessage':
               return wallet.signMessage(params?.[0] as Uint8Array);
-            case 'connect':
+            case 'solana_connect':
               return wallet.connect();
-            case 'disconnect':
+            case 'solana_disconnect':
               return wallet.disconnect?.();
+            case 'solana_getAccounts':
+              // Return the current connected account
+              return wallet.publicKey ? [wallet.publicKey.toString()] : [];
             default:
               throw ErrorFactory.configurationError(`Method ${method} not supported`);
           }
         },
         send: async (data: unknown): Promise<void> => {
-          // Handle direct message sending through Solana wallet
+          // Handle JSON-RPC messages sent through the transport
           if (!wallet) {
             throw ErrorFactory.configurationError('Wallet not available for send operation');
           }
 
-          // Log the send operation
-          this.log('debug', 'Sending data through Solana transport', { data });
+          // Extract method and id from JSON-RPC request
+          if (typeof data === 'object' && data !== null && 'method' in data) {
+            const request = data as { jsonrpc: string; method: string; params?: unknown[]; id?: string | number };
+            this.log('debug', 'Processing JSON-RPC request through Solana transport', {
+              method: request.method,
+              id: request.id
+            });
 
-          // For Solana wallets, sending is typically handled through the request method
-          // as they follow a request/response pattern rather than direct message sending
-          this.log('warn', 'Direct send not supported by Solana wallets - use request method instead');
+            try {
+              // Call the wallet method
+              let result: unknown;
+              switch (request.method) {
+                case 'solana_signTransaction':
+                  result = await wallet.signTransaction(request.params?.[0] as unknown);
+                  break;
+                case 'solana_signAllTransactions':
+                  result = await wallet.signAllTransactions(request.params?.[0] as unknown[]);
+                  break;
+                case 'solana_signMessage':
+                  result = await wallet.signMessage(request.params?.[0] as Uint8Array);
+                  break;
+                case 'solana_connect':
+                  result = await wallet.connect();
+                  break;
+                case 'solana_disconnect':
+                  result = await wallet.disconnect?.();
+                  break;
+                case 'solana_getAccounts':
+                  // Return the current connected account
+                  result = wallet.publicKey ? [wallet.publicKey.toString()] : [];
+                  break;
+                default:
+                  throw ErrorFactory.configurationError(`Method ${request.method} not supported`);
+              }
+
+              // Send successful response back through onMessage handler
+              if (messageHandler && request.id !== undefined) {
+                const response = {
+                  jsonrpc: '2.0',
+                  id: request.id,
+                  result
+                };
+                this.log('debug', 'Sending JSON-RPC response', { id: request.id });
+                messageHandler(response);
+              }
+            } catch (error) {
+              // Send error response back through onMessage handler
+              if (messageHandler && request.id !== undefined) {
+                const response = {
+                  jsonrpc: '2.0',
+                  id: request.id,
+                  error: {
+                    code: -32603,
+                    message: error instanceof Error ? error.message : String(error),
+                    data: error
+                  }
+                };
+                this.log('debug', 'Sending JSON-RPC error response', { id: request.id, error });
+                messageHandler(response);
+              } else {
+                // If no handler or no id, re-throw the error
+                throw error;
+              }
+            }
+          } else {
+            this.log('warn', 'Invalid message format for Solana transport', { data });
+            throw ErrorFactory.transportError('Invalid message format for Solana transport');
+          }
         },
         onMessage: (handler: (data: unknown) => void): (() => void) => {
+          // Store the message handler for use in send()
+          messageHandler = handler;
           // Set up message handling for Solana wallet events
           if (!wallet?.on) {
             this.log('warn', 'Wallet does not support event listening');

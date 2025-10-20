@@ -489,9 +489,7 @@ describe('WalletMeshClient', () => {
 
   describe('initialization', () => {
     it('should initialize with required config', () => {
-      const tempModal = createMockModal();
-      client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
-      client.setModal(tempModal);
+      client = new WalletMeshClient(config, createMockRegistry(), createMockModal(), createMockLogger());
 
       expect(client).toBeDefined();
     });
@@ -521,9 +519,7 @@ describe('WalletMeshClient', () => {
         },
       ]);
 
-      const tempModal = createMockModal();
-      client = new WalletMeshClient(config, mockRegistry, createMockLogger());
-      client.setModal(tempModal);
+      client = new WalletMeshClient(config, mockRegistry, createMockModal(), createMockLogger());
     });
 
     it('should detect available wallets', async () => {
@@ -578,8 +574,7 @@ describe('WalletMeshClient', () => {
       mockRegistry = createMockRegistry();
       mockModal = createMockModal();
 
-      client = new WalletMeshClient(config, mockRegistry, createMockLogger());
-      client.setModal(mockModal);
+      client = new WalletMeshClient(config, mockRegistry, mockModal, createMockLogger());
     });
 
     it.skip('should connect to a wallet', async () => {
@@ -750,8 +745,7 @@ describe('WalletMeshClient', () => {
     beforeEach(async () => {
       mockModal = createMockModal();
 
-      client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
-      client.setModal(mockModal);
+      client = new WalletMeshClient(config, createMockRegistry(), mockModal, createMockLogger());
     });
 
     it('should open modal', async () => {
@@ -782,9 +776,7 @@ describe('WalletMeshClient', () => {
 
   describe('state subscriptions', () => {
     beforeEach(async () => {
-      const tempModal = createMockModal();
-      client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
-      client.setModal(tempModal);
+      client = new WalletMeshClient(config, createMockRegistry(), createMockModal(), createMockLogger());
     });
 
     it('should subscribe to state changes', () => {
@@ -797,8 +789,7 @@ describe('WalletMeshClient', () => {
         return () => {};
       });
 
-      client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
-      client.setModal(mockModal);
+      client = new WalletMeshClient(config, createMockRegistry(), mockModal, createMockLogger());
 
       const unsubscribe = client.subscribe(callback);
 
@@ -810,8 +801,7 @@ describe('WalletMeshClient', () => {
     it('should receive state updates on connection changes', async () => {
       const callback = vi.fn();
       const mockModal = createMockModal();
-      client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
-      client.setModal(mockModal);
+      client = new WalletMeshClient(config, createMockRegistry(), mockModal, createMockLogger());
 
       client.subscribe(callback);
       callback.mockClear(); // Clear initial call
@@ -846,9 +836,7 @@ describe('WalletMeshClient', () => {
 
   describe('chain management', () => {
     beforeEach(async () => {
-      const tempModal = createMockModal();
-      client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
-      client.setModal(tempModal);
+      client = new WalletMeshClient(config, createMockRegistry(), createMockModal(), createMockLogger());
     });
 
     it('should throw error if no wallet connected', async () => {
@@ -865,9 +853,7 @@ describe('WalletMeshClient', () => {
 
   describe('state management', () => {
     beforeEach(async () => {
-      const tempModal = createMockModal();
-      client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
-      client.setModal(tempModal);
+      client = new WalletMeshClient(config, createMockRegistry(), createMockModal(), createMockLogger());
     });
 
     it('should check if connected', () => {
@@ -935,8 +921,7 @@ describe('WalletMeshClient', () => {
       mockModal = createMockModal();
       mockRegistry = createMockRegistry();
 
-      client = new WalletMeshClient(config, mockRegistry, createMockLogger());
-      client.setModal(mockModal);
+      client = new WalletMeshClient(config, mockRegistry, mockModal, createMockLogger());
     });
 
     it('should destroy client and clean up resources', () => {
@@ -985,9 +970,7 @@ describe('WalletMeshClient', () => {
     beforeEach(() => {
       mockRegistry = createMockRegistry();
 
-      const tempModal = createMockModal();
-      client = new WalletMeshClient(config, mockRegistry, createMockLogger());
-      client.setModal(tempModal);
+      client = new WalletMeshClient(config, mockRegistry, createMockModal(), createMockLogger());
     });
 
     it('should handle connection errors', async () => {
@@ -1032,9 +1015,7 @@ describe('WalletMeshClient', () => {
 
   describe('connection helpers', () => {
     beforeEach(() => {
-      const tempModal = createMockModal();
-      client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
-      client.setModal(tempModal);
+      client = new WalletMeshClient(config, createMockRegistry(), createMockModal(), createMockLogger());
     });
 
     it('should get connection by wallet id', () => {
@@ -1093,319 +1074,6 @@ describe('WalletMeshClient', () => {
 
       expect(connections).toHaveLength(1);
       expect(connections[0]).toEqual(mockAdapter.connection);
-    });
-  });
-
-  describe('adapter caching and health', () => {
-    beforeEach(() => {
-      vi.useFakeTimers();
-      const tempModal = createMockModal();
-      client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
-      client.setModal(tempModal);
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    // Note: Adapter caching tests are skipped because they require complex
-    // integration test setup with session manager, store, etc.
-    // The functionality is already fully implemented and working (see Issue #5)
-
-    it('should respect ERROR_TIMEOUT_MS when deciding to recreate', () => {
-      // Manually set health tracking data
-      client['adapterHealth'].set('timeout-wallet', {
-        errors: 1,
-        lastError: new Date(),
-        lastSuccess: null,
-        consecutiveFailures: 1,
-      });
-
-      // Should recreate immediately after error
-      expect(client['shouldRecreateAdapter']('timeout-wallet')).toBe(true);
-
-      // Advance time past ERROR_TIMEOUT_MS (30 seconds)
-      vi.advanceTimersByTime(31000);
-
-      // Should NOT recreate after timeout expires
-      expect(client['shouldRecreateAdapter']('timeout-wallet')).toBe(false);
-    });
-
-    it('should recreate after reaching MAX_CONSECUTIVE_FAILURES', () => {
-      // Manually set health tracking with high consecutive failures
-      client['adapterHealth'].set('unstable-wallet', {
-        errors: 3,
-        lastError: new Date(),
-        lastSuccess: null,
-        consecutiveFailures: 3, // Equals MAX_CONSECUTIVE_FAILURES
-      });
-
-      // Should recreate when consecutive failures reached threshold
-      expect(client['shouldRecreateAdapter']('unstable-wallet')).toBe(true);
-    });
-
-    it('should not recreate when health is good', () => {
-      // Manually set health tracking with good health
-      client['adapterHealth'].set('healthy-wallet', {
-        errors: 1,
-        lastError: new Date(Date.now() - 60000), // 1 minute ago (past timeout)
-        lastSuccess: new Date(),
-        consecutiveFailures: 0,
-      });
-
-      // Should NOT recreate when health is good
-      expect(client['shouldRecreateAdapter']('healthy-wallet')).toBe(false);
-    });
-
-    it('should track adapter invalidation', () => {
-      // Set up an adapter
-      const mockAdapter = createTypedMock<WalletAdapter>({
-        id: 'test-wallet',
-        metadata: { name: 'Test', icon: '' },
-      });
-      client['adapters'].set('test-wallet', mockAdapter);
-
-      // Invalidate the adapter
-      client['invalidateAdapter']('test-wallet', 'test_reason');
-
-      // Adapter should be removed
-      expect(client['adapters'].has('test-wallet')).toBe(false);
-
-      // Health should be updated
-      const health = client['adapterHealth'].get('test-wallet');
-      expect(health).toBeDefined();
-      expect(health?.errors).toBe(1);
-      expect(health?.consecutiveFailures).toBe(1);
-      expect(health?.lastError).toBeInstanceOf(Date);
-    });
-  });
-
-  describe('provider type validation', () => {
-    beforeEach(() => {
-      const tempModal = createMockModal();
-      client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
-      client.setModal(tempModal);
-    });
-
-    describe('sessionToWalletConnection validation', () => {
-      it('should throw when Aztec provider missing call method', () => {
-        const mockSession = {
-          sessionId: 'test-session',
-          walletId: 'aztec-wallet',
-          activeAccount: { address: '0x123', index: 0 },
-          accounts: [{ address: '0x123', index: 0 }],
-          chain: {
-            chainId: '31337',
-            chainType: ChainType.Aztec,
-            name: 'Aztec',
-            required: true,
-            interfaces: ['aztec'],
-          },
-          provider: {
-            instance: { connect: vi.fn() }, // Missing 'call' method
-            chainType: ChainType.Aztec,
-          },
-        };
-
-        expect(() => {
-          // @ts-expect-error - Accessing private method for testing
-          client['sessionToWalletConnection'](mockSession);
-        }).toThrow('Provider does not implement required');
-      });
-
-      it('should throw when EVM provider missing request method', () => {
-        const mockSession = {
-          sessionId: 'test-session',
-          walletId: 'metamask',
-          activeAccount: { address: '0x123', index: 0 },
-          accounts: [{ address: '0x123', index: 0 }],
-          chain: {
-            chainId: 'eip155:1',
-            chainType: ChainType.Evm,
-            name: 'Ethereum',
-            required: true,
-            interfaces: ['eip1193'],
-          },
-          provider: {
-            instance: { send: vi.fn() }, // Missing 'request' method (EIP-1193)
-            chainType: ChainType.Evm,
-          },
-        };
-
-        expect(() => {
-          // @ts-expect-error - Accessing private method for testing
-          client['sessionToWalletConnection'](mockSession);
-        }).toThrow('Provider does not implement required');
-      });
-
-      it('should throw when Solana provider missing transaction methods', () => {
-        const mockSession = {
-          sessionId: 'test-session',
-          walletId: 'phantom',
-          activeAccount: { address: 'abc123', index: 0 },
-          accounts: [{ address: 'abc123', index: 0 }],
-          chain: {
-            chainId: 'solana:mainnet',
-            chainType: ChainType.Solana,
-            name: 'Solana',
-            required: true,
-            interfaces: ['solana'],
-          },
-          provider: {
-            instance: { connect: vi.fn() }, // Missing signAndSendTransaction or sendTransaction
-            chainType: ChainType.Solana,
-          },
-        };
-
-        expect(() => {
-          // @ts-expect-error - Accessing private method for testing
-          client['sessionToWalletConnection'](mockSession);
-        }).toThrow('Provider does not implement required');
-      });
-
-      it('should succeed with valid Aztec provider', () => {
-        const mockProvider = { call: vi.fn(), disconnect: vi.fn() };
-        const mockSession = {
-          sessionId: 'test-session',
-          walletId: 'aztec-wallet',
-          activeAccount: { address: '0x123', index: 0 },
-          accounts: [{ address: '0x123', index: 0 }],
-          chain: {
-            chainId: '31337',
-            chainType: ChainType.Aztec,
-            name: 'Aztec',
-            required: true,
-            interfaces: ['aztec'],
-          },
-          provider: {
-            instance: mockProvider,
-            chainType: ChainType.Aztec,
-          },
-          metadata: {
-            wallet: { name: 'Aztec Wallet', icon: '' },
-            dapp: { name: 'Test App', origin: 'test://app' },
-          },
-          createdAt: Date.now(),
-          lastActiveAt: Date.now(),
-        };
-
-        // @ts-expect-error - Accessing private method for testing
-        const connection = client['sessionToWalletConnection'](mockSession);
-
-        expect(connection).toMatchObject({
-          walletId: 'aztec-wallet',
-          address: '0x123',
-          provider: mockProvider,
-        });
-      });
-
-      it('should succeed with valid EVM provider', () => {
-        const mockProvider = { request: vi.fn() };
-        const mockSession = {
-          sessionId: 'test-session',
-          walletId: 'metamask',
-          activeAccount: { address: '0x123', index: 0 },
-          accounts: [{ address: '0x123', index: 0 }],
-          chain: {
-            chainId: 'eip155:1',
-            chainType: ChainType.Evm,
-            name: 'Ethereum',
-            required: true,
-            interfaces: ['eip1193'],
-          },
-          provider: {
-            instance: mockProvider,
-            chainType: ChainType.Evm,
-          },
-          metadata: {
-            wallet: { name: 'MetaMask', icon: '' },
-            dapp: { name: 'Test App', origin: 'test://app' },
-          },
-          createdAt: Date.now(),
-          lastActiveAt: Date.now(),
-        };
-
-        // @ts-expect-error - Accessing private method for testing
-        const connection = client['sessionToWalletConnection'](mockSession);
-
-        expect(connection).toMatchObject({
-          walletId: 'metamask',
-          address: '0x123',
-          provider: mockProvider,
-        });
-      });
-
-      it('should succeed with valid Solana provider (signAndSendTransaction)', () => {
-        const mockProvider = { signAndSendTransaction: vi.fn() };
-        const mockSession = {
-          sessionId: 'test-session',
-          walletId: 'phantom',
-          activeAccount: { address: 'abc123', index: 0 },
-          accounts: [{ address: 'abc123', index: 0 }],
-          chain: {
-            chainId: 'solana:mainnet',
-            chainType: ChainType.Solana,
-            name: 'Solana',
-            required: true,
-            interfaces: ['solana'],
-          },
-          provider: {
-            instance: mockProvider,
-            chainType: ChainType.Solana,
-          },
-          metadata: {
-            wallet: { name: 'Phantom', icon: '' },
-            dapp: { name: 'Test App', origin: 'test://app' },
-          },
-          createdAt: Date.now(),
-          lastActiveAt: Date.now(),
-        };
-
-        // @ts-expect-error - Accessing private method for testing
-        const connection = client['sessionToWalletConnection'](mockSession);
-
-        expect(connection).toMatchObject({
-          walletId: 'phantom',
-          address: 'abc123',
-          provider: mockProvider,
-        });
-      });
-
-      it('should succeed with valid Solana provider (sendTransaction)', () => {
-        const mockProvider = { sendTransaction: vi.fn() };
-        const mockSession = {
-          sessionId: 'test-session',
-          walletId: 'phantom',
-          activeAccount: { address: 'abc123', index: 0 },
-          accounts: [{ address: 'abc123', index: 0 }],
-          chain: {
-            chainId: 'solana:mainnet',
-            chainType: ChainType.Solana,
-            name: 'Solana',
-            required: true,
-            interfaces: ['solana'],
-          },
-          provider: {
-            instance: mockProvider,
-            chainType: ChainType.Solana,
-          },
-          metadata: {
-            wallet: { name: 'Phantom', icon: '' },
-            dapp: { name: 'Test App', origin: 'test://app' },
-          },
-          createdAt: Date.now(),
-          lastActiveAt: Date.now(),
-        };
-
-        // @ts-expect-error - Accessing private method for testing
-        const connection = client['sessionToWalletConnection'](mockSession);
-
-        expect(connection).toMatchObject({
-          walletId: 'phantom',
-          address: 'abc123',
-          provider: mockProvider,
-        });
-      });
     });
   });
 });

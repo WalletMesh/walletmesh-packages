@@ -130,3 +130,16 @@ export { AztecExampleWalletAdapter } from '../internal/wallets/aztec-example/Azt
 
 // Export test modal factory
 export { createTestModal } from '../internal/factories/modalFactory.js';
+
+// Export Aztec transaction testing utilities
+export {
+  createMockAztecNotificationEmitter,
+  createMockAztecRouterProvider,
+  createTransactionStatusNotification,
+  createMultipleTransactions,
+  simulateTransactionWithFakeTimers,
+  type AztecTransactionStatusNotification,
+  type SimulateTransactionOptions,
+  type NotificationListener,
+  type MockAztecNotificationEmitter,
+} from './mocks/mockAztecTransactions.js';

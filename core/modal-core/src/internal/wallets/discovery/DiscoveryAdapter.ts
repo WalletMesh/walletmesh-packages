@@ -279,6 +279,32 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
   }
 
   /**
+   * Get Aztec network from discovery metadata
+   * @returns Aztec network string (e.g., 'aztec:mainnet', 'aztec:testnet', 'aztec:31337')
+   * @private
+   */
+  private getAztecNetworkFromDiscovery(): string {
+    // Check if there's network information in the responder metadata
+    const metadata = this.qualifiedResponder.metadata;
+    if (metadata && typeof metadata === 'object' && 'aztecNetwork' in metadata) {
+      const network = metadata.aztecNetwork;
+      if (typeof network === 'string') {
+        return network.startsWith('aztec:') ? network : `aztec:${network}`;
+      }
+    }
+
+    // Fall back to extracting from technology chains
+    const chains = this.getTechnologyChains();
+    const aztecChain = chains.find((chain) => chain.startsWith('aztec:'));
+    if (aztecChain) {
+      return aztecChain;
+    }
+
+    // Final fallback: use mainnet as the sensible production default
+    return 'aztec:mainnet';
+  }
+
+  /**
    * Disconnect from the wallet
    */
   async disconnect(): Promise<void> {
@@ -423,22 +449,30 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
           this.logger?.debug('Created Solana provider with interfaces:', chainInterfaces);
           break;
         case ChainType.Aztec: {
-          // Create AztecAdapter with the transport
+          // Determine Aztec network from discovery data
+          // Priority: 1) Negotiated chains, 2) Default from getTechnologyChains(), 3) Fail
+          const aztecNetwork = this.getAztecNetworkFromDiscovery();
+
+          // Create AztecAdapter with the transport and dynamically determined network
           const aztecAdapter = new AztecAdapter({
             id: this.id,
             name: this.metadata.name,
             icon: this.metadata.icon,
             ...(this.metadata.description && { description: this.metadata.description }),
             transport: this.transport || undefined,
-            network: 'aztec:31337', // Default local network to match extension router
+            network: aztecNetwork,
           });
           (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter: connecting Aztec adapter', {
             walletId: this.id,
             transportType: (this.qualifiedResponder.transportConfig as any)?.type,
+            network: aztecNetwork,
           });
           // Connect the adapter to establish the provider
           await aztecAdapter.connect();
-          this.logger?.debug('DiscoveryAdapter: Aztec adapter connected', { walletId: this.id });
+          this.logger?.debug('DiscoveryAdapter: Aztec adapter connected', {
+            walletId: this.id,
+            network: aztecNetwork,
+          });
           // Store the provider from the adapter
           const aztecProvider = aztecAdapter.getProvider(ChainType.Aztec);
           if (aztecProvider) {

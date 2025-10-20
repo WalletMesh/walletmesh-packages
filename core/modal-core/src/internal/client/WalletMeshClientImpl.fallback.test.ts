@@ -45,7 +45,9 @@ describe('WalletMeshClientImpl - Public Provider Fallback', () => {
       ],
     };
 
-    client = new WalletMeshClient(mockConfig, mockRegistry, mockModal, mockLogger);
+    client = new WalletMeshClient(mockConfig, mockRegistry, mockLogger);
+    // Set modal using two-phase construction
+    client.setModal(mockModal);
   });
 
   afterEach(() => {

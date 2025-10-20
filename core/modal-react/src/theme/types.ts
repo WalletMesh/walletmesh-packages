@@ -66,6 +66,17 @@ export interface ThemeColors {
   focusRing: string;
   disabled: string;
   disabledText: string;
+
+  // Transaction overlay tokens
+  overlayBg: string; // Full overlay background (with transparency)
+  overlayCardBg: string; // Content card background
+  overlayCardBorder: string; // Content card border
+  overlayTextPrimary: string; // Primary text color
+  overlayTextSecondary: string; // Secondary/muted text color
+  overlaySpinnerPrimary: string; // Spinner primary color
+  overlayStageActive: string; // Active stage background
+  overlayStageCompleted: string; // Completed stage background
+  overlayStageIcon: string; // Stage icon background
 }
 
 /**

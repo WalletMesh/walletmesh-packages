@@ -145,6 +145,17 @@ const lightColors: ThemeColors = {
   focusRing: 'rgba(79, 70, 229, 0.2)',
   disabled: '#f3f4f6',
   disabledText: '#9ca3af',
+
+  // Transaction overlay tokens (light mode)
+  overlayBg: 'rgba(15, 23, 42, 0.72)', // Semi-transparent dark overlay
+  overlayCardBg: 'rgba(255, 255, 255, 0.95)', // Near-opaque white card
+  overlayCardBorder: 'rgba(226, 232, 240, 0.5)', // Subtle border
+  overlayTextPrimary: '#1f2937', // Dark text
+  overlayTextSecondary: '#6b7280', // Muted text
+  overlaySpinnerPrimary: '#4f46e5', // Primary brand color
+  overlayStageActive: 'rgba(79, 70, 229, 0.25)', // Active stage highlight
+  overlayStageCompleted: 'rgba(34, 197, 94, 0.2)', // Success green
+  overlayStageIcon: 'rgba(148, 163, 184, 0.15)', // Neutral gray
 };
 
 /**
@@ -212,6 +223,17 @@ const darkColors: ThemeColors = {
   focusRing: 'rgba(99, 102, 241, 0.3)',
   disabled: '#1e293b',
   disabledText: '#64748b',
+
+  // Transaction overlay tokens (dark mode)
+  overlayBg: 'rgba(15, 23, 42, 0.72)', // Semi-transparent dark overlay
+  overlayCardBg: 'rgba(9, 14, 26, 0.92)', // Nearly opaque dark card
+  overlayCardBorder: 'rgba(148, 163, 184, 0.15)', // Subtle border
+  overlayTextPrimary: '#f8fafc', // Light text
+  overlayTextSecondary: 'rgba(226, 232, 240, 0.92)', // Slightly muted light text
+  overlaySpinnerPrimary: '#38bdf8', // Cyan accent
+  overlayStageActive: 'rgba(56, 189, 248, 0.25)', // Active stage highlight
+  overlayStageCompleted: 'rgba(34, 197, 94, 0.2)', // Success green
+  overlayStageIcon: 'rgba(148, 163, 184, 0.15)', // Neutral gray
 };
 
 /**

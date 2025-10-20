@@ -25,8 +25,9 @@ import { createComponentLogger } from '../utils/logger.js';
 import { useStore, useStoreActions, useStoreInstance } from './internal/useStore.js';
 
 // Helper function to determine if a transaction status is pending
+// Pending statuses are all non-terminal statuses (excluding 'confirmed' and 'failed')
 const isPendingTransactionStatus = (status: TransactionStatus): boolean => {
-  return ['preparing', 'proving', 'signing', 'broadcasting', 'confirming'].includes(status);
+  return ['idle', 'simulating', 'proving', 'sending', 'pending', 'confirming'].includes(status);
 };
 
 // Helper function to convert React options to service options

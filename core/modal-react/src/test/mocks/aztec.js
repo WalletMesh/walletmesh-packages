@@ -10,11 +10,13 @@ console.log('[TEST] Using mocked @aztec/aztec.js');
 // Mock AztecAddress class
 export class AztecAddress {
   constructor(address) {
-    this.address = address || '0x0000000000000000000000000000000000000000000000000000000000000001';
+    // Normalize to lowercase on construction
+    this.address = address ? address.toLowerCase() : '0x0000000000000000000000000000000000000000000000000000000000000001';
   }
 
   toString() {
-    return this.address;
+    // Always return lowercase
+    return this.address.toLowerCase();
   }
 
   toShortString() {
@@ -26,6 +28,13 @@ export class AztecAddress {
   }
 
   static fromString(str) {
+    // Validate address format
+    if (typeof str !== 'string') {
+      throw new Error(`Invalid address: expected string, got ${typeof str}`);
+    }
+    if (!str.match(/^0x[0-9a-fA-F]{64}$/)) {
+      throw new Error(`Invalid address: ${str}`);
+    }
     return new AztecAddress(str);
   }
 

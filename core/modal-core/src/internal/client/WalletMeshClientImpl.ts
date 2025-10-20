@@ -42,6 +42,7 @@ import type {
   WalletMeshConfig,
 } from './WalletMeshClient.js';
 import type { ChainConfig } from './WalletMeshClient.js';
+import { SessionParamsBuilder } from './SessionParamsBuilder.js';
 
 /**
  * Core implementation of the WalletMesh client providing comprehensive wallet management.
@@ -74,9 +75,11 @@ import type { ChainConfig } from './WalletMeshClient.js';
  * const client = new WalletMeshClient(
  *   config,
  *   registry,
- *   modal,
  *   logger
  * );
+ *
+ * // Two-phase construction: set modal after creation
+ * client.setModal(modal);
  *
  * // Initialize services
  * await client.initialize();
@@ -113,9 +116,52 @@ type ModalInternals = ModalController & {
   setView?: (view: string) => void;
 };
 
+/**
+ * Permission configuration interface
+ * @private
+ */
+interface PermissionsConfig {
+  permissions?: Record<string, string[]>;
+}
+
+/**
+ * Permission extraction result
+ * @private
+ */
+interface PermissionExtractionResult {
+  permissions: string[] | undefined;
+  chainId: string | undefined;
+  source: 'config' | 'options' | 'default' | 'none';
+}
+
 export class WalletMeshClient implements WalletMeshClientInterface, InternalWalletMeshClientInterface {
   private adapters = new Map<string, WalletAdapter>();
   private providerVersions = new Map<string, number>();
+
+  /**
+   * Track adapter health for intelligent caching
+   * @private
+   */
+  private adapterHealth = new Map<
+    string,
+    {
+      errors: number;
+      lastError: Date | null;
+      lastSuccess: Date | null;
+      consecutiveFailures: number;
+    }
+  >();
+
+  /**
+   * Configuration for adapter health tracking
+   * @private
+   */
+  private readonly ADAPTER_HEALTH_CONFIG = {
+    MAX_CONSECUTIVE_FAILURES: 3,
+    ERROR_TIMEOUT_MS: 30000, // 30 seconds
+    MAX_CACHED_ERRORS: 5,
+  };
+
   private providerLoader: ProviderLoader;
   private serviceRegistry: ServiceRegistry;
   private dappRpcIntegration: DAppRpcIntegration;
@@ -131,6 +177,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     string,
     Array<{ event: string; listener: (...args: unknown[]) => void }>
   >();
+  public modal?: ModalController;
 
   private get sessionManager(): SessionManager {
     // Use the session manager adapter
@@ -188,7 +235,6 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
   constructor(
     private config: WalletMeshConfig,
     public readonly registry: WalletRegistry,
-    public modal: ModalController,
     private logger?: Logger,
   ) {
     // Initialize service registry with a proper logger
@@ -207,10 +253,29 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     };
     this.providerLoader = new ProviderLoader(providerConfig);
 
-    // Set up modal event handlers (safely handle null modal during construction)
-    this.setupModalHandlers();
-
     // Multi-wallet functionality is now part of unified store
+  }
+
+  /**
+   * Sets the modal controller for this client.
+   *
+   * This method is part of the two-phase construction pattern, which eliminates
+   * the circular dependency between the client and modal. The client is created first,
+   * then the modal is created with the client reference, and finally the modal is wired
+   * back to the client using this method.
+   *
+   * @param modal - The modal controller to associate with this client
+   * @throws {ModalError} If modal is already set
+   * @internal
+   */
+  setModal(modal: ModalController): void {
+    if (this.modal) {
+      throw ErrorFactory.configurationError('Modal already set - cannot set modal twice');
+    }
+    this.modal = modal;
+
+    // Now set up modal event handlers
+    this.setupModalHandlers();
   }
 
   private getInvocationCaller(): string {
@@ -313,7 +378,8 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
    *
    * @example
    * ```typescript
-   * const client = new WalletMeshClient(config, registry, modal);
+   * const client = new WalletMeshClient(config, registry, logger);
+   * client.setModal(modal); // Two-phase construction
    * await client.initialize();
    * // Client is now ready for use
    * ```
@@ -1214,8 +1280,16 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     }
 
     try {
-      // Get or create adapter with provider integration
+      // Get or create adapter with health-aware caching
       let adapter = this.adapters.get(targetWalletId);
+
+      // Check if existing adapter should be recreated due to health issues
+      if (adapter && this.shouldRecreateAdapter(targetWalletId)) {
+        this.logger?.info('Recreating adapter due to health issues', { targetWalletId });
+        this.invalidateAdapter(targetWalletId, 'health_check_failed');
+        adapter = undefined; // Force recreation
+      }
+
       if (!adapter) {
         this.logger?.debug(`Creating adapter for wallet: ${targetWalletId}`);
         adapter = await this.createAdapterWithProvider(targetWalletId, options);
@@ -1250,42 +1324,20 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         }));
       }
 
-      // Add permissions to aztecOptions if configured for Aztec chains
-      const configWithPermissions = this.config as { permissions?: Record<string, string[]> };
-      if (configWithPermissions.permissions) {
-        // Find first Aztec chain to get its permissions
-        const aztecChainId = this.config.chains?.find((c) => c.chainType === ChainType.Aztec)?.chainId;
-        if (aztecChainId && configWithPermissions.permissions[aztecChainId]) {
-          const permissions = configWithPermissions.permissions[aztecChainId];
-
-          this.logger?.info('Client permissions configured for Aztec chain', {
-            chainId: aztecChainId,
-            walletId: targetWalletId,
-            declaredPermissions: permissions,
-            permissionCount: permissions.length,
-            permissionCategories: this.categorizePermissions(permissions),
-          });
-
-          connectOptions['aztecOptions'] = {
-            ...(connectOptions['aztecOptions'] || {}),
-            permissions: permissions,
-          };
-        } else if (aztecChainId) {
-          // Log when no permissions are configured for Aztec chain
-          this.logger?.warn('No explicit permissions configured for Aztec chain', {
-            chainId: aztecChainId,
-            walletId: targetWalletId,
-            impact: 'Wallet adapter will use default permissions which may be insufficient',
-            recommendation: 'Add permissions array to AztecWalletMeshProvider config',
-          });
-        }
-      } else {
-        // Log when no permissions configuration exists at all
-        this.logger?.warn('No permission configuration defined in client options', {
+      // Extract and add Aztec permissions if configured
+      const permissionResult = this.extractAztecPermissions(options);
+      if (permissionResult.permissions && permissionResult.source !== 'none') {
+        this.logger?.debug('Adding extracted permissions to connect options', {
           walletId: targetWalletId,
-          impact: 'All permission requests will use adapter defaults',
-          recommendation: 'Add permissions configuration to provider config',
+          chainId: permissionResult.chainId,
+          source: permissionResult.source,
+          permissionCount: permissionResult.permissions.length,
         });
+
+        connectOptions['aztecOptions'] = {
+          ...(connectOptions['aztecOptions'] as Record<string, unknown> | undefined),
+          permissions: permissionResult.permissions,
+        };
       }
 
       if (targetWalletId) {
@@ -1310,55 +1362,21 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       });
 
       // Create new session using unified session management
-      const sessionParams: CreateSessionParams = {
-        walletId: targetWalletId,
-        accounts: (connection.accounts || [connection.address]).map((address, index) => ({
-          address,
-          index,
-          derivationPath: `m/44'/60'/0'/0/${index}`,
-          isActive: index === 0,
-        })),
-        activeAccountIndex: 0,
-        chain: {
-          chainId: connection.chain.chainId,
-          chainType: connection.chain.chainType as ChainType,
-          name: connection.chain.name || this.getChainName(connection.chain.chainId),
-          required: connection.chain.required,
-        },
-        provider: this.adaptWalletProviderToBlockchainProvider(connection.provider as WalletProvider),
-        providerMetadata: {
-          type: 'unknown',
-          version: '1.0.0',
-          multiChainCapable: adapter.capabilities.chains.length > 1,
-          supportedMethods: adapter.capabilities.permissions?.methods || ['*'],
-        },
-        permissions: {
-          methods: adapter.capabilities.permissions?.methods || ['*'],
-          events: adapter.capabilities.permissions?.events || ['accountsChanged', 'chainChanged'],
-        },
-        metadata: {
-          wallet: {
-            name: adapter.metadata.name || 'Unknown Wallet',
-            icon: adapter.metadata.icon || '',
-            version: '1.0.0',
-          },
-          dapp: {
-            name: this.config.appName,
-            ...(this.config.appUrl && { url: this.config.appUrl }),
-            ...(this.config.appIcon && { icon: this.config.appIcon }),
-          },
-          connection: {
-            initiatedBy: 'user',
-            method: 'manual',
-            ...(typeof navigator !== 'undefined' &&
-              navigator.userAgent && { userAgent: navigator.userAgent }),
-          },
-        },
-      };
+      // Use SessionParamsBuilder to construct session parameters
+      const sessionBuilder = new SessionParamsBuilder(
+        targetWalletId,
+        connection,
+        adapter,
+        this.config,
+        options,
+      );
 
-      if (options?.sessionId && options.requestNewSession !== true) {
-        sessionParams.sessionId = options.sessionId;
-      }
+      const sessionParams = sessionBuilder.build();
+
+      // Adapt provider for session (builder returns raw provider, we need blockchain provider)
+      sessionParams.provider = this.adaptWalletProviderToBlockchainProvider(
+        connection.provider as WalletProvider,
+      );
 
       this.logger?.debug('Session parameters prepared', sessionParams);
 
@@ -1434,15 +1452,73 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         setTimeout(() => this.closeModal(), 1500);
       }
 
+      // Record successful connection in health tracking
+      const health = this.adapterHealth.get(targetWalletId);
+      if (health) {
+        health.lastSuccess = new Date();
+        health.consecutiveFailures = 0; // Reset failure counter
+      }
+      this.logger?.debug('Connection successful, health tracking updated', {
+        walletId: targetWalletId,
+        healthStatus: health
+          ? {
+              errors: health.errors,
+              consecutiveFailures: health.consecutiveFailures,
+              lastSuccess: health.lastSuccess,
+            }
+          : 'no_previous_health_data',
+      });
+
       // Convert session to WalletConnection format for compatibility
       return this.sessionToWalletConnection(session);
     } catch (error) {
+      // Invalidate adapter on connection error
+      this.invalidateAdapter(
+        targetWalletId,
+        `connection_error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+
       // Update modal state to error if modal is available
       if (targetWalletId) {
         this.updateModalStatus('error', { walletId: targetWalletId, error });
       }
       throw error;
     }
+  }
+
+  /**
+   * Connects to a wallet by opening the modal and waiting for user selection.
+   *
+   * This is a convenience method that combines `openModal()` and `connect()` into a single call,
+   * simplifying the most common wallet connection pattern. The modal is automatically opened,
+   * and the method waits for the user to select and connect to a wallet.
+   *
+   * @param options - Optional connection options
+   * @param options.chainType - Filter wallets by chain type (e.g., 'evm', 'solana')
+   * @returns Promise resolving to the wallet connection
+   * @throws {Error} If connection fails or is cancelled by user
+   *
+   * @example
+   * ```typescript
+   * // Simple connection with modal
+   * const connection = await client.connectWithModal();
+   *
+   * // Filter to EVM wallets only
+   * const connection = await client.connectWithModal({ chainType: ChainType.Evm });
+   * ```
+   *
+   * @since 1.1.0
+   * @public
+   */
+  async connectWithModal(options?: { chainType?: ChainType }): Promise<WalletConnection> {
+    // Open modal with chain type filter if provided
+    if (options?.chainType) {
+      await this.openModal({ targetChainType: options.chainType });
+    }
+
+    // Connect without walletId - this will open modal if not already open
+    // and wait for user selection
+    return this.connect();
   }
 
   /**
@@ -1526,6 +1602,12 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
 
     // Clean up provider version tracking
     this.providerVersions.delete(walletId);
+
+    // Clear health tracking for this wallet on disconnect
+    if (this.adapterHealth.has(walletId)) {
+      this.logger?.debug('Clearing health tracking for disconnected wallet', { walletId });
+      this.adapterHealth.delete(walletId);
+    }
 
     this.withModalInternals((modal) => {
       modal.stores?.connection?.actions?.setDisconnected?.();
@@ -2307,7 +2389,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     this.providerLoader.clearCache();
 
     // Clean up modal
-    this.modal.cleanup();
+    this.modal?.cleanup();
 
     // Clear registry
     this.registry.clear();
@@ -2763,11 +2845,11 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     if (adapter) {
       // Remove all tracked event listeners
       for (const { event, listener } of listeners) {
-        // Cast to unknown then to the adapter interface to handle generic event removal
-        (adapter as { off: (event: string, listener: (...args: unknown[]) => void) => void }).off(
-          event,
-          listener,
-        );
+        // Check if adapter has off method (defensive for mocks and edge cases)
+        const adapterWithOff = adapter as { off?: (event: string, listener: (...args: unknown[]) => void) => void };
+        if (typeof adapterWithOff.off === 'function') {
+          adapterWithOff.off(event, listener);
+        }
       }
     }
 
@@ -3198,7 +3280,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
   private async waitForWalletSelection(): Promise<string | null> {
     return new Promise((resolve, reject) => {
       let resolved = false;
-      let unsubscribe: (() => void) | null = null;
+      let unsubscribe: (() => void) | null | undefined = null;
 
       const cleanup = () => {
         if (unsubscribe) {
@@ -3225,7 +3307,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
 
       try {
         // Subscribe to modal state changes to detect connection initiation and modal close
-        unsubscribe = this.modal.subscribe((state) => {
+        unsubscribe = this.modal?.subscribe((state) => {
           if (resolved) return;
 
           try {
@@ -3246,10 +3328,10 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         });
 
         // Check immediately
-        const currentState = this.modal.getState();
-        if (!currentState.isOpen) {
+        const currentState = this.modal?.getState();
+        if (currentState && !currentState.isOpen) {
           safeResolve(null);
-        } else if (currentState.selectedWalletId && currentState.connection.state === 'connecting') {
+        } else if (currentState?.selectedWalletId && currentState.connection.state === 'connecting') {
           safeResolve(currentState.selectedWalletId);
         }
       } catch (error) {
@@ -3287,6 +3369,67 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         sessionId: session.sessionId,
         walletId: session.walletId,
       });
+    }
+
+    // Validate provider interface for chain type
+    const provider = session.provider.instance;
+    const sessionChainType = session.chain.chainType;
+
+    // Validate provider implements expected interface for chain type
+    if (sessionChainType === ChainType.Aztec) {
+      // Aztec providers must have call method
+      if (!('call' in provider) || typeof provider.call !== 'function') {
+        this.logger?.error('Provider missing required Aztec interface', {
+          sessionId: session.sessionId,
+          chainType: sessionChainType,
+          providerMethods: Object.keys(provider),
+        });
+        throw ErrorFactory.connectionFailed(
+          'Provider does not implement required Aztec interface (missing call method)',
+          {
+            sessionId: session.sessionId,
+            walletId: session.walletId,
+            chainType: sessionChainType,
+          }
+        );
+      }
+    } else if (sessionChainType === ChainType.Evm) {
+      // EVM providers must have request method (EIP-1193)
+      if (!('request' in provider) || typeof provider.request !== 'function') {
+        this.logger?.error('Provider missing required EVM interface', {
+          sessionId: session.sessionId,
+          chainType: sessionChainType,
+          providerMethods: Object.keys(provider),
+        });
+        throw ErrorFactory.connectionFailed(
+          'Provider does not implement required EVM interface (missing request method)',
+          {
+            sessionId: session.sessionId,
+            walletId: session.walletId,
+            chainType: sessionChainType,
+          }
+        );
+      }
+    } else if (sessionChainType === ChainType.Solana) {
+      // Solana providers must have signAndSendTransaction or sendTransaction method
+      const hasSignAndSend = 'signAndSendTransaction' in provider && typeof provider.signAndSendTransaction === 'function';
+      const hasSendTransaction = 'sendTransaction' in provider && typeof provider.sendTransaction === 'function';
+
+      if (!hasSignAndSend && !hasSendTransaction) {
+        this.logger?.error('Provider missing required Solana interface', {
+          sessionId: session.sessionId,
+          chainType: sessionChainType,
+          providerMethods: Object.keys(provider),
+        });
+        throw ErrorFactory.connectionFailed(
+          'Provider does not implement required Solana interface (missing signAndSendTransaction or sendTransaction method)',
+          {
+            sessionId: session.sessionId,
+            walletId: session.walletId,
+            chainType: sessionChainType,
+          }
+        );
+      }
     }
 
     return {
@@ -3554,6 +3697,170 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       return null;
     }
     return adapter;
+  }
+
+  /**
+   * Invalidate an adapter, removing it from cache
+   *
+   * @param walletId - Wallet ID whose adapter should be invalidated
+   * @param reason - Reason for invalidation (for logging)
+   * @private
+   */
+  private invalidateAdapter(walletId: string, reason: string): void {
+    this.logger?.info('Invalidating adapter', {
+      walletId,
+      reason,
+      hadAdapter: this.adapters.has(walletId),
+    });
+
+    const adapter = this.adapters.get(walletId);
+    if (adapter) {
+      // Clean up adapter event listeners
+      this.cleanupAdapterHandlers(walletId);
+
+      // Remove from cache
+      this.adapters.delete(walletId);
+      this.providerVersions.delete(walletId);
+    }
+
+    // Update health tracking
+    const health = this.adapterHealth.get(walletId);
+    if (health) {
+      health.errors++;
+      health.lastError = new Date();
+      health.consecutiveFailures++;
+    } else {
+      this.adapterHealth.set(walletId, {
+        errors: 1,
+        lastError: new Date(),
+        lastSuccess: null,
+        consecutiveFailures: 1,
+      });
+    }
+  }
+
+  /**
+   * Check if an adapter should be reused or recreated
+   *
+   * @param walletId - Wallet ID to check
+   * @returns true if adapter should be recreated
+   * @private
+   */
+  private shouldRecreateAdapter(walletId: string): boolean {
+    const health = this.adapterHealth.get(walletId);
+    if (!health) {
+      return false; // No health issues recorded
+    }
+
+    // Recreate if too many consecutive failures
+    if (health.consecutiveFailures >= this.ADAPTER_HEALTH_CONFIG.MAX_CONSECUTIVE_FAILURES) {
+      this.logger?.warn('Adapter has too many consecutive failures, will recreate', {
+        walletId,
+        consecutiveFailures: health.consecutiveFailures,
+      });
+      return true;
+    }
+
+    // Recreate if recent error and still failing
+    if (health.lastError) {
+      const timeSinceError = Date.now() - health.lastError.getTime();
+      if (timeSinceError < this.ADAPTER_HEALTH_CONFIG.ERROR_TIMEOUT_MS) {
+        this.logger?.debug('Recent adapter error, considering recreation', {
+          walletId,
+          timeSinceError,
+          threshold: this.ADAPTER_HEALTH_CONFIG.ERROR_TIMEOUT_MS,
+        });
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Extract Aztec permissions for a given chain
+   *
+   * Checks multiple sources in order of priority:
+   * 1. Explicit permissions in connect options (aztecOptions.permissions)
+   * 2. Permissions configured in WalletMeshConfig by chain ID
+   * 3. No permissions (adapter will use defaults)
+   *
+   * @param options - Optional connect options that may contain permissions
+   * @returns Permission extraction result with source information
+   * @private
+   */
+  private extractAztecPermissions(options?: ConnectOptions): PermissionExtractionResult {
+    // Check for Aztec chain in configuration
+    const aztecChain = this.config.chains?.find((c) => c.chainType === ChainType.Aztec);
+
+    if (!aztecChain) {
+      this.logger?.debug('No Aztec chain configured, skipping permission extraction');
+      return {
+        permissions: undefined,
+        chainId: undefined,
+        source: 'none',
+      };
+    }
+
+    const aztecChainId = aztecChain.chainId;
+
+    // Priority 1: Permissions in connect options
+    const optionsWithAztec = options as Record<string, unknown> | undefined;
+    const aztecOptions = optionsWithAztec?.['aztecOptions'] as { permissions?: string[] } | undefined;
+    const optionsPermissions = aztecOptions?.permissions;
+
+    if (Array.isArray(optionsPermissions) && optionsPermissions.length > 0) {
+      this.logger?.debug('Using permissions from connect options', {
+        chainId: aztecChainId,
+        permissions: optionsPermissions,
+        count: optionsPermissions.length,
+      });
+      return {
+        permissions: optionsPermissions,
+        chainId: aztecChainId,
+        source: 'options',
+      };
+    }
+
+    // Priority 2: Permissions in WalletMeshConfig
+    const configWithPermissions = this.config as PermissionsConfig;
+    if (configWithPermissions.permissions) {
+      const chainPermissions = configWithPermissions.permissions[aztecChainId];
+
+      if (chainPermissions && Array.isArray(chainPermissions)) {
+        this.logger?.info('Using permissions from client configuration', {
+          chainId: aztecChainId,
+          permissions: chainPermissions,
+          count: chainPermissions.length,
+          categories: this.categorizePermissions(chainPermissions),
+        });
+        return {
+          permissions: chainPermissions,
+          chainId: aztecChainId,
+          source: 'config',
+        };
+      }
+
+      this.logger?.warn('No permissions configured for Aztec chain', {
+        chainId: aztecChainId,
+        availableChains: Object.keys(configWithPermissions.permissions),
+        impact: 'Adapter will use default permissions which may be insufficient',
+        recommendation: 'Add permissions array to WalletMesh config for this chain ID',
+      });
+    } else {
+      this.logger?.warn('No permission configuration in client config', {
+        chainId: aztecChainId,
+        impact: 'Adapter will use default permissions',
+        recommendation: 'Add permissions configuration to WalletMesh config',
+      });
+    }
+
+    // Priority 3: No explicit permissions (adapter will use defaults)
+    return {
+      permissions: undefined,
+      chainId: aztecChainId,
+      source: 'default',
+    };
   }
 
   /**

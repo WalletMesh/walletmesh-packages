@@ -890,6 +890,10 @@ export class ModalController implements PublicModalController {
         throw ErrorFactory.configurationError('Client not initialized');
       }
 
+      if (!this.options.client.switchChain) {
+        throw ErrorFactory.configurationError('switchChain not supported by client');
+      }
+
       await this.options.client.switchChain(chainId, activeWalletId);
 
       if (this.logger) {

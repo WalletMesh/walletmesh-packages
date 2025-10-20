@@ -15,6 +15,7 @@ import type { AztecDappWallet } from './types.js';
 
 // Cache for the Aztec RPC wallet module
 let aztecModuleCache: Promise<AztecModule> | null = null;
+let cacheInvalidated = false;
 
 // Singleton cache for AztecDappWallet instances
 // Uses WeakMap with provider as key to allow garbage collection
@@ -40,23 +41,50 @@ interface AztecModule {
 }
 
 /**
- * Get the Aztec RPC wallet module with caching
+ * Get the Aztec RPC wallet module with caching and proper error handling
  * @internal
  */
 async function getAztecModule(): Promise<AztecModule> {
-  if (!aztecModuleCache) {
-    try {
-      aztecModuleCache = import('@walletmesh/aztec-rpc-wallet').then(
-        (module) => module as unknown as AztecModule,
-      );
-    } catch (error) {
-      throw ErrorFactory.configurationError(
-        'Failed to load Aztec module. Ensure @walletmesh/aztec-rpc-wallet is installed.',
-        { originalError: error },
-      );
-    }
+  // Return cached promise if available and not invalidated
+  if (aztecModuleCache && !cacheInvalidated) {
+    return aztecModuleCache;
   }
+
+  // Create new loading promise with proper error handling
+  aztecModuleCache = (async () => {
+    try {
+      const module = await import('@walletmesh/aztec-rpc-wallet');
+      cacheInvalidated = false; // Reset invalidation flag on success
+      return module as unknown as AztecModule;
+    } catch (error) {
+      // Invalidate cache on error to allow retry
+      cacheInvalidated = true;
+
+      // Provide helpful error message
+      const errorMessage =
+        'Failed to load @walletmesh/aztec-rpc-wallet module.\n\n' +
+        'This package is required for Aztec wallet functionality.\n' +
+        'Install it with: npm install @walletmesh/aztec-rpc-wallet\n\n' +
+        `Original error: ${error instanceof Error ? error.message : String(error)}`;
+
+      throw ErrorFactory.configurationError(errorMessage, {
+        originalError: error,
+        module: '@walletmesh/aztec-rpc-wallet',
+        resolution: 'npm install @walletmesh/aztec-rpc-wallet',
+      });
+    }
+  })();
+
   return aztecModuleCache;
+}
+
+/**
+ * Clear the module cache (useful for testing)
+ * @internal
+ */
+export function clearAztecModuleCache(): void {
+  aztecModuleCache = null;
+  cacheInvalidated = false;
 }
 
 /**
@@ -67,7 +95,26 @@ async function getAztecModule(): Promise<AztecModule> {
 export interface CreateAztecWalletOptions {
   /** The Aztec chain ID (e.g., 'aztec:sandbox', 'aztec:testnet') */
   chainId?: string;
-  /** Custom chain ID options to request permissions for */
+  /**
+   * Custom permissions to request from the wallet
+   *
+   * @deprecated This parameter is currently ignored. Permissions must be set during wallet
+   * connection (adapter.connect()), not wallet creation. Pass permissions via the adapter
+   * connect options instead:
+   *
+   * @example
+   * ```typescript
+   * await adapter.connect({
+   *   chains: [{ type: ChainType.Aztec, chainId: 'aztec:testnet' }],
+   *   aztecOptions: {
+   *     permissions: ['aztec_getAddress', 'aztec_sendTransaction', 'aztec_deployContract']
+   *   }
+   * });
+   *
+   * // Then create the wallet (permissions already granted during connection)
+   * const wallet = await createAztecWallet(provider, { chainId: 'aztec:testnet' });
+   * ```
+   */
   permissions?: Record<string, string[]>;
 }
 
@@ -105,6 +152,16 @@ export async function createAztecWallet(
   if (!provider) {
     modalLogger.debug('No provider available for Aztec wallet creation');
     return null;
+  }
+
+  // Warn if permissions were provided (they are ignored)
+  if (options.permissions) {
+    modalLogger.warn(
+      'Permissions parameter is ignored in createAztecWallet(). ' +
+        'Permissions must be set during wallet connection via adapter.connect(). ' +
+        'Pass permissions through the aztecOptions parameter when connecting.',
+      { permissions: options.permissions }
+    );
   }
 
   // Extract session ID first for better cache key

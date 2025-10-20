@@ -135,7 +135,8 @@ export async function signMessage(wallet: AztecDappWallet | null, message: strin
   try {
     // Create auth witness for the message
     // This uses the existing auth witness functionality
-    const messageBuffer = Buffer.from(message, 'utf-8');
+    const encoder = new TextEncoder();
+    const messageBuffer = encoder.encode(message);
     const authWitness = await wallet.createAuthWit(messageBuffer);
 
     // Convert auth witness to hex string signature

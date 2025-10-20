@@ -62,6 +62,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Shows complete transaction lifecycle: idle → simulating → proving → sending → pending → confirming → confirmed/failed
   - Auto-dismisses 2.5 seconds after showing success/failure state
   - Includes navigation guard to prevent accidental tab closure
+  - **Focus trapping** for keyboard accessibility (can be disabled)
+  - **ESC key support** to close when transaction completes
+  - **Theming support** with customizable design tokens
   - Automatically injected by provider (no manual rendering required)
 
 - **BackgroundTransactionIndicator** (`src/components/BackgroundTransactionIndicator.tsx`)
@@ -504,6 +507,125 @@ function useTokenBalance(tokenAddress: string) {
     enabled: !!provider && !!address,
   });
 }
+```
+
+## Transaction Overlay Configuration
+
+### Focus Trapping & Keyboard Navigation
+
+The transaction status overlay includes built-in focus trapping and keyboard navigation for improved accessibility:
+
+```typescript
+<WalletMeshProvider config={{
+  appName: 'My DApp',
+  chains: [...],
+  transactionOverlay: {
+    // ESC key closes overlay when transaction completes
+    allowEscapeKeyClose: true, // default
+
+    // Disable focus trapping if implementing custom focus management
+    disableFocusTrap: false, // default
+  }
+}}>
+  <App />
+</WalletMeshProvider>
+```
+
+**Features:**
+- **Focus trap**: Keyboard navigation stays within the overlay
+- **ESC key support**: Close overlay when transaction reaches terminal state (confirmed/failed)
+- **ARIA attributes**: Proper accessibility labels for screen readers
+- **Focus restoration**: Returns focus to previously focused element when overlay closes
+
+### Theming the Transaction Overlay
+
+Customize the transaction overlay appearance using design tokens:
+
+```typescript
+<WalletMeshProvider config={{
+  appName: 'My DApp',
+  chains: [...],
+  theme: {
+    mode: 'dark',
+    customization: {
+      colors: {
+        // Overlay background and card styling
+        overlayBg: 'rgba(0, 0, 0, 0.85)',
+        overlayCardBg: 'rgba(30, 30, 30, 0.95)',
+        overlayCardBorder: 'rgba(100, 100, 100, 0.3)',
+
+        // Text colors
+        overlayTextPrimary: '#ffffff',
+        overlayTextSecondary: 'rgba(255, 255, 255, 0.7)',
+
+        // Interactive elements
+        overlaySpinnerPrimary: '#00ff88',
+        overlayStageActive: 'rgba(0, 255, 136, 0.25)',
+        overlayStageCompleted: 'rgba(0, 200, 100, 0.2)',
+        overlayStageIcon: 'rgba(100, 100, 100, 0.2)',
+      }
+    }
+  }
+}}>
+  <App />
+</WalletMeshProvider>
+```
+
+**Available Design Tokens:**
+
+| Token | Purpose | Default (Dark) | Default (Light) |
+|-------|---------|----------------|-----------------|
+| `overlayBg` | Full overlay background | `rgba(15, 23, 42, 0.72)` | `rgba(15, 23, 42, 0.72)` |
+| `overlayCardBg` | Content card background | `rgba(9, 14, 26, 0.92)` | `rgba(255, 255, 255, 0.95)` |
+| `overlayCardBorder` | Content card border | `rgba(148, 163, 184, 0.15)` | `rgba(226, 232, 240, 0.5)` |
+| `overlayTextPrimary` | Primary text color | `#f8fafc` | `#1f2937` |
+| `overlayTextSecondary` | Secondary/muted text | `rgba(226, 232, 240, 0.92)` | `#6b7280` |
+| `overlaySpinnerPrimary` | Spinner color | `#38bdf8` | `#4f46e5` |
+| `overlayStageActive` | Active stage highlight | `rgba(56, 189, 248, 0.25)` | `rgba(79, 70, 229, 0.25)` |
+| `overlayStageCompleted` | Completed stage color | `rgba(34, 197, 94, 0.2)` | `rgba(34, 197, 94, 0.2)` |
+| `overlayStageIcon` | Stage icon background | `rgba(148, 163, 184, 0.15)` | `rgba(148, 163, 184, 0.15)` |
+
+### Complete Transaction Overlay Example
+
+```typescript
+<WalletMeshProvider config={{
+  appName: 'Advanced DApp',
+  chains: [aztecSandbox],
+
+  // Transaction overlay configuration
+  transactionOverlay: {
+    enabled: true, // Enable overlay
+
+    // Custom text
+    headline: 'Processing Your Transaction',
+    description: 'Please wait while we process your request',
+
+    // Navigation and accessibility
+    disableNavigationGuard: false, // Warn before closing tab
+    allowEscapeKeyClose: true, // ESC closes when done
+    disableFocusTrap: false, // Enable keyboard accessibility
+
+    // Display options
+    showBackgroundTransactions: false, // Only show active transaction
+  },
+
+  // Theme customization
+  theme: {
+    mode: 'dark',
+    persist: true,
+    customization: {
+      colors: {
+        // Custom overlay colors
+        overlayBg: 'rgba(0, 0, 0, 0.9)',
+        overlayCardBg: '#1a1a1a',
+        overlaySpinnerPrimary: '#00ff88',
+        overlayStageActive: 'rgba(0, 255, 136, 0.3)',
+      }
+    }
+  }
+}}>
+  <App />
+</WalletMeshProvider>
 ```
 
 ## Production Considerations

@@ -412,6 +412,7 @@ export function WalletMeshSandboxedIcon({
       {...a11yAttributes}
       {...containerConfig.attributes}
       data-has-error={hasError}
+      data-testid="sandboxed-icon"
     >
       {isLoading && (
         <div style={containerConfig.loading.styles} {...containerConfig.loading.attributes}>
