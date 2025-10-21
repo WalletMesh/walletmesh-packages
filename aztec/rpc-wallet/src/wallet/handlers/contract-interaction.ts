@@ -75,22 +75,61 @@ export function createContractInteractionHandlers() {
     return txOpts;
   }
 
+  /**
+   * @internal
+   * Extracts FeeOptions from AztecSendOptions.
+   * If fee is provided in sendOptions, use it; otherwise get defaults.
+   */
+  async function extractFeeOptions(
+    ctx: AztecHandlerContext,
+    sendOptions?: AztecSendOptions,
+  ): Promise<FeeOptions> {
+    if (sendOptions?.fee) {
+      // User provided custom fee options
+      // Note: sendOptions.fee is unknown type, needs to be the right FeeOptions structure
+      return sendOptions.fee as FeeOptions;
+    }
+    return getFeeOptions(ctx);
+  }
+
+  /**
+   * @internal
+   * Extracts TxExecutionOptions from AztecSendOptions.
+   * Builds options from cancellable and txNonce fields.
+   */
+  async function extractTxOptions(
+    ctx: AztecHandlerContext,
+    sendOptions?: AztecSendOptions,
+  ): Promise<TxExecutionOptions> {
+    if (!sendOptions) {
+      return getTxOptions(ctx);
+    }
+
+    const txOpts: TxExecutionOptions = {};
+
+    if (sendOptions.cancellable !== undefined) {
+      txOpts.cancellable = sendOptions.cancellable;
+    }
+
+    if (sendOptions.txNonce !== undefined) {
+      // txNonce is unknown, cast appropriately
+      txOpts.txNonce = sendOptions.txNonce as any;
+    }
+
+    return txOpts;
+  }
+
   async function createTxExecutionRequest(
     ctx: AztecHandlerContext,
     executionPayload: ExecutionPayload,
+    feeOptions?: FeeOptions,
+    txOptions?: TxExecutionOptions,
   ): Promise<TxExecutionRequest> {
     logger.debug('Creating transaction execution request...');
     try {
-      // TODO(twt): Provide gas settings from the context
-      logger.debug('Getting current base fees...');
-      const baseFees = await ctx.wallet.getCurrentBaseFees();
-      logger.debug('Base fees:', baseFees);
-
-      const maxFeesPerGas = baseFees.mul(1.5);
-      logger.debug('Calculated max fees per gas:', maxFeesPerGas);
-
-      const feeOpts = await getFeeOptions(ctx);
-      const txOpts = await getTxOptions(ctx);
+      // Use provided options or get defaults
+      const feeOpts = feeOptions ?? (await getFeeOptions(ctx));
+      const txOpts = txOptions ?? (await getTxOptions(ctx));
 
       // Create a transaction execution request from the payload
       const txRequest = await ctx.wallet.createTxExecutionRequest(executionPayload, feeOpts, txOpts);
@@ -137,11 +176,13 @@ export function createContractInteractionHandlers() {
    *
    * @param ctx - The {@link AztecHandlerContext}.
    * @param executionPayload - The {@link ExecutionPayload} for the transaction.
+   * @param sendOptions - Optional {@link AztecSendOptions} for fee and transaction configuration.
    * @returns A promise resolving to an object containing both the blockchain tx hash and status tracking ID.
    */
   async function executeTransaction(
     ctx: AztecHandlerContext,
     executionPayload: ExecutionPayload,
+    sendOptions?: AztecSendOptions,
   ): Promise<{ txHash: TxHash; txStatusId: string }> {
     const startTime = Date.now();
 
@@ -158,11 +199,18 @@ export function createContractInteractionHandlers() {
       logger.debug('Transaction initiated, sending initial notification...');
       await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
 
+      // Extract fee and tx options from sendOptions if provided
+      const feeOpts = await extractFeeOptions(ctx, sendOptions);
+      const txOpts = await extractTxOptions(ctx, sendOptions);
+
+      logger.debug('Using fee options:', feeOpts);
+      logger.debug('Using tx options:', txOpts);
+
       // Stage 1: Simulating (maps to Aztec's simulate())
       logger.debug('Starting transaction simulation...');
       await notifyTransactionStatus(ctx, { txStatusId, status: 'simulating' });
 
-      const txRequest = await createTxExecutionRequest(ctx, executionPayload);
+      const txRequest = await createTxExecutionRequest(ctx, executionPayload, feeOpts, txOpts);
       const simulationResult = await simulateTransaction(ctx, executionPayload, txRequest);
       logger.debug('Transaction simulation completed');
 
@@ -319,7 +367,7 @@ export function createContractInteractionHandlers() {
   async function executeBatchTransaction(
     ctx: AztecHandlerContext,
     executionPayloads: ExecutionPayload[],
-    _sendOptions?: AztecSendOptions,
+    sendOptions?: AztecSendOptions,
   ): Promise<{ txHash: TxHash; receipt: TxReceipt; txStatusId: string }> {
     const startTime = Date.now();
 
@@ -342,11 +390,18 @@ export function createContractInteractionHandlers() {
       // Merge payloads into single atomic batch
       const mergedPayload = mergeExecutionPayloads(executionPayloads);
 
+      // Extract fee and tx options from sendOptions if provided
+      const feeOpts = await extractFeeOptions(ctx, sendOptions);
+      const txOpts = await extractTxOptions(ctx, sendOptions);
+
+      logger.debug('Using fee options:', feeOpts);
+      logger.debug('Using tx options:', txOpts);
+
       // Stage 1: Simulating (maps to Aztec's simulate())
       logger.debug('Starting batch transaction simulation...');
       await notifyTransactionStatus(ctx, { txStatusId, status: 'simulating' });
 
-      const txRequest = await createTxExecutionRequest(ctx, mergedPayload);
+      const txRequest = await createTxExecutionRequest(ctx, mergedPayload, feeOpts, txOpts);
       const simulationResult = await simulateTransaction(ctx, mergedPayload, txRequest);
       logger.debug('Batch transaction simulation completed');
 
@@ -428,9 +483,10 @@ export function createContractInteractionHandlers() {
      * returned `txStatusId`.
      *
      * @param ctx - The {@link AztecHandlerContext}.
-     * @param paramsTuple - A tuple containing the {@link ExecutionPayload}.
+     * @param paramsTuple - A tuple containing the {@link ExecutionPayload} and optional {@link AztecSendOptions}.
      *                      Defined by {@link AztecWalletMethodMap.aztec_wmExecuteTx.params}.
      * @param paramsTuple.0 - The {@link ExecutionPayload} to execute.
+     * @param paramsTuple.1 - Optional {@link AztecSendOptions} for fee and transaction configuration.
      * @returns A promise that resolves to an object containing the blockchain transaction hash
      *          and the status tracking ID. Type defined by {@link AztecWalletMethodMap.aztec_wmExecuteTx.result}.
      */
@@ -438,8 +494,8 @@ export function createContractInteractionHandlers() {
       ctx: AztecHandlerContext,
       paramsTuple: AztecWalletMethodMap['aztec_wmExecuteTx']['params'],
     ): Promise<AztecWalletMethodMap['aztec_wmExecuteTx']['result']> => {
-      const [executionPayload] = paramsTuple;
-      return executeTransaction(ctx, executionPayload);
+      const [executionPayload, sendOptions] = paramsTuple;
+      return executeTransaction(ctx, executionPayload, sendOptions);
     },
 
     /**

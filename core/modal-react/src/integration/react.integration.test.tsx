@@ -9,7 +9,7 @@ import { render, renderHook, screen } from '@testing-library/react';
 import { ChainType, type SupportedChain } from '@walletmesh/modal-core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WalletMeshModal } from '../components/WalletMeshModal.js';
-import { MockWalletMeshProvider } from '../test/mocks/MockWalletMeshProvider.js';
+import { MockWalletMeshProvider } from '../test-utils/MockWalletMeshProvider.js';
 import {
   WalletMeshConnectButton,
   useAccount,

@@ -113,19 +113,17 @@ export class AztecTransactionManager {
     interaction: ContractFunctionInteraction,
     transaction: AztecTransactionResult,
   ): Promise<unknown> {
-    // Stage 1: Simulating (Aztec.js simulate())
-    this.updateStatus(transaction.txStatusId, 'simulating');
-    aztecTransactionActions.startTransactionStage(this.store, transaction.txStatusId, 'simulating');
+    // Small delay to ensure React has time to render the initial 'idle' state
+    // before transitioning to 'proving'
+    await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Stage 2: Proving (tracked via proving notifications from wallet)
-    // The wallet will send aztec_provingStatus notifications which update the state
+    // Stage 1: Proving - This encompasses simulation, proof generation, and sending
+    // The wallet handles these internally during executeTx()
     this.updateStatus(transaction.txStatusId, 'proving');
-    aztecTransactionActions.endTransactionStage(this.store, transaction.txStatusId, 'simulating');
     aztecTransactionActions.startTransactionStage(this.store, transaction.txStatusId, 'proving');
 
-    // Stage 3: Sending - Execute transaction using executeTx helper
-    // This calls wallet.wmExecuteTx() which handles proving and sending internally
-    // Use executeTx helper - this properly manages wallet state
+    // Execute transaction - this is the long operation (60-120 seconds)
+    // Handles simulation, proving, and sending internally
     const sentTx = await executeTx(this.wallet, interaction);
 
     // Update transaction hash (blockchain identifier)
@@ -135,20 +133,15 @@ export class AztecTransactionManager {
       });
     }
 
-    // Stage 4: Pending (awaiting network inclusion)
-    this.updateStatus(transaction.txStatusId, 'pending');
-    aztecTransactionActions.endTransactionStage(this.store, transaction.txStatusId, 'proving');
-    aztecTransactionActions.startTransactionStage(this.store, transaction.txStatusId, 'pending');
-
-    // Stage 5: Confirming (awaiting final confirmation)
+    // Stage 2: Confirming - waiting for network confirmation
     this.updateStatus(transaction.txStatusId, 'confirming');
-    aztecTransactionActions.endTransactionStage(this.store, transaction.txStatusId, 'pending');
+    aztecTransactionActions.endTransactionStage(this.store, transaction.txStatusId, 'proving');
     aztecTransactionActions.startTransactionStage(this.store, transaction.txStatusId, 'confirming');
 
-    // Wait for confirmation
+    // Wait for confirmation (few seconds)
     const receipt = await sentTx.wait();
 
-    // Stage 6: Confirmed
+    // Stage 3: Confirmed - transaction complete
     this.updateStatus(transaction.txStatusId, 'confirmed');
     aztecTransactionActions.endTransactionStage(this.store, transaction.txStatusId, 'confirming');
 

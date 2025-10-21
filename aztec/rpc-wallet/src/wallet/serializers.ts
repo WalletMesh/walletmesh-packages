@@ -560,7 +560,9 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
         case 'aztec_wmExecuteTx': {
           const executionPayloadRaw = ensureParam<Record<string, unknown>>(dAppParams, 'executionPayload');
           const executionPayload = await ExecutionPayloadSchema.parseAsync(executionPayloadRaw);
-          return [executionPayload];
+          const sendOptions = getOptionalParam<Record<string, unknown>>(dAppParams, 'sendOptions');
+          // AztecSendOptions is a simple object from modal-core, pass through without schema validation
+          return [executionPayload, sendOptions];
         }
         case 'aztec_wmBatchExecute': {
           const executionPayloadsRaw = ensureParam<Record<string, unknown>[]>(

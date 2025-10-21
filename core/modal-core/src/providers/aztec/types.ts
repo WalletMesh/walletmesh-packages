@@ -189,6 +189,8 @@ export interface CreateAztecWalletOptions {
  * Transaction status values for full lifecycle tracking.
  *
  * Uses Aztec-native terminology:
+ * - 'idle' - transaction created but not yet started
+ * - 'initiated' - transaction has been received and ID generated (backend-only)
  * - 'simulating' aligns with Aztec's simulate() method
  * - 'proving' is unique to zero-knowledge systems
  * - 'sending' aligns with Aztec's send() method
@@ -196,6 +198,7 @@ export interface CreateAztecWalletOptions {
  */
 export const TRANSACTION_STATUS_VALUES = [
   'idle',
+  'initiated',
   'simulating',
   'proving',
   'sending',

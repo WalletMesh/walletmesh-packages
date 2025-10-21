@@ -5,6 +5,7 @@ import type { ChainType } from '../../types.js';
  * Transaction status tracking throughout the lifecycle of a blockchain transaction.
  *
  * Uses Aztec-native terminology aligned with the official Aztec.js SDK:
+ * - `initiated` - transaction has been received and ID generated (backend-only)
  * - `simulating` maps to Aztec's simulate() method
  * - `proving` is unique to zero-knowledge systems
  * - `sending` maps to Aztec's send() method
@@ -13,15 +14,16 @@ import type { ChainType } from '../../types.js';
  * @remarks
  * The transaction lifecycle follows this progression:
  * 1. `idle` - Initial state before any action
- * 2. `simulating` - Transaction is being simulated (maps to Aztec's simulate())
- * 3. `proving` - Zero-knowledge proof is being generated (Aztec only)
- * 4. `sending` - Transaction is being sent to the network (maps to Aztec's send())
- * 5. `pending` - Transaction submitted, awaiting network inclusion
- * 6. `confirming` - Transaction included, awaiting confirmations
- * 7. `confirmed` - Transaction has been confirmed on-chain
- * 8. `failed` - Transaction failed at any stage
+ * 2. `initiated` - Transaction received by backend, ID generated (Aztec only)
+ * 3. `simulating` - Transaction is being simulated (maps to Aztec's simulate())
+ * 4. `proving` - Zero-knowledge proof is being generated (Aztec only)
+ * 5. `sending` - Transaction is being sent to the network (maps to Aztec's send())
+ * 6. `pending` - Transaction submitted, awaiting network inclusion
+ * 7. `confirming` - Transaction included, awaiting confirmations
+ * 8. `confirmed` - Transaction has been confirmed on-chain
+ * 9. `failed` - Transaction failed at any stage
  *
- * Note: The `proving` step only occurs for privacy-preserving chains like Aztec
+ * Note: The `initiated` and `proving` steps only occur for privacy-preserving chains like Aztec
  * where zero-knowledge proofs must be generated before submission.
  *
  * @example
@@ -40,6 +42,7 @@ import type { ChainType } from '../../types.js';
  */
 export type TransactionStatus =
   | 'idle'
+  | 'initiated'
   | 'simulating'
   | 'proving'
   | 'sending'

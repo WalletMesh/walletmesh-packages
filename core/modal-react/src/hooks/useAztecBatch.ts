@@ -77,6 +77,8 @@ export interface UseAztecBatchReturn {
   transactionStatuses: BatchTransactionStatus[];
   /** Whether a batch is currently executing */
   isExecuting: boolean;
+  /** Current batch execution mode (null when not executing) */
+  batchMode: 'atomic' | 'sequential' | null;
   /** Overall batch progress (0-100) */
   progress: number;
   /** Total number of transactions in current batch */
@@ -253,6 +255,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
   const { aztecWallet, isAvailable } = useAztecWallet();
   const [transactionStatuses, setTransactionStatuses] = useState<BatchTransactionStatus[]>([]);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [batchMode, setBatchMode] = useState<'atomic' | 'sequential' | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
   // Ref to track if component is mounted
@@ -291,6 +294,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
 
       if (isMountedRef.current) {
         setIsExecuting(true);
+        setBatchMode(atomic ? 'atomic' : 'sequential');
         setError(null);
 
         // Initialize statuses
@@ -446,6 +450,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
       } finally {
         if (isMountedRef.current) {
           setIsExecuting(false);
+          setBatchMode(null);
         }
       }
     },
@@ -462,6 +467,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
     executeBatch: executeBatchTransactions,
     transactionStatuses,
     isExecuting,
+    batchMode,
     progress,
     totalTransactions,
     completedTransactions,

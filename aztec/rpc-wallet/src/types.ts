@@ -508,12 +508,13 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
    * the transaction lifecycle. The frontend receives notifications via the `aztec_transactionStatus`
    * event and can correlate them using the returned `txStatusId`.
    *
-   * @param params - A tuple containing the execution payload.
+   * @param params - A tuple containing the execution payload and optional send options.
    * @param params.0 executionPayload - The {@link ExecutionPayload} to execute.
+   * @param params.1 sendOptions - Optional {@link AztecSendOptions} for fee and transaction configuration.
    * @returns result - An object containing both the blockchain transaction hash and the status tracking ID.
    */
   aztec_wmExecuteTx: {
-    params: [executionPayload: ExecutionPayload];
+    params: [executionPayload: ExecutionPayload, sendOptions?: AztecSendOptions];
     result: {
       txHash: TxHash;
       txStatusId: string;

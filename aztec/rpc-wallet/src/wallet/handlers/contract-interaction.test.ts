@@ -215,6 +215,119 @@ describe('createContractInteractionHandlers', () => {
       expect(mockContext.wallet.proveTx).toHaveBeenCalled();
       expect(mockContext.wallet.sendTx).toHaveBeenCalled();
     });
+
+    it('should accept and use custom fee options from sendOptions', async () => {
+      const customFeeOptions = {
+        paymentMethod: new FeeJuicePaymentMethod(mockAddress),
+        gasSettings: {
+          maxFeesPerGas: { feePerL2Gas: 200n, feePerDaGas: 200n },
+          maxInclFeePerGas: { feePerL2Gas: 300n, feePerDaGas: 300n },
+        },
+      };
+
+      const sendOptions = {
+        fee: customFeeOptions,
+      };
+
+      await handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload, sendOptions]);
+
+      // Verify custom fee options were passed to createTxExecutionRequest
+      const createTxCall = vi.mocked(mockContext.wallet.createTxExecutionRequest).mock.calls[0];
+      expect(createTxCall).toBeDefined();
+      expect(createTxCall?.[0]).toBe(mockExecutionPayload);
+
+      const feeOpts = createTxCall?.[1];
+      expect(feeOpts).toBeDefined();
+      expect(feeOpts?.paymentMethod).toBe(customFeeOptions.paymentMethod);
+    });
+
+    it('should accept and use custom txNonce from sendOptions', async () => {
+      const customTxNonce = 42;
+      const sendOptions = {
+        txNonce: customTxNonce,
+      };
+
+      await handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload, sendOptions]);
+
+      // Verify txNonce was passed to createTxExecutionRequest
+      const createTxCall = vi.mocked(mockContext.wallet.createTxExecutionRequest).mock.calls[0];
+      expect(createTxCall).toBeDefined();
+
+      const txOpts = createTxCall?.[2];
+      expect(txOpts).toBeDefined();
+      expect(txOpts?.txNonce).toBe(customTxNonce);
+    });
+
+    it('should accept and use custom cancellable flag from sendOptions', async () => {
+      const sendOptions = {
+        cancellable: true,
+      };
+
+      await handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload, sendOptions]);
+
+      // Verify cancellable was passed to createTxExecutionRequest
+      const createTxCall = vi.mocked(mockContext.wallet.createTxExecutionRequest).mock.calls[0];
+      expect(createTxCall).toBeDefined();
+
+      const txOpts = createTxCall?.[2];
+      expect(txOpts).toBeDefined();
+      expect(txOpts?.cancellable).toBe(true);
+    });
+
+    it('should accept and use multiple custom options from sendOptions', async () => {
+      const customFeeOptions = {
+        paymentMethod: new FeeJuicePaymentMethod(mockAddress),
+        gasSettings: {
+          maxFeesPerGas: { feePerL2Gas: 200n, feePerDaGas: 200n },
+          maxInclFeePerGas: { feePerL2Gas: 300n, feePerDaGas: 300n },
+        },
+      };
+
+      const sendOptions = {
+        fee: customFeeOptions,
+        txNonce: 99,
+        cancellable: false,
+      };
+
+      await handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload, sendOptions]);
+
+      // Verify all custom options were passed to createTxExecutionRequest
+      const createTxCall = vi.mocked(mockContext.wallet.createTxExecutionRequest).mock.calls[0];
+      expect(createTxCall).toBeDefined();
+
+      const feeOpts = createTxCall?.[1];
+      expect(feeOpts?.paymentMethod).toBe(customFeeOptions.paymentMethod);
+
+      const txOpts = createTxCall?.[2];
+      expect(txOpts?.txNonce).toBe(99);
+      expect(txOpts?.cancellable).toBe(false);
+    });
+
+    it('should use default options when sendOptions is not provided (backward compatibility)', async () => {
+      // Call without sendOptions parameter (old API)
+      await handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload]);
+
+      // Verify default fee and tx options were used
+      const createTxCall = vi.mocked(mockContext.wallet.createTxExecutionRequest).mock.calls[0];
+      expect(createTxCall).toBeDefined();
+      expect(createTxCall?.[0]).toBe(mockExecutionPayload);
+
+      // Should have called getCurrentBaseFees for default fee options
+      expect(mockContext.wallet.getCurrentBaseFees).toHaveBeenCalled();
+
+      const feeOpts = createTxCall?.[1];
+      expect(feeOpts).toBeDefined();
+      expect(feeOpts?.paymentMethod).toBeInstanceOf(FeeJuicePaymentMethod);
+    });
+
+    it('should use default options when sendOptions is empty object', async () => {
+      // Pass empty object as sendOptions
+      await handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload, {}]);
+
+      // Verify default options were used
+      expect(mockContext.wallet.getCurrentBaseFees).toHaveBeenCalled();
+      expect(mockContext.wallet.createTxExecutionRequest).toHaveBeenCalled();
+    });
   });
 
   describe('aztec_wmDeployContract', () => {
@@ -548,16 +661,99 @@ describe('createContractInteractionHandlers', () => {
       });
     });
 
-    it('should handle custom send options', async () => {
+    it('should accept and use custom fee options from sendOptions', async () => {
       const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
-      const sendOptions = { txNonce: 42 };
+
+      const customFeeOptions = {
+        paymentMethod: new FeeJuicePaymentMethod(mockAddress),
+        gasSettings: {
+          maxFeesPerGas: { feePerL2Gas: 500n, feePerDaGas: 500n },
+          maxInclFeePerGas: { feePerL2Gas: 600n, feePerDaGas: 600n },
+        },
+      };
+
+      const sendOptions = {
+        fee: customFeeOptions,
+      };
 
       await handlers.aztec_wmBatchExecute(mockContext, [[payload1], sendOptions]);
 
-      // Verify that the send options are passed through
-      // In this test, we can't directly verify send options are used,
-      // but we can ensure the function doesn't error and executes properly
-      expect(mockContext.wallet.createTxExecutionRequest).toHaveBeenCalled();
+      // Verify custom fee options were passed to createTxExecutionRequest
+      const createTxCall = vi.mocked(mockContext.wallet.createTxExecutionRequest).mock.calls[0];
+      expect(createTxCall).toBeDefined();
+
+      const feeOpts = createTxCall?.[1];
+      expect(feeOpts).toBeDefined();
+      expect(feeOpts?.paymentMethod).toBe(customFeeOptions.paymentMethod);
+    });
+
+    it('should accept and use custom txNonce and cancellable from sendOptions', async () => {
+      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
+
+      const sendOptions = {
+        txNonce: 42,
+        cancellable: true,
+      };
+
+      await handlers.aztec_wmBatchExecute(mockContext, [[payload1], sendOptions]);
+
+      // Verify custom tx options were passed to createTxExecutionRequest
+      const createTxCall = vi.mocked(mockContext.wallet.createTxExecutionRequest).mock.calls[0];
+      expect(createTxCall).toBeDefined();
+
+      const txOpts = createTxCall?.[2];
+      expect(txOpts).toBeDefined();
+      expect(txOpts?.txNonce).toBe(42);
+      expect(txOpts?.cancellable).toBe(true);
+    });
+
+    it('should accept and use multiple custom options from sendOptions', async () => {
+      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
+      const payload2 = createMockPayload([{ to: mockAddress, selector: 'approve', args: [200] }]);
+
+      const customFeeOptions = {
+        paymentMethod: new FeeJuicePaymentMethod(mockAddress),
+        gasSettings: {
+          maxFeesPerGas: { feePerL2Gas: 400n, feePerDaGas: 400n },
+          maxInclFeePerGas: { feePerL2Gas: 500n, feePerDaGas: 500n },
+        },
+      };
+
+      const sendOptions = {
+        fee: customFeeOptions,
+        txNonce: 123,
+        cancellable: false,
+      };
+
+      await handlers.aztec_wmBatchExecute(mockContext, [[payload1, payload2], sendOptions]);
+
+      // Verify all custom options were passed to createTxExecutionRequest
+      const createTxCall = vi.mocked(mockContext.wallet.createTxExecutionRequest).mock.calls[0];
+      expect(createTxCall).toBeDefined();
+
+      const feeOpts = createTxCall?.[1];
+      expect(feeOpts?.paymentMethod).toBe(customFeeOptions.paymentMethod);
+
+      const txOpts = createTxCall?.[2];
+      expect(txOpts?.txNonce).toBe(123);
+      expect(txOpts?.cancellable).toBe(false);
+    });
+
+    it('should use default options when sendOptions is not provided (backward compatibility)', async () => {
+      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
+
+      // Call without sendOptions parameter (old API)
+      await handlers.aztec_wmBatchExecute(mockContext, [[payload1]]);
+
+      // Verify default fee and tx options were used
+      expect(mockContext.wallet.getCurrentBaseFees).toHaveBeenCalled();
+
+      const createTxCall = vi.mocked(mockContext.wallet.createTxExecutionRequest).mock.calls[0];
+      expect(createTxCall).toBeDefined();
+
+      const feeOpts = createTxCall?.[1];
+      expect(feeOpts).toBeDefined();
+      expect(feeOpts?.paymentMethod).toBeInstanceOf(FeeJuicePaymentMethod);
     });
 
     it('should continue batch execution even if notifications fail', async () => {

@@ -80,6 +80,11 @@ export {
 } from '../../components/AztecTransactionStatusOverlay.js';
 
 export {
+  AztecBatchProgressOverlay,
+  type AztecBatchProgressOverlayProps,
+} from '../../components/AztecBatchProgressOverlay.js';
+
+export {
   BackgroundTransactionIndicator,
   type BackgroundTransactionIndicatorProps,
 } from '../../components/BackgroundTransactionIndicator.js';

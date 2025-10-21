@@ -255,6 +255,7 @@ export const aztecTransactionActions = {
 function getStageFromStatus(status: TransactionStatus): keyof AztecTransactionResult['stages'] | null {
   const stageMap: Record<TransactionStatus, keyof AztecTransactionResult['stages'] | null> = {
     idle: null,
+    initiated: null,
     simulating: 'simulating',
     proving: 'proving',
     sending: 'sending',

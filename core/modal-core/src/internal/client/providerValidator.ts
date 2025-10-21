@@ -60,12 +60,20 @@ export class ProviderValidator {
   /**
    * Check if a provider supports lazy initialization
    * Uses duck typing to detect providers with ensureReady() method
+   *
+   * Note: Properly handles getter properties like `isInitialized` by accessing
+   * the property directly (which triggers the getter) rather than using type
+   * assertions that may not work correctly with getters.
    */
   private isLazyProvider(provider: BlockchainProvider): provider is BlockchainProvider & LazyProvider {
-    return (
-      typeof (provider as unknown as { ensureReady?: unknown }).ensureReady === 'function' &&
-      typeof (provider as unknown as { isInitialized?: unknown }).isInitialized === 'boolean'
-    );
+    // Check for ensureReady method
+    const hasEnsureReady = 'ensureReady' in provider && typeof provider.ensureReady === 'function';
+
+    // Check for isInitialized property (handles both direct properties and getters)
+    const hasIsInitialized = 'isInitialized' in provider &&
+      typeof (provider as { isInitialized?: boolean }).isInitialized === 'boolean';
+
+    return hasEnsureReady && hasIsInitialized;
   }
 
   /**

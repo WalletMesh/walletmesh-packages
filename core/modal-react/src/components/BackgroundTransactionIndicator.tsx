@@ -40,6 +40,7 @@ interface TransactionInfo {
 
 const STATUS_ICONS: Record<TransactionStatus, string> = {
   idle: '⏳',
+  initiated: '▶️',
   simulating: '🔧',
   proving: '🔐',
   sending: '📡',
@@ -51,6 +52,7 @@ const STATUS_ICONS: Record<TransactionStatus, string> = {
 
 const STATUS_LABELS: Record<TransactionStatus, string> = {
   idle: 'Starting',
+  initiated: 'Initiated',
   simulating: 'Simulating',
   proving: 'Proving',
   sending: 'Sending',

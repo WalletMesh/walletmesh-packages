@@ -92,6 +92,7 @@ export function registerAztecSerializers(provider: WalletRouterProvider): void {
 
     // Contract Interaction Methods (WalletMesh specific)
     'aztec_wmExecuteTx',
+    'aztec_wmBatchExecute',
     'aztec_wmSimulateTx',
     'aztec_wmDeployContract',
 

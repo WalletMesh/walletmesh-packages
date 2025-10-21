@@ -47,8 +47,10 @@ describe('ExecutionPayload Serialization', () => {
     expect(deserializedParams).toBeDefined();
     expect(Array.isArray(deserializedParams)).toBe(true);
     const paramsArray = deserializedParams as unknown[];
-    expect(paramsArray).toHaveLength(1);
+    expect(paramsArray).toHaveLength(2); // Now returns [executionPayload, sendOptions]
     const result = paramsArray[0] as ExecutionPayload;
+    const sendOptions = paramsArray[1]; // Should be undefined when not provided
+    expect(sendOptions).toBeUndefined(); // sendOptions was not provided in this test
 
     // Verify the structure is preserved
     expect(result).toBeDefined();

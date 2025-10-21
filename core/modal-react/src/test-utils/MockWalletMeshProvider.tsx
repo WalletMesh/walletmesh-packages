@@ -10,9 +10,9 @@
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider } from '../../theme/ThemeContext.js';
-import { WalletMeshContext } from '../../WalletMeshContext.js';
-import type { WalletMeshReactConfig } from '../../types.js';
+import { ThemeProvider } from '../theme/ThemeContext.js';
+import { WalletMeshContext } from '../WalletMeshContext.js';
+import type { WalletMeshReactConfig } from '../types.js';
 
 // Import the client type for proper typing
 type WalletMeshClient = Awaited<ReturnType<typeof import('@walletmesh/modal-core').createWalletMesh>>;

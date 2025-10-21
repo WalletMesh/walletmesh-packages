@@ -49,6 +49,11 @@ const STAGE_INFO: Record<TransactionStatus, StageInfo> = {
     description: 'Initializing transaction',
     icon: '⏳',
   },
+  initiated: {
+    label: 'Initiated',
+    description: 'Transaction initiated',
+    icon: '▶️',
+  },
   simulating: {
     label: 'Simulating',
     description: 'Simulating transaction',
@@ -88,10 +93,7 @@ const STAGE_INFO: Record<TransactionStatus, StageInfo> = {
 
 const STAGE_ORDER: TransactionStatus[] = [
   'idle',
-  'simulating',
   'proving',
-  'sending',
-  'pending',
   'confirming',
   'confirmed',
 ];

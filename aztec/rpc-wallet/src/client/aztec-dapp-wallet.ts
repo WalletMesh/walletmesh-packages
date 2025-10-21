@@ -957,22 +957,29 @@ export class AztecDappWallet implements Wallet {
    * (initiated/simulating/proving/sending/pending/failed) throughout the transaction lifecycle.
    *
    * @param interaction - The {@link ContractFunctionInteraction} representing the desired contract call.
+   * @param sendOptions - Optional send options for fee configuration, nonce, and cancellable flag
    * @returns A {@link SentTx} object that can be used to track the transaction.
    * @see {@link AztecWalletMethodMap.aztec_wmExecuteTx}
    */
   async wmExecuteTx(
     interaction: ContractFunctionInteraction, // as returned from contract.methods.myMethod(arg0, arg1)
+    sendOptions?: unknown,
   ): Promise<SentTx> {
     // Extract the execution payload which contains the encoded function call
     const executionPayload = await interaction.request();
 
+    // Build params object, optionally including sendOptions
+    const params: { executionPayload: ExecutionPayload; sendOptions?: unknown } = {
+      executionPayload,
+    };
+    if (sendOptions !== undefined) {
+      params.sendOptions = sendOptions;
+    }
+
     // Send the high-level interaction details to the remote wallet
-    // Note: opts is not sent - the server-side wallet will handle fee configuration
     const result = (await this.routerProvider.call(this.chainId, {
       method: 'aztec_wmExecuteTx',
-      params: {
-        executionPayload,
-      },
+      params,
     })) as { txHash: TxHash; txStatusId: string };
 
     // Log the txStatusId for debugging/tracking purposes

@@ -3488,6 +3488,26 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
           'Provider does not support generic request method. Use provider-specific methods instead.',
         );
       },
+
+      // Add call() method for Aztec providers
+      // This is required by the Aztec provider interface and used by validation
+      // We bind the method directly to preserve the original signature
+      ...('call' in walletProvider && typeof walletProvider.call === 'function' && {
+        call: walletProvider.call.bind(walletProvider),
+      }),
+
+      // Add lazy provider methods if the underlying provider supports them
+      // This allows lazy providers to be detected and properly initialized
+      ...('ensureReady' in walletProvider && typeof walletProvider.ensureReady === 'function' && {
+        ensureReady: async () => {
+          return await (walletProvider as { ensureReady: () => Promise<void> }).ensureReady();
+        },
+      }),
+      ...('isInitialized' in walletProvider && typeof (walletProvider as { isInitialized?: boolean }).isInitialized === 'boolean' && {
+        get isInitialized() {
+          return (walletProvider as { isInitialized: boolean }).isInitialized;
+        },
+      }),
     };
   }
 

@@ -4,6 +4,7 @@ import { CounterContractArtifact } from '@aztec/noir-test-contracts.js/Counter';
 import {
   AztecConnectButton,
   AztecWalletReady,
+  AztecBatchProgressOverlay,
   useAccount,
   useAztecBatch,
   useAztecContract,
@@ -49,7 +50,16 @@ const DApp: React.FC = () => {
     deployedAddress: counterAddress,
   } = useAztecDeploy();
 
-  const { executeBatch, isExecuting: isBatchExecuting, progress: batchProgress } = useAztecBatch();
+  const {
+    executeBatch,
+    isExecuting: isBatchExecuting,
+    batchMode,
+    progress: batchProgress,
+    completedTransactions,
+    totalTransactions,
+    transactionStatuses,
+    failedTransactions,
+  } = useAztecBatch();
   const { toAztecAddress, toAddressString } = useAztecAddress();
   const {
     executeSync,
@@ -426,9 +436,49 @@ const DApp: React.FC = () => {
   };
 
   /**
-   * Increments the Counter contract value twice in a batch transaction.
+   * Increments the Counter contract value twice in an ATOMIC batch transaction.
+   *
+   * Atomic mode executes all operations as a single transaction with one proof.
+   * All operations succeed together or all fail together (atomicity guarantee).
+   * More efficient than sequential execution.
    */
   const handleIncrementCounterTwice = async () => {
+    if (!aztecWallet || !counterContract || !address) {
+      showError('Please deploy a counter contract first.');
+      return;
+    }
+
+    try {
+      console.log('[DApp] Starting atomic batch execution...');
+      const ownerAddressHex = toAddressString(address);
+      const interactions = [
+        counterContract.methods.increment(ownerAddressHex, ownerAddressHex),
+        counterContract.methods.increment(ownerAddressHex, ownerAddressHex),
+      ];
+
+      console.log('[DApp] Calling executeBatch with atomic: true');
+      // Use atomic mode for single transaction with one proof
+      const receipts = await executeBatch(interactions as any, { atomic: true });
+      console.log('[DApp] Atomic batch completed successfully:', receipts);
+      showSuccess('Counter incremented twice atomically (1 transaction, 1 proof)');
+    } catch (error) {
+      console.error('[DApp] Atomic batch execution failed:', error);
+      if (error instanceof Error) {
+        showError(`Atomic batch failed: ${error.message}`);
+      } else {
+        showError('Atomic batch failed with unknown error');
+      }
+    }
+  };
+
+  /**
+   * Increments the Counter contract value twice in SEQUENTIAL batch mode.
+   *
+   * Sequential mode (default) executes operations one-by-one.
+   * Each operation gets its own transaction and proof.
+   * Individual operations can fail independently.
+   */
+  const handleIncrementCounterTwiceSequential = async () => {
     if (!aztecWallet || !counterContract || !address) {
       showError('Please deploy a counter contract first.');
       return;
@@ -441,11 +491,56 @@ const DApp: React.FC = () => {
         counterContract.methods.increment(ownerAddressHex, ownerAddressHex),
       ];
 
+      // Use sequential mode (default) - separate transactions
       await executeBatch(interactions as any);
-      showSuccess('Counter incremented twice in batch');
+      showSuccess('Counter incremented twice sequentially (2 transactions, 2 proofs)');
     } catch (error) {
       if (error instanceof Error) {
-        showError(`Batch transaction failed: ${error.message}`);
+        showError(`Sequential batch failed: ${error.message}`);
+      }
+    }
+  };
+
+  /**
+   * Demonstrates atomic batch with Token contract: mint + transfer in one transaction.
+   *
+   * This is a practical example showing the power of atomic batching:
+   * - Mint tokens to your account
+   * - Transfer some tokens to another account
+   * All in a single atomic transaction with one proof.
+   */
+  const handleMintAndTransferAtomic = async () => {
+    if (!aztecWallet || !tokenContract || !address) {
+      showError('Please deploy a token contract first.');
+      return;
+    }
+
+    try {
+      showInfo('Executing atomic mint + transfer...');
+      const ownerAddress = toAztecAddress(address);
+      const ownerAddressHex = ownerAddress.toString();
+
+      // Get a different test account for the transfer recipient
+      const recipient = await getInitialTestAccounts().then((accounts) => toAztecAddress(accounts[1].address));
+
+      const interactions = [
+        // First: Mint tokens to our account
+        tokenContract.methods.mint_to_public(ownerAddressHex, 5000000000000000000000n),
+        // Second: Transfer some tokens to another account
+        tokenContract.methods.transfer_in_public(ownerAddressHex, recipient.toString(), 50000n, 0n),
+      ];
+
+      // Execute both operations atomically - single transaction, single proof
+      await executeBatch(interactions as any, { atomic: true });
+
+      // Refresh balance after successful atomic batch
+      await refreshTokenBalance();
+
+      showSuccess('Mint + Transfer completed atomically! All operations succeeded in 1 transaction.');
+    } catch (error) {
+      console.error('Atomic mint+transfer failed:', error);
+      if (error instanceof Error) {
+        showError(`Atomic batch failed: ${error.message}`);
       }
     }
   };
@@ -522,15 +617,17 @@ const DApp: React.FC = () => {
             </div>
           )}
 
-          {/* Show batch progress when batch is executing */}
-          {isBatchExecuting && (
-            <div
-              style={{ marginBottom: '20px', padding: '10px', background: '#e0f7fa', borderRadius: '5px' }}
-            >
-              <p>⚡ Executing batch transactions...</p>
-              <progress value={batchProgress} max={100} style={{ width: '100%' }} />
-              <p style={{ fontSize: '0.9em', marginTop: '5px' }}>{batchProgress}% complete</p>
-            </div>
+          {/* Batch Progress Overlay - Auto-rendered via portal */}
+          {isBatchExecuting && batchMode && (
+            <AztecBatchProgressOverlay
+              isExecuting={isBatchExecuting}
+              mode={batchMode}
+              progress={batchProgress}
+              transactions={transactionStatuses}
+              total={totalTransactions}
+              completed={completedTransactions}
+              failed={failedTransactions}
+            />
           )}
 
           {/* Token Contract Section */}
@@ -551,7 +648,7 @@ const DApp: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleMintTokens}
-                    disabled={isMintExecuting || isTokenContractLoading}
+                    disabled={isMintExecuting || isTokenContractLoading || isBatchExecuting}
                   >
                     {isMintExecuting ? '⏳ Processing...' : 'Mint Tokens (Sync)'}
                   </button>
@@ -560,16 +657,29 @@ const DApp: React.FC = () => {
                     onClick={handleTransferTokens}
                     style={{ marginLeft: '5px' }}
                     disabled={
-                      isTokenContractLoading || isRefreshingBalance || !tokenBalance || tokenBalance === '0'
+                      isTokenContractLoading ||
+                      isRefreshingBalance ||
+                      !tokenBalance ||
+                      tokenBalance === '0' ||
+                      isBatchExecuting
                     }
                   >
                     Transfer Tokens (Sync)
                   </button>
                   <button
                     type="button"
+                    onClick={handleMintAndTransferAtomic}
+                    style={{ marginLeft: '5px' }}
+                    disabled={isBatchExecuting || isTokenContractLoading}
+                    title="Mint and transfer tokens in a single atomic transaction"
+                  >
+                    {isBatchExecuting ? '⚡ Batch Processing...' : 'Mint + Transfer (Atomic)'}
+                  </button>
+                  <button
+                    type="button"
                     onClick={handleGetTokenBalance}
                     style={{ marginLeft: '5px' }}
-                    disabled={isMintExecuting || isTokenContractLoading || isRefreshingBalance}
+                    disabled={isMintExecuting || isTokenContractLoading || isRefreshingBalance || isBatchExecuting}
                   >
                     {isRefreshingBalance ? '⏳ Fetching…' : 'Get Token Balance'}
                   </button>
@@ -619,10 +729,28 @@ const DApp: React.FC = () => {
                       border: '1px solid #ccc',
                       borderRadius: '4px',
                       cursor: 'pointer',
+                      backgroundColor: isBatchExecuting ? '#e3f2fd' : '#fff',
                     }}
                     disabled={isBatchExecuting || isCounterContractLoading}
+                    title="Increment twice in a single atomic transaction (1 tx, 1 proof)"
                   >
-                    {isBatchExecuting ? '⚡ Batch Processing...' : 'Increment Twice (Batch)'}
+                    {isBatchExecuting ? '⚡ Atomic Batch...' : 'Increment Twice (Atomic)'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleIncrementCounterTwiceSequential}
+                    style={{
+                      marginRight: '5px',
+                      padding: '8px 12px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      backgroundColor: isBatchExecuting ? '#fff3e0' : '#fff',
+                    }}
+                    disabled={isBatchExecuting || isCounterContractLoading}
+                    title="Increment twice sequentially (2 separate transactions, 2 proofs)"
+                  >
+                    {isBatchExecuting ? '⚡ Sequential Batch...' : 'Increment Twice (Sequential)'}
                   </button>
                   <button
                     type="button"

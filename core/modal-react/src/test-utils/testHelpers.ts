@@ -10,7 +10,7 @@ import { createAutoMockedStore as createCoreStore } from '@walletmesh/modal-core
 import { createElement } from 'react';
 import type { ReactNode } from 'react';
 import { vi } from 'vitest';
-import { MockWalletMeshProvider } from '../test/mocks/MockWalletMeshProvider.js';
+import { MockWalletMeshProvider } from './MockWalletMeshProvider.js';
 import type { WalletMeshReactConfig } from '../types.js';
 
 // Use the actual type from modal-core/testing
