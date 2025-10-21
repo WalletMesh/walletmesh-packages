@@ -1245,7 +1245,6 @@ const Wallet: React.FC<WalletProps> = ({
           } catch (error) {
             console.error('[ROUTER DEBUG] Error:', {
               method: request.method,
-              error,
               errorMessage: error instanceof Error ? error.message : 'Unknown error',
               errorStack: error instanceof Error ? error.stack : undefined,
               errorCode: (error as { code?: unknown })?.code,

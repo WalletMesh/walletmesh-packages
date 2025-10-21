@@ -42,7 +42,7 @@ function createMinimalSession(overrides: Partial<SessionState> = {}): SessionSta
     provider: {
       instance: {
         connected: true,
-        getAddresses: () => Promise.resolve([address]),
+        getAccounts: () => Promise.resolve([address]),
         getChainId: () => Promise.resolve('0x1'),
         disconnect: () => Promise.resolve(),
         on: () => {},

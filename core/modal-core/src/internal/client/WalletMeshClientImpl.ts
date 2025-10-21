@@ -3413,7 +3413,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     const eventListeners = new Map<string, Set<(...args: unknown[]) => void>>();
 
     return {
-      async getAddresses(): Promise<string[]> {
+      async getAccounts(): Promise<string[]> {
         return walletProvider.getAccounts();
       },
 

@@ -21,6 +21,23 @@ const SANDBOX_SECURITY_POLICY = {
 } as const;
 
 /**
+ * Escapes HTML attribute content to prevent injection attacks
+ * Encodes characters that could break out of attribute context: & " < > '
+ * @internal
+ */
+function escapeHtmlAttribute(value: string): string {
+  const htmlEscapeMap: Record<string, string> = {
+    '&': '&amp;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '<': '&lt;',
+    '>': '&gt;',
+  };
+
+  return value.replace(/[&"'<>]/g, (char) => htmlEscapeMap[char] || char);
+}
+
+/**
  * Validates an icon data URI for basic constraints
  * @internal
  */
@@ -106,6 +123,9 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
     const disabledFilter = generateDisabledFilter(disabled, disabledStyle);
     const cursorStyle = disabled ? 'cursor: not-allowed;' : '';
 
+    // Escape the icon data URI to prevent HTML injection
+    const escapedIconDataUri = escapeHtmlAttribute(iconDataUri);
+
     // Create secure HTML content with CSP
     const secureHtml = `<!DOCTYPE html>
 <html>
@@ -113,9 +133,9 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
     <meta http-equiv="Content-Security-Policy" content="${SANDBOX_SECURITY_POLICY.csp}">
     <meta charset="utf-8">
     <style>
-      body { 
-        margin: 0; 
-        padding: 0; 
+      body {
+        margin: 0;
+        padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -123,9 +143,9 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
         height: 100vh;
         ${cursorStyle}
       }
-      img { 
-        width: 100%; 
-        height: 100%; 
+      img {
+        width: 100%;
+        height: 100%;
         object-fit: contain;
         max-width: 100%;
         max-height: 100%;
@@ -134,7 +154,7 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
     </style>
   </head>
   <body>
-    <img src="${iconDataUri}" alt="Icon" onerror="parent.postMessage({type:'csp-error', error:'Image load failed'}, '*')">
+    <img src="${escapedIconDataUri}" alt="Icon" onerror="parent.postMessage({type:'csp-error', error:'Image load failed'}, '*')">
   </body>
 </html>`;
 

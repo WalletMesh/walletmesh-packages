@@ -112,6 +112,57 @@ Modal Core uses a **two-layer separation** between connection and API:
 
 See `/core/modal-core/ADAPTER_PROVIDER_ARCHITECTURE.md` for detailed explanation.
 
+### Provider Interface Consolidation
+
+**Status:** ✅ Complete (2025-01-20)
+
+Modal Core has consolidated its provider interface system from three overlapping systems into two clear, purpose-driven interfaces:
+
+#### **Two-System Architecture**
+
+**1. CommonProviderInterface** (`api/types/commonProvider.ts`)
+- Base interface shared by all provider systems
+- Defines the minimal set of methods all providers must implement
+- Ensures consistency across WalletProvider and BlockchainProvider systems
+
+**Standard Methods:**
+```typescript
+interface CommonProviderInterface {
+  getAccounts(): Promise<string[]>;     // Standardized account retrieval
+  getChainId(): Promise<string | number>;
+  disconnect(): Promise<void>;
+  on(event: string, listener: (...args: unknown[]) => void): void;
+  off(event: string, listener: (...args: unknown[]) => void): void;
+  removeAllListeners(event?: string): void;
+}
+```
+
+**2. WalletProvider System** (`api/types/providers.ts`)
+- Simple JSON-RPC communication layer
+- Used by provider implementations (EvmProvider, SolanaProvider)
+- Extends CommonProviderInterface
+- Chain-specific extensions (EvmWalletProvider, SolanaWalletProvider)
+
+**3. BlockchainProvider System** (`api/types/chainProviders.ts`)
+- Rich blockchain operations for service layer
+- Used by ChainService, BalanceService, TransactionService
+- Extends CommonProviderInterface
+- Adds chain-specific features (EVMProvider, SolanaProvider)
+
+#### **Key Improvements**
+
+✅ **Single Standard Method:** `getAccounts()` is the canonical method (replaced deprecated `getAddresses()`)
+✅ **No Duplication:** Common methods defined once in CommonProviderInterface
+✅ **Type Safety:** Both systems extend the same base, ensuring compatibility
+✅ **Clear Separation:** Implementation layer vs Service/API layer
+
+**Migration Notes:**
+- All code uses `getAccounts()` consistently
+- Deprecated `getAddresses()` has been removed
+- No breaking changes for consumers (services already used `getAccounts()`)
+
+See `/PROVIDER_CONSOLIDATION_PLAN.md` for complete implementation details.
+
 ### Composition-Based Architecture
 
 Modal Core uses **composition over inheritance** throughout:
@@ -326,6 +377,119 @@ Modal Core has undergone comprehensive service consolidation to reduce complexit
 - Types: `.test.ts`, `.core.test.ts`, `.edge.test.ts`, `.integration.test.ts`
 - Integration tests: `src/internal/core/integration/`
 - Test utilities: `src/internal/testing/`
+
+### Framework-Agnostic Utilities (`src/utils/`)
+
+Modal Core provides framework-agnostic utilities that can be used by any UI framework package (React, Vue, Svelte, etc.) to implement consistent behavior without duplicating logic.
+
+#### **Connection Progress Utilities** (`src/utils/connectionProgress.ts`)
+
+Provides standardized connection progress tracking with stages and percentage calculation.
+
+**Key Exports:**
+- `ConnectionStages` - Enum of connection stages (INITIALIZING, CONNECTING, AUTHENTICATING, CONNECTED, FAILED)
+- `ConnectionProgressInfo` - Interface for progress information (progress, stage, step, details)
+- `createProgress(stage, details?)` - Create progress info for a stage
+- `createCustomProgress(progress, stage, step, details?)` - Create custom progress with specific percentage
+- `getStageProgress(stage)` - Get progress percentage for a stage
+- `getStageDescription(stage)` - Get default description for a stage
+- `interpolateProgress(fromStage, toStage, factor)` - Calculate intermediate progress between stages
+- `isTerminalStage(stage)` - Check if stage is terminal (connected/failed)
+- `isInProgress(stage)` - Check if stage is in progress
+- `ConnectionProgressTracker` - Stateful tracker class
+- `createProgressTracker()` - Factory for creating tracker instances
+
+**Usage Example:**
+```typescript
+import { createProgressTracker, ConnectionStages } from '@walletmesh/modal-core';
+
+// Create a progress tracker
+const tracker = createProgressTracker();
+
+// Update to connecting stage
+const progress = tracker.updateStage(ConnectionStages.CONNECTING, 'Connecting to MetaMask...');
+console.log(progress);
+// {
+//   progress: 40,
+//   stage: 'connecting',
+//   step: 'Connecting to wallet...',
+//   details: 'Connecting to MetaMask...'
+// }
+
+// Check progress state
+console.log(tracker.isInProgress()); // true
+console.log(tracker.getCurrentStage()); // 'connecting'
+```
+
+**Tracker Methods:**
+- `updateStage(stage, details?)` - Update to new stage, returns progress info
+- `updateCustom(progress, step, details?)` - Set custom progress within current stage
+- `getCurrent()` - Get current progress information
+- `getCurrentStage()` - Get current connection stage
+- `isInProgress()` - Check if connection is in progress
+- `isComplete()` - Check if connection is complete (connected or failed)
+- `reset()` - Reset to initial state
+
+#### **State Derivation Utilities** (`src/utils/stateDerivation.ts`)
+
+Provides framework-agnostic utilities for deriving UI state from core state, ensuring consistent state representation across all UI frameworks.
+
+**Key Exports:**
+- `deriveConnectionFlags(sessionStatus, currentView, isReconnecting)` - Derive connection state flags
+- `filterSessionsByStatus(sessions, status)` - Filter sessions by connection status
+- `getConnectedWalletIds(sessions)` - Extract wallet IDs from connected sessions
+- `getActiveSession(sessions)` - Get first connected session
+- `hasConnectedSession(sessions)` - Check if any session is connected
+- `getPrimaryAddress(sessions)` - Get address from active session
+- `getCurrentChain(sessions)` - Get chain from active session
+- `isConnectedToChain(sessions, chainId)` - Check connection to specific chain
+- `getSessionsByChainType(sessions, chainType)` - Filter sessions by chain type
+
+**Types:**
+- `ConnectionFlags` - Derived connection state (status, isConnected, isConnecting, isReconnecting, isDisconnected)
+- `SessionStatus` - Session status type ('connected' | 'connecting' | 'disconnected' | 'reconnecting')
+- `UIView` - UI view type ('idle' | 'connecting' | 'connected' | 'error')
+- `ChainInfo` - Chain information (chainId, chainType, name)
+- `WalletSession` - Session information (walletId, status, chain, address)
+
+**Usage Example:**
+```typescript
+import { deriveConnectionFlags, getActiveSession, getPrimaryAddress } from '@walletmesh/modal-core';
+
+// Derive connection flags from session and UI state
+const flags = deriveConnectionFlags('connected', 'connected', false);
+console.log(flags);
+// {
+//   status: 'connected',
+//   isConnected: true,
+//   isConnecting: false,
+//   isReconnecting: false,
+//   isDisconnected: false
+// }
+
+// Get active session from sessions array
+const sessions = [
+  { walletId: 'metamask', status: 'connected', address: '0x123...' },
+  { walletId: 'phantom', status: 'disconnected' }
+];
+
+const activeSession = getActiveSession(sessions);
+console.log(activeSession?.walletId); // 'metamask'
+
+// Get primary address
+const address = getPrimaryAddress(sessions);
+console.log(address); // '0x123...'
+```
+
+**Framework Integration:**
+These utilities are designed to be used by framework-specific hook implementations (e.g., `useAccount`, `useConnect` in modal-react) to derive consistent state without duplicating logic.
+
+**Benefits:**
+- ✅ **Single Source of Truth**: All UI frameworks derive state using the same logic
+- ✅ **Consistency**: Ensures identical behavior across React, Vue, Svelte implementations
+- ✅ **Testability**: Framework-agnostic utilities are easier to test thoroughly
+- ✅ **Maintainability**: Bug fixes and improvements benefit all framework packages
+- ✅ **Reduced Duplication**: No need to reimplement state derivation in each framework package
 
 ## Provider Entry Points
 
@@ -1634,6 +1798,7 @@ export type {
 For comprehensive architectural information, see:
 - `/core/modal-core/ARCHITECTURE.md` - Detailed architecture documentation
 - `/core/modal-core/ADAPTER_PROVIDER_ARCHITECTURE.md` - **Adapter vs Provider architecture explanation**
+- `/PROVIDER_CONSOLIDATION_PLAN.md` - **Provider interface consolidation (completed 2025-01-20)**
 - `/core/modal-core/CONNECTOR_ERROR_USAGE_EXAMPLES.md` - Complete ErrorFactory connector usage examples
 - `/core/modal-core/docs/_media/NAMING_CONVENTIONS.md` - Naming conventions
 - Root `/CLAUDE.md` - Project-wide information and standards

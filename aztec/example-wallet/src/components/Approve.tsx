@@ -31,6 +31,8 @@ const Approve: React.FC<ApproveProps> = ({
   onEnableAutoApprove,
   showAutoApprove = true,
 }) => {
+  const isBatchOperation = params?.functionCalls && params.functionCalls.length > 1;
+
   return (
     <div className="approve-container">
       <h3>Request Approval</h3>
@@ -40,14 +42,29 @@ const Approve: React.FC<ApproveProps> = ({
       <p className="approve-details">
         <b>Method:</b> {method}
       </p>
+      {isBatchOperation && (
+        <p className="approve-details" style={{ color: '#4a90e2', fontWeight: 'bold' }}>
+          ⚡ Atomic Batch Transaction ({params.functionCalls?.length} operations)
+          <br />
+          <span style={{ fontSize: '0.9em', fontWeight: 'normal', fontStyle: 'italic' }}>
+            All operations succeed together or all fail together
+          </span>
+        </p>
+      )}
       {params &&
         (params.functionCalls ? (
           params.functionCalls.map((call, index) => (
-            <FunctionCallDisplay
-              key={`${call.contractAddress}-${index}`}
-              call={call}
-              functionArgNames={functionArgNames}
-            />
+            <div key={`${call.contractAddress}-${index}`}>
+              {isBatchOperation && (
+                <p className="approve-details" style={{ marginTop: '15px', fontWeight: 'bold' }}>
+                  Operation {index + 1} of {params.functionCalls?.length}:
+                </p>
+              )}
+              <FunctionCallDisplay
+                call={call}
+                functionArgNames={functionArgNames}
+              />
+            </div>
           ))
         ) : (
           <ParameterDisplay params={params} />

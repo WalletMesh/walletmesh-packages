@@ -36,7 +36,7 @@ function createMockSessionState(overrides?: Partial<SessionState>): SessionState
     provider: {
       instance: {
         connected: true,
-        getAddresses: vi.fn().mockResolvedValue(['0x123']),
+        getAccounts: vi.fn().mockResolvedValue(['0x123']),
         getChainId: vi.fn().mockResolvedValue('0x1'),
         disconnect: vi.fn(),
         on: vi.fn(),

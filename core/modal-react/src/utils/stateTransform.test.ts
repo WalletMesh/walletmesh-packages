@@ -89,7 +89,7 @@ describe('stateTransform', () => {
       instance: {
         request: vi.fn(),
         connected: true,
-        getAddresses: vi.fn().mockResolvedValue(['0x123']),
+        getAccounts: vi.fn().mockResolvedValue(['0x123']),
         getChainId: vi.fn().mockResolvedValue('eip155:1'),
         disconnect: vi.fn().mockResolvedValue(undefined),
         on: vi.fn(),

@@ -9,12 +9,12 @@
 
 import type { AztecAddress } from '@aztec/aztec.js';
 import { ErrorFactory } from '@walletmesh/modal-core';
+import { ensureContractClassRegistered, normalizeArtifact } from '@walletmesh/modal-core/providers/aztec';
 import { getContractAt } from '@walletmesh/modal-core/providers/aztec/lazy';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ensureContractClassRegistered, normalizeArtifact } from '@walletmesh/modal-core/providers/aztec';
+import { useStore } from './internal/useStore.js';
 import type { ContractArtifact } from './useAztecDeploy.js';
 import { useAztecWallet } from './useAztecWallet.js';
-import { useStore } from './internal/useStore.js';
 
 /**
  * Contract hook return type
@@ -151,11 +151,18 @@ export function useAztecContract<T = unknown>(
   const retryTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get pending transactions to check for deployments
+  // Check both general transaction state and Aztec-specific transaction tracking
   const hasPendingDeployments = useStore((state) => {
+    // Check entities.transactions for any pending transactions
     const transactions = Object.values(state.entities.transactions || {});
-    return transactions.some(
+    const hasGeneralPendingTx = transactions.some(
       (tx) => tx && (tx.status === 'proving' || tx.status === 'sending' || tx.status === 'pending'),
     );
+
+    // Also check if there are any background transaction IDs (indicates async operations)
+    const hasBackgroundTx = (state.meta?.backgroundTransactionIds?.length ?? 0) > 0;
+
+    return hasGeneralPendingTx || hasBackgroundTx;
   });
 
   const fetchContract = useCallback(
@@ -204,31 +211,68 @@ export function useAztecContract<T = unknown>(
         retryCountRef.current = 0;
         setIsDeploymentPending(false);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err : ErrorFactory.unknownError('Failed to load contract');
+        const errorMessage =
+          err instanceof Error ? err : ErrorFactory.unknownError('Failed to load contract');
 
         // Check if this looks like a "contract not found" error and there are pending deployments
+        // Note: Router wraps errors with "Wallet returned an error" as the message,
+        // so we need to check both the message and the data field for the actual error
+        const errorData = (errorMessage as Error & { data?: unknown }).data;
+        const dataMessage =
+          typeof errorData === 'string'
+            ? errorData
+            : typeof errorData === 'object' && errorData !== null && 'message' in errorData
+              ? String((errorData as { message: unknown }).message)
+              : '';
+
         const isContractNotFound =
           errorMessage.message.includes('Failed to get contract at address') ||
-          errorMessage.message.includes('Contract not found');
+          errorMessage.message.includes('Contract not found') ||
+          errorMessage.message.includes('Contract metadata not found') ||
+          errorMessage.message.includes('has not been registered') ||
+          errorMessage.message.includes('Wallet returned an error') ||
+          errorMessage.message.includes('getInstance') ||
+          dataMessage.includes('Failed to get contract at address') ||
+          dataMessage.includes('Contract not found') ||
+          dataMessage.includes('Contract metadata not found') ||
+          dataMessage.includes('has not been registered') ||
+          dataMessage.includes('getInstance');
 
-        if (isContractNotFound && hasPendingDeployments) {
-          // This is likely a race condition - deployment hasn't confirmed yet
-          const maxRetries = 10; // Max 10 retries
-          const baseDelay = 2000; // Start with 2 seconds
+        if (isContractNotFound) {
+          // Contract not found - could be a race condition with deployment
+          // Retry with different strategies based on whether we detect pending deployments
+
+          let maxRetries: number;
+          let baseDelay: number;
+
+          if (hasPendingDeployments) {
+            // We detected pending deployments - be more patient
+            maxRetries = 12; // More retries when we know deployment is happening
+            baseDelay = 2000; // Start with 2 seconds
+          } else {
+            // No pending deployments detected - could still be a race condition
+            // where the transaction hasn't hit the store yet. Do a few quick retries.
+            maxRetries = 5; // Fewer retries without confirmed deployment
+            baseDelay = 1000; // Faster initial retry
+          }
 
           if (retryCountRef.current < maxRetries) {
             retryCountRef.current += 1;
-            const delay = baseDelay * 1.5 ** (retryCountRef.current - 1); // Exponential backoff
+            // Exponential backoff, but capped to avoid extremely long waits
+            const delay = Math.min(baseDelay * 1.5 ** (retryCountRef.current - 1), 10000);
 
             console.log(
-              `[useAztecContract] Contract not yet available (attempt ${retryCountRef.current}/${maxRetries}), retrying in ${delay}ms...`,
+              `[useAztecContract] Contract not yet available (attempt ${retryCountRef.current}/${maxRetries}), ` +
+                `pendingDeployments: ${hasPendingDeployments}, retrying in ${delay}ms...`,
             );
 
-            setIsDeploymentPending(true);
+            setIsDeploymentPending(hasPendingDeployments);
             setIsLoading(false);
             setError(
               ErrorFactory.unknownError(
-                `Contract deployment in progress (attempt ${retryCountRef.current}/${maxRetries})...`,
+                hasPendingDeployments
+                  ? `Contract deployment in progress (attempt ${retryCountRef.current}/${maxRetries})...`
+                  : `Contract not yet available (attempt ${retryCountRef.current}/${maxRetries}), checking...`,
               ),
             );
 
@@ -241,14 +285,20 @@ export function useAztecContract<T = unknown>(
           }
 
           // Max retries exceeded
-          setError(
-            ErrorFactory.unknownError(
-              'Contract deployment taking longer than expected. Please try refreshing manually.',
-            ),
-          );
-          setIsDeploymentPending(true);
+          if (hasPendingDeployments) {
+            setError(
+              ErrorFactory.unknownError(
+                'Contract deployment taking longer than expected. Please try refreshing manually.',
+              ),
+            );
+            setIsDeploymentPending(true);
+          } else {
+            // No pending deployments and retries exhausted - this is a real error
+            setError(errorMessage);
+            setIsDeploymentPending(false);
+          }
         } else {
-          // Some other error
+          // Some other error (not contract not found)
           setError(errorMessage);
           setIsDeploymentPending(false);
         }

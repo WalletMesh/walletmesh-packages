@@ -27,6 +27,9 @@ import {
   setPreferredWallet as coreSetPreferredWallet,
   filterWalletsByChain,
   isWalletInstalled,
+  // State derivation utilities from modal-core
+  deriveConnectionStatus,
+  type DerivedConnectionFlags,
 } from '@walletmesh/modal-core';
 import React, { useCallback, useMemo, useState, useEffect, useDebugValue } from 'react';
 import { useWalletMeshContext } from '../WalletMeshContext.js';
@@ -157,30 +160,55 @@ const selectAvailableWallets = (state: WalletMeshState): WalletInfo[] => {
   return [];
 };
 
-// Memoized connection flags derivation
-const deriveConnectionFlags = (
+// Helper to map activeSession status to SessionStatus type for state derivation
+const mapSessionStatus = (
+  activeSession: ReturnType<typeof selectActiveSession>,
+): 'connected' | 'connecting' | 'disconnected' | 'reconnecting' | undefined => {
+  if (!activeSession) return undefined;
+
+  // Map each session status to the appropriate SessionStatus for state derivation
+  switch (activeSession.status) {
+    case 'connected':
+      return 'connected';
+    case 'connecting':
+      return 'connecting';
+    case 'switching':
+      return 'reconnecting';
+    case 'initializing':
+      return 'connecting'; // initializing is an in-progress state
+    case 'disconnecting':
+      return 'disconnected'; // moving toward disconnected
+    case 'error':
+      return 'disconnected'; // error is a terminal state
+    case 'disconnected':
+      return 'disconnected';
+    default:
+      // Handle any unexpected status by treating as disconnected
+      return 'disconnected';
+  }
+};
+
+// Helper to map UI view to UIView type for state derivation
+const mapUIView = (
+  currentView: string | undefined,
+): 'idle' | 'connecting' | 'connected' | 'error' | undefined => {
+  if (!currentView) return undefined;
+  if (currentView === 'connecting') return 'connecting';
+  if (currentView === 'connected') return 'connected';
+  if (currentView === 'error') return 'error';
+  return 'idle';
+};
+
+// Use modal-core's state derivation utility
+const deriveConnectionFlagsFromState = (
   activeSession: ReturnType<typeof selectActiveSession>,
   uiState: ReturnType<typeof selectUIState>,
-) => {
-  let status: ConnectionStatus;
+): DerivedConnectionFlags => {
+  const sessionStatus = mapSessionStatus(activeSession);
+  const currentView = mapUIView(uiState.currentView);
+  const isReconnecting = activeSession?.status === 'switching';
 
-  if (uiState.currentView === 'connecting') {
-    status = ConnectionStatus.Connecting;
-  } else if (activeSession && activeSession.status === 'connected') {
-    status = ConnectionStatus.Connected;
-  } else if (activeSession && activeSession.status === 'switching') {
-    status = ConnectionStatus.Reconnecting;
-  } else {
-    status = ConnectionStatus.Disconnected;
-  }
-
-  return {
-    status,
-    isConnected: status === ConnectionStatus.Connected,
-    isConnecting: status === ConnectionStatus.Connecting,
-    isReconnecting: status === ConnectionStatus.Reconnecting,
-    isDisconnected: status === ConnectionStatus.Disconnected,
-  };
+  return deriveConnectionStatus(sessionStatus, currentView, isReconnecting);
 };
 
 /**
@@ -318,10 +346,11 @@ export function useAccount(options: WalletSelectionOptions = {}): AccountInfo {
   const availableWallets = useStore(selectAvailableWallets);
 
   // Memoize connection flags with granular dependencies
+  // Uses modal-core's state derivation utility for consistent state representation
   const connectionFlags = React.useMemo(() => {
     const uiState = { currentView, error: connectionError };
     if (!connectionService || !activeSession) {
-      return deriveConnectionFlags(activeSession, uiState);
+      return deriveConnectionFlagsFromState(activeSession, uiState);
     }
 
     try {
@@ -335,7 +364,7 @@ export function useAccount(options: WalletSelectionOptions = {}): AccountInfo {
       };
     } catch (error) {
       logger.error('Failed to get connection status from ConnectionService:', error);
-      return deriveConnectionFlags(activeSession, uiState);
+      return deriveConnectionFlagsFromState(activeSession, uiState);
     }
   }, [connectionService, activeSession, currentView, connectionError, logger]);
 

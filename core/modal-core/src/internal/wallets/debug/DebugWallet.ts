@@ -574,6 +574,22 @@ export class DebugWallet extends AbstractWalletAdapter {
         }
       },
 
+      removeAllListeners: (event?: string) => {
+        if (event !== undefined) {
+          if (event === 'chainChanged') {
+            this.chainChangedHandlers = [];
+          } else if (event === 'accountsChanged') {
+            this.accountsChangedHandlers = [];
+          } else {
+            eventHandlers.delete(event);
+          }
+        } else {
+          this.chainChangedHandlers = [];
+          this.accountsChangedHandlers = [];
+          eventHandlers.clear();
+        }
+      },
+
       // Solana methods (if applicable)
       ...(primaryChainType === ChainType.Solana && {
         publicKey: address,
@@ -616,6 +632,13 @@ export class DebugWallet extends AbstractWalletAdapter {
       // Add removeListener alias for backward compatibility
       removeListener: (event: string, listener: (...args: unknown[]) => void) => {
         mockProviderImpl.removeListener(event, listener);
+      },
+      removeAllListeners: (event?: string) => {
+        if (event !== undefined) {
+          mockProviderImpl.removeAllListeners(event);
+        } else {
+          mockProviderImpl.removeAllListeners();
+        }
       },
       // Spread remaining properties from mockProviderImpl for chain-specific features
       ...(primaryChainType === ChainType.Solana && {

@@ -25,7 +25,7 @@ export function createMockSessionState(overrides?: Partial<SessionState>): Sessi
     // Simple provider stub - tests can override if needed
     provider: {
       instance: {
-        getAddresses: () => Promise.resolve([address]),
+        getAccounts: () => Promise.resolve([address]),
         getChainId: () => Promise.resolve('0x1'),
         disconnect: () => Promise.resolve(),
         on: () => {},

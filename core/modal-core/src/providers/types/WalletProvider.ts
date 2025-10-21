@@ -4,6 +4,9 @@
  * This module provides a unified interface that all chain-specific providers
  * must implement, along with connection state management and event handling.
  *
+ * **IMPORTANT**: State management types have been moved to api/types/providerState.ts
+ * This file now re-exports them for backward compatibility.
+ *
  * Architecture:
  * - All blockchain providers (EVM, Solana, Aztec) implement BaseWalletProvider
  * - Common functionality like connection state and events are standardized
@@ -36,12 +39,22 @@
  */
 
 import type { EventEmitter } from 'node:events';
-import { ConnectionState } from '../../types.js';
 import type { SolanaProvider } from './SolanaProvider.js';
 import type { EVMProvider } from './evmProvider.js';
 
-// Re-export ConnectionState for convenience
-export { ConnectionState };
+// Re-export state management types from canonical location (api/types/providerState.ts)
+// These re-exports are for backward compatibility
+export {
+  ConnectionState,
+  type ConnectionInfo,
+  type ProviderMetadata,
+  type CommonConnectOptions,
+  WalletProviderError,
+  ConnectionStateManager,
+} from '../../api/types/providerState.js';
+
+// Import for local use
+import { ConnectionState } from '../../api/types/providerState.js';
 
 /**
  * Chain types supported by WalletMesh
@@ -78,80 +91,24 @@ export interface CommonWalletEventMap {
   /** Connection state changed */
   connectionStateChanged: (state: ConnectionState, previousState: ConnectionState) => void;
   /** Error occurred */
-  error: (error: WalletProviderError) => void;
+  error: (error: import('../../api/types/providerState.js').WalletProviderError) => void;
   /** Provider ready */
   ready: () => void;
   /** Provider destroyed */
   destroyed: () => void;
 }
 
-/**
- * Wallet provider error
- */
-export class WalletProviderError extends Error {
-  code: string;
-  chainType?: ChainType;
-  data?: unknown;
-
-  constructor(message: string, code: string, chainType?: ChainType, data?: unknown) {
-    super(message);
-    this.name = 'WalletProviderError';
-    this.code = code;
-    if (chainType !== undefined) {
-      this.chainType = chainType;
-    }
-    this.data = data;
-  }
-}
-
-/**
- * Base connection info
- */
-export interface ConnectionInfo {
-  /** Connection state */
-  state: ConnectionState;
-  /** Connected accounts/addresses */
-  accounts: string[];
-  /** Chain/network identifier */
-  chainId: string | number;
-  /** Timestamp of connection */
-  connectedAt?: number;
-  /** Last activity timestamp */
-  lastActivityAt?: number;
-}
-
-/**
- * Provider metadata
- */
-export interface ProviderMetadata {
-  /** Provider name */
-  name: string;
-  /** Provider icon URL */
-  icon: string;
-  /** Provider description */
-  description?: string;
-  /** Provider homepage */
-  homepage?: string;
-  /** Supported chains */
-  supportedChains?: string[];
-  /** Provider version */
-  version?: string;
-}
-
-/**
- * Connection options common to all providers
- */
-export interface CommonConnectOptions {
-  /** Connection timeout in milliseconds */
-  timeout?: number;
-  /** Whether to show UI (false for silent connection) */
-  showUI?: boolean;
-  /** Preferred accounts to connect */
-  preferredAccounts?: string[];
-}
+// Note: ConnectionInfo, ProviderMetadata, CommonConnectOptions, WalletProviderError, and ConnectionStateManager
+// are now defined in api/types/providerState.ts and re-exported above for backward compatibility
 
 /**
  * Base wallet provider interface
+ *
+ * @deprecated This rich interface is not implemented by any class in modal-core.
+ * Use the simpler BaseWalletProvider from api/types/providers.ts instead, which
+ * extends CommonProviderInterface and is the canonical interface for wallet providers.
+ *
+ * This interface will be removed in a future version.
  *
  * All chain-specific providers must implement this interface. This provides
  * a consistent API for wallet interactions across different blockchains.
@@ -202,7 +159,7 @@ export interface BaseWalletProvider extends EventEmitter {
   readonly walletId: string;
 
   /** Provider metadata - display information */
-  readonly metadata: ProviderMetadata;
+  readonly metadata: import('../../api/types/providerState.js').ProviderMetadata;
 
   /** WalletMesh provider indicator - always true for WalletMesh providers */
   readonly isWalletMesh: true;
@@ -213,7 +170,7 @@ export interface BaseWalletProvider extends EventEmitter {
   readonly connectionState: ConnectionState;
 
   /** Connection information - null when disconnected */
-  readonly connectionInfo: ConnectionInfo | null;
+  readonly connectionInfo: import('../../api/types/providerState.js').ConnectionInfo | null;
 
   // ===== Core Methods =====
 
@@ -223,7 +180,7 @@ export interface BaseWalletProvider extends EventEmitter {
    * @returns Connection information
    * @throws {WalletProviderError} On connection failure
    */
-  connect(options?: CommonConnectOptions): Promise<ConnectionInfo>;
+  connect(options?: import('../../api/types/providerState.js').CommonConnectOptions): Promise<import('../../api/types/providerState.js').ConnectionInfo>;
 
   /**
    * Disconnect from the wallet
@@ -238,7 +195,7 @@ export interface BaseWalletProvider extends EventEmitter {
   /**
    * Get connection info
    */
-  getConnectionInfo(): ConnectionInfo | null;
+  getConnectionInfo(): import('../../api/types/providerState.js').ConnectionInfo | null;
 
   /**
    * Check if provider is available
@@ -278,6 +235,9 @@ export type WalletProvider = EVMProvider | SolanaProvider;
 /**
  * Extended wallet provider with common interface
  *
+ * @deprecated This type uses the deprecated BaseWalletProvider interface.
+ * Use WalletProvider directly instead.
+ *
  * This type combines chain-specific providers with the base interface
  */
 export type ExtendedWalletProvider = WalletProvider & BaseWalletProvider;
@@ -297,89 +257,7 @@ export interface ProviderTypeMap {
  */
 export type GetProviderForChain<T extends ChainType> = ProviderTypeMap[T];
 
-/**
- * Connection state manager for providers
- */
-export class ConnectionStateManager {
-  private state: ConnectionState = ConnectionState.Disconnected;
-  private listeners: Array<(state: ConnectionState, previousState: ConnectionState) => void> = [];
-
-  /**
-   * Get current state
-   */
-  getState(): ConnectionState {
-    return this.state;
-  }
-
-  /**
-   * Update state
-   */
-  setState(newState: ConnectionState): void {
-    if (newState !== this.state) {
-      const previousState = this.state;
-      this.state = newState;
-      this.notifyListeners(newState, previousState);
-    }
-  }
-
-  /**
-   * Add state change listener
-   */
-  onStateChange(listener: (state: ConnectionState, previousState: ConnectionState) => void): () => void {
-    this.listeners.push(listener);
-    return () => {
-      const index = this.listeners.indexOf(listener);
-      if (index !== -1) {
-        this.listeners.splice(index, 1);
-      }
-    };
-  }
-
-  /**
-   * Check if in a specific state
-   */
-  isInState(state: ConnectionState): boolean {
-    return this.state === state;
-  }
-
-  /**
-   * Check if connected
-   */
-  isConnected(): boolean {
-    return this.state === ConnectionState.Connected;
-  }
-
-  /**
-   * Check if connecting
-   */
-  isConnecting(): boolean {
-    return this.state === ConnectionState.Connecting;
-  }
-
-  /**
-   * Check if disconnected
-   */
-  isDisconnected(): boolean {
-    return this.state === ConnectionState.Disconnected;
-  }
-
-  /**
-   * Check if in error state
-   */
-  isError(): boolean {
-    return this.state === ConnectionState.Error;
-  }
-
-  private notifyListeners(state: ConnectionState, previousState: ConnectionState): void {
-    for (const listener of this.listeners) {
-      try {
-        listener(state, previousState);
-      } catch (error) {
-        console.error('Error in connection state listener:', error);
-      }
-    }
-  }
-}
+// Note: ConnectionStateManager is now defined in api/types/providerState.ts and re-exported above
 
 /**
  * Type guards for wallet providers
@@ -430,7 +308,7 @@ export function createMockConnectionInfo(
   _chainType: ChainType,
   accounts: string[] = [],
   chainId: string | number = '1',
-): ConnectionInfo {
+): import('../../api/types/providerState.js').ConnectionInfo {
   return {
     state: ConnectionState.Connected,
     accounts,

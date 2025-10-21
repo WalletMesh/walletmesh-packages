@@ -18,7 +18,12 @@ import type {
   TransactionStatus,
   WalletInfo,
 } from '@walletmesh/modal-core';
-import { ErrorFactory, type ModalError } from '@walletmesh/modal-core';
+import {
+  ErrorFactory,
+  type ModalError,
+  createProgressTracker,
+  type ConnectionProgressInfo,
+} from '@walletmesh/modal-core';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useWalletMeshContext, useWalletMeshServices } from '../WalletMeshContext.js';
 import { createComponentLogger } from '../utils/logger.js';
@@ -90,16 +95,12 @@ export interface DisconnectOptions {
 /**
  * Connection progress interface
  *
+ * Re-exported from modal-core for convenience.
+ * Uses the framework-agnostic progress tracking utilities.
+ *
  * @public
  */
-export interface ConnectionProgress {
-  /** Progress percentage (0-100) */
-  progress: number;
-  /** Current step being performed */
-  step: string;
-  /** Optional step details */
-  details?: string;
-}
+export type ConnectionProgress = ConnectionProgressInfo;
 
 /**
  * Connection variables for tracking current connection attempt
@@ -440,47 +441,46 @@ export function useConnect(): UseConnectReturn {
         throw error;
       }
 
+      // Create progress tracker using modal-core utilities
+      const tracker = createProgressTracker();
+
       if (isMountedRef.current) {
-        setConnectionProgress({ progress: 0, step: 'Initializing' });
+        setConnectionProgress(tracker.getCurrent());
       }
 
       try {
-        const handleProgress = (progress: number, step: string, details?: string) => {
+        const handleProgress = (stage: 'initializing' | 'connecting' | 'authenticating' | 'connected' | 'failed', details?: string) => {
           if (isMountedRef.current) {
-            const progressInfo: ConnectionProgress = { progress, step, ...(details && { details }) };
+            const progressInfo = tracker.updateStage(stage, details);
             setConnectionProgress(progressInfo);
-            options?.onProgress?.(progress);
+            options?.onProgress?.(progressInfo.progress);
           }
         };
 
         // Initial progress
-        handleProgress(10, 'initializing', 'Initializing connection...');
+        handleProgress('initializing', 'Initializing connection...');
 
         // Execute connection
         if (walletId) {
-          handleProgress(40, 'connecting', `Connecting to ${walletId}...`);
+          handleProgress('connecting', `Connecting to ${walletId}...`);
 
           await client.connect(walletId, convertToServiceOptions(options));
 
           // Connection validation happens inside client.connect
           // If we get here, connection was successful
-          handleProgress(100, 'connected', 'Connected successfully');
+          handleProgress('connected', 'Connected successfully');
         } else if (options?.showModal !== false) {
-          handleProgress(40, 'connecting', 'Opening wallet selection...');
+          handleProgress('connecting', 'Opening wallet selection...');
 
           await client.connect(undefined, convertToServiceOptions(options));
 
-          handleProgress(100, 'connected', 'Connected successfully');
+          handleProgress('connected', 'Connected successfully');
         } else {
           throw ErrorFactory.configurationError('No wallet specified and modal disabled');
         }
       } catch (error) {
         if (isMountedRef.current) {
-          setConnectionProgress({
-            progress: 0,
-            step: 'failed',
-            details: (error as Error).message,
-          });
+          setConnectionProgress(tracker.updateStage('failed', (error as Error).message));
         }
 
         actions.ui.setError(store, 'connection', {

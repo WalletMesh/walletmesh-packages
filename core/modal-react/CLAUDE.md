@@ -490,7 +490,7 @@ import { useAccount, usePublicProvider } from '@walletmesh/modal-react';
 function useTokenBalance(tokenAddress: string) {
   const { address } = useAccount();
   const { provider } = usePublicProvider();
-  
+
   return useQuery({
     queryKey: ['balance', address, tokenAddress],
     queryFn: async () => {
@@ -508,6 +508,39 @@ function useTokenBalance(tokenAddress: string) {
   });
 }
 ```
+
+### With Modal-Core Provider Interfaces
+
+**Note:** Modal-core completed provider interface consolidation on 2025-01-20.
+
+If you're working directly with provider interfaces from `@walletmesh/modal-core`:
+
+**Use the standardized method:**
+```typescript
+import type { BlockchainProvider } from '@walletmesh/modal-core';
+
+async function getWalletAccounts(provider: BlockchainProvider) {
+  // ✅ Correct - use getAccounts()
+  const accounts = await provider.getAccounts();
+  return accounts;
+
+  // ❌ Removed - getAddresses() was deprecated and removed
+  // const accounts = await provider.getAddresses();
+}
+```
+
+**Provider Interface Hierarchy:**
+- `CommonProviderInterface` - Base interface for all providers
+- `BlockchainProvider` - Service layer interface (extends CommonProviderInterface)
+- `EVMProvider`, `SolanaProvider` - Chain-specific extensions
+
+**Key Methods (from CommonProviderInterface):**
+- `getAccounts()` - Get connected account addresses (standardized)
+- `getChainId()` - Get current chain ID
+- `disconnect()` - Disconnect from provider
+- `on()`, `off()`, `removeAllListeners()` - Event management
+
+See `/PROVIDER_CONSOLIDATION_PLAN.md` for complete details.
 
 ## Transaction Overlay Configuration
 
@@ -710,6 +743,91 @@ Customize the transaction overlay appearance using design tokens:
 - `src/hooks/useTheme.ts` - Theme management with persistence
 - `src/hooks/useWalletEvents.ts` - Unified event subscriptions
 - `src/hooks/useSSR.ts` - SSR utilities and hydration helpers
+
+### Framework-Agnostic Utility Integration
+
+Modal React hooks leverage framework-agnostic utilities from `@walletmesh/modal-core` to ensure consistent behavior and reduce duplication across future UI framework packages (Vue, Svelte, etc.).
+
+#### **useConnect Integration with Connection Progress Utilities**
+
+The `useConnect` hook uses `createProgressTracker` from `modal-core/utils/connectionProgress.ts` to provide standardized progress tracking during wallet connection.
+
+**Implementation:**
+```typescript
+import { createProgressTracker, type ConnectionProgressInfo } from '@walletmesh/modal-core';
+
+export type ConnectionProgress = ConnectionProgressInfo;
+
+function useConnect() {
+  const [connectionProgress, setConnectionProgress] = useState<ConnectionProgress | null>(null);
+
+  async function connect(walletId?: string) {
+    const tracker = createProgressTracker();
+
+    // Update progress through connection stages
+    setConnectionProgress(tracker.updateStage('initializing'));
+    setConnectionProgress(tracker.updateStage('connecting', 'Opening wallet...'));
+    setConnectionProgress(tracker.updateStage('authenticating', 'Requesting signature...'));
+    setConnectionProgress(tracker.updateStage('connected'));
+  }
+
+  return { connect, connectionProgress };
+}
+```
+
+**Benefits:**
+- ✅ Consistent progress stages across all UI frameworks
+- ✅ Standardized progress percentages (10%, 40%, 70%, 100%)
+- ✅ Type-safe progress tracking with `ConnectionProgressInfo`
+- ✅ Centralized progress logic - updates benefit all frameworks
+
+#### **useAccount Integration with State Derivation Utilities**
+
+The `useAccount` hook uses `deriveConnectionStatus` from `modal-core/utils/stateDerivation.ts` to derive connection state flags from the Zustand store state.
+
+**Implementation:**
+```typescript
+import { deriveConnectionStatus, type DerivedConnectionFlags } from '@walletmesh/modal-core';
+
+function useAccount() {
+  const activeSession = useStore((state) => getActiveSession(state));
+  const uiState = useStore((state) => state.ui);
+
+  // Map framework-specific state to utility types
+  const sessionStatus = mapSessionStatus(activeSession);
+  const currentView = mapUIView(uiState.currentView);
+  const isReconnecting = activeSession?.status === 'switching';
+
+  // Derive connection flags using framework-agnostic utility
+  const flags = deriveConnectionStatus(sessionStatus, currentView, isReconnecting);
+
+  return {
+    address: activeSession?.address,
+    chainId: activeSession?.chainId,
+    isConnected: flags.isConnected,
+    isConnecting: flags.isConnecting,
+    isReconnecting: flags.isReconnecting,
+    status: flags.status,
+  };
+}
+```
+
+**Benefits:**
+- ✅ Consistent connection state logic across all UI frameworks
+- ✅ Single source of truth for state derivation
+- ✅ Framework-agnostic utilities are easier to test
+- ✅ Bug fixes in utilities benefit all framework packages
+
+**Available Utilities:**
+- `deriveConnectionStatus()` - Derive connection flags from session/UI state
+- `filterSessionsByStatus()` - Filter sessions by status
+- `getActiveSession()` - Get first connected session
+- `getPrimaryAddress()` - Get address from active session
+- `getCurrentChain()` - Get chain from active session
+- `isConnectedToChain()` - Check connection to specific chain
+
+**Future Framework Support:**
+When implementing modal-vue, modal-svelte, or other framework packages, these same utilities can be used to ensure identical behavior without reimplementing the logic.
 
 ### Provider & Context
 - `src/WalletMeshProvider.tsx` - Main provider setup

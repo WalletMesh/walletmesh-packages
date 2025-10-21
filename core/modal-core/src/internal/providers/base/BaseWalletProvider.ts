@@ -211,6 +211,22 @@ export abstract class BaseWalletProvider implements IBaseWalletProvider {
   }
 
   /**
+   * Remove all event listeners
+   *
+   * @param event - Optional event name to remove all listeners for.
+   *                If not provided, removes all listeners for all events.
+   */
+  removeAllListeners(event?: string): void {
+    if (event !== undefined) {
+      // Remove all listeners for specific event
+      this.eventListeners.delete(event);
+    } else {
+      // Remove all listeners for all events
+      this.eventListeners.clear();
+    }
+  }
+
+  /**
    * Disconnect from wallet
    *
    * @returns Promise that resolves when disconnection is complete

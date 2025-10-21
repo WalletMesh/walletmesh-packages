@@ -305,6 +305,56 @@ export {
 } from './utils/errorFormatter.js';
 
 /**
+ * Re-export connection progress utilities
+ *
+ * Framework-agnostic utilities for tracking connection progress across UI implementations.
+ * Provides consistent progress semantics for React, Vue, Svelte, and other frameworks.
+ *
+ * @public
+ * @since 3.0.0
+ */
+export {
+  ConnectionStages,
+  createProgress,
+  createCustomProgress,
+  getStageProgress,
+  getStageDescription,
+  interpolateProgress,
+  isTerminalStage,
+  isInProgress,
+  ConnectionProgressTracker,
+  createProgressTracker,
+  type ConnectionStage,
+  type ConnectionProgressInfo,
+} from './utils/connectionProgress.js';
+
+/**
+ * Re-export state derivation utilities
+ *
+ * Framework-agnostic utilities for deriving UI state from core state.
+ * Helps UI packages derive consistent state representations across frameworks.
+ *
+ * @public
+ * @since 3.0.0
+ */
+export {
+  deriveConnectionFlags as deriveConnectionStatus,
+  filterSessionsByStatus,
+  getActiveSession as getActiveWalletSession,
+  getConnectedWalletIds,
+  getCurrentChain,
+  getPrimaryAddress,
+  getSessionsByChainType,
+  hasConnectedSession,
+  isConnectedToChain,
+  type ConnectionFlags as DerivedConnectionFlags,
+  type SessionStatus,
+  type UIView,
+  type ChainInfo,
+  type WalletSession,
+} from './utils/stateDerivation.js';
+
+/**
  * Re-export provider query utilities
  *
  * @public

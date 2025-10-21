@@ -179,9 +179,11 @@ export class NativeSolanaProvider extends SolanaProvider {
     this.wallet.removeListener(event, handler);
   }
 
-  removeAllListeners(_event?: string): void {
+  override removeAllListeners(event?: string): void {
     // Most Solana wallets don't support removeAllListeners
     // This is a limitation we have to work with
+    // However, we must keep base class listener tracking in sync
+    super.removeAllListeners(event);
   }
 
   // Implement abstract methods from SolanaProvider

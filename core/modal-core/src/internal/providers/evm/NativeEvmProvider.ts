@@ -72,10 +72,12 @@ export class NativeEvmProvider extends EvmProvider {
     this.ethereum.removeListener(event, handler);
   }
 
-  removeAllListeners(event?: string): void {
+  override removeAllListeners(event?: string): void {
     if (this.ethereum.removeAllListeners) {
       this.ethereum.removeAllListeners(event);
     }
+    // Keep base class listener tracking in sync
+    super.removeAllListeners(event);
   }
 
   /**

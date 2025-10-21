@@ -212,7 +212,7 @@ export function createMockEvmProvider(responses: Record<string, unknown> = {}) {
     // BlockchainProvider interface implementation
     connected,
 
-    getAddresses: vi.fn().mockResolvedValue(mockAccounts),
+    getAccounts: vi.fn().mockResolvedValue(mockAccounts),
 
     getChainId: vi.fn().mockResolvedValue(currentChainId),
 
@@ -337,7 +337,7 @@ export function createMockSolanaProvider(balance = 1000000000) {
     // BlockchainProvider interface implementation
     connected,
 
-    getAddresses: vi.fn().mockResolvedValue(mockAccounts),
+    getAccounts: vi.fn().mockResolvedValue(mockAccounts),
 
     getChainId: vi.fn().mockResolvedValue(currentChainId),
 

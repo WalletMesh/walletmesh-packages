@@ -1,11 +1,20 @@
 /**
  * Provider interface types for JSON-RPC communication
  *
+ * Defines the WalletProvider system used by provider implementations
+ * (EvmProvider, SolanaProvider, etc.) for JSON-RPC method communication.
+ *
+ * @remarks
+ * As of 2025-01-20, all provider interfaces extend CommonProviderInterface for consistency.
+ * This ensures compatibility with the BlockchainProvider system used by services.
+ *
+ * @see CommonProviderInterface for the base interface all providers extend
  * @module types/providers
  * @packageDocumentation
  */
 
 import type { ChainType } from '../../core/types.js';
+import type { CommonProviderInterface } from './commonProvider.js';
 
 /**
  * Method map defining wallet JSON-RPC methods for type-safe communication
@@ -232,33 +241,19 @@ export interface PublicProvider {
  * Wallet providers use the wallet's RPC endpoints for both read and write operations,
  * enabling transaction signing and other privileged operations.
  *
+ * This interface extends CommonProviderInterface to ensure consistency with
+ * the BlockchainProvider system.
+ *
  * @public
  */
-export interface BaseWalletProvider {
-  /**
-   * Get connected accounts
-   */
-  getAccounts(): Promise<string[]>;
-
-  /**
-   * Get current chain ID
-   */
-  getChainId(): Promise<string>;
-
-  /**
-   * Add event listener
-   */
-  on(event: string, listener: (...args: unknown[]) => void): void;
-
-  /**
-   * Remove event listener
-   */
-  off(event: string, listener: (...args: unknown[]) => void): void;
-
-  /**
-   * Disconnect from wallet
-   */
-  disconnect(): Promise<void>;
+export interface BaseWalletProvider extends CommonProviderInterface {
+  // All common methods inherited from CommonProviderInterface:
+  // - getAccounts(): Promise<string[]>
+  // - getChainId(): Promise<string>
+  // - disconnect(): Promise<void>
+  // - on(event: string, listener: (...args: unknown[]) => void): void
+  // - off(event: string, listener: (...args: unknown[]) => void): void
+  // - removeAllListeners(event?: string): void
 }
 
 /**

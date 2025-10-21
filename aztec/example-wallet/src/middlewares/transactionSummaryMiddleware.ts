@@ -44,6 +44,32 @@ function buildSummary(payload: ExecutionPayload | undefined): TransactionSummary
   return { functionCalls };
 }
 
+function buildBatchSummary(payloads: ExecutionPayload[] | undefined): TransactionSummary | undefined {
+  if (!Array.isArray(payloads) || payloads.length === 0) {
+    return undefined;
+  }
+
+  const allFunctionCalls: FunctionCallSummary[] = [];
+
+  for (const payload of payloads) {
+    if (payload?.calls && Array.isArray(payload.calls)) {
+      for (const call of payload.calls) {
+        allFunctionCalls.push({
+          contractAddress: call.to?.toString?.() ?? 'unknown',
+          functionName: call.name ?? 'unknown',
+          args: Array.isArray(call.args) ? call.args : [],
+        });
+      }
+    }
+  }
+
+  if (allFunctionCalls.length === 0) {
+    return undefined;
+  }
+
+  return { functionCalls: allFunctionCalls };
+}
+
 export const createTransactionSummaryMiddleware = (): JSONRPCMiddleware<
   AztecWalletMethodMap,
   AztecHandlerContext & {
@@ -54,6 +80,7 @@ export const createTransactionSummaryMiddleware = (): JSONRPCMiddleware<
   return async (context, req, next) => {
     const sessionKey = getSessionKey(context.session as SessionData | undefined);
 
+    // Handle single execution payload methods
     if (
       (req.method === 'aztec_wmExecuteTx' || req.method === 'aztec_wmSimulateTx' || req.method === 'aztec_wmDeployContract') &&
       Array.isArray(req.params) &&
@@ -61,6 +88,20 @@ export const createTransactionSummaryMiddleware = (): JSONRPCMiddleware<
     ) {
       const payload = req.params[0] as ExecutionPayload;
       const summary = buildSummary(payload);
+      if (summary) {
+        summaryStore.set(sessionKey, { summary, functionArgNames: context.functionCallArgNames });
+        context.transactionSummary = summary;
+      }
+    }
+
+    // Handle atomic batch execution
+    if (
+      req.method === 'aztec_wmBatchExecute' &&
+      Array.isArray(req.params) &&
+      req.params.length > 0
+    ) {
+      const executionPayloads = req.params[0] as ExecutionPayload[];
+      const summary = buildBatchSummary(executionPayloads);
       if (summary) {
         summaryStore.set(sessionKey, { summary, functionArgNames: context.functionCallArgNames });
         context.transactionSummary = summary;

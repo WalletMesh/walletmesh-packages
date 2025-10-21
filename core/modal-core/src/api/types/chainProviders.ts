@@ -6,31 +6,32 @@
  * different wallet implementations.
  *
  * This is separate from providers.ts which handles JSON-RPC method mapping.
+ *
+ * @remarks
+ * As of 2025-01-20, all provider interfaces extend CommonProviderInterface for consistency.
+ * The standardized method for retrieving accounts is `getAccounts()`.
+ *
+ * @see CommonProviderInterface for the base interface all providers extend
+ * @packageDocumentation
  */
 
 import type { SupportedChain } from '../../core/types.js';
+import type { CommonProviderInterface } from './commonProvider.js';
 
 /**
  * Common base interface for all blockchain providers
+ *
+ * This interface extends CommonProviderInterface to ensure consistency with
+ * the WalletProvider system.
  */
-export interface BlockchainProvider {
-  /** Get the current account addresses */
-  getAddresses(): Promise<string[]>;
-
-  /** Get the current chain ID */
-  getChainId(): Promise<string | number>;
-
-  /** Disconnect the provider */
-  disconnect(): Promise<void>;
-
-  /** Add event listener */
-  on(event: string, listener: (...args: unknown[]) => void): void;
-
-  /** Remove event listener */
-  off(event: string, listener: (...args: unknown[]) => void): void;
-
-  /** Remove all event listeners */
-  removeAllListeners(event?: string): void;
+export interface BlockchainProvider extends CommonProviderInterface {
+  // All common methods inherited from CommonProviderInterface:
+  // - getAccounts(): Promise<string[]>
+  // - getChainId(): Promise<string | number>
+  // - disconnect(): Promise<void>
+  // - on(event: string, listener: (...args: unknown[]) => void): void
+  // - off(event: string, listener: (...args: unknown[]) => void): void
+  // - removeAllListeners(event?: string): void
 
   /** Request method call for JSON-RPC communication */
   request(args: { method: string; params?: unknown[] | Record<string, unknown> }): Promise<unknown>;

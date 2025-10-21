@@ -2,10 +2,9 @@
  * @fileoverview Tests for icon sandbox utility security validation
  */
 
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
 import {
-  type CreateSandboxedIconOptions,
   createSandboxedIcon,
   createSandboxedIcons,
   isSandboxSupported,
@@ -14,18 +13,8 @@ import {
 // Install custom matchers
 installCustomMatchers();
 
-// Import actual ErrorFactory to avoid mock conflicts
-let ErrorFactoryActual: typeof import('../../internal/core/errors/errorFactory.js').ErrorFactory;
-
-beforeAll(async () => {
-  const errorFactoryModule = await vi.importActual('../../internal/core/errors/errorFactory.js');
-  const typedModule = errorFactoryModule as typeof import('../../internal/core/errors/errorFactory.js');
-  ErrorFactoryActual = typedModule.ErrorFactory;
-});
-
 // Mock DOM environment for testing
 const mockCreateElement = vi.fn();
-const mockAppendChild = vi.fn();
 
 describe('Icon Sandbox Tests', () => {
   const testEnv = createTestEnvironment();
@@ -148,7 +137,10 @@ describe('Icon Sandbox Tests', () => {
 
       expect(mockCreateElement).toHaveBeenCalledWith('iframe');
       expect(iframe.sandbox).toBe('allow-same-origin');
-      expect(iframe.srcdoc).toContain(validSvg);
+      // SVG content should be HTML-escaped in the srcdoc
+      expect(iframe.srcdoc).toContain('&lt;svg');
+      expect(iframe.srcdoc).toContain('&gt;');
+      expect(iframe.srcdoc).toContain('&quot;');
       expect(iframe.srcdoc).toContain('Content-Security-Policy');
     });
 
@@ -245,7 +237,7 @@ describe('Icon Sandbox Tests', () => {
       const iframes = await createSandboxedIcons(icons);
 
       expect(iframes).toHaveLength(2);
-      expect(iframes.every((iframe) => iframe.sandbox === 'allow-same-origin')).toBe(true);
+      expect(iframes.every((iframe) => String(iframe.sandbox) === 'allow-same-origin')).toBe(true);
     });
 
     it('should handle errors gracefully in batch processing', async () => {
@@ -315,6 +307,130 @@ describe('Icon Sandbox Tests', () => {
     });
   });
 
+  describe('HTML Injection Prevention', () => {
+    it('should prevent quote injection in src attribute', async () => {
+      // Attempt to inject code by breaking out of src attribute with quotes
+      const maliciousSvg = 'data:image/svg+xml," onload="alert(1)';
+
+      const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
+
+      // Verify the iframe was created
+      expect(iframe).toBeDefined();
+      expect(iframe.srcdoc).toBeDefined();
+
+      // Verify that quotes are escaped in the srcdoc content
+      // The escaped version should contain &quot; instead of raw quotes
+      expect(iframe.srcdoc).toContain('&quot;');
+      // Should NOT contain the unescaped injection attempt
+      expect(iframe.srcdoc).not.toMatch(/" onload="/);
+    });
+
+    it('should prevent angle bracket injection', async () => {
+      // Attempt to inject by closing the img tag and adding new elements
+      const maliciousSvg = 'data:image/svg+xml,"><script>alert(1)</script><img src="';
+
+      const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
+
+      expect(iframe).toBeDefined();
+      expect(iframe.srcdoc).toBeDefined();
+
+      // Verify angle brackets are escaped
+      expect(iframe.srcdoc).toContain('&lt;');
+      expect(iframe.srcdoc).toContain('&gt;');
+      // Should NOT contain unescaped script tags
+      expect(iframe.srcdoc).not.toMatch(/<script>/);
+    });
+
+    it('should prevent attribute injection with onload', async () => {
+      // Try various injection vectors with onload
+      const injectionVectors = [
+        'data:image/svg+xml," onload="alert(1)"',
+        "data:image/svg+xml,' onload='alert(1)'",
+        'data:image/svg+xml,"><img onload=alert(1)>',
+      ];
+
+      for (const maliciousSvg of injectionVectors) {
+        const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
+
+        expect(iframe).toBeDefined();
+        expect(iframe.srcdoc).toBeDefined();
+
+        // Verify special characters are escaped
+        const hasEscapedQuotes =
+          iframe.srcdoc.includes('&quot;') || iframe.srcdoc.includes('&#x27;');
+        const hasEscapedBrackets = iframe.srcdoc.includes('&lt;') || iframe.srcdoc.includes('&gt;');
+
+        expect(hasEscapedQuotes || hasEscapedBrackets).toBe(true);
+      }
+    });
+
+    it('should prevent closing tag injection', async () => {
+      // Attempt to close the img tag and inject new elements
+      const maliciousSvg = 'data:image/svg+xml,"></img><div onclick="alert(1)"><img src="';
+
+      const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
+
+      expect(iframe).toBeDefined();
+      expect(iframe.srcdoc).toBeDefined();
+
+      // Verify angle brackets and quotes are escaped
+      expect(iframe.srcdoc).toMatch(/&(lt|gt|quot|#x27);/);
+      // Should NOT contain unescaped div tags
+      expect(iframe.srcdoc).not.toMatch(/<\/img>/);
+      expect(iframe.srcdoc).not.toMatch(/<div/);
+    });
+
+    it('should prevent combined injection attacks', async () => {
+      // Complex attack combining multiple techniques
+      const maliciousSvg = 'data:image/svg+xml,\'></img><svg/onload=alert(1)><img src=\'';
+
+      const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
+
+      expect(iframe).toBeDefined();
+      expect(iframe.srcdoc).toBeDefined();
+
+      // All special characters should be escaped
+      expect(iframe.srcdoc).toContain('&lt;'); // <
+      expect(iframe.srcdoc).toContain('&gt;'); // >
+      expect(iframe.srcdoc).toContain('&#x27;'); // '
+
+      // Should NOT contain any unescaped malicious patterns
+      // The key check is that angle brackets are escaped so tags can't be injected
+      expect(iframe.srcdoc).not.toMatch(/<svg/);
+      expect(iframe.srcdoc).not.toMatch(/<\/img>/);
+      // Verify the malicious payload is safely contained in the escaped attribute
+      expect(iframe.srcdoc).toMatch(/&lt;svg\/onload=alert\(1\)&gt;/);
+    });
+
+    it('should handle legitimate SVG content with special characters', async () => {
+      // Valid SVG that happens to contain encoded special characters
+      const validSvg = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20r%3D%2210%22%2F%3E%3C%2Fsvg%3E';
+
+      const iframe = await createSandboxedIcon({ iconDataUri: validSvg });
+
+      expect(iframe).toBeDefined();
+      expect(iframe.srcdoc).toBeDefined();
+      // The escaped version should still be valid
+      expect(iframe.sandbox).toBe('allow-same-origin');
+    });
+
+    it('should preserve functionality while escaping', async () => {
+      // Ensure normal SVGs still work after escaping is applied
+      const normalSvg = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"><circle r="10"/></svg>';
+
+      const iframe = await createSandboxedIcon({ iconDataUri: normalSvg, size: 24 });
+
+      expect(iframe).toBeDefined();
+      expect(iframe.sandbox).toBe('allow-same-origin');
+      expect(iframe.srcdoc).toContain('Content-Security-Policy');
+
+      // Verify quotes in normal content are escaped
+      expect(iframe.srcdoc).toContain('&quot;');
+      expect(iframe.srcdoc).toContain('&lt;');
+      expect(iframe.srcdoc).toContain('&gt;');
+    });
+  });
+
   describe('createSandboxedIcon (async API)', () => {
     // Mock additional APIs needed for async testing
     const mockAddEventListener = vi.fn();
@@ -352,7 +468,7 @@ describe('Icon Sandbox Tests', () => {
               return target[prop] || '';
             },
           },
-        ) as CSSStyleDeclaration,
+        ) as unknown as CSSStyleDeclaration,
         title: '',
         loading: '',
         setAttribute: vi.fn(),
@@ -399,7 +515,9 @@ describe('Icon Sandbox Tests', () => {
       expect(iframe.sandbox).toBe('allow-same-origin');
       // Check that srcdoc was set (it will contain the HTML wrapper around the SVG)
       expect(iframe.srcdoc).toBeDefined();
-      expect(iframe.srcdoc).toContain(`<img src="${validSvg}`);
+      // The SVG should be HTML-escaped in the src attribute
+      expect(iframe.srcdoc).toContain('&lt;svg');
+      expect(iframe.srcdoc).toContain('&quot;');
     });
 
     it('should use fallback icon on error', async () => {
@@ -415,7 +533,9 @@ describe('Icon Sandbox Tests', () => {
 
       expect(iframe).toBeDefined();
       expect(iframe.srcdoc).toBeDefined();
-      expect(iframe.srcdoc).toContain(`<img src="${fallbackSvg}`);
+      // The fallback SVG should be HTML-escaped in the src attribute
+      expect(iframe.srcdoc).toContain('&lt;svg');
+      expect(iframe.srcdoc).toContain('&lt;circle');
     });
   });
 });

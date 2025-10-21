@@ -2,18 +2,18 @@ import { getInitialTestAccounts } from '@aztec/accounts/testing';
 import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';
 import { CounterContractArtifact } from '@aztec/noir-test-contracts.js/Counter';
 import {
+  AztecBatchProgressOverlay,
   AztecConnectButton,
   AztecWalletReady,
-  AztecBatchProgressOverlay,
+  getDeploymentStageLabel,
   useAccount,
+  useAztecAddress,
   useAztecBatch,
   useAztecContract,
   useAztecDeploy,
-  useAztecAddress,
   useAztecSimulation,
-  useAztecWallet,
   useAztecTransaction,
-  getDeploymentStageLabel,
+  useAztecWallet,
 } from '@walletmesh/modal-react/aztec';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
@@ -37,14 +37,14 @@ const DApp: React.FC = () => {
 
   // Use Aztec-specific hooks for deployment
   const {
-    deploy: deployToken,
+    deploySync: deployToken,
     isDeploying: isDeployingToken,
     stage: tokenStage,
     deployedAddress: tokenAddress,
   } = useAztecDeploy();
 
   const {
-    deploy: deployCounter,
+    deploySync: deployCounter,
     isDeploying: isDeployingCounter,
     stage: counterStage,
     deployedAddress: counterAddress,
@@ -197,6 +197,7 @@ const DApp: React.FC = () => {
 
   /**
    * Deploys the TokenContractArtifact to the Aztec network using the connected wallet.
+   * Uses synchronous deployment (deploySync) which waits for confirmation before returning.
    */
   const handleDeployToken = async () => {
     if (!aztecWallet || !address) {
@@ -205,7 +206,8 @@ const DApp: React.FC = () => {
     }
 
     try {
-      // Hook now handles artifact compatibility internally
+      // deploySync waits for deployment confirmation before returning
+      // Hook handles artifact compatibility internally
       await deployToken(TokenContractArtifact as any, [address, 'TokenName', 'TKN', 18], {
         onSuccess: (deployedAddress) => {
           showSuccess(`Token deployed at ${deployedAddress.toString()}`);
@@ -225,6 +227,7 @@ const DApp: React.FC = () => {
 
   /**
    * Deploys the CounterContractArtifact to the Aztec network.
+   * Uses synchronous deployment (deploySync) which waits for confirmation before returning.
    */
   const handleDeployCounter = async () => {
     if (!aztecWallet || !address) {
@@ -233,7 +236,8 @@ const DApp: React.FC = () => {
     }
 
     try {
-      // Hook now handles artifact compatibility internally
+      // deploySync waits for deployment confirmation before returning
+      // Hook handles artifact compatibility internally
       await deployCounter(CounterContractArtifact as any, [0, address], {
         onSuccess: (deployedAddress) => {
           showSuccess(`Counter deployed at ${deployedAddress.toString()}`);
@@ -521,7 +525,9 @@ const DApp: React.FC = () => {
       const ownerAddressHex = ownerAddress.toString();
 
       // Get a different test account for the transfer recipient
-      const recipient = await getInitialTestAccounts().then((accounts) => toAztecAddress(accounts[1].address));
+      const recipient = await getInitialTestAccounts().then((accounts) =>
+        toAztecAddress(accounts[1].address),
+      );
 
       const interactions = [
         // First: Mint tokens to our account
@@ -679,7 +685,9 @@ const DApp: React.FC = () => {
                     type="button"
                     onClick={handleGetTokenBalance}
                     style={{ marginLeft: '5px' }}
-                    disabled={isMintExecuting || isTokenContractLoading || isRefreshingBalance || isBatchExecuting}
+                    disabled={
+                      isMintExecuting || isTokenContractLoading || isRefreshingBalance || isBatchExecuting
+                    }
                   >
                     {isRefreshingBalance ? '⏳ Fetching…' : 'Get Token Balance'}
                   </button>

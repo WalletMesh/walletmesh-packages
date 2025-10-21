@@ -75,7 +75,7 @@ function createMockSessionState(options?: {
               return Promise.resolve(null);
           }
         }),
-        getAddresses: vi.fn().mockResolvedValue(addresses),
+        getAccounts: vi.fn().mockResolvedValue(addresses),
         getChainId: vi.fn().mockResolvedValue('0x1'),
         disconnect: vi.fn().mockResolvedValue(undefined),
         on: vi.fn(),

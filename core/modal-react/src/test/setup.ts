@@ -969,6 +969,171 @@ vi.mock('@walletmesh/modal-core', () => {
 
     // Provider components
     EvmProvider: vi.fn().mockImplementation(({ children }) => children),
+
+    // Connection progress utilities (from modal-core/utils/connectionProgress.ts)
+    ConnectionStages: {
+      INITIALIZING: 'initializing',
+      CONNECTING: 'connecting',
+      AUTHENTICATING: 'authenticating',
+      CONNECTED: 'connected',
+      FAILED: 'failed',
+    },
+    createProgress: vi.fn().mockImplementation((stage, details) => ({
+      progress: stage === 'connected' ? 100 : stage === 'connecting' ? 40 : 10,
+      stage,
+      step: details || `${stage}...`,
+      ...(details && { details }),
+    })),
+    createCustomProgress: vi.fn().mockImplementation((progress, stage, step, details) => ({
+      progress,
+      stage,
+      step,
+      ...(details && { details }),
+    })),
+    getStageProgress: vi.fn().mockImplementation((stage: string) => {
+      const map: Record<string, number> = { initializing: 10, connecting: 40, authenticating: 70, connected: 100, failed: 0 };
+      return map[stage] || 0;
+    }),
+    getStageDescription: vi.fn().mockImplementation((stage: string) => {
+      const map: Record<string, string> = {
+        initializing: 'Initializing connection...',
+        connecting: 'Connecting to wallet...',
+        authenticating: 'Authenticating...',
+        connected: 'Connected successfully',
+        failed: 'Connection failed',
+      };
+      return map[stage] || '';
+    }),
+    interpolateProgress: vi.fn().mockImplementation((fromStage: string, toStage: string, factor: number) => {
+      const progressMap: Record<string, number> = { initializing: 10, connecting: 40, authenticating: 70, connected: 100, failed: 0 };
+      const fromProgress = progressMap[fromStage] || 0;
+      const toProgress = progressMap[toStage] || 0;
+      return Math.round(fromProgress + (toProgress - fromProgress) * Math.max(0, Math.min(1, factor)));
+    }),
+    isTerminalStage: vi.fn().mockImplementation((stage) => stage === 'connected' || stage === 'failed'),
+    isInProgress: vi.fn().mockImplementation((stage) => stage !== 'connected' && stage !== 'failed'),
+    ConnectionProgressTracker: vi.fn().mockImplementation(function() {
+      let currentStage = 'initializing';
+      let currentProgress = {
+        progress: 10,
+        stage: 'initializing',
+        step: 'Initializing connection...',
+      };
+
+      return {
+        updateStage: vi.fn().mockImplementation((stage: string, details?: string) => {
+          currentStage = stage;
+          const progressMap: Record<string, number> = { initializing: 10, connecting: 40, authenticating: 70, connected: 100, failed: 0 };
+          currentProgress = {
+            progress: progressMap[stage] || 0,
+            stage,
+            step: details || `${stage}...`,
+            ...(details && { details }),
+          };
+          return { ...currentProgress };
+        }),
+        updateCustom: vi.fn().mockImplementation((progress, step, details) => {
+          currentProgress = {
+            progress,
+            stage: currentStage,
+            step,
+            ...(details && { details }),
+          };
+          return { ...currentProgress };
+        }),
+        getCurrent: vi.fn().mockImplementation(() => ({ ...currentProgress })),
+        getCurrentStage: vi.fn().mockImplementation(() => currentStage),
+        isInProgress: vi.fn().mockImplementation(() => currentStage !== 'connected' && currentStage !== 'failed'),
+        isComplete: vi.fn().mockImplementation(() => currentStage === 'connected' || currentStage === 'failed'),
+        reset: vi.fn().mockImplementation(() => {
+          currentStage = 'initializing';
+          currentProgress = {
+            progress: 10,
+            stage: 'initializing',
+            step: 'Initializing connection...',
+          };
+        }),
+      };
+    }),
+    createProgressTracker: vi.fn().mockImplementation(function() {
+      let currentStage = 'initializing';
+      let currentProgress = {
+        progress: 10,
+        stage: 'initializing',
+        step: 'Initializing connection...',
+      };
+
+      return {
+        updateStage: vi.fn().mockImplementation((stage: string, details?: string) => {
+          currentStage = stage;
+          const progressMap: Record<string, number> = { initializing: 10, connecting: 40, authenticating: 70, connected: 100, failed: 0 };
+          currentProgress = {
+            progress: progressMap[stage] || 0,
+            stage,
+            step: details || `${stage}...`,
+            ...(details && { details }),
+          };
+          return { ...currentProgress };
+        }),
+        updateCustom: vi.fn().mockImplementation((progress, step, details) => {
+          currentProgress = {
+            progress,
+            stage: currentStage,
+            step,
+            ...(details && { details }),
+          };
+          return { ...currentProgress };
+        }),
+        getCurrent: vi.fn().mockImplementation(() => ({ ...currentProgress })),
+        getCurrentStage: vi.fn().mockImplementation(() => currentStage),
+        isInProgress: vi.fn().mockImplementation(() => currentStage !== 'connected' && currentStage !== 'failed'),
+        isComplete: vi.fn().mockImplementation(() => currentStage === 'connected' || currentStage === 'failed'),
+        reset: vi.fn().mockImplementation(() => {
+          currentStage = 'initializing';
+          currentProgress = {
+            progress: 10,
+            stage: 'initializing',
+            step: 'Initializing connection...',
+          };
+        }),
+      };
+    }),
+
+    // State derivation utilities (from modal-core/utils/stateDerivation.ts)
+    deriveConnectionStatus: vi.fn().mockImplementation((sessionStatus, currentView, isReconnecting) => ({
+      status: sessionStatus === 'connected' ? 'connected' : 'disconnected',
+      isConnected: sessionStatus === 'connected',
+      isConnecting: currentView === 'connecting' && !isReconnecting,
+      isReconnecting: isReconnecting || false,
+      isDisconnected: sessionStatus !== 'connected' && currentView !== 'connecting' && !isReconnecting,
+    })),
+    filterSessionsByStatus: vi.fn().mockImplementation((sessions, status) =>
+      sessions.filter((s: { status: string }) => s.status === (status || 'connected'))
+    ),
+    getConnectedWalletIds: vi.fn().mockImplementation((sessions) =>
+      sessions.filter((s: { status: string }) => s.status === 'connected').map((s: { walletId: string }) => s.walletId)
+    ),
+    getActiveWalletSession: vi.fn().mockImplementation((sessions) =>
+      sessions.find((s: { status: string }) => s.status === 'connected') || null
+    ),
+    getPrimaryAddress: vi.fn().mockImplementation((sessions) => {
+      const active = sessions.find((s: { status: string }) => s.status === 'connected');
+      return active?.address || null;
+    }),
+    getCurrentChain: vi.fn().mockImplementation((sessions) => {
+      const active = sessions.find((s: { status: string }) => s.status === 'connected');
+      return active?.chain || null;
+    }),
+    isConnectedToChain: vi.fn().mockImplementation((sessions, chainId) => {
+      const active = sessions.find((s: { status: string }) => s.status === 'connected');
+      return active?.chain?.chainId === chainId;
+    }),
+    getSessionsByChainType: vi.fn().mockImplementation((sessions, chainType) =>
+      sessions.filter((s: { chain?: { chainType: string } }) => s.chain?.chainType === chainType)
+    ),
+    hasConnectedSession: vi.fn().mockImplementation((sessions) =>
+      sessions.some((s: { status: string }) => s.status === 'connected')
+    ),
   };
 });
 

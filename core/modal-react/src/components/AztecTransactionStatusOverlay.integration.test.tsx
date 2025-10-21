@@ -572,12 +572,12 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
       let progressbar = screen.getByRole('progressbar');
       expect(progressbar).toHaveAttribute('aria-valuenow', '0');
 
-      // Progress to proving (stage 2)
+      // Progress to proving (stage 1 in simplified STAGE_ORDER)
       mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving');
       rerender(<AztecTransactionStatusOverlay />);
 
       progressbar = screen.getByRole('progressbar');
-      expect(progressbar).toHaveAttribute('aria-valuenow', '2');
+      expect(progressbar).toHaveAttribute('aria-valuenow', '1');
     });
   });
 
