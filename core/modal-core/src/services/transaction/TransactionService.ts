@@ -1505,8 +1505,6 @@ export class TransactionService {
    * ```
    */
   computeLoadingState(status: TransactionStatus): boolean {
-    return (
-      status === 'simulating' || status === 'proving' || status === 'sending' || status === 'pending'
-    );
+    return status === 'simulating' || status === 'proving' || status === 'sending' || status === 'pending';
   }
 }

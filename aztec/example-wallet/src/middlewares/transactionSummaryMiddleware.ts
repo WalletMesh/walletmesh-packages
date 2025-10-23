@@ -24,6 +24,64 @@ export interface TransactionSummary {
   functionCalls: FunctionCallSummary[];
 }
 
+/**
+ * Builds a transaction summary from an array of execution payloads (batch execute).
+ * This is a helper function that can be used in router-level middleware.
+ *
+ * @param executionPayloads - Array of execution payloads containing calls
+ * @returns Transaction summary with all function calls
+ */
+export function buildTransactionSummaryForBatch(
+  executionPayloads: ExecutionPayload[] | undefined,
+): TransactionSummary | undefined {
+  if (!Array.isArray(executionPayloads) || executionPayloads.length === 0) {
+    return undefined;
+  }
+
+  const allFunctionCalls: FunctionCallSummary[] = [];
+
+  for (const payload of executionPayloads) {
+    if (payload?.calls && Array.isArray(payload.calls)) {
+      for (const call of payload.calls) {
+        allFunctionCalls.push({
+          contractAddress: call.to?.toString?.() ?? 'unknown',
+          functionName: call.name ?? 'unknown',
+          args: Array.isArray(call.args) ? call.args : [],
+        });
+      }
+    }
+  }
+
+  if (allFunctionCalls.length === 0) {
+    return undefined;
+  }
+
+  return { functionCalls: allFunctionCalls };
+}
+
+/**
+ * Builds a transaction summary from a single execution payload.
+ * This is a helper function that can be used in router-level middleware.
+ *
+ * @param executionPayload - Single execution payload containing calls
+ * @returns Transaction summary with function calls
+ */
+export function buildTransactionSummaryForSingle(
+  executionPayload: ExecutionPayload | undefined,
+): TransactionSummary | undefined {
+  if (!executionPayload?.calls || executionPayload.calls.length === 0) {
+    return undefined;
+  }
+
+  const functionCalls: FunctionCallSummary[] = executionPayload.calls.map((call) => ({
+    contractAddress: call.to?.toString?.() ?? 'unknown',
+    functionName: call.name ?? 'unknown',
+    args: Array.isArray(call.args) ? call.args : [],
+  }));
+
+  return { functionCalls };
+}
+
 const summaryStore = new Map<string, { summary: TransactionSummary; functionArgNames?: FunctionArgNames }>();
 
 function getSessionKey(session?: SessionData): string {
@@ -82,7 +140,9 @@ export const createTransactionSummaryMiddleware = (): JSONRPCMiddleware<
 
     // Handle single execution payload methods
     if (
-      (req.method === 'aztec_wmExecuteTx' || req.method === 'aztec_wmSimulateTx' || req.method === 'aztec_wmDeployContract') &&
+      (req.method === 'aztec_wmExecuteTx' ||
+        req.method === 'aztec_wmSimulateTx' ||
+        req.method === 'aztec_wmDeployContract') &&
       Array.isArray(req.params) &&
       req.params.length > 0
     ) {
@@ -95,13 +155,19 @@ export const createTransactionSummaryMiddleware = (): JSONRPCMiddleware<
     }
 
     // Handle atomic batch execution
-    if (
-      req.method === 'aztec_wmBatchExecute' &&
-      Array.isArray(req.params) &&
-      req.params.length > 0
-    ) {
+    if (req.method === 'aztec_wmBatchExecute' && Array.isArray(req.params) && req.params.length > 0) {
+      console.log('[TransactionSummary] Processing aztec_wmBatchExecute:', {
+        paramsLength: req.params.length,
+        firstParamType: typeof req.params[0],
+        isArray: Array.isArray(req.params[0]),
+      });
       const executionPayloads = req.params[0] as ExecutionPayload[];
       const summary = buildBatchSummary(executionPayloads);
+      console.log('[TransactionSummary] Built batch summary:', {
+        hasSummary: !!summary,
+        functionCallsCount: summary?.functionCalls.length,
+        hasFunctionArgNames: !!context.functionCallArgNames,
+      });
       if (summary) {
         summaryStore.set(sessionKey, { summary, functionArgNames: context.functionCallArgNames });
         context.transactionSummary = summary;

@@ -116,7 +116,9 @@ describe('useWalletCapabilities - Isolated Tests', () => {
       const { result } = renderHook(() => useWalletCapabilities(), { wrapper });
 
       expect(typeof result.current.isLoading).toBe('boolean');
-      expect(result.current.capabilities === null || typeof result.current.capabilities === 'object').toBe(true);
+      expect(result.current.capabilities === null || typeof result.current.capabilities === 'object').toBe(
+        true,
+      );
       expect(result.current.error === null || result.current.error instanceof Error).toBe(true);
     });
   });

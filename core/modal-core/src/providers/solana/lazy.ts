@@ -47,10 +47,9 @@ import { createLazyModule } from '../../utils/lazy/createLazyModule.js';
  * @public
  */
 export const solanaWeb3Module = createLazyModule('@solana/web3.js', {
-	displayName: 'Solana Web3.js',
-	errorMessage:
-		'Solana utilities require @solana/web3.js to be installed. ' +
-		'Run: npm install @solana/web3.js',
+  displayName: 'Solana Web3.js',
+  errorMessage:
+    'Solana utilities require @solana/web3.js to be installed. ' + 'Run: npm install @solana/web3.js',
 });
 
 /**
@@ -72,13 +71,13 @@ export const solanaWeb3Module = createLazyModule('@solana/web3.js', {
  * @public
  */
 export async function createConnection(
-	endpoint: string,
-	commitment?: 'processed' | 'confirmed' | 'finalized',
+  endpoint: string,
+  commitment?: 'processed' | 'confirmed' | 'finalized',
 ): Promise<unknown> {
-	const web3 = (await solanaWeb3Module.getModule()) as {
-		Connection: new (endpoint: string, commitment?: string) => unknown;
-	};
-	return new web3.Connection(endpoint, commitment);
+  const web3 = (await solanaWeb3Module.getModule()) as {
+    Connection: new (endpoint: string, commitment?: string) => unknown;
+  };
+  return new web3.Connection(endpoint, commitment);
 }
 
 /**
@@ -97,11 +96,11 @@ export async function createConnection(
  * @public
  */
 export async function lamportsToSol(lamports: number | bigint): Promise<number> {
-	const web3 = (await solanaWeb3Module.getModule()) as {
-		LAMPORTS_PER_SOL: number;
-	};
-	const lamportsNum = typeof lamports === 'bigint' ? Number(lamports) : lamports;
-	return lamportsNum / web3.LAMPORTS_PER_SOL;
+  const web3 = (await solanaWeb3Module.getModule()) as {
+    LAMPORTS_PER_SOL: number;
+  };
+  const lamportsNum = typeof lamports === 'bigint' ? Number(lamports) : lamports;
+  return lamportsNum / web3.LAMPORTS_PER_SOL;
 }
 
 /**
@@ -120,10 +119,10 @@ export async function lamportsToSol(lamports: number | bigint): Promise<number> 
  * @public
  */
 export async function solToLamports(sol: number): Promise<number> {
-	const web3 = (await solanaWeb3Module.getModule()) as {
-		LAMPORTS_PER_SOL: number;
-	};
-	return Math.floor(sol * web3.LAMPORTS_PER_SOL);
+  const web3 = (await solanaWeb3Module.getModule()) as {
+    LAMPORTS_PER_SOL: number;
+  };
+  return Math.floor(sol * web3.LAMPORTS_PER_SOL);
 }
 
 /**
@@ -143,15 +142,15 @@ export async function solToLamports(sol: number): Promise<number> {
  * @public
  */
 export async function isValidPublicKey(address: string): Promise<boolean> {
-	try {
-		const web3 = (await solanaWeb3Module.getModule()) as {
-			PublicKey: new (address: string) => unknown;
-		};
-		new web3.PublicKey(address);
-		return true;
-	} catch {
-		return false;
-	}
+  try {
+    const web3 = (await solanaWeb3Module.getModule()) as {
+      PublicKey: new (address: string) => unknown;
+    };
+    new web3.PublicKey(address);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -170,10 +169,10 @@ export async function isValidPublicKey(address: string): Promise<boolean> {
  * @public
  */
 export async function getSystemProgramId(): Promise<unknown> {
-	const web3 = (await solanaWeb3Module.getModule()) as {
-		SystemProgram: { programId: unknown };
-	};
-	return web3.SystemProgram.programId;
+  const web3 = (await solanaWeb3Module.getModule()) as {
+    SystemProgram: { programId: unknown };
+  };
+  return web3.SystemProgram.programId;
 }
 
 // Re-export the LazyModule type for convenience

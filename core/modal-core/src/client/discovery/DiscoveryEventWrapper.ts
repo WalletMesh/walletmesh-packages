@@ -243,7 +243,10 @@ export class DiscoveryEventWrapper {
   /**
    * Establish connection to a discovered wallet
    */
-  async connectToWallet(wallet: QualifiedResponder, sessionId?: string): Promise<{ sessionId: string; transport: unknown }> {
+  async connectToWallet(
+    wallet: QualifiedResponder,
+    sessionId?: string,
+  ): Promise<{ sessionId: string; transport: unknown }> {
     try {
       this.emit({
         type: 'connection_requested',
@@ -315,7 +318,6 @@ export class DiscoveryEventWrapper {
 
     this.activeSessions.clear();
   }
-
 
   /**
    * Setup progress tracking for a specific session

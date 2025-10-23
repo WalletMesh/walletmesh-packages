@@ -23,7 +23,14 @@ import {
 >>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { getInitialTestAccounts } from '@aztec/accounts/testing';
-import { type AccountWallet, type AztecNode, createAztecNodeClient, type PXE, waitForNode, waitForPXE } from '@aztec/aztec.js';
+import {
+  type AccountWallet,
+  type AztecNode,
+  createAztecNodeClient,
+  type PXE,
+  waitForNode,
+  waitForPXE,
+} from '@aztec/aztec.js';
 import { createPXEService, getPXEServiceConfig } from '@aztec/pxe/client/lazy';
 import {
   type ChainId,
@@ -51,12 +58,20 @@ import {
   type AskCallback,
 } from '@walletmesh/router/permissions';
 import { useToast } from '../contexts/ToastContext.js';
+<<<<<<< HEAD
 >>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 import { createFunctionArgNamesMiddleware } from '../middlewares/functionArgNamesMiddleware.js';
 import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware.js';
+=======
+import {
+  createFunctionArgNamesMiddleware,
+  type FunctionArgNames,
+} from '../middlewares/functionArgNamesMiddleware.js';
+>>>>>>> 9ae57d25 (WIP)
 import { createHistoryMiddleware, type HistoryEntry } from '../middlewares/historyMiddleware.js';
-import { createTransactionSummaryMiddleware, type TransactionSummary } from '../middlewares/transactionSummaryMiddleware.js';
+import { createTransactionSummaryMiddleware } from '../middlewares/transactionSummaryMiddleware.js';
 import { createOriginMiddleware } from '../middlewares/originMiddleware.js';
+import { createWalletNodePermissionMiddleware } from '../middlewares/walletNodePermissionMiddleware.js';
 import { createWalletSideTransport } from '../transports/CrossWindowTransport.js';
 import FunctionCallDisplay from './FunctionCallDisplay.js';
 import ParameterDisplay from './ParameterDisplay.js';
@@ -163,11 +178,7 @@ const LiveTimer: React.FC<{ startTime: number }> = ({ startTime }) => {
   );
 };
 
-const PROVING_METHODS = new Set([
-  'aztec_proveTx',
-  'aztec_wmExecuteTx',
-  'aztec_wmDeployContract',
-]);
+const PROVING_METHODS = new Set(['aztec_proveTx', 'aztec_wmExecuteTx', 'aztec_wmDeployContract']);
 
 /**
  * Creates and initializes a PXE (Private eXecution Environment) client.
@@ -267,6 +278,7 @@ const Wallet: React.FC<WalletProps> = ({
   autoApprove = false,
 >>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 }) => {
+  console.log('🔵🔵🔵 WALLET COMPONENT RENDERING 🔵🔵🔵');
   /** State for storing and displaying the history of requests received by the router. */
   const [requestHistory, setRequestHistory] = useState<HistoryEntry[]>([]);
   /** State to track if wallet_ready message has been sent to prevent duplicates */
@@ -578,44 +590,70 @@ const Wallet: React.FC<WalletProps> = ({
 
         setConnectedAccount(wallet.getAddress().toString());
 
+        // Create shared state for passing approval requirements from router to wallet node
+        // Key: call signature (chainId:method:timestamp), Value: requires approval
+        const pendingApprovals = new Map<string, boolean>();
+
         // Create local transport pair for wallet node communication
         const [clientTransport, walletTransport] = createLocalTransportPair();
 
         // Create Aztec wallet node with proper transport
         const aztecWalletNode = createAztecWalletNode(wallet, pxe, walletTransport);
 
-        // Add debugging middleware to see all incoming requests
-        aztecWalletNode.addMiddleware(async (context, request, next) => {
-          console.log('[DEBUG] Incoming request to wallet node:');
+        // Add PRE-deserialization debugging middleware to see raw serialized params
+        aztecWalletNode.addMiddleware(async (_context, request, next) => {
+          console.log('[DEBUG-PRE] Incoming request (SERIALIZED):');
+          console.log('  Method:', request.method);
+          console.log('  Params Type:', typeof request.params);
+          console.log('  Request ID:', request.id);
+
+          try {
+            const response = await next();
+            return response;
+          } catch (error) {
+            console.error('[DEBUG-PRE] Error in pre-deserialization:', error);
+            throw error;
+          }
+        });
+
+        // Add POST-deserialization debugging middleware to see deserialized typed params
+        aztecWalletNode.addPostDeserializationMiddleware(async (context, request, next) => {
+          console.log('[DEBUG-POST] Incoming request (DESERIALIZED):');
           console.log('  Method:', request.method);
           console.log('  Params:', request.params);
           console.log('  Params Type:', typeof request.params);
           console.log('  Params Keys:', request.params ? Object.keys(request.params) : null);
-          console.log('  Params JSON:', JSON.stringify(request.params, null, 2));
+          if (Array.isArray(request.params)) {
+            console.log('  Params Array Length:', request.params.length);
+            console.log('  First Param Type:', request.params[0] ? typeof request.params[0] : 'undefined');
+            if (request.params[0]) {
+              console.log('  First Param Keys:', Object.keys(request.params[0] as object));
+            }
+          }
           console.log('  Request ID:', request.id);
           console.log('  Context:', context);
 
           try {
             const response = await next();
-            console.log('[DEBUG] Response from wallet node:', {
+            console.log('[DEBUG-POST] Response from wallet node:', {
               method: request.method,
               response,
               id: request.id,
             });
             return response;
           } catch (error) {
-            console.error('[DEBUG] Error in wallet node:');
+            console.error('[DEBUG-POST] Error in wallet node (DESERIALIZED params):');
             console.error('  Method:', request.method);
             console.error('  Error:', error);
             console.error('  Error Message:', error instanceof Error ? error.message : 'Unknown error');
             console.error('  Error Stack:', error instanceof Error ? error.stack : undefined);
             console.error('  Error JSON:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
             console.error('  Request Params:', request.params);
-            console.error('  Request Params JSON:', JSON.stringify(request.params, null, 2));
             throw error;
           }
         });
 
+<<<<<<< HEAD
         // Add middleware to the wallet node for function arg names, summaries, and history
         aztecWalletNode.addMiddleware(createFunctionArgNamesMiddleware(pxe));
 <<<<<<< HEAD
@@ -627,6 +665,22 @@ const Wallet: React.FC<WalletProps> = ({
         aztecWalletNode.addMiddleware(createTransactionSummaryMiddleware());
 >>>>>>> bd392add (feat(modal-react,modal-core): enhance Aztec transaction flow with simulation, summaries, and improved execution)
         aztecWalletNode.addMiddleware(
+=======
+        // Add middleware to the wallet node
+        // Use POST-deserialization middleware for middleware that needs typed/deserialized params
+        aztecWalletNode.addPostDeserializationMiddleware(createFunctionArgNamesMiddleware(pxe));
+        aztecWalletNode.addPostDeserializationMiddleware(createTransactionSummaryMiddleware());
+        aztecWalletNode.addPostDeserializationMiddleware(
+          createWalletNodePermissionMiddleware(
+            async (request) => {
+              return await (onApprovalRequest || (async () => true))(request);
+            },
+            autoApproveRef,
+            pendingApprovals, // Pass shared state
+          ),
+        );
+        aztecWalletNode.addPostDeserializationMiddleware(
+>>>>>>> 9ae57d25 (WIP)
           createHistoryMiddleware((entries) => {
             setRequestHistory(entries as HistoryEntry[]);
 >>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
@@ -841,7 +895,9 @@ const Wallet: React.FC<WalletProps> = ({
             context: RouterContext,
             request: JSONRPCRequest<RouterMethodMap, 'wm_call', RouterMethodMap['wm_call']['params']>,
           ): Promise<boolean> {
+            console.log('🚨🚨🚨 [Wallet] checkCallPermissions CALLED 🚨🚨🚨');
             const params = request.params as RouterMethodMap['wm_call']['params'];
+            console.log('[Wallet] checkCallPermissions params:', params);
 
             // Debug logging for malformed requests
             if (!params) {
@@ -873,7 +929,7 @@ const Wallet: React.FC<WalletProps> = ({
               return false;
             }
 
-            // First check the static permission state
+            // Check the static permission state for this method
             const state = this.permissionState.get(chainId)?.get(method);
 
             // If method is in ALLOW state, always permit it
@@ -888,26 +944,42 @@ const Wallet: React.FC<WalletProps> = ({
               return false;
             }
 
-            // For ASK state or undefined, check if it was approved during connection
+            // For ASK state or undefined, check if method was approved during connection
             if (sessionId) {
               const sessionKey = `${origin}_${sessionId}`;
               const methodKey = `${chainId}:${method}`;
               const approvedSet = this.approvedMethods.get(sessionKey);
 
-              // Check if this method was explicitly approved
-              if (approvedSet?.has(methodKey)) {
-                console.log('[Wallet] Method', method, 'was approved during connection, permitting');
-                return true;
+              // Verify this method was approved during connection (i.e., dApp has permission to call it)
+              if (!approvedSet?.has(methodKey)) {
+                console.log('[Wallet] Method', method, 'was NOT requested during connection, denying');
+                return false;
               }
 
-              // For ASK state, we should prompt the user
-              console.log('[Wallet] Method', method, 'is in ASK state, prompting user for approval');
-              if (this.askPermissions) {
-                return await this.askPermissions(context, request);
+              // Method was approved during connection, now check if it needs per-transaction approval
+              console.log('[Wallet] Method', method, 'was approved during connection');
+
+              // For ASK state methods, ALWAYS require approval on each transaction
+              if (state === AllowAskDenyState.ASK) {
+                console.log('[Wallet] Method', method, 'is in ASK state, marking for wallet node approval');
+
+                // Mark this method as requiring approval via shared state
+                const approvalKey = `${chainId}:${method}`;
+                pendingApprovals.set(approvalKey, true);
+                console.log('[Wallet] Set pending approval for', approvalKey);
+
+                return true; // Allow to proceed to wallet node which will enforce approval
               }
 
-              console.log('[Wallet] Method', method, 'is in ASK state but no askCallback available, denying');
-              return false;
+              // For undefined state (not explicitly set), treat as ASK and require approval
+              console.log('[Wallet] Method', method, 'has undefined state, treating as ASK');
+
+              // Mark this method as requiring approval via shared state
+              const approvalKey = `${chainId}:${method}`;
+              pendingApprovals.set(approvalKey, true);
+              console.log('[Wallet] Set pending approval for', approvalKey);
+
+              return true; // Allow to proceed to wallet node which will enforce approval
             }
 
             // No session or no approval record, deny by default
@@ -975,67 +1047,16 @@ const Wallet: React.FC<WalletProps> = ({
             }
             return result;
           },
-          // askCallback: Handle individual method calls in ASK state
-          async (context, request) => {
-            console.log('[Wallet] askCallback called with context:', context, 'request:', request);
-
-            // If auto-approve is enabled, automatically approve
-            if (autoApproveRef.current) {
-              console.log('[Wallet] Auto-approve enabled, returning true');
-              return true;
-            }
-
-            const origin = context.origin || 'unknown';
-
-            // Extract method details from the request
-            let chainId = '';
-            let method = '';
-            let params: unknown;
-
-            if (request.method === 'wm_call' && request.params) {
-              const callParams = request.params as {
-                chainId: string;
-                call?: { method?: string; params?: unknown };
-                sessionId?: string;
-              };
-              chainId = callParams.chainId;
-              method = callParams.call?.method || '';
-              params = callParams.call?.params;
-              console.log(
-                '[Wallet] wm_call for method:',
-                method,
-                'chainId:',
-                chainId,
-                'sessionId:',
-                callParams.sessionId,
-              );
-            } else if (request.method === 'wm_bulkCall' && request.params) {
-              const bulkParams = request.params as { chainId: string; sessionId?: string; calls?: unknown[] };
-              chainId = bulkParams.chainId;
-              method = 'bulk_call'; // Simplified for UI
-              params = bulkParams.calls;
-              console.log('[Wallet] wm_bulkCall for chainId:', chainId, 'sessionId:', bulkParams.sessionId);
-            }
-
-            const transactionSummary = (context as { transactionSummary?: TransactionSummary }).transactionSummary;
-            const functionArgNames = (context as { functionCallArgNames?: FunctionArgNames }).functionCallArgNames;
-
-            const displayParams =
-              transactionSummary && transactionSummary.functionCalls.length > 0
-                ? {
-                    functionCalls: transactionSummary.functionCalls,
-                    originalParams: params,
-                  }
-                : params;
-
-            // Now we can use the async approval flow
-            return await (onApprovalRequest || (async () => true))({
-              origin,
-              chainId,
-              method,
-              params: displayParams,
-              functionArgNames,
+          // askCallback: Not used for wm_call anymore (handled by wallet node middleware)
+          // This is kept for compatibility with other router methods if needed
+          async (_context, request) => {
+            console.warn('[Wallet] Router askCallback called unexpectedly:', {
+              method: request.method,
+              note: 'wm_call approval should be handled by wallet node middleware',
             });
+
+            // For non-wm_call methods, deny by default
+            return false;
           },
           // initialState: Define initial permission states
           (() => {
@@ -1059,15 +1080,16 @@ const Wallet: React.FC<WalletProps> = ({
                   ['aztec_getPXEInfo', AllowAskDenyState.ALLOW],
                   ['aztec_simulateTx', AllowAskDenyState.ALLOW],
                   ['aztec_wmSimulateTx', AllowAskDenyState.ALLOW],
+                  ['aztec_registerContractClass', AllowAskDenyState.ALLOW],
+                  ['aztec_registerContract', AllowAskDenyState.ALLOW],
+                  ['aztec_wmDeployContract', AllowAskDenyState.ALLOW],
 
                   // Methods that require approval each time (ASK state)
                   ['aztec_sendTx', AllowAskDenyState.ASK],
                   ['aztec_proveTx', AllowAskDenyState.ASK],
                   ['aztec_wmExecuteTx', AllowAskDenyState.ASK],
-                  ['aztec_wmDeployContract', AllowAskDenyState.ASK],
+                  ['aztec_wmBatchExecute', AllowAskDenyState.ASK],
                   ['aztec_contractInteraction', AllowAskDenyState.ASK],
-                  ['aztec_registerContract', AllowAskDenyState.ASK],
-                  ['aztec_registerContractClass', AllowAskDenyState.ASK],
                   ['aztec_registerSender', AllowAskDenyState.ASK],
                   ['aztec_createAuthWit', AllowAskDenyState.ASK],
                   ['aztec_profileTx', AllowAskDenyState.ASK],
@@ -1120,7 +1142,9 @@ const Wallet: React.FC<WalletProps> = ({
         };
 
         // Create the router with transports
+        console.log('🟢🟢🟢 WALLET ROUTER ABOUT TO BE CREATED 🟢🟢🟢');
         const router = new WalletRouter(routerTransport, wallets, permissionManager, routerConfig);
+        console.log('🟢🟢🟢 WALLET ROUTER CREATED SUCCESSFULLY 🟢🟢🟢');
 
 <<<<<<< HEAD
         // Add origin middleware to provide proper origin context
@@ -1494,7 +1518,8 @@ const Wallet: React.FC<WalletProps> = ({
             </p>
           </div>
           <p className="connection-status account-info">
-            <strong>Account:</strong> <code className="account-address">{connectedAccount || 'Loading...'}</code>
+            <strong>Account:</strong>{' '}
+            <code className="account-address">{connectedAccount || 'Loading...'}</code>
           </p>
           {activeProvingCount > 0 && (
             <div className="proving-banner" role="status" aria-live="polite">
@@ -1730,6 +1755,21 @@ const Wallet: React.FC<WalletProps> = ({
                   request.params &&
                   isTransactionFunctionCall(request.params) ? (
                     <FunctionCallDisplay call={request.params} functionArgNames={request.functionArgNames} />
+                  ) : null}
+                  {request.method === 'aztec_wmBatchExecute' && request.transactionSummary?.functionCalls ? (
+                    <>
+                      <p className="request-details" style={{ color: '#4a90e2', fontWeight: 'bold' }}>
+                        ⚡ Batch Transaction ({request.transactionSummary.functionCalls.length} operations)
+                      </p>
+                      {request.transactionSummary.functionCalls.map((call, idx) => (
+                        <div key={`batch-call-${request.time}-${idx}`}>
+                          <p className="request-details" style={{ marginTop: '10px', fontWeight: 'bold' }}>
+                            Operation {idx + 1} of {request.transactionSummary?.functionCalls.length}:
+                          </p>
+                          <FunctionCallDisplay call={call} functionArgNames={request.functionArgNames} />
+                        </div>
+                      ))}
+                    </>
                   ) : null}
                   {request.approvalStatus && (
                     <p className="request-details">

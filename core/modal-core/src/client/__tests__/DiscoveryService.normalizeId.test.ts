@@ -10,7 +10,16 @@ import { DiscoveryService } from '../DiscoveryService.js';
 // Mock the store module used by DiscoveryService
 const createStoreState = () => ({
   entities: {
-    wallets: {} as Record<string, { id: string; name: string; icon: string; chains: string[]; transportConfig?: { type?: string; extensionId?: string } }>,
+    wallets: {} as Record<
+      string,
+      {
+        id: string;
+        name: string;
+        icon: string;
+        chains: string[];
+        transportConfig?: { type?: string; extensionId?: string };
+      }
+    >,
     sessions: {},
     transactions: {},
   },
@@ -68,9 +77,21 @@ interface ServiceWithInternals extends DiscoveryService {
     chains: string[];
   };
   normalizeWalletInfoId(
-    walletInfo: { id: string; name: string; icon: string; chains: string[]; transportConfig?: { type?: string; extensionId?: string } },
+    walletInfo: {
+      id: string;
+      name: string;
+      icon: string;
+      chains: string[];
+      transportConfig?: { type?: string; extensionId?: string };
+    },
     responder: QualifiedResponder,
-  ): { id: string; name: string; icon: string; chains: string[]; transportConfig?: { type?: string; extensionId?: string } };
+  ): {
+    id: string;
+    name: string;
+    icon: string;
+    chains: string[];
+    transportConfig?: { type?: string; extensionId?: string };
+  };
 }
 
 const createResponder = (): QualifiedResponder => ({

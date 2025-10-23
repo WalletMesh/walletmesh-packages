@@ -1,7 +1,12 @@
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import type { WalletConnection } from '../../../api/types/connection.js';
 import type { WalletProvider } from '../../../api/types/providers.js';
-import { ChainType, type Transport, type TransportEvent, type TransportMessageEvent } from '../../../types.js';
+import {
+  ChainType,
+  type Transport,
+  type TransportEvent,
+  type TransportMessageEvent,
+} from '../../../types.js';
 import { ErrorFactory } from '../../core/errors/errorFactory.js';
 import { AbstractWalletAdapter } from '../base/AbstractWalletAdapter.js';
 import type {
@@ -29,7 +34,7 @@ export const SUPPORTED_AZTEC_NETWORKS = {
  *
  * @public
  */
-export type AztecNetwork = typeof SUPPORTED_AZTEC_NETWORKS[keyof typeof SUPPORTED_AZTEC_NETWORKS];
+export type AztecNetwork = (typeof SUPPORTED_AZTEC_NETWORKS)[keyof typeof SUPPORTED_AZTEC_NETWORKS];
 
 /**
  * Configuration for Aztec wallet adapter
@@ -102,10 +107,7 @@ export const DEFAULT_AZTEC_PERMISSIONS = [
  *
  * @public
  */
-export const MINIMAL_AZTEC_PERMISSIONS = [
-  'aztec_getAddress',
-  'aztec_getChainId',
-] as const;
+export const MINIMAL_AZTEC_PERMISSIONS = ['aztec_getAddress', 'aztec_getChainId'] as const;
 
 /**
  * Extended permissions for advanced dApp features
@@ -366,7 +368,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
       let AztecRouterProvider: new (
         transport: JSONRPCTransport,
         context?: Record<string, unknown>,
-        sessionId?: string
+        sessionId?: string,
       ) => unknown;
       try {
         const aztecModule = await import('@walletmesh/aztec-rpc-wallet');
@@ -374,7 +376,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
       } catch (error) {
         throw ErrorFactory.configurationError(
           'Failed to load @walletmesh/aztec-rpc-wallet. Please install it to use Aztec wallets: npm install @walletmesh/aztec-rpc-wallet',
-          { adapterId: this.id, originalError: error }
+          { adapterId: this.id, originalError: error },
         );
       }
 
@@ -392,7 +394,10 @@ export class AztecAdapter extends AbstractWalletAdapter {
       // Establish session with the wallet router
       const provider = this.aztecProvider as {
         connect: (config: Record<string, string[]>) => Promise<{ sessionId: string }>;
-        call: <M extends string>(chainId: string, call: { method: M; params?: unknown[] }) => Promise<unknown>;
+        call: <M extends string>(
+          chainId: string,
+          call: { method: M; params?: unknown[] },
+        ) => Promise<unknown>;
         disconnect?: () => Promise<void>;
       };
 
@@ -491,12 +496,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
       // This catch is for errors from ensureJSONRPCTransport, normalizeNetworkId, normalizeAddress, etc.
       // These are already properly typed errors, so just re-throw them
       // Check if it's already a ModalError by checking the name property
-      if (
-        error &&
-        typeof error === 'object' &&
-        'name' in error &&
-        error.name === 'ModalError'
-      ) {
+      if (error && typeof error === 'object' && 'name' in error && error.name === 'ModalError') {
         // This is already a properly categorized ModalError, re-throw it
         throw error;
       }
@@ -640,7 +640,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
           const errorMessage = error instanceof Error ? error.message : String(error);
           throw ErrorFactory.transportError(
             `Failed to subscribe to transport messages: ${errorMessage}`,
-            'jsonrpc-bridge'
+            'jsonrpc-bridge',
           );
         }
 
@@ -750,7 +750,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
           hasProvider: !!this.aztecProvider,
           isConnected: this.state.isConnected,
           connectionStatus: this.state.status,
-        }
+        },
       );
     }
 
@@ -814,7 +814,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
           supportedNetworks: Object.values(SUPPORTED_AZTEC_NETWORKS),
           configurationHint: 'Set network in AztecAdapter config or pass in ConnectOptions.chains',
           example: `new AztecAdapter({ network: 'aztec:testnet' })`,
-        }
+        },
       );
     }
 
@@ -934,7 +934,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
             originalError: new Error('Invalid address object'),
             addressType: typeof addressResponse,
             addressConstructor: (addressResponse as { constructor?: { name?: string } }).constructor?.name,
-          }
+          },
         );
       }
       addressString = stringValue.trim();

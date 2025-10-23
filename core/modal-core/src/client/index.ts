@@ -9,9 +9,7 @@
  */
 
 // Main client implementation
-export {
-  WalletMeshClient,
-} from '../internal/client/WalletMeshClientImpl.js';
+export { WalletMeshClient } from '../internal/client/WalletMeshClientImpl.js';
 
 export type {
   WalletMeshClientConfig,

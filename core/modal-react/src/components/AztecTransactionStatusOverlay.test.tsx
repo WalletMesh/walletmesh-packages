@@ -102,8 +102,7 @@ describe('AztecTransactionStatusOverlay', () => {
     document.body.innerHTML = '';
   });
 
-  afterEach(() => {
-  });
+  afterEach(() => {});
 
   describe('Focus Trapping', () => {
     it('should enable focus trap by default', () => {

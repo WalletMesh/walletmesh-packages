@@ -27,7 +27,9 @@ describe('createWalletMesh debug wiring', () => {
     console.debug = originalDebug;
     console.info = originalInfo;
     // Restore modal logger level
-    try { originalSetLevel(4 as any); } catch {}
+    try {
+      originalSetLevel(4 as any);
+    } catch {}
     resetServices();
   });
 
@@ -43,7 +45,9 @@ describe('createWalletMesh debug wiring', () => {
 
   it('does not emit component debug logs when config.debug is false/undefined', async () => {
     // Ensure global modal logger is silent for this test
-    try { configureModalLogger(false); } catch {}
+    try {
+      configureModalLogger(false);
+    } catch {}
     await createWalletMesh({
       appName: 'Test dApp',
     } as any);

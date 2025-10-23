@@ -130,7 +130,7 @@ describe('AztecAdapter', () => {
     it('should connect successfully with provided transport and network', async () => {
       adapter = new AztecAdapter({
         transport: mockTransport,
-        network: 'aztec:testnet'
+        network: 'aztec:testnet',
       });
 
       const connection = await adapter.connect();
@@ -248,9 +248,7 @@ describe('AztecAdapter', () => {
       adapter = new AztecAdapter({ transport: mockTransport });
 
       // Before connection, getProvider should throw since there's no provider
-      expect(() => adapter.getProvider(ChainType.Aztec)).toThrow(
-        'not initialized or not connected'
-      );
+      expect(() => adapter.getProvider(ChainType.Aztec)).toThrow('not initialized or not connected');
     });
 
     it('should return provider after connection', async () => {
@@ -278,9 +276,7 @@ describe('AztecAdapter', () => {
       await adapter.disconnect();
 
       // Provider should no longer be available after disconnect
-      expect(() => adapter.getProvider(ChainType.Aztec)).toThrow(
-        'not initialized or not connected'
-      );
+      expect(() => adapter.getProvider(ChainType.Aztec)).toThrow('not initialized or not connected');
     });
 
     it('should throw if provider partially initialized', () => {
@@ -290,17 +286,13 @@ describe('AztecAdapter', () => {
       // @ts-expect-error - Intentionally setting invalid provider for testing
       (adapter as unknown as { aztecProvider: unknown }).aztecProvider = { connect: null };
 
-      expect(() => adapter.getProvider(ChainType.Aztec)).toThrow(
-        'not initialized or not connected'
-      );
+      expect(() => adapter.getProvider(ChainType.Aztec)).toThrow('not initialized or not connected');
     });
 
     it('should throw for unsupported chain types', () => {
       adapter = new AztecAdapter({ transport: mockTransport });
 
-      expect(() => adapter.getProvider(ChainType.Evm)).toThrow(
-        'AztecAdapter does not support'
-      );
+      expect(() => adapter.getProvider(ChainType.Evm)).toThrow('AztecAdapter does not support');
     });
 
     it('should provide detailed error context when validation fails', async () => {

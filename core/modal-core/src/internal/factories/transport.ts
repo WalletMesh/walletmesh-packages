@@ -79,14 +79,22 @@ export function createTransport(type: TransportType, config: AnyTransportConfig 
   try {
     switch (type) {
       case TransportType.Popup: {
-        (logger.info || logger.debug || console.info).call(logger, 'TransportFactory: creating Popup transport', { type });
+        (logger.info || logger.debug || console.info).call(
+          logger,
+          'TransportFactory: creating Popup transport',
+          { type },
+        );
         // Validate and create popup transport
         const validConfig = popupConfigSchema.parse(config) as PopupConfig;
         return new PopupWindowTransport(validConfig, logger, errorHandler);
       }
 
       case TransportType.Extension: {
-        (logger.info || logger.debug || console.info).call(logger, 'TransportFactory: creating Extension transport', { type, hasExtensionId: !!(config as ChromeExtensionConfig).extensionId });
+        (logger.info || logger.debug || console.info).call(
+          logger,
+          'TransportFactory: creating Extension transport',
+          { type, hasExtensionId: !!(config as ChromeExtensionConfig).extensionId },
+        );
         // Validate and create extension transport
         const validConfig = chromeExtensionConfigSchema.parse(config) as ChromeExtensionConfig;
 
@@ -97,7 +105,10 @@ export function createTransport(type: TransportType, config: AnyTransportConfig 
         }
 
         const transport = new ChromeExtensionTransport(validConfig, logger, errorHandler);
-        (logger.info || logger.debug || console.info).call(logger, 'TransportFactory: Extension transport created');
+        (logger.info || logger.debug || console.info).call(
+          logger,
+          'TransportFactory: Extension transport created',
+        );
         return transport;
       }
 

@@ -132,8 +132,14 @@ export { TransactionValidator } from './transaction/TransactionValidator.js';
 export { TransactionFormatter } from './transaction/TransactionFormatter.js';
 
 // Aztec transaction manager
-export { AztecTransactionManager, createAztecTransactionManager } from './transaction/AztecTransactionManager.js';
-export type { AztecTransactionManagerConfig, ContractFunctionInteraction } from './transaction/AztecTransactionManager.js';
+export {
+  AztecTransactionManager,
+  createAztecTransactionManager,
+} from './transaction/AztecTransactionManager.js';
+export type {
+  AztecTransactionManagerConfig,
+  ContractFunctionInteraction,
+} from './transaction/AztecTransactionManager.js';
 
 export type {
   TransactionStatus,

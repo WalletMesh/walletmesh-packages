@@ -355,7 +355,7 @@ vi.mock('@walletmesh/modal-core', () => {
   const guardedCreateWalletMesh = vi.fn().mockImplementation(() => {
     console.warn(
       '[TEST WARNING] createWalletMesh was called! This should not happen in tests and may cause OOM. ' +
-        'Use MockWalletMeshProvider in your tests instead.'
+        'Use MockWalletMeshProvider in your tests instead.',
     );
     // Return the mock client immediately to prevent heavy initialization
     return Promise.resolve(mockClient);
@@ -991,7 +991,13 @@ vi.mock('@walletmesh/modal-core', () => {
       ...(details && { details }),
     })),
     getStageProgress: vi.fn().mockImplementation((stage: string) => {
-      const map: Record<string, number> = { initializing: 10, connecting: 40, authenticating: 70, connected: 100, failed: 0 };
+      const map: Record<string, number> = {
+        initializing: 10,
+        connecting: 40,
+        authenticating: 70,
+        connected: 100,
+        failed: 0,
+      };
       return map[stage] || 0;
     }),
     getStageDescription: vi.fn().mockImplementation((stage: string) => {
@@ -1005,14 +1011,20 @@ vi.mock('@walletmesh/modal-core', () => {
       return map[stage] || '';
     }),
     interpolateProgress: vi.fn().mockImplementation((fromStage: string, toStage: string, factor: number) => {
-      const progressMap: Record<string, number> = { initializing: 10, connecting: 40, authenticating: 70, connected: 100, failed: 0 };
+      const progressMap: Record<string, number> = {
+        initializing: 10,
+        connecting: 40,
+        authenticating: 70,
+        connected: 100,
+        failed: 0,
+      };
       const fromProgress = progressMap[fromStage] || 0;
       const toProgress = progressMap[toStage] || 0;
       return Math.round(fromProgress + (toProgress - fromProgress) * Math.max(0, Math.min(1, factor)));
     }),
     isTerminalStage: vi.fn().mockImplementation((stage) => stage === 'connected' || stage === 'failed'),
     isInProgress: vi.fn().mockImplementation((stage) => stage !== 'connected' && stage !== 'failed'),
-    ConnectionProgressTracker: vi.fn().mockImplementation(function() {
+    ConnectionProgressTracker: vi.fn().mockImplementation(function () {
       let currentStage = 'initializing';
       let currentProgress = {
         progress: 10,
@@ -1023,7 +1035,13 @@ vi.mock('@walletmesh/modal-core', () => {
       return {
         updateStage: vi.fn().mockImplementation((stage: string, details?: string) => {
           currentStage = stage;
-          const progressMap: Record<string, number> = { initializing: 10, connecting: 40, authenticating: 70, connected: 100, failed: 0 };
+          const progressMap: Record<string, number> = {
+            initializing: 10,
+            connecting: 40,
+            authenticating: 70,
+            connected: 100,
+            failed: 0,
+          };
           currentProgress = {
             progress: progressMap[stage] || 0,
             stage,
@@ -1043,8 +1061,12 @@ vi.mock('@walletmesh/modal-core', () => {
         }),
         getCurrent: vi.fn().mockImplementation(() => ({ ...currentProgress })),
         getCurrentStage: vi.fn().mockImplementation(() => currentStage),
-        isInProgress: vi.fn().mockImplementation(() => currentStage !== 'connected' && currentStage !== 'failed'),
-        isComplete: vi.fn().mockImplementation(() => currentStage === 'connected' || currentStage === 'failed'),
+        isInProgress: vi
+          .fn()
+          .mockImplementation(() => currentStage !== 'connected' && currentStage !== 'failed'),
+        isComplete: vi
+          .fn()
+          .mockImplementation(() => currentStage === 'connected' || currentStage === 'failed'),
         reset: vi.fn().mockImplementation(() => {
           currentStage = 'initializing';
           currentProgress = {
@@ -1055,7 +1077,7 @@ vi.mock('@walletmesh/modal-core', () => {
         }),
       };
     }),
-    createProgressTracker: vi.fn().mockImplementation(function() {
+    createProgressTracker: vi.fn().mockImplementation(function () {
       let currentStage = 'initializing';
       let currentProgress = {
         progress: 10,
@@ -1066,7 +1088,13 @@ vi.mock('@walletmesh/modal-core', () => {
       return {
         updateStage: vi.fn().mockImplementation((stage: string, details?: string) => {
           currentStage = stage;
-          const progressMap: Record<string, number> = { initializing: 10, connecting: 40, authenticating: 70, connected: 100, failed: 0 };
+          const progressMap: Record<string, number> = {
+            initializing: 10,
+            connecting: 40,
+            authenticating: 70,
+            connected: 100,
+            failed: 0,
+          };
           currentProgress = {
             progress: progressMap[stage] || 0,
             stage,
@@ -1086,8 +1114,12 @@ vi.mock('@walletmesh/modal-core', () => {
         }),
         getCurrent: vi.fn().mockImplementation(() => ({ ...currentProgress })),
         getCurrentStage: vi.fn().mockImplementation(() => currentStage),
-        isInProgress: vi.fn().mockImplementation(() => currentStage !== 'connected' && currentStage !== 'failed'),
-        isComplete: vi.fn().mockImplementation(() => currentStage === 'connected' || currentStage === 'failed'),
+        isInProgress: vi
+          .fn()
+          .mockImplementation(() => currentStage !== 'connected' && currentStage !== 'failed'),
+        isComplete: vi
+          .fn()
+          .mockImplementation(() => currentStage === 'connected' || currentStage === 'failed'),
         reset: vi.fn().mockImplementation(() => {
           currentStage = 'initializing';
           currentProgress = {
@@ -1107,15 +1139,23 @@ vi.mock('@walletmesh/modal-core', () => {
       isReconnecting: isReconnecting || false,
       isDisconnected: sessionStatus !== 'connected' && currentView !== 'connecting' && !isReconnecting,
     })),
-    filterSessionsByStatus: vi.fn().mockImplementation((sessions, status) =>
-      sessions.filter((s: { status: string }) => s.status === (status || 'connected'))
-    ),
-    getConnectedWalletIds: vi.fn().mockImplementation((sessions) =>
-      sessions.filter((s: { status: string }) => s.status === 'connected').map((s: { walletId: string }) => s.walletId)
-    ),
-    getActiveWalletSession: vi.fn().mockImplementation((sessions) =>
-      sessions.find((s: { status: string }) => s.status === 'connected') || null
-    ),
+    filterSessionsByStatus: vi
+      .fn()
+      .mockImplementation((sessions, status) =>
+        sessions.filter((s: { status: string }) => s.status === (status || 'connected')),
+      ),
+    getConnectedWalletIds: vi
+      .fn()
+      .mockImplementation((sessions) =>
+        sessions
+          .filter((s: { status: string }) => s.status === 'connected')
+          .map((s: { walletId: string }) => s.walletId),
+      ),
+    getActiveWalletSession: vi
+      .fn()
+      .mockImplementation(
+        (sessions) => sessions.find((s: { status: string }) => s.status === 'connected') || null,
+      ),
     getPrimaryAddress: vi.fn().mockImplementation((sessions) => {
       const active = sessions.find((s: { status: string }) => s.status === 'connected');
       return active?.address || null;
@@ -1128,12 +1168,14 @@ vi.mock('@walletmesh/modal-core', () => {
       const active = sessions.find((s: { status: string }) => s.status === 'connected');
       return active?.chain?.chainId === chainId;
     }),
-    getSessionsByChainType: vi.fn().mockImplementation((sessions, chainType) =>
-      sessions.filter((s: { chain?: { chainType: string } }) => s.chain?.chainType === chainType)
-    ),
-    hasConnectedSession: vi.fn().mockImplementation((sessions) =>
-      sessions.some((s: { status: string }) => s.status === 'connected')
-    ),
+    getSessionsByChainType: vi
+      .fn()
+      .mockImplementation((sessions, chainType) =>
+        sessions.filter((s: { chain?: { chainType: string } }) => s.chain?.chainType === chainType),
+      ),
+    hasConnectedSession: vi
+      .fn()
+      .mockImplementation((sessions) => sessions.some((s: { status: string }) => s.status === 'connected')),
   };
 });
 

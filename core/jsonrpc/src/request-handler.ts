@@ -1,13 +1,8 @@
 import { JSONRPCError } from './error.js';
 import { MessageValidator } from './message-validator.js';
 import type { MethodManager } from './method-manager.js';
-import type {
-  JSONRPCContext,
-  JSONRPCMethodMap,
-  JSONRPCRequest,
-  JSONRPCResponse,
-  MethodResponse,
-} from './types.js';
+import type { MiddlewareManager } from './middleware-manager.js';
+import type { JSONRPCContext, JSONRPCMethodMap, JSONRPCRequest, JSONRPCResponse } from './types.js';
 
 /**
  * Handles processing and validation of JSON-RPC requests.
@@ -36,7 +31,10 @@ import type {
 export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext> {
   private validator: MessageValidator;
 
-  constructor(private methodManager: MethodManager<T, C>) {
+  constructor(
+    private methodManager: MethodManager<T, C>,
+    private postDeserializationMiddlewareManager: MiddlewareManager<T, C>,
+  ) {
     this.validator = new MessageValidator();
   }
 
@@ -44,10 +42,10 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
    * Processes a JSON-RPC request and returns a response.
    * Performs the following steps:
    * 1. Validates request structure
-   * 2. Looks up and validates method
-   * 3. Deserializes parameters if needed
-   * 4. Executes method handler
-   * 5. Serializes result if needed
+   * 2. Deserializes parameters
+   * 3. Runs post-deserialization middleware chain
+   * 4. Executes method handler (via middleware)
+   * 5. Serializes result
    * 6. Formats and returns JSON-RPC response
    *
    * @param context - Context object passed to method handlers
@@ -84,42 +82,27 @@ export class RequestHandler<T extends JSONRPCMethodMap, C extends JSONRPCContext
       throw new JSONRPCError(-32600, 'Invalid Request', 'Invalid request format');
     }
 
-    // Get method or fallback handler
-    const method = this.methodManager.getMethod(request.method);
-    let methodResponse: MethodResponse<unknown>;
+    // Deserialize params BEFORE post-deserialization middleware runs
+    const deserializedParams = await this.methodManager.deserializeParams(request.method, request.params);
 
-    if (method) {
-      // Process and validate params for registered method
-      const methodParams = await this.methodManager.deserializeParams(request.method, request.params);
-      methodResponse = await method(context, request.method, methodParams as T[keyof T]['params']);
-    } else {
-      // Try fallback handler
-      const fallback = this.methodManager.getFallbackHandler();
-      if (fallback) {
-        // For fallback handler, deserialize params using fallback serializer if available
-        const deserializedParams = await this.methodManager.deserializeParams(request.method, request.params);
-        methodResponse = await fallback(context, request.method, deserializedParams);
-      } else {
-        throw new JSONRPCError(-32601, 'Method not found', request.method);
-      }
-    }
+    // Update request with deserialized params so post-deserialization middleware sees typed params
+    const deserializedRequest = {
+      ...request,
+      params: deserializedParams,
+    } as JSONRPCRequest<T, keyof T>;
 
-    if (!methodResponse.success) {
-      throw new JSONRPCError(
-        methodResponse.error.code,
-        methodResponse.error.message,
-        methodResponse.error.data,
-      );
-    }
+    // Execute post-deserialization middleware chain
+    // The final handler in this chain calls the method handler and converts MethodResponse to JSONRPCResponse
+    const response = await this.postDeserializationMiddlewareManager.execute(context, deserializedRequest);
 
     // Serialize result if needed
-    const serializedResult = await this.methodManager.serializeResult(request.method, methodResponse.data);
+    const serializedResult = await this.methodManager.serializeResult(request.method, response.result);
 
-    // Return JSON-RPC response
+    // Return JSON-RPC response with serialized result
     return {
       jsonrpc: '2.0' as const,
       result: serializedResult,
-      id: request.id,
+      id: response.id,
     };
   }
 }

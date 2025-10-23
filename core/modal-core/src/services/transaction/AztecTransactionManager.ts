@@ -115,7 +115,7 @@ export class AztecTransactionManager {
   ): Promise<unknown> {
     // Small delay to ensure React has time to render the initial 'idle' state
     // before transitioning to 'proving'
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Stage 1: Proving - This encompasses simulation, proof generation, and sending
     // The wallet handles these internally during executeTx()
@@ -244,9 +244,7 @@ export class AztecTransactionManager {
           const checkStatus = () => {
             const tx = this.getTransaction(txStatusId);
             if (!tx) {
-              reject(
-                ErrorFactory.configurationError('Transaction not found', { txStatusId }),
-              );
+              reject(ErrorFactory.configurationError('Transaction not found', { txStatusId }));
               return;
             }
 

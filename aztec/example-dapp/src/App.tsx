@@ -90,6 +90,7 @@ function App() {
 
             // WalletMesh-specific Methods
             'aztec_wmExecuteTx',
+            'aztec_wmBatchExecute',
             'aztec_wmSimulateTx',
             'aztec_wmDeployContract',
           ],

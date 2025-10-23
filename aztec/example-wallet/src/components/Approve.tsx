@@ -4,14 +4,27 @@ import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware
 import FunctionCallDisplay from './FunctionCallDisplay.js';
 import ParameterDisplay from './ParameterDisplay.js';
 
+type FunctionCall = {
+  contractAddress: string;
+  functionName: string;
+  args: unknown[];
+};
+
+type ExecutionPayloadCall = {
+  name: string;
+  to: { toString: () => string } | string;
+  args: unknown[];
+};
+
+type ExecutionPayload = {
+  calls?: ExecutionPayloadCall[];
+};
+
 type ApproveProps = {
   method: string;
   params?: {
-    functionCalls?: {
-      contractAddress: string;
-      functionName: string;
-      args: unknown[];
-    }[];
+    functionCalls?: FunctionCall[];
+    executionPayloads?: ExecutionPayload[];
   };
   origin: string;
   functionArgNames?: FunctionArgNames;
@@ -31,7 +44,26 @@ const Approve: React.FC<ApproveProps> = ({
   onEnableAutoApprove,
   showAutoApprove = true,
 }) => {
-  const isBatchOperation = params?.functionCalls && params.functionCalls.length > 1;
+  // Transform executionPayloads to functionCalls if needed
+  let functionCalls: FunctionCall[] | undefined = params?.functionCalls;
+
+  if (!functionCalls && params?.executionPayloads) {
+    // Transform executionPayloads to functionCalls format
+    functionCalls = [];
+    for (const payload of params.executionPayloads) {
+      if (payload.calls) {
+        for (const call of payload.calls) {
+          functionCalls.push({
+            contractAddress: typeof call.to === 'string' ? call.to : call.to.toString(),
+            functionName: call.name,
+            args: call.args,
+          });
+        }
+      }
+    }
+  }
+
+  const isBatchOperation = functionCalls && functionCalls.length > 1;
 
   return (
     <div className="approve-container">
@@ -44,31 +76,27 @@ const Approve: React.FC<ApproveProps> = ({
       </p>
       {isBatchOperation && (
         <p className="approve-details" style={{ color: '#4a90e2', fontWeight: 'bold' }}>
-          ⚡ Atomic Batch Transaction ({params.functionCalls?.length} operations)
+          ⚡ Atomic Batch Transaction ({functionCalls?.length} operations)
           <br />
           <span style={{ fontSize: '0.9em', fontWeight: 'normal', fontStyle: 'italic' }}>
             All operations succeed together or all fail together
           </span>
         </p>
       )}
-      {params &&
-        (params.functionCalls ? (
-          params.functionCalls.map((call, index) => (
-            <div key={`${call.contractAddress}-${index}`}>
-              {isBatchOperation && (
-                <p className="approve-details" style={{ marginTop: '15px', fontWeight: 'bold' }}>
-                  Operation {index + 1} of {params.functionCalls?.length}:
-                </p>
-              )}
-              <FunctionCallDisplay
-                call={call}
-                functionArgNames={functionArgNames}
-              />
-            </div>
-          ))
-        ) : (
-          <ParameterDisplay params={params} />
-        ))}
+      {functionCalls ? (
+        functionCalls.map((call, index) => (
+          <div key={`${call.contractAddress}-${index}`}>
+            {isBatchOperation && (
+              <p className="approve-details" style={{ marginTop: '15px', fontWeight: 'bold' }}>
+                Operation {index + 1} of {functionCalls?.length}:
+              </p>
+            )}
+            <FunctionCallDisplay call={call} functionArgNames={functionArgNames} />
+          </div>
+        ))
+      ) : params ? (
+        <ParameterDisplay params={params} />
+      ) : null}
 
       {showAutoApprove && (
         <div className="auto-approve-option">

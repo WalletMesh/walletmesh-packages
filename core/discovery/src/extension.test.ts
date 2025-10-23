@@ -107,9 +107,8 @@ describe('extension module exports', () => {
   });
 
   it('should allow all exported components to work together', async () => {
-    const { ContentScriptRelay, WalletDiscovery, createSecurityPolicy, validateOrigin, SECURITY_PRESETS } = await import(
-      './extension.js'
-    );
+    const { ContentScriptRelay, WalletDiscovery, createSecurityPolicy, validateOrigin, SECURITY_PRESETS } =
+      await import('./extension.js');
 
     // Test security policy creation
     const strictPolicy = createSecurityPolicy(SECURITY_PRESETS.strict);

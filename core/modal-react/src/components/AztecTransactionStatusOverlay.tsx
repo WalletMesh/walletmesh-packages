@@ -91,12 +91,7 @@ const STAGE_INFO: Record<TransactionStatus, StageInfo> = {
   },
 };
 
-const STAGE_ORDER: TransactionStatus[] = [
-  'idle',
-  'proving',
-  'confirming',
-  'confirmed',
-];
+const STAGE_ORDER: TransactionStatus[] = ['idle', 'proving', 'confirming', 'confirmed'];
 
 function shorten(hash: string): string {
   if (hash.length <= 12) {

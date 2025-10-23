@@ -234,10 +234,9 @@ describe('Responder Module', () => {
       ];
 
       for (const config of invalidConfigs) {
-        expect(
-          () =>
-            // @ts-expect-error - Testing invalid input
-            createAnnouncer(config),
+        expect(() =>
+          // @ts-expect-error - Testing invalid input
+          createAnnouncer(config),
         ).toThrow();
       }
     });
@@ -326,10 +325,9 @@ describe('Responder Module', () => {
       const invalidConfigs = [null, undefined, {}, { responderInfo: null }, { responderInfo: {} }];
 
       for (const config of invalidConfigs) {
-        expect(
-          () =>
-            // @ts-expect-error - Testing invalid input
-            createAnnouncer(config),
+        expect(() =>
+          // @ts-expect-error - Testing invalid input
+          createAnnouncer(config),
         ).toThrow();
       }
     });
@@ -344,10 +342,11 @@ describe('Responder Module', () => {
       ];
 
       for (const policy of invalidPolicies) {
-        expect(() =>
-          new DiscoveryResponder(responderInfo, {
-            security: policy as unknown as SecurityPolicy,
-          }),
+        expect(
+          () =>
+            new DiscoveryResponder(responderInfo, {
+              security: policy as unknown as SecurityPolicy,
+            }),
         ).not.toThrow(); // Should handle gracefully, not throw
       }
     });
@@ -364,5 +363,4 @@ describe('Responder Module', () => {
       }
     });
   });
-
 });

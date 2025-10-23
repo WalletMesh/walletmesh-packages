@@ -307,13 +307,14 @@ export function createComponentServices(
 
   // Restrict to 'debug' | 'info' for component defaults; coerce others to 'info'
   const requestedLevel = config.logger?.level;
-  const defaultLevel: 'debug' | 'info' = requestedLevel === 'debug'
-    ? 'debug'
-    : requestedLevel === 'info'
-      ? 'info'
-      : coreDebugProbe
-        ? 'debug'
-        : 'info';
+  const defaultLevel: 'debug' | 'info' =
+    requestedLevel === 'debug'
+      ? 'debug'
+      : requestedLevel === 'info'
+        ? 'info'
+        : coreDebugProbe
+          ? 'debug'
+          : 'info';
 
   // Create a child logger with component-specific prefix
   const logger = createLogger({

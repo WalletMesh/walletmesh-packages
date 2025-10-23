@@ -11,7 +11,9 @@ console.log('[TEST] Using mocked @aztec/aztec.js');
 export class AztecAddress {
   constructor(address) {
     // Normalize to lowercase on construction
-    this.address = address ? address.toLowerCase() : '0x0000000000000000000000000000000000000000000000000000000000000001';
+    this.address = address
+      ? address.toLowerCase()
+      : '0x0000000000000000000000000000000000000000000000000000000000000001';
   }
 
   toString() {

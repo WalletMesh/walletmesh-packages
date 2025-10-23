@@ -13,13 +13,9 @@ describe('@walletmesh/modal-react/solana exports', () => {
   const modulePath = '../../solana.js';
 
   describe('Core functionality', () => {
-    it(
-      'should re-export all core functionality',
-      async () => {
-        await testCoreExportsPresent(modulePath);
-      },
-      10000,
-    ); // Increase timeout to 10s for dynamic import
+    it('should re-export all core functionality', async () => {
+      await testCoreExportsPresent(modulePath);
+    }, 10000); // Increase timeout to 10s for dynamic import
 
     it('should include chain-aware core hooks', async () => {
       await testExports(modulePath, ['useAccount', 'useConnect', 'useSwitchChain']);

@@ -22,23 +22,22 @@ vi.mock('../../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
         failed: [],
-        activeTransaction: undefined
-      }
-      ,
+        activeTransaction: undefined,
+      },
       entities: {
-        wallets: {}
-      }
+        wallets: {},
+      },
     })),
     setState: vi.fn(),
     subscribe: vi.fn(() => vi.fn()),
-    subscribeWithSelector: vi.fn(() => vi.fn())
-  }))
+    subscribeWithSelector: vi.fn(() => vi.fn()),
+  })),
 }));
 
 // Mock the discovery package imports

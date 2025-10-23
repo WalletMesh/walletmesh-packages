@@ -917,10 +917,7 @@ export class WalletRegistry {
    * @returns True if the wallet has been discovered
    */
   hasDiscoveredWallet(walletId: string): boolean {
-    return (
-      this.discoveredWallets.has(walletId) ||
-      this.discoveredWalletAliases.has(walletId)
-    );
+    return this.discoveredWallets.has(walletId) || this.discoveredWalletAliases.has(walletId);
   }
 
   /**

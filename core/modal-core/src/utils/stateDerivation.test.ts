@@ -163,9 +163,7 @@ describe('stateDerivation utils', () => {
     });
 
     it('should return empty array when no sessions match', () => {
-      const disconnectedOnly: WalletSession[] = [
-        { walletId: 'test', status: 'disconnected' },
-      ];
+      const disconnectedOnly: WalletSession[] = [{ walletId: 'test', status: 'disconnected' }];
       const filtered = filterSessionsByStatus(disconnectedOnly, 'connected');
 
       expect(filtered).toHaveLength(0);
@@ -186,9 +184,7 @@ describe('stateDerivation utils', () => {
     });
 
     it('should return empty array when no connected sessions', () => {
-      const disconnectedSessions: WalletSession[] = [
-        { walletId: 'test', status: 'disconnected' },
-      ];
+      const disconnectedSessions: WalletSession[] = [{ walletId: 'test', status: 'disconnected' }];
       const walletIds = getConnectedWalletIds(disconnectedSessions);
 
       expect(walletIds).toEqual([]);
@@ -221,9 +217,7 @@ describe('stateDerivation utils', () => {
     });
 
     it('should return undefined when no connected sessions', () => {
-      const disconnectedSessions: WalletSession[] = [
-        { walletId: 'test', status: 'disconnected' },
-      ];
+      const disconnectedSessions: WalletSession[] = [{ walletId: 'test', status: 'disconnected' }];
       const active = getActiveSession(disconnectedSessions);
 
       expect(active).toBeUndefined();
@@ -250,9 +244,7 @@ describe('stateDerivation utils', () => {
     });
 
     it('should return false when no connected sessions', () => {
-      const disconnectedSessions: WalletSession[] = [
-        { walletId: 'test', status: 'disconnected' },
-      ];
+      const disconnectedSessions: WalletSession[] = [{ walletId: 'test', status: 'disconnected' }];
       const hasConnected = hasConnectedSession(disconnectedSessions);
 
       expect(hasConnected).toBe(false);
@@ -279,9 +271,7 @@ describe('stateDerivation utils', () => {
     });
 
     it('should return undefined when no connected sessions', () => {
-      const disconnectedSessions: WalletSession[] = [
-        { walletId: 'test', status: 'disconnected' },
-      ];
+      const disconnectedSessions: WalletSession[] = [{ walletId: 'test', status: 'disconnected' }];
       const address = getPrimaryAddress(disconnectedSessions);
 
       expect(address).toBeUndefined();
@@ -311,9 +301,7 @@ describe('stateDerivation utils', () => {
     });
 
     it('should return undefined when no connected sessions', () => {
-      const disconnectedSessions: WalletSession[] = [
-        { walletId: 'test', status: 'disconnected' },
-      ];
+      const disconnectedSessions: WalletSession[] = [{ walletId: 'test', status: 'disconnected' }];
       const chain = getCurrentChain(disconnectedSessions);
 
       expect(chain).toBeUndefined();
@@ -347,9 +335,7 @@ describe('stateDerivation utils', () => {
     });
 
     it('should return false when no connected sessions', () => {
-      const disconnectedSessions: WalletSession[] = [
-        { walletId: 'test', status: 'disconnected' },
-      ];
+      const disconnectedSessions: WalletSession[] = [{ walletId: 'test', status: 'disconnected' }];
       const isConnected = isConnectedToChain(disconnectedSessions, '1');
 
       expect(isConnected).toBe(false);

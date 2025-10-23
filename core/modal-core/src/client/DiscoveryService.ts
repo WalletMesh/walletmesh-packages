@@ -335,9 +335,7 @@ export class DiscoveryService {
         originValidation.knownDomains = [...security.originValidation.knownDomains];
       }
     }
-    const sessionSecurity = security.sessionSecurity
-      ? { ...security.sessionSecurity }
-      : undefined;
+    const sessionSecurity = security.sessionSecurity ? { ...security.sessionSecurity } : undefined;
 
     const securityConfig: {
       enableOriginValidation: boolean;
@@ -348,16 +346,12 @@ export class DiscoveryService {
       sessionSecurity?: SessionSecurityConfig;
     } = {
       enableOriginValidation:
-        typeof security.enableOriginValidation === 'boolean'
-          ? security.enableOriginValidation
-          : false,
+        typeof security.enableOriginValidation === 'boolean' ? security.enableOriginValidation : false,
       enableRateLimiting:
         typeof security.enableRateLimiting === 'boolean' ? security.enableRateLimiting : false,
       rateLimit,
       enableSessionSecurity:
-        typeof security.enableSessionSecurity === 'boolean'
-          ? security.enableSessionSecurity
-          : false,
+        typeof security.enableSessionSecurity === 'boolean' ? security.enableSessionSecurity : false,
     };
 
     if (originValidation) {
@@ -420,9 +414,7 @@ export class DiscoveryService {
           ? config.security.enableOriginValidation
           : false,
       enableRateLimiting:
-        typeof config.security.enableRateLimiting === 'boolean'
-          ? config.security.enableRateLimiting
-          : false,
+        typeof config.security.enableRateLimiting === 'boolean' ? config.security.enableRateLimiting : false,
       rateLimit: rateLimitClone,
       enableSessionSecurity:
         typeof config.security.enableSessionSecurity === 'boolean'
@@ -783,7 +775,6 @@ export class DiscoveryService {
 
     this.logger.debug('DiscoveryService reset complete');
   }
-
 
   private logDiscoveryInvocation(context: 'scan'): void {
     try {
@@ -1484,10 +1475,13 @@ export class DiscoveryService {
 
     if (typeof customInfo.icon === 'string' && customInfo.icon.length > 0) {
       if (!this.isSupportedImageDataUri(customInfo.icon)) {
-        this.logger.error('Ignoring dApp icon: only data URI images (svg+xml, png, jpeg, jpg, webp, gif) are permitted', {
-          icon: customInfo.icon,
-          callerOverride: 'discovery:createInitiatorInfo',
-        });
+        this.logger.error(
+          'Ignoring dApp icon: only data URI images (svg+xml, png, jpeg, jpg, webp, gif) are permitted',
+          {
+            icon: customInfo.icon,
+            callerOverride: 'discovery:createInitiatorInfo',
+          },
+        );
         delete customInfo.icon;
       }
     }
@@ -1522,7 +1516,9 @@ export class DiscoveryService {
         }
 
         if (wallet.icon.length > 0) {
-          this.logger.warn('Discovery response ignored: wallet icon must be a data URI image', { walletId: wallet.id });
+          this.logger.warn('Discovery response ignored: wallet icon must be a data URI image', {
+            walletId: wallet.id,
+          });
           return true;
         }
       }
@@ -1629,9 +1625,7 @@ export class DiscoveryService {
   private registerDiscoveredWallets(wallets: QualifiedResponder[]): void {
     for (const wallet of wallets) {
       const customAdapter = (wallet.transportConfig as { walletAdapter?: unknown })?.walletAdapter;
-      const metadataForDiscovery: Record<string, unknown> = wallet.metadata
-        ? { ...wallet.metadata }
-        : {};
+      const metadataForDiscovery: Record<string, unknown> = wallet.metadata ? { ...wallet.metadata } : {};
       if (customAdapter) {
         metadataForDiscovery['customAdapter'] = customAdapter;
       }
@@ -1789,10 +1783,7 @@ export class DiscoveryService {
   /**
    * Ensure wallet info entries use the canonical RDNS identifier
    */
-  private normalizeWalletInfoId(
-    walletInfo: WalletInfo,
-    qualifiedWallet: QualifiedResponder,
-  ): WalletInfo {
+  private normalizeWalletInfoId(walletInfo: WalletInfo, qualifiedWallet: QualifiedResponder): WalletInfo {
     const canonicalRdns = qualifiedWallet.rdns?.trim();
     if (canonicalRdns) {
       if (walletInfo.id !== canonicalRdns) {
@@ -1864,9 +1855,11 @@ export class DiscoveryService {
       }
 
       return Object.values(wallets).find((existingWallet) => {
-        const transport = (existingWallet as WalletInfo & {
-          transportConfig?: { type?: string; extensionId?: string };
-        }).transportConfig;
+        const transport = (
+          existingWallet as WalletInfo & {
+            transportConfig?: { type?: string; extensionId?: string };
+          }
+        ).transportConfig;
         return transport?.type === 'extension' && transport.extensionId === extensionId;
       });
     } catch (error) {
@@ -1909,7 +1902,9 @@ export class DiscoveryService {
 
   private async performDiscovery(): Promise<DiscoveredWallet[]> {
     if (this.discoveryRunInProgress) {
-      this.logger.warn('Discovery scan requested while a previous scan is still running; skipping new request');
+      this.logger.warn(
+        'Discovery scan requested while a previous scan is still running; skipping new request',
+      );
       return this.getDiscoveredWallets();
     }
 
@@ -1985,7 +1980,10 @@ export class DiscoveryService {
         console.log('[DiscoveryService] Using event wrapper discovery path');
         // Start discovery with event wrapper (using fresh DiscoveryInitiator)
         const qualifiedWallets = await this.eventWrapper.startDiscovery(freshDiscoveryInitiator);
-        console.log('[DiscoveryService] Event wrapper discovery completed, found wallets:', qualifiedWallets.length);
+        console.log(
+          '[DiscoveryService] Event wrapper discovery completed, found wallets:',
+          qualifiedWallets.length,
+        );
 
         let effectiveWallets = qualifiedWallets;
         if (qualifiedWallets.length === 0) {
@@ -1995,7 +1993,10 @@ export class DiscoveryService {
               count: initiatorResults.length,
               responderIds: initiatorResults.map((wallet) => wallet.responderId),
             });
-            console.log('[DiscoveryService] Event wrapper returned no wallets; using initiator results instead:', initiatorResults.length);
+            console.log(
+              '[DiscoveryService] Event wrapper returned no wallets; using initiator results instead:',
+              initiatorResults.length,
+            );
             effectiveWallets = initiatorResults;
           }
         }
@@ -2008,7 +2009,7 @@ export class DiscoveryService {
             name: wallet.name,
             rdns: wallet.rdns,
             hasName: !!wallet.name,
-            hasRdns: !!wallet.rdns
+            hasRdns: !!wallet.rdns,
           });
           if (!wallet.responderId) {
             this.logger.warn('Skipping malformed wallet: missing responderId', { wallet });
@@ -2074,7 +2075,7 @@ export class DiscoveryService {
               console.log('[DiscoveryService] Converted wallet info:', {
                 id: normalizedWalletInfo.id,
                 name: normalizedWalletInfo.name,
-                chains: normalizedWalletInfo.chains
+                chains: normalizedWalletInfo.chains,
               });
 
               console.log('[DiscoveryService] Calling connectionActions.addDiscoveredWallet...');
@@ -2134,7 +2135,10 @@ export class DiscoveryService {
         const qualifiedWallets = await fallbackPromise;
         const fallbackSessionId =
           qualifiedWallets[0]?.sessionId ?? `fallback-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        console.log('[DiscoveryService] Discovery initiator completed, found wallets:', qualifiedWallets.length);
+        console.log(
+          '[DiscoveryService] Discovery initiator completed, found wallets:',
+          qualifiedWallets.length,
+        );
 
         // Store qualified wallets and convert to discovered format
         console.log('[DiscoveryService] Processing discovered wallets from discovery initiator');
@@ -2144,7 +2148,7 @@ export class DiscoveryService {
             name: wallet.name,
             rdns: wallet.rdns,
             hasName: !!wallet.name,
-            hasRdns: !!wallet.rdns
+            hasRdns: !!wallet.rdns,
           });
           if (!wallet.responderId) {
             this.logger.warn('Skipping malformed wallet: missing responderId', { wallet });
@@ -2163,18 +2167,27 @@ export class DiscoveryService {
 
           try {
             // Validate the qualified responder before processing
-            console.log('[DiscoveryService] Validating qualified responder (fallback path):', wallet.responderId);
+            console.log(
+              '[DiscoveryService] Validating qualified responder (fallback path):',
+              wallet.responderId,
+            );
             const validatedWallet = safeValidateQualifiedResponder(wallet);
 
             if (!validatedWallet) {
-              console.log('[DiscoveryService] Validation failed for wallet (fallback path):', wallet.responderId);
+              console.log(
+                '[DiscoveryService] Validation failed for wallet (fallback path):',
+                wallet.responderId,
+              );
               this.logger.warn('Skipping invalid discovery response (listener path)', {
                 walletId: wallet.responderId,
                 reason: 'Failed validation',
               });
               continue;
             }
-            console.log('[DiscoveryService] Wallet validation successful (fallback path):', wallet.responderId);
+            console.log(
+              '[DiscoveryService] Wallet validation successful (fallback path):',
+              wallet.responderId,
+            );
 
             // Store in both maps for compatibility
             this.qualifiedWallets.set(wallet.responderId, validatedWallet);
@@ -2192,15 +2205,24 @@ export class DiscoveryService {
             this.logger.debug('Checking origin validation for wallet (listener path)', {
               walletId: wallet.responderId,
             });
-            console.log('[DiscoveryService] Checking origin validation for wallet (fallback path):', wallet.responderId);
+            console.log(
+              '[DiscoveryService] Checking origin validation for wallet (fallback path):',
+              wallet.responderId,
+            );
             if (await this.shouldSkipWalletDueToOriginValidation(discoveredWallet)) {
-              console.log('[DiscoveryService] Wallet skipped due to origin validation (fallback path):', wallet.responderId);
+              console.log(
+                '[DiscoveryService] Wallet skipped due to origin validation (fallback path):',
+                wallet.responderId,
+              );
               this.logger.debug('Skipping wallet due to origin validation failure (listener path)', {
                 walletId: wallet.responderId,
               });
               continue;
             }
-            console.log('[DiscoveryService] Origin validation passed for wallet (fallback path):', wallet.responderId);
+            console.log(
+              '[DiscoveryService] Origin validation passed for wallet (fallback path):',
+              wallet.responderId,
+            );
 
             this.logger.debug('Adding wallet to discovered wallets (listener path)', {
               walletId: wallet.responderId,
@@ -2217,10 +2239,12 @@ export class DiscoveryService {
               console.log('[DiscoveryService] Converted wallet info (fallback path):', {
                 id: normalizedWalletInfo.id,
                 name: normalizedWalletInfo.name,
-                chains: normalizedWalletInfo.chains
+                chains: normalizedWalletInfo.chains,
               });
 
-              console.log('[DiscoveryService] Calling connectionActions.addDiscoveredWallet (fallback path)...');
+              console.log(
+                '[DiscoveryService] Calling connectionActions.addDiscoveredWallet (fallback path)...',
+              );
               connectionActions.addDiscoveredWallet(this.store, normalizedWalletInfo);
               console.log('[DiscoveryService] Successfully called addDiscoveredWallet (fallback path)');
               this.logger.debug('Added wallet to store (listener path)', {
@@ -2473,18 +2497,26 @@ export class DiscoveryService {
       }
 
       if (typeof window === 'undefined') {
-        this.logger.debug('No window context while checking extension availability; assuming available', { walletId });
+        this.logger.debug('No window context while checking extension availability; assuming available', {
+          walletId,
+        });
         return true;
       }
 
-      this.logger.debug('Skipping chrome.runtime availability probe; assuming extension wallet is available', {
-        walletId,
-        extensionId: transportConfig.extensionId,
-      });
+      this.logger.debug(
+        'Skipping chrome.runtime availability probe; assuming extension wallet is available',
+        {
+          walletId,
+          extensionId: transportConfig.extensionId,
+        },
+      );
 
       return true;
     } catch (error) {
-      this.logger.warn('Error while checking extension availability; defaulting to available', { walletId, error });
+      this.logger.warn('Error while checking extension availability; defaulting to available', {
+        walletId,
+        error,
+      });
       return true;
     }
   }

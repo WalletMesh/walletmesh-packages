@@ -361,11 +361,7 @@ export interface EVMProviderFactory {
   /**
    * Create an EVM provider instance
    */
-  createProvider(config?: {
-    chainId?: string;
-    transport?: unknown;
-    logger?: unknown;
-  }): Promise<EVMProvider>;
+  createProvider(config?: { chainId?: string; transport?: unknown; logger?: unknown }): Promise<EVMProvider>;
 
   /**
    * Check if provider is available

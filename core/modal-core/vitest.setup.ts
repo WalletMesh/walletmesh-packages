@@ -4,6 +4,11 @@
  * and handles unhandled errors
  */
 
+// IndexedDB polyfill for Node.js testing environment
+// This must be imported before any code that uses IndexedDB
+import 'fake-indexeddb/auto';
+import { beforeEach } from 'vitest';
+
 // This is a workaround to ensure browser-dependent tests are always skipped in CI/CD
 // environments or when running in non-browser contexts.
 //
@@ -170,5 +175,26 @@ if (typeof setInterval === 'undefined') {
   // @ts-expect-error
   globalThis.setInterval = () => {};
 }
+
+// Clean up IndexedDB databases between tests to prevent state leakage
+beforeEach(async () => {
+  // Get list of all databases
+  const databases = await indexedDB.databases();
+
+  // Delete each database
+  await Promise.all(
+    databases.map((db) => {
+      return new Promise<void>((resolve) => {
+        if (!db.name) {
+          resolve();
+          return;
+        }
+        const request = indexedDB.deleteDatabase(db.name);
+        request.onsuccess = () => resolve();
+        request.onerror = () => resolve(); // Resolve even on error to prevent test hanging
+      });
+    }),
+  );
+});
 
 export {};

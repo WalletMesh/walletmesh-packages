@@ -99,6 +99,14 @@ export const createHistoryMiddleware = (
     // Always set an origin, use 'unknown' as final fallback
     const detectedOrigin = origin || 'unknown';
 
+    console.log('[History] Creating history entry:', {
+      method: String(req.method),
+      hasTransactionSummary: !!context.transactionSummary,
+      hasFunctionArgNames: !!context.functionCallArgNames,
+      transactionSummaryFunctionCalls: (context.transactionSummary as TransactionSummary | undefined)
+        ?.functionCalls?.length,
+    });
+
     const entry: HistoryEntry = {
       method: String(req.method),
       params: req.params,

@@ -70,7 +70,8 @@ export class ProviderValidator {
     const hasEnsureReady = 'ensureReady' in provider && typeof provider.ensureReady === 'function';
 
     // Check for isInitialized property (handles both direct properties and getters)
-    const hasIsInitialized = 'isInitialized' in provider &&
+    const hasIsInitialized =
+      'isInitialized' in provider &&
       typeof (provider as { isInitialized?: boolean }).isInitialized === 'boolean';
 
     return hasEnsureReady && hasIsInitialized;
@@ -166,7 +167,8 @@ export class ProviderValidator {
   private validateSolanaProvider(provider: BlockchainProvider, context: ProviderValidationContext): void {
     const hasSignAndSend =
       'signAndSendTransaction' in provider && typeof provider.signAndSendTransaction === 'function';
-    const hasSendTransaction = 'sendTransaction' in provider && typeof provider.sendTransaction === 'function';
+    const hasSendTransaction =
+      'sendTransaction' in provider && typeof provider.sendTransaction === 'function';
 
     if (!hasSignAndSend && !hasSendTransaction) {
       this.logger?.error('Provider missing required Solana interface', {

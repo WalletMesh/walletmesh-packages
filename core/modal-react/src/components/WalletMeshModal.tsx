@@ -26,7 +26,10 @@
  */
 
 import { formatError, getRecoveryMessage } from '@walletmesh/modal-core';
-import { useCallback, useEffect, useRef } from 'react';
+import type { ChainType, ChainConfig } from '@walletmesh/modal-core';
+// Import built-in chain configs for targetChainType mapping
+import { ethereumMainnet, solanaMainnet, aztecSandbox } from '@walletmesh/modal-core/chains';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore } from '../hooks/internal/useStore.js';
 import { useAccount } from '../hooks/useAccount.js';
@@ -131,6 +134,37 @@ export function WalletMeshModal(): React.ReactElement | null {
   });
 
   /**
+   * Convert targetChainType to a proper ChainConfig object for connection.
+   *
+   * This ensures the chain pre-selection works correctly by providing
+   * a valid chain object with proper CAIP-2 chainId instead of a simple string.
+   *
+   * @internal
+   */
+  const targetChainConfig = useMemo((): ChainConfig | undefined => {
+    if (!targetChainType) return undefined;
+
+    // Map chain type to built-in config with proper CAIP-2 chainId
+    // ChainConfig extends SupportedChain, so built-in configs work as ChainConfig
+    switch (targetChainType) {
+      case 'evm':
+        return ethereumMainnet as ChainConfig; // eip155:1 (Ethereum Mainnet)
+      case 'solana':
+        return solanaMainnet as ChainConfig; // Solana Mainnet
+      case 'aztec':
+        return aztecSandbox as ChainConfig; // Aztec Sandbox
+      default:
+        // Unknown chain type, return best-effort config
+        return {
+          chainId: `${targetChainType}:1`,
+          chainType: targetChainType as ChainType,
+          name: targetChainType.charAt(0).toUpperCase() + targetChainType.slice(1),
+          required: false,
+        } as ChainConfig;
+    }
+  }, [targetChainType]);
+
+  /**
    * Handle clicks on the modal overlay (outside content)
    * Closes the modal when clicking the dark background
    */
@@ -165,20 +199,15 @@ export function WalletMeshModal(): React.ReactElement | null {
   const handleWalletSelect = useCallback(
     async (walletId: string) => {
       try {
-        // Always use the connect hook method which properly handles error state
-        await connect(walletId, {
+        // Build connect options with proper chain object (not string chainId)
+        const connectOptions = {
           showModal: false, // We're already in the modal
-          ...(targetChainType && {
-            chainId:
-              targetChainType === 'evm'
-                ? '1'
-                : targetChainType === 'solana'
-                  ? 'mainnet-beta'
-                  : targetChainType === 'aztec'
-                    ? 'aztec-mainnet'
-                    : targetChainType,
-          }),
-        });
+          // Pass the full chain config if targetChainType is set
+          ...(targetChainConfig && { chain: targetChainConfig }),
+        };
+
+        // Always use the connect hook method which properly handles error state
+        await connect(walletId, connectOptions);
         // Note: Don't close modal here - let modal controller handle the lifecycle
       } catch (error) {
         logger.error('Failed to connect wallet:', {
@@ -192,7 +221,7 @@ export function WalletMeshModal(): React.ReactElement | null {
         // Modal should stay open to show the error
       }
     },
-    [connect, logger, targetChainType],
+    [connect, logger, targetChainConfig],
   );
 
   // Create and manage portal root

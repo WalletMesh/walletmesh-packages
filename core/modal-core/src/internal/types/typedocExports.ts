@@ -34,14 +34,14 @@ export type {
 export type {
   ReactAdapterConfig,
   VueAdapterConfig,
-  SvelteAdapterConfig
+  SvelteAdapterConfig,
 } from '../../schemas/adapters.js';
 
 // Export the schemas themselves for TypeDoc
 export {
   reactAdapterConfigSchema,
   svelteAdapterConfigSchema,
-  vueAdapterConfigSchema
+  vueAdapterConfigSchema,
 } from '../../schemas/adapters.js';
 
 // These are type-only exports for TypeDoc compatibility
@@ -121,7 +121,7 @@ export type {
 export type { AztecAccount } from '../../api/types/providers.js';
 export type {
   SolanaWalletStandardWallet as SolanaWallet,
-  SolanaWalletAccount as SolanaAccount
+  SolanaWalletAccount as SolanaAccount,
 } from '../../client/discovery/solana/types.js';
 
 // Type-only export for compatibility

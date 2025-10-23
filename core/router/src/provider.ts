@@ -80,19 +80,17 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
       this._sessionId = sessionId;
     }
 
-    this.addMiddleware(
-      async (_context, request, next) => {
-        if (request.id === undefined && typeof request.method === 'string') {
-          this.dispatchNotification(request.method, request.params);
-          return {
-            jsonrpc: '2.0' as const,
-            id: undefined,
-            result: null,
-          };
-        }
-        return next();
-      },
-    );
+    this.addMiddleware(async (_context, request, next) => {
+      if (request.id === undefined && typeof request.method === 'string') {
+        this.dispatchNotification(request.method, request.params);
+        return {
+          jsonrpc: '2.0' as const,
+          id: undefined,
+          result: null,
+        };
+      }
+      return next();
+    });
   }
 
   /**

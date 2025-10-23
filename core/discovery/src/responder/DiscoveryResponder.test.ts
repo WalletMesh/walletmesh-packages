@@ -995,12 +995,11 @@ describe('DiscoveryResponder', () => {
       ];
 
       for (const info of invalidResponderInfos) {
-        expect(
-          () =>
-            createAnnouncer({
-              responderInfo: info as unknown as ResponderInfo,
-              eventTarget: mockEventTarget,
-            }),
+        expect(() =>
+          createAnnouncer({
+            responderInfo: info as unknown as ResponderInfo,
+            eventTarget: mockEventTarget,
+          }),
         ).toThrow(); // Constructor now validates and throws for invalid info
       }
     });

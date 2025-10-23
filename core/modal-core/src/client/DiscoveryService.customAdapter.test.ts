@@ -10,7 +10,10 @@ import { globalAdapterRegistry } from '../internal/registry/WalletAdapterRegistr
 import { AbstractWalletAdapter } from '../internal/wallets/base/AbstractWalletAdapter.js';
 import { DiscoveryAdapter } from '../internal/wallets/discovery/DiscoveryAdapter.js';
 import { createMockLogger, createMockRegistry } from '../testing/helpers/mocks.js';
-import { setupDiscoveryInitiatorMock, type MockDiscoveryInitiator } from '../testing/helpers/setupDiscoveryInitiatorMock.js';
+import {
+  setupDiscoveryInitiatorMock,
+  type MockDiscoveryInitiator,
+} from '../testing/helpers/setupDiscoveryInitiatorMock.js';
 import { DiscoveryService } from './DiscoveryService.js';
 
 // Mock @walletmesh/discovery module
@@ -29,21 +32,21 @@ vi.mock('../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
         failed: [],
-        activeTransaction: undefined
+        activeTransaction: undefined,
       },
       entities: {
-        wallets: {}
-      }
+        wallets: {},
+      },
     })),
     setState: vi.fn(),
     subscribe: vi.fn(() => vi.fn()),
-    subscribeWithSelector: vi.fn(() => vi.fn())
+    subscribeWithSelector: vi.fn(() => vi.fn()),
   })),
 }));
 

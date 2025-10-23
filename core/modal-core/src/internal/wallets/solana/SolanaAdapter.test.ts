@@ -72,15 +72,18 @@ describe('SolanaAdapter', () => {
     Object.assign(window, { solana: mockSolana });
 
     // Mock SolanaProvider to return a simple mock object with all required methods
-    vi.mocked(SolanaProvider).mockImplementation(() => ({
-      chainType: ChainType.Solana,
-      on: vi.fn(),
-      off: vi.fn(),
-      disconnect: vi.fn(),
-      getAccounts: vi.fn(),
-      getChainId: vi.fn(),
-      updatePublicKey: vi.fn(),
-    }) as unknown as SolanaProvider);
+    vi.mocked(SolanaProvider).mockImplementation(
+      () =>
+        ({
+          chainType: ChainType.Solana,
+          on: vi.fn(),
+          off: vi.fn(),
+          disconnect: vi.fn(),
+          getAccounts: vi.fn(),
+          getChainId: vi.fn(),
+          updatePublicKey: vi.fn(),
+        }) as unknown as SolanaProvider,
+    );
 
     adapter = new SolanaAdapter();
   });

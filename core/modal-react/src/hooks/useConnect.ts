@@ -449,7 +449,10 @@ export function useConnect(): UseConnectReturn {
       }
 
       try {
-        const handleProgress = (stage: 'initializing' | 'connecting' | 'authenticating' | 'connected' | 'failed', details?: string) => {
+        const handleProgress = (
+          stage: 'initializing' | 'connecting' | 'authenticating' | 'connected' | 'failed',
+          details?: string,
+        ) => {
           if (isMountedRef.current) {
             const progressInfo = tracker.updateStage(stage, details);
             setConnectionProgress(progressInfo);

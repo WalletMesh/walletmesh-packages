@@ -317,10 +317,15 @@ export class SolanaAdapter extends AbstractWalletAdapter {
 
           // Extract method and id from JSON-RPC request
           if (typeof data === 'object' && data !== null && 'method' in data) {
-            const request = data as { jsonrpc: string; method: string; params?: unknown[]; id?: string | number };
+            const request = data as {
+              jsonrpc: string;
+              method: string;
+              params?: unknown[];
+              id?: string | number;
+            };
             this.log('debug', 'Processing JSON-RPC request through Solana transport', {
               method: request.method,
-              id: request.id
+              id: request.id,
             });
 
             try {
@@ -355,7 +360,7 @@ export class SolanaAdapter extends AbstractWalletAdapter {
                 const response = {
                   jsonrpc: '2.0',
                   id: request.id,
-                  result
+                  result,
                 };
                 this.log('debug', 'Sending JSON-RPC response', { id: request.id });
                 messageHandler(response);
@@ -369,8 +374,8 @@ export class SolanaAdapter extends AbstractWalletAdapter {
                   error: {
                     code: -32603,
                     message: error instanceof Error ? error.message : String(error),
-                    data: error
-                  }
+                    data: error,
+                  },
                 };
                 this.log('debug', 'Sending JSON-RPC error response', { id: request.id, error });
                 messageHandler(response);
@@ -429,15 +434,23 @@ export class SolanaAdapter extends AbstractWalletAdapter {
               try {
                 // Try to remove specific listener if wallet supports it
                 if (wallet && 'removeListener' in wallet && typeof wallet.removeListener === 'function') {
-                  (wallet as { removeListener: (event: string, handler: (...args: unknown[]) => void) => void })
-                    .removeListener(event, eventHandler);
+                  (
+                    wallet as {
+                      removeListener: (event: string, handler: (...args: unknown[]) => void) => void;
+                    }
+                  ).removeListener(event, eventHandler);
                   this.log('debug', `Removed ${event} event listener using removeListener`);
                 } else if (wallet && 'off' in wallet && typeof wallet.off === 'function') {
-                  (wallet as { off: (event: string, handler: (...args: unknown[]) => void) => void })
-                    .off(event, eventHandler);
+                  (wallet as { off: (event: string, handler: (...args: unknown[]) => void) => void }).off(
+                    event,
+                    eventHandler,
+                  );
                   this.log('debug', `Removed ${event} event listener using off`);
                 } else {
-                  this.log('debug', `Wallet doesn't support removeListener or off for ${event}, will use removeAllListeners in disconnect`);
+                  this.log(
+                    'debug',
+                    `Wallet doesn't support removeListener or off for ${event}, will use removeAllListeners in disconnect`,
+                  );
                 }
 
                 // Remove from tracked handlers
@@ -617,13 +630,20 @@ export class SolanaAdapter extends AbstractWalletAdapter {
     for (const [event, handlers] of this.registeredEventHandlers.entries()) {
       for (const handler of handlers) {
         try {
-          if ('removeListener' in this.solanaWallet && typeof this.solanaWallet.removeListener === 'function') {
-            (this.solanaWallet as { removeListener: (event: string, handler: (...args: unknown[]) => void) => void })
-              .removeListener(event, handler);
+          if (
+            'removeListener' in this.solanaWallet &&
+            typeof this.solanaWallet.removeListener === 'function'
+          ) {
+            (
+              this.solanaWallet as {
+                removeListener: (event: string, handler: (...args: unknown[]) => void) => void;
+              }
+            ).removeListener(event, handler);
             this.log('debug', `Removed ${event} event listener using removeListener`);
           } else if ('off' in this.solanaWallet && typeof this.solanaWallet.off === 'function') {
-            (this.solanaWallet as { off: (event: string, handler: (...args: unknown[]) => void) => void })
-              .off(event, handler);
+            (
+              this.solanaWallet as { off: (event: string, handler: (...args: unknown[]) => void) => void }
+            ).off(event, handler);
             this.log('debug', `Removed ${event} event listener using off`);
           }
         } catch (error) {
@@ -636,7 +656,10 @@ export class SolanaAdapter extends AbstractWalletAdapter {
     this.registeredEventHandlers.clear();
 
     // Fall back to removeAllListeners if available (less precise but ensures cleanup)
-    if ('removeAllListeners' in this.solanaWallet && typeof this.solanaWallet.removeAllListeners === 'function') {
+    if (
+      'removeAllListeners' in this.solanaWallet &&
+      typeof this.solanaWallet.removeAllListeners === 'function'
+    ) {
       try {
         this.solanaWallet.removeAllListeners();
         this.log('debug', 'Called removeAllListeners as final cleanup');

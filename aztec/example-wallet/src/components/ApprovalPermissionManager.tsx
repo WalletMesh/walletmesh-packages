@@ -7,6 +7,7 @@ import type {
   RouterContext,
   RouterMethodMap,
 } from '@walletmesh/router';
+import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware.js';
 
 /**
  * Options for configuring the {@link ApprovalPermissionManager}.
@@ -16,7 +17,7 @@ interface ApprovalPermissionManagerOptions {
    * Callback function invoked when a permission request requires user interaction.
    * This function should typically trigger a UI prompt for the user to approve or deny the request.
    *
-   * @param request - Details of the permission request, including origin, chainId, method, and params.
+   * @param request - Details of the permission request, including origin, chainId, method, params, and optional function argument names.
    * @returns A promise that resolves to `true` if the user approves the request, `false` otherwise.
    */
   onApprovalRequest: (request: {
@@ -24,6 +25,7 @@ interface ApprovalPermissionManagerOptions {
     chainId: ChainId;
     method: string;
     params?: unknown;
+    functionArgNames?: FunctionArgNames;
   }) => Promise<boolean>;
 
   /**
@@ -66,10 +68,7 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
         'aztec_sendTx',
         'aztec_simulateUtility',
         'aztec_contractInteraction',
-        'aztec_wmDeployContract',
         'aztec_getPrivateEvents',
-        'aztec_registerContract',
-        'aztec_registerContractClass',
       ],
     );
   }

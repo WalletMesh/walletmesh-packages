@@ -551,10 +551,13 @@ export class DiscoveryInitiator {
         });
         return;
       } catch (transitionError) {
-        this.logger.error('[DiscoveryInitiator] Failed to transition to error state after duplicate response', {
-          error: transitionError,
-          sessionId: this.sessionId,
-        });
+        this.logger.error(
+          '[DiscoveryInitiator] Failed to transition to error state after duplicate response',
+          {
+            error: transitionError,
+            sessionId: this.sessionId,
+          },
+        );
       }
     }
 
@@ -723,7 +726,8 @@ export class DiscoveryInitiator {
       return metadataError;
     }
 
-    const message = typeof metadata['errorMessage'] === 'string' ? metadata['errorMessage'] : 'Discovery error';
+    const message =
+      typeof metadata['errorMessage'] === 'string' ? metadata['errorMessage'] : 'Discovery error';
     const code = typeof metadata['errorCode'] === 'number' ? metadata['errorCode'] : undefined;
     const category = (metadata['errorCategory'] as ErrorCategory | undefined) ?? undefined;
 

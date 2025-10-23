@@ -148,10 +148,14 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
    */
   async connect(options?: ConnectOptions): Promise<WalletConnection> {
     try {
-      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter.connect invoked', {
-        responderId: this.qualifiedResponder.responderId,
-        transportType: (this.qualifiedResponder.transportConfig as any)?.type,
-      });
+      (this.logger?.info || this.logger?.debug || console.info).call(
+        this.logger,
+        'DiscoveryAdapter.connect invoked',
+        {
+          responderId: this.qualifiedResponder.responderId,
+          transportType: (this.qualifiedResponder.transportConfig as any)?.type,
+        },
+      );
       // Use discovery protocol's ConnectionManager to establish connection
       // Convert chains from ConnectOptions format to string array
       const requestedChains = options?.chains
@@ -210,10 +214,14 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
 
       // Base class will handle events
 
-      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter.connect completed', {
-        walletId: walletConnection.walletId,
-        chainType: walletConnection.chainType,
-      });
+      (this.logger?.info || this.logger?.debug || console.info).call(
+        this.logger,
+        'DiscoveryAdapter.connect completed',
+        {
+          walletId: walletConnection.walletId,
+          chainType: walletConnection.chainType,
+        },
+      );
       return walletConnection;
     } catch (error) {
       const originalError = error instanceof Error ? error : new Error(String(error));
@@ -360,13 +368,17 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
     };
 
     let transport: Transport;
-    (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter: selecting transport', {
-      walletId: this.qualifiedResponder.responderId,
-      type: (transportConfig as any)?.type,
-      hasUrl: Boolean((transportConfig as any)?.url),
-      hasWebsocketUrl: Boolean((transportConfig as any)?.websocketUrl),
-      extensionId: (transportConfig as any)?.extensionId,
-    });
+    (this.logger?.info || this.logger?.debug || console.info).call(
+      this.logger,
+      'DiscoveryAdapter: selecting transport',
+      {
+        walletId: this.qualifiedResponder.responderId,
+        type: (transportConfig as any)?.type,
+        hasUrl: Boolean((transportConfig as any)?.url),
+        hasWebsocketUrl: Boolean((transportConfig as any)?.websocketUrl),
+        extensionId: (transportConfig as any)?.extensionId,
+      },
+    );
 
     // Select transport strictly from supported types
     switch ((transportConfig as any).type) {
@@ -396,14 +408,22 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
     }
 
     try {
-      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter: connecting transport', {
-        walletId: this.qualifiedResponder.responderId,
-        type: (transportConfig as any)?.type,
-      });
+      (this.logger?.info || this.logger?.debug || console.info).call(
+        this.logger,
+        'DiscoveryAdapter: connecting transport',
+        {
+          walletId: this.qualifiedResponder.responderId,
+          type: (transportConfig as any)?.type,
+        },
+      );
       await transport.connect();
-      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter: transport connected', {
-        walletId: this.qualifiedResponder.responderId,
-      });
+      (this.logger?.info || this.logger?.debug || console.info).call(
+        this.logger,
+        'DiscoveryAdapter: transport connected',
+        {
+          walletId: this.qualifiedResponder.responderId,
+        },
+      );
     } catch (error) {
       const connectError =
         error instanceof Error ? error : new Error(`Failed to connect transport: ${String(error)}`);
@@ -462,11 +482,15 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
             transport: this.transport || undefined,
             network: aztecNetwork,
           });
-          (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'DiscoveryAdapter: connecting Aztec adapter', {
-            walletId: this.id,
-            transportType: (this.qualifiedResponder.transportConfig as any)?.type,
-            network: aztecNetwork,
-          });
+          (this.logger?.info || this.logger?.debug || console.info).call(
+            this.logger,
+            'DiscoveryAdapter: connecting Aztec adapter',
+            {
+              walletId: this.id,
+              transportType: (this.qualifiedResponder.transportConfig as any)?.type,
+              network: aztecNetwork,
+            },
+          );
           // Connect the adapter to establish the provider
           await aztecAdapter.connect();
           this.logger?.debug('DiscoveryAdapter: Aztec adapter connected', {

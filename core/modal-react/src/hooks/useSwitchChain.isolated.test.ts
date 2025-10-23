@@ -12,9 +12,9 @@ import { ChainType } from '@walletmesh/modal-core';
 
 const mockChainService = {
   switchChain: vi.fn().mockResolvedValue(undefined),
-  getSupportedChains: vi.fn().mockReturnValue([
-    { chainId: '1', chainType: ChainType.Evm, name: 'Ethereum', required: true },
-  ]),
+  getSupportedChains: vi
+    .fn()
+    .mockReturnValue([{ chainId: '1', chainType: ChainType.Evm, name: 'Ethereum', required: true }]),
   isChainSupported: vi.fn().mockReturnValue(true),
   validateChainSwitch: vi.fn().mockReturnValue({ isValid: true }),
 };
@@ -59,9 +59,7 @@ vi.mock('../WalletMeshContext.js', () => ({
     client: mockClient,
     config: {
       appName: 'Test',
-      chains: [
-        { chainId: '1', chainType: ChainType.Evm, name: 'Ethereum', required: true },
-      ],
+      chains: [{ chainId: '1', chainType: ChainType.Evm, name: 'Ethereum', required: true }],
     },
   })),
   useWalletMeshServices: vi.fn(() => ({

@@ -571,13 +571,15 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
           retryInterval: discoveryConfig.retryInterval ?? 30000,
           maxAttempts: discoveryConfig.maxAttempts || 0,
           // Use technologies from config if available, otherwise use generated ones
-          ...(discoveryConfig.technologies ? {
-            technologies: discoveryConfig.technologies.map(tech => ({
-              type: tech.type as 'evm' | 'solana' | 'aztec',
-              interfaces: tech.interfaces || [],
-              ...(tech.features && { features: tech.features })
-            }))
-          } : (technologies && { technologies })),
+          ...(discoveryConfig.technologies
+            ? {
+                technologies: discoveryConfig.technologies.map((tech) => ({
+                  type: tech.type as 'evm' | 'solana' | 'aztec',
+                  interfaces: tech.interfaces || [],
+                  ...(tech.features && { features: tech.features }),
+                })),
+              }
+            : technologies && { technologies }),
           // Add dApp info from discovery config
           ...(discoveryConfig.dappInfo && { dappInfo: discoveryConfig.dappInfo }),
           // Add capabilities from discovery config
@@ -933,9 +935,8 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
    * @private
    */
   private async runBrowserDiscovery(chainTypes?: ChainType[]): Promise<void> {
-    const requestedChainTypes = chainTypes && chainTypes.length > 0
-      ? new Set(chainTypes)
-      : new Set(this.extractChainTypesFromConfig());
+    const requestedChainTypes =
+      chainTypes && chainTypes.length > 0 ? new Set(chainTypes) : new Set(this.extractChainTypesFromConfig());
 
     if (requestedChainTypes.has(ChainType.Evm)) {
       await this.runEVMDiscovery();
@@ -971,9 +972,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     });
   }
 
-  private resolveCanonicalWalletId(
-    wallet: import('@walletmesh/discovery').QualifiedResponder,
-  ): string {
+  private resolveCanonicalWalletId(wallet: import('@walletmesh/discovery').QualifiedResponder): string {
     const discovered = this.registry.getDiscoveredWallet(wallet.responderId);
     if (discovered) {
       return discovered.id;
@@ -1090,7 +1089,9 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
             return undefined;
         }
       })
-      .filter((tech): tech is { type: 'evm' | 'solana' | 'aztec'; interfaces: string[] } => tech !== undefined);
+      .filter(
+        (tech): tech is { type: 'evm' | 'solana' | 'aztec'; interfaces: string[] } => tech !== undefined,
+      );
 
     return technologies.length > 0 ? technologies : undefined;
   }
@@ -1350,15 +1351,23 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       }
 
       // Connect
-      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'Client.connect: calling adapter.connect', {
-        walletId: targetWalletId,
-        adapterClass: adapter?.constructor?.name,
-      });
+      (this.logger?.info || this.logger?.debug || console.info).call(
+        this.logger,
+        'Client.connect: calling adapter.connect',
+        {
+          walletId: targetWalletId,
+          adapterClass: adapter?.constructor?.name,
+        },
+      );
       const connection = await adapter.connect(connectOptions);
-      (this.logger?.info || this.logger?.debug || console.info).call(this.logger, 'Client.connect: adapter.connect resolved', {
-        walletId: targetWalletId,
-        adapterClass: adapter?.constructor?.name,
-      });
+      (this.logger?.info || this.logger?.debug || console.info).call(
+        this.logger,
+        'Client.connect: adapter.connect resolved',
+        {
+          walletId: targetWalletId,
+          adapterClass: adapter?.constructor?.name,
+        },
+      );
       this.logger?.debug('Connection established, creating session', {
         walletId: targetWalletId,
         address: connection.address,
@@ -1981,8 +1990,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
           const canonicalId = this.resolveCanonicalWalletId(result.wallet);
           const responderId = result.wallet.responderId;
           const discoveredInfo =
-            this.registry.getDiscoveredWallet(canonicalId) ||
-            this.registry.getDiscoveredWallet(responderId);
+            this.registry.getDiscoveredWallet(canonicalId) || this.registry.getDiscoveredWallet(responderId);
           const customMetadata =
             (discoveredInfo?.metadata as Record<string, unknown> | undefined) ||
             (result.wallet.metadata as Record<string, unknown> | undefined) ||
@@ -2851,7 +2859,9 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       // Remove all tracked event listeners
       for (const { event, listener } of listeners) {
         // Check if adapter has off method (defensive for mocks and edge cases)
-        const adapterWithOff = adapter as { off?: (event: string, listener: (...args: unknown[]) => void) => void };
+        const adapterWithOff = adapter as {
+          off?: (event: string, listener: (...args: unknown[]) => void) => void;
+        };
         if (typeof adapterWithOff.off === 'function') {
           adapterWithOff.off(event, listener);
         }
@@ -3492,22 +3502,25 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       // Add call() method for Aztec providers
       // This is required by the Aztec provider interface and used by validation
       // We bind the method directly to preserve the original signature
-      ...('call' in walletProvider && typeof walletProvider.call === 'function' && {
-        call: walletProvider.call.bind(walletProvider),
-      }),
+      ...('call' in walletProvider &&
+        typeof walletProvider.call === 'function' && {
+          call: walletProvider.call.bind(walletProvider),
+        }),
 
       // Add lazy provider methods if the underlying provider supports them
       // This allows lazy providers to be detected and properly initialized
-      ...('ensureReady' in walletProvider && typeof walletProvider.ensureReady === 'function' && {
-        ensureReady: async () => {
-          return await (walletProvider as { ensureReady: () => Promise<void> }).ensureReady();
-        },
-      }),
-      ...('isInitialized' in walletProvider && typeof (walletProvider as { isInitialized?: boolean }).isInitialized === 'boolean' && {
-        get isInitialized() {
-          return (walletProvider as { isInitialized: boolean }).isInitialized;
-        },
-      }),
+      ...('ensureReady' in walletProvider &&
+        typeof walletProvider.ensureReady === 'function' && {
+          ensureReady: async () => {
+            return await (walletProvider as { ensureReady: () => Promise<void> }).ensureReady();
+          },
+        }),
+      ...('isInitialized' in walletProvider &&
+        typeof (walletProvider as { isInitialized?: boolean }).isInitialized === 'boolean' && {
+          get isInitialized() {
+            return (walletProvider as { isInitialized: boolean }).isInitialized;
+          },
+        }),
     };
   }
 

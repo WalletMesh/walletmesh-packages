@@ -252,22 +252,21 @@ vi.mock('../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
         failed: [],
-        activeTransaction: undefined
-      }
-      ,
+        activeTransaction: undefined,
+      },
       entities: {
-        wallets: {}
-      }
+        wallets: {},
+      },
     })),
     setState: vi.fn(),
     subscribe: vi.fn(() => vi.fn()),
-    subscribeWithSelector: vi.fn(() => vi.fn())
+    subscribeWithSelector: vi.fn(() => vi.fn()),
   })),
   useStore: vi.fn(() => ({
     getState: vi.fn(() => ({
@@ -277,17 +276,16 @@ vi.mock('../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
-        failed: []
-      }
-      ,
+        failed: [],
+      },
       entities: {
-        wallets: {}
-      }
+        wallets: {},
+      },
     })),
     setState: vi.fn(),
     subscribe: vi.fn(),
@@ -300,17 +298,16 @@ vi.mock('../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
-        failed: []
-      }
-      ,
+        failed: [],
+      },
       entities: {
-        wallets: {}
-      }
+        wallets: {},
+      },
     })),
     setState: vi.fn(),
     subscribe: vi.fn(),
@@ -327,22 +324,21 @@ vi.mock('../../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
         failed: [],
-        activeTransaction: undefined
-      }
-      ,
+        activeTransaction: undefined,
+      },
       entities: {
-        wallets: {}
-      }
+        wallets: {},
+      },
     })),
     setState: vi.fn(),
     subscribe: vi.fn(() => vi.fn()),
-    subscribeWithSelector: vi.fn(() => vi.fn())
+    subscribeWithSelector: vi.fn(() => vi.fn()),
   })),
   useStore: vi.fn(() => ({
     getState: vi.fn(() => ({
@@ -352,17 +348,16 @@ vi.mock('../../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
-        failed: []
-      }
-      ,
+        failed: [],
+      },
       entities: {
-        wallets: {}
-      }
+        wallets: {},
+      },
     })),
     setState: vi.fn(),
     subscribe: vi.fn(),
@@ -375,17 +370,16 @@ vi.mock('../../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
-        failed: []
-      }
-      ,
+        failed: [],
+      },
       entities: {
-        wallets: {}
-      }
+        wallets: {},
+      },
     })),
     setState: vi.fn(),
     subscribe: vi.fn(),
@@ -678,7 +672,10 @@ describe('WalletMeshClient', () => {
 
       const mockAdapter = {
         id: 'metamask',
-        metadata: { name: 'MetaMask', icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiPjwvc3ZnPg==' },
+        metadata: {
+          name: 'MetaMask',
+          icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiPjwvc3ZnPg==',
+        },
         capabilities: { chains: [{ type: ChainType.Evm }] },
         connect: vi.fn().mockResolvedValue({
           walletId: 'metamask',
@@ -996,7 +993,7 @@ describe('WalletMeshClient', () => {
         metadata: {
           name: 'MetaMask',
           icon: 'data:image/svg+xml;base64,test',
-          description: 'MetaMask wallet'
+          description: 'MetaMask wallet',
         },
         connect: vi.fn().mockRejectedValue(new Error('Connection failed')),
         on: vi.fn(),

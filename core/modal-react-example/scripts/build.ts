@@ -61,12 +61,7 @@ function saveBuildState(state: BuildState): void {
 
 function shouldRebuildDependencies(): boolean {
   // Check if dependencies need rebuilding by checking their dist directories
-  const deps = [
-    '../jsonrpc/dist',
-    '../discovery/dist',
-    '../modal-core/dist',
-    '../modal-react/dist',
-  ];
+  const deps = ['../jsonrpc/dist', '../discovery/dist', '../modal-core/dist', '../modal-react/dist'];
 
   for (const dep of deps) {
     const depPath = path.join(ROOT_DIR, dep);

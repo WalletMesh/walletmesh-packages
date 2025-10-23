@@ -102,14 +102,15 @@
     "@types/node": "^24.3.0",
     "@vitest/coverage-v8": "2.1.8",
     "@walletmesh/aztec-rpc-wallet": "workspace:*",
+    "fake-indexeddb": "^6.2.4",
     "glob": "^10.4.5",
     "happy-dom": "^17.6.3",
     "vitest": "2.1.8"
   },
   "peerDependencies": {
-    "@walletmesh/aztec-rpc-wallet": "^0.5.0",
     "@nemi-fi/wallet-sdk": "^1.0.0",
-    "@solana/web3.js": "^1.0.0"
+    "@solana/web3.js": "^1.0.0",
+    "@walletmesh/aztec-rpc-wallet": "^0.5.0"
   },
   "peerDependenciesMeta": {
     "@walletmesh/aztec-rpc-wallet": {
@@ -122,5 +123,7 @@
       "optional": true
     }
   },
-  "files": ["dist"]
+  "files": [
+    "dist"
+  ]
 }

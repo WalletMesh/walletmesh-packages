@@ -270,9 +270,8 @@ export const getBackgroundTransactions = (state: WalletMeshState): TransactionRe
  * Get count of active background transactions
  */
 export const getBackgroundTransactionCount = (state: WalletMeshState): number => {
-  return getBackgroundTransactions(state).filter((tx) =>
-    tx.status !== 'confirmed' && tx.status !== 'failed'
-  ).length;
+  return getBackgroundTransactions(state).filter((tx) => tx.status !== 'confirmed' && tx.status !== 'failed')
+    .length;
 };
 
 /**

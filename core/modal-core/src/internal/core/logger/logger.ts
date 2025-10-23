@@ -296,10 +296,7 @@ export function createDebugLogger(prefix: string, debug = false): Logger {
  * @internal
  */
 export function createLogger(
-  options: {
-    level?: 'debug' | 'info' | 'warn' | 'error';
-    prefix?: string;
-  } = {},
+  options: { level?: 'debug' | 'info' | 'warn' | 'error'; prefix?: string } = {},
 ): Logger {
   const debug = options.level === 'debug';
   return new Logger(debug, options.prefix);

@@ -11,12 +11,7 @@
 
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 import { executeTx } from './utils.js';
-import type {
-  AztecDappWallet,
-  AztecSendOptions,
-  ContractFunctionInteraction,
-  TxReceipt,
-} from './types.js';
+import type { AztecDappWallet, AztecSendOptions, ContractFunctionInteraction, TxReceipt } from './types.js';
 
 /**
  * Get a contract instance at a specific address

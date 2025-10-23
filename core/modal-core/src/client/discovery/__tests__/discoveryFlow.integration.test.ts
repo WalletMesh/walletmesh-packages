@@ -41,22 +41,22 @@ vi.mock('../../../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
         failed: [],
-        activeTransaction: undefined
+        activeTransaction: undefined,
       },
       entities: {
-        wallets: {}
-      }
+        wallets: {},
+      },
     })),
     setState: vi.fn(),
     subscribe: vi.fn(() => vi.fn()),
-    subscribeWithSelector: vi.fn(() => vi.fn())
-  }))
+    subscribeWithSelector: vi.fn(() => vi.fn()),
+  })),
 }));
 
 vi.mock('../../state/store.js', () => ({
@@ -68,21 +68,21 @@ vi.mock('../../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
         failed: [],
-        activeTransaction: undefined
+        activeTransaction: undefined,
       },
       entities: {
-        wallets: {}
-      }
+        wallets: {},
+      },
     })),
     setState: vi.fn(),
     subscribe: vi.fn(() => vi.fn()),
-    subscribeWithSelector: vi.fn(() => vi.fn())
+    subscribeWithSelector: vi.fn(() => vi.fn()),
   })),
   useStore: vi.fn(() => ({
     getState: vi.fn(() => ({
@@ -92,19 +92,19 @@ vi.mock('../../state/store.js', () => ({
         availableWallets: [],
         discoveredWallets: [],
         activeSessionId: null,
-        connectionStatus: 'disconnected'
+        connectionStatus: 'disconnected',
       },
       transactions: {
         pending: [],
         confirmed: [],
         failed: [],
-        activeTransaction: undefined
+        activeTransaction: undefined,
       },
       entities: {
-        wallets: {}
-      }
-    }))
-  }))
+        wallets: {},
+      },
+    })),
+  })),
 }));
 
 // Mock WebSocket transport
@@ -357,15 +357,13 @@ describe('Discovery Flow Integration', () => {
         mockConnectionManager,
       );
 
-      const rateLimiterCheckSpy = vi
-        .spyOn(RateLimiter.prototype, 'check')
-        .mockReturnValue({
-          allowed: false,
-          remaining: 0,
-          resetAfterMs: 1000,
-          retryAfterMs: 1000,
-          reason: 'rate_limited',
-        });
+      const rateLimiterCheckSpy = vi.spyOn(RateLimiter.prototype, 'check').mockReturnValue({
+        allowed: false,
+        remaining: 0,
+        resetAfterMs: 1000,
+        retryAfterMs: 1000,
+        reason: 'rate_limited',
+      });
 
       await expect(discoveryService.scan()).rejects.toMatchObject({
         code: 'configuration_error',

@@ -247,10 +247,14 @@ export class ChromeExtensionTransport extends AbstractTransport {
               throw ErrorFactory.transportError('Chrome runtime connect not available', 'chrome-extension');
             }
 
-            (this.logger.info || this.logger.debug || console.info).call(this.logger, 'ChromeExtensionTransport: connecting to extension', {
-              extensionId: this.config.extensionId,
-              attempt,
-            });
+            (this.logger.info || this.logger.debug || console.info).call(
+              this.logger,
+              'ChromeExtensionTransport: connecting to extension',
+              {
+                extensionId: this.config.extensionId,
+                attempt,
+              },
+            );
 
             this.port = chromeWindow.chrome.runtime.connect(this.config.extensionId);
 
@@ -263,7 +267,10 @@ export class ChromeExtensionTransport extends AbstractTransport {
             // Set up message handlers
             this.port.onMessage.addListener(this.handleMessage);
             this.port.onDisconnect.addListener(this.handleDisconnect);
-            (this.logger.info || this.logger.debug || console.info).call(this.logger, 'ChromeExtensionTransport: port established, handlers attached');
+            (this.logger.info || this.logger.debug || console.info).call(
+              this.logger,
+              'ChromeExtensionTransport: port established, handlers attached',
+            );
 
             // Give time for the timeout to potentially occur first
             queueMicrotask(() => {
@@ -279,26 +286,36 @@ export class ChromeExtensionTransport extends AbstractTransport {
 
               // Wait for explicit wallet readiness before sending any messages
               this.ready = false;
-              this.readyTimeout = setTimeout(() => {
-                (this.logger.warn || console.warn).call(
-                  this.logger,
-                  'ChromeExtensionTransport: wallet_ready timeout; proceeding without explicit readiness',
-                );
-                this.ready = true;
-                this.flushQueue();
-              }, Math.min(Math.max(this.config.timeout || 5000, 1000), 15000));
+              this.readyTimeout = setTimeout(
+                () => {
+                  (this.logger.warn || console.warn).call(
+                    this.logger,
+                    'ChromeExtensionTransport: wallet_ready timeout; proceeding without explicit readiness',
+                  );
+                  this.ready = true;
+                  this.flushQueue();
+                },
+                Math.min(Math.max(this.config.timeout || 5000, 1000), 15000),
+              );
 
               // Emit connected event
               this.emit({
                 type: 'connected',
               } as TransportEvent);
-              (this.logger.info || this.logger.debug || console.info).call(this.logger, 'ChromeExtensionTransport: connected');
+              (this.logger.info || this.logger.debug || console.info).call(
+                this.logger,
+                'ChromeExtensionTransport: connected',
+              );
 
               resolve();
             });
           } catch (error) {
             this.clearTimeouts();
-            (this.logger.error || this.logger.warn || console.error).call(this.logger, 'ChromeExtensionTransport: connect failed', error);
+            (this.logger.error || this.logger.warn || console.error).call(
+              this.logger,
+              'ChromeExtensionTransport: connect failed',
+              error,
+            );
             reject(error);
           }
         });
@@ -383,19 +400,26 @@ export class ChromeExtensionTransport extends AbstractTransport {
     }
 
     try {
-      (this.logger.info || this.logger.debug || console.info).call(this.logger, 'ChromeExtensionTransport: sending message', {
-        payload:
-          data && typeof data === 'object'
-            ? {
-                jsonrpc: (data as any).jsonrpc,
-                id: (data as any).id,
-                method: (data as any).method,
-              }
-            : { type: typeof data },
-      });
+      (this.logger.info || this.logger.debug || console.info).call(
+        this.logger,
+        'ChromeExtensionTransport: sending message',
+        {
+          payload:
+            data && typeof data === 'object'
+              ? {
+                  jsonrpc: (data as any).jsonrpc,
+                  id: (data as any).id,
+                  method: (data as any).method,
+                }
+              : { type: typeof data },
+        },
+      );
       if (!this.ready) {
         this.pendingQueue.push(data);
-        (this.logger.info || this.logger.debug || console.info).call(this.logger, 'ChromeExtensionTransport: queued message (not ready yet)');
+        (this.logger.info || this.logger.debug || console.info).call(
+          this.logger,
+          'ChromeExtensionTransport: queued message (not ready yet)',
+        );
         return;
       }
       this.port.postMessage(data);
@@ -420,7 +444,10 @@ export class ChromeExtensionTransport extends AbstractTransport {
    * @private
    */
   private handleMessage = (message: unknown) => {
-    (this.logger.info || this.logger.debug || console.info).call(this.logger, 'ChromeExtensionTransport: received message');
+    (this.logger.info || this.logger.debug || console.info).call(
+      this.logger,
+      'ChromeExtensionTransport: received message',
+    );
     // Detect readiness notification from extension
     try {
       const m = message as any;
@@ -434,7 +461,13 @@ export class ChromeExtensionTransport extends AbstractTransport {
         return;
       }
       // Detect PXE readiness status; propagate as normal message so providers can subscribe
-      if (m && m.jsonrpc === '2.0' && m.method === 'aztec_status' && m.params && typeof m.params === 'object') {
+      if (
+        m &&
+        m.jsonrpc === '2.0' &&
+        m.method === 'aztec_status' &&
+        m.params &&
+        typeof m.params === 'object'
+      ) {
         // Do not alter ready flag here; this is separate from transport readiness
         // Forward event to consumers
       }
@@ -451,7 +484,10 @@ export class ChromeExtensionTransport extends AbstractTransport {
    * @private
    */
   private handleDisconnect = () => {
-    (this.logger.info || this.logger.debug || console.info).call(this.logger, 'ChromeExtensionTransport: port disconnected');
+    (this.logger.info || this.logger.debug || console.info).call(
+      this.logger,
+      'ChromeExtensionTransport: port disconnected',
+    );
     const wasConnected = this.connected;
     this.connected = false;
     this.port = null;
@@ -495,7 +531,11 @@ export class ChromeExtensionTransport extends AbstractTransport {
       try {
         this.port.postMessage(item);
       } catch (err) {
-        (this.logger.error || this.logger.warn || console.error).call(this.logger, 'ChromeExtensionTransport: failed to flush queued message', err);
+        (this.logger.error || this.logger.warn || console.error).call(
+          this.logger,
+          'ChromeExtensionTransport: failed to flush queued message',
+          err,
+        );
       }
     }
   }

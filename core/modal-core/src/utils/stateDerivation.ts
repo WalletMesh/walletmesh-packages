@@ -302,9 +302,6 @@ export function isConnectedToChain(sessions: WalletSession[], chainId: string): 
  * @category State Derivation
  * @public
  */
-export function getSessionsByChainType(
-  sessions: WalletSession[],
-  chainType: ChainType,
-): WalletSession[] {
+export function getSessionsByChainType(sessions: WalletSession[], chainType: ChainType): WalletSession[] {
   return sessions.filter((session) => session.chain?.chainType === chainType);
 }

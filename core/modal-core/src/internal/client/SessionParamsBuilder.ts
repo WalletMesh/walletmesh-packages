@@ -259,8 +259,7 @@ export class SessionParamsBuilder {
       connection: {
         initiatedBy: 'user' as const,
         method: 'manual' as const,
-        ...(typeof navigator !== 'undefined' &&
-          navigator.userAgent && { userAgent: navigator.userAgent }),
+        ...(typeof navigator !== 'undefined' && navigator.userAgent && { userAgent: navigator.userAgent }),
       },
     };
   }

@@ -4,11 +4,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
-import {
-  createSandboxedIcon,
-  createSandboxedIcons,
-  isSandboxSupported,
-} from './iconSandbox.js';
+import { createSandboxedIcon, createSandboxedIcons, isSandboxSupported } from './iconSandbox.js';
 
 // Install custom matchers
 installCustomMatchers();
@@ -356,8 +352,7 @@ describe('Icon Sandbox Tests', () => {
         expect(iframe.srcdoc).toBeDefined();
 
         // Verify special characters are escaped
-        const hasEscapedQuotes =
-          iframe.srcdoc.includes('&quot;') || iframe.srcdoc.includes('&#x27;');
+        const hasEscapedQuotes = iframe.srcdoc.includes('&quot;') || iframe.srcdoc.includes('&#x27;');
         const hasEscapedBrackets = iframe.srcdoc.includes('&lt;') || iframe.srcdoc.includes('&gt;');
 
         expect(hasEscapedQuotes || hasEscapedBrackets).toBe(true);
@@ -382,7 +377,7 @@ describe('Icon Sandbox Tests', () => {
 
     it('should prevent combined injection attacks', async () => {
       // Complex attack combining multiple techniques
-      const maliciousSvg = 'data:image/svg+xml,\'></img><svg/onload=alert(1)><img src=\'';
+      const maliciousSvg = "data:image/svg+xml,'></img><svg/onload=alert(1)><img src='";
 
       const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
 
@@ -404,7 +399,8 @@ describe('Icon Sandbox Tests', () => {
 
     it('should handle legitimate SVG content with special characters', async () => {
       // Valid SVG that happens to contain encoded special characters
-      const validSvg = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20r%3D%2210%22%2F%3E%3C%2Fsvg%3E';
+      const validSvg =
+        'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Ccircle%20r%3D%2210%22%2F%3E%3C%2Fsvg%3E';
 
       const iframe = await createSandboxedIcon({ iconDataUri: validSvg });
 

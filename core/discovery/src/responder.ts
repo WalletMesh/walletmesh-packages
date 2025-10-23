@@ -379,7 +379,11 @@ export class DiscoveryResponder {
       return false;
     }
 
-    if (!request.required || typeof request.required !== 'object' || !Array.isArray(request.required.technologies)) {
+    if (
+      !request.required ||
+      typeof request.required !== 'object' ||
+      !Array.isArray(request.required.technologies)
+    ) {
       this.logger.warn('[WalletMesh] Invalid discovery request: malformed requirements');
       return false;
     }
@@ -387,10 +391,7 @@ export class DiscoveryResponder {
     return true;
   }
 
-  protected handleRequestProcessingError(
-    error: unknown,
-    request?: DiscoveryRequestEvent,
-  ): boolean {
+  protected handleRequestProcessingError(error: unknown, request?: DiscoveryRequestEvent): boolean {
     if (error instanceof ProtocolError) {
       switch (error.code) {
         case ERROR_CODES.SESSION_REPLAY_DETECTED: {
@@ -437,10 +438,7 @@ export class DiscoveryResponder {
     const message = error.message ?? String(error);
 
     if (message.toLowerCase().includes('dispatch')) {
-      this.logger.error(
-        `[WalletMesh] Failed to dispatch response event for ${request.origin}:`,
-        message,
-      );
+      this.logger.error(`[WalletMesh] Failed to dispatch response event for ${request.origin}:`, message);
     } else {
       this.logger.error(`[WalletMesh] Failed to send discovery response to ${request.origin}:`, message);
     }
@@ -487,7 +485,6 @@ export class DiscoveryResponder {
       responderId,
       rdns: this.responderInfo.rdns,
     });
-
   }
 
   /**
@@ -569,5 +566,4 @@ export class DiscoveryResponder {
 
     return stateMachine;
   }
-
 }

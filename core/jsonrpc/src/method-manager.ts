@@ -208,8 +208,11 @@ export class MethodManager<
           reject(new TimeoutError('Request timed out', id));
         } else {
           // Phantom timeout avoided - request was already resolved
-          console.debug('[MethodManager] Phantom timeout avoided for request:', id,
-            stillPending ? 'different request object' : 'request already completed');
+          console.debug(
+            '[MethodManager] Phantom timeout avoided for request:',
+            id,
+            stillPending ? 'different request object' : 'request already completed',
+          );
         }
       }, timeoutInSeconds * 1000);
     }

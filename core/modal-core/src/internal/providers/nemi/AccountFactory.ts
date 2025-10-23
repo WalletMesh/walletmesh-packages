@@ -44,27 +44,25 @@ import type { NemiAccount } from './types.js';
  * @public
  */
 export async function createWalletMeshAccount(
-	client: WalletMeshClient,
-	chainId?: string,
+  client: WalletMeshClient,
+  chainId?: string,
 ): Promise<NemiAccount> {
-	// Get current state
-	const state = client.getState();
+  // Get current state
+  const state = client.getState();
 
-	// Determine which chainId to use
-	const targetChainId = chainId || state.connection.chain?.chainId;
+  // Determine which chainId to use
+  const targetChainId = chainId || state.connection.chain?.chainId;
 
-	if (!targetChainId) {
-		throw new Error(
-			'No chain ID available. Call client.connect() first to connect to a wallet, or provide a chainId parameter.',
-		);
-	}
+  if (!targetChainId) {
+    throw new Error(
+      'No chain ID available. Call client.connect() first to connect to a wallet, or provide a chainId parameter.',
+    );
+  }
 
-	// Check if connected
-	if (state.connection.state !== 'connected') {
-		throw new Error(
-			'Not connected to a wallet. Call client.connect() first.',
-		);
-	}
+  // Check if connected
+  if (state.connection.state !== 'connected') {
+    throw new Error('Not connected to a wallet. Call client.connect() first.');
+  }
 
-	return WalletMeshAccount.create(client, targetChainId);
+  return WalletMeshAccount.create(client, targetChainId);
 }

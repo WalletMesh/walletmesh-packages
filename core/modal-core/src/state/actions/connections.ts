@@ -397,7 +397,10 @@ export const connectionActions = {
    * Add a discovered wallet to the state
    */
   addDiscoveredWallet: (store: StoreApi<WalletMeshState>, wallet: WalletInfo) => {
-    console.log('[addDiscoveredWallet] Adding wallet to store:', { walletId: wallet.id, walletName: wallet.name });
+    console.log('[addDiscoveredWallet] Adding wallet to store:', {
+      walletId: wallet.id,
+      walletName: wallet.name,
+    });
 
     // Validate wallet info
     const validatedWallet = parseWithErrorFactory(walletInfoSchema, wallet, 'Invalid wallet info');
@@ -421,7 +424,7 @@ export const connectionActions = {
       console.log('[addDiscoveredWallet] Current state after update:', {
         totalWallets: Object.keys(state.entities.wallets).length,
         availableWalletIds: state.meta.availableWalletIds,
-        walletEntities: Object.keys(state.entities.wallets)
+        walletEntities: Object.keys(state.entities.wallets),
       });
     });
   },

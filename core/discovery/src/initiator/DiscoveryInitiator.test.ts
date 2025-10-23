@@ -24,12 +24,7 @@ function createInitiatorFromConfig(config: DiscoveryInitiatorConfig): DiscoveryI
     ...(config.securityPolicy && { security: config.securityPolicy }),
   } as const;
 
-  return new DiscoveryInitiator(
-    config.requirements,
-    config.initiatorInfo,
-    options,
-    config.preferences,
-  );
+  return new DiscoveryInitiator(config.requirements, config.initiatorInfo, options, config.preferences);
 }
 
 describe('DiscoveryInitiator', () => {

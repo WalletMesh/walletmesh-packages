@@ -336,9 +336,7 @@ describe('WalletDiscovery', () => {
           icon: 'data:image/svg+xml;base64,dXBkYXRlZA==',
           type: 'extension',
         }),
-        features: [
-          { id: 'private-transactions', name: 'Private Transactions' },
-        ],
+        features: [{ id: 'private-transactions', name: 'Private Transactions' }],
       };
 
       // Should not throw error

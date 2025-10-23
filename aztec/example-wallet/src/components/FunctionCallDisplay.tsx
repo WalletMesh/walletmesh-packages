@@ -1,5 +1,6 @@
-import React from 'react';
+import type React from 'react';
 import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware';
+import ArgumentDisplay from './ArgumentDisplay';
 
 type FunctionCall = {
   to?: { toString: () => string } | string; // New structure uses 'to' instead of 'contractAddress'
@@ -63,18 +64,44 @@ const FunctionCallDisplay: React.FC<FunctionCallDisplayProps> = ({
         <p className="details">
           <b>{isDeployment ? 'Contract Deployment:' : 'Function Call:'}</b>
         </p>
-        <pre className="function-call">
-          {`${functionName}(`}
-          {call.args.map((arg, index) => (
-            <React.Fragment key={`param-${parameterNames[index]?.name || index}-${index}`}>
-              {'\n  '}
-              {parameterNames[index]?.name && `${parameterNames[index].name}: `}
-              {formatParameterValue(arg)}
-              {index < call.args.length - 1 ? ',' : ''}
-            </React.Fragment>
-          ))}
-          {'\n)'}
-        </pre>
+        <div className="function-call">
+          <div style={{ fontFamily: 'monospace', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+            {functionName}(
+          </div>
+          {call.args.map((arg, index) => {
+            const paramInfo = parameterNames[index];
+
+            // If we have enhanced parameter info, use ArgumentDisplay
+            if (paramInfo?.abiType) {
+              return (
+                <ArgumentDisplay
+                  key={`param-${paramInfo.name || index}-${index}`}
+                  value={arg}
+                  paramInfo={paramInfo}
+                />
+              );
+            }
+
+            // Fallback to old display format if no parameter info
+            return (
+              <div
+                key={`${functionName}-param-${paramInfo?.name || 'unknown'}-${index}`}
+                style={{
+                  fontFamily: 'monospace',
+                  marginLeft: '1rem',
+                  marginBottom: '0.5rem',
+                }}
+              >
+                {paramInfo?.name && <span style={{ fontWeight: 'bold' }}>{paramInfo.name}: </span>}
+                {formatParameterValue(arg)}
+                {index < call.args.length - 1 ? ',' : ''}
+              </div>
+            );
+          })}
+          <div style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
+            )
+          </div>
+        </div>
       </div>
     </div>
   );

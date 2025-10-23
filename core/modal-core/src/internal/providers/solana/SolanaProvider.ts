@@ -150,9 +150,7 @@ export class SolanaProvider extends BaseWalletProvider implements SolanaWalletPr
     }
 
     if (typeof message !== 'string') {
-      throw ErrorFactory.transportError(
-        `Invalid message type: expected string, got ${typeof message}`,
-      );
+      throw ErrorFactory.transportError(`Invalid message type: expected string, got ${typeof message}`);
     }
 
     if (message.length === 0) {

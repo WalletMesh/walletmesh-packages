@@ -180,7 +180,9 @@ export interface BaseWalletProvider extends EventEmitter {
    * @returns Connection information
    * @throws {WalletProviderError} On connection failure
    */
-  connect(options?: import('../../api/types/providerState.js').CommonConnectOptions): Promise<import('../../api/types/providerState.js').ConnectionInfo>;
+  connect(
+    options?: import('../../api/types/providerState.js').CommonConnectOptions,
+  ): Promise<import('../../api/types/providerState.js').ConnectionInfo>;
 
   /**
    * Disconnect from the wallet

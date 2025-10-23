@@ -113,7 +113,12 @@ export function AztecBatchProgressOverlay({
 
   // Don't render if not executing
   if (!isExecuting || !isBrowser()) {
-    console.log('[AztecBatchProgressOverlay] Not rendering - isExecuting:', isExecuting, 'isBrowser:', isBrowser());
+    console.log(
+      '[AztecBatchProgressOverlay] Not rendering - isExecuting:',
+      isExecuting,
+      'isBrowser:',
+      isBrowser(),
+    );
     return null;
   }
 
@@ -154,7 +159,7 @@ export function AztecBatchProgressOverlay({
 
     if (isAtomic) {
       // For atomic, show unified status
-      const activeTx = transactions.find(tx => tx.status === 'confirming' || tx.status === 'sending');
+      const activeTx = transactions.find((tx) => tx.status === 'confirming' || tx.status === 'sending');
       if (activeTx) {
         return STATUS_LABELS[activeTx.status];
       }
@@ -162,7 +167,9 @@ export function AztecBatchProgressOverlay({
     }
 
     // For sequential, show current transaction
-    const activeTx = transactions.find(tx => tx.status !== 'pending' && tx.status !== 'success' && tx.status !== 'error');
+    const activeTx = transactions.find(
+      (tx) => tx.status !== 'pending' && tx.status !== 'success' && tx.status !== 'error',
+    );
     if (activeTx) {
       return `Transaction ${activeTx.index + 1}: ${STATUS_LABELS[activeTx.status]}`;
     }
@@ -187,10 +194,7 @@ export function AztecBatchProgressOverlay({
         {/* Progress Bar */}
         <div className={styles['progressContainer']}>
           <div className={styles['progressBar']}>
-            <div
-              className={styles['progressFill']}
-              style={{ width: `${progress}%` }}
-            />
+            <div className={styles['progressFill']} style={{ width: `${progress}%` }} />
           </div>
           <div className={styles['progressText']}>
             <span>{progress}%</span>
@@ -201,13 +205,9 @@ export function AztecBatchProgressOverlay({
         {/* Atomic Mode: Single unified status */}
         {isAtomic && (
           <div className={styles['atomicInfo']}>
-            <p className={styles['atomicMessage']}>
-              ℹ️ All operations will succeed or fail together
-            </p>
+            <p className={styles['atomicMessage']}>ℹ️ All operations will succeed or fail together</p>
             {transactions.length > 0 && transactions[0]?.hash && (
-              <p className={styles['transactionHash']}>
-                Transaction: {shorten(transactions[0].hash)}
-              </p>
+              <p className={styles['transactionHash']}>Transaction: {shorten(transactions[0].hash)}</p>
             )}
           </div>
         )}
@@ -225,40 +225,24 @@ export function AztecBatchProgressOverlay({
               return (
                 <div
                   key={tx.index}
-                  className={`${styles['transaction']} ${
-                    isActive ? styles['transactionActive'] : ''
-                  } ${
+                  className={`${styles['transaction']} ${isActive ? styles['transactionActive'] : ''} ${
                     isCompleted ? styles['transactionSuccess'] : ''
-                  } ${
-                    isFailed ? styles['transactionError'] : ''
-                  }`}
+                  } ${isFailed ? styles['transactionError'] : ''}`}
                 >
                   <div className={styles['transactionHeader']}>
                     <span className={styles['transactionIndex']}>
                       {STATUS_ICONS[tx.status]} Transaction {tx.index + 1}
                     </span>
-                    <span className={styles['transactionStatusLabel']}>
-                      {STATUS_LABELS[tx.status]}
-                    </span>
+                    <span className={styles['transactionStatusLabel']}>{STATUS_LABELS[tx.status]}</span>
                   </div>
 
-                  {tx.hash && (
-                    <div className={styles['transactionHash']}>
-                      {shorten(tx.hash)}
-                    </div>
-                  )}
+                  {tx.hash && <div className={styles['transactionHash']}>{shorten(tx.hash)}</div>}
 
                   {duration > 0 && (
-                    <div className={styles['transactionDuration']}>
-                      {formatDuration(duration)}
-                    </div>
+                    <div className={styles['transactionDuration']}>{formatDuration(duration)}</div>
                   )}
 
-                  {tx.error && (
-                    <div className={styles['transactionError']}>
-                      {tx.error.message}
-                    </div>
-                  )}
+                  {tx.error && <div className={styles['transactionError']}>{tx.error.message}</div>}
                 </div>
               );
             })}
@@ -281,6 +265,6 @@ export function AztecBatchProgressOverlay({
         )}
       </div>
     </div>,
-    targetContainer
+    targetContainer,
   );
 }

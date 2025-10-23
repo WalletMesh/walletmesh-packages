@@ -32,12 +32,9 @@ export class TestClientHelper {
    * Simulate connecting a wallet
    */
   async connect(
-    options: {
-      walletId: string;
-      chainId?: string;
-      chainType?: ChainType;
-      address?: string;
-    } = { walletId: 'metamask' },
+    options: { walletId: string; chainId?: string; chainType?: ChainType; address?: string } = {
+      walletId: 'metamask',
+    },
   ) {
     const connection = await this.client.connect(options.walletId);
     return connection;

@@ -38,11 +38,7 @@ export interface MockWalletMeshProviderProps {
  * @param props.config - Optional config override (merged with defaults)
  * @param props.mockClient - Optional mock client override
  */
-export function MockWalletMeshProvider({
-  children,
-  config = {},
-  mockClient,
-}: MockWalletMeshProviderProps) {
+export function MockWalletMeshProvider({ children, config = {}, mockClient }: MockWalletMeshProviderProps) {
   // Use provided mock client or get from global test scope
   const client = useMemo((): WalletMeshClient | null => {
     if (mockClient) {

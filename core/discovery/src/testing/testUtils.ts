@@ -366,12 +366,7 @@ export function createTestDiscoveryInitiator(
     ...(overrides.securityPolicy && { security: overrides.securityPolicy }),
   };
 
-  return new DiscoveryInitiator(
-    requirements,
-    initiatorInfo,
-    options,
-    overrides.preferences,
-  );
+  return new DiscoveryInitiator(requirements, initiatorInfo, options, overrides.preferences);
 }
 
 /**

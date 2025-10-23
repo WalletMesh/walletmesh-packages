@@ -49,4 +49,9 @@ export type {
   TransactionCallbacks,
   BackgroundTransactionsState,
 } from './types/aztecTransactions.js';
-export { getStageDuration, getTotalDuration, isFinalStatus, isActiveStatus } from './types/aztecTransactions.js';
+export {
+  getStageDuration,
+  getTotalDuration,
+  isFinalStatus,
+  isActiveStatus,
+} from './types/aztecTransactions.js';

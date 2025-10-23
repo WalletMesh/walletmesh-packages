@@ -316,7 +316,7 @@ export class EvmAdapter extends AbstractWalletAdapter {
             throw ErrorFactory.transportError('Invalid message format for EVM transport');
           }
         },
-        onMessage(callback: (message: unknown) => void): (() => void) {
+        onMessage(callback: (message: unknown) => void): () => void {
           // EVM wallets use EIP-1193 provider events for notifications
           // Set up event listeners that forward events to the callback
           const ethereum = (window as { ethereum?: Record<string, unknown> }).ethereum;

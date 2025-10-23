@@ -34,7 +34,9 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorFactory, createWalletMesh } from '@walletmesh/modal-core';
-import type { ChainType, QueryManager, WalletMeshConfig } from '@walletmesh/modal-core';
+import type { ChainType, QueryManager, WalletMeshConfig, SupportedChain } from '@walletmesh/modal-core';
+// Import built-in chain configs for shorthand mapping
+import { ethereumMainnet, solanaMainnet, aztecSandbox } from '@walletmesh/modal-core/chains';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AztecTransactionStatusOverlay } from './components/AztecTransactionStatusOverlay.js';
 import { BackgroundTransactionIndicator } from './components/BackgroundTransactionIndicator.js';
@@ -379,6 +381,36 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
    * @returns Fully formed modal-core client configuration
    * @internal
    */
+
+  /**
+   * Maps chain type shorthand strings to built-in chain configurations.
+   *
+   * This helper function enables the simplified API where users can pass
+   * chain type strings like 'evm' or 'solana' instead of full chain objects.
+   *
+   * @param chainShorthand - Chain type string ('evm', 'solana', 'aztec')
+   * @returns SupportedChain object with proper CAIP-2 chainId
+   * @internal
+   */
+  const mapChainShorthand = useCallback((chainShorthand: string): SupportedChain => {
+    switch (chainShorthand.toLowerCase()) {
+      case 'evm':
+        return ethereumMainnet; // eip155:1 (Ethereum Mainnet)
+      case 'solana':
+        return solanaMainnet; // Solana Mainnet
+      case 'aztec':
+        return aztecSandbox; // Aztec Sandbox
+      default:
+        // Unknown shorthand, return a best-effort config
+        return {
+          chainId: `${chainShorthand}:1`,
+          chainType: chainShorthand as ChainType,
+          name: chainShorthand.charAt(0).toUpperCase() + chainShorthand.slice(1),
+          required: false,
+        };
+    }
+  }, []);
+
   // Helper function to detect chain type - memoized to prevent recreation
   const detectChainType = useCallback((supportedChain: unknown): ChainType => {
     const chain = supportedChain as { chainType?: ChainType; chainId?: string; group?: string };
@@ -404,8 +436,21 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
 
   const transformedConfig = useMemo(() => {
     // Transform SupportedChain[] to the format expected by modal-core
-    // Convert from SupportedChain format to modal-core's internal chain format
+    // Handles both shorthand strings ('evm', 'solana') and full chain objects
     const transformedChains = (config.chains || []).map((supportedChain: unknown) => {
+      // Check if this is a string shorthand (e.g., 'evm', 'solana')
+      if (typeof supportedChain === 'string') {
+        // Map shorthand to built-in chain config
+        const builtInChain = mapChainShorthand(supportedChain);
+        return {
+          chainId: builtInChain.chainId,
+          chainType: builtInChain.chainType,
+          name: builtInChain.name,
+          required: builtInChain.required || false,
+        };
+      }
+
+      // Handle full chain objects
       const chain = supportedChain as { chainId?: string; label?: string; name?: string; required?: boolean };
       const chainType = detectChainType(supportedChain);
 
@@ -505,7 +550,7 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
     if (config['permissions']) clientConfig.permissions = config['permissions'];
 
     return clientConfig;
-  }, [config, detectChainType]);
+  }, [config, mapChainShorthand, detectChainType]);
 
   /**
    * Creates the WalletMesh client instance asynchronously.

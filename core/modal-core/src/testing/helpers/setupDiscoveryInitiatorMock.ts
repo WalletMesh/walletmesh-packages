@@ -13,8 +13,8 @@ export interface MockDiscoveryInitiator {
 
 export async function setupDiscoveryInitiatorMock(
   overrides: Partial<MockDiscoveryInitiator> = {},
-): Promise<{ mockInitiator: MockDiscoveryInitiator }>
-{  const discoveryModule = await import('@walletmesh/discovery');
+): Promise<{ mockInitiator: MockDiscoveryInitiator }> {
+  const discoveryModule = await import('@walletmesh/discovery');
 
   const mockInitiator: MockDiscoveryInitiator = {
     startDiscovery: vi.fn().mockResolvedValue([]),

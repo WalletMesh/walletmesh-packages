@@ -112,9 +112,16 @@ describe('useAztecDeploy - Isolated Tests', () => {
 
       expect(typeof result.current.isDeploying).toBe('boolean');
       expect(typeof result.current.stage).toBe('string');
-      expect(['idle', 'preparing', 'computing', 'proving', 'sending', 'confirming', 'success', 'error']).toContain(
-        result.current.stage,
-      );
+      expect([
+        'idle',
+        'preparing',
+        'computing',
+        'proving',
+        'sending',
+        'confirming',
+        'success',
+        'error',
+      ]).toContain(result.current.stage);
     });
   });
 
