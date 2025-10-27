@@ -116,7 +116,7 @@ describe('Discovery Completion Events', () => {
   });
 
   describe('Discovery Error Events', () => {
-    it('should broadcast discovery error event on duplicate response', async () => {
+    it('should allow identical duplicate responses from same wallet', async () => {
       const listener = createTestDiscoveryInitiator({
         requirements: {
           technologies: [
@@ -128,7 +128,7 @@ describe('Discovery Completion Events', () => {
           features: ['account-management'],
         },
         initiatorInfo: createTestDAppInfo({ name: 'Test DApp', url: 'https://dapp.example.com' }),
-        timeout: 5000,
+        timeout: 1000,
         eventTarget: mockEventTarget,
       });
 
@@ -165,32 +165,23 @@ describe('Discovery Completion Events', () => {
       const event1 = new CustomEvent(DISCOVERY_EVENTS.RESPONSE, { detail: response });
       mockEventTarget.dispatchEvent(event1);
 
-      // Send second response from same RDNS (duplicate - should trigger error)
-      const duplicateResponse = {
-        ...response,
-        responderId: 'responder-2', // Different ID but same RDNS
-      };
-      const event2 = new CustomEvent(DISCOVERY_EVENTS.RESPONSE, {
-        detail: duplicateResponse,
-      });
+      // Send identical response again (should be silently ignored)
+      const event2 = new CustomEvent(DISCOVERY_EVENTS.RESPONSE, { detail: response });
       mockEventTarget.dispatchEvent(event2);
 
-      // Discovery should be rejected due to duplicate response
-      await expect(discoveryPromise).rejects.toThrow('Duplicate response detected');
+      // Advance time to complete discovery
+      await vi.advanceTimersByTimeAsync(1000);
 
-      // Check that discovery error event was received
-      expect(errorEvents).toHaveLength(1);
+      // Discovery should complete successfully with one responder
+      const responders = await discoveryPromise;
+      expect(responders).toHaveLength(1);
+      expect(responders[0]?.rdns).toBe('com.example.wallet');
 
-      const errorEvent = errorEvents[0];
-      if (!errorEvent) throw new Error('Expected errorEvent to be defined');
-      expect(errorEvent.detail).toMatchObject({
-        type: DISCOVERY_EVENTS.ERROR,
-        version: '0.1.0',
-        errorCode: 2008,
-        errorCategory: 'security',
-      });
-      expect(errorEvent.detail.errorMessage).toContain('Duplicate response detected');
-      expect(errorEvent.detail.sessionId).toBeTruthy();
+      // Check that no error events were received
+      expect(errorEvents).toHaveLength(0);
+
+      // Check that completed event was received
+      expect(completedEvents).toHaveLength(1);
     });
 
     it('should not broadcast completion events when session ID is null', async () => {

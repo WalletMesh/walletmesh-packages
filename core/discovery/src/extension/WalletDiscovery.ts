@@ -312,7 +312,7 @@ export class WalletDiscovery {
       if (this.browserAPI.tabs) {
         this.browserAPI.tabs
           .sendMessage(tabId, {
-            type: 'discovery:announce',
+            type: 'discovery:wallet:response',
             data: announcement,
           })
           .then(() => {

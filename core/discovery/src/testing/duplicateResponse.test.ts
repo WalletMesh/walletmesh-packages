@@ -116,7 +116,7 @@ describe('Duplicate Response Detection', () => {
 
     // Security violation should be logged
     expect(consoleSpy.warn).toHaveBeenCalledWith(
-      '[WalletMesh] SECURITY VIOLATION: Duplicate response detected',
+      '[WalletMesh] SECURITY VIOLATION: Duplicate response detected with DIFFERENT parameters',
       expect.objectContaining({
         rdns: 'com.example.wallet',
         duplicateResponderId: 'wallet-2',
@@ -244,7 +244,7 @@ describe('Duplicate Response Detection', () => {
 
     // Should log security violation for the duplicate
     expect(consoleSpy.warn).toHaveBeenCalledWith(
-      '[WalletMesh] SECURITY VIOLATION: Duplicate response detected',
+      '[WalletMesh] SECURITY VIOLATION: Duplicate response detected with DIFFERENT parameters',
       expect.objectContaining({
         rdns: 'com.suspicious.wallet',
         responseCount: 2,

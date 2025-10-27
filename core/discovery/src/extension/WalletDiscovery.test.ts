@@ -142,7 +142,7 @@ describe('WalletDiscovery', () => {
       expect(mockChrome.tabs.sendMessage).toHaveBeenCalledWith(
         123,
         {
-          type: 'discovery:announce',
+          type: 'discovery:wallet:response',
           data: expect.objectContaining({
             type: 'discovery:wallet:response',
             sessionId: 'test-session-123',

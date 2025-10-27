@@ -519,6 +519,23 @@ export class DiscoveryInitiator {
       return;
     }
 
+    // Check if the duplicate response is identical to the first response
+    // This can happen in React dev mode (Strict Mode) where effects run twice
+    const isIdenticalResponse =
+      firstResponse.name === response.name &&
+      firstResponse.icon === response.icon &&
+      firstResponse.rdns === response.rdns &&
+      JSON.stringify(firstResponse.matched) === JSON.stringify(response.matched) &&
+      JSON.stringify(firstResponse.transportConfig) === JSON.stringify(response.transportConfig);
+
+    if (isIdenticalResponse) {
+      // Silently ignore identical duplicate responses (common in dev mode)
+      this.logger.debug('Ignoring identical duplicate response from:', rdns);
+      this.seenResponders.set(rdns, (this.seenResponders.get(rdns) ?? 0) + 1);
+      return;
+    }
+
+    // If response is different, this is a potential security issue
     const responseCount = this.seenResponders.get(rdns) ?? 1;
     const duplicateDetails: DuplicateResponseDetails = {
       rdns: response.rdns,
@@ -533,7 +550,7 @@ export class DiscoveryInitiator {
 
     const duplicateError = new DuplicateResponseError(duplicateDetails);
 
-    this.logger.warn('SECURITY VIOLATION: Duplicate response detected', duplicateDetails);
+    this.logger.warn('SECURITY VIOLATION: Duplicate response detected with DIFFERENT parameters', duplicateDetails);
 
     // Increment response count
     this.seenResponders.set(rdns, (this.seenResponders.get(rdns) ?? 0) + 1);
