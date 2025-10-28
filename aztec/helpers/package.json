@@ -29,5 +29,10 @@
   "dependencies": {
     "@aztec/aztec.js": "2.0.3",
     "@aztec/stdlib": "2.0.3"
+  },
+  "peerDependencies": {
+    "@walletmesh/jsonrpc": "workspace:*",
+    "@walletmesh/router": "workspace:*",
+    "@walletmesh/aztec-rpc-wallet": "workspace:*"
   }
 }

@@ -1,6 +1,6 @@
 import type React from 'react';
 import './Approve.css';
-import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware';
+import type { FunctionArgNames } from '@walletmesh/aztec-helpers';
 import FunctionCallDisplay from './FunctionCallDisplay.js';
 import ParameterDisplay from './ParameterDisplay.js';
 

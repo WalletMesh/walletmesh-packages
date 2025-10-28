@@ -13,7 +13,9 @@ ignoredBuiltDependencies:
 linkWorkspacePackages: true
 
 onlyBuiltDependencies:
+  - bufferutil
   - c-kzg
+  - utf-8-validate
 
 overrides:
   lodash@<4.17.21: '>=4.17.21'

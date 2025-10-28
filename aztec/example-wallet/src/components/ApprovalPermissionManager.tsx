@@ -7,7 +7,7 @@ import type {
   RouterContext,
   RouterMethodMap,
 } from '@walletmesh/router';
-import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware.js';
+import type { FunctionArgNames } from '@walletmesh/aztec-helpers';
 
 /**
  * Options for configuring the {@link ApprovalPermissionManager}.

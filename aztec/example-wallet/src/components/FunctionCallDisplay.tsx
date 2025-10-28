@@ -1,5 +1,5 @@
 import type React from 'react';
-import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware';
+import type { FunctionArgNames } from '@walletmesh/aztec-helpers';
 import ArgumentDisplay from './ArgumentDisplay';
 
 type FunctionCall = {

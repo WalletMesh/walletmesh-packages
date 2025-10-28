@@ -13,10 +13,14 @@ import './App.css';
 import Wallet from './components/Wallet.js';
 import { ToastProvider } from './contexts/ToastContext.js';
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 =======
 import type { FunctionArgNames } from './middlewares/functionArgNamesMiddleware.js';
 >>>>>>> bd392add (feat(modal-react,modal-core): enhance Aztec transaction flow with simulation, summaries, and improved execution)
+=======
+import type { FunctionArgNames } from '@walletmesh/aztec-helpers';
+>>>>>>> 578f948e (refactor(aztec-helpers): move middleware to shared package and add comprehensive tests)
 
 interface ApprovalRequest {
   origin: string;

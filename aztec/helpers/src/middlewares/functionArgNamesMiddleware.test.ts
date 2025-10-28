@@ -6,12 +6,12 @@ import {
   createFunctionArgNamesMiddleware,
   type FunctionArgNames,
 } from './functionArgNamesMiddleware.js';
-import type { EnhancedParameterInfo } from '@walletmesh/aztec-helpers';
+import type { EnhancedParameterInfo } from '../types.js';
 import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 
-// Mock the aztec-helpers module
-vi.mock('@walletmesh/aztec-helpers', () => ({
+// Mock the helpers module
+vi.mock('../helpers.js', () => ({
   getEnhancedParameterInfo: vi.fn(),
 }));
 
@@ -22,7 +22,7 @@ describe('functionArgNamesMiddleware', () => {
   beforeEach(async () => {
     mockPxe = {} as PXE;
     // Get the mocked function
-    const { getEnhancedParameterInfo } = await import('@walletmesh/aztec-helpers');
+    const { getEnhancedParameterInfo } = await import('../helpers.js');
     mockGetEnhancedParameterInfo = vi.mocked(getEnhancedParameterInfo);
     mockGetEnhancedParameterInfo.mockClear();
   });

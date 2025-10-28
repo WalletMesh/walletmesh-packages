@@ -66,11 +66,15 @@ import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware
 import {
   createFunctionArgNamesMiddleware,
   type FunctionArgNames,
+<<<<<<< HEAD
 } from '../middlewares/functionArgNamesMiddleware.js';
 >>>>>>> 9ae57d25 (WIP)
+=======
+  createTransactionSummaryMiddleware,
+  createOriginMiddleware,
+} from '@walletmesh/aztec-helpers';
+>>>>>>> 578f948e (refactor(aztec-helpers): move middleware to shared package and add comprehensive tests)
 import { createHistoryMiddleware, type HistoryEntry } from '../middlewares/historyMiddleware.js';
-import { createTransactionSummaryMiddleware } from '../middlewares/transactionSummaryMiddleware.js';
-import { createOriginMiddleware } from '../middlewares/originMiddleware.js';
 import { createWalletNodePermissionMiddleware } from '../middlewares/walletNodePermissionMiddleware.js';
 import { createWalletSideTransport } from '../transports/CrossWindowTransport.js';
 import FunctionCallDisplay from './FunctionCallDisplay.js';

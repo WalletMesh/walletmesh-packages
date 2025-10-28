@@ -120,45 +120,39 @@ export function BackgroundTransactionIndicator({
 
   // Track completed transactions for auto-hide
   useEffect(() => {
-    const newCompletedIds = new Set<string>();
     backgroundTransactions.forEach((tx) => {
       if (tx.status === 'confirmed' || tx.status === 'failed') {
-        newCompletedIds.add(tx.id);
-      }
-    });
-
-    // Set timers to remove completed transactions from the set
-    newCompletedIds.forEach((id) => {
-      if (!completedTransactionIds.has(id)) {
-        // Clear any existing timer for this id
-        const existingTimer = timersRef.current.get(id);
-        if (existingTimer) {
-          clearTimeout(existingTimer);
-        }
-
-        // Set new timer and store reference
-        const timer = setTimeout(() => {
+        // Only process if we haven't set a timer for this ID yet
+        if (!timersRef.current.has(tx.id)) {
+          // Add to completed set immediately
           setCompletedTransactionIds((prev) => {
             const next = new Set(prev);
-            next.delete(id);
+            next.add(tx.id);
             return next;
           });
-          // Clean up timer reference
-          timersRef.current.delete(id);
-        }, completedDuration);
 
-        timersRef.current.set(id, timer);
+          // Set timer to remove from set after duration
+          const timer = setTimeout(() => {
+            setCompletedTransactionIds((prev) => {
+              const next = new Set(prev);
+              next.delete(tx.id);
+              return next;
+            });
+            // Clean up timer reference
+            timersRef.current.delete(tx.id);
+          }, completedDuration);
+
+          timersRef.current.set(tx.id, timer);
+        }
       }
     });
-
-    setCompletedTransactionIds(newCompletedIds);
 
     // Cleanup function to clear all timers
     return () => {
       timersRef.current.forEach((timer) => clearTimeout(timer));
       timersRef.current.clear();
     };
-  }, [backgroundTransactions, completedDuration, completedTransactionIds]);
+  }, [backgroundTransactions, completedDuration]);
 
   // Filter transactions based on showCompleted setting
   const visibleTransactions = useMemo(() => {
