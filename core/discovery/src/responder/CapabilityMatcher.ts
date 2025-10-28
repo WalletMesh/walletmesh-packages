@@ -333,6 +333,18 @@ export class CapabilityMatcher {
       return null;
     }
 
+    // Match networks if specified
+    let matchedNetworks: string[] | undefined;
+    if (requirement.networks && requirement.networks.length > 0) {
+      const supportedNetworks = supportedTech.networks || [];
+      matchedNetworks = this.intersectArrays(requirement.networks, supportedNetworks);
+
+      // If networks are specified but none match, technology doesn't match
+      if (matchedNetworks.length === 0) {
+        return null;
+      }
+    }
+
     // Match features if specified
     if (requirement.features && requirement.features.length > 0) {
       const supportedFeatures = supportedTech.features || [];
@@ -343,11 +355,17 @@ export class CapabilityMatcher {
         return null;
       }
 
-      return {
+      const result: TechnologyMatch = {
         type: requirement.type,
         interfaces: matchedInterfaces,
         features: matchedFeatures,
       };
+
+      if (matchedNetworks !== undefined && matchedNetworks.length > 0) {
+        result.networks = matchedNetworks;
+      }
+
+      return result;
     }
 
     const result: TechnologyMatch = {
@@ -362,13 +380,17 @@ export class CapabilityMatcher {
       );
     }
 
+    if (matchedNetworks !== undefined && matchedNetworks.length > 0) {
+      result.networks = matchedNetworks;
+    }
+
     return result;
   }
 
   /**
    * Get supported technology information from wallet capabilities.
    */
-  private getSupportedTechnology(techType: string): { interfaces: string[]; features?: string[] } | null {
+  private getSupportedTechnology(techType: string): { interfaces: string[]; features?: string[]; networks?: string[] } | null {
     // Find the technology directly in the responder's technologies array
     const supportedTechnology = this.responderInfo.technologies.find((tech) => tech.type === techType);
 
@@ -376,12 +398,16 @@ export class CapabilityMatcher {
       return null;
     }
 
-    const result: { interfaces: string[]; features?: string[] } = {
+    const result: { interfaces: string[]; features?: string[]; networks?: string[] } = {
       interfaces: supportedTechnology.interfaces,
     };
 
     if (supportedTechnology.features !== undefined) {
       result.features = supportedTechnology.features;
+    }
+
+    if (supportedTechnology.networks !== undefined) {
+      result.networks = supportedTechnology.networks;
     }
 
     return result;

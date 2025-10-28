@@ -8,6 +8,40 @@ import type { WalletInfo } from '@walletmesh/modal-core';
 // Import the mock setup (comment out for now to isolate issues)
 // import '../test-utils/centralizedMocks.js';
 
+// Mock localStorage for Zustand persist middleware
+const createLocalStorageMock = () => {
+  let store: Record<string, string> = {};
+
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => {
+      store[key] = value.toString();
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      store = {};
+    },
+    get length() {
+      return Object.keys(store).length;
+    },
+    key: (index: number) => {
+      const keys = Object.keys(store);
+      return keys[index] || null;
+    },
+  };
+};
+
+// Install localStorage mock globally
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'localStorage', {
+    value: createLocalStorageMock(),
+    writable: true,
+    configurable: true,
+  });
+}
+
 // Intercept and suppress stderr output for expected test messages
 if (typeof process !== 'undefined' && process.stderr) {
   const originalStderrWrite = process.stderr.write;
@@ -1239,6 +1273,11 @@ Element.prototype.scrollIntoView = vi.fn();
 beforeEach(() => {
   // Setup fake timers for all tests
   vi.useFakeTimers();
+
+  // Clear localStorage before each test (if it exists and has clear method)
+  if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.clear === 'function') {
+    window.localStorage.clear();
+  }
 
   // Clear all mocks before each test
   vi.clearAllMocks();

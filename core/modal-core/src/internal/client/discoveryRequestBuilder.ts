@@ -42,8 +42,14 @@ export function buildTechnologyRequirements(
           type: techType,
           interfaces: [],
           features: [],
+          networks: [],
         };
         techRequirements.set(techType, techReq);
+      }
+
+      // Add network from chain's chainId (CAIP-2 format)
+      if (chain.chainId && !techReq.networks!.includes(chain.chainId)) {
+        techReq.networks!.push(chain.chainId);
       }
 
       // Add chain-specific interfaces if specified

@@ -1161,7 +1161,7 @@ export class AztecDappWallet implements Wallet {
  * address and chain ID) is completed.
  *
  * @param provider - An {@link AztecRouterProvider} instance, which handles Aztec-specific type serialization.
- * @param chainId - The Aztec chain ID (e.g., 'aztec:mainnet', 'aztec:31337') for the wallet. Defaults to 'aztec:mainnet'.
+ * @param chainId - The Aztec chain ID (e.g., 'aztec:mainnet', 'aztec:31337', 'aztec:testnet') for the wallet.
  * @returns A promise that resolves to a fully initialized {@link AztecDappWallet} instance.
  *
  * @example
@@ -1175,7 +1175,7 @@ export class AztecDappWallet implements Wallet {
  */
 export async function createAztecWallet(
   provider: AztecRouterProvider,
-  chainId: AztecChainId = 'aztec:mainnet',
+  chainId: AztecChainId,
 ): Promise<AztecDappWallet> {
   logger.info(`Creating AztecDappWallet for chain ${chainId}`);
   const wallet = new AztecDappWallet(provider, chainId);

@@ -72,15 +72,15 @@ import type { WalletMeshConfig } from '../../types.js';
 export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig {
   const isDevelopment = process.env['NODE_ENV'] === 'development';
 
-  // Default to sandbox for development, testnet for production if no chains specified
-  const defaultChains = config.chains || [
-    isDevelopment
-      ? { chainId: 'aztec:31337', required: false, label: 'Aztec Sandbox' }
-      : { chainId: 'aztec:testnet', required: false, label: 'Aztec Testnet' },
-  ];
+  // Chains must be explicitly specified
+  if (!config.chains || config.chains.length === 0) {
+    throw new Error(
+      'No chains specified in Aztec config. Please provide chains array with at least one chain (e.g., { chainId: "aztec:31337", label: "Aztec Sandbox" })'
+    );
+  }
 
   // Convert simplified chain config to full SupportedChain objects
-  const chains = defaultChains.map((chain) => {
+  const chains = config.chains.map((chain) => {
     // Map chainId to full chain configuration
     if (chain.chainId === 'aztec:31337' || chain.chainId.includes('sandbox')) {
       return { ...aztecSandbox, required: chain.required ?? false };

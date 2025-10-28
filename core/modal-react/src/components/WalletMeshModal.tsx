@@ -531,7 +531,22 @@ export function WalletMeshModal(): React.ReactElement | null {
               >
                 {/* Use sandboxed icon with a generic fallback to ensure visibility */}
                 <WalletMeshSandboxedWalletIcon
-                  wallet={{ id: wallet.id, name: wallet.name, icon: wallet.icon || '' }}
+                  wallet={{
+                    id: wallet.id,
+                    name: wallet.name,
+                    // Pass the icon as-is if it exists, or the fallback icon if empty
+                    icon:
+                      wallet.icon && wallet.icon.trim() !== ''
+                        ? wallet.icon
+                        : 'data:image/svg+xml;utf8,' +
+                          encodeURIComponent(
+                            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                              '<rect x="2" y="5" width="20" height="14" rx="2" ry="2" fill="#f3f4f6" stroke="#6b7280"/>' +
+                              '<path d="M16 12h2" stroke="#6b7280"/>' +
+                              '<circle cx="17.5" cy="12" r="1.5" fill="#6b7280"/>' +
+                              '</svg>',
+                          ),
+                  }}
                   size={24}
                   className={styles['walletIcon'] as string}
                   fallbackIcon={

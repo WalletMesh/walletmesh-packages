@@ -21,6 +21,35 @@ const SANDBOX_SECURITY_POLICY = {
 } as const;
 
 /**
+ * Safe default icon SVG as data URI - a simple generic wallet icon
+ * @internal
+ */
+const SAFE_DEFAULT_ICON =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<rect x="2" y="5" width="20" height="14" rx="2" ry="2" fill="#f3f4f6" stroke="#6b7280"/>' +
+      '<path d="M16 12h2" stroke="#6b7280"/>' +
+      '<circle cx="17.5" cy="12" r="1.5" fill="#6b7280"/>' +
+      '</svg>',
+  );
+
+/**
+ * Malicious patterns to detect in icon data URIs
+ * @internal
+ */
+const MALICIOUS_PATTERNS = [
+  /<script/i, // Script tags
+  /javascript:/i, // JavaScript protocol
+  /on\w+\s*=/i, // Event handlers (onclick, onload, etc.) - but we need to be careful not to match our own
+  /eval\(/i, // eval() calls
+  /expression\(/i, // CSS expressions (IE)
+  /<iframe/i, // Iframe injection
+  /<embed/i, // Embed injection
+  /<object/i, // Object injection
+] as const;
+
+/**
  * Escapes HTML attribute content to prevent injection attacks
  * Encodes characters that could break out of attribute context: & " < > '
  * @internal
@@ -38,7 +67,38 @@ function escapeHtmlAttribute(value: string): string {
 }
 
 /**
- * Validates an icon data URI for basic constraints
+ * Detects malicious patterns in icon data URI
+ * @internal
+ * @returns Object with isMalicious flag and detected patterns
+ */
+function detectMaliciousContent(iconDataUri: string): {
+  isMalicious: boolean;
+  detectedPatterns: string[];
+} {
+  const detectedPatterns: string[] = [];
+
+  // Decode the data URI content to check for malicious patterns
+  try {
+    const decodedContent = decodeURIComponent(iconDataUri);
+
+    for (const pattern of MALICIOUS_PATTERNS) {
+      if (pattern.test(decodedContent)) {
+        detectedPatterns.push(pattern.source);
+      }
+    }
+  } catch {
+    // If decoding fails, treat as potentially malicious
+    detectedPatterns.push('decode_error');
+  }
+
+  return {
+    isMalicious: detectedPatterns.length > 0,
+    detectedPatterns,
+  };
+}
+
+/**
+ * Validates an icon data URI for basic constraints and security
  * @internal
  */
 function validateIcon(iconDataUri: string): void {
@@ -56,7 +116,26 @@ function validateIcon(iconDataUri: string): void {
     throw ErrorFactory.iconValidationFailed('Icon exceeds maximum size limit');
   }
 
-  // Note: Security is handled by CSP, not pattern matching
+  // Check for malicious patterns
+  const { isMalicious, detectedPatterns } = detectMaliciousContent(iconDataUri);
+  if (isMalicious) {
+    // Log to console for dApp developers to be aware
+    console.warn(
+      '[WalletMesh Security] Malicious content detected in wallet icon. Using safe default icon instead.',
+      {
+        detectedPatterns,
+        iconPreview: iconDataUri.substring(0, 100) + '...',
+      },
+    );
+    modalLogger.warn('Malicious icon content detected', {
+      detectedPatterns,
+      iconLength: iconDataUri.length,
+    });
+
+    throw ErrorFactory.iconValidationFailed(
+      `Malicious content detected in icon: ${detectedPatterns.join(', ')}`,
+    );
+  }
 }
 
 /**
@@ -119,6 +198,12 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
     iframe.setAttribute('aria-hidden', 'true');
     iframe.loading = 'lazy';
 
+    // Temporarily mount to DOM for content initialization
+    // Position off-screen and hidden so it doesn't flash or affect layout
+    const tempStyle = iframe.style.cssText;
+    iframe.style.cssText += '; position: absolute; left: -9999px; visibility: hidden;';
+    document.body.appendChild(iframe);
+
     // Generate disabled styling if needed
     const disabledFilter = generateDisabledFilter(disabled, disabledStyle);
     const cursorStyle = disabled ? 'cursor: not-allowed;' : '';
@@ -154,7 +239,7 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
     </style>
   </head>
   <body>
-    <img src="${escapedIconDataUri}" alt="Icon" onerror="parent.postMessage({type:'csp-error', error:'Image load failed'}, '*')">
+    <img src="${escapedIconDataUri}" alt="Icon" onload="parent.postMessage({type:'icon-loaded'}, '*')" onerror="parent.postMessage({type:'csp-error', error:'Image load failed'}, '*')">
   </body>
 </html>`;
 
@@ -167,20 +252,33 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
         clearTimeout(timeoutId);
       }
       window.removeEventListener('message', handleMessage);
+      // Remove from temporary mount point if still there
+      if (iframe.parentNode === document.body) {
+        document.body.removeChild(iframe);
+        // Restore original styling
+        iframe.style.cssText = tempStyle;
+      }
       resolved = true;
     };
 
     const handleMessage = (event: MessageEvent) => {
-      if (event.source === iframe.contentWindow && event.data?.type === 'csp-error') {
-        cleanup();
-        const error = ErrorFactory.renderFailed(
-          `CSP blocked icon content: ${event.data.error || 'Unknown error'}`,
-          'iconSandbox',
-        );
-        if (onCspError) {
-          onCspError(error);
+      if (event.source === iframe.contentWindow) {
+        if (event.data?.type === 'icon-loaded') {
+          // Icon loaded successfully
+          cleanup();
+          resolve(iframe);
+        } else if (event.data?.type === 'csp-error') {
+          // CSP or load error occurred
+          cleanup();
+          const error = ErrorFactory.renderFailed(
+            `CSP blocked icon content: ${event.data.error || 'Unknown error'}`,
+            'iconSandbox',
+          );
+          if (onCspError) {
+            onCspError(error);
+          }
+          reject(error);
         }
-        reject(error);
       }
     };
 
@@ -317,7 +415,28 @@ export async function createSandboxedIcon(options: CreateSandboxedIconOptions): 
 
     return iframe;
   } catch (error) {
-    // If we have a fallback icon, try it
+    // Check if malicious content was detected
+    const isMaliciousError =
+      error &&
+      typeof error === 'object' &&
+      'message' in error &&
+      typeof error.message === 'string' &&
+      error.message.includes('Malicious content detected');
+
+    if (isMaliciousError) {
+      // Don't try fallback for malicious content - use safe default immediately
+      modalLogger.info('Using safe default icon due to malicious content detection');
+      const safeIframe = await createIframeWithCspDetection({
+        iconDataUri: SAFE_DEFAULT_ICON,
+        size,
+        timeout,
+        ...(disabled !== undefined && { disabled }),
+        ...(disabledStyle && { disabledStyle }),
+      });
+      return safeIframe;
+    }
+
+    // For non-malicious errors, try fallback icon if provided
     if (fallbackIcon && fallbackIcon !== iconDataUri) {
       modalLogger.warn('Primary icon failed, attempting fallback', error);
 
@@ -337,6 +456,27 @@ export async function createSandboxedIcon(options: CreateSandboxedIconOptions): 
         });
         return fallbackIframe;
       } catch (fallbackError) {
+        // Check if fallback also has malicious content
+        const isFallbackMalicious =
+          fallbackError &&
+          typeof fallbackError === 'object' &&
+          'message' in fallbackError &&
+          typeof fallbackError.message === 'string' &&
+          fallbackError.message.includes('Malicious content detected');
+
+        if (isFallbackMalicious) {
+          // Use safe default if fallback is also malicious
+          modalLogger.info('Fallback icon also malicious, using safe default');
+          const safeIframe = await createIframeWithCspDetection({
+            iconDataUri: SAFE_DEFAULT_ICON,
+            size,
+            timeout,
+            ...(disabled !== undefined && { disabled }),
+            ...(disabledStyle && { disabledStyle }),
+          });
+          return safeIframe;
+        }
+
         modalLogger.warn('Fallback icon also failed', fallbackError);
         // Fall through to throw the original error
       }

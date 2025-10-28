@@ -191,6 +191,7 @@ export function WalletMeshSandboxedIcon({
     let isMounted = true;
     const abortController = new AbortController();
     let currentIframe: HTMLIFrameElement | null = null;
+    let loadingTimeout: ReturnType<typeof setTimeout> | null = null;
 
     setHasError(false);
     setIsLoading(true);
@@ -203,6 +204,50 @@ export function WalletMeshSandboxedIcon({
         if (!isMounted || abortController.signal.aborted) {
           return;
         }
+
+        // Validate icon data URI early - if empty/invalid, use fallback immediately
+        const isValidDataUri = src && src.trim() !== '' && src.startsWith('data:');
+        if (!isValidDataUri) {
+          logger.debug('Invalid or empty icon data URI, using fallback immediately');
+
+          // If we have a fallback, try to use it
+          if (fallbackIcon && fallbackIcon.trim() !== '' && fallbackIcon.startsWith('data:')) {
+            // Use fallback icon as the main icon
+            const options = normalizeIconOptions({
+              iconDataUri: fallbackIcon,
+              size,
+              ...(cspTimeout !== undefined && { timeout: cspTimeout }),
+              ...(disabled !== undefined && { disabled }),
+              ...(disabledStyle !== undefined && { disabledStyle }),
+            });
+
+            const createdIframe = await createSandboxedIcon(options);
+            currentIframe = createdIframe;
+
+            if (isMounted && !abortController.signal.aborted) {
+              setIframe(createdIframe);
+              setIsLoading(false);
+            }
+            return;
+          } else {
+            // No valid fallback either, show error state
+            logger.warn('No valid icon or fallback icon available');
+            if (isMounted && !abortController.signal.aborted) {
+              setHasError(true);
+              setIsLoading(false);
+            }
+            return;
+          }
+        }
+
+        // Set a timeout to prevent infinite loading state (3 seconds)
+        loadingTimeout = setTimeout(() => {
+          if (isMounted && !abortController.signal.aborted) {
+            logger.warn('Icon loading timed out, falling back');
+            setHasError(true);
+            setIsLoading(false);
+          }
+        }, 3000);
 
         // Normalize icon options using modal-core utility
         const options = normalizeIconOptions({
@@ -223,6 +268,12 @@ export function WalletMeshSandboxedIcon({
         });
 
         const createdIframe = await createSandboxedIcon(options);
+
+        // Clear the loading timeout since we succeeded
+        if (loadingTimeout) {
+          clearTimeout(loadingTimeout);
+          loadingTimeout = null;
+        }
         currentIframe = createdIframe;
 
         // Check if cancelled after async operation
@@ -251,6 +302,12 @@ export function WalletMeshSandboxedIcon({
           setIsLoading(false);
         }
       } catch (error) {
+        // Clear the loading timeout on error
+        if (loadingTimeout) {
+          clearTimeout(loadingTimeout);
+          loadingTimeout = null;
+        }
+
         // Check if cancelled before handling error
         if (!isMounted || abortController.signal.aborted) {
           return;
@@ -318,6 +375,12 @@ export function WalletMeshSandboxedIcon({
     return () => {
       isMounted = false;
       abortController.abort();
+
+      // Clear loading timeout if it exists
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+        loadingTimeout = null;
+      }
 
       // Clean up any iframe that was created
       if (currentIframe) {

@@ -19,8 +19,14 @@ describe('Icon Sandbox Tests', () => {
     await testEnv.setup();
 
     // Setup DOM mocks
+    const mockBody = {
+      appendChild: vi.fn(),
+      removeChild: vi.fn(),
+    };
+
     global.document = {
       createElement: mockCreateElement,
+      body: mockBody,
     } as Partial<Document> as Document;
 
     // Mock window with proper timeout functions
@@ -51,6 +57,7 @@ describe('Icon Sandbox Tests', () => {
       loading: '',
       setAttribute: vi.fn(),
       srcdocPrivate: '',
+      parentNode: null,
       contentWindow: {
         postMessage: vi.fn(),
       },
@@ -72,19 +79,47 @@ describe('Icon Sandbox Tests', () => {
       }),
     };
 
-    // Intercept srcdoc setter to trigger load event
+    // Mock body.appendChild to set parentNode
+    mockBody.appendChild.mockImplementation((node: any) => {
+      node.parentNode = mockBody;
+      return node;
+    });
+
+    // Mock body.removeChild to clear parentNode
+    mockBody.removeChild.mockImplementation((node: any) => {
+      node.parentNode = null;
+      return node;
+    });
+
+    // Intercept srcdoc setter to trigger load event and icon-loaded message
     Object.defineProperty(mockIframe, 'srcdoc', {
       set(value: string) {
         this.srcdocPrivate = value;
-        // Trigger load event when srcdoc is set
-        if (this.eventListenersPrivate['load']) {
-          // Use process.nextTick to ensure async behavior
-          process.nextTick(() => {
+        // Use process.nextTick to ensure async behavior
+        process.nextTick(() => {
+          // First trigger iframe load event
+          if (this.eventListenersPrivate['load']) {
             for (const handler of this.eventListenersPrivate['load']) {
               handler();
             }
-          });
-        }
+          }
+
+          // Then simulate the icon-loaded postMessage from the image inside the iframe
+          // Find the message handler registered on window
+          const windowAddEventListener = global.window.addEventListener as ReturnType<typeof vi.fn>;
+          const messageHandlerCall = windowAddEventListener.mock.calls.find(
+            (call: unknown[]) => (call as [string, (event: MessageEvent) => void])[0] === 'message'
+          );
+
+          if (messageHandlerCall) {
+            const messageHandler = (messageHandlerCall as [string, (event: MessageEvent) => void])[1];
+            // Simulate postMessage from iframe contentWindow
+            messageHandler({
+              source: this.contentWindow,
+              data: { type: 'icon-loaded' },
+            } as MessageEvent);
+          }
+        });
       },
       get() {
         return this.srcdocPrivate || '';
@@ -159,37 +194,72 @@ describe('Icon Sandbox Tests', () => {
       );
     });
 
-    it('should allow SVGs with script tags (CSP will block execution)', async () => {
+    it('should detect and reject SVGs with script tags', async () => {
       const svgWithScript = 'data:image/svg+xml,<svg><script>alert("xss")</script></svg>';
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
-      // Should not throw - CSP handles security
+      // Should use safe default icon instead of throwing
       const iframe = await createSandboxedIcon({ iconDataUri: svgWithScript });
       expect(iframe).toBeDefined();
+
+      // Verify console warning was logged
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[WalletMesh Security] Malicious content detected in wallet icon. Using safe default icon instead.',
+        expect.objectContaining({
+          detectedPatterns: expect.arrayContaining([expect.stringContaining('script')]),
+        }),
+      );
+
+      consoleWarnSpy.mockRestore();
     });
 
-    it('should allow SVGs with javascript: URIs (CSP will block execution)', async () => {
+    it('should detect and reject SVGs with javascript: URIs', async () => {
       const svgWithJavascript = 'data:image/svg+xml,<svg><image href="javascript:alert(1)"/></svg>';
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
-      // Should not throw - CSP handles security
+      // Should use safe default icon
       const iframe = await createSandboxedIcon({ iconDataUri: svgWithJavascript });
       expect(iframe).toBeDefined();
+
+      // Verify console warning was logged
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[WalletMesh Security] Malicious content detected in wallet icon. Using safe default icon instead.',
+        expect.objectContaining({
+          detectedPatterns: expect.arrayContaining([expect.stringContaining('javascript:')]),
+        }),
+      );
+
+      consoleWarnSpy.mockRestore();
     });
 
-    it('should allow SVGs with event handlers (CSP will block execution)', async () => {
+    it('should detect and reject SVGs with event handlers', async () => {
       const svgWithHandlers = 'data:image/svg+xml,<svg onload="alert(1)"><circle r="10"/></svg>';
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
-      // Should not throw - CSP handles security
+      // Should use safe default icon
       const iframe = await createSandboxedIcon({ iconDataUri: svgWithHandlers });
       expect(iframe).toBeDefined();
+
+      // Verify console warning was logged
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[WalletMesh Security] Malicious content detected in wallet icon. Using safe default icon instead.',
+        expect.objectContaining({
+          detectedPatterns: expect.arrayContaining([expect.stringMatching(/on\\w\+\\s\*=/i)]),
+        }),
+      );
+
+      consoleWarnSpy.mockRestore();
     });
 
-    it('should allow SVGs with foreignObject elements (CSP will restrict content)', async () => {
+    it('should allow SVGs with foreignObject elements (no malicious patterns)', async () => {
       const svgWithForeignObject =
         'data:image/svg+xml,<svg><foreignObject><div>content</div></foreignObject></svg>';
 
-      // Should not throw - CSP handles security
+      // Should not trigger malicious detection - foreignObject itself is not malicious
       const iframe = await createSandboxedIcon({ iconDataUri: svgWithForeignObject });
       expect(iframe).toBeDefined();
+      // Should contain the actual SVG, not the safe default
+      expect(iframe.srcdoc).toContain('foreignObject');
     });
 
     it('should set proper security attributes on iframe', async () => {
@@ -304,46 +374,63 @@ describe('Icon Sandbox Tests', () => {
   });
 
   describe('HTML Injection Prevention', () => {
-    it('should prevent quote injection in src attribute', async () => {
+    it('should detect and reject quote injection with event handler', async () => {
       // Attempt to inject code by breaking out of src attribute with quotes
       const maliciousSvg = 'data:image/svg+xml," onload="alert(1)';
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
 
-      // Verify the iframe was created
+      // Verify iframe was created with safe default
       expect(iframe).toBeDefined();
       expect(iframe.srcdoc).toBeDefined();
 
-      // Verify that quotes are escaped in the srcdoc content
-      // The escaped version should contain &quot; instead of raw quotes
-      expect(iframe.srcdoc).toContain('&quot;');
-      // Should NOT contain the unescaped injection attempt
-      expect(iframe.srcdoc).not.toMatch(/" onload="/);
+      // Verify console warning was logged
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[WalletMesh Security] Malicious content detected in wallet icon. Using safe default icon instead.',
+        expect.objectContaining({
+          detectedPatterns: expect.any(Array),
+        }),
+      );
+
+      // Verify safe default is used (should not contain the malicious payload)
+      expect(iframe.srcdoc).not.toContain('alert(1)');
+
+      consoleWarnSpy.mockRestore();
     });
 
-    it('should prevent angle bracket injection', async () => {
+    it('should detect and reject angle bracket injection with script tags', async () => {
       // Attempt to inject by closing the img tag and adding new elements
       const maliciousSvg = 'data:image/svg+xml,"><script>alert(1)</script><img src="';
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
 
       expect(iframe).toBeDefined();
       expect(iframe.srcdoc).toBeDefined();
 
-      // Verify angle brackets are escaped
-      expect(iframe.srcdoc).toContain('&lt;');
-      expect(iframe.srcdoc).toContain('&gt;');
-      // Should NOT contain unescaped script tags
-      expect(iframe.srcdoc).not.toMatch(/<script>/);
+      // Verify console warning was logged
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[WalletMesh Security] Malicious content detected in wallet icon. Using safe default icon instead.',
+        expect.objectContaining({
+          detectedPatterns: expect.arrayContaining([expect.stringContaining('script')]),
+        }),
+      );
+
+      // Verify safe default is used
+      expect(iframe.srcdoc).not.toContain('alert(1)');
+
+      consoleWarnSpy.mockRestore();
     });
 
-    it('should prevent attribute injection with onload', async () => {
+    it('should detect and reject various onload injection vectors', async () => {
       // Try various injection vectors with onload
       const injectionVectors = [
         'data:image/svg+xml," onload="alert(1)"',
         "data:image/svg+xml,' onload='alert(1)'",
         'data:image/svg+xml,"><img onload=alert(1)>',
       ];
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       for (const maliciousSvg of injectionVectors) {
         const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
@@ -351,50 +438,57 @@ describe('Icon Sandbox Tests', () => {
         expect(iframe).toBeDefined();
         expect(iframe.srcdoc).toBeDefined();
 
-        // Verify special characters are escaped
-        const hasEscapedQuotes = iframe.srcdoc.includes('&quot;') || iframe.srcdoc.includes('&#x27;');
-        const hasEscapedBrackets = iframe.srcdoc.includes('&lt;') || iframe.srcdoc.includes('&gt;');
-
-        expect(hasEscapedQuotes || hasEscapedBrackets).toBe(true);
+        // Verify safe default is used (should not contain alert)
+        expect(iframe.srcdoc).not.toContain('alert(1)');
+        expect(iframe.srcdoc).not.toContain('alert(1)');
       }
+
+      // Verify console warning was logged at least once
+      expect(consoleWarnSpy).toHaveBeenCalled();
+      consoleWarnSpy.mockRestore();
     });
 
-    it('should prevent closing tag injection', async () => {
+    it('should detect and reject closing tag injection with event handler', async () => {
       // Attempt to close the img tag and inject new elements
       const maliciousSvg = 'data:image/svg+xml,"></img><div onclick="alert(1)"><img src="';
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
 
       expect(iframe).toBeDefined();
       expect(iframe.srcdoc).toBeDefined();
 
-      // Verify angle brackets and quotes are escaped
-      expect(iframe.srcdoc).toMatch(/&(lt|gt|quot|#x27);/);
-      // Should NOT contain unescaped div tags
-      expect(iframe.srcdoc).not.toMatch(/<\/img>/);
-      expect(iframe.srcdoc).not.toMatch(/<div/);
+      // Verify console warning was logged
+      expect(consoleWarnSpy).toHaveBeenCalled();
+
+      // Verify safe default is used
+      expect(iframe.srcdoc).not.toContain('alert(1)');
+
+      consoleWarnSpy.mockRestore();
     });
 
-    it('should prevent combined injection attacks', async () => {
+    it('should detect and reject combined injection attacks', async () => {
       // Complex attack combining multiple techniques
       const maliciousSvg = "data:image/svg+xml,'></img><svg/onload=alert(1)><img src='";
+      const consoleWarnSpy = vi.spyOn(console, 'warn');
 
       const iframe = await createSandboxedIcon({ iconDataUri: maliciousSvg });
 
       expect(iframe).toBeDefined();
       expect(iframe.srcdoc).toBeDefined();
 
-      // All special characters should be escaped
-      expect(iframe.srcdoc).toContain('&lt;'); // <
-      expect(iframe.srcdoc).toContain('&gt;'); // >
-      expect(iframe.srcdoc).toContain('&#x27;'); // '
+      // Verify console warning was logged
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        '[WalletMesh Security] Malicious content detected in wallet icon. Using safe default icon instead.',
+        expect.objectContaining({
+          detectedPatterns: expect.any(Array),
+        }),
+      );
 
-      // Should NOT contain any unescaped malicious patterns
-      // The key check is that angle brackets are escaped so tags can't be injected
-      expect(iframe.srcdoc).not.toMatch(/<svg/);
-      expect(iframe.srcdoc).not.toMatch(/<\/img>/);
-      // Verify the malicious payload is safely contained in the escaped attribute
-      expect(iframe.srcdoc).toMatch(/&lt;svg\/onload=alert\(1\)&gt;/);
+      // Verify safe default is used (should not contain the malicious payload)
+      expect(iframe.srcdoc).not.toContain('alert(1)');
+
+      consoleWarnSpy.mockRestore();
     });
 
     it('should handle legitimate SVG content with special characters', async () => {
@@ -444,15 +538,35 @@ describe('Icon Sandbox Tests', () => {
         clearTimeout: mockClearTimeout,
       });
 
+      // Setup mock body for DOM operations
+      const mockBody = {
+        appendChild: vi.fn(),
+        removeChild: vi.fn(),
+      };
+
       // Reset global document setup
       global.document = {
         createElement: mockCreateElement,
+        body: mockBody,
       } as Partial<Document> as Document;
+
+      // Mock body.appendChild to set parentNode
+      mockBody.appendChild.mockImplementation((node: unknown) => {
+        (node as { parentNode: unknown }).parentNode = mockBody;
+        return node;
+      });
+
+      // Mock body.removeChild to clear parentNode
+      mockBody.removeChild.mockImplementation((node: unknown) => {
+        (node as { parentNode: unknown }).parentNode = null;
+        return node;
+      });
 
       // Track event listeners to simulate iframe load
       let loadHandler: () => void;
       const mockIframe = {
         sandbox: '',
+        parentNode: null,
         style: new Proxy(
           {},
           {
@@ -471,10 +585,21 @@ describe('Icon Sandbox Tests', () => {
         srcdocPrivate: '',
         set srcdoc(value: string) {
           this.srcdocPrivate = value;
-          // Simulate iframe load when srcdoc is set
+          // Simulate iframe load and icon-loaded message when srcdoc is set
           setTimeout(() => {
+            // First trigger iframe load
             if (loadHandler) {
               loadHandler();
+            }
+            // Then simulate icon-loaded postMessage
+            const messageHandler = mockAddEventListener.mock.calls.find(
+              (call: unknown[]) => (call as [string, (event: MessageEvent) => void])[0] === 'message'
+            )?.[1];
+            if (messageHandler) {
+              (messageHandler as (event: MessageEvent) => void)({
+                source: this.contentWindow,
+                data: { type: 'icon-loaded' },
+              } as MessageEvent);
             }
           }, 0);
         },

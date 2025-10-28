@@ -41,6 +41,13 @@ export interface TechnologyRequirement {
    * These are features specific to this blockchain technology.
    */
   features?: string[];
+
+  /**
+   * Specific networks required for this technology (CAIP-2 format).
+   * Examples: 'eip155:1' (Ethereum mainnet), 'aztec:31337' (Aztec sandbox), 'solana:mainnet'
+   * If specified, wallet must support at least one of these networks to match.
+   */
+  networks?: string[];
 }
 
 /**
@@ -110,6 +117,13 @@ export interface TechnologyMatch {
    * Subset of what the wallet supports that matches the requirement.
    */
   features: string[];
+
+  /**
+   * Matched networks for this technology (CAIP-2 format).
+   * Networks that overlap between what was requested and what the wallet supports.
+   * Only included if networks were specified in the request.
+   */
+  networks?: string[];
 }
 
 /**
@@ -138,6 +152,13 @@ export interface TechnologyCapability {
    * Should include all capabilities specific to this blockchain technology.
    */
   features?: string[];
+
+  /**
+   * Specific networks supported for this technology (CAIP-2 format).
+   * Examples: 'eip155:1' (Ethereum mainnet), 'aztec:31337' (Aztec sandbox), 'solana:mainnet'
+   * Wallet will only respond to discovery if it supports at least one required network.
+   */
+  networks?: string[];
 }
 
 /**

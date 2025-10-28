@@ -158,9 +158,13 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       );
       // Use discovery protocol's ConnectionManager to establish connection
       // Convert chains from ConnectOptions format to string array
-      const requestedChains = options?.chains
-        ? options.chains.map((c) => `${c.type}:${c.chainId || '*'}`)
-        : this.getTechnologyChains();
+      // chainId is already in CAIP-2 format (e.g., 'aztec:31337'), so use it directly
+      if (!options?.chains || options.chains.length === 0) {
+        throw ErrorFactory.configurationError(
+          'No chains specified for wallet connection. Please provide chains in ConnectOptions.',
+        );
+      }
+      const requestedChains = options.chains.map((c) => c.chainId || '*');
 
       const connection = await this.connectionManager.connect(this.qualifiedResponder, {
         requestedChains,
@@ -247,6 +251,13 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
     const technologies = this.qualifiedResponder.matched?.required?.technologies || [];
 
     for (const tech of technologies) {
+      // First check if technology has networks array - use those if available
+      if (tech.networks && Array.isArray(tech.networks) && tech.networks.length > 0) {
+        chains.push(...tech.networks);
+        continue;
+      }
+
+      // Fallback to defaults based on technology type
       switch (tech.type) {
         case 'evm':
           chains.push('eip155:1'); // Default to mainnet
@@ -308,8 +319,11 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       return aztecChain;
     }
 
-    // Final fallback: use mainnet as the sensible production default
-    return 'aztec:mainnet';
+    // No default - throw error if network cannot be determined
+    throw new Error(
+      `Unable to determine Aztec network for wallet "${this.metadata.name}". ` +
+      `The wallet must include 'aztecNetwork' in its discovery metadata or provide chain information.`
+    );
   }
 
   /**
