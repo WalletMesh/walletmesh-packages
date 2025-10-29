@@ -611,6 +611,7 @@ describe('Icon Sandbox Tests', () => {
             loadHandler = handler;
           }
         }),
+        removeEventListener: vi.fn(),
         contentWindow: {
           postMessage: mockPostMessage,
         },

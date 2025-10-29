@@ -63,6 +63,65 @@ export interface DiscoveryAdapterConfig {
  * based on discovered wallet metadata. Supports all chain types.
  */
 export class DiscoveryAdapter extends AbstractWalletAdapter {
+  /**
+   * Extract wallet information from a QualifiedResponder
+   * Useful for displaying discovered wallets without instantiating the adapter
+   *
+   * @param responder - The qualified responder from discovery protocol
+   * @returns Wallet metadata and capabilities
+   * @public
+   */
+  static getWalletInfoFromResponder(responder: QualifiedResponder): {
+    id: string;
+    name: string;
+    icon: string;
+    rdns: string;
+    transportType: string;
+    chains: ChainType[];
+    features: Set<WalletFeature>;
+  } {
+    // Determine chain types from matched technologies
+    const chains: ChainType[] = [];
+    const features: Set<WalletFeature> = new Set();
+
+    if (responder.matched?.required?.technologies) {
+      for (const tech of responder.matched.required.technologies) {
+        switch (tech.type) {
+          case 'evm':
+            chains.push(ChainType.Evm);
+            features.add('sign_message');
+            features.add('sign_transaction');
+            break;
+          case 'solana':
+            chains.push(ChainType.Solana);
+            features.add('sign_message');
+            features.add('sign_transaction');
+            break;
+          case 'aztec':
+            chains.push(ChainType.Aztec);
+            features.add('sign_message');
+            features.add('sign_transaction');
+            features.add('encrypt');
+            features.add('decrypt');
+            break;
+        }
+      }
+    }
+
+    // Add multi_account feature by default for discovered wallets
+    features.add('multi_account');
+
+    return {
+      id: responder.responderId,
+      name: responder.name,
+      icon: responder.icon,
+      rdns: responder.rdns,
+      transportType: (responder.transportConfig as { type?: string })?.type || 'unknown',
+      chains,
+      features,
+    };
+  }
+
   readonly id: string;
   readonly metadata: WalletAdapterMetadata;
   readonly capabilities: WalletCapabilities;
@@ -72,6 +131,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
   private config: DiscoveryAdapterConfig;
   private aztecConnectionResult: WalletConnection | null = null;
   private connectOptions?: ConnectOptions;
+  private sessionId: string | null = null;
 
   constructor(
     qualifiedResponder: unknown,
@@ -163,6 +223,105 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
           transportType: (this.qualifiedResponder.transportConfig as any)?.type,
         },
       );
+
+      // Check if we have an existing connected provider that can be reused
+      const currentChainType = this.getChainTypeFromTechnologies();
+      const existingProvider = this.providers.get(currentChainType);
+
+      if (existingProvider && this.sessionId && this.state.isConnected) {
+        (this.logger?.info || this.logger?.debug || console.info).call(
+          this.logger,
+          '🔄 Checking existing provider connection',
+          {
+            hasProvider: true,
+            sessionId: this.sessionId,
+            chainType: currentChainType,
+          },
+        );
+
+        try {
+          // Verify connection is still active by attempting to get accounts
+          // Different approaches for different chain types
+          let isStillConnected = false;
+          let accounts: string[] = [];
+
+          if (currentChainType === ChainType.Aztec) {
+            // For Aztec, check if we have the cached connection result
+            if (this.aztecConnectionResult) {
+              accounts = this.aztecConnectionResult.accounts;
+              isStillConnected = true;
+            }
+          } else if ('getAccounts' in existingProvider) {
+            // For EVM/Solana, try to get accounts
+            const providerAccounts = await (existingProvider as { getAccounts: () => Promise<string[]> }).getAccounts();
+            if (Array.isArray(providerAccounts) && providerAccounts.length > 0) {
+              accounts = providerAccounts;
+              isStillConnected = true;
+            }
+          }
+
+          if (isStillConnected && accounts.length > 0) {
+            (this.logger?.info || this.logger?.debug || console.info).call(
+              this.logger,
+              '✅ Existing provider is still connected, reusing it',
+              {
+                chainType: currentChainType,
+                sessionId: this.sessionId,
+                accountCount: accounts.length,
+              },
+            );
+
+            // Reuse existing connection
+            const chainId = options?.chains?.[0]?.chainId || this.qualifiedResponder.networks?.[0] || '1';
+            // We know accounts has at least one element because we checked accounts.length > 0
+            const primaryAddress = accounts[0] as string;
+            return {
+              walletId: this.qualifiedResponder.responderId,
+              address: primaryAddress,
+              accounts,
+              chain: {
+                chainId,
+                chainType: currentChainType,
+                name: this.getChainName(chainId, currentChainType),
+                required: false,
+              },
+              chainType: currentChainType,
+              provider: existingProvider,
+              walletInfo: {
+                id: this.qualifiedResponder.responderId,
+                name: this.qualifiedResponder.name,
+                icon: this.qualifiedResponder.icon,
+                chains: [currentChainType],
+              },
+            };
+          }
+        } catch (error) {
+          (this.logger?.warn || this.logger?.debug || console.warn).call(
+            this.logger,
+            'Existing provider is no longer connected, will create new connection',
+            {
+              error,
+              sessionId: this.sessionId,
+            },
+          );
+          // Provider is no longer valid, clear it and continue with new connection
+          this.providers.delete(currentChainType);
+          this.sessionId = null;
+          this.aztecConnectionResult = null;
+
+          // Also clear the transport if it exists
+          if (this.transport) {
+            try {
+              if ('disconnect' in this.transport) {
+                await this.transport.disconnect();
+              }
+            } catch {
+              // Ignore errors during cleanup
+            }
+            this.transport = null;
+          }
+        }
+      }
       // Use discovery protocol's ConnectionManager to establish connection
       // Convert chains from ConnectOptions format to string array
       // chainId is already in CAIP-2 format (e.g., 'aztec:31337'), so use it directly
@@ -172,13 +331,45 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         );
       }
       // Create transport based on transport config
+      (this.logger?.info || this.logger?.debug || console.info).call(
+        this.logger,
+        'DiscoveryAdapter: Creating transport from config',
+        {
+          transportType: (this.qualifiedResponder.transportConfig as any)?.type,
+          hasExtensionId: !!(this.qualifiedResponder.transportConfig as any)?.extensionId,
+          hasUrl: !!(this.qualifiedResponder.transportConfig as any)?.url,
+        },
+      );
       this.transport = await this.createTransportFromConfig();
+      (this.logger?.info || this.logger?.debug || console.info).call(
+        this.logger,
+        'DiscoveryAdapter: Transport created successfully',
+      );
 
       // Create appropriate provider based on chains
+      (this.logger?.info || this.logger?.debug || console.info).call(
+        this.logger,
+        'DiscoveryAdapter: Creating providers',
+        {
+          capabilities: this.capabilities.chains.map((c) => ({
+            type: c.type,
+            chainIds: c.chainIds,
+          })),
+        },
+      );
       await this.createProviders();
+      (this.logger?.info || this.logger?.debug || console.info).call(
+        this.logger,
+        'DiscoveryAdapter: Providers created successfully',
+      );
 
       // Get chain type from technologies
       const chainType = this.getChainTypeFromTechnologies();
+      (this.logger?.debug || console.debug).call(
+        this.logger,
+        'DiscoveryAdapter: Determined chain type',
+        { chainType },
+      );
 
       // Retrieve the created provider from the providers map
       const provider = this.providers.get(chainType);
@@ -193,6 +384,16 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       let accounts: Array<{ address: string; chainId: string }> = [];
       try {
         const chainId = this.qualifiedResponder.networks?.[0] || (chainType === ChainType.Aztec ? 'aztec:31337' : '1');
+
+        (this.logger?.info || this.logger?.debug || console.info).call(
+          this.logger,
+          'DiscoveryAdapter: Retrieving accounts',
+          {
+            chainType,
+            chainId,
+            method: chainType === ChainType.Aztec ? 'cached_connection' : 'getAccounts',
+          },
+        );
 
         if (chainType === ChainType.Aztec) {
           // For Aztec: Use the connection result that was already established in createProviders()
@@ -221,7 +422,20 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         if (accounts.length === 0) {
           throw new Error('No accounts returned from wallet provider');
         }
+
+        (this.logger?.info || this.logger?.debug || console.info).call(
+          this.logger,
+          'DiscoveryAdapter: Accounts retrieved successfully',
+          {
+            accountCount: accounts.length,
+            firstAccount: accounts[0]?.address?.substring(0, 10) + '...',
+          },
+        );
       } catch (error) {
+        this.logger?.error('DiscoveryAdapter: Failed to retrieve accounts', {
+          error,
+          chainType,
+        });
         throw ErrorFactory.connectionFailed('Failed to retrieve accounts from wallet', {
           originalError: error,
           walletId: this.qualifiedResponder.responderId,
@@ -243,6 +457,13 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       const firstAccount = validatedAccounts[0];
       const chainId = firstAccount?.chainId || '1'; // Default to mainnet
 
+      // Extract sessionId if available (especially for Aztec connections)
+      let sessionId: string | undefined;
+      if (chainType === ChainType.Aztec && this.aztecConnectionResult?.sessionId) {
+        sessionId = this.aztecConnectionResult.sessionId;
+        this.sessionId = sessionId; // Store for reuse
+      }
+
       // Create wallet connection object
       const walletConnection: WalletConnection = {
         walletId: this.qualifiedResponder.responderId,
@@ -251,7 +472,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         chain: {
           chainId,
           chainType,
-          name: 'Unknown Chain',
+          name: this.getChainName(chainId, chainType),
           required: false,
         },
         chainType,
@@ -262,6 +483,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
           icon: this.qualifiedResponder.icon,
           chains: [chainType],
         },
+        ...(sessionId && { sessionId }),
       };
 
       // Connection state is managed by base class
@@ -274,6 +496,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         {
           walletId: walletConnection.walletId,
           chainType: walletConnection.chainType,
+          sessionId: this.sessionId,
         },
       );
       return walletConnection;
@@ -285,6 +508,49 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         message: originalError.message,
         stack: originalError.stack,
       });
+
+      // Enhanced error recovery: clean up any partial state
+      try {
+        // Clear providers that may have been partially created
+        if (this.providers.size > 0) {
+          this.logger?.debug('Cleaning up partial provider state after connection error', {
+            providerCount: this.providers.size,
+          });
+          this.providers.clear();
+        }
+
+        // Clear session state
+        if (this.sessionId) {
+          this.logger?.debug('Clearing session state after connection error');
+          this.sessionId = null;
+        }
+
+        // Clear Aztec connection result if present
+        if (this.aztecConnectionResult) {
+          this.logger?.debug('Clearing Aztec connection result after connection error');
+          this.aztecConnectionResult = null;
+        }
+
+        // Disconnect transport if it was created
+        if (this.transport) {
+          this.logger?.debug('Disconnecting transport after connection error');
+          try {
+            if ('disconnect' in this.transport && typeof this.transport.disconnect === 'function') {
+              await this.transport.disconnect();
+            }
+          } catch (transportError) {
+            this.logger?.warn('Failed to disconnect transport during error cleanup', transportError);
+            // Continue with cleanup even if transport disconnect fails
+          }
+          this.transport = null;
+        }
+      } catch (cleanupError) {
+        // Log cleanup errors but don't throw - we want to preserve the original error
+        this.logger?.warn('Error during connection failure cleanup', {
+          cleanupError,
+          originalError,
+        });
+      }
 
       throw ErrorFactory.connectionFailed(originalError.message, {
         walletId: this.qualifiedResponder.responderId,
@@ -351,6 +617,10 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       if (this.transport && 'disconnect' in this.transport) {
         await this.transport.disconnect();
       }
+
+      // Clear session and connection state
+      this.sessionId = null;
+      this.aztecConnectionResult = null;
 
       // Clear providers
       this.providers.clear();
@@ -508,6 +778,10 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
             transport: this.transport || undefined,
             network: aztecNetwork,
           });
+          // Log permission information for Aztec connection
+          const aztecOptions = (this.connectOptions?.['aztecOptions'] as { permissions?: string[] }) || {};
+          const permissions = aztecOptions.permissions || [];
+
           (this.logger?.info || this.logger?.debug || console.info).call(
             this.logger,
             'DiscoveryAdapter: connecting Aztec adapter',
@@ -515,9 +789,26 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
               walletId: this.id,
               transportType: (this.qualifiedResponder.transportConfig as any)?.type,
               network: aztecNetwork,
-              hasPermissions: !!(this.connectOptions?.['aztecOptions'] as { permissions?: string[] })?.permissions,
+              hasPermissions: permissions.length > 0,
+              permissionCount: permissions.length,
             },
           );
+
+          // Log detailed permission table if permissions are requested
+          if (permissions.length > 0) {
+            const permissionCategories = this.categorizeAztecPermissions(permissions);
+            (this.logger?.info || this.logger?.debug || console.info).call(
+              this.logger,
+              'Requesting Aztec wallet permissions',
+              {
+                network: aztecNetwork,
+                total: permissions.length,
+                byCategory: permissionCategories,
+                permissions: permissions.slice(0, 10), // Show first 10 to avoid excessive logging
+              },
+            );
+          }
+
           // Connect the adapter to establish the provider and get connection details
           // Pass the connection options (which include permissions) to the Aztec adapter
           this.aztecConnectionResult = await aztecAdapter.connect(this.connectOptions);
@@ -531,6 +822,8 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
           const aztecProvider = aztecAdapter.getProvider(ChainType.Aztec);
           if (aztecProvider) {
             this.providers.set(ChainType.Aztec, aztecProvider);
+            // Set up provider event listeners
+            this.setupProviderListeners(aztecProvider);
           }
           this.logger?.debug('Created Aztec adapter with interfaces:', chainInterfaces);
           break;
@@ -564,6 +857,286 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
   ): string[] {
     const techType = chainType.toLowerCase();
     return negotiatedInterfaces[techType] || [];
+  }
+
+  /**
+   * Set up provider event listeners to forward events to adapter
+   * @override
+   */
+  protected override setupProviderListeners(provider: unknown): void {
+    const chainType = this.getChainTypeFromTechnologies();
+
+    this.log('debug', 'Setting up provider event listeners', { chainType });
+
+    // Set up event listeners based on chain type
+    switch (chainType) {
+      case ChainType.Evm:
+        this.setupEvmProviderListeners(provider);
+        break;
+      case ChainType.Solana:
+        this.setupSolanaProviderListeners(provider);
+        break;
+      case ChainType.Aztec:
+        this.setupAztecProviderListeners(provider);
+        break;
+      default:
+        this.log('warn', 'Unknown chain type for event forwarding', { chainType });
+    }
+  }
+
+  /**
+   * Set up EVM provider event listeners
+   * @private
+   */
+  private setupEvmProviderListeners(provider: unknown): void {
+    const evmProvider = provider as { on?: (event: string, listener: (...args: unknown[]) => void) => void };
+
+    if (typeof evmProvider.on !== 'function') {
+      this.log('warn', 'EVM provider does not support event listeners');
+      return;
+    }
+
+    // Forward accountsChanged events
+    evmProvider.on('accountsChanged', (accounts: unknown) => {
+      this.log('debug', 'EVM accounts changed', { accounts });
+      const accountArray = accounts as string[];
+      this.emitBlockchainEvent('accountsChanged', {
+        accounts: accountArray,
+        chainType: ChainType.Evm,
+      });
+    });
+
+    // Forward chainChanged events
+    evmProvider.on('chainChanged', (chainId: unknown) => {
+      this.log('debug', 'EVM chain changed', { chainId });
+      const chainIdString = chainId as string;
+      this.emitBlockchainEvent('chainChanged', {
+        chainId: chainIdString,
+        chainType: ChainType.Evm,
+      });
+    });
+
+    // Forward disconnect events
+    evmProvider.on('disconnect', () => {
+      this.log('debug', 'EVM provider disconnected');
+      this.emitBlockchainEvent('disconnected', { reason: 'Provider disconnected' });
+    });
+  }
+
+  /**
+   * Set up Solana provider event listeners
+   * @private
+   */
+  private setupSolanaProviderListeners(provider: unknown): void {
+    const solanaProvider = provider as { on?: (event: string, listener: (...args: unknown[]) => void) => void };
+
+    if (typeof solanaProvider.on !== 'function') {
+      this.log('warn', 'Solana provider does not support event listeners');
+      return;
+    }
+
+    // Forward accountChanged events (Solana uses singular 'accountChanged')
+    solanaProvider.on('accountChanged', (event: unknown) => {
+      this.log('debug', 'Solana account changed', { event });
+      // Extract public key - event could be the key directly or an object with publicKey property
+      let accountString = '';
+      if (event && typeof event === 'object' && 'publicKey' in event) {
+        const pubKeyObj = (event as { publicKey: unknown }).publicKey;
+        accountString = pubKeyObj ? String(pubKeyObj) : '';
+      } else {
+        accountString = event ? String(event) : '';
+      }
+      this.emitBlockchainEvent('accountsChanged', {
+        accounts: accountString ? [accountString] : [],
+        chainType: ChainType.Solana,
+      });
+    });
+
+    // Forward connect events
+    solanaProvider.on('connect', (event: unknown) => {
+      this.log('debug', 'Solana provider connected', { event });
+      // Extract public key from connect event
+      let publicKey = '';
+      if (event && typeof event === 'object' && 'publicKey' in event) {
+        const pubKeyObj = (event as { publicKey: unknown }).publicKey;
+        publicKey = pubKeyObj ? String(pubKeyObj) : '';
+      }
+      this.emitBlockchainEvent('connected', {
+        publicKey,
+        chainType: ChainType.Solana,
+      });
+    });
+
+    // Forward disconnect events
+    solanaProvider.on('disconnect', () => {
+      this.log('debug', 'Solana provider disconnected');
+      this.emitBlockchainEvent('disconnected', { reason: 'Provider disconnected' });
+    });
+  }
+
+  /**
+   * Set up Aztec provider event listeners
+   * @private
+   */
+  private setupAztecProviderListeners(provider: unknown): void {
+    const aztecProvider = provider as { on?: (event: string, listener: (...args: unknown[]) => void) => void };
+
+    if (typeof aztecProvider.on !== 'function') {
+      this.log('warn', 'Aztec provider does not support event listeners');
+      return;
+    }
+
+    // Forward accountsChanged events
+    aztecProvider.on('accountsChanged', (accounts: unknown) => {
+      this.log('debug', 'Aztec accounts changed', { accounts });
+      const accountArray = accounts as string[];
+      this.emitBlockchainEvent('accountsChanged', {
+        accounts: accountArray,
+        chainType: ChainType.Aztec,
+      });
+    });
+
+    // Forward chainChanged events
+    aztecProvider.on('chainChanged', (chainId: unknown) => {
+      this.log('debug', 'Aztec chain changed', { chainId });
+      const chainIdString = chainId as string;
+      this.emitBlockchainEvent('chainChanged', {
+        chainId: chainIdString,
+        chainType: ChainType.Aztec,
+      });
+    });
+
+    // Forward statusChanged events
+    aztecProvider.on('statusChanged', (event: unknown) => {
+      this.log('debug', 'Aztec status changed', { event });
+      this.emitBlockchainEvent('statusChanged', {
+        ...(event as object),
+        chainType: ChainType.Aztec,
+      });
+    });
+
+    // Forward networkChanged events (map to chainChanged)
+    aztecProvider.on('networkChanged', (event: unknown) => {
+      this.log('debug', 'Aztec network changed', { event });
+      // Extract network/chainId from event
+      let chainId = '';
+      if (event && typeof event === 'object' && 'network' in event) {
+        chainId = String((event as { network: unknown }).network);
+      }
+      this.emitBlockchainEvent('chainChanged', {
+        chainId,
+        chainType: ChainType.Aztec,
+      });
+    });
+
+    // Forward disconnect events
+    aztecProvider.on('disconnect', () => {
+      this.log('debug', 'Aztec provider disconnected');
+      this.emitBlockchainEvent('disconnected', { reason: 'Provider disconnected' });
+    });
+  }
+
+  /**
+   * Get user-friendly chain name from chain ID
+   * @private
+   */
+  private getChainName(chainId: string, chainType: ChainType): string {
+    // Handle Aztec chains
+    if (chainType === ChainType.Aztec) {
+      switch (chainId) {
+        case 'aztec:mainnet':
+          return 'Aztec Mainnet';
+        case 'aztec:testnet':
+          return 'Aztec Testnet';
+        case 'aztec:31337':
+          return 'Aztec Sandbox';
+        default:
+          return 'Aztec Network';
+      }
+    }
+
+    // Handle EVM chains
+    if (chainType === ChainType.Evm) {
+      const numericId = chainId.replace('eip155:', '');
+      switch (numericId) {
+        case '1':
+          return 'Ethereum Mainnet';
+        case '137':
+          return 'Polygon';
+        case '42161':
+          return 'Arbitrum One';
+        case '10':
+          return 'Optimism';
+        case '8453':
+          return 'Base';
+        case '43114':
+          return 'Avalanche C-Chain';
+        case '250':
+          return 'Fantom';
+        case '56':
+          return 'BNB Smart Chain';
+        case '5':
+          return 'Goerli';
+        case '11155111':
+          return 'Sepolia Testnet';
+        default:
+          return `Unknown Chain (${numericId})`;
+      }
+    }
+
+    // Handle Solana chains
+    if (chainType === ChainType.Solana) {
+      switch (chainId) {
+        case 'solana:mainnet':
+        case 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp':
+          return 'Solana Mainnet';
+        case 'solana:devnet':
+        case 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1':
+          return 'Solana Devnet';
+        case 'solana:testnet':
+        case 'solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z':
+          return 'Solana Testnet';
+        default:
+          return 'Solana Network';
+      }
+    }
+
+    return 'Unknown Chain';
+  }
+
+  /**
+   * Categorize Aztec permissions for logging and display
+   * @private
+   */
+  private categorizeAztecPermissions(permissions: string[]): Record<string, string[]> {
+    const categories: { Read: string[]; Transaction: string[]; Contract: string[]; Auth: string[]; Other: string[] } = {
+      Read: [],
+      Transaction: [],
+      Contract: [],
+      Auth: [],
+      Other: [],
+    };
+
+    for (const permission of permissions) {
+      if (permission.startsWith('aztec_get') || permission.startsWith('aztec_list')) {
+        categories['Read'].push(permission);
+      } else if (
+        permission.includes('Transaction') ||
+        permission.includes('send') ||
+        permission === 'aztec_signMessage'
+      ) {
+        categories['Transaction'].push(permission);
+      } else if (permission.includes('Contract') || permission.includes('deploy') || permission.includes('call')) {
+        categories['Contract'].push(permission);
+      } else if (permission.includes('Auth') || permission.includes('Witness') || permission.includes('register')) {
+        categories['Auth'].push(permission);
+      } else {
+        categories['Other'].push(permission);
+      }
+    }
+
+    // Remove empty categories
+    return Object.fromEntries(Object.entries(categories).filter(([_, perms]) => perms.length > 0));
   }
 
   /**

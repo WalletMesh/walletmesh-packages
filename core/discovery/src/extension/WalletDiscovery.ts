@@ -15,6 +15,43 @@ import { type Logger, defaultLogger } from '../core/logger.js';
 import { getBrowserAPI, getExtensionId, type BrowserAPI } from './browserApi.js';
 
 /**
+ * Callback to determine if discovery response should be sent to an origin.
+ *
+ * This callback is invoked after capability matching but before sending the
+ * discovery response. It allows the wallet extension to implement custom
+ * origin policies such as allowlists, user prompts, and trusted origins.
+ *
+ * **IMPORTANT**: This callback is synchronous or async (returns boolean or Promise<boolean>).
+ * The core library does NOT provide any storage, tracking, or UI - that is the
+ * extension's responsibility.
+ *
+ * @param origin - The origin of the discovery request (e.g., 'https://app.example.com')
+ * @returns true to send discovery response, false to silently ignore the request
+ *
+ * @example Allowlist only
+ * ```typescript
+ * shouldRespondToDiscovery: (origin) => {
+ *   return allowedOrigins.has(origin);
+ * }
+ * ```
+ *
+ * @example With user prompt
+ * ```typescript
+ * shouldRespondToDiscovery: async (origin) => {
+ *   // Check trusted origins (no prompt)
+ *   if (trustedOrigins.has(origin)) return true;
+ *
+ *   // Check allowlist (no prompt)
+ *   if (allowlist.has(origin)) return true;
+ *
+ *   // Unknown origin - prompt user
+ *   return await showPermissionPrompt(origin);
+ * }
+ * ```
+ */
+export type ShouldRespondToDiscoveryCallback = (origin: string) => boolean | Promise<boolean>;
+
+/**
  * Configuration for WalletDiscovery initialization.
  *
  * @example
@@ -45,6 +82,60 @@ export interface WalletDiscoveryConfig {
 
   /** Optional logger instance */
   logger?: Logger;
+
+  /**
+   * Optional callback to determine if discovery response should be sent to an origin.
+   *
+   * If not provided, only the SecurityPolicy validation is performed.
+   * If provided, this callback is the final check before sending a response.
+   *
+   * When this callback returns false, the request is silently ignored (no response
+   * sent). This prevents information leakage and protects user privacy.
+   *
+   * **Security Note**: This callback is called AFTER:
+   * - Session replay checks
+   * - Rate limiting checks
+   * - Capability matching
+   *
+   * So you can assume the request is well-formed and the wallet CAN fulfill
+   * the requirements. This callback is purely for origin-based policy decisions.
+   *
+   * **Extension Responsibility**: The extension implements this callback to handle:
+   * - Allowlist checking
+   * - Trusted origin checking
+   * - User permission prompts
+   * - Storage/persistence (but NOT marking as discovered - see onResponseSent)
+   *
+   * **IMPORTANT**: Do NOT mark the origin as "discovered" in this callback. Use
+   * the `onResponseSent` callback instead, which is called AFTER the response
+   * is successfully delivered.
+   *
+   * @since 0.9.0
+   */
+  shouldRespondToDiscovery?: ShouldRespondToDiscoveryCallback;
+
+  /**
+   * Optional callback invoked after discovery response is successfully sent to an origin.
+   *
+   * This callback is called ONLY when:
+   * - The origin was approved (shouldRespondToDiscovery returned true)
+   * - The response was successfully delivered via browser.tabs.sendMessage
+   *
+   * **Use this callback to mark the origin as "discovered"** for later connection
+   * validation. This ensures consistent state - the origin is only marked as
+   * discovered if it actually received the response.
+   *
+   * If the send fails (tab closed, network error, etc.), this callback is NOT
+   * called, preventing inconsistent state.
+   *
+   * **Extension Responsibility**: The extension implements this callback to:
+   * - Mark origin as discovered in OriginManager
+   * - Track discovery completion for connection phase validation
+   *
+   * @param origin - The origin that successfully received the discovery response
+   * @since 0.9.0
+   */
+  onResponseSent?: (origin: string) => void;
 }
 
 /**
@@ -124,6 +215,7 @@ export interface WalletDiscoveryStats {
  * @since 0.2.0
  */
 export class WalletDiscovery {
+  private config: WalletDiscoveryConfig;
   private announcer: DiscoveryResponder;
   private capabilityMatcher: CapabilityMatcher;
   private securityPolicy: SecurityPolicy;
@@ -146,13 +238,18 @@ export class WalletDiscovery {
     // Support both the full config object and just passing responder info directly
     if ('responderInfo' in configOrResponderInfo) {
       // Full config object
-      const config = configOrResponderInfo as WalletDiscoveryConfig;
-      this.securityPolicy = config.securityPolicy || { requireHttps: true };
-      this.responderInfo = config.responderInfo;
-      this.logger = config.logger ?? defaultLogger;
+      this.config = configOrResponderInfo as WalletDiscoveryConfig;
+      this.securityPolicy = this.config.securityPolicy || { requireHttps: true };
+      this.responderInfo = this.config.responderInfo;
+      this.logger = this.config.logger ?? defaultLogger;
     } else {
       // Just responder info - use defaults for everything else
       const responderInfo = configOrResponderInfo as ResponderInfo;
+      this.config = {
+        responderInfo,
+        securityPolicy: { requireHttps: true },
+        logger: defaultLogger,
+      };
       this.securityPolicy = { requireHttps: true };
       this.responderInfo = responderInfo;
       this.logger = defaultLogger;
@@ -260,11 +357,18 @@ export class WalletDiscovery {
    * All security validation, capability matching, and announcement
    * generation happens in this secure background context.
    *
+   * This method performs the following checks in order:
+   * 1. Origin validation (SecurityPolicy)
+   * 2. Capability matching
+   * 3. Custom origin validation (shouldRespondToDiscovery callback) ← NEW
+   * 4. Send response if all checks pass
+   * 5. Call onResponseSent callback after successful delivery ← NEW
+   *
    * @param request - The discovery request from the dApp
    * @param origin - The origin of the requesting dApp
    * @param tabId - The browser tab ID for sending responses
    */
-  handleDiscoveryRequest(request: DiscoveryRequestEvent, origin: string, tabId: number): void {
+  async handleDiscoveryRequest(request: DiscoveryRequestEvent, origin: string, tabId: number): Promise<void> {
     this.stats.requestsProcessed++;
 
     // Security validation in background
@@ -285,6 +389,27 @@ export class WalletDiscovery {
     });
 
     if (matchResult.canFulfill && matchResult.intersection) {
+      // ═══════════════════════════════════════════════════════════
+      // NEW: Origin-based policy callback (extension-provided)
+      // ═══════════════════════════════════════════════════════════
+      if (this.config.shouldRespondToDiscovery) {
+        try {
+          const isAllowed = await this.config.shouldRespondToDiscovery(origin);
+
+          if (!isAllowed) {
+            this.logger.info(`Extension policy rejected origin (silent): ${origin}`);
+            this.stats.requestsRejected++;
+            return; // Silent failure - wallet remains hidden
+          }
+
+          this.logger.debug(`Extension policy approved origin: ${origin}`);
+        } catch (error) {
+          this.logger.error('Extension policy callback threw error', error);
+          this.stats.requestsRejected++;
+          return; // Fail closed - don't send response on error
+        }
+      }
+
       // Get extension ID from browser API
       const extensionId = getExtensionId();
       if (!extensionId) {
@@ -313,24 +438,29 @@ export class WalletDiscovery {
 
       // Send to content script for relay to dApp
       if (this.browserAPI.tabs) {
-        this.browserAPI.tabs
-          .sendMessage(tabId, {
+        try {
+          await this.browserAPI.tabs.sendMessage(tabId, {
             type: 'discovery:wallet:response',
             data: announcement,
-          })
-          .then(() => {
-            // Message sent successfully
-          })
-          .catch(() => {
-            // Tab might not have content script or be closed
-            this.logger.warn(`Failed to send announcement to tab ${tabId}`);
           });
+
+          // Message sent successfully
+          this.stats.announcementsSent++;
+          this.logger.info(`Discovery announcement sent to ${origin}`);
+
+          // Call onResponseSent callback AFTER successful delivery
+          // This is where extension should mark origin as "discovered"
+          if (this.config.onResponseSent) {
+            this.config.onResponseSent(origin);
+          }
+        } catch {
+          // Tab might not have content script or be closed
+          this.logger.warn(`Failed to send announcement to tab ${tabId}`);
+          // onResponseSent NOT called - origin remains not-discovered
+        }
       } else {
         this.logger.warn('Browser tabs API not available');
       }
-
-      this.stats.announcementsSent++;
-      this.logger.info(`Discovery announcement sent to ${origin}`);
     } else {
       // Silent rejection if can't fulfill (privacy-preserving)
       this.logger.info(`Discovery request from ${origin} does not match capabilities`);

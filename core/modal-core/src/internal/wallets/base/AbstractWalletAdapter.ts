@@ -553,7 +553,7 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
    * @param data - Event data
    */
   protected emitBlockchainEvent(
-    event: 'accountsChanged' | 'chainChanged' | 'disconnected',
+    event: 'accountsChanged' | 'chainChanged' | 'disconnected' | 'connected' | 'statusChanged',
     data: unknown,
   ): void {
     this.log('debug', `Emitting blockchain event: wallet:${event}`, data);
@@ -568,6 +568,12 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
         break;
       case 'disconnected':
         this.emit('wallet:disconnected', data as { reason?: string });
+        break;
+      case 'connected':
+        this.emit('wallet:connected', data);
+        break;
+      case 'statusChanged':
+        this.emit('wallet:statusChanged', data);
         break;
     }
   }

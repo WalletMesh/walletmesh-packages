@@ -447,9 +447,10 @@ describe('AztecAdapter', () => {
 
       adapter = new AztecAdapter({ transport: mockTransport, network: 'aztec:testnet' });
 
+      // The adapter will extract 'address' from the value property, then validation will fail
       await expect(adapter.connect()).rejects.toMatchObject({
         code: 'connection_failed',
-        message: expect.stringContaining('invalid address object'),
+        message: expect.stringContaining('invalid Aztec address format'),
       });
     });
 

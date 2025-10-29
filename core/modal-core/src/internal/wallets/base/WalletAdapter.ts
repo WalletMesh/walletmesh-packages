@@ -51,6 +51,7 @@ export interface ChainDefinition {
 export type WalletFeature =
   | 'sign_message'
   | 'sign_typed_data'
+  | 'sign_transaction'
   | 'encrypt'
   | 'decrypt'
   | 'multi_account'
@@ -134,8 +135,9 @@ export type AdapterEvents = {
   // These events focus on "what happened" rather than "how to update state"
   'wallet:accountsChanged': { accounts: string[]; chainType?: ChainType };
   'wallet:chainChanged': { chainId: string; chainType?: ChainType };
-  'wallet:connected': { connection: WalletConnection };
+  'wallet:connected': unknown;
   'wallet:disconnected': { reason?: string };
+  'wallet:statusChanged': unknown;
 };
 
 export type AdapterEvent = keyof AdapterEvents;

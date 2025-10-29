@@ -31,9 +31,12 @@ describe('WalletDiscovery', () => {
     mockChrome = chromeEnv.chrome;
     chromeCleanup = chromeEnv.cleanup;
 
-    // Ensure tabs.sendMessage returns a Promise
+    // Ensure tabs.sendMessage works with callback pattern (Chrome API style)
     // biome-ignore lint/suspicious/noExplicitAny: Mock function setup requires any for test utilities
-    (mockChrome.tabs.sendMessage as any) = vi.fn().mockResolvedValue(undefined);
+    (mockChrome.tabs.sendMessage as any) = vi.fn((_tabId: number, _message: unknown, callback: (response?: unknown) => void) => {
+      // Call callback immediately to simulate successful send
+      callback(undefined);
+    });
 
     mockResponderInfo = {
       ...createTestResponderInfo.aztec({
@@ -134,8 +137,8 @@ describe('WalletDiscovery', () => {
       await walletDiscovery.enable();
     });
 
-    it('should handle valid discovery request', () => {
-      walletDiscovery.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+    it('should handle valid discovery request', async () => {
+      await walletDiscovery.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
 
       expect(walletDiscovery.getStats().requestsProcessed).toBe(1);
       expect(walletDiscovery.getStats().announcementsSent).toBe(1);
@@ -188,15 +191,24 @@ describe('WalletDiscovery', () => {
       expect(mockChrome.tabs.sendMessage).not.toHaveBeenCalled();
     });
 
-    it('should handle Chrome tabs.sendMessage failures gracefully', () => {
-      (
-        mockChrome.tabs.sendMessage as { mockImplementation: (fn: () => Promise<never>) => void }
-      ).mockImplementation(() => Promise.reject(new Error('Tab closed')));
+    it('should handle Chrome tabs.sendMessage failures gracefully', async () => {
+      // biome-ignore lint/suspicious/noExplicitAny: Mock function setup requires any for test utilities
+      (mockChrome.tabs.sendMessage as any).mockImplementation((_tabId: number, _message: unknown, callback: (response?: unknown) => void) => {
+        // Simulate failure by setting chrome.runtime.lastError
+        if (typeof chrome !== 'undefined') {
+          (chrome.runtime as { lastError?: { message: string } }).lastError = { message: 'Tab closed' };
+        }
+        callback(undefined);
+        // Clean up lastError after callback
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+          delete (chrome.runtime as { lastError?: { message: string } }).lastError;
+        }
+      });
 
-      walletDiscovery.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+      await walletDiscovery.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
 
       expect(walletDiscovery.getStats().requestsProcessed).toBe(1);
-      expect(walletDiscovery.getStats().announcementsSent).toBe(1);
+      expect(walletDiscovery.getStats().announcementsSent).toBe(0); // Changed: sendMessage failed, so shouldn't increment
       // Should not throw error
     });
   });
@@ -311,8 +323,8 @@ describe('WalletDiscovery', () => {
       await walletDiscovery.enable();
 
       // Process some requests
-      walletDiscovery.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
-      walletDiscovery.handleDiscoveryRequest(mockRequest, 'https://malicious.com', 124);
+      await walletDiscovery.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+      await walletDiscovery.handleDiscoveryRequest(mockRequest, 'https://malicious.com', 124);
 
       const stats = walletDiscovery.getStats();
 
@@ -697,6 +709,393 @@ describe('WalletDiscovery', () => {
 
       expect(responderInfo).toEqual(mockResponderInfo);
       expect(responderInfo).toBe(mockResponderInfo); // Should be same reference
+    });
+  });
+
+  describe('shouldRespondToDiscovery callback', () => {
+    const mockRequest: DiscoveryRequestEvent = {
+      type: 'discovery:wallet:request',
+      version: '0.1.0',
+      sessionId: 'test-session-123',
+      required: {
+        technologies: [
+          {
+            type: 'aztec',
+            interfaces: ['aztec-wallet-api-v1'],
+            features: ['private-transactions'],
+          },
+        ],
+        features: [],
+      },
+      origin: 'https://trusted-dapp.com',
+      initiatorInfo: {
+        name: 'Test dApp',
+        url: 'https://trusted-dapp.com',
+        icon: 'data:image/svg+xml;base64,dGVzdA==',
+      },
+    };
+
+    beforeEach(async () => {
+      await walletDiscovery.enable();
+    });
+
+    it('should send response when callback returns true', async () => {
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        shouldRespondToDiscovery: vi.fn().mockReturnValue(true),
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+
+      expect(callbackWallet.getStats().announcementsSent).toBe(1);
+      expect(callbackWallet.getStats().requestsRejected).toBe(0);
+      expect(mockChrome.tabs.sendMessage).toHaveBeenCalled();
+    });
+
+    it('should not send response when callback returns false (silent rejection)', async () => {
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        shouldRespondToDiscovery: vi.fn().mockReturnValue(false),
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+
+      expect(callbackWallet.getStats().announcementsSent).toBe(0);
+      expect(callbackWallet.getStats().requestsRejected).toBe(1);
+      expect(mockChrome.tabs.sendMessage).not.toHaveBeenCalled();
+    });
+
+    it('should support async callback', async () => {
+      const asyncCallback = vi.fn().mockResolvedValue(true);
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        shouldRespondToDiscovery: asyncCallback,
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+
+      expect(asyncCallback).toHaveBeenCalledWith('https://trusted-dapp.com');
+      expect(callbackWallet.getStats().announcementsSent).toBe(1);
+      expect(mockChrome.tabs.sendMessage).toHaveBeenCalled();
+    });
+
+    it('should handle callback throwing error (fail closed)', async () => {
+      const errorCallback = vi.fn().mockImplementation(() => {
+        throw new Error('Permission denied');
+      });
+
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        shouldRespondToDiscovery: errorCallback,
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+
+      expect(callbackWallet.getStats().announcementsSent).toBe(0);
+      expect(callbackWallet.getStats().requestsRejected).toBe(1);
+      expect(mockChrome.tabs.sendMessage).not.toHaveBeenCalled();
+    });
+
+    it('should handle async callback rejecting (fail closed)', async () => {
+      const rejectCallback = vi.fn().mockRejectedValue(new Error('Async error'));
+
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        shouldRespondToDiscovery: rejectCallback,
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+
+      expect(callbackWallet.getStats().announcementsSent).toBe(0);
+      expect(callbackWallet.getStats().requestsRejected).toBe(1);
+      expect(mockChrome.tabs.sendMessage).not.toHaveBeenCalled();
+    });
+
+    it('should work without callback (backward compatibility)', async () => {
+      const noCallbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        // No shouldRespondToDiscovery callback
+      });
+
+      await noCallbackWallet.enable();
+      await noCallbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+
+      // Should send response normally without callback
+      expect(noCallbackWallet.getStats().announcementsSent).toBe(1);
+      expect(mockChrome.tabs.sendMessage).toHaveBeenCalled();
+    });
+
+    it('should pass correct origin to callback', async () => {
+      const callbackSpy = vi.fn().mockReturnValue(true);
+
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://test-origin.com'],
+        },
+        shouldRespondToDiscovery: callbackSpy,
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://test-origin.com', 123);
+
+      expect(callbackSpy).toHaveBeenCalledWith('https://test-origin.com');
+      expect(callbackSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call callback if capability matching fails', async () => {
+      const callbackSpy = vi.fn().mockReturnValue(true);
+
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        shouldRespondToDiscovery: callbackSpy,
+      });
+
+      const unsupportedRequest = {
+        ...mockRequest,
+        required: {
+          technologies: [
+            {
+              type: 'evm' as const, // Not supported by Aztec wallet
+              interfaces: ['eip-1193'],
+            },
+          ],
+          features: [],
+        },
+      };
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(unsupportedRequest, 'https://trusted-dapp.com', 123);
+
+      // Callback should not be called if capability matching fails
+      expect(callbackSpy).not.toHaveBeenCalled();
+      expect(callbackWallet.getStats().announcementsSent).toBe(0);
+    });
+
+    it('should not call callback if origin validation fails', async () => {
+      const callbackSpy = vi.fn().mockReturnValue(true);
+
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        shouldRespondToDiscovery: callbackSpy,
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://malicious.com', 123);
+
+      // Callback should not be called if origin validation fails
+      expect(callbackSpy).not.toHaveBeenCalled();
+      expect(callbackWallet.getStats().requestsRejected).toBe(1);
+    });
+  });
+
+  describe('onResponseSent callback', () => {
+    const mockRequest: DiscoveryRequestEvent = {
+      type: 'discovery:wallet:request',
+      version: '0.1.0',
+      sessionId: 'test-session-123',
+      required: {
+        technologies: [
+          {
+            type: 'aztec',
+            interfaces: ['aztec-wallet-api-v1'],
+            features: ['private-transactions'],
+          },
+        ],
+        features: [],
+      },
+      origin: 'https://trusted-dapp.com',
+      initiatorInfo: {
+        name: 'Test dApp',
+        url: 'https://trusted-dapp.com',
+        icon: 'data:image/svg+xml;base64,dGVzdA==',
+      },
+    };
+
+    beforeEach(async () => {
+      await walletDiscovery.enable();
+    });
+
+    it('should call onResponseSent after successful message delivery', async () => {
+      const onResponseSentSpy = vi.fn();
+
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        onResponseSent: onResponseSentSpy,
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+
+      expect(onResponseSentSpy).toHaveBeenCalledWith('https://trusted-dapp.com');
+      expect(onResponseSentSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call onResponseSent if sendMessage fails', async () => {
+      const onResponseSentSpy = vi.fn();
+
+      // biome-ignore lint/suspicious/noExplicitAny: Mock function setup requires any for test utilities
+      (mockChrome.tabs.sendMessage as any).mockImplementation((_tabId: number, _message: unknown, callback: (response?: unknown) => void) => {
+        // Simulate failure by setting chrome.runtime.lastError
+        if (typeof chrome !== 'undefined') {
+          (chrome.runtime as { lastError?: { message: string } }).lastError = { message: 'Tab closed' };
+        }
+        callback(undefined);
+        // Clean up lastError after callback
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+          delete (chrome.runtime as { lastError?: { message: string } }).lastError;
+        }
+      });
+
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        onResponseSent: onResponseSentSpy,
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+
+      // onResponseSent should NOT be called when sendMessage fails
+      expect(onResponseSentSpy).not.toHaveBeenCalled();
+      expect(callbackWallet.getStats().announcementsSent).toBe(0);
+    });
+
+    it('should not call onResponseSent if shouldRespondToDiscovery returns false', async () => {
+      const onResponseSentSpy = vi.fn();
+
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        shouldRespondToDiscovery: vi.fn().mockReturnValue(false),
+        onResponseSent: onResponseSentSpy,
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+
+      // onResponseSent should NOT be called if shouldRespondToDiscovery rejects
+      expect(onResponseSentSpy).not.toHaveBeenCalled();
+      expect(mockChrome.tabs.sendMessage).not.toHaveBeenCalled();
+    });
+
+    it('should work without onResponseSent callback (backward compatibility)', async () => {
+      const noCallbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        // No onResponseSent callback
+      });
+
+      await noCallbackWallet.enable();
+
+      // Should not throw error
+      await expect(
+        noCallbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123)
+      ).resolves.not.toThrow();
+
+      expect(noCallbackWallet.getStats().announcementsSent).toBe(1);
+    });
+
+    it('should call both callbacks in correct order', async () => {
+      const callOrder: string[] = [];
+
+      const shouldRespondSpy = vi.fn().mockImplementation(() => {
+        callOrder.push('shouldRespond');
+        return true;
+      });
+
+      const onResponseSentSpy = vi.fn().mockImplementation(() => {
+        callOrder.push('onResponseSent');
+      });
+
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://trusted-dapp.com'],
+        },
+        shouldRespondToDiscovery: shouldRespondSpy,
+        onResponseSent: onResponseSentSpy,
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://trusted-dapp.com', 123);
+
+      expect(callOrder).toEqual(['shouldRespond', 'onResponseSent']);
+      expect(shouldRespondSpy).toHaveBeenCalledWith('https://trusted-dapp.com');
+      expect(onResponseSentSpy).toHaveBeenCalledWith('https://trusted-dapp.com');
+    });
+
+    it('should pass same origin to both callbacks', async () => {
+      const shouldRespondSpy = vi.fn().mockReturnValue(true);
+      const onResponseSentSpy = vi.fn();
+
+      const callbackWallet = new WalletDiscovery({
+        responderInfo: mockResponderInfo,
+        securityPolicy: {
+          requireHttps: true,
+          allowedOrigins: ['https://test-origin.com'],
+        },
+        shouldRespondToDiscovery: shouldRespondSpy,
+        onResponseSent: onResponseSentSpy,
+      });
+
+      await callbackWallet.enable();
+      await callbackWallet.handleDiscoveryRequest(mockRequest, 'https://test-origin.com', 123);
+
+      expect(shouldRespondSpy).toHaveBeenCalledWith('https://test-origin.com');
+      expect(onResponseSentSpy).toHaveBeenCalledWith('https://test-origin.com');
     });
   });
 });
