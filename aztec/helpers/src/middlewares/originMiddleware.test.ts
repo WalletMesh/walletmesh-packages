@@ -9,7 +9,6 @@ describe('originMiddleware', () => {
   let mockNext: ReturnType<typeof vi.fn>;
 
   // Store original window properties
-  const originalLocation = global.window?.location;
   const originalDocument = global.document;
   const originalWindow = global.window;
 

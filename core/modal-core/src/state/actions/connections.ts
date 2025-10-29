@@ -14,6 +14,7 @@ import type {
   SessionState,
   SessionStateMetadata,
 } from '../../api/types/sessionState.js';
+import { SAFE_DEFAULT_ICON } from '../../api/utils/iconSandbox.js';
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 import {
   createSessionParamsSchema,
@@ -301,8 +302,14 @@ export const connectionActions = {
    * Add a wallet to the state
    */
   addWallet: (store: StoreApi<WalletMeshState>, wallet: WalletInfo) => {
+    // Ensure icon has a value (use safe default if undefined or empty)
+    const walletWithIcon: WalletInfo = {
+      ...wallet,
+      icon: wallet.icon && wallet.icon.trim() !== '' ? wallet.icon : SAFE_DEFAULT_ICON,
+    };
+
     // Validate wallet info
-    const validatedWallet = parseWithErrorFactory(walletInfoSchema, wallet, 'Invalid wallet info');
+    const validatedWallet = parseWithErrorFactory(walletInfoSchema, walletWithIcon, 'Invalid wallet info');
     const cleanedWallet = cleanObject(validatedWallet) as WalletInfo;
 
     mutateState(store, (state) => {
@@ -400,13 +407,24 @@ export const connectionActions = {
     console.log('[addDiscoveredWallet] Adding wallet to store:', {
       walletId: wallet.id,
       walletName: wallet.name,
+      hasIcon: !!wallet.icon,
     });
 
+    // Ensure icon has a value (use safe default if undefined or empty)
+    const walletWithIcon: WalletInfo = {
+      ...wallet,
+      icon: wallet.icon && wallet.icon.trim() !== '' ? wallet.icon : SAFE_DEFAULT_ICON,
+    };
+
     // Validate wallet info
-    const validatedWallet = parseWithErrorFactory(walletInfoSchema, wallet, 'Invalid wallet info');
+    const validatedWallet = parseWithErrorFactory(walletInfoSchema, walletWithIcon, 'Invalid wallet info');
     const cleanedWallet = cleanObject(validatedWallet) as WalletInfo;
 
-    console.log('[addDiscoveredWallet] Validated wallet:', cleanedWallet);
+    console.log('[addDiscoveredWallet] Validated wallet:', {
+      id: cleanedWallet.id,
+      name: cleanedWallet.name,
+      hasIcon: !!cleanedWallet.icon,
+    });
 
     mutateState(store, (state) => {
       // Add to wallets entities

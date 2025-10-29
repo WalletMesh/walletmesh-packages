@@ -302,6 +302,9 @@ export class WalletDiscovery {
         name: this.responderInfo.name,
         icon: this.responderInfo.icon,
         matched: matchResult.intersection, // Only what dApp should see
+        ...(this.responderInfo.networks && this.responderInfo.networks.length > 0 && {
+          networks: this.responderInfo.networks,
+        }),
         transportConfig: {
           type: 'extension',
           extensionId,

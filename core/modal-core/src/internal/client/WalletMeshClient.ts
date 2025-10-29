@@ -695,7 +695,9 @@ export interface WalletMeshConfig {
         type: string;
         interfaces?: string[];
       }>;
+      chains?: string[];
       features?: string[];
+      interfaces?: string[];
     };
   };
 

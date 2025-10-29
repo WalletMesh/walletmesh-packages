@@ -127,7 +127,7 @@ export const EXTENDED_AZTEC_PERMISSIONS = [
  *
  * Aztec addresses can use different formats:
  * - Bech32-style: aztec1... (followed by base32 encoded data)
- * - Hex format: 0x... (40 hex characters, similar to Ethereum)
+ * - Hex format: 0x... (64 hex characters, 32-byte address)
  *
  * Note: These patterns may need to be updated as Aztec address
  * standards evolve.
@@ -135,7 +135,7 @@ export const EXTENDED_AZTEC_PERMISSIONS = [
  * @internal
  */
 const AZTEC_ADDRESS_PATTERN = /^aztec1[a-z0-9]{38,}$/i;
-const AZTEC_HEX_ADDRESS_PATTERN = /^0x[0-9a-fA-F]{40}$/;
+const AZTEC_HEX_ADDRESS_PATTERN = /^0x[0-9a-fA-F]{64}$/;
 
 /**
  * Generic Aztec wallet adapter
@@ -877,7 +877,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
    *
    * Aztec addresses can use two formats:
    * - Bech32-style: aztec1... (followed by base32 encoded data)
-   * - Hex format: 0x... (40 hex characters, like Ethereum addresses)
+   * - Hex format: 0x... (64 hex characters, 32-byte address)
    *
    * @param address - Address string to validate
    * @returns true if address is valid Aztec format

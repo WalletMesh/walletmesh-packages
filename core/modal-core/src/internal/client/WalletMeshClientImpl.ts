@@ -3,7 +3,11 @@ import type { BlockchainProvider } from '../../api/types/chainProviders.js';
 import type { WalletConnection } from '../../api/types/connection.js';
 import { isAztecRouterProvider, isEvmProvider } from '../../api/types/guards.js';
 import type { WalletProvider } from '../../api/types/providers.js';
-import type { CreateSessionParams, SessionManager, SessionState } from '../../api/types/sessionState.js';
+import type {
+  CreateSessionParams,
+  SessionManager,
+  SessionState,
+} from '../../api/types/sessionState.js';
 import { EVMDiscoveryService } from '../../client/discovery/evm/EvmDiscoveryService.js';
 import { SolanaDiscoveryService } from '../../client/discovery/solana/SolanaDiscoveryService.js';
 import type { DiscoveryConnectionManager } from '../../client/discovery/types.js';
@@ -233,6 +237,18 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       cleanupExpiredSessions: async () => {},
     };
   }
+
+  /**
+   * Helper method to get session by wallet ID
+   * Replaces adapter.connection pattern with session-based lookup
+   * @private
+   */
+  private getSessionByWalletId(walletId: string): SessionState | null {
+    const state = useStore.getState();
+    const sessions = Object.values(state.entities.sessions).filter((s) => s.walletId === walletId && s.status === 'connected');
+    return sessions[0] || null;
+  }
+
 
   constructor(
     private config: WalletMeshConfig,
@@ -564,6 +580,25 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       // Use discovery config from client config if available
       const discoveryConfig = this.config.discovery || {};
 
+      // Extract chain IDs from client config chains array
+      const chainIdsFromConfig =
+        this.config.chains?.map((chain) => chain.chainId).filter((id): id is string => !!id) || [];
+
+      // Merge chain IDs with discovery config capabilities
+      const existingCapabilities = discoveryConfig.capabilities || {};
+      const mergedCapabilities: {
+        chains?: string[];
+        features?: string[];
+        interfaces?: string[];
+      } = {
+        ...(existingCapabilities.features && { features: existingCapabilities.features }),
+        ...(existingCapabilities.interfaces && { interfaces: existingCapabilities.interfaces }),
+        chains: [
+          ...(existingCapabilities.chains || []),
+          ...chainIdsFromConfig,
+        ],
+      };
+
       const discoveryService = new DiscoveryService(
         {
           enabled: discoveryConfig.enabled !== false,
@@ -582,8 +617,8 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
             : technologies && { technologies }),
           // Add dApp info from discovery config
           ...(discoveryConfig.dappInfo && { dappInfo: discoveryConfig.dappInfo }),
-          // Add capabilities from discovery config
-          ...(discoveryConfig.capabilities && { capabilities: discoveryConfig.capabilities }),
+          // Add capabilities with merged chain IDs from client config
+          capabilities: mergedCapabilities,
           transport: {
             adapterConfig: {
               autoConnect: false,
@@ -1833,17 +1868,18 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
   ): Promise<unknown> {
     this.logger?.debug('requestChainConnection called', { walletId, chainId, chainType });
 
-    const adapter = this.adapters.get(walletId);
-    if (!adapter) {
-      this.logger?.debug('No adapter found for wallet', { walletId });
+    // Get session for this wallet instead of using adapter.connection
+    const session = this.getSessionByWalletId(walletId);
+    if (!session) {
+      this.logger?.debug('No active session found for wallet', { walletId });
       return null;
     }
 
-    const provider = adapter.connection?.provider as {
+    const provider = session.provider?.instance as {
       request?: (params: { method: string; params?: unknown[] }) => Promise<unknown>;
     };
     if (!provider) {
-      this.logger?.debug('No provider found in adapter connection', { walletId });
+      this.logger?.debug('No provider found in session', { walletId, sessionId: session.sessionId });
       return null;
     }
 
@@ -1918,9 +1954,30 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
    * @public
    */
   getAllConnections(): WalletConnection[] {
-    return this.getConnections()
-      .filter((adapter) => adapter.connection !== null)
-      .map((adapter) => adapter.connection as WalletConnection);
+    // Get all connected sessions from state instead of adapter.connection
+    const state = useStore.getState();
+    const connectedSessions = Object.values(state.entities.sessions).filter((s) => s.status === 'connected');
+
+    // Convert sessions to WalletConnection format
+    return connectedSessions.map((session): WalletConnection => ({
+      walletId: session.walletId,
+      address: session.activeAccount.address,
+      accounts: session.accounts.map((a) => a.address),
+      chain: {
+        chainId: session.chain.chainId,
+        chainType: session.chain.chainType,
+        name: session.chain.name,
+        required: session.chain.required,
+      },
+      chainType: session.chain.chainType,
+      provider: session.provider.instance as WalletProvider,
+      walletInfo: {
+        id: session.walletId,
+        name: session.metadata.wallet.name,
+        icon: session.metadata.wallet.icon,
+        chains: [session.chain.chainType],
+      },
+    }));
   }
 
   /**
@@ -2933,14 +2990,8 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
 
         await connectionActions.createSession(useStore, sessionParams);
 
-        // Update adapter connection state
-        const adapter = this.adapters.get(walletId);
-        if (adapter?.connection && accounts.length > 0) {
-          adapter.connection.accounts = accounts;
-          adapter.connection.address = accounts[0] as string; // Safe because we checked length > 0
-        }
-
         // State updated - changes automatically propagated through Zustand subscriptions
+        // No need to update adapter.connection - session state is the source of truth
       }
     } catch (error) {
       this.logger?.error('Failed to handle accounts changed', { walletId, accounts, error });
@@ -2990,16 +3041,8 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
           };
       await this.sessionManager.switchChain(activeSession.sessionId, chain);
 
-      // Update adapter connection state
-      const adapter = this.adapters.get(walletId);
-      if (adapter?.connection) {
-        adapter.connection.chain = chain;
-        if (chainType) {
-          adapter.connection.chainType = chainType;
-        }
-      }
-
       // State updated - chain switch automatically propagated through Zustand subscriptions
+      // No need to update adapter.connection - session state is the source of truth
     } catch (error) {
       this.logger?.error('Failed to handle chain changed', { walletId, chainId, error });
     }
@@ -3631,22 +3674,14 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       return null;
     }
 
-    // Get the adapter for this wallet to retrieve the original WalletProvider
-    const adapter = this.adapters.get(activeSession.walletId);
-    if (!adapter) {
-      this.logger?.warn(`No adapter found for wallet ${activeSession.walletId}`);
+    // Retrieve provider from session state (single source of truth)
+    if (!activeSession.provider?.instance) {
+      this.logger?.warn(`Session ${activeSession.sessionId} has no provider instance`);
       return null;
     }
 
-    // Check if the adapter has a connection with a provider
-    if (!adapter.connection?.provider) {
-      this.logger?.warn(`Adapter for wallet ${activeSession.walletId} has no connection provider`);
-      return null;
-    }
-
-    // Return the original WalletProvider from the adapter's connection
-    // This is the actual WalletProvider that has the request method
-    const walletProvider = adapter.connection.provider as WalletProvider;
+    // Return the WalletProvider from the session
+    const walletProvider = activeSession.provider.instance as WalletProvider;
     return walletProvider;
   }
 
@@ -3778,6 +3813,9 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     // Check for Aztec chain in configuration
     const aztecChain = this.config.chains?.find((c) => c.chainType === ChainType.Aztec);
 
+    console.log('🔍 EXTRACT PERMISSIONS - All chains:', this.config.chains);
+    console.log('🔍 EXTRACT PERMISSIONS - aztecChain found:', aztecChain);
+
     if (!aztecChain) {
       this.logger?.debug('No Aztec chain configured, skipping permission extraction');
       return {
@@ -3788,6 +3826,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     }
 
     const aztecChainId = aztecChain.chainId;
+    console.log('🔍 EXTRACT PERMISSIONS - aztecChainId:', aztecChainId);
 
     // Priority 1: Permissions in connect options
     const optionsWithAztec = options as Record<string, unknown> | undefined;
@@ -3809,10 +3848,15 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
 
     // Priority 2: Permissions in WalletMeshConfig
     const configWithPermissions = this.config as PermissionsConfig;
+    console.log('🔍 EXTRACT PERMISSIONS - config.permissions keys:', Object.keys(configWithPermissions.permissions || {}));
+    console.log('🔍 EXTRACT PERMISSIONS - looking for permissions at key:', aztecChainId);
+
     if (configWithPermissions.permissions) {
       const chainPermissions = configWithPermissions.permissions[aztecChainId];
+      console.log('🔍 EXTRACT PERMISSIONS - found chainPermissions:', chainPermissions);
 
       if (chainPermissions && Array.isArray(chainPermissions)) {
+        console.log('✅ EXTRACT PERMISSIONS - Using permissions from config for chain:', aztecChainId);
         this.logger?.info('Using permissions from client configuration', {
           chainId: aztecChainId,
           permissions: chainPermissions,
@@ -3826,6 +3870,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         };
       }
 
+      console.warn('⚠️ EXTRACT PERMISSIONS - No permissions found for chain:', aztecChainId, 'Available:', Object.keys(configWithPermissions.permissions));
       this.logger?.warn('No permissions configured for Aztec chain', {
         chainId: aztecChainId,
         availableChains: Object.keys(configWithPermissions.permissions),

@@ -289,7 +289,6 @@ describe('DebugWallet', () => {
 
       expect(adapter.state.status).toBe('disconnected');
       expect(adapter.state.connection).toBeNull();
-      expect(adapter.connection).toBeNull();
     });
 
     it('should handle disconnect when not connected', async () => {
@@ -701,12 +700,12 @@ describe('DebugWallet', () => {
       // Connect
       await adapter.connect();
       expect(adapter.state.status).toBe('connected');
-      expect(adapter.connection).toBeDefined();
+      expect(adapter.state.connection).toBeDefined();
 
       // Disconnect
       await adapter.disconnect();
       expect(adapter.state.status).toBe('disconnected');
-      expect(adapter.connection).toBeNull();
+      expect(adapter.state.connection).toBeNull();
     });
 
     it('should handle rapid connect/disconnect cycles', async () => {
@@ -719,7 +718,7 @@ describe('DebugWallet', () => {
       await adapter.disconnect();
 
       expect(adapter.state.status).toBe('disconnected');
-      expect(adapter.connection).toBeNull();
+      expect(adapter.state.connection).toBeNull();
     });
   });
 

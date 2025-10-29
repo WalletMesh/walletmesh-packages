@@ -168,7 +168,7 @@ describe('AbstractWalletAdapter', () => {
         expect(adapter.capabilities.chains).toHaveLength(1);
         expect(adapter.capabilities.chains[0].type).toBe(ChainType.Evm);
         expect(adapter.state.status).toBe('disconnected');
-        expect(adapter.connection).toBeNull();
+        expect(adapter.state.connection).toBeNull();
       });
 
       it('should have default empty supportedProviders', () => {
@@ -343,7 +343,7 @@ describe('AbstractWalletAdapter', () => {
 
         // Should reset state
         expect(adapter.state.status).toBe('disconnected');
-        expect(adapter.connection).toBeNull();
+        expect(adapter.state.connection).toBeNull();
       });
 
       it('should connect and update state', async () => {
@@ -362,7 +362,7 @@ describe('AbstractWalletAdapter', () => {
         // Check state was updated
         expect(adapter.state.status).toBe('connected');
         expect(adapter.state.address).toBe('0x123');
-        expect(adapter.connection).toBe(connection);
+        expect(adapter.state.connection).toBe(connection);
       });
 
       it('should disconnect and cleanup', async () => {
@@ -374,7 +374,7 @@ describe('AbstractWalletAdapter', () => {
         await adapter.disconnect();
 
         expect(adapter.state.status).toBe('disconnected');
-        expect(adapter.connection).toBeNull();
+        expect(adapter.state.connection).toBeNull();
       });
 
       it('should throw error when getting provider without connection', () => {
@@ -573,7 +573,7 @@ describe('AbstractWalletAdapter', () => {
         // Should update state
         expect(adapter.state.status).toBe('connected');
         expect(adapter.state.address).toBe('0x789');
-        expect(adapter.connection).toBe(connection);
+        expect(adapter.state.connection).toBe(connection);
       });
 
       it('should emit events when creating connection', async () => {

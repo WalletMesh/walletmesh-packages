@@ -22,6 +22,7 @@ export const walletMetadataSchema = z.object({
 
   /**
    * Wallet icon as data URI containing an image (SVG, PNG, JPEG, WebP, or GIF)
+   * Optional - if not provided, a generic wallet icon will be used
    */
   icon: z.string().refine(
     (val) => {
@@ -49,7 +50,7 @@ export const walletMetadataSchema = z.object({
     {
       message: 'Icon must be a data URI with a safe image format (SVG, PNG, JPEG, WebP, or GIF)',
     },
-  ),
+  ).optional(),
 
   /**
    * Optional wallet description

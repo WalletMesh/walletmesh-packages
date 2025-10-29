@@ -607,8 +607,10 @@ const DApp: React.FC = () => {
 
     setIsFetchingCounterValue(true);
     try {
-      const ownerAddressHex = toAddressString(address);
       let value: unknown;
+
+      // Use the address from the hook (already in the correct format)
+      const ownerAddressHex = toAddressString(address);
 
       if (externalAztecRpcUrl) {
         try {
@@ -616,7 +618,7 @@ const DApp: React.FC = () => {
             counterAddress.toString(),
             CounterContractArtifact,
             'get_counter',
-            [ownerAddressHex],
+            [ownerAddressHex], // Read the wallet's own counter
           );
         } catch (error) {
           console.warn('[DApp] External RPC counter fetch failed, falling back to wallet RPC', error);
@@ -647,7 +649,17 @@ const DApp: React.FC = () => {
       {/* Use AztecWalletReady to handle wallet connection states */}
       <AztecWalletReady
         fallback={<p>Please connect your Aztec wallet to interact with contracts</p>}
-        connectingFallback={<p>🔄 Initializing Aztec wallet...</p>}
+        connectingFallback={
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            <p style={{ fontSize: '18px', marginBottom: '10px' }}>🔄 Connecting to Aztec Wallet...</p>
+            <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
+              Initializing PXE and loading accounts
+            </p>
+            <p style={{ fontSize: '12px', color: '#888' }}>
+              This may take 5-15 seconds on first connection
+            </p>
+          </div>
+        }
         errorFallback={(error: Error) => <p style={{ color: 'red' }}>Error: {error.message}</p>}
       >
         <div>

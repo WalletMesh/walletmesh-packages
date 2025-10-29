@@ -867,27 +867,48 @@ describe('WalletMeshClient', () => {
       client.setModal(tempModal);
     });
 
-    it('should check if connected', () => {
+    it('should check if connected using session state', async () => {
       expect(client.isConnected).toBe(false);
 
-      // Add an adapter with a connection
-      const mockAdapter = {
-        connection: {
-          walletId: 'metamask',
-          address: '0x123',
-          accounts: ['0x123'],
-          chain: {
-            chainId: 'eip155:1',
-            chainType: ChainType.Evm,
-            name: 'Ethereum Mainnet',
-            required: true,
-            interfaces: ['eip1193'],
+      // isConnected now checks session state instead of adapter.connection
+      const storeModule = await import('../state/store.js');
+      const mockProvider = { request: vi.fn() };
+
+      // Mock store to return session data
+      vi.spyOn(storeModule.useStore, 'getState').mockReturnValue({
+        entities: {
+          sessions: {
+            'session-1': {
+              sessionId: 'session-1',
+              walletId: 'metamask',
+              status: 'connected',
+              activeAccount: { address: '0x123', isDefault: true, isActive: true },
+              accounts: [{ address: '0x123', isDefault: true, isActive: true }],
+              chain: {
+                chainId: 'eip155:1',
+                chainType: ChainType.Evm,
+                name: 'Ethereum Mainnet',
+                required: true,
+              },
+              provider: {
+                instance: mockProvider,
+                type: 'eip1193',
+                version: '1.0.0',
+                multiChainCapable: false,
+                supportedMethods: ['eth_requestAccounts'],
+              },
+              permissions: { scopes: [] },
+              metadata: {
+                wallet: { name: 'MetaMask', icon: '' },
+                dApp: { name: 'Test', url: 'https://test.com' },
+                connection: { timestamp: Date.now(), origin: 'test' },
+              },
+              createdAt: Date.now(),
+              lastActiveAt: Date.now(),
+            },
           },
-          chainType: ChainType.Evm,
-          provider: {},
         },
-      };
-      client['adapters'].set('metamask', mockAdapter);
+      } as ReturnType<typeof storeModule.useStore.getState>);
 
       expect(client.isConnected).toBe(true);
     });
@@ -1067,29 +1088,61 @@ describe('WalletMeshClient', () => {
       expect(connections).toContain(mockAdapter2);
     });
 
-    it('should get all connection details', () => {
-      const mockAdapter = {
-        id: 'metamask',
-        connection: {
-          walletId: 'metamask',
-          address: '0x123',
-          chain: {
-            chainId: 'eip155:1',
-            chainType: ChainType.Evm,
-            name: 'Ethereum Mainnet',
-            required: true,
-            interfaces: ['eip1193'],
-          },
-          chainType: ChainType.Evm,
-        },
-      };
+    it('should get all connection details from session state', async () => {
+      // getAllConnections() now reads from Zustand session state instead of adapter.connection
+      const storeModule = await import('../state/store.js');
+      const mockProvider = { request: vi.fn() };
 
-      client['adapters'].set('metamask', mockAdapter);
+      // Mock store to return session data
+      vi.spyOn(storeModule.useStore, 'getState').mockReturnValue({
+        entities: {
+          sessions: {
+            'session-1': {
+              sessionId: 'session-1',
+              walletId: 'metamask',
+              status: 'connected',
+              activeAccount: { address: '0x123', isDefault: true, isActive: true },
+              accounts: [{ address: '0x123', isDefault: true, isActive: true }],
+              chain: {
+                chainId: 'eip155:1',
+                chainType: ChainType.Evm,
+                name: 'Ethereum Mainnet',
+                required: true,
+              },
+              provider: {
+                instance: mockProvider,
+                type: 'eip1193',
+                version: '1.0.0',
+                multiChainCapable: false,
+                supportedMethods: ['eth_requestAccounts'],
+              },
+              permissions: { scopes: [] },
+              metadata: {
+                wallet: { name: 'MetaMask', icon: '' },
+                dApp: { name: 'Test', url: 'https://test.com' },
+                connection: { timestamp: Date.now(), origin: 'test' },
+              },
+              createdAt: Date.now(),
+              lastActiveAt: Date.now(),
+            },
+          },
+        },
+      } as ReturnType<typeof storeModule.useStore.getState>);
 
       const connections = client.getAllConnections();
 
       expect(connections).toHaveLength(1);
-      expect(connections[0]).toEqual(mockAdapter.connection);
+      expect(connections[0]).toMatchObject({
+        walletId: 'metamask',
+        address: '0x123',
+        accounts: ['0x123'],
+        chain: {
+          chainId: 'eip155:1',
+          chainType: ChainType.Evm,
+        },
+        chainType: ChainType.Evm,
+        provider: mockProvider,
+      });
     });
   });
 

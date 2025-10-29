@@ -13,7 +13,26 @@ import { ErrorFactory } from '@walletmesh/modal-core';
 import type { AztecContractArtifact, AztecDeploymentStage } from '@walletmesh/modal-core/providers/aztec';
 import { ensureContractClassRegistered, normalizeArtifact } from '@walletmesh/modal-core/providers/aztec';
 import { useCallback, useState, useRef, useEffect } from 'react';
+import { useStoreInstance } from './internal/useStore.js';
 import { useAztecWallet } from './useAztecWallet.js';
+
+/**
+ * Helper type for deployment transaction tracking
+ */
+interface DeploymentTransaction {
+  id: string;
+  status: 'preparing' | 'computing' | 'proving' | 'sending' | 'confirming' | 'confirmed' | 'failed';
+  contractAddress?: string;
+  artifactName: string;
+  timestamp: number;
+}
+
+/**
+ * Generate a unique deployment transaction ID
+ */
+function generateDeploymentTxId(): string {
+  return `deployment-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
 
 /**
  * Contract artifact type that handles different artifact formats
@@ -239,6 +258,7 @@ export interface UseAztecDeployReturn {
  */
 export function useAztecDeploy(): UseAztecDeployReturn {
   const { aztecWallet, isReady, address } = useAztecWallet();
+  const store = useStoreInstance();
   const [isDeploying, setIsDeploying] = useState(false);
   const [stage, setStage] = useState<AztecDeploymentStage>('idle');
   const [error, setError] = useState<Error | null>(null);
@@ -249,12 +269,102 @@ export function useAztecDeploy(): UseAztecDeployReturn {
   // Ref to track if component is mounted
   const isMountedRef = useRef(true);
 
+  // Ref to track the current deployment transaction ID for store management
+  const currentDeploymentTxIdRef = useRef<string | null>(null);
+
+  // Helper functions to manage deployment transactions in the store
+  const addDeploymentTransaction = useCallback(
+    (txId: string, artifactName: string, contractAddress?: string) => {
+      if (!store) return;
+
+      const deploymentTx: DeploymentTransaction = {
+        id: txId,
+        status: 'preparing',
+        artifactName,
+        ...(contractAddress && { contractAddress }),
+        timestamp: Date.now(),
+      };
+
+      store.setState((state) => ({
+        ...state,
+        entities: {
+          ...state.entities,
+          transactions: {
+            ...state.entities.transactions,
+            [txId]: deploymentTx as unknown,
+          },
+        },
+      }));
+
+      currentDeploymentTxIdRef.current = txId;
+    },
+    [store],
+  );
+
+  const updateDeploymentStatus = useCallback(
+    (txId: string, status: DeploymentTransaction['status']) => {
+      if (!store) return;
+
+      store.setState((state) => {
+        const existingTx = state.entities.transactions?.[txId];
+        if (!existingTx) return state;
+
+        return {
+          ...state,
+          entities: {
+            ...state.entities,
+            transactions: {
+              ...state.entities.transactions,
+              [txId]: {
+                ...existingTx,
+                status,
+              },
+            },
+          },
+        };
+      });
+    },
+    [store],
+  );
+
+  const removeDeploymentTransaction = useCallback(
+    (txId: string) => {
+      if (!store) return;
+
+      store.setState((state) => {
+        const transactions = { ...state.entities.transactions };
+        delete transactions[txId];
+
+        return {
+          ...state,
+          entities: {
+            ...state.entities,
+            transactions,
+          },
+        };
+      });
+
+      if (currentDeploymentTxIdRef.current === txId) {
+        currentDeploymentTxIdRef.current = null;
+      }
+    },
+    [store],
+  );
+
   // Cleanup on unmount
   useEffect(() => {
+    // Ensure ref is set to true on every render
+    isMountedRef.current = true;
+
     return () => {
       isMountedRef.current = false;
+
+      // Clean up any pending deployment transaction from the store
+      if (currentDeploymentTxIdRef.current) {
+        removeDeploymentTransaction(currentDeploymentTxIdRef.current);
+      }
     };
-  }, []);
+  }, [removeDeploymentTransaction]);
 
   const reset = useCallback(() => {
     if (!isMountedRef.current) return;
@@ -392,6 +502,9 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         throw error;
       }
 
+      // Generate unique transaction ID for store tracking
+      const deploymentTxId = generateDeploymentTxId();
+
       if (isMountedRef.current) {
         setIsDeploying(true);
         setStage('preparing');
@@ -403,10 +516,14 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         options.onStart();
       }
 
+      // Add deployment transaction to store for tracking
+      addDeploymentTransaction(deploymentTxId, artifact.name);
+
       try {
         // Prepare deployment
         if (isMountedRef.current) {
           setStage('computing');
+          updateDeploymentStatus(deploymentTxId, 'computing');
           if (options.onProgress) {
             options.onProgress('computing');
           }
@@ -415,6 +532,7 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         // Deploy the contract
         if (isMountedRef.current) {
           setStage('proving');
+          updateDeploymentStatus(deploymentTxId, 'proving');
           if (options.onProgress) {
             options.onProgress('proving');
           }
@@ -432,6 +550,7 @@ export function useAztecDeploy(): UseAztecDeployReturn {
 
         if (isMountedRef.current) {
           setStage('sending');
+          updateDeploymentStatus(deploymentTxId, 'sending');
           if (options.onProgress) {
             options.onProgress('sending');
           }
@@ -442,6 +561,7 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         // Wait for deployment to complete
         if (isMountedRef.current) {
           setStage('confirming');
+          updateDeploymentStatus(deploymentTxId, 'confirming');
           if (options.onProgress) {
             options.onProgress('confirming');
           }
@@ -460,16 +580,31 @@ export function useAztecDeploy(): UseAztecDeployReturn {
           txHash,
         };
 
+        console.log('[useAztecDeploy] Deployment successful:', {
+          contractAddress: contractAddress.toString(),
+          isMounted: isMountedRef.current,
+          deploymentTxId,
+        });
+
         if (isMountedRef.current) {
+          console.log('[useAztecDeploy] Setting deployedAddress state:', contractAddress.toString());
           setDeployedAddress(contractAddress);
           setLastDeployment(result);
           setStage('success');
+          updateDeploymentStatus(deploymentTxId, 'confirmed');
           setIsDeploying(false);
+          console.log('[useAztecDeploy] State updates complete');
         }
 
         if (options.onSuccess) {
           options.onSuccess(contractAddress);
         }
+
+        // Remove deployment transaction from store after successful completion
+        // Use a small delay to ensure useAztecContract has time to detect the pending deployment
+        setTimeout(() => {
+          removeDeploymentTransaction(deploymentTxId);
+        }, 1000);
 
         return result;
       } catch (err) {
@@ -490,6 +625,7 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         if (isMountedRef.current) {
           setError(enhancedError);
           setStage('error');
+          updateDeploymentStatus(deploymentTxId, 'failed');
           setIsDeploying(false);
         }
 
@@ -497,11 +633,24 @@ export function useAztecDeploy(): UseAztecDeployReturn {
           options.onError(enhancedError);
         }
 
+        // Remove deployment transaction from store on error
+        removeDeploymentTransaction(deploymentTxId);
+
         throw enhancedError;
       }
     },
-    [aztecWallet, isReady, address, stage],
+    [aztecWallet, isReady, address, addDeploymentTransaction, updateDeploymentStatus, removeDeploymentTransaction],
   );
+
+  // Log state changes for debugging
+  useEffect(() => {
+    console.log('[useAztecDeploy] Hook state changed:', {
+      deployedAddress: deployedAddress ? deployedAddress.toString() : 'null',
+      isDeploying,
+      stage,
+      error: error?.message,
+    });
+  }, [deployedAddress, isDeploying, stage, error]);
 
   return {
     deploy,

@@ -174,7 +174,7 @@ describe('EvmAdapter', () => {
       });
 
       expect(adapter.state.status).toBe('connected');
-      expect(adapter.connection).toBe(connection);
+      expect(adapter.state.connection).toBe(connection);
 
       expect(mockEthereum.request).toHaveBeenCalledWith({ method: 'eth_requestAccounts' });
       expect(mockEthereum.request).toHaveBeenCalledWith({ method: 'eth_chainId' });
@@ -272,7 +272,7 @@ describe('EvmAdapter', () => {
       await adapter.disconnect();
 
       expect(adapter.state.status).toBe('disconnected');
-      expect(adapter.connection).toBeNull();
+      expect(adapter.state.connection).toBeNull();
     });
 
     it('should transition from connected to disconnected', async () => {
@@ -293,7 +293,7 @@ describe('EvmAdapter', () => {
       await adapter.disconnect();
 
       expect(adapter.state.status).toBe('disconnected');
-      expect(adapter.connection).toBeNull();
+      expect(adapter.state.connection).toBeNull();
     });
 
     it('should handle disconnect when not connected', async () => {
@@ -573,7 +573,7 @@ describe('EvmAdapter', () => {
 
       await adapter.connect();
 
-      expect(adapter.connection?.chain.chainId).toBe('eip155:1'); // Default to mainnet in CAIP-2 format
+      expect(adapter.state.connection?.chain.chainId).toBe('eip155:1'); // Default to mainnet in CAIP-2 format
     });
 
     it('should handle ethereum provider without event methods', async () => {
@@ -600,7 +600,7 @@ describe('EvmAdapter', () => {
       accountsChangedHandler('not-an-array');
 
       // Should not update or throw
-      expect(adapter.connection?.accounts).toEqual(['0x123']);
+      expect(adapter.state.connection?.accounts).toEqual(['0x123']);
     });
 
     it('should handle non-string chainId in event', async () => {
@@ -614,7 +614,7 @@ describe('EvmAdapter', () => {
       chainChangedHandler(123);
 
       // Should not update or throw
-      expect(adapter.connection?.chain.chainId).toBe('eip155:1');
+      expect(adapter.state.connection?.chain.chainId).toBe('eip155:1');
     });
   });
 

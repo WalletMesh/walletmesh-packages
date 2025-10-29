@@ -70,6 +70,8 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
   private qualifiedResponder: QualifiedResponder;
   private connectionManager: DiscoveryConnectionManager;
   private config: DiscoveryAdapterConfig;
+  private aztecConnectionResult: WalletConnection | null = null;
+  private connectOptions?: ConnectOptions;
 
   constructor(
     qualifiedResponder: unknown,
@@ -148,6 +150,11 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
    */
   async connect(options?: ConnectOptions): Promise<WalletConnection> {
     try {
+      // Store options for use in provider creation (only if defined)
+      if (options) {
+        this.connectOptions = options;
+      }
+
       (this.logger?.info || this.logger?.debug || console.info).call(
         this.logger,
         'DiscoveryAdapter.connect invoked',
@@ -164,24 +171,6 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
           'No chains specified for wallet connection. Please provide chains in ConnectOptions.',
         );
       }
-      const requestedChains = options.chains.map((c) => c.chainId || '*');
-
-      const connection = await this.connectionManager.connect(this.qualifiedResponder, {
-        requestedChains,
-        requestedPermissions: ['accounts', 'sign-transactions'],
-      });
-
-      // Validate accounts from connection response
-      let validatedAccounts: ValidatedDiscoveryAccount[];
-      try {
-        validatedAccounts = validateDiscoveryAccounts(connection.accounts);
-      } catch (error) {
-        throw ErrorFactory.connectionFailed('Invalid account data received from wallet', {
-          originalError: error,
-          walletId: this.qualifiedResponder.responderId,
-        });
-      }
-
       // Create transport based on transport config
       this.transport = await this.createTransportFromConfig();
 
@@ -190,6 +179,67 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
 
       // Get chain type from technologies
       const chainType = this.getChainTypeFromTechnologies();
+
+      // Retrieve the created provider from the providers map
+      const provider = this.providers.get(chainType);
+      if (!provider) {
+        throw ErrorFactory.connectionFailed('Provider was not created successfully', {
+          walletId: this.qualifiedResponder.responderId,
+          chainType,
+        });
+      }
+
+      // Get accounts - different approach for Aztec vs EVM/Solana
+      let accounts: Array<{ address: string; chainId: string }> = [];
+      try {
+        const chainId = this.qualifiedResponder.networks?.[0] || (chainType === ChainType.Aztec ? 'aztec:31337' : '1');
+
+        if (chainType === ChainType.Aztec) {
+          // For Aztec: Use the connection result that was already established in createProviders()
+          // The AztecAdapter.connect() already retrieved the address via aztec_getAddress RPC call
+          if (!this.aztecConnectionResult) {
+            throw new Error('Aztec connection was not established during provider creation');
+          }
+
+          accounts = this.aztecConnectionResult.accounts.map((addr) => ({
+            address: addr,
+            chainId,
+          }));
+        } else if ('getAccounts' in provider) {
+          // For EVM/Solana: Get accounts directly from provider
+          const providerAccounts = await provider.getAccounts();
+
+          if (Array.isArray(providerAccounts)) {
+            accounts = providerAccounts.map((addr) => ({
+              address: typeof addr === 'string' ? addr : String(addr),
+              chainId,
+            }));
+          }
+        }
+
+        // Ensure we got at least one account
+        if (accounts.length === 0) {
+          throw new Error('No accounts returned from wallet provider');
+        }
+      } catch (error) {
+        throw ErrorFactory.connectionFailed('Failed to retrieve accounts from wallet', {
+          originalError: error,
+          walletId: this.qualifiedResponder.responderId,
+          chainType,
+        });
+      }
+
+      // Validate accounts from provider response
+      let validatedAccounts: ValidatedDiscoveryAccount[];
+      try {
+        validatedAccounts = validateDiscoveryAccounts(accounts);
+      } catch (error) {
+        throw ErrorFactory.connectionFailed('Invalid account data received from wallet', {
+          originalError: error,
+          walletId: this.qualifiedResponder.responderId,
+        });
+      }
+
       const firstAccount = validatedAccounts[0];
       const chainId = firstAccount?.chainId || '1'; // Default to mainnet
 
@@ -205,7 +255,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
           required: false,
         },
         chainType,
-        provider: null, // Will be set after creating providers
+        provider: provider,
         walletInfo: {
           id: this.qualifiedResponder.responderId,
           name: this.qualifiedResponder.name,
@@ -244,37 +294,6 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
   }
 
   /**
-   * Get default chains based on technologies
-   */
-  private getTechnologyChains(): string[] {
-    const chains: string[] = [];
-    const technologies = this.qualifiedResponder.matched?.required?.technologies || [];
-
-    for (const tech of technologies) {
-      // First check if technology has networks array - use those if available
-      if (tech.networks && Array.isArray(tech.networks) && tech.networks.length > 0) {
-        chains.push(...tech.networks);
-        continue;
-      }
-
-      // Fallback to defaults based on technology type
-      switch (tech.type) {
-        case 'evm':
-          chains.push('eip155:1'); // Default to mainnet
-          break;
-        case 'solana':
-          chains.push('solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp');
-          break;
-        case 'aztec':
-          chains.push('aztec:mainnet');
-          break;
-      }
-    }
-
-    return chains;
-  }
-
-  /**
    * Get chain type from technologies
    */
   private getChainTypeFromTechnologies(): ChainType {
@@ -303,26 +322,20 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
    * @private
    */
   private getAztecNetworkFromDiscovery(): string {
-    // Check if there's network information in the responder metadata
-    const metadata = this.qualifiedResponder.metadata;
-    if (metadata && typeof metadata === 'object' && 'aztecNetwork' in metadata) {
-      const network = metadata.aztecNetwork;
-      if (typeof network === 'string') {
-        return network.startsWith('aztec:') ? network : `aztec:${network}`;
-      }
-    }
+    // Check top-level networks array first
+    const networks = this.qualifiedResponder.networks ||
+                     this.qualifiedResponder.matched?.required?.networks ||
+                     [];
 
-    // Fall back to extracting from technology chains
-    const chains = this.getTechnologyChains();
-    const aztecChain = chains.find((chain) => chain.startsWith('aztec:'));
-    if (aztecChain) {
-      return aztecChain;
+    const aztecNetwork = networks.find((network: string) => network.startsWith('aztec:'));
+    if (aztecNetwork) {
+      return aztecNetwork;
     }
 
     // No default - throw error if network cannot be determined
     throw new Error(
       `Unable to determine Aztec network for wallet "${this.metadata.name}". ` +
-      `The wallet must include 'aztecNetwork' in its discovery metadata or provide chain information.`
+      `The wallet must provide network information in the discovery response.`
     );
   }
 
@@ -484,7 +497,6 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
           break;
         case ChainType.Aztec: {
           // Determine Aztec network from discovery data
-          // Priority: 1) Negotiated chains, 2) Default from getTechnologyChains(), 3) Fail
           const aztecNetwork = this.getAztecNetworkFromDiscovery();
 
           // Create AztecAdapter with the transport and dynamically determined network
@@ -503,13 +515,17 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
               walletId: this.id,
               transportType: (this.qualifiedResponder.transportConfig as any)?.type,
               network: aztecNetwork,
+              hasPermissions: !!(this.connectOptions?.['aztecOptions'] as { permissions?: string[] })?.permissions,
             },
           );
-          // Connect the adapter to establish the provider
-          await aztecAdapter.connect();
+          // Connect the adapter to establish the provider and get connection details
+          // Pass the connection options (which include permissions) to the Aztec adapter
+          this.aztecConnectionResult = await aztecAdapter.connect(this.connectOptions);
           this.logger?.debug('DiscoveryAdapter: Aztec adapter connected', {
             walletId: this.id,
             network: aztecNetwork,
+            address: this.aztecConnectionResult.address,
+            accounts: this.aztecConnectionResult.accounts,
           });
           // Store the provider from the adapter
           const aztecProvider = aztecAdapter.getProvider(ChainType.Aztec);

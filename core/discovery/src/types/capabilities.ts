@@ -41,13 +41,6 @@ export interface TechnologyRequirement {
    * These are features specific to this blockchain technology.
    */
   features?: string[];
-
-  /**
-   * Specific networks required for this technology (CAIP-2 format).
-   * Examples: 'eip155:1' (Ethereum mainnet), 'aztec:31337' (Aztec sandbox), 'solana:mainnet'
-   * If specified, wallet must support at least one of these networks to match.
-   */
-  networks?: string[];
 }
 
 /**
@@ -74,6 +67,15 @@ export interface CapabilityRequirements {
    * See RESPONDER_FEATURES for standard values.
    */
   features: string[];
+
+  /**
+   * Specific networks required (CAIP-2 format).
+   * Examples: 'eip155:1' (Ethereum mainnet), 'aztec:31337' (Aztec sandbox), 'solana:mainnet'
+   * If specified, wallet must support at least one of these networks to match.
+   * Networks are independent of technology support - a wallet might support Aztec technology
+   * on multiple networks.
+   */
+  networks?: string[];
 }
 
 /**
@@ -98,6 +100,12 @@ export interface CapabilityPreferences {
    * These are "nice to have" capabilities beyond the required features.
    */
   features?: string[];
+
+  /**
+   * Additional networks that would be beneficial (CAIP-2 format).
+   * These networks are not required but having them increases wallet ranking.
+   */
+  networks?: string[];
 }
 
 export interface TechnologyMatch {
@@ -117,13 +125,6 @@ export interface TechnologyMatch {
    * Subset of what the wallet supports that matches the requirement.
    */
   features: string[];
-
-  /**
-   * Matched networks for this technology (CAIP-2 format).
-   * Networks that overlap between what was requested and what the wallet supports.
-   * Only included if networks were specified in the request.
-   */
-  networks?: string[];
 }
 
 /**
@@ -152,13 +153,6 @@ export interface TechnologyCapability {
    * Should include all capabilities specific to this blockchain technology.
    */
   features?: string[];
-
-  /**
-   * Specific networks supported for this technology (CAIP-2 format).
-   * Examples: 'eip155:1' (Ethereum mainnet), 'aztec:31337' (Aztec sandbox), 'solana:mainnet'
-   * Wallet will only respond to discovery if it supports at least one required network.
-   */
-  networks?: string[];
 }
 
 /**
@@ -186,6 +180,12 @@ export interface CapabilityIntersection {
      * Global features that overlap between requirements and responder support.
      */
     features: string[];
+
+    /**
+     * Networks that overlap between requirements and responder support (CAIP-2 format).
+     * Only included if networks were specified in the request.
+     */
+    networks?: string[];
   };
 
   /**
@@ -202,6 +202,11 @@ export interface CapabilityIntersection {
      * Optional features that are supported.
      */
     features?: string[];
+
+    /**
+     * Optional networks that are supported (CAIP-2 format).
+     */
+    networks?: string[];
   };
 }
 
@@ -280,6 +285,7 @@ export interface BaseResponderInfo {
   protocolVersion: string;
   technologies: TechnologyCapability[];
   features: ResponderFeature[];
+  networks?: string[];
   description?: string;
   homepage?: string;
   platform?: ResponderPlatform;
@@ -335,6 +341,7 @@ export interface QualifiedResponder {
   name: string;
   icon: string;
   matched: CapabilityIntersection;
+  networks?: string[];
   sessionId?: string;
   transportConfig?: import('./core.js').TransportConfig;
   metadata?: {

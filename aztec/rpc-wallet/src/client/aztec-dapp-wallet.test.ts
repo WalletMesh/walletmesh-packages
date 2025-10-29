@@ -596,7 +596,7 @@ describe('AztecDappWallet', () => {
         }
       });
 
-      const wallet = await createAztecWallet(provider);
+      const wallet = await createAztecWallet(provider, 'aztec:mainnet');
 
       expect(wallet).toBeInstanceOf(AztecDappWallet);
       expect(wallet.getAddress()).toEqual(mockAddress);

@@ -71,6 +71,7 @@ export interface DiscoveryResponseEvent extends BaseDiscoveryMessage {
   name: string;
   icon: string;
   matched: import('./capabilities.js').CapabilityIntersection;
+  networks?: string[];
   transportConfig?: TransportConfig;
   description?: string;
   responderVersion?: string;

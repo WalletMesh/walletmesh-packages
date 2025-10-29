@@ -13,11 +13,11 @@ import type { SupportedChain } from '../../types.js';
 import { ChainType } from '../../types.js';
 
 /**
- * Build technology requirements from supported chains and interfaces
+ * Build technology requirements and networks from supported chains and interfaces
  *
  * @param supportedChains - Array of supported chain objects
  * @param supportedInterfaces - Supported interfaces per technology
- * @returns Array of technology requirements for discovery
+ * @returns Object containing technologies and networks arrays for discovery
  */
 export function buildTechnologyRequirements(
   supportedChains?: SupportedChain[],
@@ -26,8 +26,9 @@ export function buildTechnologyRequirements(
     solana?: string[];
     aztec?: string[];
   },
-): TechnologyRequirement[] {
+): { technologies: TechnologyRequirement[]; networks: string[] } {
   const techRequirements: Map<string, TechnologyRequirement> = new Map();
+  const networks: Set<string> = new Set();
 
   // Process supported chains to determine required technologies
   if (supportedChains && supportedChains.length > 0) {
@@ -42,14 +43,13 @@ export function buildTechnologyRequirements(
           type: techType,
           interfaces: [],
           features: [],
-          networks: [],
         };
         techRequirements.set(techType, techReq);
       }
 
-      // Add network from chain's chainId (CAIP-2 format)
-      if (chain.chainId && !techReq.networks!.includes(chain.chainId)) {
-        techReq.networks!.push(chain.chainId);
+      // Add network from chain's chainId (CAIP-2 format) to top-level networks set
+      if (chain.chainId) {
+        networks.add(chain.chainId);
       }
 
       // Add chain-specific interfaces if specified
@@ -116,7 +116,10 @@ export function buildTechnologyRequirements(
     }
   }
 
-  return Array.from(techRequirements.values());
+  return {
+    technologies: Array.from(techRequirements.values()),
+    networks: Array.from(networks),
+  };
 }
 
 /**

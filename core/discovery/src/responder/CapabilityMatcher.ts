@@ -274,7 +274,17 @@ export class CapabilityMatcher {
     const supportedFeatures = this.getSupportedFeatures();
     const missingFeatures = (required.features || []).filter((f) => !supportedFeatures.includes(f));
 
-    const canFulfill = missingTechnologies.length === 0 && missingFeatures.length === 0;
+    // Check network support
+    const supportedNetworks = this.responderInfo.networks || [];
+    const missingNetworks: string[] = [];
+    if (required.networks && required.networks.length > 0) {
+      const matchedNetworks = this.intersectArrays(required.networks, supportedNetworks);
+      if (matchedNetworks.length === 0) {
+        missingNetworks.push(...required.networks);
+      }
+    }
+
+    const canFulfill = missingTechnologies.length === 0 && missingFeatures.length === 0 && missingNetworks.length === 0;
 
     if (!canFulfill) {
       return {
@@ -295,11 +305,25 @@ export class CapabilityMatcher {
       },
     };
 
+    // Always include networks if wallet supports any
+    // If request specifies networks, calculate intersection; otherwise include all supported networks
+    if (supportedNetworks.length > 0) {
+      if (required.networks && required.networks.length > 0) {
+        intersection.required.networks = this.intersectArrays(required.networks, supportedNetworks);
+      } else {
+        // No specific networks requested - include all supported networks
+        intersection.required.networks = supportedNetworks;
+      }
+    }
+
     // Add optional capabilities if requested
     if (optional) {
       intersection.optional = {};
       if (optional.features) {
         intersection.optional.features = this.intersectArrays(optional.features, supportedFeatures);
+      }
+      if (optional.networks) {
+        intersection.optional.networks = this.intersectArrays(optional.networks, supportedNetworks);
       }
     }
 
@@ -333,18 +357,6 @@ export class CapabilityMatcher {
       return null;
     }
 
-    // Match networks if specified
-    let matchedNetworks: string[] | undefined;
-    if (requirement.networks && requirement.networks.length > 0) {
-      const supportedNetworks = supportedTech.networks || [];
-      matchedNetworks = this.intersectArrays(requirement.networks, supportedNetworks);
-
-      // If networks are specified but none match, technology doesn't match
-      if (matchedNetworks.length === 0) {
-        return null;
-      }
-    }
-
     // Match features if specified
     if (requirement.features && requirement.features.length > 0) {
       const supportedFeatures = supportedTech.features || [];
@@ -355,17 +367,11 @@ export class CapabilityMatcher {
         return null;
       }
 
-      const result: TechnologyMatch = {
+      return {
         type: requirement.type,
         interfaces: matchedInterfaces,
         features: matchedFeatures,
       };
-
-      if (matchedNetworks !== undefined && matchedNetworks.length > 0) {
-        result.networks = matchedNetworks;
-      }
-
-      return result;
     }
 
     const result: TechnologyMatch = {
@@ -380,17 +386,13 @@ export class CapabilityMatcher {
       );
     }
 
-    if (matchedNetworks !== undefined && matchedNetworks.length > 0) {
-      result.networks = matchedNetworks;
-    }
-
     return result;
   }
 
   /**
    * Get supported technology information from wallet capabilities.
    */
-  private getSupportedTechnology(techType: string): { interfaces: string[]; features?: string[]; networks?: string[] } | null {
+  private getSupportedTechnology(techType: string): { interfaces: string[]; features?: string[] } | null {
     // Find the technology directly in the responder's technologies array
     const supportedTechnology = this.responderInfo.technologies.find((tech) => tech.type === techType);
 
@@ -398,16 +400,12 @@ export class CapabilityMatcher {
       return null;
     }
 
-    const result: { interfaces: string[]; features?: string[]; networks?: string[] } = {
+    const result: { interfaces: string[]; features?: string[] } = {
       interfaces: supportedTechnology.interfaces,
     };
 
     if (supportedTechnology.features !== undefined) {
       result.features = supportedTechnology.features;
-    }
-
-    if (supportedTechnology.networks !== undefined) {
-      result.networks = supportedTechnology.networks;
     }
 
     return result;

@@ -22,9 +22,10 @@ const SANDBOX_SECURITY_POLICY = {
 
 /**
  * Safe default icon SVG as data URI - a simple generic wallet icon
- * @internal
+ * Exported for consistency across the codebase when a fallback icon is needed
+ * @public
  */
-const SAFE_DEFAULT_ICON =
+export const SAFE_DEFAULT_ICON =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
@@ -102,6 +103,12 @@ function detectMaliciousContent(iconDataUri: string): {
  * @internal
  */
 function validateIcon(iconDataUri: string): void {
+  // Debug logging to verify new code is running
+  console.log('[IconSandbox DEBUG] Validating icon:', {
+    preview: iconDataUri.substring(0, 100) + '...',
+    length: iconDataUri.length,
+  });
+
   // Check if it's a data URI with allowed MIME type
   const validPrefix = SANDBOX_SECURITY_POLICY.allowedMimeTypes.some((mimeType) =>
     iconDataUri.startsWith(`data:${mimeType}`),
@@ -202,6 +209,8 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
     // Position off-screen and hidden so it doesn't flash or affect layout
     const tempStyle = iframe.style.cssText;
     iframe.style.cssText += '; position: absolute; left: -9999px; visibility: hidden;';
+
+    console.log('[IconSandbox DEBUG] Mounting iframe to document.body for initialization');
     document.body.appendChild(iframe);
 
     // Generate disabled styling if needed
@@ -211,7 +220,7 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
     // Escape the icon data URI to prevent HTML injection
     const escapedIconDataUri = escapeHtmlAttribute(iconDataUri);
 
-    // Create secure HTML content with CSP
+    // Create secure HTML content with CSP (no inline scripts)
     const secureHtml = `<!DOCTYPE html>
 <html>
   <head>
@@ -239,7 +248,7 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
     </style>
   </head>
   <body>
-    <img src="${escapedIconDataUri}" alt="Icon" onload="parent.postMessage({type:'icon-loaded'}, '*')" onerror="parent.postMessage({type:'csp-error', error:'Image load failed'}, '*')">
+    <img src="${escapedIconDataUri}" alt="Icon">
   </body>
 </html>`;
 
@@ -251,7 +260,8 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      window.removeEventListener('message', handleMessage);
+      iframe.removeEventListener('load', handleLoad);
+      iframe.removeEventListener('error', handleError);
       // Remove from temporary mount point if still there
       if (iframe.parentNode === document.body) {
         document.body.removeChild(iframe);
@@ -261,29 +271,10 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
       resolved = true;
     };
 
-    const handleMessage = (event: MessageEvent) => {
-      if (event.source === iframe.contentWindow) {
-        if (event.data?.type === 'icon-loaded') {
-          // Icon loaded successfully
-          cleanup();
-          resolve(iframe);
-        } else if (event.data?.type === 'csp-error') {
-          // CSP or load error occurred
-          cleanup();
-          const error = ErrorFactory.renderFailed(
-            `CSP blocked icon content: ${event.data.error || 'Unknown error'}`,
-            'iconSandbox',
-          );
-          if (onCspError) {
-            onCspError(error);
-          }
-          reject(error);
-        }
-      }
-    };
-
     const handleLoad = () => {
       if (!resolved) {
+        // Icon loaded successfully
+        console.log('[IconSandbox DEBUG] Icon loaded successfully, removing from temporary mount');
         cleanup();
         resolve(iframe);
       }
@@ -292,12 +283,15 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
     const handleError = () => {
       if (!resolved) {
         cleanup();
-        reject(ErrorFactory.renderFailed('Iframe failed to load', 'iconSandbox'));
+        const error = ErrorFactory.renderFailed('Iframe failed to load', 'iconSandbox');
+        if (onCspError) {
+          onCspError(error);
+        }
+        reject(error);
       }
     };
 
     // Set up event listeners
-    window.addEventListener('message', handleMessage);
     iframe.addEventListener('load', handleLoad);
     iframe.addEventListener('error', handleError);
 

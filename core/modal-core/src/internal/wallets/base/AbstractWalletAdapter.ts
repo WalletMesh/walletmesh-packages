@@ -209,12 +209,6 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
     return { ...this.connectionState };
   }
 
-  /**
-   * Get current connection (read-only)
-   */
-  get connection(): WalletConnection | null {
-    return this.connectionState.connection;
-  }
 
   /**
    * Initialize the adapter with context

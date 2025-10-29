@@ -462,6 +462,7 @@ export class DiscoveryResponder {
       name: this.responderInfo.name,
       icon: this.responderInfo.icon,
       matched: intersection,
+      ...(this.responderInfo.networks && this.responderInfo.networks.length > 0 && { networks: this.responderInfo.networks }),
       ...(transportConfig && { transportConfig }),
       ...(this.responderInfo.description && { description: this.responderInfo.description }),
       ...(this.responderInfo.version && { responderVersion: this.responderInfo.version }),

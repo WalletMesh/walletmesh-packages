@@ -81,7 +81,7 @@ describe('helpers', () => {
       vi.mocked(provider.connect).mockResolvedValue(mockConnectResult);
       vi.mocked(createAztecWallet).mockResolvedValue(mockWallet);
 
-      const result = await connectAztec(provider);
+      const result = await connectAztec(provider, 'aztec:mainnet');
 
       expect(provider.connect).toHaveBeenCalledWith({
         'aztec:mainnet': ALL_AZTEC_METHODS,
@@ -127,7 +127,7 @@ describe('helpers', () => {
       vi.mocked(provider.connect).mockResolvedValue(mockConnectResult);
       vi.mocked(createAztecWallet).mockResolvedValue(mockWallet);
 
-      const result = await connectAztec(provider, undefined, customMethods);
+      const result = await connectAztec(provider, 'aztec:mainnet', customMethods);
 
       expect(provider.connect).toHaveBeenCalledWith({
         'aztec:mainnet': customMethods,
@@ -167,7 +167,7 @@ describe('helpers', () => {
       const error = new Error('Connection failed');
       vi.mocked(provider.connect).mockRejectedValue(error);
 
-      await expect(connectAztec(provider)).rejects.toThrow('Connection failed');
+      await expect(connectAztec(provider, 'aztec:mainnet')).rejects.toThrow('Connection failed');
       expect(createAztecWallet).not.toHaveBeenCalled();
     });
 
@@ -181,7 +181,7 @@ describe('helpers', () => {
       vi.mocked(provider.connect).mockResolvedValue(mockConnectResult);
       vi.mocked(createAztecWallet).mockRejectedValue(error);
 
-      await expect(connectAztec(provider)).rejects.toThrow('Wallet creation failed');
+      await expect(connectAztec(provider, 'aztec:mainnet')).rejects.toThrow('Wallet creation failed');
     });
   });
 });

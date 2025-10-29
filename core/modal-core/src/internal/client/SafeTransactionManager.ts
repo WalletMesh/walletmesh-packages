@@ -8,12 +8,26 @@ import type {
   TransactionManager,
   TransactionResult,
 } from '../../api/types/transaction.js';
+import type { SessionState } from '../../api/types/sessionState.js';
+import { useStore } from '../../state/store.js';
 import type { SupportedChain } from '../../types.js';
 import { ErrorFactory } from '../core/errors/errorFactory.js';
 import type { WalletMeshClient } from './WalletMeshClientImpl.js';
 
 export class SafeTransactionManager implements TransactionManager {
   constructor(private client: WalletMeshClient) {}
+
+  /**
+   * Helper to get session by wallet ID
+   * @private
+   */
+  private getSessionByWalletId(walletId: string): SessionState | null {
+    const state = useStore.getState();
+    const sessions = Object.values(state.entities.sessions).filter(
+      (s) => s.walletId === walletId && s.status === 'connected',
+    );
+    return sessions[0] || null;
+  }
 
   async executeWithContext<T = unknown>(request: SafeTransactionRequest<T>): Promise<TransactionResult<T>> {
     const { context, params } = request;
@@ -26,20 +40,15 @@ export class SafeTransactionManager implements TransactionManager {
       });
     }
 
-    // Get the wallet adapter
-    const adapter = this.client.getConnection(context.walletId);
-    if (!adapter) {
+    // Get session for this wallet instead of adapter
+    const session = this.getSessionByWalletId(context.walletId);
+    if (!session) {
       throw ErrorFactory.walletNotFound(context.walletId);
     }
 
     // Check if we need to switch chains
-    const currentConnection = adapter.connection;
-    if (!currentConnection) {
-      throw ErrorFactory.connectionFailed('Wallet not connected');
-    }
-
     let chainSwitched = false;
-    const currentChainId = String(currentConnection.chain.chainId);
+    const currentChainId = String(session.chain.chainId);
     const targetChainId = String(context.chain.chainId);
 
     if (currentChainId !== targetChainId) {
@@ -55,8 +64,9 @@ export class SafeTransactionManager implements TransactionManager {
       }
     }
 
-    // Get fresh provider after potential chain switch
-    const provider = adapter.connection?.provider;
+    // Get provider from session after potential chain switch
+    const updatedSession = this.getSessionByWalletId(context.walletId);
+    const provider = updatedSession?.provider?.instance;
     if (!provider) {
       throw ErrorFactory.connectionFailed('No provider available');
     }
@@ -84,12 +94,22 @@ export class SafeTransactionManager implements TransactionManager {
     reason?: string;
     suggestedAction?: 'connect-wallet' | 'switch-chain' | 'switch-wallet';
   }> {
-    // Check if wallet is connected
-    const adapter = this.client.getConnection(context.walletId);
-    if (!adapter || !adapter.connection) {
+    // Check if wallet is connected using session state
+    const session = this.getSessionByWalletId(context.walletId);
+    if (!session) {
       return {
         valid: false,
         reason: 'Wallet not connected',
+        suggestedAction: 'connect-wallet',
+      };
+    }
+
+    // Get adapter to check capabilities
+    const adapter = this.client.getConnection(context.walletId);
+    if (!adapter) {
+      return {
+        valid: false,
+        reason: 'Wallet adapter not found',
         suggestedAction: 'connect-wallet',
       };
     }
@@ -103,7 +123,7 @@ export class SafeTransactionManager implements TransactionManager {
         return chain.type === context.chainType;
       }
       // For now, assume same type can switch
-      return chain.type === adapter.connection?.chainType;
+      return chain.type === session.chain.chainType;
     });
 
     if (!supportsChain) {
@@ -115,7 +135,7 @@ export class SafeTransactionManager implements TransactionManager {
     }
 
     // Check if on correct chain (unless auto-switch is enabled)
-    const currentChainId = String(adapter.connection.chain.chainId);
+    const currentChainId = String(session.chain.chainId);
     const targetChainId = String(context.chain.chainId);
 
     if (currentChainId !== targetChainId && !context.autoSwitchChain) {
@@ -149,12 +169,13 @@ export class SafeTransactionManager implements TransactionManager {
 
     return connections
       .filter((adapter) => {
-        // Check if connected
-        if (!adapter.connection) return false;
+        // Check if connected using session state
+        const session = this.getSessionByWalletId(adapter.id);
+        if (!session) return false;
 
         // Check if supports the chain type
         return adapter.capabilities.chains.some(
-          (chain) => chain.type === chainType || chain.type === adapter.connection?.chainType,
+          (chain) => chain.type === chainType || chain.type === session.chain.chainType,
         );
       })
       .map((adapter) => {

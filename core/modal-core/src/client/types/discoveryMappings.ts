@@ -184,6 +184,8 @@ export function getFeaturesForChainTypes(chainTypes: ChainType[]): string[] {
 
 /**
  * Get technologies for chain types
+ * @param chainTypes - Chain types to get technologies for
+ * @returns Array of technology requirements (without nested networks)
  */
 export function getTechnologiesForChainTypes(chainTypes: ChainType[]): TechnologyRequirement[] {
   const technologies: TechnologyRequirement[] = [];
@@ -280,6 +282,11 @@ export function normalizeChainId(chainId: string): string {
 
 /**
  * Create capability requirements from chain types
+ * @param chainTypes - Chain types to create requirements for
+ * @param customChains - Optional specific chain IDs to include in networks field (at top-level)
+ * @param customFeatures - Optional custom features to use instead of defaults
+ * @param customInterfaces - Reserved for future use
+ * @returns Capability requirements with top-level networks array
  */
 export function createCapabilityRequirementsFromChainTypes(
   chainTypes: ChainType[],
@@ -312,19 +319,23 @@ export function createCapabilityRequirementsFromChainTypes(
     return {
       technologies: mergedTechnologies,
       features: existingCapabilities.features || getFeaturesForChainTypes(chainTypes),
+      ...(existingCapabilities.networks && { networks: existingCapabilities.networks }),
     };
   }
 
-  // Handle original overload
+  // Handle original overload - customChains are specific chain IDs to include at top-level
+  const specificChainIds = Array.isArray(customChainsOrCapabilities) ? customChainsOrCapabilities : undefined;
   const features =
     customFeatures && customFeatures.length > 0 ? customFeatures : getFeaturesForChainTypes(chainTypes);
 
-  // Create technologies from chain types
+  // Create technologies from chain types (without nested networks)
   const technologies = getTechnologiesForChainTypes(chainTypes);
 
+  // Return with networks at top-level
   return {
     technologies,
     features,
+    ...(specificChainIds && specificChainIds.length > 0 && { networks: specificChainIds }),
   };
 }
 

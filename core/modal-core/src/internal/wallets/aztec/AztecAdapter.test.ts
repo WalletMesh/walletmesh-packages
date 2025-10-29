@@ -384,7 +384,7 @@ describe('AztecAdapter', () => {
     });
 
     it('should accept valid hex format Aztec address', async () => {
-      const validHexAddress = '0x1234567890123456789012345678901234567890';
+      const validHexAddress = '0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 
       const { AztecRouterProvider } = await import('@walletmesh/aztec-rpc-wallet');
       (AztecRouterProvider as ReturnType<typeof vi.fn>).mockImplementationOnce(() => ({

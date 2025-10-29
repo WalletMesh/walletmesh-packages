@@ -216,9 +216,9 @@ describe('CapabilityMatcher', () => {
             {
               type: 'aztec',
               interfaces: ['aztec-wallet-api-v1'],
-              networks: ['aztec:31337', 'aztec:mainnet'],
             },
           ],
+          networks: ['aztec:31337', 'aztec:mainnet'],
         };
         matcher = new CapabilityMatcher(responderInfo);
 
@@ -231,10 +231,10 @@ describe('CapabilityMatcher', () => {
               {
                 type: 'aztec',
                 interfaces: ['aztec-wallet-api-v1'],
-                networks: ['aztec:31337'], // Request sandbox network
               },
             ],
             features: [],
+            networks: ['aztec:31337'], // Request sandbox network
           },
           origin: 'https://example.com',
           initiatorInfo: { name: 'Test App', icon: '', url: '' },
@@ -243,7 +243,7 @@ describe('CapabilityMatcher', () => {
         const result = matcher.matchCapabilities(request);
 
         expect(result.canFulfill).toBe(true);
-        expect(result.intersection?.required.technologies[0]?.networks).toEqual(['aztec:31337']);
+        expect(result.intersection?.required.networks).toEqual(['aztec:31337']);
       });
 
       it('should fail when networks do not overlap', () => {
@@ -254,9 +254,9 @@ describe('CapabilityMatcher', () => {
             {
               type: 'aztec',
               interfaces: ['aztec-wallet-api-v1'],
-              networks: ['aztec:mainnet'],
             },
           ],
+          networks: ['aztec:mainnet'],
         };
         matcher = new CapabilityMatcher(responderInfo);
 
@@ -269,10 +269,10 @@ describe('CapabilityMatcher', () => {
               {
                 type: 'aztec',
                 interfaces: ['aztec-wallet-api-v1'],
-                networks: ['aztec:31337'], // Request sandbox but wallet only has mainnet
               },
             ],
             features: [],
+            networks: ['aztec:31337'], // Request sandbox but wallet only has mainnet
           },
           origin: 'https://example.com',
           initiatorInfo: { name: 'Test App', icon: '', url: '' },
@@ -281,10 +281,9 @@ describe('CapabilityMatcher', () => {
         const result = matcher.matchCapabilities(request);
 
         expect(result.canFulfill).toBe(false);
-        expect(result.missing.technologies[0]?.type).toBe('aztec');
       });
 
-      it('should match when no networks specified (backwards compatibility)', () => {
+      it('should match when no networks specified', () => {
         // Wallet specifies networks
         responderInfo = {
           ...createTestResponderInfo.ethereum(),
@@ -292,9 +291,9 @@ describe('CapabilityMatcher', () => {
             {
               type: 'evm',
               interfaces: ['eip-1193'],
-              networks: ['eip155:1', 'eip155:137'],
             },
           ],
+          networks: ['eip155:1', 'eip155:137'],
         };
         matcher = new CapabilityMatcher(responderInfo);
 
@@ -308,10 +307,10 @@ describe('CapabilityMatcher', () => {
               {
                 type: 'evm',
                 interfaces: ['eip-1193'],
-                // No networks specified - should still match
               },
             ],
             features: [],
+            // No networks specified - should still match
           },
           origin: 'https://example.com',
           initiatorInfo: { name: 'Test App', icon: '', url: '' },
@@ -320,8 +319,8 @@ describe('CapabilityMatcher', () => {
         const result = matcher.matchCapabilities(request);
 
         expect(result.canFulfill).toBe(true);
-        // networks not included in result when not requested
-        expect(result.intersection?.required.technologies[0]?.networks).toBeUndefined();
+        // Networks are now always included when wallet supports them (even if not requested)
+        expect(result.intersection?.required.networks).toEqual(['eip155:1', 'eip155:137']);
       });
 
       it('should return all overlapping networks', () => {
@@ -332,9 +331,9 @@ describe('CapabilityMatcher', () => {
             {
               type: 'evm',
               interfaces: ['eip-1193'],
-              networks: ['eip155:1', 'eip155:137', 'eip155:42161'],
             },
           ],
+          networks: ['eip155:1', 'eip155:137', 'eip155:42161'],
         };
         matcher = new CapabilityMatcher(responderInfo);
 
@@ -348,10 +347,10 @@ describe('CapabilityMatcher', () => {
               {
                 type: 'evm',
                 interfaces: ['eip-1193'],
-                networks: ['eip155:1', 'eip155:137', 'eip155:10'], // Last one not supported
               },
             ],
             features: [],
+            networks: ['eip155:1', 'eip155:137', 'eip155:10'], // Last one not supported
           },
           origin: 'https://example.com',
           initiatorInfo: { name: 'Test App', icon: '', url: '' },
@@ -360,10 +359,10 @@ describe('CapabilityMatcher', () => {
         const result = matcher.matchCapabilities(request);
 
         expect(result.canFulfill).toBe(true);
-        expect(result.intersection?.required.technologies[0]?.networks).toHaveLength(2);
-        expect(result.intersection?.required.technologies[0]?.networks).toContain('eip155:1');
-        expect(result.intersection?.required.technologies[0]?.networks).toContain('eip155:137');
-        expect(result.intersection?.required.technologies[0]?.networks).not.toContain('eip155:10');
+        expect(result.intersection?.required.networks).toHaveLength(2);
+        expect(result.intersection?.required.networks).toContain('eip155:1');
+        expect(result.intersection?.required.networks).toContain('eip155:137');
+        expect(result.intersection?.required.networks).not.toContain('eip155:10');
       });
     });
 

@@ -670,7 +670,7 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
       status = 'connected';
     }
 
-    return {
+    const result = {
       // Account information
       isConnected,
       address: (addressString ?? address) || null,
@@ -703,6 +703,8 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
       status,
       isAztecChain,
     };
+
+    return result;
   }, [
     isConnected,
     address,

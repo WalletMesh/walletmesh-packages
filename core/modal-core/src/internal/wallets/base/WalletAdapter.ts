@@ -204,9 +204,6 @@ export interface WalletAdapter {
   /** Current connection state */
   readonly state: WalletAdapterConnectionState;
 
-  /** Current connection if connected */
-  readonly connection: WalletConnection | null;
-
   /**
    * Connect to the wallet
    * @param options - Connection options

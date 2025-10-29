@@ -93,6 +93,11 @@ export const capabilityRequirementsSchema = z.object({
    * Required events (e.g., ['accountsChanged', 'chainChanged'])
    */
   events: z.array(z.string()).optional(),
+
+  /**
+   * Required networks (CAIP-2 format, e.g., ['eip155:1', 'aztec:31337', 'solana:mainnet'])
+   */
+  networks: z.array(z.string()).optional(),
 });
 
 /**
@@ -199,6 +204,11 @@ export const qualifiedResponderSchema = z.object({
    * Matched capabilities
    */
   matched: capabilityIntersectionSchema,
+
+  /**
+   * Supported networks (CAIP-2 format, e.g., ['eip155:1', 'aztec:31337'])
+   */
+  networks: z.array(z.string()).optional(),
 
   /**
    * Optional transport configuration
