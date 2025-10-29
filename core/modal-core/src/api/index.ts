@@ -696,15 +696,11 @@ export {
  * Manages wallet discovery and connection state.
  *
  * @see {@link ConnectionStateManager}
- * @see {@link DiscoveryEventWrapper}
  */
 export {
   ConnectionStateManager,
-  DiscoveryEventWrapper,
   type ConnectionState as DiscoveryConnectionState,
   type ConnectionStateChangeEvent as DiscoveryConnectionStateChangeEvent,
-  type DiscoveryProtocolEvent,
-  type EventWrapperConfig,
 } from '../client/discovery/index.js';
 
 // Re-export discovery types from @walletmesh/discovery

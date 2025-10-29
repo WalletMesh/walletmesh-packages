@@ -83,7 +83,6 @@ import {
   SessionSecurityManager,
 } from '../security/sessionSecurity.js';
 import { ConnectionStateManager } from './discovery/ConnectionState.js';
-import { DiscoveryEventWrapper } from './discovery/DiscoveryEventWrapper.js';
 import { createCapabilityRequirementsFromChainTypes } from './types/discoveryMappings.js';
 
 /**
@@ -271,7 +270,6 @@ export class DiscoveryService {
 
   // Enhanced discovery components
   private connectionStateManager: ConnectionStateManager | null = null;
-  private eventWrapper: DiscoveryEventWrapper | null = null;
 
   // Security components
   private sessionSecurityManager: SessionSecurityManager | null = null;
@@ -740,16 +738,6 @@ export class DiscoveryService {
       this.discoveryInitiator = null;
     }
 
-    // Reset event wrapper
-    if (this.eventWrapper) {
-      try {
-        this.eventWrapper.cleanup();
-      } catch (error) {
-        this.logger.debug('Event wrapper cleanup failed (ignored)', { error });
-      }
-      this.eventWrapper = null;
-    }
-
     // Clear cached adapters
     for (const adapter of this.walletAdapters.values()) {
       try {
@@ -1028,23 +1016,13 @@ export class DiscoveryService {
         });
       }
 
-      // Use event wrapper if available for better event handling
-      let sessionId: string;
-      let transportConfig: unknown;
-
-      if (this.eventWrapper) {
-        const sessionHint = this.walletDiscoverySessions.get(walletId);
-        const result = await this.eventWrapper.connectToWallet(qualifiedWallet, sessionHint);
-        sessionId = result.sessionId;
-        transportConfig = result.transport;
-      } else {
-        const connection = await this.connectionManager.connect(qualifiedWallet, {
-          requestedChains: options?.requestedChains || [],
-          requestedPermissions: options?.requestedPermissions || ['accounts', 'sign-transactions'],
-        });
-        sessionId = connection.connectionId || qualifiedWallet.responderId;
-        transportConfig = connection;
-      }
+      // Connect directly using ConnectionManager
+      const connection = await this.connectionManager.connect(qualifiedWallet, {
+        requestedChains: options?.requestedChains || [],
+        requestedPermissions: options?.requestedPermissions || ['accounts', 'sign-transactions'],
+      });
+      const sessionId = connection.connectionId || qualifiedWallet.responderId;
+      const transportConfig = connection;
 
       // Update connection state to connected
       if (this.connectionStateManager) {
@@ -1549,79 +1527,6 @@ export class DiscoveryService {
 
   // Chain conversion methods moved to discoveryMappings.ts
 
-  private setupDiscoveryEventHandlers(): void {
-    if (!this.eventWrapper) return;
-
-    // Setup event handlers from the event wrapper
-    this.eventWrapper.addEventListener((event) => {
-      const sessionId = 'sessionId' in event ? event.sessionId : undefined;
-      switch (event.type) {
-        case 'wallet_found': {
-          // Skip wallets that are missing essential fields
-          if (!event.wallet.name || !event.wallet.rdns) {
-            this.logger.warn('Skipping malformed wallet: missing essential fields', {
-              walletId: event.wallet.responderId,
-              hasName: !!event.wallet.name,
-              hasRdns: !!event.wallet.rdns,
-              sessionId,
-            });
-            break;
-          }
-
-          // Convert and store the qualified wallet
-          this.qualifiedWallets.set(event.wallet.responderId, event.wallet);
-          if (sessionId) {
-            this.walletDiscoverySessions.set(event.wallet.responderId, sessionId);
-          }
-          const discoveredWallet = this.convertQualifiedWalletToDiscoveredWallet(event.wallet);
-
-          // Apply origin validation if enabled
-          this.handleOriginValidationAsync(discoveredWallet);
-          break;
-        }
-
-        case 'discovery_error':
-          this.emit({ type: 'discovery_error', error: event.error });
-          break;
-
-        case 'connection_established':
-          // Update connection state
-          if (this.connectionStateManager) {
-            this.connectionStateManager.updateConnectionState(event.walletId, {
-              status: 'connected',
-              sessionId: event.sessionId,
-              connectedAt: Date.now(),
-            });
-          }
-          break;
-
-        case 'connection_failed':
-          // Update connection state
-          if (this.connectionStateManager) {
-            this.connectionStateManager.updateConnectionState(event.walletId, {
-              status: 'error',
-              error: {
-                code: 'CONNECTION_FAILED',
-                message: event.error.message,
-                recoverable: true,
-              },
-            });
-          }
-          break;
-      }
-    });
-
-    // Setup connection state change handlers
-    if (this.connectionStateManager) {
-      this.connectionStateManager.onStateChange((event) => {
-        this.logger.debug('Connection state changed', event);
-
-        // You can emit additional events here if needed
-        // For now, connection state is managed internally
-      });
-    }
-  }
-
   private registerDiscoveredWallets(wallets: QualifiedResponder[]): void {
     for (const wallet of wallets) {
       const customAdapter = (wallet.transportConfig as { walletAdapter?: unknown })?.walletAdapter;
@@ -1955,334 +1860,139 @@ export class DiscoveryService {
       const freshDiscoveryInitiator = this.createFreshDiscoveryInitiator();
       this.discoveryInitiator = freshDiscoveryInitiator;
 
-      // Create or update DiscoveryEventWrapper with fresh initiator
-      if (!this.eventWrapper && this.connectionManager) {
-        this.eventWrapper = new DiscoveryEventWrapper(
-          freshDiscoveryInitiator,
-          this.connectionManager,
-          this.logger,
-          {
-            timeout: this.config.timeout,
-            emitProgress: true,
-          },
-        );
+      // Start discovery directly with DiscoveryInitiator (no event wrapper)
+      this.logger.debug('Starting discovery with DiscoveryInitiator');
+      console.log('[DiscoveryService] Starting discovery');
+      const qualifiedWallets = await freshDiscoveryInitiator.startDiscovery();
+      console.log('[DiscoveryService] Discovery completed, found wallets:', qualifiedWallets.length);
 
-        // Set up event handlers for the fresh event wrapper
-        this.setupDiscoveryEventHandlers();
-      } else if (this.eventWrapper) {
-        // Update existing event wrapper with fresh initiator
-        this.eventWrapper.updateDiscoveryInitiator(freshDiscoveryInitiator);
-      }
-
-      if (this.eventWrapper) {
-        // Use the event wrapper for discovery
-        this.logger.debug('Using event wrapper path for discovery');
-        console.log('[DiscoveryService] Using event wrapper discovery path');
-        // Start discovery with event wrapper (using fresh DiscoveryInitiator)
-        const qualifiedWallets = await this.eventWrapper.startDiscovery(freshDiscoveryInitiator);
-        console.log(
-          '[DiscoveryService] Event wrapper discovery completed, found wallets:',
-          qualifiedWallets.length,
-        );
-
-        let effectiveWallets = qualifiedWallets;
-        if (qualifiedWallets.length === 0) {
-          const initiatorResults = freshDiscoveryInitiator.getQualifiedResponders();
-          if (initiatorResults.length > 0) {
-            this.logger.debug('Event wrapper returned no wallets; using initiator results instead', {
-              count: initiatorResults.length,
-              responderIds: initiatorResults.map((wallet) => wallet.responderId),
-            });
-            console.log(
-              '[DiscoveryService] Event wrapper returned no wallets; using initiator results instead:',
-              initiatorResults.length,
-            );
-            effectiveWallets = initiatorResults;
-          }
+      // Store qualified wallets and convert to discovered format
+      console.log('[DiscoveryService] Processing discovered wallets');
+      for (const wallet of qualifiedWallets) {
+        console.log('[DiscoveryService] Processing wallet:', {
+          responderId: wallet.responderId,
+          name: wallet.name,
+          rdns: wallet.rdns,
+          hasName: !!wallet.name,
+          hasRdns: !!wallet.rdns,
+        });
+        if (!wallet.responderId) {
+          this.logger.warn('Skipping malformed wallet: missing responderId', { wallet });
+          continue;
         }
 
-        // Store qualified wallets and convert to discovered format
-        console.log('[DiscoveryService] Processing discovered wallets from event wrapper');
-        for (const wallet of effectiveWallets) {
-          console.log('[DiscoveryService] Processing wallet:', {
-            responderId: wallet.responderId,
-            name: wallet.name,
-            rdns: wallet.rdns,
+        // Skip wallets that are missing essential fields
+        if (!wallet.name || !wallet.rdns) {
+          this.logger.warn('Skipping malformed wallet: missing essential fields', {
+            walletId: wallet.responderId,
             hasName: !!wallet.name,
             hasRdns: !!wallet.rdns,
           });
-          if (!wallet.responderId) {
-            this.logger.warn('Skipping malformed wallet: missing responderId', { wallet });
-            continue;
-          }
+          continue;
+        }
 
-          // Skip wallets that are missing essential fields
-          if (!wallet.name || !wallet.rdns) {
-            this.logger.warn('Skipping malformed wallet: missing essential fields', {
+        try {
+          // Validate the qualified responder before processing
+          console.log('[DiscoveryService] Validating qualified responder:', wallet.responderId);
+          const validatedWallet = safeValidateQualifiedResponder(wallet);
+
+          if (!validatedWallet) {
+            console.log('[DiscoveryService] Validation failed for wallet:', wallet.responderId);
+            this.logger.warn('Skipping invalid discovery response', {
               walletId: wallet.responderId,
-              hasName: !!wallet.name,
-              hasRdns: !!wallet.rdns,
+              reason: 'Failed validation',
             });
             continue;
           }
+          console.log('[DiscoveryService] Wallet validation successful:', wallet.responderId);
 
+          // Store in both maps for compatibility
+          this.qualifiedWallets.set(wallet.responderId, validatedWallet);
+          this.discoveredResponders.set(wallet.responderId, validatedWallet);
+          if (validatedWallet.rdns) {
+            this.respondersByRdns.set(validatedWallet.rdns, validatedWallet);
+          }
+
+          const discoveredWallet = this.convertQualifiedWalletToDiscoveredWallet(validatedWallet);
+
+          // Apply origin validation if enabled
+          this.logger.debug('Checking origin validation for wallet', {
+            walletId: wallet.responderId,
+          });
+          console.log('[DiscoveryService] Checking origin validation for wallet:', wallet.responderId);
+          if (await this.shouldSkipWalletDueToOriginValidation(discoveredWallet)) {
+            console.log('[DiscoveryService] Wallet skipped due to origin validation:', wallet.responderId);
+            this.logger.debug('Skipping wallet due to origin validation failure', {
+              walletId: wallet.responderId,
+            });
+            continue;
+          }
+          console.log('[DiscoveryService] Origin validation passed for wallet:', wallet.responderId);
+
+          this.logger.debug('Adding wallet to discovered wallets', {
+            walletId: wallet.responderId,
+          });
+          this.updateDiscoveredWallet(discoveredWallet);
+
+          // Add wallet to store for UI integration
+          console.log('[DiscoveryService] About to add wallet to store');
           try {
-            // Validate the qualified responder before processing
-            console.log('[DiscoveryService] Validating qualified responder:', wallet.responderId);
-            const validatedWallet = safeValidateQualifiedResponder(wallet);
+            console.log('[DiscoveryService] Converting wallet to WalletInfo format');
+            const walletInfo = this.convertQualifiedResponderToWalletInfo(validatedWallet);
+            const normalizedWalletInfo = this.normalizeWalletInfoId(walletInfo, validatedWallet);
 
-            if (!validatedWallet) {
-              console.log('[DiscoveryService] Validation failed for wallet:', wallet.responderId);
-              this.logger.warn('Skipping invalid discovery response', {
-                walletId: wallet.responderId,
-                reason: 'Failed validation',
-              });
-              continue;
-            }
-            console.log('[DiscoveryService] Wallet validation successful:', wallet.responderId);
+            console.log('[DiscoveryService] Converted wallet info:', {
+              id: normalizedWalletInfo.id,
+              name: normalizedWalletInfo.name,
+              chains: normalizedWalletInfo.chains,
+            });
 
-            // Store in both maps for compatibility
-            this.qualifiedWallets.set(wallet.responderId, validatedWallet);
-            this.discoveredResponders.set(wallet.responderId, validatedWallet);
-            if (validatedWallet.rdns) {
-              this.respondersByRdns.set(validatedWallet.rdns, validatedWallet);
-            }
-
-            const discoveredWallet = this.convertQualifiedWalletToDiscoveredWallet(validatedWallet);
-
-            // Apply origin validation if enabled
-            this.logger.debug('Checking origin validation for wallet', { walletId: wallet.responderId });
-            console.log('[DiscoveryService] Checking origin validation for wallet:', wallet.responderId);
-            if (await this.shouldSkipWalletDueToOriginValidation(discoveredWallet)) {
-              console.log('[DiscoveryService] Wallet skipped due to origin validation:', wallet.responderId);
-              this.logger.debug('Skipping wallet due to origin validation failure', {
-                walletId: wallet.responderId,
-              });
-              continue;
-            }
-            console.log('[DiscoveryService] Origin validation passed for wallet:', wallet.responderId);
-
-            this.logger.debug('Adding wallet to discovered wallets', { walletId: wallet.responderId });
-            this.updateDiscoveredWallet(discoveredWallet);
-
-            // Add wallet to store for UI integration
-            console.log('[DiscoveryService] About to add wallet to store');
-            try {
-              console.log('[DiscoveryService] Converting wallet to WalletInfo format');
-              const walletInfo = this.convertQualifiedResponderToWalletInfo(validatedWallet);
-              const normalizedWalletInfo = this.normalizeWalletInfoId(walletInfo, validatedWallet);
-
-              console.log('[DiscoveryService] Converted wallet info:', {
-                id: normalizedWalletInfo.id,
-                name: normalizedWalletInfo.name,
-                chains: normalizedWalletInfo.chains,
-              });
-
-              console.log('[DiscoveryService] Calling connectionActions.addDiscoveredWallet...');
-              connectionActions.addDiscoveredWallet(this.store, normalizedWalletInfo);
-              console.log('[DiscoveryService] Successfully called addDiscoveredWallet');
-              this.logger.debug('Added wallet to store', {
-                walletId: normalizedWalletInfo.id,
-                walletName: normalizedWalletInfo.name,
-              });
-              walletIdsDiscoveredThisScan.add(normalizedWalletInfo.id);
-            } catch (error) {
-              console.error('[DiscoveryService] Failed to add wallet to store:', error);
-              this.logger.error('Failed to add wallet to store', {
-                walletId: wallet.responderId,
-                error,
-              });
-            }
-
-            // Emit enhanced discovery event with transport data
-            this.emitEnhanced({ type: 'wallet_discovered_with_transport', wallet: validatedWallet });
-
-            // Log transport configuration if available
-            if (validatedWallet.transportConfig) {
-              this.logger.debug('Found transport configuration', {
-                walletId: wallet.responderId,
-                transportType: validatedWallet.transportConfig.type,
-                extensionId: validatedWallet.transportConfig.extensionId,
-              });
-
-              this.emitEnhanced({
-                type: 'transport_extracted',
-                walletId: wallet.responderId,
-                transportType: validatedWallet.transportConfig.type,
-              });
-            }
-
-            // Store qualified wallet in connection state for future connections
-            if (this.connectionStateManager) {
-              this.connectionStateManager.updateConnectionState(wallet.responderId, {
-                status: 'disconnected',
-                qualifiedWallet: validatedWallet,
-              });
-            }
+            console.log('[DiscoveryService] Calling connectionActions.addDiscoveredWallet...');
+            connectionActions.addDiscoveredWallet(this.store, normalizedWalletInfo);
+            console.log('[DiscoveryService] Successfully called addDiscoveredWallet');
+            this.logger.debug('Added wallet to store', {
+              walletId: normalizedWalletInfo.id,
+              walletName: normalizedWalletInfo.name,
+            });
+            walletIdsDiscoveredThisScan.add(normalizedWalletInfo.id);
           } catch (error) {
-            this.logger.error('Failed to process qualified wallet', {
+            console.error('[DiscoveryService] Failed to add wallet to store:', error);
+            this.logger.error('Failed to add wallet to store', {
               walletId: wallet.responderId,
               error,
             });
           }
-        }
-      } else {
-        // Fallback to direct discovery protocol usage
-        this.logger.debug('Using direct discovery initiator path for discovery');
-        console.log('[DiscoveryService] Using fallback discovery initiator path');
-        // Start discovery with fresh DiscoveryInitiator
-        const fallbackPromise = freshDiscoveryInitiator.startDiscovery();
-        const qualifiedWallets = await fallbackPromise;
-        const fallbackSessionId =
-          qualifiedWallets[0]?.sessionId ?? `fallback-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        console.log(
-          '[DiscoveryService] Discovery initiator completed, found wallets:',
-          qualifiedWallets.length,
-        );
 
-        // Store qualified wallets and convert to discovered format
-        console.log('[DiscoveryService] Processing discovered wallets from discovery initiator');
-        for (const wallet of qualifiedWallets) {
-          console.log('[DiscoveryService] Processing wallet (fallback path):', {
-            responderId: wallet.responderId,
-            name: wallet.name,
-            rdns: wallet.rdns,
-            hasName: !!wallet.name,
-            hasRdns: !!wallet.rdns,
+          // Emit enhanced discovery event with transport data
+          this.emitEnhanced({ type: 'wallet_discovered_with_transport', wallet: validatedWallet });
+
+          // Log transport configuration if available
+          if (validatedWallet.transportConfig) {
+            this.logger.debug('Found transport configuration', {
+              walletId: wallet.responderId,
+              transportType: validatedWallet.transportConfig.type,
+              extensionId: validatedWallet.transportConfig.extensionId,
+            });
+
+            this.emitEnhanced({
+              type: 'transport_extracted',
+              walletId: wallet.responderId,
+              transportType: validatedWallet.transportConfig.type,
+            });
+          }
+
+          // Store qualified wallet in connection state for future connections
+          if (this.connectionStateManager) {
+            this.connectionStateManager.updateConnectionState(wallet.responderId, {
+              status: 'disconnected',
+              qualifiedWallet: validatedWallet,
+            });
+          }
+        } catch (error) {
+          this.logger.error('Failed to process qualified wallet', {
+            walletId: wallet.responderId,
+            error,
           });
-          if (!wallet.responderId) {
-            this.logger.warn('Skipping malformed wallet: missing responderId', { wallet });
-            continue;
-          }
-
-          // Skip wallets that are missing essential fields
-          if (!wallet.name || !wallet.rdns) {
-            this.logger.warn('Skipping malformed wallet: missing essential fields', {
-              walletId: wallet.responderId,
-              hasName: !!wallet.name,
-              hasRdns: !!wallet.rdns,
-            });
-            continue;
-          }
-
-          try {
-            // Validate the qualified responder before processing
-            console.log(
-              '[DiscoveryService] Validating qualified responder (fallback path):',
-              wallet.responderId,
-            );
-            const validatedWallet = safeValidateQualifiedResponder(wallet);
-
-            if (!validatedWallet) {
-              console.log(
-                '[DiscoveryService] Validation failed for wallet (fallback path):',
-                wallet.responderId,
-              );
-              this.logger.warn('Skipping invalid discovery response (listener path)', {
-                walletId: wallet.responderId,
-                reason: 'Failed validation',
-              });
-              continue;
-            }
-            console.log(
-              '[DiscoveryService] Wallet validation successful (fallback path):',
-              wallet.responderId,
-            );
-
-            // Store in both maps for compatibility
-            this.qualifiedWallets.set(wallet.responderId, validatedWallet);
-            if (fallbackSessionId) {
-              this.walletDiscoverySessions.set(wallet.responderId, fallbackSessionId);
-            }
-            this.discoveredResponders.set(wallet.responderId, validatedWallet);
-            if (validatedWallet.rdns) {
-              this.respondersByRdns.set(validatedWallet.rdns, validatedWallet);
-            }
-
-            const discoveredWallet = this.convertQualifiedWalletToDiscoveredWallet(validatedWallet);
-
-            // Apply origin validation if enabled
-            this.logger.debug('Checking origin validation for wallet (listener path)', {
-              walletId: wallet.responderId,
-            });
-            console.log(
-              '[DiscoveryService] Checking origin validation for wallet (fallback path):',
-              wallet.responderId,
-            );
-            if (await this.shouldSkipWalletDueToOriginValidation(discoveredWallet)) {
-              console.log(
-                '[DiscoveryService] Wallet skipped due to origin validation (fallback path):',
-                wallet.responderId,
-              );
-              this.logger.debug('Skipping wallet due to origin validation failure (listener path)', {
-                walletId: wallet.responderId,
-              });
-              continue;
-            }
-            console.log(
-              '[DiscoveryService] Origin validation passed for wallet (fallback path):',
-              wallet.responderId,
-            );
-
-            this.logger.debug('Adding wallet to discovered wallets (listener path)', {
-              walletId: wallet.responderId,
-            });
-            this.updateDiscoveredWallet(discoveredWallet);
-
-            // Add wallet to store for UI integration
-            console.log('[DiscoveryService] About to add wallet to store (fallback path)');
-            try {
-              console.log('[DiscoveryService] Converting wallet to WalletInfo format (fallback path)');
-              const walletInfo = this.convertQualifiedResponderToWalletInfo(validatedWallet);
-              const normalizedWalletInfo = this.normalizeWalletInfoId(walletInfo, validatedWallet);
-
-              console.log('[DiscoveryService] Converted wallet info (fallback path):', {
-                id: normalizedWalletInfo.id,
-                name: normalizedWalletInfo.name,
-                chains: normalizedWalletInfo.chains,
-              });
-
-              console.log(
-                '[DiscoveryService] Calling connectionActions.addDiscoveredWallet (fallback path)...',
-              );
-              connectionActions.addDiscoveredWallet(this.store, normalizedWalletInfo);
-              console.log('[DiscoveryService] Successfully called addDiscoveredWallet (fallback path)');
-              this.logger.debug('Added wallet to store (listener path)', {
-                walletId: normalizedWalletInfo.id,
-                walletName: normalizedWalletInfo.name,
-              });
-              walletIdsDiscoveredThisScan.add(normalizedWalletInfo.id);
-            } catch (error) {
-              console.error('[DiscoveryService] Failed to add wallet to store (fallback path):', error);
-              this.logger.error('Failed to add wallet to store (listener path)', {
-                walletId: wallet.responderId,
-                error,
-              });
-            }
-
-            // Emit enhanced discovery event with transport data
-            this.emitEnhanced({ type: 'wallet_discovered_with_transport', wallet: validatedWallet });
-
-            // Log transport configuration if available
-            if (validatedWallet.transportConfig) {
-              this.logger.debug('Found transport configuration (listener path)', {
-                walletId: wallet.responderId,
-                transportType: validatedWallet.transportConfig.type,
-                extensionId: validatedWallet.transportConfig.extensionId,
-              });
-
-              this.emitEnhanced({
-                type: 'transport_extracted',
-                walletId: wallet.responderId,
-                transportType: validatedWallet.transportConfig.type,
-              });
-            }
-          } catch (error) {
-            this.logger.error('Failed to process qualified wallet', {
-              walletId: wallet.responderId,
-              error,
-            });
-          }
         }
       }
 
@@ -2615,26 +2325,6 @@ export class DiscoveryService {
     });
   }
 
-  /**
-   * Handle origin validation asynchronously without blocking the event handler
-   */
-  private handleOriginValidationAsync(discoveredWallet: DiscoveredWallet): void {
-    this.shouldSkipWalletDueToOriginValidation(discoveredWallet)
-      .then((shouldSkip) => {
-        if (!shouldSkip) {
-          this.updateDiscoveredWallet(discoveredWallet);
-        }
-      })
-      .catch((error) => {
-        this.logger.error('Error during origin validation in event handler', {
-          walletId: discoveredWallet.id,
-          error,
-        });
-        // In case of validation error, skip the wallet for security
-        // This ensures we fail closed rather than potentially adding an invalid wallet
-      });
-  }
-
   private async cleanupDiscoveryComponents(): Promise<void> {
     this.logger.debug('Cleaning up discovery components');
 
@@ -2652,12 +2342,6 @@ export class DiscoveryService {
     // Create a new EventTarget to completely reset the event system
     // @ts-expect-error - accessing private readonly property for cleanup
     (this as { eventTarget: EventTarget }).eventTarget = new EventTarget();
-
-    // Stop event wrapper discovery if in progress
-    if (this.eventWrapper) {
-      await this.eventWrapper.stopDiscovery();
-      this.eventWrapper = null;
-    }
 
     if (this.discoveryInitiator) {
       // Stop discovery if in progress

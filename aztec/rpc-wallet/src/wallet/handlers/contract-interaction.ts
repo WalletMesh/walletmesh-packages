@@ -12,6 +12,7 @@ import type { FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfac
 import type { ExecutionPayload } from '@aztec/entrypoints/payload';
 import type { AztecSendOptions } from '../../types.js';
 import { createLogger } from '@aztec/foundation/log';
+import { FunctionType } from '@aztec/stdlib/abi';
 import { GasSettings } from '@aztec/stdlib/gas';
 import type { TxExecutionRequest, TxReceipt, TxSimulationResult } from '@aztec/stdlib/tx';
 import { JSONRPCError } from '@walletmesh/jsonrpc';
@@ -119,6 +120,38 @@ export function createContractInteractionHandlers() {
     return txOpts;
   }
 
+  /**
+   * @internal
+   * Helper to detect if an ExecutionPayload is for a utility (view/pure) function.
+   * Utility functions are read-only and don't require transaction execution.
+   *
+   * Note: This detection is conservative and only checks explicit function type markers.
+   * It does NOT check for missing authWitnesses/capsules, as those can be empty for
+   * valid transaction payloads in test scenarios or specific contract calls.
+   */
+  function isUtilityFunction(executionPayload: ExecutionPayload): boolean {
+    try {
+      // Check the function type in calls - this is the most reliable indicator
+      if (executionPayload.calls && executionPayload.calls.length > 0) {
+        const firstCall = executionPayload.calls[0];
+        if (firstCall && typeof firstCall === 'object' && 'type' in firstCall) {
+          const callType = (firstCall as { type?: string | number }).type;
+          const isUtility = callType === FunctionType.UTILITY || callType === 'utility';
+
+          if (isUtility) {
+            logger.debug('Detected utility function from explicit call type');
+            return true;
+          }
+        }
+      }
+
+      return false;
+    } catch (error) {
+      logger.debug('Error detecting utility function type:', error);
+      return false;
+    }
+  }
+
   async function createTxExecutionRequest(
     ctx: AztecHandlerContext,
     executionPayload: ExecutionPayload,
@@ -147,6 +180,17 @@ export function createContractInteractionHandlers() {
     txExecutionRequest?: TxExecutionRequest,
   ): Promise<TxSimulationResult> {
     try {
+      // Check if this is a utility function (view/pure function)
+      if (isUtilityFunction(executionPayload)) {
+        logger.debug('Detected utility function - cannot simulate as transaction');
+        // Utility functions are read-only and should not be simulated as transactions.
+        // Throw an error to cause fallback to the interaction's native simulate() method.
+        throw new Error(
+          'Utility functions (view/pure) cannot be simulated as transactions. ' +
+            'Use the interaction\'s native simulate() method instead.',
+        );
+      }
+
       const txRequest = txExecutionRequest || (await createTxExecutionRequest(ctx, executionPayload));
       // Execute the transaction using the standard flow
       logger.debug('Starting transaction simulation...');
@@ -682,7 +726,7 @@ export function createContractInteractionHandlers() {
           deploySentTx = await deployProvenTx.send();
           txHash = await deploySentTx.getTxHash();
           logger.debug(
-            `Deployment transaction sent in ${Date.now() - sendStartTime}ms, hash: ${txHash.toString()}`,
+            `Deployment transaction sent in ${Date.now() - sendStartTime}ms, hash: ${txHash?.toString()}`,
           );
         } catch (error) {
           logger.error(`Failed to send deployment transaction for ${artifact.name}:`, error);

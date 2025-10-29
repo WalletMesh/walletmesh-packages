@@ -11,12 +11,11 @@ import type { TransactionStatus } from '../../services/transaction/types.js';
 
 /**
  * Helper to properly handle immer state mutations
+ * When using immer middleware, the state is a draft that can be mutated directly
  */
 const mutateState = (store: StoreApi<WalletMeshState>, updater: (state: WalletMeshState) => void) => {
-  store.setState((state) => {
-    updater(state);
-    return state;
-  });
+  // Cast to the expected immer type where the updater returns void
+  (store.setState as (updater: (state: WalletMeshState) => void) => void)(updater);
 };
 
 /**

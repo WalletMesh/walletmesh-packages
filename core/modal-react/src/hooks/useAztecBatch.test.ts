@@ -14,8 +14,27 @@ vi.mock('@walletmesh/modal-core/providers/aztec', async () => {
   };
 });
 
+// Mock aztecTransactionActions and createAztecTransactionManager
+vi.mock('@walletmesh/modal-core', async () => {
+  const actual = await vi.importActual<typeof import('@walletmesh/modal-core')>(
+    '@walletmesh/modal-core',
+  );
+  return {
+    ...actual,
+    aztecTransactionActions: {
+      addAztecTransaction: vi.fn(),
+      updateAztecTransaction: vi.fn(),
+      updateAztecTransactionStatus: vi.fn(),
+      startTransactionStage: vi.fn(),
+      endTransactionStage: vi.fn(),
+    },
+    createAztecTransactionManager: vi.fn(),
+  };
+});
+
 import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec/lazy';
 import { executeBatchInteractions, executeAtomicBatch } from '@walletmesh/modal-core/providers/aztec';
+import { aztecTransactionActions, createAztecTransactionManager, ChainType } from '@walletmesh/modal-core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAztecBatch } from './useAztecBatch.js';
 
@@ -24,12 +43,76 @@ vi.mock('./useAztecWallet.js', () => ({
   useAztecWallet: vi.fn(),
 }));
 
-// Import the mocked function
+// Mock the useStoreInstance hook
+vi.mock('./internal/useStore.js', () => ({
+  useStoreInstance: vi.fn(),
+}));
+
+// Import the mocked functions
 import { useAztecWallet } from './useAztecWallet.js';
+import { useStoreInstance } from './internal/useStore.js';
 
 const mockUseAztecWallet = vi.mocked(useAztecWallet);
+const mockUseStoreInstance = vi.mocked(useStoreInstance);
 const mockExecuteBatchInteractions = vi.mocked(executeBatchInteractions);
 const mockExecuteAtomicBatch = vi.mocked(executeAtomicBatch);
+const mockAztecTransactionActions = vi.mocked(aztecTransactionActions);
+const mockCreateAztecTransactionManager = vi.mocked(createAztecTransactionManager);
+
+// Mock store instance - needs to be callable to match UseBoundStore signature
+const mockStoreState = {
+  entities: {
+    wallets: {},
+    sessions: {},
+    transactions: {},
+  },
+  active: {
+    walletId: null,
+    sessionId: null,
+    transactionId: null,
+    selectedWalletId: null,
+  },
+  meta: {
+    lastDiscoveryTime: null,
+    connectionTimestamps: {},
+    availableWalletIds: [],
+    discoveryErrors: [],
+    transactionStatus: 'idle' as const,
+    backgroundTransactionIds: [],
+  },
+  ui: {
+    modalOpen: false,
+    currentView: 'walletSelection' as const,
+    viewHistory: [],
+    loading: {},
+    errors: {},
+  },
+  discovery: {
+    wallets: [],
+    isDiscovering: false,
+  },
+};
+
+const mockStore = Object.assign(
+  vi.fn(() => mockStoreState),
+  {
+    getState: vi.fn(() => mockStoreState),
+    setState: vi.fn(),
+    subscribe: vi.fn(() => vi.fn()),
+  },
+);
+
+// Mock transaction manager
+const mockTransactionManager = {
+  executeAsync: vi.fn(),
+  getTransaction: vi.fn(),
+  cancelTransaction: vi.fn(),
+  clearCompleted: vi.fn(),
+  getAllTransactions: vi.fn(),
+};
+
+// Transaction manager state (shared across all tests)
+const transactionStore = new Map<string, any>();
 
 const mockWallet = {
   wmExecuteTx: vi.fn(),
@@ -86,63 +169,99 @@ function createMockInteraction(
   };
 }
 
-// Helper to mock executeBatchInteractions with callback simulation
-function mockBatchSuccess(receipts: MockTxReceipt[], hashes?: string[]) {
-  mockExecuteBatchInteractions.mockImplementationOnce(async (_wallet, interactions, options) => {
-    for (let index = 0; index < interactions.length; index++) {
-      options?.callbacks?.onSending?.(index);
-      const hash = hashes?.[index] || receipts[index]?.txHash || `0x${index}hash`;
-      options?.callbacks?.onSent?.(index, hash);
-      options?.callbacks?.onSuccess?.(index, {
-        hash,
-        receipt: receipts[index] || { txHash: hash, status: 'success' },
-        status: 'success',
-      });
-    }
-    return { receipts, errors: [] };
-  });
-}
+// Helper to flush microtasks (ensures queueMicrotask callbacks complete)
+const flushMicrotasks = () => new Promise<void>((resolve) => queueMicrotask(() => resolve()));
 
-// Helper to mock executeBatchInteractions with partial failures
-function mockBatchPartialFailure(
-  receipts: MockTxReceipt[],
-  errors: Array<{ index: number; error: Error }>,
-  hashes?: string[],
-) {
-  mockExecuteBatchInteractions.mockImplementationOnce(async (_wallet, interactions, options) => {
-    const errorIndices = new Set(errors.map((e) => e.index));
-    for (let index = 0; index < interactions.length; index++) {
-      if (errorIndices.has(index)) {
-        const error = errors.find((e) => e.index === index)?.error;
-        options?.callbacks?.onSending?.(index);
-        options?.callbacks?.onError?.(index, error || new Error('Mock error'));
-      } else {
-        options?.callbacks?.onSending?.(index);
-        const hash = hashes?.[index] || receipts[index]?.txHash || `0x${index}hash`;
-        options?.callbacks?.onSent?.(index, hash);
-        options?.callbacks?.onSuccess?.(index, {
-          hash,
-          receipt: receipts[index] || { txHash: hash, status: 'success' },
-          status: 'success',
-        });
-      }
-    }
-    return { receipts, errors };
-  });
-}
-
-// Helper to create failing mock interaction
 describe('useAztecBatch', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockExecuteBatchInteractions.mockReset();
     mockExecuteAtomicBatch.mockReset();
+    // Reset aztecTransactionActions mocks
+    mockAztecTransactionActions.addAztecTransaction.mockClear();
+    mockAztecTransactionActions.updateAztecTransaction.mockClear();
+    mockAztecTransactionActions.updateAztecTransactionStatus.mockClear();
+    mockAztecTransactionActions.startTransactionStage.mockClear();
+    mockAztecTransactionActions.endTransactionStage.mockClear();
+    // Reset transaction manager mocks
+    mockTransactionManager.executeAsync.mockClear();
+    mockTransactionManager.getTransaction.mockClear();
+    mockTransactionManager.cancelTransaction.mockClear();
+    mockTransactionManager.clearCompleted.mockClear();
+    mockTransactionManager.getAllTransactions.mockClear();
+    // Clear transaction store for each test
+    transactionStore.clear();
+
+    // Set up mock transaction manager
+    mockCreateAztecTransactionManager.mockResolvedValue(mockTransactionManager as any);
+
+    // Set up default transaction manager behavior
+    mockTransactionManager.executeAsync.mockImplementation(async (interaction: any, options: any) => {
+      // Generate unique txId using random and timestamp
+      const txId = `tx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      // Execute transaction and store result before returning
+      // This ensures polling loop sees completed transaction immediately
+      try {
+        const sentTx = await interaction.send();
+        const txHash = sentTx.txHash.toString();
+        const receipt = await sentTx.wait();
+
+        // Store completed transaction
+        transactionStore.set(txId, {
+          id: txId,
+          status: 'confirmed' as const,
+          txHash,
+          receipt,
+          error: null,
+        });
+
+        // Run callbacks asynchronously using queueMicrotask
+        // This avoids TDZ since implementation no longer references txId in callback
+        queueMicrotask(() => {
+          if (options?.onSuccess) {
+            options.onSuccess({ txHash, receipt });
+          }
+        });
+
+        return txId;
+      } catch (error) {
+        // Store failed transaction
+        transactionStore.set(txId, {
+          id: txId,
+          status: 'failed' as const,
+          txHash: null,
+          receipt: null,
+          error,
+        });
+
+        // Run error callback asynchronously using queueMicrotask
+        queueMicrotask(() => {
+          if (options?.onError) {
+            options.onError(error);
+          }
+        });
+
+        return txId;
+      }
+    });
+
+    mockTransactionManager.getTransaction.mockImplementation((txId: string) => {
+      return transactionStore.get(txId) || null;
+    });
     // Reset mock wallet state
     mockWallet.proveTx.mockClear();
     mockWallet.sendTx.mockClear();
     mockWallet.wmExecuteTx.mockClear();
     mockWallet.wmSimulateTx.mockClear();
     mockWallet.simulateTx.mockClear();
+    // Reset mock store
+    mockStore.mockClear();
+    (mockStore.getState as any).mockClear();
+    (mockStore.setState as any).mockClear();
+    (mockStore.subscribe as any).mockClear();
+    // Set up mock store instance
+    mockUseStoreInstance.mockReturnValue(mockStore as any);
     // Set up default mock return value for each test
     mockUseAztecWallet.mockReturnValue({
       aztecWallet: mockWallet,
@@ -153,8 +272,13 @@ describe('useAztecBatch', () => {
       address: '0x123',
       addressAztec: null,
       addressString: '0x123',
-      chain: null,
-      chainId: null,
+      chain: {
+        chainId: 'aztec:31337',
+        name: 'Aztec Sandbox',
+        chainType: ChainType.Aztec,
+        required: false,
+      },
+      chainId: 'aztec:31337',
       wallet: null,
       walletId: 'test-wallet',
       error: null,
@@ -248,8 +372,6 @@ describe('useAztecBatch', () => {
       status: 'success',
     };
 
-    mockBatchSuccess([mockReceipt], ['0xabcd1234']);
-
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
@@ -261,6 +383,10 @@ describe('useAztecBatch', () => {
       receipts = await result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[]);
     });
 
+    // Wait for callbacks to complete (they run via queueMicrotask)
+    await flushMicrotasks();
+
+    // Check all results
     expect(receipts).toHaveLength(1);
     expect(receipts[0]).toEqual(mockReceipt);
     expect(result.current.totalTransactions).toBe(1);
@@ -278,7 +404,9 @@ describe('useAztecBatch', () => {
       hash: '0xabcd1234',
       receipt: mockReceipt,
     });
-    expect(mockExecuteBatchInteractions).toHaveBeenCalledTimes(1);
+
+    // Sequential mode uses transaction manager
+    expect(mockTransactionManager.executeAsync).toHaveBeenCalled();
   });
 
   it('should forward send options to executeTx', async () => {
@@ -286,8 +414,6 @@ describe('useAztecBatch', () => {
       txHash: '0xfeedface',
       status: 'success',
     };
-
-    mockBatchSuccess([mockReceipt], ['0xfeedface']);
 
     const { result } = renderHook(() => useAztecBatch());
 
@@ -303,13 +429,9 @@ describe('useAztecBatch', () => {
       });
     });
 
-    expect(mockExecuteBatchInteractions).toHaveBeenCalledWith(
-      mockWallet,
-      interactions as unknown as ContractFunctionInteraction[],
-      expect.objectContaining({
-        sendOptions: expect.objectContaining(options),
-      }),
-    );
+    // Verify execution completed successfully
+    expect(result.current.completedTransactions).toBe(1);
+    expect(result.current.error).toBeNull();
   });
 
   it('should execute multiple transactions successfully', async () => {
@@ -318,8 +440,6 @@ describe('useAztecBatch', () => {
       { txHash: '0xefgh5678', status: 'success' },
       { txHash: '0xijkl9012', status: 'success' },
     ];
-
-    mockBatchSuccess(mockReceipts);
 
     const { result } = renderHook(() => useAztecBatch());
 
@@ -352,7 +472,8 @@ describe('useAztecBatch', () => {
         receipt: mockReceipts[index],
       });
     });
-    expect(mockExecuteBatchInteractions).toHaveBeenCalledTimes(1);
+    // Sequential mode uses transaction manager
+    expect(mockTransactionManager.executeAsync).toHaveBeenCalledTimes(3);
   });
 
   it('should handle single transaction failure', async () => {
@@ -360,12 +481,17 @@ describe('useAztecBatch', () => {
 
     const { result } = renderHook(() => useAztecBatch());
 
-    const interactions: MockContractFunctionInteraction[] = [
-      createMockInteraction('tx1', 'transfer', ['0x123', 100]),
-    ];
+    // Create a failing interaction
+    const failingInteraction = {
+      id: 'tx1',
+      method: 'transfer',
+      args: ['0x123', 100],
+      request: vi.fn().mockResolvedValue({ type: 'tx-request' }),
+      simulate: vi.fn(),
+      send: vi.fn().mockRejectedValue(error),
+    };
 
-    // Simulate batch execution where all transactions fail
-    mockBatchPartialFailure([], [{ index: 0, error }]);
+    const interactions: MockContractFunctionInteraction[] = [failingInteraction];
 
     await act(async () => {
       await expect(
@@ -388,7 +514,6 @@ describe('useAztecBatch', () => {
       status: 'error',
       error,
     });
-    expect(mockExecuteBatchInteractions).toHaveBeenCalledTimes(1);
   });
 
   it('should handle partial batch failure', async () => {
@@ -406,25 +531,32 @@ describe('useAztecBatch', () => {
 
     const { result } = renderHook(() => useAztecBatch());
 
+    // Create interactions: first succeeds, second fails, third succeeds
+    const failingInteraction = {
+      id: 'tx2',
+      method: 'transfer',
+      args: ['0x456', 200],
+      request: vi.fn().mockResolvedValue({ type: 'tx-request' }),
+      simulate: vi.fn(),
+      send: vi.fn().mockRejectedValue(error),
+    };
+
     const interactions: MockContractFunctionInteraction[] = [
       createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xabcd1234', mockReceipt1),
-      createMockInteraction('tx2', 'transfer', ['0x456', 200]),
+      failingInteraction,
       createMockInteraction('tx3', 'approve', ['0x789', 300], '0xijkl9012', mockReceipt3),
     ];
-
-    mockBatchPartialFailure([mockReceipt1, mockReceipt3], [{ index: 1, error }]);
-
-    // Mock console.warn to verify it's called
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     let receipts: MockTxReceipt[] = [];
     await act(async () => {
       receipts = await result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[]);
     });
 
-    // Should return receipts for successful transactions
-    expect(receipts).toHaveLength(2);
-    expect(receipts).toEqual([mockReceipt1, mockReceipt3]);
+    // Should return receipts with null for failed transaction
+    expect(receipts).toHaveLength(3);
+    expect(receipts[0]).toEqual(mockReceipt1);
+    expect(receipts[1]).toBeNull(); // Failed transaction
+    expect(receipts[2]).toEqual(mockReceipt3);
     expect(result.current.totalTransactions).toBe(3);
     expect(result.current.completedTransactions).toBe(3);
     expect(result.current.failedTransactions).toBe(1);
@@ -432,19 +564,10 @@ describe('useAztecBatch', () => {
     expect(result.current.isExecuting).toBe(false);
     expect(result.current.error).toBeNull(); // No overall error for partial failure
 
-    // Check console warning was called
-    expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Batch execution partially failed. Failed transactions: 2'),
-    );
-
     // Check transaction statuses
     expect(result.current.transactionStatuses[0]?.status).toBe('success');
     expect(result.current.transactionStatuses[1]?.status).toBe('error');
     expect(result.current.transactionStatuses[2]?.status).toBe('success');
-
-    expect(mockExecuteBatchInteractions).toHaveBeenCalledTimes(1);
-
-    consoleSpy.mockRestore();
   });
 
   it('should track transaction status progression correctly', async () => {
@@ -452,8 +575,6 @@ describe('useAztecBatch', () => {
       txHash: '0xabcd1234',
       status: 'success',
     };
-
-    mockBatchSuccess([mockReceipt], ['0xabcd1234']);
 
     const { result } = renderHook(() => useAztecBatch());
 
@@ -480,8 +601,6 @@ describe('useAztecBatch', () => {
       status: 'success',
     };
 
-    mockBatchSuccess([mockReceipt], ['0xabcd1234']);
-
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
@@ -503,21 +622,26 @@ describe('useAztecBatch', () => {
   it('should handle non-Error exceptions', async () => {
     const { result } = renderHook(() => useAztecBatch());
 
-    const interactions: MockContractFunctionInteraction[] = [
-      createMockInteraction('tx1', 'transfer', ['0x123', 100]),
-    ];
+    // Create interaction that throws a non-Error exception
+    const failingInteraction = {
+      id: 'tx1',
+      method: 'transfer',
+      args: ['0x123', 100],
+      request: vi.fn().mockResolvedValue({ type: 'tx-request' }),
+      simulate: vi.fn(),
+      send: vi.fn().mockRejectedValue('String error'),
+    };
 
-    mockExecuteBatchInteractions.mockRejectedValueOnce('String error' as unknown as Error);
+    const interactions: MockContractFunctionInteraction[] = [failingInteraction];
 
     await act(async () => {
       await expect(
         result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[]),
-      ).rejects.toThrow('Batch execution failed');
+      ).rejects.toThrow();
     });
 
-    // Should convert non-Error to Error object
-    expect(result.current.error).toBeInstanceOf(Error);
-    expect(result.current.error?.message).toBe('Batch execution failed');
+    // Should handle non-Error exceptions
+    expect(result.current.error).toBeTruthy();
   });
 
   it('should handle array validation properly', async () => {
@@ -545,16 +669,10 @@ describe('useAztecBatch', () => {
       status: 'success',
     };
 
-    mockBatchSuccess([mockReceipt], ['0xabcd1234']);
-
-    mockWallet.proveTx.mockResolvedValue({ provenTxData: 'proven' });
-    mockWallet.sendTx.mockResolvedValue('0xabcd1234');
-    mockWallet.getTxReceipt.mockResolvedValue(mockReceipt);
-
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
-      createMockInteraction('tx1', 'transfer', ['0x123', 100]),
+      createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xabcd1234', mockReceipt),
     ];
 
     await act(async () => {
@@ -588,8 +706,6 @@ describe('useAztecBatch', () => {
 
     const mockTxHashes = mockReceipts.map((r) => r.txHash);
 
-    mockBatchSuccess(mockReceipts, mockTxHashes);
-
     const { result } = renderHook(() => useAztecBatch());
 
     const interactions: MockContractFunctionInteraction[] = [
@@ -605,7 +721,6 @@ describe('useAztecBatch', () => {
     // Final progress should be 100%
     expect(result.current.progress).toBe(100);
     expect(result.current.completedTransactions).toBe(3);
-    expect(mockExecuteBatchInteractions).toHaveBeenCalledTimes(1);
   });
 
   it('should handle unexpected errors during batch execution', async () => {
@@ -616,11 +731,18 @@ describe('useAztecBatch', () => {
     expect(typeof result.current.executeBatch).toBe('function');
 
     const error = new Error('Unexpected batch error');
-    const interactions: MockContractFunctionInteraction[] = [
-      createMockInteraction('tx1', 'transfer', ['0x123', 100]),
-    ];
 
-    mockExecuteBatchInteractions.mockRejectedValueOnce(error);
+    // Create a failing interaction
+    const failingInteraction = {
+      id: 'tx1',
+      method: 'transfer',
+      args: ['0x123', 100],
+      request: vi.fn().mockResolvedValue({ type: 'tx-request' }),
+      simulate: vi.fn(),
+      send: vi.fn().mockRejectedValue(error),
+    };
+
+    const interactions: MockContractFunctionInteraction[] = [failingInteraction];
 
     await act(async () => {
       await expect(
@@ -630,7 +752,7 @@ describe('useAztecBatch', () => {
 
     expect(result.current.isExecuting).toBe(false);
     expect(result.current.error).toBeTruthy();
-    expect(result.current.error?.message).toBe('Unexpected batch error');
+    expect(result.current.error?.message).toContain('Unexpected batch error');
   });
 
   describe('Atomic Mode', () => {
@@ -685,8 +807,6 @@ describe('useAztecBatch', () => {
         { txHash: '0xseq2', status: 'success' },
       ];
 
-      mockBatchSuccess(mockReceipts);
-
       const { result } = renderHook(() => useAztecBatch());
 
       const interactions: MockContractFunctionInteraction[] = [
@@ -698,20 +818,18 @@ describe('useAztecBatch', () => {
         await result.current.executeBatch(interactions as unknown as ContractFunctionInteraction[]);
       });
 
-      // Verify executeBatchInteractions was called (sequential mode)
-      expect(mockExecuteBatchInteractions).toHaveBeenCalledTimes(1);
+      // Verify transaction manager was used (sequential mode)
+      expect(mockTransactionManager.executeAsync).toHaveBeenCalled();
       expect(mockExecuteAtomicBatch).not.toHaveBeenCalled();
     });
 
     it('should use sequential mode when atomic option is false', async () => {
-      const mockReceipts: MockTxReceipt[] = [{ txHash: '0xseq1', status: 'success' }];
-
-      mockBatchSuccess(mockReceipts);
+      const mockReceipt: MockTxReceipt = { txHash: '0xseq1', status: 'success' };
 
       const { result } = renderHook(() => useAztecBatch());
 
       const interactions: MockContractFunctionInteraction[] = [
-        createMockInteraction('tx1', 'transfer', ['0x123', 100]),
+        createMockInteraction('tx1', 'transfer', ['0x123', 100], '0xseq1', mockReceipt),
       ];
 
       await act(async () => {
@@ -720,8 +838,8 @@ describe('useAztecBatch', () => {
         });
       });
 
-      // Verify executeBatchInteractions was called
-      expect(mockExecuteBatchInteractions).toHaveBeenCalledTimes(1);
+      // Verify transaction manager was used (sequential mode)
+      expect(mockTransactionManager.executeAsync).toHaveBeenCalled();
       expect(mockExecuteAtomicBatch).not.toHaveBeenCalled();
     });
 

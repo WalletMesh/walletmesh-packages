@@ -183,8 +183,11 @@ export function WalletMeshSandboxedIcon({
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Create error recovery instance
-  const errorRecovery = createIconErrorRecovery(RECOVERY_PRESETS.conservative);
+  // Create error recovery instance (memoized to prevent recreation on every render)
+  const errorRecovery = useMemo(
+    () => createIconErrorRecovery(RECOVERY_PRESETS.conservative),
+    [],
+  );
 
   useEffect(() => {
     // Track if component is still mounted to prevent state updates after unmount
@@ -405,7 +408,6 @@ export function WalletMeshSandboxedIcon({
     disabled,
     disabledStyle,
     errorRecovery,
-    onClick,
     logger,
   ]);
 

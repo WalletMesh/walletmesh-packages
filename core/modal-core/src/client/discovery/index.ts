@@ -10,11 +10,6 @@ export {
   type ConnectionState,
   type ConnectionStateChangeEvent,
 } from './ConnectionState.js';
-export {
-  DiscoveryEventWrapper,
-  type DiscoveryProtocolEvent,
-  type EventWrapperConfig,
-} from './DiscoveryEventWrapper.js';
 
 // EVM discovery exports
 export { EVMDiscoveryService } from './evm/EvmDiscoveryService.js';

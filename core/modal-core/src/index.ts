@@ -569,6 +569,7 @@ export {
   uiActions,
   connectionActions,
   transactionActions,
+  aztecTransactionActions,
   actions,
   useStoreActions,
 } from './state/actions/index.js';

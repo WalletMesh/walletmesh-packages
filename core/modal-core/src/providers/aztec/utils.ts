@@ -581,59 +581,115 @@ export async function simulateTx(
     return preparedExecutionPayload;
   };
 
+  // Strategy 1: Try the interaction's native simulate() method FIRST
+  const maybeSimulate = interactionInternal.simulate;
+  if (typeof maybeSimulate === 'function') {
+    try {
+      console.debug('[simulateTx] Trying interaction.simulate()');
+      const result = await maybeSimulate.call(interaction);
+      console.debug('[simulateTx] interaction.simulate() succeeded');
+      return result;
+    } catch (error) {
+      console.warn('[simulateTx] interaction.simulate() failed:', error);
+      errors.push(toError(error));
+      // Continue to try other strategies
+    }
+  } else {
+    console.debug('[simulateTx] No native simulate() method found on interaction');
+  }
+
+  // Detect function type for remaining strategies
   let functionType: FunctionType | string | undefined = interactionInternal.functionDao?.functionType;
+  let detectedPayload: unknown | undefined;
+  let payloadDetectionFailed = false;
+
   if (!functionType) {
     try {
-      const payload = await getExecutionPayload();
-      if (payload && typeof payload === 'object') {
-        const calls = (payload as { calls?: Array<{ type?: string }> }).calls;
+      detectedPayload = await getExecutionPayload();
+      if (detectedPayload && typeof detectedPayload === 'object') {
+        const calls = (detectedPayload as { calls?: Array<{ type?: string }> }).calls;
         const detectedType = calls?.[0]?.type;
         if (typeof detectedType === 'string') {
           functionType = detectedType;
+          console.debug('[simulateTx] Detected function type from payload:', detectedType);
         }
       }
     } catch (error) {
       const resolvedError = toError(error);
+      console.warn('[simulateTx] Failed to get execution payload:', resolvedError.message);
       errors.push(resolvedError);
+      payloadDetectionFailed = true;
     }
   }
 
-  const isUtilityFunction = functionType === FunctionType.UTILITY || functionType === 'utility';
+  // Detect utility function based on payload
+  let isUtilityFunction = functionType === FunctionType.UTILITY || functionType === 'utility';
 
-  if (!isUtilityFunction && typeof wallet.wmSimulateTx === 'function') {
+  // Additional heuristic: Check if payload lacks transaction-required fields
+  let likelyUtilityByStructure = false;
+  if (detectedPayload && typeof detectedPayload === 'object') {
+    const payload = detectedPayload as { authWitnesses?: unknown[]; capsules?: unknown[]; calls?: unknown[] };
+    const hasNoAuthWitnesses = !payload.authWitnesses || payload.authWitnesses.length === 0;
+    const hasNoCapsules = !payload.capsules || payload.capsules.length === 0;
+    const hasCalls = !!(payload.calls && payload.calls.length > 0);
+
+    // Only consider it likely a utility function if it has calls but no auth/capsules
+    likelyUtilityByStructure = hasNoAuthWitnesses && hasNoCapsules && hasCalls;
+
+    if (likelyUtilityByStructure) {
+      console.debug('[simulateTx] Detected likely utility function from payload structure');
+    }
+  }
+
+  // If we failed to detect the payload and have no other success, this is likely a utility function
+  // Utility functions don't have a request() method to generate ExecutionPayloads
+  if (payloadDetectionFailed && !isUtilityFunction) {
+    console.debug('[simulateTx] Payload detection failed - likely a utility function without request() method');
+    // Don't try remaining strategies that require a payload
+    const firstError = errors[0];
+    const message = firstError ? firstError.message : 'Unknown error';
+    throw ErrorFactory.transportError(`Failed to simulate transaction: ${message}`);
+  }
+
+  // Strategy 2: Try wmSimulateTx for NON-utility functions (state-changing transactions)
+  if (!isUtilityFunction && !likelyUtilityByStructure && typeof wallet.wmSimulateTx === 'function') {
     try {
+      console.debug('[simulateTx] Trying wmSimulateTx');
       const simulationResult = await wallet.wmSimulateTx(interaction);
       const decoded = tryDecodeSimulationResult(interaction, simulationResult);
       if (decoded !== undefined) {
         return decoded;
       }
-      console.warn('wmSimulateTx returned undecodable result; falling back to native simulation.');
+      console.warn('[simulateTx] wmSimulateTx returned undecodable result; falling back to native simulation.');
       undecodedResult = simulationResult;
     } catch (error) {
-      console.warn('wmSimulateTx failed, attempting native simulation fallback.', error);
+      console.warn('[simulateTx] wmSimulateTx failed, attempting native simulation fallback.', error);
       errors.push(toError(error));
     }
   }
 
-  const maybeSimulate = interactionInternal.simulate;
-  if (typeof maybeSimulate === 'function') {
+  // Strategy 3: Try wallet.simulateTx with txRequest ONLY for confirmed NON-utility functions
+  // Skip this for utility functions or suspected utility functions to avoid authWitnesses errors
+  if (!isUtilityFunction && !likelyUtilityByStructure && !payloadDetectionFailed) {
     try {
-      return await maybeSimulate.call(interaction);
-    } catch (error) {
-      errors.push(toError(error));
-    }
-  }
-
-  if (!isUtilityFunction) {
-    try {
+      console.debug('[simulateTx] Trying wallet.simulateTx with txRequest');
       const txRequest = await getExecutionPayload();
       if (!txRequest) {
         throw new Error('Unable to prepare execution payload for simulation.');
       }
+
+      // Additional validation: ensure txRequest has required transaction fields
+      const payload = txRequest as { authWitnesses?: unknown; calls?: unknown };
+      if (!payload.authWitnesses || !payload.calls) {
+        console.warn('[simulateTx] ExecutionPayload missing required transaction fields - skipping wallet.simulateTx');
+        throw new Error('ExecutionPayload missing required transaction fields (authWitnesses or calls)');
+      }
+
       const simulationResult = await wallet.simulateTx(txRequest, true);
       const decoded = tryDecodeSimulationResult(interaction, simulationResult);
       return decoded !== undefined ? decoded : simulationResult;
     } catch (error) {
+      console.warn('[simulateTx] wallet.simulateTx failed:', error);
       errors.push(toError(error));
     }
   }
