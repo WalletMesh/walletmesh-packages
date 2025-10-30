@@ -104,24 +104,7 @@ export function AztecBatchProgressOverlay({
     isBrowser: isBrowser(),
   });
 
-  // Setup focus trap for the overlay content
-  const overlayContentRef = useFocusTrap<HTMLDivElement>({
-    enabled: !disableFocusTrap && isExecuting,
-    autoFocus: true,
-    restoreFocus: true,
-  });
-
-  // Don't render if not executing
-  if (!isExecuting || !isBrowser()) {
-    console.log(
-      '[AztecBatchProgressOverlay] Not rendering - isExecuting:',
-      isExecuting,
-      'isBrowser:',
-      isBrowser(),
-    );
-    return null;
-  }
-
+  // Calculate derived values before any conditional returns
   const isAtomic = mode === 'atomic';
 
   // Determine headline
@@ -175,6 +158,24 @@ export function AztecBatchProgressOverlay({
     }
     return `${completed} of ${total} operations complete`;
   }, [progress, isAtomic, transactions, completed, total]);
+
+  // Setup focus trap for the overlay content
+  const overlayContentRef = useFocusTrap<HTMLDivElement>({
+    enabled: !disableFocusTrap && isExecuting,
+    autoFocus: true,
+    restoreFocus: true,
+  });
+
+  // Don't render if not executing
+  if (!isExecuting || !isBrowser()) {
+    console.log(
+      '[AztecBatchProgressOverlay] Not rendering - isExecuting:',
+      isExecuting,
+      'isBrowser:',
+      isBrowser(),
+    );
+    return null;
+  }
 
   const targetContainer = container || (isBrowser() ? document.body : null);
   if (!targetContainer) return null;

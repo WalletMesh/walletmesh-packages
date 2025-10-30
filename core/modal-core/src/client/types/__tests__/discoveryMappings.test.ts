@@ -6,7 +6,6 @@ import type { QualifiedResponder } from '@walletmesh/discovery';
 import { describe, expect, it } from 'vitest';
 import { ChainType, TransportType } from '../../../types.js';
 import {
-  CHAIN_MAPPINGS,
   chainTypeToDiscoveryChains,
   checkWalletSupportsChainTypes,
   createCapabilityRequirementsFromChainTypes,

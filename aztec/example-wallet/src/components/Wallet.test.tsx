@@ -37,7 +37,9 @@ describe('Wallet Component - Account Registration', () => {
     };
 
     const { getSchnorrAccount } = await import('@aztec/accounts/schnorr');
-    vi.mocked(getSchnorrAccount).mockResolvedValue(mockAccount as any);
+    vi.mocked(getSchnorrAccount).mockResolvedValue(
+      mockAccount as unknown as Awaited<ReturnType<typeof getSchnorrAccount>>,
+    );
 
     // The wallet should not throw even if registration fails
     expect(mockAccount.register).rejects.toThrow('Registration failed');
@@ -56,7 +58,9 @@ describe('Wallet Component - Account Registration', () => {
     };
 
     const { getSchnorrAccount } = await import('@aztec/accounts/schnorr');
-    vi.mocked(getSchnorrAccount).mockResolvedValue(mockAccount as any);
+    vi.mocked(getSchnorrAccount).mockResolvedValue(
+      mockAccount as unknown as Awaited<ReturnType<typeof getSchnorrAccount>>,
+    );
 
     // Both methods fail
     expect(mockAccount.register).rejects.toThrow('Registration failed');
@@ -82,7 +86,9 @@ describe('Wallet Component - Account Registration', () => {
     };
 
     const { getSchnorrAccount } = await import('@aztec/accounts/schnorr');
-    vi.mocked(getSchnorrAccount).mockResolvedValue(mockAccount as any);
+    vi.mocked(getSchnorrAccount).mockResolvedValue(
+      mockAccount as unknown as Awaited<ReturnType<typeof getSchnorrAccount>>,
+    );
 
     // First registration attempt fails
     await expect(mockAccount.register()).rejects.toThrow('First attempt failed');
@@ -109,7 +115,9 @@ describe('Wallet Component - Account Registration', () => {
     };
 
     const { getSchnorrAccount } = await import('@aztec/accounts/schnorr');
-    vi.mocked(getSchnorrAccount).mockResolvedValue(mockAccount as any);
+    vi.mocked(getSchnorrAccount).mockResolvedValue(
+      mockAccount as unknown as Awaited<ReturnType<typeof getSchnorrAccount>>,
+    );
 
     // Registration succeeds
     const wallet = await mockAccount.register();

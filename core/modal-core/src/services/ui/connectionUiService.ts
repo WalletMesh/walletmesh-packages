@@ -14,6 +14,7 @@ import type { WalletInfo } from '../../types.js';
 import type { ChainType } from '../../types.js';
 import type { BaseServiceDependencies } from '../base/ServiceDependencies.js';
 import type { ChainService } from '../chain/ChainService.js';
+import { getChainName } from '../../utils/chainNameResolver.js';
 
 /**
  * Button state types for connect button
@@ -163,7 +164,7 @@ export class ConnectionUIService {
         }
 
         if (options?.showChain && this.connectionInfo.chainId) {
-          displayInfo.chainName = this.getChainName(
+          displayInfo.chainName = getChainName(
             this.connectionInfo.chainId,
             options.chainType || this.connectionInfo.chainType || undefined,
           );
@@ -302,7 +303,7 @@ export class ConnectionUIService {
 
     // Add chain information if requested
     if (options?.showChain && this.connectionInfo.chainId) {
-      result.chainName = this.getChainName(
+      result.chainName = getChainName(
         this.connectionInfo.chainId,
         chainType || this.connectionInfo.chainType || undefined,
       );
@@ -319,60 +320,6 @@ export class ConnectionUIService {
   // ======================================
   // Chain Information
   // ======================================
-
-  /**
-   * Get chain name from chain ID
-   */
-  public getChainName(chainId: string, _chainType?: ChainType): string {
-    try {
-      // Use chain service to get chain information if available
-      if (this.chainService) {
-        const chainInfo = this.chainService.getChain(chainId);
-        if (chainInfo) {
-          return chainInfo.name;
-        }
-      }
-    } catch (error) {
-      this.logger.debug('Failed to get chain info from service, falling back to hardcoded names', {
-        chainId,
-        error,
-      });
-    }
-
-    // Fallback to hardcoded chain names if chain service doesn't have the info
-    const chainIdStr = chainId;
-
-    // Fallback chain names for CAIP-2 format
-    switch (chainIdStr) {
-      // EVM chains (eip155 namespace)
-      case 'eip155:1':
-        return 'Ethereum';
-      case 'eip155:137':
-        return 'Polygon';
-      case 'eip155:56':
-        return 'BSC';
-      case 'eip155:42161':
-        return 'Arbitrum';
-      case 'eip155:10':
-        return 'Optimism';
-      // Solana chains (solana namespace)
-      case 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp':
-        return 'Solana';
-      case 'solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z':
-        return 'Solana Testnet';
-      case 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1':
-        return 'Solana Devnet';
-      // Aztec chains (aztec namespace)
-      case 'aztec:31337':
-        return 'Aztec Sandbox';
-      case 'aztec:testnet':
-        return 'Aztec Testnet';
-      case 'aztec:mainnet':
-        return 'Aztec Mainnet';
-      default:
-        return chainIdStr;
-    }
-  }
 
   /**
    * Get chain icon URL
@@ -452,7 +399,7 @@ export class ConnectionUIService {
    * Get chain display name (alias for getChainName)
    */
   public getChainDisplayName(chainId: string, chainType: ChainType): string {
-    return this.getChainName(chainId, chainType);
+    return getChainName(chainId, chainType);
   }
 
   /**
@@ -475,7 +422,7 @@ export class ConnectionUIService {
     }
 
     if (options?.showChain && info.chainId && info.chainType) {
-      parts.push(this.getChainName(info.chainId, info.chainType));
+      parts.push(getChainName(info.chainId, info.chainType));
     }
 
     if (options?.showWalletName && info.wallet) {

@@ -2,13 +2,12 @@
  * Tests for simplified ErrorHandler
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createMockLogger, createTestEnvironment, installCustomMatchers } from '../../../testing/index.js';
 import type { Logger } from '../logger/logger.js';
-import { ErrorFactory } from './errorFactory.js';
 import { ErrorHandler } from './errorHandler.js';
-import { ERROR_CODES, ModalErrorImpl } from './types.js';
-import { isFatalError, isModalError } from './utils.js';
+import { ERROR_CODES } from './types.js';
+import { isFatalError } from './utils.js';
 
 // Install custom matchers
 installCustomMatchers();

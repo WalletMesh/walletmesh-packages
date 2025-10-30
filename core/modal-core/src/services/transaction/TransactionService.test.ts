@@ -12,7 +12,7 @@ import { ChainType, type SupportedChain } from '../../types.js';
 import type { TransactionServiceDependencies } from './TransactionService.js';
 import { TransactionService } from './TransactionService.js';
 import { TransactionValidator } from './TransactionValidator.js';
-import type { AztecTransactionParams, SolanaTransactionParams, TransactionResult } from './types.js';
+import type { AztecTransactionParams, SolanaTransactionParams } from './types.js';
 
 installCustomMatchers();
 

@@ -4,7 +4,6 @@ import {
   type IconError,
   IconErrorRecovery,
   type IconErrorType,
-  type RecoveryResult,
   type RecoveryStrategy,
   classifyIconError,
   createErrorClassifier,
@@ -452,7 +451,7 @@ describe('iconErrorRecovery', () => {
       };
 
       // Mock a recovery function that throws
-      const originalExecute = executeRecovery;
+      const _originalExecute = executeRecovery;
       vi.doMock('./iconErrorRecovery.js', () => ({
         ...vi.importActual('./iconErrorRecovery.js'),
         executeRecovery: vi.fn().mockRejectedValue(new Error('Recovery failed')),

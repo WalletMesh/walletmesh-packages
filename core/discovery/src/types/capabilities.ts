@@ -10,7 +10,6 @@
  * @since 0.1.0
  */
 
-
 /**
  * Technology requirement for discovery.
  *

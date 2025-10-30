@@ -119,7 +119,7 @@ export const aztecTransactionActions = {
   ) => {
     mutateState(store, (state) => {
       const tx = state.entities.transactions[txStatusId] as AztecTransactionResult | undefined;
-      if (tx && tx.stages && tx.stages[stage]) {
+      if (tx?.stages?.[stage]) {
         const stageTiming = tx.stages[stage] as StageTiming;
         stageTiming.end = Date.now();
       }

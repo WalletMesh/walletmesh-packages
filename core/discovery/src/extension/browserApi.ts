@@ -20,6 +20,7 @@ import { ConsoleLogger } from '../core/logger.js';
  */
 export interface BrowserRuntime {
   id: string;
+  connect?: (connectInfo?: { name?: string }) => chrome.runtime.Port;
   sendMessage: (message: unknown) => Promise<unknown>;
   onMessage: {
     addListener: (
@@ -117,7 +118,7 @@ function callbackToPromise<T>(fn: (...args: unknown[]) => void, ...args: unknown
   return new Promise((resolve, reject) => {
     const callback = (result: T) => {
       // Check for Chrome runtime errors
-      if (typeof chrome !== 'undefined' && chrome.runtime?.lastError) {
+      if (chrome?.runtime?.lastError) {
         reject(new Error(chrome.runtime.lastError.message));
       } else {
         resolve(result);
@@ -143,7 +144,7 @@ function createRuntimeAPI(): BrowserRuntime | null {
     if (runtime.id !== undefined && runtime.sendMessage && runtime.onMessage) {
       logger.debug('Using browser.runtime API (Firefox/polyfill)');
 
-      return {
+      const result: BrowserRuntime = {
         id: runtime.id,
         sendMessage: (message: unknown) => {
           // browser.* APIs return Promises natively
@@ -174,17 +175,27 @@ function createRuntimeAPI(): BrowserRuntime | null {
           },
         },
       };
+
+      // Add connect method if available
+      if ('connect' in runtime && typeof runtime.connect === 'function') {
+        result.connect = runtime.connect.bind(runtime);
+      }
+
+      return result;
     }
   }
 
   // Check for 'chrome' namespace (Chrome, Edge, Opera)
-  if (typeof chrome !== 'undefined' && chrome.runtime) {
-    const runtime = chrome.runtime;
+  // In ES modules/Node.js tests, check globalThis.chrome first, then fall back to bare chrome identifier
+  const globalThisChrome = (globalThis as unknown as { chrome?: typeof chrome }).chrome;
+  const chromeGlobal = globalThisChrome || (typeof chrome !== 'undefined' ? chrome : undefined);
+  if (chromeGlobal?.runtime) {
+    const runtime = chromeGlobal.runtime;
 
     if (runtime.id !== undefined && runtime.sendMessage && runtime.onMessage) {
       logger.debug('Using chrome.runtime API');
 
-      return {
+      const result: BrowserRuntime = {
         id: runtime.id,
         sendMessage: (message: unknown) => {
           // Convert callback-based API to Promise
@@ -230,6 +241,13 @@ function createRuntimeAPI(): BrowserRuntime | null {
           },
         },
       };
+
+      // Add connect method if available
+      if ('connect' in runtime && typeof runtime.connect === 'function') {
+        result.connect = runtime.connect.bind(runtime);
+      }
+
+      return result;
     }
   }
 
@@ -270,8 +288,11 @@ function createTabsAPI(): BrowserTabs | null {
   }
 
   // Check for 'chrome' namespace (Chrome, Edge, Opera)
-  if (typeof chrome !== 'undefined' && chrome.tabs) {
-    const tabs = chrome.tabs;
+  // In ES modules/Node.js tests, check globalThis.chrome first, then fall back to bare chrome identifier
+  const globalThisChrome = (globalThis as unknown as { chrome?: typeof chrome }).chrome;
+  const chromeGlobal = globalThisChrome || (typeof chrome !== 'undefined' ? chrome : undefined);
+  if (chromeGlobal?.tabs) {
+    const tabs = chromeGlobal.tabs;
 
     if (tabs.sendMessage) {
       logger.debug('Using chrome.tabs API');
@@ -327,7 +348,10 @@ function detectAPIType(): 'chrome' | 'browser' | 'none' {
   ) {
     return 'browser';
   }
-  if (typeof chrome !== 'undefined' && chrome.runtime?.id !== undefined) {
+  // Check globalThis.chrome first for ES modules/Node.js tests, then fall back to bare chrome identifier
+  const globalThisChrome = (globalThis as unknown as { chrome?: typeof chrome }).chrome;
+  const chromeGlobal = globalThisChrome || (typeof chrome !== 'undefined' ? chrome : undefined);
+  if (chromeGlobal?.runtime?.id !== undefined) {
     return 'chrome';
   }
   return 'none';

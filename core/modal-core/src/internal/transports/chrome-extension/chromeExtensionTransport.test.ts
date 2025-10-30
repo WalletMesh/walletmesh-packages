@@ -84,8 +84,11 @@ const mockChrome = {
 
 // Install/uninstall helpers
 const installMockChrome = () => {
+  // Set on global for Node.js environment
   Object.assign(global, { chrome: mockChrome });
-  // Also set on window for jsdom environment
+  // Set on globalThis for ES modules compatibility (used by discovery's getBrowserAPI)
+  Object.assign(globalThis, { chrome: mockChrome });
+  // Also set on window for browser environment
   if (typeof window !== 'undefined') {
     Object.assign(window, { chrome: mockChrome });
   }
@@ -93,7 +96,8 @@ const installMockChrome = () => {
 
 const uninstallMockChrome = () => {
   Object.assign(global, { chrome: undefined });
-  // Also clear from window for jsdom environment
+  Object.assign(globalThis, { chrome: undefined });
+  // Also clear from window for browser environment
   if (typeof window !== 'undefined') {
     Object.assign(window, { chrome: undefined });
   }
@@ -687,5 +691,88 @@ describe('ChromeExtensionTransport', () => {
     await transportTestUtils.runAllTimers();
 
     await expect(connectPromise).rejects.toThrow('Failed to connect to transport');
+  });
+
+  it('should detect Chrome API type correctly', async () => {
+    const _transport = createTestTransport({
+      extensionId: 'test-extension-id',
+      ...transportTestUtils.config,
+    });
+
+    const logger = createDebugLogger('TestLogger', false);
+    const infoSpy = vi.spyOn(logger, 'info');
+
+    // Create new transport with spied logger
+    const transportWithSpy = new ChromeExtensionTransport(
+      {
+        extensionId: 'test-extension-id',
+        ...transportTestUtils.config,
+      },
+      logger,
+      createMockErrorHandler(),
+    );
+
+    // Start connection
+    const connectPromise = transportWithSpy.connect();
+
+    // Send wallet_ready to complete connection
+    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
+    // Wait for connection to complete
+    await connectPromise;
+
+    // Verify that the logger was called with apiType info
+    const connectCalls = infoSpy.mock.calls.filter(
+      (call) => typeof call[0] === 'string' && call[0].includes('connecting to extension'),
+    );
+
+    expect(connectCalls.length).toBeGreaterThan(0);
+    // Should log the apiType (chrome, browser, or none)
+    const connectCall = connectCalls[0];
+    expect(connectCall[1]).toHaveProperty('apiType');
+    expect(connectCall[1].apiType).toBe('chrome'); // In this test environment
+  });
+
+  it('should fail gracefully when browser API is not available', async () => {
+    // Temporarily remove chrome API
+    const originalChrome = (globalThis as { chrome?: unknown }).chrome;
+    const originalGlobalChrome = (global as { chrome?: unknown }).chrome;
+
+    Object.assign(globalThis, { chrome: undefined });
+    Object.assign(global, { chrome: undefined });
+    if (typeof window !== 'undefined') {
+      Object.assign(window, { chrome: undefined });
+    }
+
+    const transport = createTestTransport({
+      extensionId: 'test-extension-id',
+      timeout: 1000,
+      retries: 1,
+    });
+
+    // Add error handler to prevent unhandled rejection
+    const errorHandler = vi.fn();
+    transport.on('error', errorHandler);
+
+    const connectPromise = transport.connect();
+
+    // Advance timers through full retry cycle
+    // With retries: 1, timeout: 1000, retryDelay: 1000 (default)
+    // Total time needed: 1000 (first attempt) + 1000 (retry delay) + 1000 (second attempt) = 3000ms
+    await vi.advanceTimersByTimeAsync(3500);
+
+    // Should reject with appropriate error
+    await expect(connectPromise).rejects.toThrow();
+
+    // Should have emitted error event
+    expect(errorHandler).toHaveBeenCalled();
+
+    // Restore chrome API
+    Object.assign(globalThis, { chrome: originalChrome });
+    Object.assign(global, { chrome: originalGlobalChrome });
+    if (typeof window !== 'undefined') {
+      Object.assign(window, { chrome: mockChrome });
+    }
   });
 });

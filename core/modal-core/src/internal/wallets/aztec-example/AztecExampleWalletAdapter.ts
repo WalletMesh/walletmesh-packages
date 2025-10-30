@@ -17,6 +17,7 @@ import type { WalletConnection } from '../../../api/types/connection.js';
 import type { WalletProvider } from '../../../api/types/providers.js';
 import { ChainType, type Transport } from '../../../types.js';
 import type { WalletInfo } from '../../../types.js';
+import { getChainName } from '../../../utils/chainNameResolver.js';
 import { ErrorFactory } from '../../core/errors/errorFactory.js';
 import { ErrorHandler } from '../../core/errors/errorHandler.js';
 import { modalLogger } from '../../core/logger/globalLogger.js';
@@ -75,8 +76,10 @@ interface AztecRouterProviderInterface {
     permissions: Record<string, string[]>,
     timeout?: number,
   ) => Promise<{ sessionId: string; permissions: unknown }>;
+  reconnect: (sessionId: string, timeout?: number) => Promise<{ sessionId: string; permissions: unknown }>;
   disconnect: () => Promise<void>;
   on: (event: string, listener: (...args: unknown[]) => void) => void;
+  sessionId: string | undefined; // Session ID property available after connection
 }
 
 export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
@@ -114,6 +117,48 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
   };
 
   /**
+   * Constructor that accepts optional transport configuration for session restoration
+   * @param config Optional configuration with transport settings and sessionId from persisted session
+   */
+  constructor(config?: {
+    transportConfig?: {
+      type: string;
+      config: Record<string, unknown>;
+    };
+    sessionId?: string;
+  }) {
+    super();
+
+    // If transport config is provided (from session restoration), use it
+    if (config?.transportConfig) {
+      const { config: transportConfigData } = config.transportConfig;
+
+      // Extract walletUrl from various possible locations in transport config
+      const walletUrl =
+        (transportConfigData['walletUrl'] as string | undefined) ||
+        (transportConfigData['targetOrigin'] as string | undefined) ||
+        this.walletConfig.walletUrl; // Fallback to default
+
+      if (walletUrl) {
+        this.walletConfig.walletUrl = walletUrl;
+      }
+
+      this.log('debug', 'Adapter created with restored transport config', {
+        walletUrl,
+        hasSessionId: !!config.sessionId,
+      });
+    }
+
+    // If sessionId is provided from persisted session, store it
+    if (config?.sessionId) {
+      this.sessionId = config.sessionId;
+      this.log('debug', 'Adapter created with persisted sessionId', {
+        sessionId: config.sessionId,
+      });
+    }
+  }
+
+  /**
    * Implement the abstract connect method from AbstractWalletAdapter
    */
   async connect(options?: ConnectOptions): Promise<WalletConnection> {
@@ -123,18 +168,7 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
   /**
    * Get a display name for a chainId
    */
-  private getChainName(chainId: string): string {
-    switch (chainId) {
-      case 'aztec:31337':
-        return 'Aztec Sandbox';
-      case 'aztec:testnet':
-        return 'Aztec Testnet';
-      case 'aztec:mainnet':
-        return 'Aztec Mainnet';
-      default:
-        return chainId;
-    }
-  }
+  // Note: getChainName() has been consolidated to src/utils/chainNameResolver.ts
 
   /**
    * Categorize a permission for better debugging
@@ -410,7 +444,7 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
           provider: this.routerProvider as unknown as WalletProvider,
           providerType: 'aztec-router',
           sessionId: this.sessionId,
-          chainName: this.getChainName(String(chainId || chainIdStr)),
+          chainName: getChainName(String(chainId || chainIdStr)),
         });
       } catch (error) {
         modalLogger.warn('Existing provider is no longer connected, will create new connection', {
@@ -716,44 +750,126 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
 
     // Check if we have a persisted session to restore
     const persistedSession = this.getPersistedSession();
-    if (persistedSession?.sessionId) {
-      modalLogger.info('Using persisted session ID for reconnection', {
-        sessionId: persistedSession.sessionId,
-        walletId: persistedSession.walletId,
-      });
-      this.sessionId = persistedSession.sessionId;
-    }
+    // Get adapterReconstruction from persisted session OR from options (reconnection scenario)
+    // When reconnecting after page refresh, WalletMeshClientImpl passes adapterReconstruction in options
+    const adapterReconstruction =
+      persistedSession?.adapterReconstruction ||
+      (options as { adapterReconstruction?: unknown })?.adapterReconstruction as
+        | { sessionId?: string; transportConfig?: unknown }
+        | undefined;
+    // Use sessionId from adapterReconstruction, or fall back to constructor-provided sessionId
+    const sessionIdToReconnect = adapterReconstruction?.sessionId || this.sessionId;
+    const shouldReconnect = !!(sessionIdToReconnect && options?.isReconnection);
 
-    // Connect to the wallet through the router provider
-    const requestedPermissions = this.getRequiredPermissions(options);
-    modalLogger.info('Connecting to wallet through router provider', {
-      chainId,
-      requestedPermissions,
-      totalPermissions: requestedPermissions.length,
-      fromConnectionOptions: !!(options?.['aztecOptions'] as { permissions?: string[] })?.permissions,
+    console.log('🔍 [Adapter Session Debug] Session reconnection check:', {
+      hasPersistedSession: !!persistedSession,
+      hasAdapterReconstruction: !!adapterReconstruction,
+      adapterReconstructionFromPersisted: !!persistedSession?.adapterReconstruction,
+      adapterReconstructionFromOptions: !!(options as { adapterReconstruction?: unknown })
+        ?.adapterReconstruction,
+      sessionIdToReconnect,
+      isReconnectionFlag: options?.isReconnection,
+      shouldReconnect,
+      persistedSessionKeys: persistedSession ? Object.keys(persistedSession) : [],
+      adapterReconstructionKeys: adapterReconstruction ? Object.keys(adapterReconstruction) : [],
     });
 
-    // Log detailed permission information for debugging
-    console.group('🔐 Aztec Wallet Permission Request');
-    console.info(`Requesting ${requestedPermissions.length} permissions for chain: ${chainId}`);
-    console.table(
-      requestedPermissions.map((permission, index) => ({
-        index: index + 1,
-        permission,
-        category: this.categorizePermission(permission),
-      })),
-    );
-    console.info('ℹ️ These permissions will be sent to the wallet for approval');
-    console.groupEnd();
+    let connectResult: { sessionId: string; permissions: unknown };
 
-    const connectResult = await this.routerProvider.connect(
-      { [chainId]: requestedPermissions },
-      30000, // 30 second timeout
-    );
+    if (shouldReconnect && sessionIdToReconnect) {
+      modalLogger.info('🔄 Attempting to reconnect to persisted session', {
+        sessionId: sessionIdToReconnect,
+        walletId: persistedSession?.walletId,
+      });
+      console.log('[AztecExampleWalletAdapter] 🔄 Reconnecting to existing session:', sessionIdToReconnect);
 
-    // Store the sessionId from the connection
-    this.sessionId = connectResult.sessionId;
-    modalLogger.info('Connection established', { sessionId: this.sessionId });
+      try {
+        // Use reconnect() instead of connect() to restore the existing session
+        const reconnectResult = await this.routerProvider.reconnect(
+          sessionIdToReconnect,
+          30000, // 30 second timeout
+        );
+
+        connectResult = reconnectResult;
+        // Try multiple sources to ensure we capture sessionId
+        this.sessionId = reconnectResult.sessionId ?? this.routerProvider?.sessionId ?? null;
+
+        modalLogger.info('🔍 [Session Capture] Successfully reconnected to existing session', {
+          sessionIdFromResult: reconnectResult.sessionId,
+          sessionIdFromProvider: this.routerProvider?.sessionId,
+          finalSessionId: this.sessionId,
+          hasSessionId: !!this.sessionId,
+        });
+        console.log('[AztecExampleWalletAdapter] Session reconnected successfully');
+      } catch (error) {
+        modalLogger.warn('⚠️ Reconnection failed, falling back to new connection', {
+          error,
+          sessionId: sessionIdToReconnect,
+        });
+        console.warn('[AztecExampleWalletAdapter] Reconnection failed, creating new session:', error);
+
+        // Fall through to normal connect() flow
+        const requestedPermissions = this.getRequiredPermissions(options);
+        modalLogger.info('Creating new connection after reconnection failure', {
+          chainId,
+          requestedPermissions: requestedPermissions.length,
+        });
+
+        connectResult = await this.routerProvider.connect(
+          { [chainId]: requestedPermissions },
+          30000, // 30 second timeout
+        );
+
+        // Try multiple sources to ensure we capture sessionId
+        this.sessionId = connectResult.sessionId ?? this.routerProvider?.sessionId ?? null;
+        modalLogger.info('🔍 [Session Capture] New connection established after reconnection failure', {
+          sessionIdFromResult: connectResult.sessionId,
+          sessionIdFromProvider: this.routerProvider?.sessionId,
+          finalSessionId: this.sessionId,
+          hasSessionId: !!this.sessionId,
+        });
+      }
+    } else {
+      // Normal connection flow (new session)
+      const requestedPermissions = this.getRequiredPermissions(options);
+      modalLogger.info('Connecting to wallet through router provider', {
+        chainId,
+        requestedPermissions,
+        totalPermissions: requestedPermissions.length,
+        fromConnectionOptions: !!(options?.['aztecOptions'] as { permissions?: string[] })?.permissions,
+      });
+
+      // Log detailed permission information for debugging
+      console.group('🔐 Aztec Wallet Permission Request');
+      console.info(`Requesting ${requestedPermissions.length} permissions for chain: ${chainId}`);
+      console.table(
+        requestedPermissions.map((permission, index) => ({
+          index: index + 1,
+          permission,
+          category: this.categorizePermission(permission),
+        })),
+      );
+      console.info('ℹ️ These permissions will be sent to the wallet for approval');
+      console.groupEnd();
+
+      connectResult = await this.routerProvider.connect(
+        { [chainId]: requestedPermissions },
+        30000, // 30 second timeout
+      );
+
+      // Store the sessionId from the connection
+      // Try multiple sources to ensure we capture it
+      this.sessionId = connectResult.sessionId ?? this.routerProvider?.sessionId ?? null;
+
+      modalLogger.info('🔍 [Session Capture] Connection established, extracting sessionId', {
+        sessionIdFromResult: connectResult.sessionId,
+        sessionIdFromProvider: this.routerProvider?.sessionId,
+        finalSessionId: this.sessionId,
+        hasSessionId: !!this.sessionId,
+        sessionIdType: typeof this.sessionId,
+        connectResultKeys: Object.keys(connectResult || {}),
+      });
+    }
 
     // Get the actual account information
     const accounts = await this.getAccounts(chainId);
@@ -799,15 +915,30 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
 
     // Use the createConnection helper from AbstractWalletAdapter
     // This properly stores the connection in the adapter's internal state
-    return this.createConnection({
+    modalLogger.info('[DEBUG] Before createConnection', {
+      sessionId: this.sessionId,
+      hasSessionId: !!this.sessionId,
+      sessionIdType: typeof this.sessionId,
+    });
+
+    const connection = await this.createConnection({
       address: accounts[0] as string,
       accounts,
       chainId: actualChainId,
       chainType: ChainType.Aztec,
       provider: this.routerProvider as unknown as import('../../../api/types/providers.js').WalletProvider,
-      chainName: this.getChainName(actualChainId),
+      sessionId: this.sessionId ?? undefined,
+      chainName: getChainName(actualChainId),
       chainRequired: false,
     });
+
+    modalLogger.info('[DEBUG] After createConnection', {
+      connectionSessionId: connection.sessionId,
+      hasConnectionSessionId: !!connection.sessionId,
+      connectionSessionIdType: typeof connection.sessionId,
+    });
+
+    return connection;
   }
 
   /**
@@ -888,6 +1019,18 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
     aztecProvider.on('disconnect', () => {
       modalLogger.debug('Provider disconnected');
       this.emitBlockchainEvent('disconnected', { reason: 'Provider disconnected' });
+    });
+
+    // Listen for session termination from wallet
+    aztecProvider.on('wm_sessionTerminated', (data: unknown) => {
+      const { sessionId, reason } = data as { sessionId: string; reason: string };
+      modalLogger.info('Session terminated by wallet', { sessionId, reason });
+      // Forward to WalletMeshClient via blockchain event
+      this.emitBlockchainEvent('sessionTerminated', {
+        sessionId,
+        reason,
+        chainType: ChainType.Aztec,
+      });
     });
   }
 

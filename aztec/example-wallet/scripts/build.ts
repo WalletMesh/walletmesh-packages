@@ -48,7 +48,7 @@ function loadBuildState(): BuildState | null {
       const data = fs.readFileSync(CACHE_FILE, 'utf8');
       return JSON.parse(data);
     }
-  } catch (error) {
+  } catch (_error) {
     console.log('Failed to load build state, will rebuild');
   }
   return null;
@@ -87,7 +87,7 @@ function runTypeScript(): void {
       cwd: ROOT_DIR,
     });
     console.log('TypeScript build completed');
-  } catch (error) {
+  } catch (_error) {
     console.error('TypeScript build failed');
     process.exit(1);
   }
@@ -102,7 +102,7 @@ function runVite(): void {
       shell: true,
     });
     console.log('Vite build completed');
-  } catch (error) {
+  } catch (_error) {
     console.error('Vite build failed');
     process.exit(1);
   }

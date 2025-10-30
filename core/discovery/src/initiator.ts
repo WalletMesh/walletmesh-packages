@@ -22,6 +22,7 @@ import type {
   CapabilityPreferences,
   QualifiedResponder,
 } from './types/capabilities.js';
+import { deepEqual } from './utils/deepEqual.js';
 import type { SecurityPolicy } from './types/security.js';
 import type { DiscoveryInitiatorConfig } from './types/testing.js';
 import { DISCOVERY_EVENTS, DISCOVERY_CONFIG, DISCOVERY_PROTOCOL_VERSION } from './core/constants.js';
@@ -38,6 +39,20 @@ import {
   validateCapabilityRequirements,
   validateInitiatorInfo,
 } from './utils/validation.js';
+
+/**
+ * Check if a string contains control characters.
+ * Control characters include ASCII control chars (0x00-0x1F) and DEL + C1 controls (0x7F-0x9F).
+ */
+function hasControlCharacters(str: string): boolean {
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    if ((code >= 0x00 && code <= 0x1f) || (code >= 0x7f && code <= 0x9f)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Options for DiscoveryInitiator configuration.
@@ -259,7 +274,7 @@ export class DiscoveryInitiator {
         // ignore invalid; fall through
       }
     }
-    if (typeof window !== 'undefined' && window?.location?.origin) {
+    if (window?.location?.origin) {
       return window.location.origin;
     }
     return 'http://localhost:3000';
@@ -460,7 +475,7 @@ export class DiscoveryInitiator {
         return;
       }
 
-      if (response.name && /[\u0000-\u001F\u007F-\u009F]/.test(response.name)) {
+      if (response.name && hasControlCharacters(response.name)) {
         this.logger.warn('[DiscoveryInitiator] Invalid discovery response name:', response.name);
         return;
       }
@@ -525,8 +540,8 @@ export class DiscoveryInitiator {
       firstResponse.name === response.name &&
       firstResponse.icon === response.icon &&
       firstResponse.rdns === response.rdns &&
-      JSON.stringify(firstResponse.matched) === JSON.stringify(response.matched) &&
-      JSON.stringify(firstResponse.transportConfig) === JSON.stringify(response.transportConfig);
+      deepEqual(firstResponse.matched, response.matched) &&
+      deepEqual(firstResponse.transportConfig, response.transportConfig);
 
     if (isIdenticalResponse) {
       // Silently ignore identical duplicate responses (common in dev mode)
@@ -550,7 +565,10 @@ export class DiscoveryInitiator {
 
     const duplicateError = new DuplicateResponseError(duplicateDetails);
 
-    this.logger.warn('SECURITY VIOLATION: Duplicate response detected with DIFFERENT parameters', duplicateDetails);
+    this.logger.warn(
+      'SECURITY VIOLATION: Duplicate response detected with DIFFERENT parameters',
+      duplicateDetails,
+    );
 
     // Increment response count
     this.seenResponders.set(rdns, (this.seenResponders.get(rdns) ?? 0) + 1);

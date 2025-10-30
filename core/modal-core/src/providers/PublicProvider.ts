@@ -50,7 +50,7 @@ export class PublicProviderWrapper implements PublicProvider {
         Array.isArray(args.params) ? args.params : args.params ? [args.params] : undefined,
       );
       return result.data as T;
-    } catch (error) {
+    } catch (_error) {
       // Re-throw with proper error context
       throw ErrorFactory.transportError(`Public provider RPC call failed: ${args.method}`, 'PublicProvider');
     }

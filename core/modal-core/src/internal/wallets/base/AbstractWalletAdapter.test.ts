@@ -1,6 +1,6 @@
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WalletAdapterConnectionState, WalletConnection } from '../../../api/types/connection.js';
+import type { WalletConnection } from '../../../api/types/connection.js';
 import type { ProviderClass, WalletProvider } from '../../../api/types/providers.js';
 import {
   createMockJSONRPCTransport,
@@ -14,7 +14,6 @@ import type { ModalError } from '../../core/errors/types.js';
 import { AbstractWalletAdapter } from './AbstractWalletAdapter.js';
 import type {
   AdapterContext,
-  AdapterEvent,
   ConnectOptions,
   EventHandler,
   WalletAdapterMetadata,
@@ -37,7 +36,7 @@ type MockTransportAdapter = {
   request: ReturnType<typeof vi.fn>;
 };
 
-let mockTransportAdapter: MockTransportAdapter;
+let _mockTransportAdapter: MockTransportAdapter;
 // let TransportToJsonrpcAdapterMock: ReturnType<typeof vi.fn>; // Adapters removed
 
 // vi.mock('../../adapters/TransportToJsonrpcAdapter.js', () => ({
@@ -63,7 +62,7 @@ class DebugWalletAdapter extends AbstractWalletAdapter {
   };
 
   // Mock methods - must be implemented since they're abstract
-  async connect(options?: ConnectOptions): Promise<WalletConnection> {
+  async connect(_options?: ConnectOptions): Promise<WalletConnection> {
     // Simulate connection using base class helper
     const mockProvider = {} as WalletProvider;
     return this.createConnection({
@@ -142,7 +141,7 @@ describe('AbstractWalletAdapter', () => {
     await testEnv.setup();
 
     // Set up the mock implementation after clearing mocks
-    mockTransportAdapter = {
+    _mockTransportAdapter = {
       send: vi.fn(),
       sendBatch: vi.fn(),
       close: vi.fn(),
@@ -764,7 +763,7 @@ describe('AbstractWalletAdapter', () => {
         class AdapterWithListeners extends DebugWalletAdapter {
           setupProviderListenersCalled = false;
 
-          protected setupProviderListeners(provider: WalletProvider): void {
+          protected setupProviderListeners(_provider: WalletProvider): void {
             this.setupProviderListenersCalled = true;
           }
         }

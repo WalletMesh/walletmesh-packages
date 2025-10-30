@@ -4,7 +4,6 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WalletMeshClient } from '../../internal/client/WalletMeshClient.js';
 import {
   createMockClient,
   createMockWalletInfo,

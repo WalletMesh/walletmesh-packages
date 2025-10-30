@@ -265,9 +265,9 @@ describe('SessionManager', () => {
 
     it('should clean up expired sessions', () => {
       // Create multiple sessions
-      const session1 = sessionManager.createSession('https://example1.com');
+      const _session1 = sessionManager.createSession('https://example1.com');
       const session2 = sessionManager.createSession('https://example2.com');
-      const session3 = sessionManager.createSession('https://example3.com');
+      const _session3 = sessionManager.createSession('https://example3.com');
 
       // Suspend one
       sessionManager.suspendSession(session2.id);
@@ -343,8 +343,8 @@ describe('SessionManager', () => {
     });
 
     it('should dispose properly', () => {
-      const session1 = sessionManager.createSession('https://example1.com');
-      const session2 = sessionManager.createSession('https://example2.com');
+      const _session1 = sessionManager.createSession('https://example1.com');
+      const _session2 = sessionManager.createSession('https://example2.com');
 
       sessionManager.dispose();
 

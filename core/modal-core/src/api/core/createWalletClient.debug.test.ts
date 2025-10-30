@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createWalletMesh } from './createWalletClient.js';
 import { resetServices } from '../../internal/core/factories/serviceFactory.js';
 import { modalLogger, configureModalLogger } from '../../internal/core/logger/globalLogger.js';

@@ -13,7 +13,7 @@
  * @group query
  */
 
-import type { QueryClient, QueryClientConfig } from '@tanstack/query-core';
+import type { QueryClientConfig } from '@tanstack/query-core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   createMockServiceDependencies,

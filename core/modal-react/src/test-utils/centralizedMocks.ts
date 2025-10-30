@@ -15,26 +15,37 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import { vi } from 'vitest';
 
+// Define the return type for the store
+// We define our own interface instead of using ReturnType to ensure type compatibility
+interface MockStore {
+  getState: () => WalletMeshState;
+  setState: (updater: ((state: WalletMeshState) => WalletMeshState) | Partial<WalletMeshState>) => void;
+  subscribe: (callback: (state: WalletMeshState) => void) => () => void;
+  destroy: () => void;
+}
+
 // Create mock SessionManager - exported for use across React tests
 export function createMockSessionManager(): SessionManager {
   const sessions = new Map<string, SessionState>();
 
   return {
-    createSession: vi.fn().mockImplementation(async (params) => {
-      const session = {
-        sessionId: `session-${params.walletId}-${Date.now()}`,
-        walletId: params.walletId,
-        status: 'connected',
-        ...params,
-      };
-      sessions.set(session.sessionId, session);
-      return session;
-    }),
-    getSession: vi.fn().mockImplementation((sessionId) => sessions.get(sessionId) || null),
+    createSession: vi
+      .fn()
+      .mockImplementation(async (params: Parameters<SessionManager['createSession']>[0]) => {
+        const session = coreCreateMockSessionState({
+          sessionId: `session-${params.walletId}-${Date.now()}`,
+          walletId: params.walletId,
+        });
+        sessions.set(session.sessionId, session);
+        return session;
+      }),
+    getSession: vi.fn().mockImplementation((sessionId: string) => sessions.get(sessionId) || null),
     getActiveSession: vi.fn().mockReturnValue(null),
     getWalletSessions: vi
       .fn()
-      .mockImplementation((walletId) => Array.from(sessions.values()).filter((s) => s.walletId === walletId)),
+      .mockImplementation((walletId: string) =>
+        Array.from(sessions.values()).filter((s) => s.walletId === walletId),
+      ),
     updateSessionStatus: vi.fn(),
     switchChain: vi.fn().mockResolvedValue({} as SessionState),
     switchAccount: vi.fn().mockResolvedValue({} as SessionState),
@@ -50,18 +61,10 @@ export function createMockSessionManager(): SessionManager {
 }
 import type { WalletMeshReactConfig } from '../types.js';
 
-// Define the return type for the store
-interface MockStore {
-  getState: () => WalletMeshState;
-  setState: (updater: ((state: WalletMeshState) => WalletMeshState) | Partial<WalletMeshState>) => void;
-  subscribe: (callback: (state: WalletMeshState) => void) => () => void;
-  destroy: () => void;
-}
-
 // React-specific version of createAutoMockedStore that extends the core version
 function createAutoMockedStore(initialState?: Partial<WalletMeshState>): MockStore {
   // Use the core testing utility and add React-specific extensions if needed
-  return coreCreateAutoMockedStore(initialState);
+  return coreCreateAutoMockedStore(initialState) as unknown as MockStore;
 }
 
 // React-specific version of createMockSessionState that extends the core version
@@ -436,7 +439,7 @@ export const ReactTestStoreUtils: ReactTestStoreUtilsType = {
     // Add React-specific methods if needed
     return {
       ...store,
-      useStore: vi.fn().mockImplementation((selector) => {
+      useStore: vi.fn().mockImplementation((selector?: (state: WalletMeshState) => unknown) => {
         const state = store.getState();
         return selector ? selector(state) : state;
       }),

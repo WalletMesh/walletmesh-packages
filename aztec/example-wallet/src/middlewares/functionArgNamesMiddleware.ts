@@ -12,7 +12,6 @@ export type FunctionArgNames = Record<string, Record<string, EnhancedParameterIn
  */
 const deploymentArtifactCache = new Map<string, { name: string; artifact: unknown }>();
 
-
 /**
  * Extracts function argument names for an array of execution payloads (batch execute).
  * This is a helper function that can be used in router-level middleware.
@@ -459,8 +458,11 @@ export const createFunctionArgNamesMiddleware = (
       });
 
       if (result && typeof result === 'object' && 'contractAddress' in result) {
-        const contractAddressObj = (result as { contractAddress?: { toString?: () => string } }).contractAddress;
-        const contractAddress = contractAddressObj?.toString ? contractAddressObj.toString() : String(contractAddressObj);
+        const contractAddressObj = (result as { contractAddress?: { toString?: () => string } })
+          .contractAddress;
+        const contractAddress = contractAddressObj?.toString
+          ? contractAddressObj.toString()
+          : String(contractAddressObj);
 
         if (contractAddress && contractAddress !== 'undefined') {
           deploymentArtifactCache.set(contractAddress, deploymentArtifact);

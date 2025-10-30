@@ -17,7 +17,7 @@ export function AztecDebugger() {
       // Try to get session info directly if client available
       if (client && 'getState' in client) {
         try {
-          const state = (client as any).getState?.();
+          const state = (client as unknown as { getState?: () => unknown }).getState?.();
           console.log('[AztecDebugger] Modal state:', state);
         } catch (e) {
           console.error('[AztecDebugger] Could not access client state:', e);

@@ -4,9 +4,8 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { mockFactories, setupMocks, testSetupPatterns, timerUtils } from '../../testing/index.js';
+import { setupMocks, testSetupPatterns } from '../../testing/index.js';
 import { type ChromeExtensionConfig, type PopupConfig, TransportType } from '../../types.js';
-import { createComponentServices } from '../core/factories/serviceFactory.js';
 import { ChromeExtensionTransport, PopupWindowTransport } from '../transports/index.js';
 import { createTransport } from './transport.js';
 

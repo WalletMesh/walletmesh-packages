@@ -214,8 +214,7 @@ vi.mock('../../internal/wallets/mock/MockAdapter.js', () => ({
 
 // Now import after mocks are set up
 import type { WalletConfig, WalletMeshConfig } from '../../internal/client/WalletMeshClient.js';
-import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
-import { createMockRegistry, createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
+import { createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
 import type { ModalController } from '../../types.js';
 import { createWalletMesh } from './createWalletClient.js';
 
@@ -372,7 +371,7 @@ describe('createWalletMesh', () => {
       it('should create modal with correct configuration', async () => {
         const config = createUniqueConfig();
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         // Check if mock was called
         expect(mockCreateModal).toHaveBeenCalled();
@@ -428,7 +427,7 @@ describe('createWalletMesh', () => {
           };
         });
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         // The proxy should provide no-op functions for methods before modal is ready
         expect(typeof capturedModal.open).toBe('function');
@@ -517,7 +516,7 @@ describe('createWalletMesh', () => {
           wallets: walletConfig,
         };
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         // No wallets should be registered when include is empty
         expect(mockRegistryInstance.register).not.toHaveBeenCalled();
@@ -558,7 +557,7 @@ describe('createWalletMesh', () => {
 
         const config = createUniqueConfig();
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         // Get the called arguments
         const calledArgs = mockCreateModal.mock.calls[0]?.[0];
@@ -618,7 +617,7 @@ describe('createWalletMesh', () => {
           wallets: walletConfig,
         };
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         // Should register only EVM adapter (debug wallet not included by default anymore)
         expect(mockRegistryInstance.register).toHaveBeenCalledTimes(1);
@@ -649,7 +648,7 @@ describe('createWalletMesh', () => {
           wallets,
         };
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         expect(mockCreateModal).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -676,7 +675,7 @@ describe('createWalletMesh', () => {
           wallets,
         };
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         // When using direct wallet info, adapters for matching wallet IDs should be registered
         expect(mockRegistryInstance.register).toHaveBeenCalled();
@@ -695,7 +694,7 @@ describe('createWalletMesh', () => {
       it('should register default adapters when no wallet config provided', async () => {
         const config = createUniqueConfig();
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         expect(mockRegistryInstance.register).toHaveBeenCalledTimes(1); // Only EVM (debug wallet not included by default)
       });
@@ -710,7 +709,7 @@ describe('createWalletMesh', () => {
           wallets: walletConfig,
         };
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         expect(mockRegistryInstance.register).toHaveBeenCalledWith(
           expect.objectContaining({ id: 'evm-wallet' }),
@@ -730,7 +729,7 @@ describe('createWalletMesh', () => {
           wallets: walletConfig,
         };
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         expect(mockRegistryInstance.register).toHaveBeenCalledWith(
           expect.objectContaining({ id: 'evm-wallet' }),
@@ -750,7 +749,7 @@ describe('createWalletMesh', () => {
           wallets: walletConfig,
         };
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         expect(mockRegistryInstance.register).toHaveBeenCalledWith(
           expect.objectContaining({ id: 'evm-wallet' }),
@@ -771,7 +770,7 @@ describe('createWalletMesh', () => {
           wallets: walletConfig,
         };
 
-        const client = await createWalletMesh(config);
+        const _client = await createWalletMesh(config);
 
         // Include filter runs first, then exclude
         expect(mockRegistryInstance.register).toHaveBeenCalledWith(

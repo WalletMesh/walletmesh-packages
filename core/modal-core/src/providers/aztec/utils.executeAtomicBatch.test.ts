@@ -5,7 +5,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { executeAtomicBatch } from './utils.js';
 import type { AztecDappWallet, ContractFunctionInteraction, SentTx, TxReceipt } from './types.js';
-import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 
 describe('executeAtomicBatch', () => {
   let mockWallet: AztecDappWallet;

@@ -496,7 +496,7 @@ describe('dom-essentials', () => {
     it('should handle boolean options', () => {
       const handler = vi.fn();
 
-      const cleanup = addElementListener(mockElement, 'click', handler, true);
+      const _cleanup = addElementListener(mockElement, 'click', handler, true);
 
       expect(mockElement.addEventListener).toHaveBeenCalledWith('click', handler, true);
     });

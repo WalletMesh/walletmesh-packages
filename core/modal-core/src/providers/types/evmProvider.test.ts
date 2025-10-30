@@ -9,7 +9,6 @@ import {
   EIP1193ErrorCode,
   type EIP1193ProviderError,
   type EVMConnectOptions,
-  type EVMProvider,
   type EVMProviderState,
   type EVMTransactionRequest,
   type EVMTypedData,

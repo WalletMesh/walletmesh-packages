@@ -1,9 +1,7 @@
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ModalError } from '../internal/core/errors/types.js';
 import { createMockWalletInfo } from '../testing/index.js';
 import { ChainType } from '../types.js';
-import type { WalletInfo } from '../types.js';
-import type { WalletMeshState } from './store.js';
 
 // Use vi.hoisted to ensure mock is applied before imports
 const { mockSessionManager, sessions, resetActiveSessionId } = vi.hoisted(() => {
@@ -147,7 +145,7 @@ const { mockSessionManager, sessions, resetActiveSessionId } = vi.hoisted(() => 
 
       return session;
     }),
-    discoverAccounts: vi.fn().mockImplementation(async (sessionId, options) => {
+    discoverAccounts: vi.fn().mockImplementation(async (sessionId, _options) => {
       const session = sessions.get(sessionId);
       if (!session) throw new Error('Session not found');
 
@@ -267,10 +265,9 @@ const { mockSessionManager, sessions, resetActiveSessionId } = vi.hoisted(() => 
 
 import { createTestStore } from '../testing/index.js';
 import { connectionActions } from './actions/connections.js';
-import { transactionActions } from './actions/transactions.js';
 import { uiActions } from './actions/ui.js';
 // Import without mocking since we inject the mock directly
-import { getActiveSession, useStore } from './store.js';
+import { useStore } from './store.js';
 
 describe.sequential('Store', () => {
   let store: ReturnType<typeof createTestStore>;

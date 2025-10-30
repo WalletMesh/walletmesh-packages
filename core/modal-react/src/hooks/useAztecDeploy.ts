@@ -337,7 +337,10 @@ export function useAztecDeploy(): UseAztecDeployReturn {
 
         // Generate transaction status ID for background tracking
         const deploymentTxStatusId = generateDeploymentTxStatusId();
-        logger.debug('Starting async deployment', { txStatusId: deploymentTxStatusId, artifact: artifact.name });
+        logger.debug('Starting async deployment', {
+          txStatusId: deploymentTxStatusId,
+          artifact: artifact.name,
+        });
 
         // Create initial transaction entry for background tracking
         const initialTransaction: AztecTransactionResult = {
@@ -429,7 +432,7 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         throw enhancedError;
       }
     },
-    [aztecWallet, isReady, address, chain, store, logger],
+    [aztecWallet, isReady, address, chain, store, logger, txStatusId],
   );
 
   /**

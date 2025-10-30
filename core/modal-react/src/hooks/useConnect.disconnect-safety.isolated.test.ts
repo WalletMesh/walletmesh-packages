@@ -90,7 +90,7 @@ vi.mock('../WalletMeshContext.js', () => ({
 
 // Mock store
 vi.mock('./internal/useStore.js', () => ({
-  useStore: vi.fn((selector) => {
+  useStore: vi.fn((selector?: (state: unknown) => unknown) => {
     const state = mockStore.getState();
     return selector ? selector(state) : state;
   }),

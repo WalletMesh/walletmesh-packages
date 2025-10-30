@@ -1,10 +1,11 @@
 import react from '@vitejs/plugin-react';
+import type { ConfigEnv } from 'vite';
 import { defineConfig, loadEnv } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }: any) => {
+export default defineConfig(({ mode }: ConfigEnv) => {
   const env = loadEnv(mode, process.cwd());
 
   return {
@@ -36,7 +37,17 @@ export default defineConfig(({ mode }: any) => {
       }),
     ],
     optimizeDeps: {
-      exclude: ['@aztec/bb.js', 'barretenberg'],
+      exclude: [
+        '@aztec/bb.js',
+        'barretenberg',
+        // WalletMesh workspace packages - prevent pre-bundling to avoid stale cache
+        '@walletmesh/aztec-rpc-wallet',
+        '@walletmesh/jsonrpc',
+        '@walletmesh/router',
+        '@walletmesh/modal-react',
+        '@walletmesh/modal-core',
+        '@walletmesh/discovery',
+      ],
       include: ['react', 'react-dom', 'react/jsx-runtime'],
     },
     server: {
@@ -70,5 +81,5 @@ export default defineConfig(({ mode }: any) => {
         ],
       },
     },
-  } as any;
+  };
 });

@@ -20,6 +20,7 @@ import { TransportType } from '../../../types.js';
 import type { Transport } from '../../../types.js';
 import { ChainType } from '../../../types.js';
 import { ErrorFactory } from '../../core/errors/errorFactory.js';
+import { getChainName } from '../../../utils/chainNameResolver.js';
 import { AztecAdapter } from '../aztec/AztecAdapter.js';
 import { AbstractWalletAdapter } from '../base/AbstractWalletAdapter.js';
 
@@ -33,6 +34,32 @@ import type {
   WalletCapabilities,
   WalletFeature,
 } from '../base/WalletAdapter.js';
+import { useStore } from '../../../state/store.js';
+
+/**
+ * Minimal data needed to construct a DiscoveryAdapter
+ *
+ * This interface defines the essential information required to create
+ * a DiscoveryAdapter instance without needing the full QualifiedResponder
+ * from the discovery protocol. This enables adapter recreation after
+ * page refresh using only persisted session data.
+ */
+export interface DiscoveryAdapterData {
+  /** Wallet identifier */
+  id: string;
+
+  /** Wallet metadata (name, icon, description) */
+  metadata: WalletAdapterMetadata;
+
+  /** Wallet capabilities (supported chains and features) */
+  capabilities: WalletCapabilities;
+
+  /** Transport configuration for communication */
+  transportConfig: unknown;
+
+  /** Optional network identifiers (e.g., ['aztec:31337', 'evm:1']) */
+  networks?: string[];
+}
 
 /**
  * Configuration for the Discovery Wallet Adapter
@@ -122,37 +149,20 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
     };
   }
 
-  readonly id: string;
-  readonly metadata: WalletAdapterMetadata;
-  readonly capabilities: WalletCapabilities;
-
-  private qualifiedResponder: QualifiedResponder;
-  private connectionManager: DiscoveryConnectionManager;
-  private config: DiscoveryAdapterConfig;
-  private aztecConnectionResult: WalletConnection | null = null;
-  private connectOptions?: ConnectOptions;
-  private sessionId: string | null = null;
-
-  constructor(
-    qualifiedResponder: unknown,
-    connectionManager: DiscoveryConnectionManager,
-    config: DiscoveryAdapterConfig = {},
-  ) {
-    super();
-
+  /**
+   * Extract minimal adapter data from a QualifiedResponder
+   *
+   * This static method extracts only the essential information needed to
+   * construct a DiscoveryAdapter, without requiring the full QualifiedResponder
+   * object. This enables adapter persistence and recreation after page refresh.
+   *
+   * @param qualifiedResponder - The discovery protocol response
+   * @returns Minimal data required to construct the adapter
+   * @public
+   */
+  static extractAdapterData(qualifiedResponder: unknown): DiscoveryAdapterData {
     // Validate the qualified responder data
-    let validatedResponder: QualifiedResponder;
-    try {
-      validatedResponder = validateQualifiedResponder(qualifiedResponder);
-    } catch (error) {
-      throw ErrorFactory.configurationError('Invalid discovery response data', {
-        originalError: error,
-        responderId: (qualifiedResponder as { responderId?: string })?.responderId,
-      });
-    }
-
-    // Initialize required properties with validated data
-    this.id = `discovery-${validatedResponder.responderId}`;
+    const validatedResponder = validateQualifiedResponder(qualifiedResponder);
 
     // Map discovery technologies to modal-core chain types
     const chainTypes = mapDiscoveryTechnologiesToChainTypes(
@@ -162,7 +172,8 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
     // Extract description from validated metadata
     const description = validatedResponder.metadata?.['description'] || `${validatedResponder.name} wallet`;
 
-    this.metadata = {
+    // Build metadata object
+    const metadata: WalletAdapterMetadata = {
       name: validatedResponder.name,
       icon: validatedResponder.icon,
       description: typeof description === 'string' ? description : '',
@@ -179,27 +190,108 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
     const features = new Set<WalletFeature>();
     features.add('multi_account');
 
-    this.capabilities = {
+    // Build capabilities object
+    const capabilities: WalletCapabilities = {
       chains: chainDefinitions,
       features,
     };
 
-    this.qualifiedResponder = validatedResponder;
+    return {
+      id: validatedResponder.responderId,
+      metadata,
+      capabilities,
+      transportConfig: validatedResponder.transportConfig,
+      networks: validatedResponder.networks || [],
+    };
+  }
+
+  readonly id: string;
+  readonly metadata: WalletAdapterMetadata;
+  readonly capabilities: WalletCapabilities;
+
+  private transportConfig: unknown;
+  private networks: string[];
+  private qualifiedResponder?: QualifiedResponder; // Optional - only for backward compatibility
+  private connectionManager: DiscoveryConnectionManager;
+  private config: DiscoveryAdapterConfig;
+  private aztecConnectionResult: WalletConnection | null = null;
+  private connectOptions?: ConnectOptions;
+  private sessionId: string | null = null;
+
+  /**
+   * Create a DiscoveryAdapter
+   *
+   * @param adapterDataOrResponder - Either minimal DiscoveryAdapterData or full QualifiedResponder
+   * @param connectionManager - Connection manager for discovery protocol
+   * @param config - Optional adapter configuration
+   */
+  constructor(
+    adapterDataOrResponder: DiscoveryAdapterData | unknown,
+    connectionManager: DiscoveryConnectionManager,
+    config: DiscoveryAdapterConfig = {},
+  ) {
+    super();
+
+    // Check if we received DiscoveryAdapterData or QualifiedResponder
+    const isAdapterData = (data: any): data is DiscoveryAdapterData => {
+      return (
+        data &&
+        typeof data === 'object' &&
+        'id' in data &&
+        'metadata' in data &&
+        'capabilities' in data &&
+        'transportConfig' in data
+      );
+    };
+
+    let adapterData: DiscoveryAdapterData;
+
+    if (isAdapterData(adapterDataOrResponder)) {
+      // New path: Use provided minimal data directly
+      adapterData = adapterDataOrResponder;
+    } else {
+      // Legacy path: Extract data from QualifiedResponder
+      try {
+        adapterData = DiscoveryAdapter.extractAdapterData(adapterDataOrResponder);
+        // Store the qualified responder for backward compatibility
+        this.qualifiedResponder = validateQualifiedResponder(adapterDataOrResponder);
+      } catch (error) {
+        throw ErrorFactory.configurationError('Invalid discovery response data', {
+          originalError: error,
+          responderId: (adapterDataOrResponder as { responderId?: string })?.responderId,
+        });
+      }
+    }
+
+    // Initialize from adapter data
+    this.id = `discovery-${adapterData.id}`;
+    this.metadata = adapterData.metadata;
+    this.capabilities = adapterData.capabilities;
+    this.transportConfig = adapterData.transportConfig;
+    this.networks = adapterData.networks || [];
     this.connectionManager = connectionManager;
     this.config = config;
+  }
+
+  /**
+   * Get the wallet ID (without the 'discovery-' prefix)
+   * @private
+   */
+  private getWalletId(): string {
+    return this.id.replace(/^discovery-/, '');
   }
 
   /**
    * Detect if discovery wallet is available
    */
   async detect(): Promise<DetectionResult> {
-    // For discovery protocol adapters, availability is determined by the responder
+    // For discovery protocol adapters, availability is determined by having transport config
     return {
       isInstalled: true,
-      isReady: this.qualifiedResponder !== null,
+      isReady: this.transportConfig !== null && this.transportConfig !== undefined,
       metadata: {
         type: 'discovery',
-        responder: this.qualifiedResponder,
+        responder: this.qualifiedResponder, // May be undefined for minimal data path
         connectionManager: this.connectionManager,
       },
     };
@@ -219,8 +311,8 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         this.logger,
         'DiscoveryAdapter.connect invoked',
         {
-          responderId: this.qualifiedResponder.responderId,
-          transportType: (this.qualifiedResponder.transportConfig as any)?.type,
+          responderId: this.getWalletId(),
+          transportType: (this.transportConfig as any)?.type,
         },
       );
 
@@ -253,7 +345,9 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
             }
           } else if ('getAccounts' in existingProvider) {
             // For EVM/Solana, try to get accounts
-            const providerAccounts = await (existingProvider as { getAccounts: () => Promise<string[]> }).getAccounts();
+            const providerAccounts = await (
+              existingProvider as { getAccounts: () => Promise<string[]> }
+            ).getAccounts();
             if (Array.isArray(providerAccounts) && providerAccounts.length > 0) {
               accounts = providerAccounts;
               isStillConnected = true;
@@ -272,25 +366,25 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
             );
 
             // Reuse existing connection
-            const chainId = options?.chains?.[0]?.chainId || this.qualifiedResponder.networks?.[0] || '1';
+            const chainId = options?.chains?.[0]?.chainId || this.networks[0] || '1';
             // We know accounts has at least one element because we checked accounts.length > 0
             const primaryAddress = accounts[0] as string;
             return {
-              walletId: this.qualifiedResponder.responderId,
+              walletId: this.getWalletId(),
               address: primaryAddress,
               accounts,
               chain: {
                 chainId,
                 chainType: currentChainType,
-                name: this.getChainName(chainId, currentChainType),
+                name: getChainName(chainId, currentChainType),
                 required: false,
               },
               chainType: currentChainType,
               provider: existingProvider,
               walletInfo: {
-                id: this.qualifiedResponder.responderId,
-                name: this.qualifiedResponder.name,
-                icon: this.qualifiedResponder.icon,
+                id: this.getWalletId(),
+                name: this.metadata.name,
+                icon: this.metadata.icon,
                 chains: [currentChainType],
               },
             };
@@ -335,9 +429,9 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         this.logger,
         'DiscoveryAdapter: Creating transport from config',
         {
-          transportType: (this.qualifiedResponder.transportConfig as any)?.type,
-          hasExtensionId: !!(this.qualifiedResponder.transportConfig as any)?.extensionId,
-          hasUrl: !!(this.qualifiedResponder.transportConfig as any)?.url,
+          transportType: (this.transportConfig as any)?.type,
+          hasExtensionId: !!(this.transportConfig as any)?.extensionId,
+          hasUrl: !!(this.transportConfig as any)?.url,
         },
       );
       this.transport = await this.createTransportFromConfig();
@@ -365,17 +459,15 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
 
       // Get chain type from technologies
       const chainType = this.getChainTypeFromTechnologies();
-      (this.logger?.debug || console.debug).call(
-        this.logger,
-        'DiscoveryAdapter: Determined chain type',
-        { chainType },
-      );
+      (this.logger?.debug || console.debug).call(this.logger, 'DiscoveryAdapter: Determined chain type', {
+        chainType,
+      });
 
       // Retrieve the created provider from the providers map
       const provider = this.providers.get(chainType);
       if (!provider) {
         throw ErrorFactory.connectionFailed('Provider was not created successfully', {
-          walletId: this.qualifiedResponder.responderId,
+          walletId: this.getWalletId(),
           chainType,
         });
       }
@@ -383,7 +475,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       // Get accounts - different approach for Aztec vs EVM/Solana
       let accounts: Array<{ address: string; chainId: string }> = [];
       try {
-        const chainId = this.qualifiedResponder.networks?.[0] || (chainType === ChainType.Aztec ? 'aztec:31337' : '1');
+        const chainId = this.networks[0] || (chainType === ChainType.Aztec ? 'aztec:31337' : '1');
 
         (this.logger?.info || this.logger?.debug || console.info).call(
           this.logger,
@@ -428,7 +520,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
           'DiscoveryAdapter: Accounts retrieved successfully',
           {
             accountCount: accounts.length,
-            firstAccount: accounts[0]?.address?.substring(0, 10) + '...',
+            firstAccount: `${accounts[0]?.address?.substring(0, 10)}...`,
           },
         );
       } catch (error) {
@@ -438,7 +530,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         });
         throw ErrorFactory.connectionFailed('Failed to retrieve accounts from wallet', {
           originalError: error,
-          walletId: this.qualifiedResponder.responderId,
+          walletId: this.getWalletId(),
           chainType,
         });
       }
@@ -450,7 +542,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       } catch (error) {
         throw ErrorFactory.connectionFailed('Invalid account data received from wallet', {
           originalError: error,
-          walletId: this.qualifiedResponder.responderId,
+          walletId: this.getWalletId(),
         });
       }
 
@@ -466,21 +558,21 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
 
       // Create wallet connection object
       const walletConnection: WalletConnection = {
-        walletId: this.qualifiedResponder.responderId,
+        walletId: this.getWalletId(),
         address: firstAccount?.address || '',
         accounts: validatedAccounts.map((account) => account.address),
         chain: {
           chainId,
           chainType,
-          name: this.getChainName(chainId, chainType),
+          name: getChainName(chainId, chainType),
           required: false,
         },
         chainType,
         provider: provider,
         walletInfo: {
-          id: this.qualifiedResponder.responderId,
-          name: this.qualifiedResponder.name,
-          icon: this.qualifiedResponder.icon,
+          id: this.getWalletId(),
+          name: this.metadata.name,
+          icon: this.metadata.icon,
           chains: [chainType],
         },
         ...(sessionId && { sessionId }),
@@ -504,7 +596,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       const originalError = error instanceof Error ? error : new Error(String(error));
 
       this.logger?.error('Discovery adapter connection failed', {
-        walletId: this.qualifiedResponder.responderId,
+        walletId: this.getWalletId(),
         message: originalError.message,
         stack: originalError.stack,
       });
@@ -553,29 +645,37 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       }
 
       throw ErrorFactory.connectionFailed(originalError.message, {
-        walletId: this.qualifiedResponder.responderId,
+        walletId: this.getWalletId(),
         originalError,
       });
     }
   }
 
   /**
-   * Get chain type from technologies
+   * Get chain type from capabilities
    */
   private getChainTypeFromTechnologies(): ChainType {
-    const technologies = this.qualifiedResponder.matched?.required?.technologies || [];
+    // Get chain types from capabilities (which were derived from technologies)
+    if (this.capabilities.chains.length > 0) {
+      // Safe to use non-null assertion since we checked length > 0
+      return this.capabilities.chains[0]!.type;
+    }
 
-    // Return the first technology's chain type
-    if (technologies.length > 0) {
-      const firstTech = technologies[0];
-      if (!firstTech) return ChainType.Evm;
-      switch (firstTech.type) {
-        case 'evm':
-          return ChainType.Evm;
-        case 'solana':
-          return ChainType.Solana;
-        case 'aztec':
-          return ChainType.Aztec;
+    // Fallback to qualifiedResponder if available (legacy path)
+    if (this.qualifiedResponder) {
+      const technologies = this.qualifiedResponder.matched?.required?.technologies || [];
+      if (technologies.length > 0) {
+        const firstTech = technologies[0];
+        if (firstTech) {
+          switch (firstTech.type) {
+            case 'evm':
+              return ChainType.Evm;
+            case 'solana':
+              return ChainType.Solana;
+            case 'aztec':
+              return ChainType.Aztec;
+          }
+        }
       }
     }
 
@@ -588,10 +688,14 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
    * @private
    */
   private getAztecNetworkFromDiscovery(): string {
-    // Check top-level networks array first
-    const networks = this.qualifiedResponder.networks ||
-                     this.qualifiedResponder.matched?.required?.networks ||
-                     [];
+    // Check networks array
+    const networks = this.networks || [];
+
+    // If qualifiedResponder exists (legacy path), also check its networks
+    if (this.qualifiedResponder) {
+      const legacyNetworks = this.qualifiedResponder.matched?.required?.networks || [];
+      networks.push(...legacyNetworks);
+    }
 
     const aztecNetwork = networks.find((network: string) => network.startsWith('aztec:'));
     if (aztecNetwork) {
@@ -601,7 +705,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
     // No default - throw error if network cannot be determined
     throw new Error(
       `Unable to determine Aztec network for wallet "${this.metadata.name}". ` +
-      `The wallet must provide network information in the discovery response.`
+        `The wallet must provide network information in the discovery response.`,
     );
   }
 
@@ -611,7 +715,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
   async disconnect(): Promise<void> {
     try {
       // Disconnect via ConnectionManager
-      await this.connectionManager.disconnect(this.qualifiedResponder.responderId);
+      await this.connectionManager.disconnect(this.getWalletId());
 
       // Clean up transport
       if (this.transport && 'disconnect' in this.transport) {
@@ -641,11 +745,14 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
    * Create transport based on transport config from discovery
    */
   private async createTransportFromConfig(): Promise<Transport> {
-    const transportConfig = this.qualifiedResponder.transportConfig;
+    const transportConfig = this.transportConfig;
 
     if (!transportConfig) {
       throw ErrorFactory.configurationError('No transport configuration provided by wallet');
     }
+
+    // Cast to any for accessing dynamic properties
+    const configAny = transportConfig as any;
 
     const {
       retries = 3,
@@ -661,7 +768,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       timeout,
       reconnect,
       reconnectInterval,
-      ...transportConfig.adapterConfig,
+      ...configAny.adapterConfig,
     };
 
     let transport: Transport;
@@ -669,7 +776,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
       this.logger,
       'DiscoveryAdapter: selecting transport',
       {
-        walletId: this.qualifiedResponder.responderId,
+        walletId: this.getWalletId(),
         type: (transportConfig as any)?.type,
         hasUrl: Boolean((transportConfig as any)?.url),
         hasWebsocketUrl: Boolean((transportConfig as any)?.websocketUrl),
@@ -678,20 +785,20 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
     );
 
     // Select transport strictly from supported types
-    switch ((transportConfig as any).type) {
+    switch (configAny.type) {
       case 'extension':
-        if (!transportConfig.extensionId) {
+        if (!configAny.extensionId) {
           throw ErrorFactory.configurationError('Extension ID required for Chrome extension transport');
         }
-        baseConfig['extensionId'] = transportConfig.extensionId;
+        baseConfig['extensionId'] = configAny.extensionId;
         transport = createTransport(TransportType.Extension, baseConfig);
         break;
 
       case 'websocket':
-        if (!(transportConfig as any).url && !(transportConfig as any).websocketUrl) {
+        if (!configAny.url && !configAny.websocketUrl) {
           throw ErrorFactory.configurationError('WebSocket URL required for WebSocket transport');
         }
-        baseConfig['url'] = (transportConfig as any).url ?? (transportConfig as any).websocketUrl;
+        baseConfig['url'] = configAny.url ?? configAny.websocketUrl;
         // Map to Popup transport as a placeholder until WebSocket transport exists
         transport = createTransport(TransportType.Popup, baseConfig);
         break;
@@ -701,7 +808,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         throw ErrorFactory.configurationError('Injected wallets do not use transports');
 
       default:
-        throw ErrorFactory.configurationError(`Unsupported transport type: ${transportConfig.type}`);
+        throw ErrorFactory.configurationError(`Unsupported transport type: ${configAny.type}`);
     }
 
     try {
@@ -709,7 +816,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         this.logger,
         'DiscoveryAdapter: connecting transport',
         {
-          walletId: this.qualifiedResponder.responderId,
+          walletId: this.getWalletId(),
           type: (transportConfig as any)?.type,
         },
       );
@@ -718,7 +825,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         this.logger,
         'DiscoveryAdapter: transport connected',
         {
-          walletId: this.qualifiedResponder.responderId,
+          walletId: this.getWalletId(),
         },
       );
     } catch (error) {
@@ -729,8 +836,8 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         ? 'Extension not reachable. Ensure it is installed and allows this origin.'
         : connectError.message;
       throw ErrorFactory.connectionFailed(connectError.message, {
-        walletId: this.qualifiedResponder.responderId,
-        transportType: transportConfig.type,
+        walletId: this.getWalletId(),
+        transportType: configAny.type,
         originalError: new Error(message),
       });
     }
@@ -787,7 +894,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
             'DiscoveryAdapter: connecting Aztec adapter',
             {
               walletId: this.id,
-              transportType: (this.qualifiedResponder.transportConfig as any)?.type,
+              transportType: (this.transportConfig as any)?.type,
               network: aztecNetwork,
               hasPermissions: permissions.length > 0,
               permissionCount: permissions.length,
@@ -838,8 +945,8 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
   private getNegotiatedInterfaces(): Record<string, string[]> {
     const interfaces: Record<string, string[]> = {};
 
-    // Only support technology-based matches
-    if (this.qualifiedResponder.matched?.required?.technologies) {
+    // Only support technology-based matches (only available if created from QualifiedResponder)
+    if (this.qualifiedResponder?.matched?.required?.technologies) {
       for (const tech of this.qualifiedResponder.matched.required.technologies) {
         interfaces[tech.type] = tech.interfaces || [];
       }
@@ -928,7 +1035,9 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
    * @private
    */
   private setupSolanaProviderListeners(provider: unknown): void {
-    const solanaProvider = provider as { on?: (event: string, listener: (...args: unknown[]) => void) => void };
+    const solanaProvider = provider as {
+      on?: (event: string, listener: (...args: unknown[]) => void) => void;
+    };
 
     if (typeof solanaProvider.on !== 'function') {
       this.log('warn', 'Solana provider does not support event listeners');
@@ -979,7 +1088,9 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
    * @private
    */
   private setupAztecProviderListeners(provider: unknown): void {
-    const aztecProvider = provider as { on?: (event: string, listener: (...args: unknown[]) => void) => void };
+    const aztecProvider = provider as {
+      on?: (event: string, listener: (...args: unknown[]) => void) => void;
+    };
 
     if (typeof aztecProvider.on !== 'function') {
       this.log('warn', 'Aztec provider does not support event listeners');
@@ -1036,80 +1147,20 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
     });
   }
 
-  /**
-   * Get user-friendly chain name from chain ID
-   * @private
-   */
-  private getChainName(chainId: string, chainType: ChainType): string {
-    // Handle Aztec chains
-    if (chainType === ChainType.Aztec) {
-      switch (chainId) {
-        case 'aztec:mainnet':
-          return 'Aztec Mainnet';
-        case 'aztec:testnet':
-          return 'Aztec Testnet';
-        case 'aztec:31337':
-          return 'Aztec Sandbox';
-        default:
-          return 'Aztec Network';
-      }
-    }
-
-    // Handle EVM chains
-    if (chainType === ChainType.Evm) {
-      const numericId = chainId.replace('eip155:', '');
-      switch (numericId) {
-        case '1':
-          return 'Ethereum Mainnet';
-        case '137':
-          return 'Polygon';
-        case '42161':
-          return 'Arbitrum One';
-        case '10':
-          return 'Optimism';
-        case '8453':
-          return 'Base';
-        case '43114':
-          return 'Avalanche C-Chain';
-        case '250':
-          return 'Fantom';
-        case '56':
-          return 'BNB Smart Chain';
-        case '5':
-          return 'Goerli';
-        case '11155111':
-          return 'Sepolia Testnet';
-        default:
-          return `Unknown Chain (${numericId})`;
-      }
-    }
-
-    // Handle Solana chains
-    if (chainType === ChainType.Solana) {
-      switch (chainId) {
-        case 'solana:mainnet':
-        case 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp':
-          return 'Solana Mainnet';
-        case 'solana:devnet':
-        case 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1':
-          return 'Solana Devnet';
-        case 'solana:testnet':
-        case 'solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z':
-          return 'Solana Testnet';
-        default:
-          return 'Solana Network';
-      }
-    }
-
-    return 'Unknown Chain';
-  }
+  // Note: getChainName() has been consolidated to src/utils/chainNameResolver.ts
 
   /**
    * Categorize Aztec permissions for logging and display
    * @private
    */
   private categorizeAztecPermissions(permissions: string[]): Record<string, string[]> {
-    const categories: { Read: string[]; Transaction: string[]; Contract: string[]; Auth: string[]; Other: string[] } = {
+    const categories: {
+      Read: string[];
+      Transaction: string[];
+      Contract: string[];
+      Auth: string[];
+      Other: string[];
+    } = {
       Read: [],
       Transaction: [],
       Contract: [],
@@ -1126,9 +1177,17 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
         permission === 'aztec_signMessage'
       ) {
         categories['Transaction'].push(permission);
-      } else if (permission.includes('Contract') || permission.includes('deploy') || permission.includes('call')) {
+      } else if (
+        permission.includes('Contract') ||
+        permission.includes('deploy') ||
+        permission.includes('call')
+      ) {
         categories['Contract'].push(permission);
-      } else if (permission.includes('Auth') || permission.includes('Witness') || permission.includes('register')) {
+      } else if (
+        permission.includes('Auth') ||
+        permission.includes('Witness') ||
+        permission.includes('register')
+      ) {
         categories['Auth'].push(permission);
       } else {
         categories['Other'].push(permission);
@@ -1140,9 +1199,47 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
   }
 
   /**
-   * Get the discovered wallet metadata
+   * Override persistSession to save DiscoveryAdapter-specific data
    */
-  getWalletMetadata(): QualifiedResponder {
+  protected override async persistSession(connection: WalletConnection, sessionId: string): Promise<void> {
+    // Call parent to save base data
+    await super.persistSession(connection, sessionId);
+
+    // Build discovery data to save
+    const discoveryData = {
+      id: this.getWalletId(),
+      metadata: this.metadata,
+      capabilities: this.capabilities,
+      transportConfig: this.transportConfig,
+      networks: this.networks,
+    };
+
+    // Add discovery-specific adapter data for reconnection
+    // Parent always creates adapterReconstruction, so we can safely extend it
+    useStore.setState((state) => ({
+      entities: {
+        ...state.entities,
+        sessions: {
+          ...state.entities.sessions,
+          [sessionId]: {
+            ...state.entities.sessions[sessionId],
+            adapterReconstruction: {
+              ...state.entities.sessions[sessionId]?.adapterReconstruction,
+              discoveryData,
+            },
+          },
+        },
+      },
+    }));
+
+    this.log('debug', 'Persisted discovery adapter data', { walletId: this.getWalletId(), sessionId });
+  }
+
+  /**
+   * Get the discovered wallet metadata
+   * Returns the QualifiedResponder if available (legacy path), otherwise undefined
+   */
+  getWalletMetadata(): QualifiedResponder | undefined {
     return this.qualifiedResponder;
   }
 
@@ -1156,7 +1253,7 @@ export class DiscoveryAdapter extends AbstractWalletAdapter {
   /**
    * Get transport config for debugging
    */
-  getTransportConfig(): typeof this.qualifiedResponder.transportConfig {
-    return this.qualifiedResponder.transportConfig;
+  getTransportConfig(): unknown {
+    return this.transportConfig;
   }
 }

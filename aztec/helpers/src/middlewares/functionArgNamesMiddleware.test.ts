@@ -218,12 +218,12 @@ describe('functionArgNamesMiddleware', () => {
               // Missing name
               to: mockAddress('0x123'),
               args: [],
-            } as any,
+            },
             {
               name: 'validFunction',
               // Missing to
               args: [],
-            } as any,
+            },
             {
               name: 'test',
               to: mockAddress('0x456'),
@@ -231,7 +231,9 @@ describe('functionArgNamesMiddleware', () => {
             },
           ],
         },
-      ];
+      ] as unknown as Array<{
+        calls: Array<{ name: string; to: { toString: () => string }; args: unknown[] }>;
+      }>;
 
       const params = [mockParamInfo('param', 'Field')];
       mockGetEnhancedParameterInfo.mockResolvedValue(params);
@@ -375,9 +377,9 @@ describe('functionArgNamesMiddleware', () => {
             // Missing name
             to: mockAddress('0x456'),
             args: [],
-          } as any,
+          },
         ],
-      };
+      } as unknown as { calls: Array<{ name: string; to: { toString: () => string }; args: unknown[] }> };
 
       const params = [mockParamInfo('param', 'Field')];
       mockGetEnhancedParameterInfo.mockResolvedValue(params);
@@ -439,7 +441,7 @@ describe('functionArgNamesMiddleware', () => {
     beforeEach(() => {
       middleware = createFunctionArgNamesMiddleware(mockPxe);
       mockNext = vi.fn().mockResolvedValue({ result: 'success' });
-      mockContext = {} as any;
+      mockContext = {} as AztecHandlerContext & { functionCallArgNames?: FunctionArgNames };
       mockGetEnhancedParameterInfo.mockClear();
     });
 
@@ -578,7 +580,11 @@ describe('functionArgNamesMiddleware', () => {
               ],
             },
             args: [1000],
-          } as any,
+          } as unknown as {
+            artifact: { name: string; functions?: unknown[] };
+            args: unknown[];
+            constructorName?: string;
+          },
         ],
       };
 
@@ -614,7 +620,11 @@ describe('functionArgNamesMiddleware', () => {
               ],
             },
             args: [],
-          } as any,
+          } as unknown as {
+            artifact: { name: string; functions?: unknown[] };
+            args: unknown[];
+            constructorName?: string;
+          },
         ],
       };
 
@@ -644,7 +654,11 @@ describe('functionArgNamesMiddleware', () => {
               name: 'MinimalContract',
             },
             args: [],
-          } as any,
+          } as unknown as {
+            artifact: { name: string; functions?: unknown[] };
+            args: unknown[];
+            constructorName?: string;
+          },
         ],
       };
 
@@ -729,12 +743,12 @@ describe('functionArgNamesMiddleware', () => {
     });
 
     it('should handle missing params gracefully', async () => {
-      const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'> = {
+      const request = {
         jsonrpc: '2.0',
         id: 10,
         method: 'aztec_wmExecuteTx',
-        params: undefined as any,
-      };
+        params: undefined,
+      } as unknown as JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'>;
 
       await middleware(mockContext, request, mockNext);
 
@@ -743,12 +757,12 @@ describe('functionArgNamesMiddleware', () => {
     });
 
     it('should handle empty params array', async () => {
-      const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'> = {
+      const request = {
         jsonrpc: '2.0',
         id: 11,
         method: 'aztec_wmExecuteTx',
-        params: [] as any,
-      };
+        params: [],
+      } as unknown as JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'>;
 
       await middleware(mockContext, request, mockNext);
 

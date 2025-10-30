@@ -17,6 +17,11 @@ import type {
 import { SAFE_DEFAULT_ICON } from '../../api/utils/iconSandbox.js';
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 import {
+  getProviderForSession,
+  removeProviderForSession,
+  setProviderForSession,
+} from '../../internal/session/ProviderRegistry.js';
+import {
   createSessionParamsSchema,
   sessionIdSchema,
   sessionMetadataSchema,
@@ -72,6 +77,18 @@ export const connectionActions = {
     // This is a simplified version - in practice, this would integrate with SessionManager
     const sessionId = validatedParams.sessionId ?? generateSessionId('session');
 
+    // Get provider from ProviderRegistry if not provided in params
+    // This allows storing provider BEFORE calling createSession to avoid cross-origin errors
+    const providerOrNull =
+      (validatedParams.provider as BlockchainProvider | undefined) ?? getProviderForSession(sessionId);
+    if (!providerOrNull) {
+      throw ErrorFactory.configurationError(
+        'Provider must be either passed in params or stored in ProviderRegistry before calling createSession',
+        { sessionId },
+      );
+    }
+    const provider: BlockchainProvider = providerOrNull;
+
     const defaultAccount: AccountInfo = {
       address: '',
     };
@@ -100,7 +117,10 @@ export const connectionActions = {
         ...(validatedParams.chain.isNative !== undefined && { isNative: validatedParams.chain.isNative }),
       },
       provider: {
-        instance: validatedParams.provider as BlockchainProvider,
+        // IMPORTANT: Never store provider.instance in Zustand state!
+        // Provider instances contain Window references that cause cross-origin errors with Immer.
+        // Instead, store the actual provider in ProviderRegistry (see below).
+        instance: null,
         type: validatedParams.providerMetadata?.type || 'unknown',
         version: validatedParams.providerMetadata?.version || '1.0.0',
         multiChainCapable: validatedParams.providerMetadata?.multiChainCapable || false,
@@ -163,10 +183,19 @@ export const connectionActions = {
         operationCount: 0,
         activeTime: 0,
       },
+      // Include adapter reconstruction data if provided
+      ...(validatedParams.adapterReconstruction && {
+        adapterReconstruction: cleanObject(validatedParams.adapterReconstruction),
+      }),
     };
 
+    // Store the provider instance in ProviderRegistry (OUTSIDE Zustand state)
+    // This prevents cross-origin errors when Immer tries to freeze Window objects
+    // Note: Provider may already be in registry if stored before calling createSession
+    setProviderForSession(sessionId, provider);
+
     mutateState(store, (state) => {
-      // Add session to normalized entities
+      // Add session to normalized entities (provider.instance is null)
       state.entities.sessions[sessionId] = newSession;
       // Set as active session
       state.active.sessionId = sessionId;
@@ -187,6 +216,9 @@ export const connectionActions = {
   ): Promise<void> => {
     // Validate session ID
     const validatedSessionId = parseWithErrorFactory(sessionIdSchema, sessionId, 'Invalid session ID');
+
+    // Remove provider from registry (cleanup)
+    removeProviderForSession(validatedSessionId);
 
     mutateState(store, (state) => {
       // Remove session from entities

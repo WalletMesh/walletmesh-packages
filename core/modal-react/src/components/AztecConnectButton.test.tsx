@@ -27,7 +27,7 @@ vi.mock('@walletmesh/modal-core', async () => {
     getAztecProvingState: actual['getAztecProvingState'] ?? (() => ({ entries: {} })),
     getActiveAztecProvingEntries: actual['getActiveAztecProvingEntries'] ?? (() => []),
     provingActions: actual['provingActions'] ?? { handleNotification: vi.fn(), clearAll: vi.fn() },
-    useConnectButtonState: vi.fn((_state, options) => {
+    useConnectButtonState: vi.fn((_state: unknown, options?: { labels?: { connect?: string } }) => {
       // Return disconnected state with custom label if provided
       return {
         state: 'disconnected',

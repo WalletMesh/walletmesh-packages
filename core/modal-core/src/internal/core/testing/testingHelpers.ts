@@ -44,7 +44,7 @@ function areFakeTimersEnabled(): boolean {
     // without causing an error
     const fakeTimersEnabled = typeof vi.getTimerCount === 'function';
     return fakeTimersEnabled;
-  } catch (e) {
+  } catch (_e) {
     return false;
   }
 }

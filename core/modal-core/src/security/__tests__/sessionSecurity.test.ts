@@ -552,13 +552,13 @@ describe('SessionSecurityManager', () => {
       );
 
       // Create sessions
-      const session1 = await sessionManager.createSession({
+      const _session1 = await sessionManager.createSession({
         origin: 'https://example.com',
         walletId: 'wallet1',
         authorizedChains: ['eip155:1'],
       });
 
-      const session2 = await sessionManager.createSession({
+      const _session2 = await sessionManager.createSession({
         origin: 'https://example.com',
         walletId: 'wallet2',
         authorizedChains: ['eip155:1'],

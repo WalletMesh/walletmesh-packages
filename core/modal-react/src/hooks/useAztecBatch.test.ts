@@ -4,9 +4,9 @@
 
 import { act, renderHook } from '@testing-library/react';
 vi.mock('@walletmesh/modal-core/providers/aztec', async () => {
-  const actual = await vi.importActual<typeof import('@walletmesh/modal-core/providers/aztec')>(
+  const actual = (await vi.importActual(
     '@walletmesh/modal-core/providers/aztec',
-  );
+  )) as typeof import('@walletmesh/modal-core/providers/aztec');
   return {
     ...actual,
     executeBatchInteractions: vi.fn(),
@@ -16,9 +16,7 @@ vi.mock('@walletmesh/modal-core/providers/aztec', async () => {
 
 // Mock aztecTransactionActions and createAztecTransactionManager
 vi.mock('@walletmesh/modal-core', async () => {
-  const actual = await vi.importActual<typeof import('@walletmesh/modal-core')>(
-    '@walletmesh/modal-core',
-  );
+  const actual = (await vi.importActual('@walletmesh/modal-core')) as typeof import('@walletmesh/modal-core');
   return {
     ...actual,
     aztecTransactionActions: {

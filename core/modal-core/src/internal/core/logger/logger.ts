@@ -245,7 +245,7 @@ export class Logger implements Disposable {
           return value;
         }),
       );
-    } catch (e) {
+    } catch (_e) {
       return '[Object cannot be serialized]';
     }
   }

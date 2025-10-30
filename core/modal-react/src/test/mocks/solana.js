@@ -23,7 +23,7 @@ export class PublicKey {
     return new Uint8Array([1, 2, 3, 4]);
   }
 
-  static isOnCurve(key) {
+  static isOnCurve(_key) {
     return true;
   }
 }
@@ -57,19 +57,19 @@ export class Connection {
     this.endpoint = endpoint;
   }
 
-  async getAccountInfo(publicKey) {
+  async getAccountInfo(_publicKey) {
     return null;
   }
 
-  async getBalance(publicKey) {
+  async getBalance(_publicKey) {
     return 2000000000; // 2 SOL in lamports
   }
 
-  async sendTransaction(transaction, signers) {
+  async sendTransaction(_transaction, _signers) {
     return 'mockTransactionSignature';
   }
 
-  async confirmTransaction(signature) {
+  async confirmTransaction(_signature) {
     return { value: { err: null } };
   }
 }

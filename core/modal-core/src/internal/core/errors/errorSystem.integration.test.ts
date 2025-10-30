@@ -1,9 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createTestEnvironment, installCustomMatchers } from '../../../testing/index.js';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { installCustomMatchers } from '../../../testing/index.js';
 import { Logger } from '../logger/logger.js';
 import { ErrorFactory } from './errorFactory.js';
 import { ErrorHandler } from './errorHandler.js';
-import { ERROR_CODES, ModalErrorImpl } from './types.js';
+import { ERROR_CODES } from './types.js';
 
 // Install custom matchers
 installCustomMatchers();

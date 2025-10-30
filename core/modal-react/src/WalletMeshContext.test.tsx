@@ -26,7 +26,7 @@ vi.mock('@walletmesh/modal-core', () => ({
   getAztecProvingState: vi.fn(() => ({ entries: {} })),
   getActiveAztecProvingEntries: vi.fn(() => []),
   ErrorFactory: {
-    configurationError: vi.fn().mockImplementation((message, details) => {
+    configurationError: vi.fn().mockImplementation((message: string, details?: unknown) => {
       const error = new Error(message);
       Object.assign(error, {
         code: 'CONFIGURATION_ERROR',
@@ -36,7 +36,7 @@ vi.mock('@walletmesh/modal-core', () => ({
       });
       return error;
     }),
-    connectionFailed: vi.fn().mockImplementation((message, details) => {
+    connectionFailed: vi.fn().mockImplementation((message: string, details?: unknown) => {
       const error = new Error(message);
       Object.assign(error, {
         code: 'CONNECTION_FAILED',
@@ -46,7 +46,7 @@ vi.mock('@walletmesh/modal-core', () => ({
       });
       return error;
     }),
-    walletNotFound: vi.fn().mockImplementation((walletId) => {
+    walletNotFound: vi.fn().mockImplementation((walletId: string) => {
       const error = new Error(`Wallet ${walletId} not found`);
       Object.assign(error, {
         code: 'WALLET_NOT_FOUND',

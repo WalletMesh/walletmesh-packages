@@ -24,7 +24,7 @@ import {
   useTransaction,
   useWalletProvider,
 } from '@walletmesh/modal-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 function TransactionExample() {
   const { isConnected, address, chainType } = useAccount();

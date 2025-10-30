@@ -112,11 +112,15 @@ describe('WalletMeshClientImpl - Public Provider Fallback', () => {
       };
 
       const mockSession = {
-        sessionId: 'test-session',
+        sessionId: 'test-session-fallback',
         status: 'connected',
         chain: { chainId: 'eip155:1', chainType: ChainType.Evm, name: 'Ethereum', required: true },
-        provider: { instance: mockWalletProvider }, // The provider instance is directly used as WalletProvider
+        provider: { instance: null }, // Provider stored in registry, not state
       };
+
+      // Store provider in registry (NOT in state, to avoid cross-origin errors)
+      const registryModule = await import('../session/ProviderRegistry.js');
+      registryModule.setProviderForSession('test-session-fallback', mockWalletProvider as any);
 
       // Mock the sessionManager property getter
       const mockSessionManager = {

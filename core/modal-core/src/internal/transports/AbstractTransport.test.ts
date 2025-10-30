@@ -18,7 +18,6 @@ import {
   testSetupPatterns,
 } from '../../testing/index.js';
 import type { TransportConfig, TransportEvent } from '../../types.js';
-import type { ErrorHandler } from '../core/errors/errorHandler.js';
 import { AbstractTransport } from './AbstractTransport.js';
 
 // Setup mocks using centralized mock system
@@ -380,7 +379,7 @@ describe('AbstractTransport', () => {
           const unsubscribe = transport.on('connected', handler);
 
           // Verify subscription exists
-          const internals = asTransportInternals(transport);
+          const _internals = asTransportInternals(transport);
           expect(transport['subscriptions'].has('connected')).toBe(true);
 
           unsubscribe();
@@ -470,7 +469,7 @@ describe('AbstractTransport', () => {
       describe('Connection retry behavior', () => {
         it('should retry connection attempts', async () => {
           let attempts = 0;
-          const originalConnectInternal = transport['connectInternal'];
+          const _originalConnectInternal = transport['connectInternal'];
 
           transport['connectInternal'] = vi.fn().mockImplementation(async () => {
             attempts++;
@@ -520,7 +519,7 @@ describe('AbstractTransport', () => {
           await transport.connect();
 
           let attempts = 0;
-          const originalSendInternal = transport['sendInternal'];
+          const _originalSendInternal = transport['sendInternal'];
 
           transport['sendInternal'] = vi.fn().mockImplementation(async (data) => {
             attempts++;

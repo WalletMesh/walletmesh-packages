@@ -14,7 +14,6 @@ import {
   useModal,
   useWallets,
 } from '@walletmesh/modal-react';
-import React from 'react';
 
 /**
  * Main app component demonstrating the provider setup
@@ -170,7 +169,7 @@ function ConfigInfo() {
 /**
  * Advanced example: Manual wallet connection without modal
  */
-function DirectConnect() {
+function _DirectConnect() {
   const { connect, progress, variables } = useConnect();
 
   const connectEvmWallet = async () => {
@@ -197,7 +196,7 @@ function DirectConnect() {
 /**
  * Advanced example: Multi-wallet disconnection
  */
-function DisconnectAll() {
+function _DisconnectAll() {
   const { disconnectAll, isDisconnecting } = useDisconnect();
 
   return (

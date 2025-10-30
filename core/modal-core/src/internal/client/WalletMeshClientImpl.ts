@@ -3,11 +3,7 @@ import type { BlockchainProvider } from '../../api/types/chainProviders.js';
 import type { WalletConnection } from '../../api/types/connection.js';
 import { isAztecRouterProvider, isEvmProvider } from '../../api/types/guards.js';
 import type { WalletProvider } from '../../api/types/providers.js';
-import type {
-  CreateSessionParams,
-  SessionManager,
-  SessionState,
-} from '../../api/types/sessionState.js';
+import type { CreateSessionParams, SessionManager, SessionState } from '../../api/types/sessionState.js';
 import { EVMDiscoveryService } from '../../client/discovery/evm/EvmDiscoveryService.js';
 import { SolanaDiscoveryService } from '../../client/discovery/solana/SolanaDiscoveryService.js';
 import type { DiscoveryConnectionManager } from '../../client/discovery/types.js';
@@ -27,11 +23,14 @@ import { connectionActions } from '../../state/actions/connections.js';
 import { useStore } from '../../state/store.js';
 import { ChainType, type SupportedChain, type WalletInfo } from '../../types.js';
 import type { DiscoveredWalletInfo } from '../../types.js';
+import { getChainName } from '../../utils/chainNameResolver.js';
+import { generateSessionId } from '../../utils/crypto.js';
 import { ErrorFactory } from '../core/errors/errorFactory.js';
 import type { Logger } from '../core/logger/logger.js';
 import { createDebugLogger } from '../core/logger/logger.js';
 import type { ModalController } from '../modal/controller.js';
 import { ServiceRegistry } from '../registries/ServiceRegistry.js';
+import { getProviderForSession, setProviderForSession } from '../session/ProviderRegistry.js';
 import type { WalletRegistry } from '../registries/wallets/WalletRegistry.js';
 import type { WalletAdapter } from '../wallets/base/WalletAdapter.js';
 import type { ConnectOptions } from '../wallets/base/WalletAdapter.js';
@@ -245,10 +244,11 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
    */
   private getSessionByWalletId(walletId: string): SessionState | null {
     const state = useStore.getState();
-    const sessions = Object.values(state.entities.sessions).filter((s) => s.walletId === walletId && s.status === 'connected');
+    const sessions = Object.values(state.entities.sessions).filter(
+      (s) => s.walletId === walletId && s.status === 'connected',
+    );
     return sessions[0] || null;
   }
-
 
   constructor(
     private config: WalletMeshConfig,
@@ -491,6 +491,11 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         'Aztec wallets will be discovered through main discovery coordinator and direct registration',
       );
     }
+
+    // Note: Discovery is intentionally NOT run during initialization.
+    // Discovery will happen when the user clicks "Connect Wallet".
+    // For rehydrated sessions with complete qualifiedResponder data,
+    // adapters will be recreated directly without needing discovery.
   }
 
   /**
@@ -520,10 +525,62 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       return;
     }
 
-    this.logger?.debug('Found rehydrated sessions:', {
+    const availableWalletIds = Object.values(entities.wallets).map((w: WalletInfo) => w.id);
+    const discoveredWalletIds = this.registry.getAllDiscoveredWallets().map((w) => w.id);
+
+    this.logger?.info('Found rehydrated sessions:', {
       sessionCount: activeSessions.length,
       activeSessionId,
+      sessionWalletIds: activeSessions.map((s) => s.walletId),
+      availableWalletIds,
+      discoveredWalletIds,
     });
+
+    // Recreate adapters for sessions with adapter reconstruction data
+    await this.recreateAdaptersFromSessions(activeSessions);
+
+    // Pre-load and install built-in adapters for sessions
+    // This ensures built-in adapters have access to persisted session data
+    // before reconnection is attempted
+    for (const session of activeSessions) {
+      const { walletId } = session;
+
+      // Only process built-in wallets that aren't already loaded
+      if (this.registry.isBuiltinWallet(walletId) && !this.adapters.has(walletId)) {
+        this.logger?.debug('Pre-loading built-in adapter for session', { walletId });
+
+        try {
+          // Load the built-in adapter with session data for transport reconstruction
+          const adapter = await this.loadBuiltinAdapter(walletId, session);
+
+          if (adapter) {
+            // Install the adapter so it can restore session data
+            // Create a logger context for the adapter
+            const adapterLogger = this.logger || {
+              debug: () => {},
+              info: () => {},
+              warn: () => {},
+              error: () => {},
+            };
+
+            await adapter.install({
+              logger: adapterLogger,
+            });
+
+            // Cache the adapter in the adapters Map
+            this.adapters.set(walletId, adapter);
+
+            this.logger?.info('Pre-loaded and installed built-in adapter for reconnection', {
+              walletId,
+              hasTransportConfig: !!session.adapterReconstruction?.transportConfig,
+              hasSessionId: !!session.adapterReconstruction?.sessionId,
+            });
+          }
+        } catch (error) {
+          this.logger?.warn('Failed to pre-load built-in adapter', { walletId, error });
+        }
+      }
+    }
 
     // If there's an active session, attempt to reconnect
     const activeSession = activeSessionId ? entities.sessions[activeSessionId] : null;
@@ -534,15 +591,94 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       });
 
       try {
-        // Attempt to reconnect to the wallet with the session ID
-        const connectOptions: ConnectOptions = {
-          isReconnection: true,
-          chain: activeSession.chain,
-        };
-        if (activeSessionId) {
-          connectOptions.sessionId = activeSessionId;
+        // Get the wallet session ID from adapterReconstruction
+        // This is what the wallet expects to recognize the session
+        this.logger?.debug('[DEBUG] Checking adapterReconstruction for sessionId', {
+          hasAdapterReconstruction: !!activeSession.adapterReconstruction,
+          adapterReconstructionKeys: activeSession.adapterReconstruction
+            ? Object.keys(activeSession.adapterReconstruction)
+            : [],
+          adapterReconstructionSessionId: activeSession.adapterReconstruction?.sessionId,
+        });
+
+        const walletSessionId = activeSession.adapterReconstruction?.sessionId;
+
+        // Try to get existing provider for reconnection
+        const existingProvider = activeSessionId ? getProviderForSession(activeSessionId) : null;
+
+        // If we have a sessionId and provider with reconnect method, use reconnect instead of connect
+        if (
+          walletSessionId &&
+          existingProvider &&
+          typeof existingProvider === 'object' &&
+          'reconnect' in existingProvider &&
+          typeof (existingProvider as any).reconnect === 'function'
+        ) {
+          this.logger?.info('Using provider reconnect method to restore session', {
+            walletId: activeSession.walletId,
+            walletSessionId,
+            hasExistingProvider: true,
+          });
+
+          try {
+            // Call reconnect on the provider
+            const reconnectResult = await (existingProvider as any).reconnect(walletSessionId);
+
+            this.logger?.info('Successfully reconnected via provider.reconnect()', {
+              walletId: activeSession.walletId,
+              reconnectResult,
+            });
+          } catch (reconnectError) {
+            this.logger?.warn('Provider reconnect failed, falling back to connect', {
+              walletId: activeSession.walletId,
+              error: reconnectError,
+            });
+
+            // Fall back to regular connect, but pass adapter reconstruction data
+            // so the adapter can use provider.reconnect() instead of creating new connection
+            const connectOptions: ConnectOptions = {
+              isReconnection: true,
+              chain: activeSession.chain,
+              sessionId: walletSessionId,
+              adapterReconstruction: activeSession.adapterReconstruction,
+            };
+            await this.connect(activeSession.walletId, connectOptions);
+          }
+        } else {
+          // No existing provider or sessionId, use regular connect flow
+          this.logger?.info('No provider reconnect available, using regular connect', {
+            walletId: activeSession.walletId,
+            hasWalletSessionId: !!walletSessionId,
+            hasExistingProvider: !!existingProvider,
+            hasReconnectMethod:
+              existingProvider && typeof existingProvider === 'object' && 'reconnect' in existingProvider,
+          });
+
+          const connectOptions: ConnectOptions = {
+            isReconnection: true,
+            chain: activeSession.chain,
+            adapterReconstruction: activeSession.adapterReconstruction,
+          };
+
+          if (walletSessionId) {
+            connectOptions.sessionId = walletSessionId;
+            this.logger?.debug('Using wallet session ID for reconnection', {
+              walletId: activeSession.walletId,
+              walletSessionId,
+            });
+          } else {
+            this.logger?.warn('No wallet session ID found in adapterReconstruction, reconnection may fail', {
+              walletId: activeSession.walletId,
+              modalSessionId: activeSessionId,
+              hasAdapterReconstruction: !!activeSession.adapterReconstruction,
+              adapterReconstructionKeys: activeSession.adapterReconstruction
+                ? Object.keys(activeSession.adapterReconstruction)
+                : [],
+            });
+          }
+
+          await this.connect(activeSession.walletId, connectOptions);
         }
-        await this.connect(activeSession.walletId, connectOptions);
 
         this.logger?.info('Successfully reconnected to rehydrated session');
       } catch (error) {
@@ -552,6 +688,237 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
           connectionActions.endSession(useStore, activeSessionId);
         }
       }
+    }
+
+    // Clean up orphaned sessions (sessions with no provider instance)
+    // This handles cases where sessions were restored from localStorage but couldn't reconnect
+    this.cleanupOrphanedSessions();
+  }
+
+  /**
+   * Recreate adapters from rehydrated sessions with adapter reconstruction data
+   *
+   * This is essential for discovered wallets which need to be reconstructed from
+   * persisted transport configuration and adapter type information.
+   *
+   * @private
+   */
+  private async recreateAdaptersFromSessions(sessions: SessionState[]): Promise<void> {
+    for (const session of sessions) {
+      // Skip if no adapter reconstruction data
+      if (!session.adapterReconstruction) {
+        continue;
+      }
+
+      const { adapterType, transportConfig, walletMetadata } = session.adapterReconstruction;
+      const { walletId } = session;
+
+      try {
+        // Check if adapter already exists
+        if (this.adapters.has(walletId)) {
+          this.logger?.debug('Adapter already exists, skipping recreation', { walletId });
+          continue;
+        }
+
+        // Skip pre-registered built-in wallets - they will be loaded via loadBuiltinAdapter()
+        // Don't register them as discovered wallets
+        if (this.registry.isBuiltinWallet(walletId)) {
+          this.logger?.debug('Skipping pre-registered wallet, will load via built-in path', { walletId });
+          continue;
+        }
+
+        // Restore wallet metadata to registry if available
+        // This makes the wallet appear in the UI immediately
+        if (walletMetadata && this.registry) {
+          // Map adapter type to valid DiscoveredWalletInfo type
+          let normalizedAdapterType: 'discovery' | 'aztec' | 'solana' | 'evm';
+          const lowerType = adapterType.toLowerCase();
+          if (lowerType.includes('discovery')) {
+            normalizedAdapterType = 'discovery';
+          } else if (lowerType.includes('aztec')) {
+            normalizedAdapterType = 'aztec';
+          } else if (lowerType.includes('solana')) {
+            normalizedAdapterType = 'solana';
+          } else {
+            normalizedAdapterType = 'evm'; // default fallback
+          }
+
+          const discoveredWallet = {
+            id: walletId,
+            name: walletMetadata.name,
+            icon: walletMetadata.icon,
+            description: walletMetadata.description,
+            homepage: walletMetadata.homepage,
+            adapterType: normalizedAdapterType,
+            adapterConfig: {
+              // Use discoveryData if available (new minimal path), fall back to qualifiedResponder (legacy)
+              qualifiedResponder:
+                session.adapterReconstruction.discoveryData ||
+                session.adapterReconstruction.qualifiedResponder,
+              transportConfig: session.adapterReconstruction.transportConfig,
+              connectionManager: this.discoveryService?.getConnectionManager(),
+            },
+            discoveryMethod: 'discovery-protocol' as const,
+          };
+
+          try {
+            this.registry.registerDiscoveredWallet(discoveredWallet);
+            this.logger?.debug('Restored wallet to registry', { walletId });
+          } catch (registryError) {
+            this.logger?.warn('Failed to add wallet to registry', { walletId, registryError });
+          }
+        }
+
+        // For discovery adapters, we need to recreate from transport config
+        if (adapterType === 'discovery' || adapterType === 'DiscoveryAdapter') {
+          await this.recreateDiscoveryAdapter(walletId, transportConfig, session);
+        } else {
+          // For other adapter types, they should already be registered
+          // or can be created through normal means
+          this.logger?.debug('Non-discovery adapter, will be handled by normal connection flow', {
+            walletId,
+            adapterType,
+          });
+        }
+      } catch (error) {
+        this.logger?.error('Failed to recreate adapter from session:', {
+          walletId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+        // Continue with other sessions even if one fails
+      }
+    }
+  }
+
+  /**
+   * Clean up orphaned sessions that have no provider instance
+   *
+   * This handles cases where sessions were restored from localStorage during
+   * Zustand rehydration but couldn't reconnect or don't have registered providers.
+   * Sessions without providers can't perform any operations, so they should be removed.
+   *
+   * @private
+   */
+  private cleanupOrphanedSessions(): void {
+    const store = useStore.getState();
+    const { entities } = store;
+    const sessionIds = Object.keys(entities.sessions);
+
+    if (sessionIds.length === 0) {
+      return;
+    }
+
+    let removedCount = 0;
+    for (const sessionId of sessionIds) {
+      const provider = getProviderForSession(sessionId);
+      if (!provider) {
+        this.logger?.info('Removing orphaned session with no provider instance', {
+          sessionId,
+          walletId: entities.sessions[sessionId]?.walletId,
+        });
+        connectionActions.endSession(useStore, sessionId);
+        removedCount++;
+      }
+    }
+
+    if (removedCount > 0) {
+      this.logger?.info('Cleaned up orphaned sessions', {
+        totalSessions: sessionIds.length,
+        removedCount,
+        remainingCount: sessionIds.length - removedCount,
+      });
+    }
+  }
+
+  /**
+   * Recreate a discovery adapter from session reconstruction data
+   *
+   * Enhanced to restore the qualified responder to the discovery service before
+   * creating the adapter, eliminating the need to re-run discovery.
+   *
+   * @private
+   */
+  private async recreateDiscoveryAdapter(
+    walletId: string,
+    _transportConfig: { type: string; config: Record<string, unknown> },
+    session: SessionState,
+  ): Promise<void> {
+    if (!this.discoveryService) {
+      this.logger?.warn('Discovery service not available for adapter recreation', { walletId });
+      return;
+    }
+
+    try {
+      const { adapterReconstruction } = session;
+      const discoveryData = adapterReconstruction?.discoveryData;
+
+      // New path: Use minimal discoveryData to create adapter directly
+      if (discoveryData) {
+        this.logger?.info('Recreating DiscoveryAdapter from minimal session data', { walletId });
+
+        // Get connection manager
+        const connectionManager = this.discoveryService.getConnectionManager();
+        if (!connectionManager) {
+          throw ErrorFactory.configurationError('Discovery connection manager not available', { walletId });
+        }
+
+        // Import DiscoveryAdapter dynamically
+        const { DiscoveryAdapter } = await import('../wallets/discovery/DiscoveryAdapter.js');
+
+        // Create adapter directly using saved minimal data
+        const adapter = new DiscoveryAdapter(discoveryData, connectionManager, { autoConnect: false });
+
+        // Restore session ID if available
+        const sessionId = adapterReconstruction?.sessionId;
+        if (sessionId && 'setSessionId' in adapter && typeof adapter.setSessionId === 'function') {
+          (adapter as any).setSessionId(sessionId);
+          this.logger?.debug('Restored session ID to adapter', { walletId, sessionId });
+        }
+
+        this.adapters.set(walletId, adapter);
+        this.setupAdapterHandlers(walletId, adapter);
+        this.logger?.info('Successfully recreated discovery adapter from minimal data', { walletId });
+        return;
+      }
+
+      // Legacy path: Try to use qualifiedResponder (for backward compatibility)
+      const qualifiedResponder = adapterReconstruction?.qualifiedResponder;
+      if (qualifiedResponder) {
+        this.logger?.debug('Using legacy qualifiedResponder for adapter recreation', { walletId });
+
+        // Restore to discovery service's internal map
+        (this.discoveryService as any).discoveredResponders.set(walletId, qualifiedResponder);
+        (this.discoveryService as any).qualifiedWallets.set(walletId, qualifiedResponder);
+
+        // Create adapter using discovery service
+        const adapter = await this.discoveryService.createWalletAdapter(walletId, {
+          autoConnect: false,
+        });
+
+        if (adapter) {
+          const sessionId = adapterReconstruction?.sessionId;
+          if (sessionId && 'setSessionId' in adapter && typeof adapter.setSessionId === 'function') {
+            (adapter as any).setSessionId(sessionId);
+          }
+
+          this.adapters.set(walletId, adapter);
+          this.setupAdapterHandlers(walletId, adapter);
+          this.logger?.info('Successfully recreated discovery adapter from legacy data', { walletId });
+        }
+        return;
+      }
+
+      // No data available - cannot recreate
+      this.logger?.warn('No discovery data available for adapter recreation', { walletId });
+      throw ErrorFactory.configurationError('Cannot recreate DiscoveryAdapter: no session data available', {
+        walletId,
+      });
+    } catch (error) {
+      this.logger?.error('Failed to recreate discovery adapter:', {
+        walletId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
     }
   }
 
@@ -593,10 +960,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       } = {
         ...(existingCapabilities.features && { features: existingCapabilities.features }),
         ...(existingCapabilities.interfaces && { interfaces: existingCapabilities.interfaces }),
-        chains: [
-          ...(existingCapabilities.chains || []),
-          ...chainIdsFromConfig,
-        ],
+        chains: [...(existingCapabilities.chains || []), ...chainIdsFromConfig],
       };
 
       const discoveryService = new DiscoveryService(
@@ -1175,7 +1539,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     return validChains.map((chain) => ({
       chainId: chain.chainId as string, // ChainId type in service can be string or number
       chainType: chain.chainType as ChainType,
-      name: chain.name || this.getChainName(chain.chainId),
+      name: chain.name || getChainName(chain.chainId),
       required: chain.required ?? false,
       // Provide default values for required fields not in client config
       nativeCurrency: this.getDefaultNativeCurrency(chain.chainType as ChainType, chain.chainId),
@@ -1423,24 +1787,84 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       const sessionParams = sessionBuilder.build();
 
       // Adapt provider for session (builder returns raw provider, we need blockchain provider)
-      sessionParams.provider = this.adaptWalletProviderToBlockchainProvider(
+      const providerObj = connection.provider as Record<string, unknown> | null | undefined;
+      this.logger?.debug('Adapting provider for session', {
+        providerType: connection.provider?.constructor?.name,
+        hasCall: providerObj && typeof providerObj === 'object' ? 'call' in providerObj : false,
+        hasRequest: providerObj && typeof providerObj === 'object' ? 'request' in providerObj : false,
+        hasGetAccounts: providerObj && typeof providerObj === 'object' ? 'getAccounts' in providerObj : false,
+      });
+
+      const adaptedProvider = this.adaptWalletProviderToBlockchainProvider(
         connection.provider as WalletProvider,
       );
 
-      this.logger?.debug('Session parameters prepared', sessionParams);
+      this.logger?.debug('Provider adapted successfully', {
+        adaptedProviderHasCall: 'call' in adaptedProvider,
+        adaptedProviderHasRequest: 'request' in adaptedProvider,
+        adaptedProviderHasGetAccounts: 'getAccounts' in adaptedProvider,
+      });
+
+      // CRITICAL: Store provider in ProviderRegistry BEFORE calling createSession
+      // This prevents Immer from accessing cross-origin Window objects during state mutation
+      // Use sessionId from backend wallet if provided, otherwise from sessionParams, or generate new one
+      const sessionId = connection.sessionId ?? sessionParams.sessionId ?? generateSessionId('session');
+      setProviderForSession(sessionId, adaptedProvider);
+
+      // Ensure sessionId is set in params for createSession
+      sessionParams.sessionId = sessionId;
+
+      // DO NOT pass provider through sessionParams - it's already in registry
+      // This prevents cross-origin errors when Immer processes the parameters
+      delete sessionParams.provider;
+
+      this.logger?.debug('Session parameters prepared', {
+        walletId: sessionParams.walletId,
+        accountsCount: sessionParams.accounts.length,
+        chainId: sessionParams.chain.chainId,
+        chainType: sessionParams.chain.chainType,
+        providerStoredInRegistry: true,
+        sessionId,
+      });
 
       // Use unified store's createSession action to ensure proper state updates
+      this.logger?.debug('[DEBUG] sessionParams before createSession', {
+        sessionId: sessionParams.sessionId,
+        hasAdapterReconstruction: !!sessionParams.adapterReconstruction,
+        adapterReconstructionSessionId: (sessionParams.adapterReconstruction as any)?.sessionId,
+        adapterReconstructionKeys: sessionParams.adapterReconstruction
+          ? Object.keys(sessionParams.adapterReconstruction)
+          : [],
+      });
+
       let session: SessionState | undefined;
       try {
         session = await connectionActions.createSession(useStore, sessionParams);
       } catch (sessionError) {
-        this.logger?.error('Failed to create session', {
+        // Enhanced error logging to capture validation errors
+        const errorDetails: Record<string, unknown> = {
           error: sessionError,
           errorType: typeof sessionError,
           errorConstructor: sessionError?.constructor?.name,
           message: sessionError instanceof Error ? sessionError.message : String(sessionError),
           stack: sessionError instanceof Error ? sessionError.stack : undefined,
-        });
+          walletId: targetWalletId,
+          sessionParamsKeys: Object.keys(sessionParams),
+          accountsCount: sessionParams.accounts.length,
+          firstAccount: sessionParams.accounts[0],
+          chain: sessionParams.chain,
+          providerStoredInRegistry: true,
+          sessionId,
+        };
+
+        // Check if it's a Zod validation error
+        if (sessionError && typeof sessionError === 'object' && 'issues' in sessionError) {
+          errorDetails['zodIssues'] = (sessionError as any).issues;
+        }
+
+        this.logger?.error('Failed to create session', errorDetails);
+        console.error('[SessionCreationError] Full details:', errorDetails);
+
         throw ErrorFactory.connectionFailed('Failed to create session', {
           walletId: targetWalletId,
           originalError: sessionError,
@@ -1452,6 +1876,35 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         walletId: session.walletId,
         status: session.status,
       });
+
+      // Call adapter's persistSession to save adapter-specific reconstruction data
+      // This allows adapters to enhance the session with additional data needed for reconnection
+      try {
+        if ('persistSession' in adapter && typeof adapter.persistSession === 'function') {
+          this.logger?.debug('Calling adapter.persistSession', {
+            walletId: targetWalletId,
+            sessionId: session.sessionId,
+            adapterType: adapter.constructor.name,
+          });
+          await (adapter as any).persistSession(connection, session.sessionId);
+          this.logger?.debug('Adapter persistence completed', {
+            walletId: targetWalletId,
+            sessionId: session.sessionId,
+          });
+        } else {
+          this.logger?.debug('Adapter does not have persistSession method', {
+            walletId: targetWalletId,
+            adapterType: adapter.constructor.name,
+          });
+        }
+      } catch (persistError) {
+        // Don't throw - session is already created, adapter-specific persistence is an optional enhancement
+        this.logger?.warn('Failed to persist adapter-specific session data', {
+          walletId: targetWalletId,
+          sessionId: session.sessionId,
+          error: persistError instanceof Error ? persistError.message : String(persistError),
+        });
+      }
 
       // Add wallet info to the configured wallets in the store - but only if it supports configured chain types
       const adapterChains = adapter.capabilities.chains.map((chain) => chain.type);
@@ -1495,7 +1948,6 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
 
       // Emit event
       // Connection added - state automatically updated via session manager
-
 
       // Record successful connection in health tracking
       const health = this.adapterHealth.get(targetWalletId);
@@ -1753,8 +2205,10 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     // If switching to the same chain, just return current state
     if (previousChainId.toString() === chainId) {
       this.logger?.info('Already on the requested chain', { chainId });
+      // Get provider from registry (NOT from state, to avoid cross-origin errors)
+      const currentProvider = getProviderForSession(activeSession.sessionId);
       return {
-        provider: activeSession.provider.instance,
+        provider: currentProvider,
         chainType: activeSession.chain.chainType,
         chainId,
         previousChainId: String(previousChainId),
@@ -1762,7 +2216,8 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     }
 
     // Request chain connection for EVM chains
-    let provider: unknown = activeSession.provider.instance;
+    // Get provider from registry (NOT from state, to avoid cross-origin errors)
+    let provider: unknown = getProviderForSession(activeSession.sessionId);
     if (chainType === 'evm') {
       this.logger?.debug('Requesting new chain connection for EVM', { chainId });
       try {
@@ -1773,7 +2228,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         });
         if (!provider) {
           // Use current provider if wallet doesn't support chain-specific providers
-          provider = activeSession.provider.instance;
+          provider = getProviderForSession(activeSession.sessionId);
           this.logger?.info('Wallet does not support chain-specific providers, using current provider', {
             chainId,
           });
@@ -1800,7 +2255,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       : {
           chainId,
           chainType,
-          name: this.getChainName(chainId),
+          name: getChainName(chainId),
           required: false,
         };
     const newSession = await this.sessionManager.switchChain(activeSession.sessionId, chain);
@@ -1812,8 +2267,10 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     // Chain switching is now managed through session manager
     // State changes are automatically propagated through Zustand subscriptions
 
+    // Get provider from registry (NOT from state, to avoid cross-origin errors)
+    const newProvider = getProviderForSession(newSession.sessionId);
     return {
-      provider: newSession.provider.instance,
+      provider: newProvider,
       chainType: newSession.chain.chainType,
       chainId,
       previousChainId: String(previousChainId),
@@ -1955,25 +2412,29 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     const connectedSessions = Object.values(state.entities.sessions).filter((s) => s.status === 'connected');
 
     // Convert sessions to WalletConnection format
-    return connectedSessions.map((session): WalletConnection => ({
-      walletId: session.walletId,
-      address: session.activeAccount.address,
-      accounts: session.accounts.map((a) => a.address),
-      chain: {
-        chainId: session.chain.chainId,
+    return connectedSessions.map((session): WalletConnection => {
+      // Get provider from registry (NOT from state, to avoid cross-origin errors)
+      const provider = getProviderForSession(session.sessionId);
+      return {
+        walletId: session.walletId,
+        address: session.activeAccount.address,
+        accounts: session.accounts.map((a) => a.address),
+        chain: {
+          chainId: session.chain.chainId,
+          chainType: session.chain.chainType,
+          name: session.chain.name,
+          required: session.chain.required,
+        },
         chainType: session.chain.chainType,
-        name: session.chain.name,
-        required: session.chain.required,
-      },
-      chainType: session.chain.chainType,
-      provider: session.provider.instance as WalletProvider,
-      walletInfo: {
-        id: session.walletId,
-        name: session.metadata.wallet.name,
-        icon: session.metadata.wallet.icon,
-        chains: [session.chain.chainType],
-      },
-    }));
+        provider: provider as WalletProvider,
+        walletInfo: {
+          id: session.walletId,
+          name: session.metadata.wallet.name,
+          icon: session.metadata.wallet.icon,
+          chains: [session.chain.chainType],
+        },
+      };
+    });
   }
 
   /**
@@ -2021,12 +2482,12 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         const shouldOverrideChains = Boolean(options?.chainTypes && options.chainTypes.length > 0);
 
         const overrideTechnologies = shouldOverrideChains
-          ? this.mapChainTypesToTechnologies(options!.chainTypes!)
+          ? this.mapChainTypesToTechnologies(options?.chainTypes!)
           : undefined;
 
         const scanConfig = shouldOverrideChains
           ? {
-              supportedChainTypes: [...options!.chainTypes!],
+              supportedChainTypes: [...options?.chainTypes!],
               ...(overrideTechnologies ? { technologies: overrideTechnologies } : {}),
             }
           : undefined;
@@ -2226,14 +2687,12 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     // Trigger wallet discovery before opening modal
     // This ensures wallets are discovered based on the target chain type
     this.logger?.debug('Opening modal, starting discovery', {
-      targetChainType: options?.targetChainType
+      targetChainType: options?.targetChainType,
     });
 
     try {
       // Build discovery options - only include chainTypes if targetChainType is specified
-      const discoveryOptions = options?.targetChainType
-        ? { chainTypes: [options.targetChainType] }
-        : {};
+      const discoveryOptions = options?.targetChainType ? { chainTypes: [options.targetChainType] } : {};
 
       await this.discoverWallets(discoveryOptions);
       this.logger?.debug('Discovery completed, opening modal UI');
@@ -2911,6 +3370,85 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     adapter.on('wallet:disconnected', disconnectedListener);
     listeners.push({ event: 'wallet:disconnected', listener: disconnectedListener });
 
+    // Listen for session termination from wallet
+    const sessionTerminatedListener = async (data: unknown) => {
+      const { sessionId, reason } = data as { sessionId: string; reason?: string };
+
+      console.log('[WalletMeshClient] 🚨 Session terminated event received', {
+        walletId,
+        sessionId,
+        reason,
+        timestamp: new Date().toISOString(),
+      });
+
+      this.logger?.info('Session terminated by wallet', { walletId, sessionId, reason });
+
+      // Find and remove the session from the store
+      const store = useStore.getState();
+      const sessionToRemove = Object.values(store.entities.sessions).find((s) => s.sessionId === sessionId);
+
+      if (sessionToRemove) {
+        console.log('[WalletMeshClient] ✅ Found session to remove', {
+          sessionId,
+          walletId: sessionToRemove.walletId,
+        });
+
+        this.logger?.debug('Removing terminated session from store', { sessionId });
+
+        // Delete session from store using setState
+        useStore.setState((state) => {
+          console.log('[WalletMeshClient] 🔄 Updating Zustand store - removing session', { sessionId });
+
+          const newSessions = { ...state.entities.sessions };
+          delete newSessions[sessionId];
+
+          const newState = {
+            entities: {
+              ...state.entities,
+              sessions: newSessions,
+            },
+            ui: {
+              ...state.ui,
+              currentView: 'wallet-selection' as const,
+              isLoading: false,
+              errors: {
+                ...state.ui.errors,
+                session: {
+                  code: 'session_terminated',
+                  message: 'Your wallet connection was closed. Please reconnect to continue.',
+                  category: 'connection' as const,
+                  fatal: false,
+                  data: {
+                    reason: reason || 'Session revoked by wallet',
+                    sessionId,
+                    walletId,
+                  },
+                },
+              },
+            },
+          };
+
+          console.log('[WalletMeshClient] ✅ Store update complete', {
+            remainingSessions: Object.keys(newState.entities.sessions).length,
+            hasError: !!newState.ui.errors.session,
+          });
+
+          return newState;
+        });
+
+        console.log('[WalletMeshClient] ✅ Session termination handled successfully');
+      } else {
+        console.warn('[WalletMeshClient] ⚠️ Session not found for termination', {
+          sessionId,
+          availableSessions: Object.keys(store.entities.sessions),
+        });
+
+        this.logger?.warn('Session not found for termination', { sessionId });
+      }
+    };
+    adapter.on('wallet:sessionTerminated', sessionTerminatedListener);
+    listeners.push({ event: 'wallet:sessionTerminated', listener: sessionTerminatedListener });
+
     // Store listeners for cleanup
     this.adapterEventListeners.set(walletId, listeners);
 
@@ -2988,6 +3526,16 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         // First, end the current session (not a disconnect, just session update)
         await this.sessionManager.endSession(activeSession.sessionId);
 
+        // Get provider from registry (NOT from state, to avoid cross-origin errors)
+        const provider = getProviderForSession(activeSession.sessionId);
+
+        if (!provider) {
+          this.logger?.error('Provider not found in registry for session update', {
+            sessionId: activeSession.sessionId,
+          });
+          throw ErrorFactory.connectionFailed('Provider not found for session update');
+        }
+
         // Create a new session with updated accounts
         const sessionParams = {
           walletId: activeSession.walletId,
@@ -2999,7 +3547,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
           })),
           activeAccountIndex: 0,
           chain: activeSession.chain,
-          provider: activeSession.provider.instance,
+          provider,
           providerMetadata: {
             type: activeSession.provider.type,
             version: activeSession.provider.version,
@@ -3058,7 +3606,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         : {
             chainId,
             chainType: chainType || this.getChainTypeFromId(chainId),
-            name: this.getChainName(chainId),
+            name: getChainName(chainId),
             required: false,
           };
       await this.sessionManager.switchChain(activeSession.sessionId, chain);
@@ -3101,6 +3649,61 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
   }
 
   /**
+   * Load a built-in wallet adapter
+   *
+   * This method handles loading of pre-registered built-in adapters
+   * like AztecExampleWalletAdapter and DebugWallet. These adapters
+   * are part of the core package and should not be treated as
+   * discovered wallets.
+   *
+   * @param walletId - ID of the built-in wallet
+   * @returns Adapter instance if found, undefined otherwise
+   * @private
+   */
+  private async loadBuiltinAdapter(
+    walletId: string,
+    session?: SessionState,
+  ): Promise<WalletAdapter | undefined> {
+    this.logger?.debug('Attempting to load as built-in adapter', { walletId, hasSession: !!session });
+
+    try {
+      if (walletId === 'aztec-example-wallet') {
+        const { AztecExampleWalletAdapter } = await import(
+          /* @vite-ignore */ '../wallets/aztec-example/AztecExampleWalletAdapter.js'
+        );
+
+        // Extract transport config and sessionId from session if available
+        const config = session?.adapterReconstruction
+          ? {
+              transportConfig: session.adapterReconstruction.transportConfig,
+              ...(session.adapterReconstruction.sessionId && {
+                sessionId: session.adapterReconstruction.sessionId,
+              }),
+            }
+          : undefined;
+
+        const adapter = new AztecExampleWalletAdapter(config);
+        this.registry.registerBuiltIn(adapter);
+        this.logger?.info('Loaded and registered AztecExampleWalletAdapter as built-in', {
+          withStoredConfig: !!config,
+          hasSessionId: !!config?.sessionId,
+        });
+        return adapter;
+      } else if (walletId === 'debug-wallet') {
+        const { DebugWallet } = await import(/* @vite-ignore */ '../wallets/debug/DebugWallet.js');
+        const adapter = new DebugWallet();
+        this.registry.registerBuiltIn(adapter);
+        this.logger?.info('Loaded and registered DebugWallet as built-in');
+        return adapter;
+      }
+    } catch (importError) {
+      this.logger?.error('Failed to load built-in adapter', { walletId, error: importError });
+    }
+
+    return undefined;
+  }
+
+  /**
    * Creates a wallet adapter with lazy-loaded blockchain provider.
    *
    * Enhances the adapter with chain-specific provider classes for
@@ -3117,21 +3720,27 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     walletId: string,
     options?: ConnectOptions,
   ): Promise<WalletAdapter> {
+    // First, check if adapter was already created during session restoration
+    // This prevents re-creating adapters that were successfully restored from saved sessions
+    const cachedAdapter = this.adapters.get(walletId);
+    if (cachedAdapter) {
+      this.logger?.debug('Using adapter from session restoration', { walletId });
+      return cachedAdapter;
+    }
+
     // Get adapter from registry
-    this.logger?.debug(`Looking for adapter in registry: ${walletId}`);
-    this.logger?.debug('Looking for adapter in registry', { walletId });
-
     const allAdapters = this.registry.getAllAdapters();
-    this.logger?.debug('Available adapters', {
-      count: allAdapters.length,
-      adapters: allAdapters.map((a) => ({ id: a.id, name: a.metadata.name })),
-    });
-
     let adapter = this.registry.getAdapter(walletId);
 
-    // If adapter not found, check if it's a discovered wallet
+    // If adapter not found in registry, try loading as built-in adapter
     if (!adapter) {
-      this.logger?.debug('Adapter not found, checking discovered wallets', { walletId });
+      this.logger?.debug('Adapter not in registry, trying built-in adapter loading', { walletId });
+      adapter = await this.loadBuiltinAdapter(walletId);
+    }
+
+    // If still not found, check if it's a discovered wallet
+    if (!adapter) {
+      this.logger?.debug('Not a built-in adapter, checking discovered wallets', { walletId });
 
       const discoveredWallet = this.registry.getDiscoveredWallet(walletId);
       if (discoveredWallet) {
@@ -3192,35 +3801,14 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
           throw ErrorFactory.walletNotFound(walletId);
         }
       } else {
-        // Try to load as a built-in adapter if not discovered
-        this.logger?.debug('Attempting to load as built-in adapter', { walletId });
-        try {
-          // The registry's loadBuiltinAdapter is private, but we can try to load specific known adapters
-          if (walletId === 'aztec-example-wallet') {
-            const { AztecExampleWalletAdapter } = await import(
-              /* @vite-ignore */ '../wallets/aztec-example/AztecExampleWalletAdapter.js'
-            );
-            adapter = new AztecExampleWalletAdapter();
-            this.registry.register(adapter);
-            this.logger?.info('Loaded and registered AztecExampleWalletAdapter');
-          } else if (walletId === 'debug-wallet') {
-            const { DebugWallet } = await import(/* @vite-ignore */ '../wallets/debug/DebugWallet.js');
-            adapter = new DebugWallet();
-            this.registry.register(adapter);
-            this.logger?.info('Loaded and registered DebugWallet');
-          }
-        } catch (importError) {
-          this.logger?.error('Failed to load built-in adapter', { walletId, error: importError });
-        }
-
-        if (!adapter) {
-          this.logger?.error('Adapter not found for wallet', {
-            walletId,
-            availableIds: allAdapters.map((a) => a.id),
-            discoveredIds: this.registry.getAllDiscoveredWallets().map((w) => w.id),
-          });
-          throw ErrorFactory.walletNotFound(walletId);
-        }
+        // Wallet not found in discovered wallets
+        // Built-in adapters are already loaded earlier in the method
+        this.logger?.error('Wallet not found', {
+          walletId,
+          availableIds: allAdapters.map((a) => a.id),
+          discoveredIds: this.registry.getAllDiscoveredWallets().map((w) => w.id),
+        });
+        throw ErrorFactory.walletNotFound(walletId);
       }
     }
 
@@ -3432,14 +4020,17 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
    * @private
    */
   private async sessionToWalletConnection(session: SessionState): Promise<WalletConnection> {
+    // Get provider from registry (NOT from state, to avoid cross-origin errors)
+    const provider = getProviderForSession(session.sessionId);
+
     this.logger?.debug('Converting session to wallet connection', {
       sessionId: session.sessionId,
       walletId: session.walletId,
       hasProvider: !!session.provider,
-      hasProviderInstance: !!session.provider?.instance,
+      hasProviderInstance: !!provider,
     });
 
-    if (!session.provider?.instance) {
+    if (!provider) {
       this.logger?.error('Session missing provider instance', {
         sessionId: session.sessionId,
         walletId: session.walletId,
@@ -3452,7 +4043,6 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     }
 
     // Validate provider interface for chain type (handles lazy providers)
-    const provider = session.provider.instance;
     await this.providerValidator.validate(provider, {
       sessionId: session.sessionId,
       walletId: session.walletId,
@@ -3465,7 +4055,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       accounts: session.accounts.map((acc) => acc.address),
       chain: session.chain,
       chainType: session.chain.chainType,
-      provider: session.provider.instance,
+      provider,
       walletInfo: {
         id: session.walletId,
         name: session.metadata.wallet.name,
@@ -3555,7 +4145,14 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
           return await walletProvider.request(args);
         }
         if (isAztecRouterProvider(walletProvider)) {
-          return await walletProvider.call({ method: args.method, params: args.params as unknown[] });
+          // Aztec providers require chainId for all calls, which is not available in the generic request() context.
+          // The adapted provider preserves the original call(chainId, call, timeout) method below (line ~3827).
+          // Services and code that need to use Aztec providers should call the provider.call() method directly
+          // with the appropriate chainId, rather than using the generic request() method.
+          throw ErrorFactory.transportError(
+            `Aztec providers require chainId for method calls. Method '${args.method}' cannot be called via generic request(). Use provider.call(chainId, { method, params }) instead.`,
+            'aztec-router',
+          );
         }
         // For providers that don't support generic request/call patterns,
         // throw an error indicating they should use provider-specific methods
@@ -3589,34 +4186,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     };
   }
 
-  /**
-   * Gets a human-readable name for a chain ID.
-   *
-   * Maps common chain IDs to their names. Falls back to generic
-   * naming for unknown chains.
-   *
-   * @param chainId - Chain ID as string or number
-   * @returns Human-readable chain name
-   * @private
-   */
-  private getChainName(chainId: string | number): string {
-    const id = typeof chainId === 'string' ? chainId : chainId.toString();
-
-    // Common chain names
-    const chainNames: Record<string, string> = {
-      '1': 'Ethereum Mainnet',
-      '0x1': 'Ethereum Mainnet',
-      '137': 'Polygon',
-      '0x89': 'Polygon',
-      '56': 'BSC',
-      '0x38': 'BSC',
-      'mainnet-beta': 'Solana Mainnet',
-      testnet: 'Solana Testnet',
-      devnet: 'Solana Devnet',
-    };
-
-    return chainNames[id] || `Chain ${id}`;
-  }
+  // Note: getChainName() has been consolidated to src/utils/chainNameResolver.ts
 
   /**
    * Gets a public provider for read-only operations on the specified chain.
@@ -3656,14 +4226,19 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     const activeSession = this.sessionManager?.getActiveSession();
     const isCorrectChain = activeSession?.chain?.chainId === chainId && activeSession?.status === 'connected';
 
-    if (isCorrectChain && activeSession && activeSession.provider?.instance) {
-      this.logger?.info(`Using wallet provider as fallback for public provider on chain ${chainId}`);
+    if (isCorrectChain && activeSession) {
+      // Get provider from registry (NOT from state, to avoid cross-origin errors)
+      const provider = getProviderForSession(activeSession.sessionId);
 
-      // The provider instance is already a WalletProvider
-      const walletProvider = activeSession.provider.instance as unknown as WalletProvider;
+      if (provider) {
+        this.logger?.info(`Using wallet provider as fallback for public provider on chain ${chainId}`);
 
-      // Create a fallback wrapper that restricts to read-only operations
-      return new WalletProviderFallbackWrapper(walletProvider, chainId, chainConfig.chainType as ChainType);
+        // The provider instance is already a WalletProvider
+        const walletProvider = provider as unknown as WalletProvider;
+
+        // Create a fallback wrapper that restricts to read-only operations
+        return new WalletProviderFallbackWrapper(walletProvider, chainId, chainConfig.chainType as ChainType);
+      }
     }
 
     this.logger?.warn(`No public provider available for chain ${chainId} (no dApp RPC or wallet fallback)`);
@@ -3696,14 +4271,15 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       return null;
     }
 
-    // Retrieve provider from session state (single source of truth)
-    if (!activeSession.provider?.instance) {
+    // Get provider from registry (NOT from state, to avoid cross-origin errors)
+    const provider = getProviderForSession(activeSession.sessionId);
+    if (!provider) {
       this.logger?.warn(`Session ${activeSession.sessionId} has no provider instance`);
       return null;
     }
 
-    // Return the WalletProvider from the session
-    const walletProvider = activeSession.provider.instance as WalletProvider;
+    // Return the WalletProvider from the registry
+    const walletProvider = provider as WalletProvider;
     return walletProvider;
   }
 
@@ -3835,9 +4411,6 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     // Check for Aztec chain in configuration
     const aztecChain = this.config.chains?.find((c) => c.chainType === ChainType.Aztec);
 
-    console.log('🔍 EXTRACT PERMISSIONS - All chains:', this.config.chains);
-    console.log('🔍 EXTRACT PERMISSIONS - aztecChain found:', aztecChain);
-
     if (!aztecChain) {
       this.logger?.debug('No Aztec chain configured, skipping permission extraction');
       return {
@@ -3848,7 +4421,6 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     }
 
     const aztecChainId = aztecChain.chainId;
-    console.log('🔍 EXTRACT PERMISSIONS - aztecChainId:', aztecChainId);
 
     // Priority 1: Permissions in connect options
     const optionsWithAztec = options as Record<string, unknown> | undefined;
@@ -3870,15 +4442,11 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
 
     // Priority 2: Permissions in WalletMeshConfig
     const configWithPermissions = this.config as PermissionsConfig;
-    console.log('🔍 EXTRACT PERMISSIONS - config.permissions keys:', Object.keys(configWithPermissions.permissions || {}));
-    console.log('🔍 EXTRACT PERMISSIONS - looking for permissions at key:', aztecChainId);
 
     if (configWithPermissions.permissions) {
       const chainPermissions = configWithPermissions.permissions[aztecChainId];
-      console.log('🔍 EXTRACT PERMISSIONS - found chainPermissions:', chainPermissions);
 
       if (chainPermissions && Array.isArray(chainPermissions)) {
-        console.log('✅ EXTRACT PERMISSIONS - Using permissions from config for chain:', aztecChainId);
         this.logger?.info('Using permissions from client configuration', {
           chainId: aztecChainId,
           permissions: chainPermissions,
@@ -3892,7 +4460,12 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         };
       }
 
-      console.warn('⚠️ EXTRACT PERMISSIONS - No permissions found for chain:', aztecChainId, 'Available:', Object.keys(configWithPermissions.permissions));
+      console.warn(
+        '⚠️ EXTRACT PERMISSIONS - No permissions found for chain:',
+        aztecChainId,
+        'Available:',
+        Object.keys(configWithPermissions.permissions),
+      );
       this.logger?.warn('No permissions configured for Aztec chain', {
         chainId: aztecChainId,
         availableChains: Object.keys(configWithPermissions.permissions),

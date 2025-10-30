@@ -10,7 +10,7 @@ import type { Logger } from '../../../internal/core/logger/logger.js';
 import type { WalletRegistry } from '../../../internal/registries/wallets/WalletRegistry.js';
 import { createMockLogger } from '../../../testing/index.js';
 import { RateLimiter } from '../../../security/rateLimiting.js';
-import { ChainType, TransportType } from '../../../types.js';
+import { ChainType } from '../../../types.js';
 import { DiscoveryService } from '../../DiscoveryService.js';
 
 // Mock @walletmesh/discovery module
@@ -121,7 +121,8 @@ vi.mock('../../../internal/transports/websocket/WebSocketTransport.js', () => ({
 }));
 
 // Valid test data that passes schema validation
-const VALID_ICON_DATA_URI = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2ZmNjkwMCIvPjwvc3ZnPg==';
+const VALID_ICON_DATA_URI =
+  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2ZmNjkwMCIvPjwvc3ZnPg==';
 const VALID_UUID_METAMASK = '550e8400-e29b-41d4-a716-446655440000';
 const VALID_UUID_INJECTED = '550e8400-e29b-41d4-a716-446655440001';
 const VALID_UUID_POPUP = '550e8400-e29b-41d4-a716-446655440002';
@@ -135,7 +136,7 @@ describe('Discovery Flow Integration', () => {
   let logger: Logger;
   let mockWalletRegistry: Partial<WalletRegistry>;
   let mockAdapterRegistry: unknown;
-  let mockCoordinator: unknown;
+  let _mockCoordinator: unknown;
 
   beforeEach(async () => {
     vi.useFakeTimers();
@@ -176,7 +177,7 @@ describe('Discovery Flow Integration', () => {
       clear: vi.fn(),
     };
 
-    mockCoordinator = {
+    _mockCoordinator = {
       registerListener: vi.fn(),
       unregisterListener: vi.fn(),
       notifyDiscovery: vi.fn(),

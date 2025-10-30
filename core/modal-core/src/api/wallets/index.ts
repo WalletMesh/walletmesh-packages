@@ -1,6 +1,23 @@
 /**
  * Wallet adapter API exports
  *
+ * Provides the base classes, interfaces, and types for implementing wallet adapters
+ * in the WalletMesh ecosystem. Wallet adapters handle the connection layer between
+ * dApps and specific wallet implementations.
+ *
+ * **Session Persistence**: As of January 2025, wallet adapters use the unified Zustand
+ * store for session persistence. The previously exported WalletStorage utility has been
+ * removed in favor of direct Zustand integration in AbstractWalletAdapter.
+ *
+ * **Key Exports**:
+ * - `AbstractWalletAdapter` - Base class for all wallet adapters with built-in Zustand persistence
+ * - Wallet adapter interfaces and types
+ * - Connection state types
+ * - Wallet metadata types
+ *
+ * @see {@link AbstractWalletAdapter} for adapter session persistence implementation
+ * @see {@link ../../state/store.ts} for the unified Zustand store
+ *
  * @module api/wallets
  * @packageDocumentation
  */
@@ -42,7 +59,3 @@ export type {
   WalletInfo,
   WalletMetadata,
 } from '../../types.js';
-
-// Re-export storage types used by AbstractWalletAdapter
-export { WalletStorage } from '../../internal/utils/dom/storage.js';
-export type { AdapterSessionData } from '../../internal/utils/dom/storage.js';

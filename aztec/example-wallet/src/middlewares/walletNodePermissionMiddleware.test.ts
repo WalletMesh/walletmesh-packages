@@ -64,7 +64,7 @@ describe('walletNodePermissionMiddleware', () => {
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'> = {
         jsonrpc: '2.0',
         method: 'aztec_wmExecuteTx',
-        params: [{} as any, {}],
+        params: [{} as unknown, {}],
         id: 1,
       };
 
@@ -80,7 +80,7 @@ describe('walletNodePermissionMiddleware', () => {
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmDeployContract'> = {
         jsonrpc: '2.0',
         method: 'aztec_wmDeployContract',
-        params: [{} as any],
+        params: [{} as unknown],
         id: 1,
       };
 
@@ -233,7 +233,7 @@ describe('walletNodePermissionMiddleware', () => {
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'> = {
         jsonrpc: '2.0',
         method: 'aztec_wmExecuteTx',
-        params: [{} as any, {}],
+        params: [{} as unknown, {}],
         id: 1,
       };
 
@@ -276,7 +276,7 @@ describe('walletNodePermissionMiddleware', () => {
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'> = {
         jsonrpc: '2.0',
         method: 'aztec_wmExecuteTx',
-        params: [{} as any, {}],
+        params: [{} as unknown, {}],
         id: 1,
       };
 

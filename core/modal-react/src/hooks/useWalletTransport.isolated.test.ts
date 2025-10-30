@@ -127,18 +127,20 @@ vi.mock('../WalletMeshContext.js', () => ({
 
 // Mock internal hooks
 vi.mock('./internal/useStore.js', () => ({
-  useStore: vi.fn((selector) => {
+  useStore: vi.fn((selector?: (state: unknown) => unknown) => {
     const state = mockStore.getState();
     return selector ? selector(state) : state;
   }),
-  shallowEqual: vi.fn((a, b) => {
+  shallowEqual: vi.fn((a: unknown, b: unknown) => {
     if (a === b) return true;
     if (!a || !b) return false;
-    const keysA = Object.keys(a);
-    const keysB = Object.keys(b);
+    const objA = a as Record<string, unknown>;
+    const objB = b as Record<string, unknown>;
+    const keysA = Object.keys(objA);
+    const keysB = Object.keys(objB);
     if (keysA.length !== keysB.length) return false;
     for (const key of keysA) {
-      if (a[key] !== b[key]) return false;
+      if (objA[key] !== objB[key]) return false;
     }
     return true;
   }),

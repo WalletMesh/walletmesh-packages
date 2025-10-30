@@ -2,8 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { testSetupPatterns } from '../../testing/index.js';
 import type { ModalError } from '../../types.js';
 import {
-  type ErrorCategory,
-  type RecoveryAction,
   WALLET_ERROR_CODES,
   categorizeError,
   createModalError,

@@ -37,11 +37,13 @@ import type {
 import type {
   PrivateExecutionResult,
   SimulationOverrides,
+  SimulationStats,
   TxProfileResult,
   TxProvingResult,
   TxSimulationResult,
   UtilitySimulationResult,
 } from '@aztec/stdlib/tx';
+import type { AbiDecoded } from '@aztec/stdlib/abi';
 
 import type { WalletMethodMap } from '@walletmesh/router';
 import type { ContractArtifactCache } from './contractArtifactCache.js';
@@ -72,6 +74,76 @@ export interface AztecSendOptions {
  * ```
  */
 export type AztecChainId = `aztec:${string}`;
+
+/**
+ * Discriminated union indicating the type of simulation that was performed.
+ *
+ * - `'transaction'`: Result from simulating a state-changing transaction (private or public function)
+ * - `'utility'`: Result from simulating a read-only utility/view function
+ */
+export type SimulationType = 'transaction' | 'utility';
+
+/**
+ * Unified simulation result that can represent either transaction or utility simulations.
+ * This type allows `wmSimulateTx` to handle both utility and transaction functions seamlessly,
+ * providing a consistent API for dApps while preserving access to the original simulation results.
+ *
+ * @example
+ * ```typescript
+ * const result = await wallet.wmSimulateTx(interaction);
+ *
+ * // Simple usage - access decoded result regardless of type
+ * console.log('Return value:', result.decodedResult);
+ *
+ * // Type-specific usage with narrowing
+ * if (result.simulationType === 'utility') {
+ *   const utilityResult = result.originalResult; // Type: UtilitySimulationResult
+ *   console.log('Raw result:', utilityResult.result);
+ * } else {
+ *   const txResult = result.originalResult; // Type: TxSimulationResult
+ *   console.log('Gas used:', txResult.gasUsed);
+ * }
+ * ```
+ */
+export interface UnifiedSimulationResult {
+  /**
+   * Indicates which type of simulation was performed.
+   * This field acts as a discriminator for TypeScript type narrowing of `originalResult`.
+   */
+  simulationType: SimulationType;
+
+  /**
+   * The decoded return value from the simulation.
+   *
+   * - For transactions: Decoded from `privateExecutionResult` or `publicOutput`
+   * - For utilities: Direct decoded result from execution
+   *
+   * This provides easy access to the actual return value that dApps typically care about,
+   * without needing to know which type of simulation was performed or how to extract values.
+   */
+  decodedResult?: AbiDecoded;
+
+  /**
+   * Performance and execution statistics.
+   * Present for both transaction and utility simulations, providing timing and profiling data.
+   */
+  stats?: SimulationStats;
+
+  /**
+   * The original simulation result in its native format.
+   *
+   * - When `simulationType === 'transaction'`: This is a {@link TxSimulationResult} containing
+   *   full execution details including private/public execution, gas usage, and kernel inputs.
+   *   DApps can use this for advanced features like gas estimation, proof generation, etc.
+   *
+   * - When `simulationType === 'utility'`: This is a {@link UtilitySimulationResult} containing
+   *   the raw utility execution result.
+   *
+   * This field preserves backward compatibility and enables advanced use cases while the
+   * `decodedResult` field provides a simple, consistent interface for common usage.
+   */
+  originalResult: TxSimulationResult | UtilitySimulationResult;
+}
 
 /**
  * Defines the context object provided to all Aztec wallet-side JSON-RPC method handlers.
@@ -582,12 +654,18 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
 
   /**
    * WalletMesh specific: Simulates a contract function interaction using a pre-constructed {@link ExecutionPayload}.
+   *
+   * This method automatically detects whether the function is a utility (view/pure) function or a
+   * state-changing transaction, and performs the appropriate simulation. The result is wrapped in a
+   * {@link UnifiedSimulationResult} that provides both a convenient decoded result and access to the
+   * original simulation output.
+   *
    * @param params - A tuple containing the execution payload.
    * @param params.0 executionPayload - The {@link ExecutionPayload} to simulate.
-   * @returns result - The {@link TxSimulationResult}.
+   * @returns result - A {@link UnifiedSimulationResult} containing the decoded result and original simulation data.
    */
   aztec_wmSimulateTx: {
     params: [executionPayload: ExecutionPayload];
-    result: TxSimulationResult;
+    result: UnifiedSimulationResult;
   };
 }

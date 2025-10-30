@@ -6,7 +6,7 @@
  * @module hooks/useConfig
  */
 
-import { ChainType, ErrorFactory, type WalletMeshClient } from '@walletmesh/modal-core';
+import { type ChainType, ErrorFactory, type WalletMeshClient } from '@walletmesh/modal-core';
 import type { SupportedChain, WalletInfo } from '@walletmesh/modal-core';
 import { useCallback, useMemo } from 'react';
 import { useWalletMeshContext } from '../WalletMeshContext.js';
@@ -178,7 +178,6 @@ export function useConfig(): UseConfigReturn {
     }
     client.closeModal();
   }, [client]);
-
 
   // Extract chains from config - now SupportedChain objects instead of ChainType enums
   const chains: SupportedChain[] = useMemo(() => {

@@ -23,6 +23,20 @@
       "recommended": true,
       "complexity": {
         "useLiteralKeys": "off"
+      },
+      "correctness": {
+        "noUnusedVariables": {
+          "level": "warn",
+          "options": {
+            "ignoreRestSiblings": true
+          }
+        }
+      },
+      "suspicious": {
+        "noExplicitAny": "warn"
+      },
+      "style": {
+        "useConst": "warn"
       }
     }
   },

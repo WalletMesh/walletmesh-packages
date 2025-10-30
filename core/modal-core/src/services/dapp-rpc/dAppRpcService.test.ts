@@ -17,12 +17,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
 import { ChainType } from '../../types.js';
 import type { SupportedChain } from '../../types.js';
-import type {
-  DAppRpcConfig,
-  DAppRpcEndpoint,
-  DAppRpcServiceDependencies,
-  RpcResult,
-} from './dAppRpcService.js';
+import type { DAppRpcConfig, DAppRpcEndpoint, DAppRpcServiceDependencies } from './dAppRpcService.js';
 import { DAppRpcService } from './dAppRpcService.js';
 
 // Install domain-specific matchers

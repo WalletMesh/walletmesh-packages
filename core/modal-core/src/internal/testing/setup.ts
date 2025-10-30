@@ -174,18 +174,12 @@ vi.mock('@solana/web3.js', () => {
 
   return {
     // Named exports use PascalCase to match real module
-    // biome-ignore lint/style/useNamingConvention: Matching Solana Web3.js exports
     PublicKey: MockPublicKey,
-    // biome-ignore lint/style/useNamingConvention: Matching Solana Web3.js exports
     Transaction: MockTransaction,
-    // biome-ignore lint/style/useNamingConvention: Matching Solana Web3.js exports
     Connection: MockConnection,
     default: {
-      // biome-ignore lint/style/useNamingConvention: Matching Solana Web3.js exports
       PublicKey: MockPublicKey,
-      // biome-ignore lint/style/useNamingConvention: Matching Solana Web3.js exports
       Transaction: MockTransaction,
-      // biome-ignore lint/style/useNamingConvention: Matching Solana Web3.js exports
       Connection: MockConnection,
     },
   };

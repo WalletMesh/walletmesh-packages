@@ -105,7 +105,7 @@ function detectMaliciousContent(iconDataUri: string): {
 function validateIcon(iconDataUri: string): void {
   // Debug logging to verify new code is running
   console.log('[IconSandbox DEBUG] Validating icon:', {
-    preview: iconDataUri.substring(0, 100) + '...',
+    preview: `${iconDataUri.substring(0, 100)}...`,
     length: iconDataUri.length,
   });
 
@@ -131,7 +131,7 @@ function validateIcon(iconDataUri: string): void {
       '[WalletMesh Security] Malicious content detected in wallet icon. Using safe default icon instead.',
       {
         detectedPatterns,
-        iconPreview: iconDataUri.substring(0, 100) + '...',
+        iconPreview: `${iconDataUri.substring(0, 100)}...`,
       },
     );
     modalLogger.warn('Malicious icon content detected', {
@@ -256,7 +256,6 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
 </html>`;
 
     let resolved = false;
-    // biome-ignore lint/style/useConst: timeoutId is assigned later and used in cleanup function
     let timeoutId: number | undefined;
 
     const cleanup = () => {

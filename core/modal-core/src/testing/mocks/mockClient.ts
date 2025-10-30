@@ -212,7 +212,6 @@ export function createIntegratedMockClient(config?: {
 export function setupClientModuleMocks() {
   // Auto-mock the client module
   vi.mock('../../client/WalletMeshClient.js', () => ({
-    // biome-ignore lint/style/useNamingConvention: Matching exported class name
     WalletMeshClient: vi.fn(() => createAutoMockedWalletMeshClient()),
   }));
 

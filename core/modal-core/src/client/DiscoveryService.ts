@@ -303,6 +303,14 @@ export class DiscoveryService {
     });
   }
 
+  /**
+   * Get the connection manager for creating adapters
+   * @returns The connection manager instance, or null if not initialized
+   */
+  getConnectionManager(): DiscoveryConnectionManager | null {
+    return this.connectionManager;
+  }
+
   private normalizeConfig(config: DiscoveryConfig): Required<DiscoveryConfig> {
     const security = config.security ?? {};
     const transport = config.transport ?? {};

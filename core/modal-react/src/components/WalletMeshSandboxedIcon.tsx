@@ -184,10 +184,7 @@ export function WalletMeshSandboxedIcon({
   const [isLoading, setIsLoading] = useState(true);
 
   // Create error recovery instance (memoized to prevent recreation on every render)
-  const errorRecovery = useMemo(
-    () => createIconErrorRecovery(RECOVERY_PRESETS.conservative),
-    [],
-  );
+  const errorRecovery = useMemo(() => createIconErrorRecovery(RECOVERY_PRESETS.conservative), []);
 
   useEffect(() => {
     // Track if component is still mounted to prevent state updates after unmount
@@ -409,6 +406,7 @@ export function WalletMeshSandboxedIcon({
     disabledStyle,
     errorRecovery,
     logger,
+    onClick,
   ]);
 
   // Effect to manage iframe DOM insertion/removal

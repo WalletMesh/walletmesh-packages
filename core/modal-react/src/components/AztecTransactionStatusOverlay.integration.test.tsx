@@ -547,8 +547,14 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
       // Get the overlay
       const overlay = screen.getByRole('dialog');
       expect(overlay).toHaveAttribute('aria-modal', 'true');
-      expect(overlay).toHaveAttribute('aria-labelledby', 'tx-overlay-headline');
-      expect(overlay).toHaveAttribute('aria-describedby', 'tx-overlay-description');
+
+      // Verify aria-labelledby and aria-describedby reference valid elements (dynamic IDs from useId)
+      const labelledBy = overlay.getAttribute('aria-labelledby');
+      const describedBy = overlay.getAttribute('aria-describedby');
+      expect(labelledBy).toBeTruthy();
+      expect(describedBy).toBeTruthy();
+      expect(document.getElementById(labelledBy!)).toBeTruthy();
+      expect(document.getElementById(describedBy!)).toBeTruthy();
 
       // Progress bar should have aria-valuenow
       const progressbar = screen.getByRole('progressbar');

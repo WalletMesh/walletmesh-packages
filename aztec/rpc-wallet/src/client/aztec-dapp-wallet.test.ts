@@ -2,20 +2,23 @@ import type { ContractArtifact, ContractInstanceWithAddress, Tx, TxExecutionRequ
 import { AztecAddress, CompleteAddress, Fr, TxHash } from '@aztec/aztec.js';
 import type { FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfaces';
 import type { ExecutionPayload } from '@aztec/entrypoints/payload';
-import type { WalletRouterProvider } from '@walletmesh/router';
 import { beforeAll, beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
 import { AztecDappWallet, createAztecWallet } from './aztec-dapp-wallet.js';
+import type { AztecRouterProvider } from './aztec-router-provider.js';
 
 // Mock provider
 const createMockProvider = () => {
   const call = vi.fn() as Mock;
   const on = vi.fn();
   const off = vi.fn();
+  const dispose = vi.fn();
   return {
     call,
     on,
     off,
-  } as unknown as WalletRouterProvider & { call: Mock };
+    dispose,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any as AztecRouterProvider & { call: Mock; dispose: Mock };
 };
 
 // Mock Aztec objects - we'll create these asynchronously in tests or beforeEach hooks

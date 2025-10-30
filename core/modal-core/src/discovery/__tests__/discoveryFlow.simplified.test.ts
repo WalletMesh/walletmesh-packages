@@ -3,7 +3,6 @@
  * Tests advanced discovery scenarios using mocked services
  */
 
-import type { QualifiedResponder } from '@walletmesh/discovery';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DiscoveryService } from '../../client/DiscoveryService.js';
 import { createMockLogger, createMockRegistry } from '../../testing/helpers/mocks.js';
@@ -50,14 +49,14 @@ vi.mock('../../state/store.js', () => ({
 describe('Discovery Flow Edge Cases (Simplified)', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockRegistry: ReturnType<typeof createMockRegistry>;
-  let mockInitiator: MockDiscoveryInitiator;
+  let _mockInitiator: MockDiscoveryInitiator;
 
   beforeEach(async () => {
     mockLogger = createMockLogger();
     mockRegistry = createMockRegistry();
     vi.useFakeTimers();
 
-    ({ mockInitiator } = await setupDiscoveryInitiatorMock({
+    ({ _mockInitiator } = await setupDiscoveryInitiatorMock({
       on: vi.fn(),
       off: vi.fn(),
       removeAllListeners: vi.fn(),

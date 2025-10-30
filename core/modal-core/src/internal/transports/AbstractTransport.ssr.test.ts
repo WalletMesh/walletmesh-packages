@@ -15,7 +15,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestEnvironment } from '../../testing/index.js';
 import type { TransportConfig, TransportEvent } from '../../types.js';
-import { ErrorFactory } from '../core/errors/errorFactory.js';
 import type { ErrorHandler } from '../core/errors/errorHandler.js';
 import type { Logger } from '../core/logger/logger.js';
 import { AbstractTransport } from './AbstractTransport.ssr.js';
@@ -463,7 +462,7 @@ describe('AbstractTransport', () => {
 
       it('should retry send failures', async () => {
         let attempts = 0;
-        const originalSendInternal = transport.sendInternal;
+        const _originalSendInternal = transport.sendInternal;
         transport.sendInternal = vi.fn(async (data: unknown) => {
           attempts++;
           if (attempts < 2) {
@@ -879,7 +878,7 @@ describe('AbstractTransport', () => {
   describe('Edge Cases and Integration', () => {
     it('should handle multiple connect calls', async () => {
       await transport.connect();
-      const firstCallCount = transport.connectCalled ? 1 : 0;
+      const _firstCallCount = transport.connectCalled ? 1 : 0;
 
       await transport.connect();
       // Should not call connectInternal again if already connected

@@ -520,4 +520,11 @@ export class EnhancedCrossWindowTransport extends AbstractTransport {
     this.targetWindow = null;
     super.destroy();
   }
+
+  /**
+   * Get transport type identifier
+   */
+  protected getTransportType(): string {
+    return 'enhanced-cross-window';
+  }
 }

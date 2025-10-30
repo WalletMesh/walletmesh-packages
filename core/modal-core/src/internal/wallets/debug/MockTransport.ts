@@ -44,10 +44,19 @@ export class MockTransport implements JSONRPCTransport {
         break;
 
       case 'eth_chainId':
-        result =
-          this.config.chainType === ChainType.Evm
-            ? `0x${Number.parseInt(this.config.chainId).toString(16)}`
-            : '0x1';
+        if (this.config.chainType === ChainType.Evm) {
+          // Handle both hex and decimal chainId formats
+          const chainId = this.config.chainId;
+          if (chainId.startsWith('0x')) {
+            // Already in hex format, return as-is
+            result = chainId;
+          } else {
+            // Convert decimal to hex
+            result = `0x${Number.parseInt(chainId, 10).toString(16)}`;
+          }
+        } else {
+          result = '0x1';
+        }
         break;
 
       case 'eth_getBalance':

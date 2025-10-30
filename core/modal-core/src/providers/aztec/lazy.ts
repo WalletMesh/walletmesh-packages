@@ -285,15 +285,31 @@ export class LazyAztecRouterProvider {
   private async initialize(transport: JSONRPCTransport, context?: Record<string, unknown>): Promise<void> {
     console.log('[LazyAztecRouterProvider] Starting initialization...');
     const module = await aztecRouterModule.getModule();
+
+    // Import connectionActions for session cleanup
+    const { connectionActions } = await import('../../state/actions/connections.js');
+    const store = useStore as unknown as StoreApi<WalletMeshState>;
+
     // Cast through unknown to avoid type checking issues with external module
     this.realProvider = new module.AztecRouterProvider(
       transport,
-      context,
+      {
+        context,
+        onSessionTerminated: ({ sessionId, reason }: { sessionId: string; reason: string }) => {
+          console.log(`[LazyAztecRouterProvider] Session ${sessionId} terminated by wallet: ${reason}`);
+
+          // End the session in the store, which will trigger UI updates
+          connectionActions.endSession(store, sessionId, { isDisconnect: true }).catch((error: unknown) => {
+            console.error('[LazyAztecRouterProvider] Failed to end session:', error);
+          });
+
+          console.log(`[LazyAztecRouterProvider] Session ${sessionId} cleanup initiated`);
+        },
+      },
     ) as unknown as AztecRouterProviderInstance;
 
     // Listen for proving status notifications
     try {
-      const store = useStore as unknown as StoreApi<WalletMeshState>;
       this.cleanupNotificationHandlers();
 
       if (
@@ -356,6 +372,9 @@ export class LazyAztecRouterProvider {
         }
       });
       this.notificationCleanup.push(removeTxStatus);
+
+      // Note: Session termination (wm_sessionTerminated) is now handled by AztecRouterProvider itself
+      // via the onSessionTerminated callback passed in the constructor above
 
       console.log('[LazyAztecRouterProvider] Notification subscriptions ready');
     } finally {

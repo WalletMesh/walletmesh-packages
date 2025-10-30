@@ -586,7 +586,17 @@ export async function simulateTx(
   if (typeof maybeSimulate === 'function') {
     try {
       console.debug('[simulateTx] Trying interaction.simulate()');
-      const result = await maybeSimulate.call(interaction);
+
+      // Get wallet address to pass as 'from' parameter (required for utility/view functions)
+      const from = wallet.getAddress();
+
+      // Pass options with 'from' parameter as required by Aztec.js simulate() method
+      // Type cast needed because TypeScript types don't include the options parameter
+      // but it's supported at runtime according to Aztec.js docs
+      const result = await (maybeSimulate as (options?: { from?: unknown }) => Promise<unknown>).call(
+        interaction,
+        { from },
+      );
       console.debug('[simulateTx] interaction.simulate() succeeded');
       return result;
     } catch (error) {
@@ -623,7 +633,7 @@ export async function simulateTx(
   }
 
   // Detect utility function based on payload
-  let isUtilityFunction = functionType === FunctionType.UTILITY || functionType === 'utility';
+  const isUtilityFunction = functionType === FunctionType.UTILITY || functionType === 'utility';
 
   // Additional heuristic: Check if payload lacks transaction-required fields
   let likelyUtilityByStructure = false;
@@ -644,11 +654,31 @@ export async function simulateTx(
   // If we failed to detect the payload and have no other success, this is likely a utility function
   // Utility functions don't have a request() method to generate ExecutionPayloads
   if (payloadDetectionFailed && !isUtilityFunction) {
-    console.debug('[simulateTx] Payload detection failed - likely a utility function without request() method');
+    console.debug(
+      '[simulateTx] Payload detection failed - likely a utility function without request() method',
+    );
     // Don't try remaining strategies that require a payload
     const firstError = errors[0];
     const message = firstError ? firstError.message : 'Unknown error';
     throw ErrorFactory.transportError(`Failed to simulate transaction: ${message}`);
+  }
+
+  // Exit early for confirmed utility functions - don't try transaction simulation strategies
+  if (isUtilityFunction || likelyUtilityByStructure) {
+    console.debug('[simulateTx] Detected utility/view function - skipping transaction simulation strategies');
+
+    // If we got here, interaction.simulate() failed above - throw meaningful error
+    const firstError = errors[0];
+    if (firstError) {
+      throw ErrorFactory.transportError(
+        `Utility function simulation failed: ${firstError.message}. ` +
+          'Utility functions require interaction.simulate({ from: address }) to be called correctly.',
+      );
+    }
+
+    throw ErrorFactory.transportError(
+      'Unable to simulate utility function. The interaction.simulate() method is not available or failed.',
+    );
   }
 
   // Strategy 2: Try wmSimulateTx for NON-utility functions (state-changing transactions)
@@ -656,12 +686,34 @@ export async function simulateTx(
     try {
       console.debug('[simulateTx] Trying wmSimulateTx');
       const simulationResult = await wallet.wmSimulateTx(interaction);
-      const decoded = tryDecodeSimulationResult(interaction, simulationResult);
-      if (decoded !== undefined) {
-        return decoded;
+
+      // Check if this is a UnifiedSimulationResult (new format)
+      if (isUnifiedSimulationResult(simulationResult)) {
+        console.debug('[simulateTx] Received UnifiedSimulationResult from wmSimulateTx');
+        // If we have a decoded result, use it; otherwise fall back to trying to decode the original
+        if (simulationResult.decodedResult !== undefined) {
+          return simulationResult.decodedResult;
+        }
+        // Try to decode the original result
+        const decoded = tryDecodeSimulationResult(interaction, simulationResult.originalResult);
+        if (decoded !== undefined) {
+          return decoded;
+        }
+        console.warn(
+          '[simulateTx] wmSimulateTx returned undecodable result; falling back to native simulation.',
+        );
+        undecodedResult = simulationResult.originalResult;
+      } else {
+        // Legacy format (TxSimulationResult) - try to decode directly
+        const decoded = tryDecodeSimulationResult(interaction, simulationResult);
+        if (decoded !== undefined) {
+          return decoded;
+        }
+        console.warn(
+          '[simulateTx] wmSimulateTx returned undecodable result; falling back to native simulation.',
+        );
+        undecodedResult = simulationResult;
       }
-      console.warn('[simulateTx] wmSimulateTx returned undecodable result; falling back to native simulation.');
-      undecodedResult = simulationResult;
     } catch (error) {
       console.warn('[simulateTx] wmSimulateTx failed, attempting native simulation fallback.', error);
       errors.push(toError(error));
@@ -681,7 +733,9 @@ export async function simulateTx(
       // Additional validation: ensure txRequest has required transaction fields
       const payload = txRequest as { authWitnesses?: unknown; calls?: unknown };
       if (!payload.authWitnesses || !payload.calls) {
-        console.warn('[simulateTx] ExecutionPayload missing required transaction fields - skipping wallet.simulateTx');
+        console.warn(
+          '[simulateTx] ExecutionPayload missing required transaction fields - skipping wallet.simulateTx',
+        );
         throw new Error('ExecutionPayload missing required transaction fields (authWitnesses or calls)');
       }
 
@@ -709,6 +763,25 @@ function isTxSimulationResult(value: unknown): value is TxSimulationResult {
     value !== null &&
     typeof (value as TxSimulationResult).getPublicReturnValues === 'function' &&
     typeof (value as TxSimulationResult).getPrivateReturnValues === 'function'
+  );
+}
+
+/**
+ * Type guard to check if a value is a UnifiedSimulationResult.
+ * UnifiedSimulationResult has simulationType and originalResult fields.
+ */
+function isUnifiedSimulationResult(value: unknown): value is {
+  simulationType: 'transaction' | 'utility';
+  decodedResult?: unknown;
+  stats?: unknown;
+  originalResult: unknown;
+} {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'simulationType' in value &&
+    'originalResult' in value &&
+    (value.simulationType === 'transaction' || value.simulationType === 'utility')
   );
 }
 

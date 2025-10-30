@@ -207,7 +207,7 @@
 }
 
 .proving-banner__method {
-  font-family: 'Roboto Mono', monospace;
+  font-family: "Roboto Mono", monospace;
   word-break: break-all;
 }
 
@@ -233,7 +233,8 @@
 }
 
 @keyframes subtle-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -672,8 +673,237 @@
   font-weight: 500;
 }
 
-/* Dark mode timing stats */
+/* Active Sessions Styles */
+.active-sessions-container {
+  margin: 16px 0;
+  background-color: var(--sessions-bg, #f9f9f9);
+  border: 1px solid var(--sessions-border, #e0e0e0);
+  border-radius: 6px;
+}
+
+.active-sessions-toggle {
+  width: 100%;
+  padding: 12px;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sessions-toggle-text, #333);
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.active-sessions-toggle:hover {
+  background-color: var(--sessions-toggle-hover, rgba(0, 0, 0, 0.05));
+}
+
+.active-sessions-toggle .toggle-icon {
+  font-size: 12px;
+  transition: transform 0.2s;
+  color: var(--sessions-icon-color, #666);
+}
+
+.active-sessions-toggle .sessions-count {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: normal;
+  color: var(--sessions-count-color, #666);
+}
+
+.active-sessions-content {
+  padding: 16px;
+  border-top: 1px solid var(--sessions-content-border, #e0e0e0);
+  background-color: var(--sessions-content-bg, #fff);
+}
+
+.no-sessions-data {
+  color: var(--sessions-no-data, #666);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+  margin: 0;
+}
+
+.sessions-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.revoke-all-button {
+  padding: 8px 16px;
+  background-color: #ff5722;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.revoke-all-button:hover {
+  background-color: #e64a19;
+}
+
+.sessions-table-container {
+  overflow-x: auto;
+  border-radius: 4px;
+}
+
+.sessions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.sessions-table thead {
+  background-color: var(--table-header-bg, #f5f5f5);
+  border-bottom: 2px solid var(--table-header-border, #ddd);
+}
+
+.sessions-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--table-header-text, #333);
+  white-space: nowrap;
+}
+
+.sessions-table tbody tr {
+  border-bottom: 1px solid var(--table-row-border, #e0e0e0);
+  transition: background-color 0.15s;
+}
+
+.sessions-table tbody tr:nth-child(even) {
+  background-color: var(--table-row-even, #fafafa);
+}
+
+.sessions-table tbody tr:hover {
+  background-color: var(--table-row-hover, #f0f8ff);
+}
+
+.sessions-table td {
+  padding: 8px 12px;
+  color: var(--table-cell-text, #333);
+}
+
+.sessions-table .origin-cell {
+  font-weight: 500;
+  color: var(--table-origin-text, #333);
+  word-break: break-word;
+  max-width: 300px;
+}
+
+.sessions-table .session-id-cell {
+  font-family: monospace;
+  font-size: 12px;
+  color: var(--table-session-id-text, #666);
+}
+
+.current-session-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background-color: var(--current-session-bg, rgba(76, 175, 80, 0.1));
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--current-session-text, #2e7d32);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.current-session-dot {
+  font-size: 10px;
+  color: var(--current-session-dot, #4caf50);
+  line-height: 1;
+}
+
+.sessions-table tbody tr.current-session-row {
+  background-color: var(--current-session-row-bg, rgba(76, 175, 80, 0.05));
+}
+
+.sessions-table .created-cell {
+  font-size: 12px;
+  color: var(--table-created-text, #666);
+  white-space: nowrap;
+}
+
+.sessions-table .actions-cell {
+  text-align: center;
+}
+
+.revoke-button {
+  padding: 6px 12px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.revoke-button:hover {
+  background-color: #d32f2f;
+}
+
+/* Dark mode timing stats and sessions */
 @media (prefers-color-scheme: dark) {
+  .active-sessions-container {
+    --sessions-bg: #2a2a2a;
+    --sessions-border: #444;
+  }
+
+  .active-sessions-toggle {
+    --sessions-toggle-text: #e0e0e0;
+    --sessions-toggle-hover: rgba(255, 255, 255, 0.08);
+    --sessions-icon-color: #aaa;
+    --sessions-count-color: #aaa;
+  }
+
+  .active-sessions-content {
+    --sessions-content-border: #444;
+    --sessions-content-bg: #1a1a1a;
+  }
+
+  .no-sessions-data {
+    --sessions-no-data: #aaa;
+  }
+
+  .sessions-table {
+    --table-header-bg: #2a2a2a;
+    --table-header-border: #444;
+    --table-header-text: #e0e0e0;
+    --table-row-border: #333;
+    --table-row-even: #222;
+    --table-row-hover: #2a3a4a;
+    --table-cell-text: #e0e0e0;
+    --table-origin-text: #e0e0e0;
+    --table-session-id-text: #aaa;
+    --table-created-text: #aaa;
+  }
+
+  .current-session-indicator {
+    --current-session-bg: rgba(76, 175, 80, 0.2);
+    --current-session-text: #81c784;
+  }
+
+  .current-session-dot {
+    --current-session-dot: #66bb6a;
+  }
+
+  .current-session-row {
+    --current-session-row-bg: rgba(76, 175, 80, 0.1);
+  }
+
   .timing-stats-container {
     --timing-bg: #2a2a2a;
     --timing-border: #444;

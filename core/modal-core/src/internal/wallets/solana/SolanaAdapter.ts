@@ -2,6 +2,7 @@ import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import type { WalletConnection } from '../../../api/types/connection.js';
 import type { ProviderClass } from '../../../api/types/providers.js';
 import { ChainType } from '../../../types.js';
+import { getChainName } from '../../../utils/chainNameResolver.js';
 import { ErrorFactory } from '../../core/errors/errorFactory.js';
 import { SolanaProvider } from '../../providers/solana/SolanaProvider.js';
 import { AbstractWalletAdapter } from '../base/AbstractWalletAdapter.js';
@@ -119,18 +120,7 @@ export class SolanaAdapter extends AbstractWalletAdapter {
    * @param chainId - Solana chain ID
    * @returns Human-readable chain name
    */
-  private getChainName(chainId: string): string {
-    const chainMap: Record<string, string> = {
-      'mainnet-beta': 'Solana Mainnet',
-      devnet: 'Solana Devnet',
-      testnet: 'Solana Testnet',
-      localnet: 'Solana Localnet',
-      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': 'Solana Mainnet',
-      'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1': 'Solana Devnet',
-      'solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z': 'Solana Testnet',
-    };
-    return chainMap[chainId] || 'Solana';
-  }
+  // Note: getChainName() has been consolidated to src/utils/chainNameResolver.ts
 
   /**
    * Detect if Solana wallet is available
@@ -231,7 +221,7 @@ export class SolanaAdapter extends AbstractWalletAdapter {
               accounts,
               chainId,
               chainType: ChainType.Solana,
-              chainName: this.getChainName(chainId),
+              chainName: getChainName(chainId),
               chainRequired: false,
               provider: this.cachedProvider,
               providerType: 'solana-standard',
@@ -499,7 +489,7 @@ export class SolanaAdapter extends AbstractWalletAdapter {
         accounts,
         chainType: ChainType.Solana,
         chainId,
-        chainName: this.getChainName(chainId),
+        chainName: getChainName(chainId),
         chainRequired: false,
         provider,
       });

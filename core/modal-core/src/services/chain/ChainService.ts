@@ -1465,7 +1465,7 @@ export class ChainService {
             isSwitching: false,
           };
         }
-      } catch (error) {
+      } catch (_error) {
         // Fall through to return error state
       }
     }

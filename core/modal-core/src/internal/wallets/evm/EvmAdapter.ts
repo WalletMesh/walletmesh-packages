@@ -2,6 +2,7 @@ import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import type { WalletConnection } from '../../../api/types/connection.js';
 import type { ProviderClass } from '../../../api/types/providers.js';
 import { ChainType } from '../../../types.js';
+import { getChainName } from '../../../utils/chainNameResolver.js';
 import { ErrorFactory } from '../../core/errors/errorFactory.js';
 import { EvmProvider } from '../../providers/evm/EvmProvider.js';
 import { AbstractWalletAdapter } from '../base/AbstractWalletAdapter.js';
@@ -192,20 +193,7 @@ export class EvmAdapter extends AbstractWalletAdapter {
    * @param chainId - Chain ID in CAIP-2 format
    * @returns Human-readable chain name
    */
-  private getChainName(chainId: string): string {
-    const chainMap: Record<string, string> = {
-      'eip155:1': 'Ethereum Mainnet',
-      'eip155:11155111': 'Ethereum Sepolia',
-      'eip155:137': 'Polygon',
-      'eip155:10': 'Optimism',
-      'eip155:42161': 'Arbitrum',
-      'eip155:56': 'BNB Smart Chain',
-      'eip155:43114': 'Avalanche',
-      'eip155:100': 'Gnosis',
-      'eip155:8453': 'Base',
-    };
-    return chainMap[chainId] || 'EVM Chain';
-  }
+  // Note: getChainName() has been consolidated to src/utils/chainNameResolver.ts
 
   /**
    * Connect to EVM wallet
@@ -235,7 +223,7 @@ export class EvmAdapter extends AbstractWalletAdapter {
               accounts: testAccounts,
               chainId: chainIdCAIP2,
               chainType: ChainType.Evm,
-              chainName: this.getChainName(chainIdCAIP2),
+              chainName: getChainName(chainIdCAIP2),
               chainRequired: false,
               provider: this.cachedProvider,
               providerType: 'eip1193',
@@ -439,7 +427,7 @@ export class EvmAdapter extends AbstractWalletAdapter {
         accounts,
         chainId: chainIdCAIP2,
         chainType: ChainType.Evm,
-        chainName: this.getChainName(chainIdCAIP2),
+        chainName: getChainName(chainIdCAIP2),
         chainRequired: false,
         provider,
         providerType: 'eip1193',

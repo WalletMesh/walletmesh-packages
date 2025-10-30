@@ -21,8 +21,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CrossWindowTransport } from './CrossWindowTransport.js';
 import type { CrossWindowConfig } from './CrossWindowTransport.js';
 
-import { createMockErrorHandler, createMockWindow, createTestEnvironment } from '../../../testing/index.js';
-import { ErrorFactory } from '../../core/errors/errorFactory.js';
+import { createMockErrorHandler, createMockWindow } from '../../../testing/index.js';
 import { createDebugLogger } from '../../core/logger/logger.js';
 
 // Define internal interface to access private members in tests

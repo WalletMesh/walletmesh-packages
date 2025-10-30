@@ -310,37 +310,6 @@ describe('DiscoveryAdapter - Expanded Coverage', () => {
     });
   });
 
-  describe('Chain name resolution - comprehensive', () => {
-    it('should resolve all major EVM chain names', () => {
-      const responder = createTestResponder();
-      const adapter = new DiscoveryAdapter(responder, mockConnectionManager);
-
-      const chains = [
-        { id: '1', expected: 'Ethereum Mainnet' },
-        { id: '5', expected: 'Goerli' },
-        { id: '137', expected: 'Polygon' },
-        { id: '10', expected: 'Optimism' },
-        { id: '42161', expected: 'Arbitrum One' },
-        { id: '43114', expected: 'Avalanche C-Chain' },
-        { id: '250', expected: 'Fantom' },
-        { id: '56', expected: 'BNB Smart Chain' },
-      ];
-
-      for (const { id, expected } of chains) {
-        const name = (adapter as any).getChainName(id, ChainType.Evm);
-        expect(name).toBe(expected);
-      }
-    });
-
-    it('should handle unknown chain IDs with descriptive fallback', () => {
-      const responder = createTestResponder();
-      const adapter = new DiscoveryAdapter(responder, mockConnectionManager);
-
-      const unknownName = (adapter as any).getChainName('999999', ChainType.Evm);
-      expect(unknownName).toBe('Unknown Chain (999999)');
-    });
-  });
-
   describe('Permission categorization - edge cases', () => {
     it('should handle empty permission arrays', () => {
       const responder = createTestResponder({
@@ -401,11 +370,7 @@ describe('DiscoveryAdapter - Expanded Coverage', () => {
       });
       const adapter = new DiscoveryAdapter(responder, mockConnectionManager);
 
-      const permissions = [
-        'aztec_sendTransaction',
-        'aztec_signTransaction',
-        'aztec_broadcastTransaction',
-      ];
+      const permissions = ['aztec_sendTransaction', 'aztec_signTransaction', 'aztec_broadcastTransaction'];
 
       const categorized = (adapter as any).categorizeAztecPermissions(permissions);
       expect(categorized.Transaction).toHaveLength(3);

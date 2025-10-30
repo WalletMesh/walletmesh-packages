@@ -29,6 +29,7 @@
  * @internal
  */
 
+import type { TransportContext } from '@walletmesh/jsonrpc';
 import type {
   PopupConfig,
   TransportConnectedEvent,
@@ -134,6 +135,12 @@ export class PopupWindowTransport extends AbstractTransport {
   private openerWindow: Window | null = null;
 
   /**
+   * Last message origin from MessageEvent (browser-validated)
+   * Used for getMessageContext() to provide trusted origin information
+   */
+  private lastMessageOrigin?: string;
+
+  /**
    * Create a new popup transport
    *
    * @param config - Transport configuration
@@ -144,7 +151,7 @@ export class PopupWindowTransport extends AbstractTransport {
     super(config, logger, errorHandler);
 
     // Detect if we're running in a popup context (has window.opener)
-    if (typeof window !== 'undefined' && window.opener && window.opener !== window) {
+    if (typeof window !== 'undefined' && window?.opener && window.opener !== window) {
       this.isPopupContext = true;
       this.openerWindow = window.opener;
       this.log('debug', 'PopupWindowTransport running in popup context');
@@ -192,7 +199,7 @@ export class PopupWindowTransport extends AbstractTransport {
             this.log('debug', 'Cannot access opener origin due to CORS, using wildcard');
           }
         }
-      } catch (e) {
+      } catch (_e) {
         this.targetOrigin = '*';
       }
     }
@@ -490,10 +497,30 @@ export class PopupWindowTransport extends AbstractTransport {
         return;
       }
 
+      // Capture the browser-validated origin for validation and getLastMessageContext()
+      this.captureOrigin(event.origin);
+      this.lastMessageOrigin = event.origin;
+
       // Process the message from our popup
       try {
         // Parse the data if it's a string
         let data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+
+        // Validate _context.origin using shared validation logic
+        const validation = this.validateOrigin(data, {
+          additionalContext: {
+            targetOrigin: this.targetOrigin,
+          },
+        });
+
+        if (!validation.valid && validation.error) {
+          this.log('error', 'Origin validation failed: _context.origin mismatch', validation.context);
+          this.emit({
+            type: 'error',
+            error: validation.error,
+          } as TransportErrorEvent);
+          return; // Reject message
+        }
 
         // Check if this is a wrapped wallet message from CrossWindowTransport
         // The wallet uses CrossWindowTransport which wraps messages in this format
@@ -687,5 +714,47 @@ export class PopupWindowTransport extends AbstractTransport {
     await super.destroy();
 
     this.log('debug', 'Popup transport destroyed');
+  }
+
+  /**
+   * Get trusted context information for the most recently received message.
+   * Provides browser-validated origin from MessageEvent.origin, which is
+   * guaranteed to be accurate by the browser's security model.
+   *
+   * @returns TransportContext with browser-validated origin if available
+   *
+   * @example
+   * ```typescript
+   * const context = transport.getLastMessageContext();
+   * if (context) {
+   *   console.log('Message from origin:', context.origin);
+   *   console.log('Browser-validated:', context.trustedSource); // true
+   * }
+   * ```
+   */
+  public getLastMessageContext(): TransportContext | undefined {
+    if (!this.lastMessageOrigin) {
+      return undefined;
+    }
+
+    return {
+      origin: this.lastMessageOrigin,
+      trustedSource: true, // Browser-validated via MessageEvent.origin
+      transportType: 'popup',
+    };
+  }
+
+  /**
+   * Get transport type identifier
+   */
+  protected getTransportType(): string {
+    return 'popup';
+  }
+
+  /**
+   * Override to indicate this transport uses browser-validated origins
+   */
+  protected override isBrowserValidatedOrigin(): boolean {
+    return true;
   }
 }

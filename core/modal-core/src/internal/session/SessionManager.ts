@@ -16,9 +16,15 @@ import type {
   SessionStatus,
 } from '../../api/types/sessionState.js';
 import { ChainType, type SupportedChain } from '../../types.js';
+import { getChainName } from '../../utils/chainNameResolver.js';
 import { generateId, generateSessionId } from '../../utils/crypto.js';
 import { ErrorFactory } from '../core/errors/errorFactory.js';
 import { modalLogger } from '../core/logger/globalLogger.js';
+import {
+  getProviderForSession,
+  removeProviderForSession,
+  setProviderForSession,
+} from './ProviderRegistry.js';
 
 /**
  * Session manager that consolidates multiple session patterns
@@ -43,9 +49,21 @@ export class SessionManager implements ISessionManager {
     // Use provided session ID or generate a new one
     const sessionId = params.sessionId || this.generateSessionId(params.walletId, params.chain.chainId);
 
-    // Create session provider wrapper
+    // Get provider from params or registry
+    const provider = params.provider || getProviderForSession(sessionId);
+    if (!provider) {
+      throw ErrorFactory.configurationError(
+        'Provider must be either passed in params or stored in ProviderRegistry before calling createSession',
+        { sessionId },
+      );
+    }
+
+    // Store provider in registry (NOT in state, to avoid cross-origin errors)
+    setProviderForSession(sessionId, provider);
+
+    // Create session provider wrapper (instance is null - stored in registry)
     const sessionProvider = {
-      instance: params.provider,
+      instance: null, // Provider stored in ProviderRegistry, not state
       type: params.providerMetadata.type,
       version: params.providerMetadata.version,
       multiChainCapable: params.providerMetadata.multiChainCapable,
@@ -121,6 +139,10 @@ export class SessionManager implements ISessionManager {
             lastActiveAt: now,
           },
         },
+      }),
+      // Include adapter reconstruction data if provided
+      ...(params.adapterReconstruction && {
+        adapterReconstruction: params.adapterReconstruction,
       }),
     };
 
@@ -251,8 +273,8 @@ export class SessionManager implements ISessionManager {
 
     // For the same provider type, we can update the current session
     if (currentSession.chain.chainType === newChainType && currentSession.provider.multiChainCapable) {
-      // Try to switch the provider to the new chain
-      const provider = currentSession.provider.instance;
+      // Get provider from registry (NOT from state, to avoid cross-origin errors)
+      const provider = getProviderForSession(currentSession.sessionId);
 
       // Check if the provider supports chain switching
       if (provider && typeof provider === 'object' && 'request' in provider) {
@@ -329,11 +351,12 @@ export class SessionManager implements ISessionManager {
       chain: {
         ...chain,
         chainType: newChainType,
-        name: chain.name || this.getChainName(chain.chainId),
+        name: chain.name || getChainName(chain.chainId),
       },
       provider: {
         ...currentSession.provider,
-        instance: currentSession.provider.instance,
+        // Provider instance is stored in ProviderRegistry, not in state
+        instance: null,
       },
       permissions: { ...currentSession.permissions },
       metadata: {
@@ -419,9 +442,13 @@ export class SessionManager implements ISessionManager {
 
     // Clean up provider if needed
     try {
-      if (updatedSession.provider.instance && 'disconnect' in updatedSession.provider.instance) {
-        await (updatedSession.provider.instance as { disconnect: () => Promise<void> }).disconnect();
+      // Get provider from registry (NOT from state, to avoid cross-origin errors)
+      const provider = getProviderForSession(sessionId);
+      if (provider && 'disconnect' in provider) {
+        await (provider as { disconnect: () => Promise<void> }).disconnect();
       }
+      // Remove provider from registry after disconnection
+      removeProviderForSession(sessionId);
     } catch (error) {
       // Log but don't throw - session cleanup should be resilient
       modalLogger.warn('Error disconnecting provider during session cleanup', error);
@@ -536,63 +563,7 @@ export class SessionManager implements ISessionManager {
     return JSON.stringify(a) === JSON.stringify(b);
   }
 
-  private getChainName(chainId: string): string {
-    const id = this.normalizeToCAIP2(chainId);
-
-    // CAIP-2 chain names
-    const chainNames: Record<string, string> = {
-      'eip155:1': 'Ethereum Mainnet',
-      'eip155:137': 'Polygon',
-      'eip155:56': 'BSC',
-      'eip155:10': 'Optimism',
-      'eip155:42161': 'Arbitrum One',
-      'eip155:8453': 'Base',
-      'eip155:11155111': 'Sepolia',
-      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp': 'Solana Mainnet',
-      'solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z': 'Solana Testnet',
-      'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1': 'Solana Devnet',
-      'aztec:31337': 'Aztec Sandbox',
-      'aztec:mainnet': 'Aztec Mainnet',
-      'aztec:testnet': 'Aztec Testnet',
-    };
-
-    // Check if it exists in the CAIP-2 format map
-    if (chainNames[id]) {
-      return chainNames[id];
-    }
-
-    // For unknown chains, return original format for display purposes
-    return `Chain ${chainId}`;
-  }
-
-  /**
-   * Convert legacy chain IDs to CAIP-2 format for consistent handling
-   */
-  private normalizeToCAIP2(chainId: string): string {
-    // If already in CAIP-2 format, return as-is
-    if (typeof chainId === 'string' && chainId.includes(':')) {
-      return chainId;
-    }
-
-    // Convert legacy formats to CAIP-2
-    let numericId: number;
-
-    if (typeof chainId === 'string') {
-      // Handle hex format like '0x89'
-      if (chainId.startsWith('0x')) {
-        numericId = Number.parseInt(chainId, 16);
-      } else {
-        // Handle string numbers like '137'
-        numericId = Number.parseInt(chainId, 10);
-      }
-    } else {
-      // Handle numeric format like 42161
-      numericId = chainId;
-    }
-
-    // Convert to CAIP-2 format (assume EVM for legacy numeric IDs)
-    return `eip155:${numericId}`;
-  }
+  // Note: getChainName() and normalizeToCAIP2() have been consolidated to src/utils/chainNameResolver.ts
 
   /**
    * Switch active account within a session

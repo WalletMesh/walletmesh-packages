@@ -56,6 +56,102 @@ export interface SessionState {
 
   /** Multi-account management context */
   accountContext?: AccountManagementContext;
+
+  /**
+   * Adapter reconstruction data for hydration after page reload
+   *
+   * These fields enable the client to recreate the adapter on page refresh
+   * so that connections can be automatically reestablished. This is especially
+   * important for wallets discovered via the discovery protocol.
+   *
+   * Enhanced to include complete wallet metadata and responder data, eliminating
+   * the need to re-run discovery on page reload.
+   */
+  adapterReconstruction?: {
+    /** Adapter type identifier (e.g., 'discovery', 'metamask', 'phantom') */
+    adapterType: string;
+
+    /** Blockchain technology type (e.g., 'evm', 'solana', 'aztec') */
+    blockchainType: string;
+
+    /** Transport configuration for recreating the transport */
+    transportConfig: {
+      /** Transport type */
+      type: string;
+      /** Transport-specific configuration */
+      config: Record<string, unknown>;
+    };
+
+    /**
+     * Complete wallet metadata for restoration
+     *
+     * Stores the wallet's name, icon, description, and other metadata
+     * so it can be displayed in the UI immediately without re-discovery.
+     *
+     * Optional for backwards compatibility with sessions created before this feature.
+     */
+    walletMetadata?: {
+      /** Wallet display name */
+      name: string;
+      /** Wallet icon (data URI or URL) */
+      icon: string;
+      /** Wallet description (optional) */
+      description?: string;
+      /** Wallet homepage URL (optional) */
+      homepage?: string;
+      /** Custom wallet properties */
+      [key: string]: unknown;
+    };
+
+    /**
+     * Discovery adapter-specific reconstruction data
+     *
+     * Minimal data needed to recreate a DiscoveryAdapter without the full QualifiedResponder.
+     * This enables lightweight session persistence for discovered wallets.
+     *
+     * Only populated for DiscoveryAdapter instances.
+     */
+    discoveryData?: {
+      /** Wallet identifier */
+      id: string;
+      /** Wallet metadata */
+      metadata: {
+        name: string;
+        icon: string;
+        description?: string;
+        homepage?: string;
+      };
+      /** Wallet capabilities */
+      capabilities: {
+        chains: Array<{ type: string; chainIds: string }>;
+        features: string[];
+      };
+      /** Transport configuration */
+      transportConfig: Record<string, unknown>;
+      /** Network identifiers */
+      networks?: string[];
+    };
+
+    /**
+     * Discovery protocol responder data (for discovered wallets)
+     *
+     * @deprecated Use `discoveryData` instead for DiscoveryAdapter instances.
+     * This field is maintained for backward compatibility with older sessions
+     * that were created before the discoveryData field was added.
+     *
+     * This is the complete QualifiedResponder object from the discovery protocol.
+     * Only populated for wallets discovered via the discovery protocol.
+     */
+    qualifiedResponder?: Record<string, unknown>;
+
+    /**
+     * Session ID for RPC calls
+     *
+     * The session ID that should be included in JSON-RPC method calls to the wallet.
+     * This is required for session-aware wallets to properly route and authorize requests.
+     */
+    sessionId?: string;
+  };
 }
 
 /**
@@ -80,10 +176,25 @@ export interface ChainSessionInfo extends SupportedChain {
 
 /**
  * Provider information in session context
+ *
+ * **IMPORTANT**: Provider instances are NOT stored in Zustand state!
+ * - `instance` is always `null` in state to prevent cross-origin errors
+ * - Actual provider instances are stored in ProviderRegistry
+ * - Use `getProviderForSession(sessionId)` to retrieve the real provider
+ *
+ * **Why**: Provider instances contain Window object references (popup, iframe)
+ * which cause Immer to throw cross-origin SecurityError when freezing state.
  */
 export interface SessionProvider {
-  /** Provider instance (chain-specific) */
-  instance: BlockchainProvider;
+  /**
+   * Provider instance (ALWAYS null in state)
+   *
+   * The actual provider is stored in ProviderRegistry to avoid cross-origin errors.
+   * Use `getProviderForSession(sessionId)` from ProviderRegistry to get the real provider.
+   *
+   * @see {@link ProviderRegistry}
+   */
+  instance: BlockchainProvider | null;
 
   /** Provider type identifier */
   type: string;
@@ -383,8 +494,11 @@ export interface CreateSessionParams {
   /** Chain information */
   chain: ChainSessionInfo;
 
-  /** Provider instance */
-  provider: BlockchainProvider;
+  /**
+   * Provider instance (optional - can be retrieved from ProviderRegistry by sessionId)
+   * If not provided, must be stored in ProviderRegistry before calling createSession
+   */
+  provider?: BlockchainProvider;
 
   /** Provider metadata */
   providerMetadata: {
@@ -411,6 +525,24 @@ export interface CreateSessionParams {
 
   /** Optional session ID (for reconnection) */
   sessionId?: string;
+
+  /**
+   * Optional adapter reconstruction data for hydration
+   * This enables the client to recreate the adapter on page refresh
+   */
+  adapterReconstruction?: {
+    /** Adapter type identifier (e.g., 'discovery', 'metamask', 'phantom') */
+    adapterType: string;
+    /** Blockchain technology type (e.g., 'evm', 'solana', 'aztec') */
+    blockchainType: string;
+    /** Transport configuration for recreating the transport */
+    transportConfig: {
+      /** Transport type */
+      type: string;
+      /** Transport-specific configuration */
+      config: Record<string, unknown>;
+    };
+  };
 }
 
 /**

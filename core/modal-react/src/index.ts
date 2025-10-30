@@ -129,6 +129,7 @@ export {
   isConnectionState,
   hasErrorCode,
   hasErrorMessage,
+  isSessionError,
   isString,
   isNumber,
   isBoolean,
@@ -420,6 +421,16 @@ export {
   type UseSSRReturn,
 } from './hooks/useSSR.js';
 
+// === ERROR HANDLING HOOKS ===
+// Session error detection and handling
+export {
+  useSessionError,
+  useAutoDisconnectOnSessionError,
+  type UseSessionErrorOptions,
+  type UseSessionErrorReturn,
+  type SessionError,
+} from './hooks/useSessionError.js';
+
 // === EVENT HOOKS ===
 // Event subscriptions
 export {
@@ -560,6 +571,7 @@ export {
   useStoreActions,
   shallowEqual,
   useStoreWithEquality,
+  useWalletMeshStoreInstance,
 } from './hooks/internal/useStore.js';
 
 // === REACT COMPONENTS ===

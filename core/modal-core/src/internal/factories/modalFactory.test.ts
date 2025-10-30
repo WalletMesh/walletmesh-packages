@@ -4,12 +4,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  createMockClient,
-  // createMockFrameworkAdapter, // Framework adapters removed
-  createMockLogger,
-  setupMocks,
-} from '../../testing/index.js';
+import { createMockClient, setupMocks } from '../../testing/index.js';
 import { ChainType } from '../../types.js';
 import type { WalletInfo } from '../../types.js';
 import { ModalController } from '../modal/controller.js';

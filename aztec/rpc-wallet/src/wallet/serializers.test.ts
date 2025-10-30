@@ -214,10 +214,11 @@ describe('ExecuteTx Result Serialization', () => {
     const result = { txHash, txStatusId };
 
     // Test result serialization
-    const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmExecuteTx', result);
+    if (!AztecWalletSerializer.result) throw new Error('result serializer should be defined');
+    const serializedResult = await AztecWalletSerializer.result.serialize('aztec_wmExecuteTx', result);
 
     // Test result deserialization
-    const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+    const deserializedResult = (await AztecWalletSerializer.result.deserialize(
       'aztec_wmExecuteTx',
       serializedResult,
     )) as { txHash: TxHash; txStatusId: string };
@@ -237,10 +238,11 @@ describe('ExecuteTx Result Serialization', () => {
     // Test with various UUID formats
     const testCases = [crypto.randomUUID(), '550e8400-e29b-41d4-a716-446655440000', 'custom-status-id-123'];
 
+    if (!AztecWalletSerializer.result) throw new Error('result serializer should be defined');
     for (const txStatusId of testCases) {
       const result = { txHash, txStatusId };
-      const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmExecuteTx', result);
-      const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+      const serializedResult = await AztecWalletSerializer.result.serialize('aztec_wmExecuteTx', result);
+      const deserializedResult = (await AztecWalletSerializer.result.deserialize(
         'aztec_wmExecuteTx',
         serializedResult,
       )) as { txHash: TxHash; txStatusId: string };
@@ -256,8 +258,9 @@ describe('ExecuteTx Result Serialization', () => {
     const txStatusId = crypto.randomUUID();
     const result = { txHash, txStatusId };
 
-    const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmExecuteTx', result);
-    const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+    if (!AztecWalletSerializer.result) throw new Error('result serializer should be defined');
+    const serializedResult = await AztecWalletSerializer.result.serialize('aztec_wmExecuteTx', result);
+    const deserializedResult = (await AztecWalletSerializer.result.deserialize(
       'aztec_wmExecuteTx',
       serializedResult,
     )) as { txHash: TxHash; txStatusId: string };
@@ -277,10 +280,11 @@ describe('DeployContract Result Serialization', () => {
     const result = { txHash, contractAddress, txStatusId };
 
     // Test result serialization
-    const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmDeployContract', result);
+    if (!AztecWalletSerializer.result) throw new Error('result serializer should be defined');
+    const serializedResult = await AztecWalletSerializer.result.serialize('aztec_wmDeployContract', result);
 
     // Test result deserialization
-    const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+    const deserializedResult = (await AztecWalletSerializer.result.deserialize(
       'aztec_wmDeployContract',
       serializedResult,
     )) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };
@@ -307,13 +311,11 @@ describe('DeployContract Result Serialization', () => {
       'custom-deployment-id-456',
     ];
 
+    if (!AztecWalletSerializer.result) throw new Error('result serializer should be defined');
     for (const txStatusId of testCases) {
       const result = { txHash, contractAddress, txStatusId };
-      const serializedResult = await AztecWalletSerializer.result!.serialize(
-        'aztec_wmDeployContract',
-        result,
-      );
-      const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+      const serializedResult = await AztecWalletSerializer.result.serialize('aztec_wmDeployContract', result);
+      const deserializedResult = (await AztecWalletSerializer.result.deserialize(
         'aztec_wmDeployContract',
         serializedResult,
       )) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };
@@ -331,8 +333,9 @@ describe('DeployContract Result Serialization', () => {
     const txStatusId = crypto.randomUUID();
     const result = { txHash, contractAddress, txStatusId };
 
-    const serializedResult = await AztecWalletSerializer.result!.serialize('aztec_wmDeployContract', result);
-    const deserializedResult = (await AztecWalletSerializer.result!.deserialize(
+    if (!AztecWalletSerializer.result) throw new Error('result serializer should be defined');
+    const serializedResult = await AztecWalletSerializer.result.serialize('aztec_wmDeployContract', result);
+    const deserializedResult = (await AztecWalletSerializer.result.deserialize(
       'aztec_wmDeployContract',
       serializedResult,
     )) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };

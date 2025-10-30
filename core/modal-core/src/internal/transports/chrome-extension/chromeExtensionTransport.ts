@@ -14,97 +14,23 @@ import type { ErrorHandler } from '../../core/errors/errorHandler.js';
 import type { Logger } from '../../core/logger/logger.js';
 import { AbstractTransport } from '../AbstractTransport.js';
 
-// Define Chrome types for TypeScript
-
-/**
- * Chrome port interface for extension communication
- * @interface ChromePort
- */
-interface ChromePort {
-  /**
-   * Send a message through the port
-   * @param {any} message - Message to send
-   * @returns {void}
-   */
-  // biome-ignore lint/suspicious/noExplicitAny: Chrome extension messages can be any type
-  postMessage: (message: any) => void;
-  /**
-   * Message event handler
-   * @type {ChromeEvent}
-   */
-  onMessage: ChromeEvent;
-  /**
-   * Disconnect event handler
-   * @type {ChromeEvent}
-   */
-  onDisconnect: ChromeEvent;
-  /**
-   * Disconnect from the port
-   * @returns {void}
-   */
+// Type definitions for browser extension APIs
+type RuntimePort = {
+  onMessage: {
+    addListener: (callback: (message: unknown) => void) => void;
+    removeListener: (callback: (message: unknown) => void) => void;
+  };
+  onDisconnect: {
+    addListener: (callback: () => void) => void;
+    removeListener: (callback: () => void) => void;
+  };
+  postMessage: (message: unknown) => void;
   disconnect: () => void;
-}
+};
 
-/**
- * Chrome event interface
- * @interface ChromeEvent
- */
-interface ChromeEvent {
-  /**
-   * Add event listener
-   * @param {function(any): void} callback - Event callback
-   * @returns {void}
-   */
-  // biome-ignore lint/suspicious/noExplicitAny: Chrome extension event data can be any type
-  addListener: (callback: (data: any) => void) => void;
-  /**
-   * Remove event listener
-   * @param {function(any): void} callback - Event callback
-   * @returns {void}
-   */
-  // biome-ignore lint/suspicious/noExplicitAny: Chrome extension event data can be any type
-  removeListener: (callback: (data: any) => void) => void;
-}
-
-/**
- * Chrome runtime interface
- * @interface ChromeRuntime
- */
-interface ChromeRuntime {
-  /**
-   * Connect to extension
-   * @param {string} extensionId - Extension ID
-   * @returns {ChromePort}
-   */
-  connect: (extensionId: string) => ChromePort;
-}
-
-/**
- * Chrome API interface
- * @interface Chrome
- */
-interface Chrome {
-  /**
-   * Runtime API
-   * @type {ChromeRuntime}
-   */
-  runtime?: ChromeRuntime;
-}
-
-/**
- * Window with Chrome API
- * @interface WindowWithChrome
- * @extends {Window}
- */
-interface WindowWithChrome extends Window {
-  /**
-   * Chrome API
-   * @type {Chrome}
-   */
-  chrome?: Chrome;
-}
-
-// Note: chrome types are already declared by @types/chrome
+type RuntimeAPI = {
+  connect: (extensionId: string, connectInfo?: { name?: string }) => RuntimePort;
+};
 
 /**
  * Transport implementation for communication with Chrome extensions
@@ -154,11 +80,11 @@ export class ChromeExtensionTransport extends AbstractTransport {
     return new ChromeExtensionTransport(config, logger, errorHandler);
   }
   /**
-   * Chrome runtime port connection
-   * @type {ChromePort | null}
+   * Browser extension port connection (Chrome or Firefox)
+   * @type {RuntimePort | null}
    * @private
    */
-  private port: ChromePort | null = null;
+  private port: RuntimePort | null = null;
   private ready = false;
   private readyTimeout: ReturnType<typeof setTimeout> | null = null;
   private pendingQueue: unknown[] = [];
@@ -208,8 +134,9 @@ export class ChromeExtensionTransport extends AbstractTransport {
   }
 
   /**
-   * Internal method to connect to the Chrome extension
-   * @throws {ModalError} If Chrome API is unavailable or connection fails
+   * Internal method to connect to the browser extension
+   * Works with both Chrome and Firefox extensions from dApp context
+   * @throws {ModalError} If browser extension API is unavailable or connection fails
    * @protected
    * @async
    */
@@ -218,8 +145,19 @@ export class ChromeExtensionTransport extends AbstractTransport {
       return;
     }
 
-    if (typeof window === 'undefined' || !(window as WindowWithChrome).chrome?.runtime) {
-      const error = ErrorFactory.transportError('Chrome runtime API not available', 'chrome-extension');
+    // Direct browser API detection - works from dApp context
+    // Check for browser.runtime (Firefox) or chrome.runtime (Chrome, Edge, Opera, Brave)
+    const browserGlobal = (globalThis as { browser?: { runtime?: RuntimeAPI } }).browser;
+    const chromeGlobal = (globalThis as { chrome?: { runtime?: RuntimeAPI } }).chrome;
+
+    const runtimeAPI = browserGlobal?.runtime || chromeGlobal?.runtime;
+    const apiType = browserGlobal?.runtime ? 'browser' : chromeGlobal?.runtime ? 'chrome' : 'none';
+
+    if (!runtimeAPI) {
+      const error = ErrorFactory.transportError(
+        `Browser extension API not available (detected: ${apiType})`,
+        'chrome-extension',
+      );
       this.emit({
         type: 'error',
         error,
@@ -244,21 +182,21 @@ export class ChromeExtensionTransport extends AbstractTransport {
           }, this.config.timeout);
 
           try {
-            const chromeWindow = window as WindowWithChrome;
-            if (!chromeWindow.chrome?.runtime?.connect) {
-              throw ErrorFactory.transportError('Chrome runtime connect not available', 'chrome-extension');
-            }
-
             (this.logger.info || this.logger.debug || console.info).call(
               this.logger,
-              'ChromeExtensionTransport: connecting to extension',
+              `ChromeExtensionTransport: connecting to extension (using ${apiType} API)`,
               {
                 extensionId: this.config.extensionId,
                 attempt,
+                apiType,
               },
             );
 
-            this.port = chromeWindow.chrome.runtime.connect(this.config.extensionId);
+            // Connect to extension using native browser API
+            // This works from any web page context (dApp) to connect to an extension
+            this.port = runtimeAPI.connect(this.config.extensionId, {
+              name: 'walletmesh-transport',
+            });
 
             if (!this.port) {
               throw ErrorFactory.connectionFailed('Failed to create port connection', {
@@ -294,69 +232,66 @@ export class ChromeExtensionTransport extends AbstractTransport {
 
               // Wait for explicit wallet_ready message before marking as connected
               this.ready = false;
-              this.readyTimeout = setTimeout(
-                () => {
-                  (this.logger.error || this.logger.warn || console.error).call(
-                    this.logger,
-                    'ChromeExtensionTransport: wallet_ready timeout - connection failed',
-                  );
+              this.readyTimeout = setTimeout(() => {
+                (this.logger.error || this.logger.warn || console.error).call(
+                  this.logger,
+                  'ChromeExtensionTransport: wallet_ready timeout - connection failed',
+                );
 
-                  // Clear other timeouts (but not readyTimeout since we're inside it)
-                  if (this.connectTimeout) {
-                    clearTimeout(this.connectTimeout);
-                    this.connectTimeout = null;
+                // Clear other timeouts (but not readyTimeout since we're inside it)
+                if (this.connectTimeout) {
+                  clearTimeout(this.connectTimeout);
+                  this.connectTimeout = null;
+                }
+                if (this.reconnectTimer) {
+                  clearTimeout(this.reconnectTimer);
+                  this.reconnectTimer = null;
+                }
+
+                // Save and clear connection callbacks
+                const rejectCallback = this.connectionReject;
+                this.connectionResolve = null;
+                this.connectionReject = null;
+
+                this.connected = false;
+                this.readyTimeout = null; // Clear readyTimeout reference
+
+                // Remove event listeners
+                if (this.port) {
+                  if (this.port.onMessage) {
+                    this.port.onMessage.removeListener(this.handleMessage);
                   }
-                  if (this.reconnectTimer) {
-                    clearTimeout(this.reconnectTimer);
-                    this.reconnectTimer = null;
+                  if (this.port.onDisconnect) {
+                    this.port.onDisconnect.removeListener(this.handleDisconnect);
                   }
-
-                  // Save and clear connection callbacks
-                  const rejectCallback = this.connectionReject;
-                  this.connectionResolve = null;
-                  this.connectionReject = null;
-
-                  this.connected = false;
-                  this.readyTimeout = null; // Clear readyTimeout reference
-
-                  // Remove event listeners
-                  if (this.port) {
-                    if (this.port.onMessage) {
-                      this.port.onMessage.removeListener(this.handleMessage);
-                    }
-                    if (this.port.onDisconnect) {
-                      this.port.onDisconnect.removeListener(this.handleDisconnect);
-                    }
-                    try {
-                      this.port.disconnect();
-                    } catch (error) {
-                      // Ignore errors on disconnect
-                    }
-                    this.port = null;
+                  try {
+                    this.port.disconnect();
+                  } catch (_error) {
+                    // Ignore errors on disconnect
                   }
+                  this.port = null;
+                }
 
-                  // Create connection timeout error
-                  const error = ErrorFactory.connectionFailed(
-                    'Connection timeout: wallet_ready message not received',
-                    {
-                      transport: 'chrome-extension',
-                      timeout: this.config.timeout,
-                    }
-                  );
+                // Create connection timeout error
+                const error = ErrorFactory.connectionFailed(
+                  'Connection timeout: wallet_ready message not received',
+                  {
+                    transport: 'chrome-extension',
+                    timeout: this.config.timeout,
+                  },
+                );
 
-                  // Emit error event
-                  this.emit({
-                    type: 'error',
-                    error,
-                  } as TransportEvent);
+                // Emit error event
+                this.emit({
+                  type: 'error',
+                  error,
+                } as TransportEvent);
 
-                  // Reject the connection using the saved callback
-                  if (rejectCallback) {
-                    rejectCallback(error);
-                  }
-                },
-                this.config.timeout,
-              );
+                // Reject the connection using the saved callback
+                if (rejectCallback) {
+                  rejectCallback(error);
+                }
+              }, this.config.timeout);
 
               (this.logger.info || this.logger.debug || console.info).call(
                 this.logger,
@@ -425,7 +360,7 @@ export class ChromeExtensionTransport extends AbstractTransport {
       // Disconnect the port
       try {
         this.port.disconnect();
-      } catch (error) {
+      } catch (_error) {
         // Ignore errors on disconnect
       }
 
@@ -550,6 +485,30 @@ export class ChromeExtensionTransport extends AbstractTransport {
         // Forward event to consumers
       }
     } catch {}
+
+    // Validate _context.origin using shared validation logic
+    // Extension sees dApp origin via sender.origin and can include it in _context
+    const validation = this.validateOrigin(message, {
+      additionalContext: {
+        extensionId: this.config.extensionId,
+      },
+    });
+
+    if (!validation.valid && validation.error) {
+      (this.logger.error || this.logger.warn || console.error).call(
+        this.logger,
+        'ChromeExtensionTransport: Origin validation failed - _context.origin mismatch',
+        validation.context,
+      );
+
+      this.emit({
+        type: 'error',
+        error: validation.error,
+      } as TransportEvent);
+
+      return; // Reject message
+    }
+
     this.emit({
       type: 'message',
       data: message,
@@ -620,5 +579,12 @@ export class ChromeExtensionTransport extends AbstractTransport {
         );
       }
     }
+  }
+
+  /**
+   * Get transport type identifier
+   */
+  protected getTransportType(): string {
+    return 'chrome-extension';
   }
 }

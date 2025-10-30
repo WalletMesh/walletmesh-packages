@@ -13,14 +13,14 @@ import {
   useSwitchChain,
   useTransaction,
 } from '@walletmesh/modal-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 /**
  * Example 1: Simple EVM Transfer
  * Send native tokens on EVM chains
  */
 function EVMTransferExample() {
-  const { isConnected, address, chainId } = useAccount();
+  const { isConnected } = useAccount();
   const { data: balance } = useBalance();
   const { sendTransaction, isLoading, error, currentTransaction } = useTransaction();
   const [recipient, setRecipient] = useState('');

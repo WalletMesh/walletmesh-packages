@@ -5,6 +5,7 @@ import {
   createTransactionSummaryMiddleware,
   type TransactionSummary,
 } from './transactionSummaryMiddleware.js';
+import type { FunctionArgNames } from './functionArgNamesMiddleware.js';
 import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 
@@ -128,7 +129,9 @@ describe('transactionSummaryMiddleware', () => {
     });
 
     it('should return undefined for non-array input', () => {
-      const result = buildTransactionSummaryForBatch({} as any);
+      const result = buildTransactionSummaryForBatch(
+        {} as unknown as Parameters<typeof buildTransactionSummaryForBatch>[0],
+      );
       expect(result).toBeUndefined();
     });
 
@@ -157,15 +160,17 @@ describe('transactionSummaryMiddleware', () => {
               // Missing name
               to: mockAddress('0x456'),
               args: [],
-            } as any,
+            },
             {
               name: 'anotherFunction',
               // Missing to
               args: [7, 8, 9],
-            } as any,
+            },
           ],
         },
-      ];
+      ] as unknown as Array<{
+        calls: Array<{ name: string; to: { toString: () => string }; args: unknown[] }>;
+      }>;
 
       const result = buildTransactionSummaryForBatch(executionPayloads);
 
@@ -196,7 +201,7 @@ describe('transactionSummaryMiddleware', () => {
           calls: [
             {
               name: 'test',
-              to: '0xDirect' as any,
+              to: '0xDirect' as unknown as { toString: () => string },
               args: [],
             },
           ],
@@ -223,7 +228,7 @@ describe('transactionSummaryMiddleware', () => {
             {
               name: 'test',
               to: mockAddress('0x123'),
-              args: 'not-an-array' as any,
+              args: 'not-an-array' as unknown as unknown[],
             },
           ],
         },
@@ -329,14 +334,14 @@ describe('transactionSummaryMiddleware', () => {
             // Missing name
             to: mockAddress('0xBBB'),
             args: [2],
-          } as any,
+          },
           {
             name: 'function3',
             // Missing to
             args: [3],
-          } as any,
+          },
         ],
-      };
+      } as unknown as { calls: Array<{ name: string; to: { toString: () => string }; args: unknown[] }> };
 
       const result = buildTransactionSummaryForSingle(executionPayload);
 
@@ -367,7 +372,7 @@ describe('transactionSummaryMiddleware', () => {
           {
             name: 'test',
             to: mockAddress('0x999'),
-            args: null as any,
+            args: null as unknown as unknown[],
           },
         ],
       };
@@ -390,14 +395,17 @@ describe('transactionSummaryMiddleware', () => {
     let middleware: ReturnType<typeof createTransactionSummaryMiddleware>;
     let mockNext: ReturnType<typeof vi.fn>;
     let mockContext: AztecHandlerContext & {
-      functionCallArgNames?: any;
+      functionCallArgNames?: FunctionArgNames;
       transactionSummary?: TransactionSummary;
     };
 
     beforeEach(() => {
       middleware = createTransactionSummaryMiddleware();
       mockNext = vi.fn().mockResolvedValue({ result: 'success' });
-      mockContext = {} as any;
+      mockContext = {} as AztecHandlerContext & {
+        functionCallArgNames?: FunctionArgNames;
+        transactionSummary?: TransactionSummary;
+      };
     });
 
     afterEach(() => {
@@ -529,12 +537,12 @@ describe('transactionSummaryMiddleware', () => {
     });
 
     it('should handle invalid params gracefully', async () => {
-      const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'> = {
+      const request = {
         jsonrpc: '2.0',
         id: 5,
         method: 'aztec_wmExecuteTx',
-        params: [] as any,
-      };
+        params: [],
+      } as unknown as JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'>;
 
       await middleware(mockContext, request, mockNext);
 
@@ -547,7 +555,7 @@ describe('transactionSummaryMiddleware', () => {
         '0x123': {
           transfer: [{ name: 'amount', abiType: { kind: 'field' }, typeString: 'Field' }],
         },
-      };
+      } as FunctionArgNames;
       mockContext.functionCallArgNames = mockFunctionArgNames;
 
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'> = {
@@ -607,7 +615,11 @@ describe('transactionSummaryMiddleware', () => {
           {
             artifact: { name: 'TestContract' },
             args: [1, 2, 3],
-          } as any,
+          } as unknown as {
+            artifact: { name: string; functions?: unknown[] };
+            args: unknown[];
+            constructorName?: string;
+          },
         ],
       };
 

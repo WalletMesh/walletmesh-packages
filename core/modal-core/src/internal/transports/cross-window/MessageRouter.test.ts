@@ -8,24 +8,13 @@ import {
   ConnectionRole,
   ConnectionStateMachine,
 } from './ConnectionStateMachine.js';
+import { MessageRouter, type MessageRouterConfig } from './MessageRouter.js';
 import {
-  type DataMessageHandler,
-  type ErrorMessageHandler,
-  MessageRouter,
-  type MessageRouterConfig,
-  type RawMessageHandler,
-} from './MessageRouter.js';
-import {
-  type ControlMessage,
   ControlType,
-  type DataMessage,
-  type ErrorMessage,
   type MessageCategory,
-  type TransportMessage,
   createControlMessage,
   createDataMessage,
   createErrorMessage,
-  createTransportMessage,
 } from './protocol.js';
 
 describe('MessageRouter', () => {

@@ -138,6 +138,7 @@ export type AdapterEvents = {
   'wallet:connected': unknown;
   'wallet:disconnected': { reason?: string };
   'wallet:statusChanged': unknown;
+  'wallet:sessionTerminated': { sessionId: string; reason?: string; chainType?: ChainType };
 };
 
 export type AdapterEvent = keyof AdapterEvents;

@@ -16,7 +16,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
 import { TokenMetadataFetcher } from './TokenMetadataFetcher.js';
-import type { TokenMetadata } from './types.js';
 
 // Install domain-specific matchers
 installCustomMatchers();

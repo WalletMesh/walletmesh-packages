@@ -157,12 +157,10 @@ export function createAutoMockedProvider(chainType: ChainType) {
  */
 export function setupProviderMocks() {
   vi.mock('../../internal/providers/evm/EvmProvider.js', () => ({
-    // biome-ignore lint/style/useNamingConvention: Matching exported class name
     EvmProvider: vi.fn(() => createAutoMockedEvmProvider()),
   }));
 
   vi.mock('../../internal/providers/solana/SolanaProvider.js', () => ({
-    // biome-ignore lint/style/useNamingConvention: Matching exported class name
     SolanaProvider: vi.fn(() => createAutoMockedSolanaProvider()),
   }));
 

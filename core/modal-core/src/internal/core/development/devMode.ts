@@ -145,7 +145,7 @@ export class DevModeManager {
   startPerformanceMeasure(label: string): void {
     if (!this.config.performanceMonitoring || !this.isEnabled()) return;
 
-    const now = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+    const now = performance?.now ? performance.now() : Date.now();
     this.performanceMarks.set(label, now);
     walletMeshDebugger.log(`Performance: Started measuring "${label}"`);
   }
@@ -162,7 +162,7 @@ export class DevModeManager {
       return;
     }
 
-    const now = typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now();
+    const now = performance?.now ? performance.now() : Date.now();
     const duration = now - startTime;
     this.performanceMarks.delete(label);
 

@@ -62,7 +62,7 @@ describe('Theme Utils', () => {
     // Mock window.matchMedia
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
-      value: vi.fn().mockImplementation((query) => ({
+      value: vi.fn().mockImplementation((query: string) => ({
         matches: false,
         media: query,
         onchange: null,
@@ -135,7 +135,7 @@ describe('Theme Utils', () => {
     });
 
     it('should return dark when system prefers dark', () => {
-      window.matchMedia = vi.fn().mockImplementation((query) => ({
+      window.matchMedia = vi.fn().mockImplementation((query: string) => ({
         matches: query === '(prefers-color-scheme: dark)',
         media: query,
       }));
@@ -144,7 +144,7 @@ describe('Theme Utils', () => {
     });
 
     it('should return light when system prefers light', () => {
-      window.matchMedia = vi.fn().mockImplementation((query) => ({
+      window.matchMedia = vi.fn().mockImplementation((query: string) => ({
         matches: false,
         media: query,
       }));

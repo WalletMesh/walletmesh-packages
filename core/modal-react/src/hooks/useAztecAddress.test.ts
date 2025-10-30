@@ -41,7 +41,7 @@ describe('useAztecAddress', () => {
     const { result } = renderHook(() => useAztecAddress());
 
     // toUpperCase on full address would also uppercase the 'x' in '0x', so we uppercase only the hex part
-    const uppercaseAddress = '0x' + SAMPLE_ADDRESS.slice(2).toUpperCase();
+    const uppercaseAddress = `0x${SAMPLE_ADDRESS.slice(2).toUpperCase()}`;
     const str = result.current.toAddressString(uppercaseAddress);
     expect(str).toBe(SAMPLE_ADDRESS.toLowerCase());
   });

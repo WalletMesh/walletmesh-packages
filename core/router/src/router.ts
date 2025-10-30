@@ -1,4 +1,5 @@
 import {
+  createTransportContextMiddleware,
   JSONRPCError,
   JSONRPCNode,
   JSONRPCProxy,
@@ -49,6 +50,19 @@ export interface WalletRouterConfig {
    * @default false
    */
   debug?: boolean;
+  /**
+   * Optional callback invoked when a new session is created.
+   * Called after the session is successfully stored in the session store.
+   * @param sessionId - The ID of the newly created session
+   * @param origin - The origin that created the session
+   */
+  onSessionCreated?: (sessionId: string, origin: string) => void;
+  /**
+   * Optional callback invoked when a session is deleted.
+   * Called after the session is removed from the session store.
+   * @param sessionId - The ID of the deleted session
+   */
+  onSessionDeleted?: (sessionId: string) => void;
 }
 
 /**
@@ -172,6 +186,18 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   private permissionManager: PermissionManager<RouterMethodMap, RouterContext>;
 
   /**
+   * Optional callback for when a session is created
+   * @private
+   */
+  private onSessionCreated?: (sessionId: string, origin: string) => void;
+
+  /**
+   * Optional callback for when a session is deleted
+   * @private
+   */
+  private onSessionDeleted?: (sessionId: string) => void;
+
+  /**
    * Creates a new WalletRouter instance for managing multi-chain wallet connections.
    *
    * @param transport - Transport layer for sending messages
@@ -201,6 +227,12 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     this.config = config;
     this.sessionStore = config.sessionStore || defaultStore;
     this.permissionManager = permissionManager;
+    if (config.onSessionCreated) {
+      this.onSessionCreated = config.onSessionCreated;
+    }
+    if (config.onSessionDeleted) {
+      this.onSessionDeleted = config.onSessionDeleted;
+    }
 
     // Create proxies for each wallet transport with chain-specific configuration
     this.walletProxies = new Map();
@@ -217,6 +249,9 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       };
       this.walletProxies.set(chainId, new JSONRPCProxy(walletTransport, proxyConfig));
     }
+
+    // Add transport context middleware FIRST to inject browser-validated origin
+    this.addMiddleware(createTransportContextMiddleware(transport));
 
     // Add middleware for session validation and permission checks
     this.addMiddleware(createSessionMiddleware(this.sessionStore));
@@ -321,6 +356,103 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
+   * Revokes a specific session, terminating the connection with the dApp.
+   * This is the wallet-side API for session termination.
+   *
+   * @param sessionId - Session ID to revoke
+   * @returns Promise that resolves when session is revoked
+   * @throws {RouterError} With code 'invalidSession' if session doesn't exist
+   *
+   * @example
+   * ```typescript
+   * // Wallet UI: User clicks "Revoke Session" button
+   * await router.revokeSession('session123');
+   * ```
+   */
+  public async revokeSession(sessionId: string): Promise<void> {
+    // Fetch session from store
+    const session = await this.sessionStore.get(sessionId);
+    if (!session) {
+      throw new RouterError('invalidSession', `Session ${sessionId} not found`);
+    }
+
+    // Build context for disconnect
+    const context: RouterContext = {
+      session: {
+        id: session.id,
+        origin: session.origin,
+        createdAt: session.createdAt,
+      },
+      origin: session.origin,
+    };
+
+    try {
+      // Call internal disconnect method to handle cleanup and notifications
+      await this.disconnect(context, { sessionId });
+    } catch (error) {
+      // Log error but still consider session revoked (wallet-side authoritative)
+      console.warn('[WalletRouter] Error during session revocation', {
+        sessionId,
+        error: error instanceof Error ? error.message : error,
+      });
+      // Ensure session is deleted even if notification fails
+      await this.sessionStore.delete(sessionId);
+      this.onSessionDeleted?.(sessionId);
+      throw error;
+    }
+  }
+
+  /**
+   * Revokes all active sessions, terminating all dApp connections.
+   * This is the wallet-side API for bulk session termination.
+   *
+   * @returns Promise that resolves when all sessions are revoked
+   *
+   * @example
+   * ```typescript
+   * // Wallet UI: User clicks "Revoke All Sessions" button
+   * await router.revokeAllSessions();
+   * ```
+   */
+  public async revokeAllSessions(): Promise<void> {
+    // Get all sessions from store
+    const sessionsMap = await this.sessionStore.getAll();
+
+    if (!sessionsMap || sessionsMap.size === 0) {
+      console.log('[WalletRouter] No sessions to revoke');
+      return;
+    }
+
+    console.log(`[WalletRouter] Revoking ${sessionsMap.size} sessions`);
+
+    // Convert Map to array of sessions for processing
+    const sessions = Array.from(sessionsMap.values());
+
+    // Revoke each session individually to ensure proper cleanup and notifications
+    const results = await Promise.allSettled(
+      sessions.map(async (session) => {
+        try {
+          await this.revokeSession(session.id);
+        } catch (error) {
+          console.warn('[WalletRouter] Failed to revoke session', {
+            sessionId: session.id,
+            error: error instanceof Error ? error.message : error,
+          });
+          throw error;
+        }
+      }),
+    );
+
+    // Log any failures
+    const failures = results.filter((r) => r.status === 'rejected');
+    if (failures.length > 0) {
+      console.warn(`[WalletRouter] ${failures.length}/${sessions.length} sessions failed to revoke properly`);
+    } else {
+      console.log('[WalletRouter] All sessions revoked successfully');
+    }
+  }
+
+  /**
    * Forward wallet-originated notifications to connected clients.
    *
    * @param chainId - Chain that emitted the notification
@@ -373,6 +505,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     const session: SessionData = {
       id: sessionId,
       origin,
+      createdAt: Date.now(),
     };
 
     context.session = session;
@@ -382,8 +515,15 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       sanitizedPermissions,
     );
 
+    // Store the requested permissions in the session for reconnection
+    // sanitizedPermissions is already in ChainPermissions format - no conversion needed
+    session.permissions = sanitizedPermissions;
+
     // Store session data
     await this.sessionStore.set(sessionId, session);
+
+    // Notify about new session creation
+    this.onSessionCreated?.(sessionId, origin);
 
     return { sessionId, permissions: approvedPermissions };
   }
@@ -448,6 +588,9 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     }
 
     await this.sessionStore.delete(sessionId);
+
+    // Notify about session deletion
+    this.onSessionDeleted?.(sessionId);
 
     // Emit session terminated event
     this.emit('wm_sessionTerminated', {
@@ -527,14 +670,22 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   protected async _call(
     proxy: JSONRPCProxy,
     methodCall: MethodCall,
+    context?: RouterContext,
   ): Promise<RouterMethodMap['wm_call']['result']> {
-    // Create inner JSON-RPC request
-    const innerRequest = {
+    // Create inner JSON-RPC request with context forwarding
+    const innerRequest: any = {
       jsonrpc: '2.0' as const,
       method: methodCall.method,
       params: methodCall.params,
       id: crypto.randomUUID(),
     };
+
+    // Attach context for local transports to extract
+    if (context?.origin) {
+      innerRequest._context = {
+        origin: context.origin,
+      };
+    }
 
     try {
       // Forward the raw message through the proxy
@@ -584,12 +735,12 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * @protected
    */
   protected async call(
-    _context: RouterContext,
+    context: RouterContext,
     params: RouterMethodMap['wm_call']['params'],
   ): Promise<RouterMethodMap['wm_call']['result']> {
     const { chainId, call } = params;
     const client = this.validateChain(chainId);
-    return await this._call(client, call);
+    return await this._call(client, call, context);
   }
 
   /**
@@ -604,7 +755,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * @protected
    */
   protected async bulkCall(
-    _context: RouterContext,
+    context: RouterContext,
     params: RouterMethodMap['wm_bulkCall']['params'],
   ): Promise<RouterMethodMap['wm_bulkCall']['result']> {
     const { chainId, calls } = params;
@@ -613,7 +764,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     const responses: unknown[] = [];
     try {
       for (const call of calls) {
-        responses.push(await this._call(client, call));
+        responses.push(await this._call(client, call, context));
       }
       return responses as RouterMethodMap['wm_bulkCall']['result'];
     } catch (error) {

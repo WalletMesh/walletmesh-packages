@@ -25,8 +25,22 @@
  */
 
 // Export browser extension specific components
-export { ContentScriptRelay, getContentScriptRelay, WalletDiscovery } from './extension/index.js';
-export type { WalletDiscoveryConfig, WalletDiscoveryStats } from './extension/index.js';
+export {
+  ContentScriptRelay,
+  getContentScriptRelay,
+  WalletDiscovery,
+  getBrowserAPI,
+  isExtensionEnvironment,
+  getExtensionId,
+} from './extension/index.js';
+export type {
+  WalletDiscoveryConfig,
+  WalletDiscoveryStats,
+  BrowserAPI,
+  BrowserRuntime,
+  BrowserTabs,
+  MessageSender,
+} from './extension/index.js';
 
 // Re-export commonly needed types for extensions
 export type {

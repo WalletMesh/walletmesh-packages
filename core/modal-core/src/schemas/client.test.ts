@@ -10,7 +10,6 @@ import {
   discoveryConfigSchema,
   walletFilterConfigSchema,
   connectOptionsSchema,
-  walletClientConfigSchema,
   walletClientStateSchema,
   clientEventSchema,
 } from './client.js';

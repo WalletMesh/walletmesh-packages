@@ -19,7 +19,6 @@ export const mockFactories = {
    * Create ErrorFactory mock implementation
    */
   createErrorFactoryMock: () => ({
-    // biome-ignore lint/style/useNamingConvention: Matching exported object name
     ErrorFactory: {
       create: vi.fn((code, message, category, data, fatal) => {
         const error: {
@@ -350,7 +349,6 @@ export const mockFactories = {
    * Create ModalController mock implementation
    */
   createModalControllerMock: () => ({
-    // biome-ignore lint/style/useNamingConvention: Matching exported class name
     ModalController: vi.fn().mockImplementation((options) => ({
       options,
       open: vi.fn().mockResolvedValue(undefined),

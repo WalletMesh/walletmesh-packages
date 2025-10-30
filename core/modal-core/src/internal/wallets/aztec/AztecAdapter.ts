@@ -8,6 +8,7 @@ import {
   type TransportMessageEvent,
 } from '../../../types.js';
 import { ErrorFactory } from '../../core/errors/errorFactory.js';
+import { getChainName } from '../../../utils/chainNameResolver.js';
 import { AbstractWalletAdapter } from '../base/AbstractWalletAdapter.js';
 import type {
   ConnectOptions,
@@ -436,7 +437,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
             chain: {
               chainId: network,
               chainType: ChainType.Aztec,
-              name: this.getChainName(network),
+              name: getChainName(network),
               required: false,
             },
             chainType: ChainType.Aztec,
@@ -623,7 +624,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
         chainId: network,
         chainType: ChainType.Aztec,
         provider: this.aztecProvider as WalletProvider,
-        chainName: this.getChainName(network),
+        chainName: getChainName(network),
         chainRequired: false,
         sessionId,
       });
@@ -632,7 +633,7 @@ export class AztecAdapter extends AbstractWalletAdapter {
         walletId: this.id,
         network,
         sessionId,
-        address: address.substring(0, 10) + '...',
+        address: `${address.substring(0, 10)}...`,
       });
 
       return walletConnection;
@@ -1011,12 +1012,10 @@ export class AztecAdapter extends AbstractWalletAdapter {
       });
 
       // Send acknowledgment asynchronously
-      transport
-        .send(ackMessage)
-        .catch((error) => {
-          this.log('warn', 'Failed to send wallet_ready acknowledgment', error);
-          // Don't throw - this is best effort
-        });
+      transport.send(ackMessage).catch((error) => {
+        this.log('warn', 'Failed to send wallet_ready acknowledgment', error);
+        // Don't throw - this is best effort
+      });
     }
   }
 
@@ -1107,7 +1106,9 @@ export class AztecAdapter extends AbstractWalletAdapter {
    * @override
    */
   protected override setupProviderListeners(provider: unknown): void {
-    const aztecProvider = provider as { on?: (event: string, listener: (...args: unknown[]) => void) => void };
+    const aztecProvider = provider as {
+      on?: (event: string, listener: (...args: unknown[]) => void) => void;
+    };
 
     if (typeof aztecProvider.on !== 'function') {
       this.log('warn', 'Aztec provider does not support event listeners');
@@ -1461,7 +1462,12 @@ export class AztecAdapter extends AbstractWalletAdapter {
               if (nestedProp in nestedObj) {
                 const nestedValue = nestedObj[nestedProp];
                 // Check if the nested value is a string
-                if (typeof nestedValue === 'string' && nestedValue && nestedValue !== 'null' && nestedValue !== 'undefined') {
+                if (
+                  typeof nestedValue === 'string' &&
+                  nestedValue &&
+                  nestedValue !== 'null' &&
+                  nestedValue !== 'undefined'
+                ) {
                   this.log('debug', `Using nested '${prop}.${nestedProp}' property for address`, {
                     [`${prop}.${nestedProp}`]: nestedValue,
                   });
@@ -1474,9 +1480,13 @@ export class AztecAdapter extends AbstractWalletAdapter {
                     if (deepProp in deepNestedObj && typeof deepNestedObj[deepProp] === 'string') {
                       const deepValue = deepNestedObj[deepProp] as string;
                       if (deepValue && deepValue !== 'null' && deepValue !== 'undefined') {
-                        this.log('debug', `Using deeply nested '${prop}.${nestedProp}.${deepProp}' property for address`, {
-                          [`${prop}.${nestedProp}.${deepProp}`]: deepValue,
-                        });
+                        this.log(
+                          'debug',
+                          `Using deeply nested '${prop}.${nestedProp}.${deepProp}' property for address`,
+                          {
+                            [`${prop}.${nestedProp}.${deepProp}`]: deepValue,
+                          },
+                        );
                         return deepValue;
                       }
                     }
@@ -1533,16 +1543,5 @@ export class AztecAdapter extends AbstractWalletAdapter {
     return String(addressResponse);
   }
 
-  private getChainName(chainId: string): string {
-    switch (chainId) {
-      case 'aztec:mainnet':
-        return 'Aztec Mainnet';
-      case 'aztec:testnet':
-        return 'Aztec Testnet';
-      case 'aztec:31337':
-        return 'Aztec Sandbox';
-      default:
-        return 'Aztec Network';
-    }
-  }
+  // Note: getChainName() has been consolidated to src/utils/chainNameResolver.ts
 }

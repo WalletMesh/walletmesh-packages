@@ -43,8 +43,8 @@ import { generateSessionId as generateSecureSessionId } from '../../../utils/cry
 // import { TransportToJsonrpcAdapter } from '../../adapters/TransportToJsonrpcAdapter.js';
 import { ErrorFactory } from '../../core/errors/errorFactory.js';
 import { Logger } from '../../core/logger/logger.js';
-import { WalletStorage } from '../../utils/dom/storage.js';
-import type { AdapterSessionData } from '../../utils/dom/storage.js';
+import { useStore } from '../../../state/store.js';
+import type { SessionState } from '../../../api/types/sessionState.js';
 import type {
   AdapterContext,
   AdapterEvent,
@@ -173,11 +173,6 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
   };
 
   /**
-   * Persisted session data for potential reconnection
-   */
-  private persistedSession?: AdapterSessionData;
-
-  /**
    * Active transport instance
    */
   protected transport: Transport | null = null;
@@ -198,9 +193,28 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
   protected debug = false;
 
   /**
-   * Storage instance for session persistence
+   * Cached persisted session data from Zustand store
+   *
+   * This field stores a SessionState object that was loaded from the Zustand store
+   * during the `install()` lifecycle method. It enables adapters to detect and
+   * restore previous wallet connections across page refreshes.
+   *
+   * **Architecture Note**: Prior to the Zustand migration (2025-01), adapters used
+   * WalletStorage with a separate AdapterSessionData interface. Now, adapters access
+   * the full SessionState from the unified Zustand store, providing richer context
+   * for reconnection flows.
+   *
+   * **Usage Pattern**:
+   * 1. `install()` calls `restoreSession()` which populates this field
+   * 2. Subclass `connect()` methods can check this field to enable auto-reconnect
+   * 3. `cleanup()` clears this field on disconnect
+   *
+   * @see {@link restoreSession} for how this field is populated
+   * @see {@link persistSession} for how session data is saved to the store
+   * @see {@link getPersistedSession} for accessing this field
+   * @protected
    */
-  protected storage: WalletStorage | null = null;
+  protected persistedSession: SessionState | undefined;
 
   /**
    * Get current connection state (read-only)
@@ -209,21 +223,41 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
     return { ...this.connectionState };
   }
 
-
   /**
    * Initialize the adapter with context
    *
-   * Called by the framework when the adapter is registered. Subclasses can
-   * override to perform additional initialization but should call super.install().
+   * Called by the framework when the adapter is registered. This method sets up
+   * the adapter's logger, debug mode, and **automatically attempts to restore any
+   * previously persisted session from the Zustand store** to enable auto-reconnect
+   * across page refreshes.
+   *
+   * Subclasses can override to perform additional initialization but **must call
+   * super.install()** to ensure proper session restoration.
+   *
+   * **Session Restoration**: This method calls {@link restoreSession} which loads
+   * session data from the Zustand store and populates {@link persistedSession}.
+   * Subclasses can then check this field in their `connect()` method to implement
+   * automatic reconnection logic.
    *
    * @param context - Adapter context with logger and configuration
+   *
+   * @see {@link restoreSession} for session restoration details
+   * @see {@link persistedSession} for accessing restored session data
    *
    * @example
    * ```typescript
    * async install(context: AdapterContext): Promise<void> {
+   *   // Always call super first to restore session
    *   await super.install(context);
+   *
    *   // Additional initialization
    *   this.initializeCustomFeatures();
+   *
+   *   // Optionally check for persisted session
+   *   const session = this.getPersistedSession();
+   *   if (session) {
+   *     this.log('info', 'Found previous session, auto-reconnect available');
+   *   }
    * }
    * ```
    */
@@ -232,18 +266,11 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
     this.debug = Boolean((context as { debug?: boolean }).debug);
     this.log('debug', 'Installing adapter', { id: this.id });
 
-    // Initialize storage for session persistence
+    // Attempt to restore previous session from Zustand store
     try {
-      // Create a logger instance for storage if needed
-      const storageLogger =
-        this.logger instanceof Logger ? this.logger : new Logger(this.debug, `${this.id}-storage`);
-
-      this.storage = new WalletStorage({ prefix: 'walletmesh_' }, storageLogger);
-
-      // Attempt to restore previous session
       await this.restoreSession();
     } catch (error) {
-      this.log('warn', 'Failed to initialize storage or restore session', error);
+      this.log('warn', 'Failed to restore session', error);
     }
   }
 
@@ -553,7 +580,13 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
    * @param data - Event data
    */
   protected emitBlockchainEvent(
-    event: 'accountsChanged' | 'chainChanged' | 'disconnected' | 'connected' | 'statusChanged',
+    event:
+      | 'accountsChanged'
+      | 'chainChanged'
+      | 'disconnected'
+      | 'connected'
+      | 'statusChanged'
+      | 'sessionTerminated',
     data: unknown,
   ): void {
     this.log('debug', `Emitting blockchain event: wallet:${event}`, data);
@@ -575,21 +608,81 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
       case 'statusChanged':
         this.emit('wallet:statusChanged', data);
         break;
+      case 'sessionTerminated':
+        this.emit(
+          'wallet:sessionTerminated',
+          data as { sessionId: string; reason?: string; chainType?: ChainType },
+        );
+        break;
     }
   }
 
   /**
    * INFRASTRUCTURE HELPER: Clean up all resources
-   * Called automatically on disconnect and uninstall
+   *
+   * Performs comprehensive cleanup of adapter resources including Zustand store
+   * session removal, provider cleanup, transport cleanup, and state reset.
+   * Called automatically on `disconnect()` and `uninstall()`.
+   *
+   * **Zustand Store Integration**: This method removes all sessions for this wallet
+   * from the Zustand store, ensuring that persisted session data is cleared when
+   * the user explicitly disconnects. The store access is wrapped in a try-catch to
+   * gracefully handle test environments where the store may not be fully initialized.
+   *
+   * **Cleanup Order**:
+   * 1. Remove sessions from Zustand store (with graceful fallback)
+   * 2. Clear cached persisted session reference
+   * 3. Clean up wallet providers
+   * 4. Clean up transport connections
+   * 5. Remove all event listeners
+   * 6. Reset connection state to disconnected
+   *
+   * **Error Handling Strategy**: Uses nested try-catch blocks:
+   * - Inner try-catch: Handles Zustand store access failures (e.g., in tests)
+   * - Outer try-catch: Handles any unexpected errors during cleanup
+   *
+   * This ensures cleanup continues even if individual steps fail, preventing
+   * resource leaks in edge cases.
+   *
+   * @see {@link cleanupProviders} for provider cleanup details
+   * @see {@link cleanupTransport} for transport cleanup details
+   * @see {@link persistSession} for how sessions are saved
+   * @protected
    */
   protected async cleanup(): Promise<void> {
     this.log('debug', 'Cleaning up adapter resources');
 
     try {
-      // Clear persisted session
-      if (this.storage) {
-        this.storage.clearAdapterSession(this.id);
+      // Clear persisted session from Zustand store
+      // Nested try-catch ensures cleanup continues even if store is unavailable (e.g., in tests)
+      try {
+        const store = useStore.getState();
+        const sessions = store?.entities?.sessions;
+
+        if (sessions) {
+          // Find and remove sessions for this wallet
+          for (const [sessionId, session] of Object.entries(sessions)) {
+            if (session?.walletId === this.id) {
+              useStore.setState((state) => {
+                const newSessions = { ...state.entities.sessions };
+                delete newSessions[sessionId];
+                return {
+                  entities: {
+                    ...state.entities,
+                    sessions: newSessions,
+                  },
+                };
+              });
+            }
+          }
+        }
+      } catch (storeError) {
+        // Store may not be available in test environments - log but continue cleanup
+        this.log('debug', 'Could not access Zustand store during cleanup', storeError);
       }
+
+      // Clear cached persisted session
+      this.persistedSession = undefined;
 
       // Clean up providers
       await this.cleanupProviders();
@@ -644,103 +737,207 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
   }
 
   /**
-   * Persist session data to storage for recovery across page refreshes
+   * Persist session adapter reconstruction data to Zustand store for recovery across page refreshes
    *
-   * @param connection - The wallet connection to persist
-   * @param sessionId - The session ID to use
+   * This method stores the minimal data needed to recreate the adapter and transport
+   * after a page refresh. The data is saved to the SessionState's `adapterReconstruction`
+   * field in the Zustand store, which is automatically persisted to localStorage.
+   *
+   * **Architecture**: Prior to the Zustand migration (2025-01), this method used
+   * WalletStorage with a separate AdapterSessionData interface. Now it integrates
+   * directly with the unified SessionState in the Zustand store.
+   *
+   * **What Gets Persisted**:
+   * - `adapterType`: Wallet adapter identifier (e.g., 'metamask', 'phantom')
+   * - `blockchainType`: Chain type (e.g., 'evm', 'solana', 'aztec')
+   * - `transportConfig`: Transport type and configuration for reconnection
+   * - `walletMetadata`: Wallet name, icon, and description for UI display
+   * - `sessionId`: Session identifier for RPC calls
+   *
+   * **Page Refresh Flow**:
+   * 1. User connects wallet → Session created in Zustand store
+   * 2. `persistSession()` called → Updates SessionState.adapterReconstruction
+   * 3. Zustand persist middleware → Saves to localStorage
+   * 4. Page refresh → Zustand rehydrates from localStorage
+   * 5. `restoreSession()` called → Loads SessionState with adapterReconstruction
+   * 6. Adapter can use this data to reconnect automatically
+   *
+   * @param connection - The wallet connection containing data to persist
+   * @param sessionId - The session ID for this connection
+   *
+   * @see {@link restoreSession} for how this data is loaded after page refresh
+   * @see {@link SessionState.adapterReconstruction} for the stored data structure
+   * @see {@link cleanup} for how persisted data is cleared on disconnect
+   *
+   * @example
+   * ```typescript
+   * // After successful wallet connection
+   * const connection = await this.doConnect(options);
+   * const sessionId = this.generateSessionId();
+   *
+   * // Persist for page refresh recovery
+   * await this.persistSession(connection, sessionId);
+   *
+   * // Stored structure (automatically saved to localStorage):
+   * // {
+   * //   adapterType: 'metamask',
+   * //   blockchainType: 'evm',
+   * //   transportConfig: { type: 'extension', config: {} },
+   * //   walletMetadata: {
+   * //     name: 'MetaMask',
+   * //     icon: 'data:image/svg+xml;base64,...',
+   * //     description: 'MetaMask browser extension'
+   * //   },
+   * //   sessionId: 'session_metamask_abc123'
+   * // }
+   * ```
+   *
+   * @protected
    */
   protected async persistSession(connection: WalletConnection, sessionId: string): Promise<void> {
-    if (!this.storage) {
-      this.log('debug', 'Storage not available, skipping session persistence');
-      return;
-    }
-
     try {
-      // Extract provider metadata if available
-      let providerMetadata: Record<string, unknown> | undefined;
-      const provider = connection.provider as unknown;
-      if (provider && typeof provider === 'object') {
-        // Check if provider has sessionId or other metadata
-        if ('sessionId' in provider) {
-          providerMetadata = { sessionId: (provider as { sessionId: unknown }).sessionId };
-        }
-        if (
-          'getConnectionInfo' in provider &&
-          typeof (provider as { getConnectionInfo: unknown }).getConnectionInfo === 'function'
-        ) {
-          try {
-            const connectionInfo = await (
-              provider as { getConnectionInfo: () => Promise<unknown> }
-            ).getConnectionInfo();
-            providerMetadata = { ...providerMetadata, connectionInfo };
-          } catch (error) {
-            this.log('debug', 'Failed to get connection info from provider', error);
-          }
-        }
+      const store = useStore.getState();
+      const session = store.entities.sessions[sessionId];
+
+      if (!session) {
+        this.log('debug', 'No session found in store for persistence', { sessionId });
+        return;
       }
 
-      const sessionData: AdapterSessionData = {
-        walletId: this.id,
-        sessionId,
-        chainId: connection.chain.chainId,
-        chainType: String(connection.chainType),
-        accounts: connection.accounts,
-        activeAccount: connection.address,
-        metadata: {
-          connectedAt: connection.metadata?.connectedAt || Date.now(),
-          lastActiveAt: Date.now(),
-          ...(connection.metadata?.sessionMetadata && {
-            walletMetadata: connection.metadata.sessionMetadata,
-          }),
-          ...(providerMetadata && { providerMetadata }),
+      // Build adapter reconstruction data
+      const adapterReconstruction = {
+        adapterType: this.id,
+        blockchainType: String(connection.chainType),
+        transportConfig: this.transport
+          ? {
+              type: String((this.transport as { type?: unknown }).type || 'unknown'),
+              config: (this.transport as { config?: Record<string, unknown> }).config || {},
+            }
+          : {
+              type: 'unknown',
+              config: {},
+            },
+        walletMetadata: {
+          name: connection.walletInfo.name,
+          icon: connection.walletInfo.icon || '',
+          description: connection.walletInfo.description,
         },
-        ...(this.transport && {
-          transportConfig: {
-            type: String((this.transport as { type?: unknown }).type || 'unknown'),
-            config: {},
-          },
-        }),
+        sessionId,
       };
 
-      this.storage.saveAdapterSession(this.id, sessionData);
-      this.log('debug', 'Persisted session data', { walletId: this.id, sessionId });
+      // Update the session's adapterReconstruction field
+      useStore.setState((state) => ({
+        entities: {
+          ...state.entities,
+          sessions: {
+            ...state.entities.sessions,
+            [sessionId]: {
+              ...state.entities.sessions[sessionId],
+              adapterReconstruction,
+            },
+          },
+        },
+      }));
+
+      this.log('debug', 'Persisted adapter reconstruction data', { walletId: this.id, sessionId });
     } catch (error) {
       this.log('error', 'Failed to persist session', error);
     }
   }
 
   /**
-   * Restore a previously persisted session
+   * Restore a previously persisted session from Zustand store
    *
-   * This method attempts to restore a session from storage but does not
-   * automatically reconnect. Subclasses should override this method to
-   * implement reconnection logic specific to their wallet type.
+   * This method is automatically called by `install()` during adapter initialization.
+   * It searches the Zustand store for a SessionState matching this wallet's ID and,
+   * if found, caches it in the {@link persistedSession} field for potential use
+   * during reconnection flows.
+   *
+   * **Important**: This method only **loads** session data; it does **not** automatically
+   * reconnect to the wallet. Subclasses should override this method (calling `super.restoreSession()`)
+   * to implement wallet-specific reconnection logic.
+   *
+   * **Architecture**: Prior to the Zustand migration (2025-01), this method used
+   * WalletStorage to load AdapterSessionData. Now it loads the full SessionState from
+   * the Zustand store, providing richer context including account information, chain
+   * details, and permissions.
+   *
+   * **Lifecycle**:
+   * 1. `install()` calls this method
+   * 2. Method queries Zustand store for sessions matching `this.id`
+   * 3. If found, stores in `this.persistedSession`
+   * 4. Updates session's `lastActiveAt` timestamp
+   * 5. Subclass `connect()` can check `this.persistedSession` for auto-reconnect
+   *
+   * **Override Pattern**:
+   * ```typescript
+   * protected async restoreSession(): Promise<void> {
+   *   // Call parent to load session data
+   *   await super.restoreSession();
+   *
+   *   // Check if we have a session to restore
+   *   const session = this.getPersistedSession();
+   *   if (!session) return;
+   *
+   *   // Implement wallet-specific reconnection
+   *   try {
+   *     await this.reconnectWithSession(session);
+   *     this.log('info', 'Auto-reconnected from persisted session');
+   *   } catch (error) {
+   *     this.log('warn', 'Auto-reconnect failed, user must reconnect manually', error);
+   *   }
+   * }
+   * ```
+   *
+   * @see {@link install} which calls this method automatically
+   * @see {@link persistedSession} which stores the loaded session
+   * @see {@link persistSession} for how session data is saved
+   * @see {@link getPersistedSession} for accessing the restored session
+   *
+   * @protected
    */
   protected async restoreSession(): Promise<void> {
-    if (!this.storage) {
-      this.log('debug', 'Storage not available, skipping session restoration');
-      return;
-    }
-
     try {
-      const sessionData = this.storage.getAdapterSession(this.id);
-      if (!sessionData) {
-        this.log('debug', 'No persisted session found');
+      const store = useStore.getState();
+      const sessions = Object.values(store.entities.sessions);
+
+      // Find a session for this wallet
+      const session = sessions.find((s) => s.walletId === this.id);
+
+      if (!session) {
+        this.log('debug', 'No persisted session found for wallet', { walletId: this.id });
         return;
       }
 
       this.log('info', 'Found persisted session', {
-        walletId: sessionData.walletId,
-        sessionId: sessionData.sessionId,
-        chainId: sessionData.chainId,
+        walletId: session.walletId,
+        sessionId: session.sessionId,
+        chainId: session.chain.chainId,
       });
 
       // Store the session data for potential use during connect
       // Subclasses can override this method to implement auto-reconnect
-      this.persistedSession = sessionData;
+      this.persistedSession = session;
 
-      // Touch the session to update last active time
-      this.storage.touchAdapterSession(this.id);
+      // Update last active time
+      const existingSession = useStore.getState().entities.sessions[session.sessionId];
+      if (existingSession) {
+        useStore.setState((state) => ({
+          entities: {
+            ...state.entities,
+            sessions: {
+              ...state.entities.sessions,
+              [session.sessionId]: {
+                ...existingSession,
+                lifecycle: {
+                  ...existingSession.lifecycle,
+                  lastActiveAt: Date.now(),
+                },
+              },
+            },
+          },
+        }));
+      }
     } catch (error) {
       this.log('error', 'Failed to restore session', error);
     }
@@ -749,9 +946,41 @@ export abstract class AbstractWalletAdapter implements WalletAdapter {
   /**
    * Get the persisted session data if available
    *
-   * @returns The persisted session data or undefined
+   * Returns the SessionState that was loaded from the Zustand store during
+   * `install()`. This provides access to previously persisted wallet connection
+   * data for implementing auto-reconnect flows.
+   *
+   * **Usage**: Subclasses typically call this method in their `connect()` implementation
+   * to check if a previous session exists and attempt automatic reconnection.
+   *
+   * @returns The persisted SessionState from the Zustand store, or undefined if no session was found
+   *
+   * @see {@link restoreSession} for how this field is populated
+   * @see {@link persistedSession} for the internal storage field
+   *
+   * @example
+   * ```typescript
+   * async connect(options?: ConnectOptions): Promise<WalletConnection> {
+   *   // Check for persisted session to enable auto-reconnect
+   *   const persistedSession = this.getPersistedSession();
+   *
+   *   if (persistedSession && !options?.forceNew) {
+   *     this.log('info', 'Found persisted session, attempting auto-reconnect');
+   *     try {
+   *       return await this.reconnectWithSession(persistedSession);
+   *     } catch (error) {
+   *       this.log('warn', 'Auto-reconnect failed, proceeding with new connection', error);
+   *     }
+   *   }
+   *
+   *   // Normal connection flow
+   *   return await this.doConnect(options);
+   * }
+   * ```
+   *
+   * @protected
    */
-  protected getPersistedSession(): AdapterSessionData | undefined {
+  protected getPersistedSession(): SessionState | undefined {
     return this.persistedSession;
   }
 

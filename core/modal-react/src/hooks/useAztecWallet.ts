@@ -472,7 +472,7 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
       // Wait for the initialization to complete
       try {
         await initPromise;
-      } catch (error) {
+      } catch (_error) {
         // Error already handled above
       }
     }
@@ -558,7 +558,7 @@ export function useAztecWallet(chain?: SupportedChain): AztecWalletInfo {
         try {
           const info = await getAccountInfo(aztecWallet, account);
           accountInfos.push(info);
-        } catch (err) {
+        } catch (_err) {
           // If we can't get info for an account, create basic info
           accountInfos.push({
             address: account,

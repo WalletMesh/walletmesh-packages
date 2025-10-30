@@ -32,7 +32,6 @@ import type { ModalError } from '../core/errors/types.js';
 import { ERROR_CODES } from '../core/errors/types.js';
 import { createCoreServices } from '../core/factories/serviceFactory.js';
 import type { Logger } from '../core/logger/logger.js';
-import type { WalletRegistry } from '../registries/wallets/WalletRegistry.js';
 import { ModalController } from './controller.js';
 
 // Install domain-specific matchers
@@ -82,7 +81,7 @@ const createWalletClientMock = () => {
     connect: vi.fn().mockImplementation(async (walletId: string) => {
       // Create session in unified store
       const { useStore } = await import('../../state/store.js');
-      const store = useStore.getState();
+      const _store = useStore.getState();
 
       const sessionParams = {
         walletId,
@@ -150,7 +149,7 @@ describe('Modal Controller Error Handling Integration', () => {
   let modalController: ModalController;
   // let frameworkAdapter: ReturnType<typeof createFrameworkAdapterMock>; // Framework adapters removed
   let clientInstance: ReturnType<typeof createWalletClientMock>;
-  let useStoreActual: typeof import('../../state/store.js').useStore;
+  let _useStoreActual: typeof import('../../state/store.js').useStore;
 
   // Event listeners removed - using state checking instead
 
@@ -158,7 +157,7 @@ describe('Modal Controller Error Handling Integration', () => {
     // Import actual unified store to avoid mock conflicts and freezing issues
     const storeModule = await vi.importActual('../../state/store.js');
     const typedModule = storeModule as typeof import('../../state/store.js');
-    useStoreActual = typedModule.useStore;
+    _useStoreActual = typedModule.useStore;
   });
 
   // Set up before each test
@@ -167,7 +166,7 @@ describe('Modal Controller Error Handling Integration', () => {
 
     // Create a SessionManager for testing
     const { SessionManager } = await import('../session/SessionManager.js');
-    const sessionManager = new SessionManager();
+    const _sessionManager = new SessionManager();
 
     // Create a real store using the test function
     const realStore = createTestStore({
@@ -408,7 +407,7 @@ describe('Modal Controller Error Handling Integration', () => {
         // View errors might not propagate to connection state
         expect(state.connection.state).toBe('error');
       }
-    } catch (error) {
+    } catch (_error) {
       console.warn('View transition test failed but continuing with test suite');
     }
   });
@@ -419,7 +418,7 @@ describe('Modal Controller Error Handling Integration', () => {
   it('should handle disconnection errors properly', async () => {
     // First create a session to disconnect from
     const { useStore } = await import('../../state/store.js');
-    const store = useStore.getState();
+    const _store = useStore.getState();
 
     const sessionParams = {
       walletId: 'wallet1',
@@ -494,7 +493,7 @@ describe('Modal Controller Error Handling Integration', () => {
 
       // The modal controller uses the error handler for logging
       errorHandler.logError(testError, 'ModalTest');
-    } catch (error) {
+    } catch (_error) {
       console.warn('Error event system test failed but continuing with test suite');
     }
   });
@@ -545,7 +544,7 @@ describe('Modal Controller Error Handling Integration', () => {
         expect(state.connection.error.code).toBeTruthy();
         expect(state.connection.error.message).toBeTruthy();
       }
-    } catch (error) {
+    } catch (_error) {
       console.warn('Error context test failed but continuing with test suite');
     }
   });

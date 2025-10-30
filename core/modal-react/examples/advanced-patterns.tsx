@@ -19,7 +19,7 @@ import {
   useWalletEvents,
 } from '@walletmesh/modal-react';
 import type React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Example 1: SSR-Safe Components

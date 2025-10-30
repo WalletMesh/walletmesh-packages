@@ -99,7 +99,8 @@ describe('createContractInteractionHandlers', () => {
       expect(result.txStatusId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i); // UUID format
 
       // Verify notifications were sent for each stage
-      const notifyCalls = vi.mocked(mockContext.notify!).mock.calls;
+      if (!mockContext.notify) throw new Error('notify should be defined in test');
+      const notifyCalls = vi.mocked(mockContext.notify).mock.calls;
 
       // Should have notifications for: initiated, simulating, proving, sending, pending
       expect(notifyCalls.length).toBeGreaterThanOrEqual(5);
@@ -183,7 +184,8 @@ describe('createContractInteractionHandlers', () => {
       await expect(handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload])).rejects.toThrow();
 
       // Verify error notification was sent with a backend-generated txStatusId
-      const notifyCalls = vi.mocked(mockContext.notify!).mock.calls;
+      if (!mockContext.notify) throw new Error('notify should be defined in test');
+      const notifyCalls = vi.mocked(mockContext.notify).mock.calls;
       const failedCall = notifyCalls.find(
         (call) =>
           call[0] === 'aztec_transactionStatus' &&
@@ -201,7 +203,8 @@ describe('createContractInteractionHandlers', () => {
 
     it('should continue transaction execution even if notifications fail', async () => {
       // Make notify fail
-      vi.mocked(mockContext.notify!).mockRejectedValue(new Error('Notification failed'));
+      if (!mockContext.notify) throw new Error('notify should be defined in test');
+      vi.mocked(mockContext.notify).mockRejectedValue(new Error('Notification failed'));
 
       // Transaction should still complete successfully
       const result = await handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload]);
@@ -545,7 +548,8 @@ describe('createContractInteractionHandlers', () => {
 
       const result = await handlers.aztec_wmBatchExecute(mockContext, [[payload1]]);
 
-      const notifyCalls = vi.mocked(mockContext.notify!).mock.calls;
+      if (!mockContext.notify) throw new Error('notify should be defined in test');
+      const notifyCalls = vi.mocked(mockContext.notify).mock.calls;
       const txStatusId = result.txStatusId;
 
       // Should have notifications for: initiated, simulating, proving, sending, pending
@@ -645,7 +649,8 @@ describe('createContractInteractionHandlers', () => {
       await expect(handlers.aztec_wmBatchExecute(mockContext, [[payload1]])).rejects.toThrow();
 
       // Verify error notification was sent
-      const notifyCalls = vi.mocked(mockContext.notify!).mock.calls;
+      if (!mockContext.notify) throw new Error('notify should be defined in test');
+      const notifyCalls = vi.mocked(mockContext.notify).mock.calls;
       const failedCall = notifyCalls.find(
         (call) =>
           call[0] === 'aztec_transactionStatus' &&
@@ -760,7 +765,8 @@ describe('createContractInteractionHandlers', () => {
       const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
 
       // Make notify fail
-      vi.mocked(mockContext.notify!).mockRejectedValue(new Error('Notification failed'));
+      if (!mockContext.notify) throw new Error('notify should be defined in test');
+      vi.mocked(mockContext.notify).mockRejectedValue(new Error('Notification failed'));
 
       // Transaction should still complete successfully
       const result = await handlers.aztec_wmBatchExecute(mockContext, [[payload1]]);

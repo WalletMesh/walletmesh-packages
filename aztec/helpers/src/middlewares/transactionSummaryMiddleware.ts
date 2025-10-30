@@ -151,7 +151,7 @@ export const createTransactionSummaryMiddleware = (): JSONRPCMiddleware<
       if (summary) {
         summaryStore.set(sessionKey, {
           summary,
-          ...(context.functionCallArgNames && { functionArgNames: context.functionCallArgNames })
+          ...(context.functionCallArgNames && { functionArgNames: context.functionCallArgNames }),
         });
         context.transactionSummary = summary;
       }
@@ -174,7 +174,7 @@ export const createTransactionSummaryMiddleware = (): JSONRPCMiddleware<
       if (summary) {
         summaryStore.set(sessionKey, {
           summary,
-          ...(context.functionCallArgNames && { functionArgNames: context.functionCallArgNames })
+          ...(context.functionCallArgNames && { functionArgNames: context.functionCallArgNames }),
         });
         context.transactionSummary = summary;
       }

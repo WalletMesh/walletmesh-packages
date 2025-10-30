@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createMockEvmProvider, testSetupPatterns } from '../../testing/index.js';
 import { CHAIN_CONFIGS, type ChainInfo, ChainManager } from './chainManager.js';
 

@@ -93,7 +93,7 @@ export abstract class AbstractTransport implements Transport {
   async connect(): Promise<void> {
     try {
       await this.connectWithRetry();
-    } catch (error) {
+    } catch (_error) {
       // Create transport error using ErrorFactory
       const modalError = ErrorFactory.connectionFailed('Failed to connect to transport', {
         context: 'connect',
@@ -144,7 +144,7 @@ export abstract class AbstractTransport implements Transport {
   async disconnect(): Promise<void> {
     try {
       await this.disconnectInternal();
-    } catch (error) {
+    } catch (_error) {
       // Create transport error using ErrorFactory
       const modalError = ErrorFactory.transportDisconnected('Failed to disconnect from transport', 'manual');
 
@@ -193,7 +193,7 @@ export abstract class AbstractTransport implements Transport {
           await this.delay(DELAY_MS);
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Create transport error using ErrorFactory
       const modalError = ErrorFactory.messageFailed('Failed to send message through transport', { data });
 

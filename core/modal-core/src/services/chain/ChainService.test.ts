@@ -5,18 +5,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WalletInfo } from '../../core/types.js';
 import { createLogger } from '../../internal/core/logger/logger.js';
-import {
-  createMockEvmProvider,
-  createMockServiceDependencies,
-  createMockWalletInfo,
-  createTestEnvironment,
-  installCustomMatchers,
-} from '../../testing/index.js';
+import { createMockWalletInfo, createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
 import { ChainType } from '../../types.js';
 import type { ChainServiceDependencies } from './ChainService.js';
 import { ChainService } from './ChainService.js';
-import type { ChainEnsuranceConfig } from './ChainService.js';
-import type { ChainInfo, SwitchChainArgs } from './types.js';
+import type { ChainInfo } from './types.js';
 
 // Install domain-specific matchers
 installCustomMatchers();

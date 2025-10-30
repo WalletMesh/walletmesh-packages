@@ -11,9 +11,9 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { AccountInfo, CreateSessionParams, SessionState } from '../api/types/sessionState.js';
+import type { CreateSessionParams, SessionState } from '../api/types/sessionState.js';
 import { SessionManager } from '../internal/session/SessionManager.js';
-import { ChainType, testSetupPatterns } from '../testing/index.js';
+import { ChainType } from '../testing/index.js';
 
 // Extreme edge case providers
 const createExtremeEdgeCaseProvider = (behavior: string) => {
@@ -361,7 +361,7 @@ describe('SessionManager Edge Cases', () => {
           chainType: ChainType.Evm,
           name: 'Polygon',
         });
-      } catch (error) {
+      } catch (_error) {
         // Expected to fail, but shouldn't crash
       }
 
@@ -624,7 +624,7 @@ describe('SessionManager Edge Cases', () => {
       for (const session of sessions) {
         try {
           await sessionManager.endSession(session.sessionId);
-        } catch (error) {
+        } catch (_error) {
           // Cleanup might fail under extreme conditions, but shouldn't crash
         }
       }

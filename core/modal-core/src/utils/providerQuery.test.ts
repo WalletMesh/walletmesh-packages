@@ -8,7 +8,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ChainType } from '../types.js';
 import {
   type ProviderQueryOptions,
-  type ProviderQueryResult,
   createProviderQueryKey,
   executeProviderMethod,
   isMethodSupported,

@@ -233,6 +233,7 @@ export function AztecWalletMeshProvider({ config, children, ...restProps }: Azte
   // Create full WalletMesh configuration from Aztec-specific config
   const walletMeshConfig = createAztecConfig(config);
 
+  // biome-ignore lint/suspicious/noExplicitAny: AztecWalletMeshConfig extends WalletMeshConfig with additional fields
   return (
     <WalletMeshProvider config={walletMeshConfig as any} {...restProps}>
       {children}

@@ -21,10 +21,9 @@ import {
   isEVMInterface,
   isSolanaInterface,
   useAccount,
-  usePublicProvider,
   useWalletProvider,
 } from '@walletmesh/modal-react';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * Example 1: Using Provider Implementations

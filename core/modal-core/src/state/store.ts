@@ -41,6 +41,7 @@ export interface LoadingState {
   operations?: Record<string, boolean>;
   modal?: boolean;
   connection?: boolean;
+  reconnecting?: boolean;
   discovery?: boolean;
   transaction?: boolean;
 }
@@ -338,18 +339,12 @@ export const useStore = create<WalletMeshState>()(
         reviver: (_, value) => value,
         replacer: (_, value) => {
           // Exclude non-serializable values during JSON.stringify
+          // Only skip functions - trust partialize to handle complex objects
           if (typeof value === 'function') {
             return undefined;
           }
-          // Exclude circular references and other problematic objects
-          if (value && typeof value === 'object') {
-            try {
-              JSON.stringify(value);
-            } catch (error) {
-              // Skip objects that can't be serialized
-              return undefined;
-            }
-          }
+          // Allow objects to be serialized naturally
+          // partialize already removes problematic data like provider.instance
           return value;
         },
       }),
@@ -357,7 +352,29 @@ export const useStore = create<WalletMeshState>()(
       partialize: (state) => ({
         // Only persist specific parts of state
         entities: {
-          sessions: state.entities.sessions,
+          // Exclude provider.instance from sessions to prevent cross-origin errors
+          // The provider instance contains references to Window objects (popup, iframe)
+          // which cannot be serialized and cause cross-origin security violations.
+          // Provider instances are recreated from adapter reconstruction data on page reload.
+          //
+          // IMPORTANT: Only persist sessions that have adapterReconstruction.sessionId
+          // Wallets that don't support session persistence won't have this field,
+          // so we skip persisting them (they'll need fresh connection each time)
+          sessions: Object.fromEntries(
+            Object.entries(state.entities.sessions)
+              // Filter: only persist sessions with sessionId for reconnection
+              .filter(([_id, session]) => session.adapterReconstruction?.sessionId)
+              .map(([id, session]) => [
+                id,
+                {
+                  ...session,
+                  provider: {
+                    ...session.provider,
+                    instance: null, // Exclude non-serializable provider instance
+                  },
+                },
+              ]),
+          ),
           // Don't persist wallets or transactions
         },
         active: {
@@ -375,16 +392,63 @@ export const useStore = create<WalletMeshState>()(
       }),
       // Merge persisted state with initial state to ensure all properties exist
       merge: (persistedState, currentState) => {
-        const persisted = persistedState as Partial<WalletMeshState>;
+        // Zustand persist middleware wraps state in a 'state' property
+        // Access the nested state or fall back to direct access for compatibility
+        const rawPersisted = persistedState as any;
+        const persisted = (rawPersisted?.state || rawPersisted) as Partial<WalletMeshState>;
+
+        // Debug logging to track rehydration
+        console.log('[Store] Merge function called with:', {
+          hasState: !!rawPersisted?.state,
+          hasEntities: !!persisted?.entities,
+          hasSessions: !!persisted?.entities?.sessions,
+          sessionCount: persisted?.entities?.sessions ? Object.keys(persisted.entities.sessions).length : 0,
+        });
+
+        const now = Date.now();
+        const MAX_SESSION_AGE = 24 * 60 * 60 * 1000; // 24 hours
+
+        // Filter out stale sessions during rehydration
+        // Note: Sessions without adapterReconstruction.sessionId are already filtered
+        // by partialize, so we only need to check age here
+        const validSessions: Record<string, SessionState> = {};
+        const persistedSessions = persisted?.entities?.sessions || {};
+
+        for (const [sessionId, session] of Object.entries(persistedSessions)) {
+          // Skip if session is too old
+          if (session.lifecycle?.createdAt && now - session.lifecycle.createdAt > MAX_SESSION_AGE) {
+            console.log('[Store] Skipping stale session during merge:', sessionId, {
+              age: now - session.lifecycle.createdAt,
+              maxAge: MAX_SESSION_AGE,
+            });
+            continue;
+          }
+
+          // Session is valid for restoration (already has sessionId from partialize filter)
+          validSessions[sessionId] = session;
+        }
+
+        console.log('[Store] Session validation during merge:', {
+          persistedCount: Object.keys(persistedSessions).length,
+          validCount: Object.keys(validSessions).length,
+          skippedCount: Object.keys(persistedSessions).length - Object.keys(validSessions).length,
+        });
+
         const merged: WalletMeshState = {
           ...currentState,
           entities: {
             ...currentState.entities,
-            sessions: persisted?.entities?.sessions || currentState.entities.sessions,
+            // Restore only validated sessions with null provider instances
+            // Provider instances will be recreated by adapters during reconnection
+            sessions: validSessions,
           },
           active: {
             ...currentState.active,
-            sessionId: persisted?.active?.sessionId || currentState.active.sessionId,
+            // Only restore active sessionId if it exists in validated sessions
+            sessionId:
+              persisted?.active?.sessionId && validSessions[persisted.active.sessionId]
+                ? persisted.active.sessionId
+                : currentState.active.sessionId,
           },
           ui: {
             ...currentState.ui,

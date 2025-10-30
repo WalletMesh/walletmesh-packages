@@ -35,7 +35,7 @@ import type {
   UtilitySimulationResult,
 } from '@aztec/stdlib/tx';
 
-import type { AztecChainId } from '../types.js';
+import type { AztecChainId, UnifiedSimulationResult } from '../types.js';
 import type { AztecRouterProvider } from './aztec-router-provider.js';
 
 const logger = createLogger('aztec-rpc-wallet:dapp-wallet');
@@ -1032,19 +1032,34 @@ export class AztecDappWallet implements Wallet {
 
   /**
    * Simulates a transaction based on a {@link ContractFunctionInteraction}.
-   * This WalletMesh-specific helper method simplifies simulating a transaction by deriving
-   * the necessary {@link ExecutionPayload} from the interaction and making an RPC call
-   * to the `aztec_wmSimulateTx` method on the remote wallet.
+   * This WalletMesh-specific helper method simplifies simulating by deriving the necessary
+   * {@link ExecutionPayload} from the interaction and making an RPC call to the
+   * `aztec_wmSimulateTx` method on the remote wallet.
+   *
+   * The wallet automatically detects whether this is a utility (view/pure) function or a
+   * state-changing transaction and performs the appropriate simulation. The result is wrapped
+   * in a {@link UnifiedSimulationResult} that provides:
+   * - Easy access to the decoded return value via `decodedResult`
+   * - The original simulation result for advanced use cases via `originalResult`
+   * - Metadata about which type of simulation was performed via `simulationType`
    *
    * @param interaction - The {@link ContractFunctionInteraction} representing the desired contract call.
-   * @returns A promise that resolves to the {@link TxSimulationResult}.
-   * @remarks TODO(twt): This should return a more useful result, not the raw TxSimulationResult.
-   *   Copying the logic from `aztec.js/src/contract/contract_function_interaction.ts`
-   *   could work if we can get the Function ABI or maybe have `aztec_wmSimulateTx` return hints
-   *   about how to interpret the result.
+   * @returns A promise that resolves to the {@link UnifiedSimulationResult}.
    * @see {@link AztecWalletMethodMap.aztec_wmSimulateTx}
+   *
+   * @example
+   * ```typescript
+   * // Simple usage - access decoded result
+   * const result = await wallet.wmSimulateTx(interaction);
+   * console.log('Return value:', result.decodedResult);
+   *
+   * // Advanced usage - access original result for gas estimation
+   * if (result.simulationType === 'transaction') {
+   *   const gasUsed = result.originalResult.gasUsed;
+   * }
+   * ```
    */
-  async wmSimulateTx(interaction: ContractFunctionInteraction): Promise<TxSimulationResult> {
+  async wmSimulateTx(interaction: ContractFunctionInteraction): Promise<UnifiedSimulationResult> {
     // Extract the execution payload which contains the encoded function call
     const executionPayload = await interaction.request();
 
@@ -1054,11 +1069,8 @@ export class AztecDappWallet implements Wallet {
       params: {
         executionPayload,
       },
-    })) as TxSimulationResult;
+    })) as UnifiedSimulationResult;
 
-    // TODO(twt): This should return a more useful result, not the raw TxSimulationResult
-    // Copying the logic from https://github.com/AztecProtocol/aztec-packages/blob/next/yarn-project/aztec.js/src/contract/contract_function_interaction.ts
-    // could work if we can get the Function ABI or maybe have aztec_wmSimulateTx return hints about how to interpret the result.
     return result;
   }
 

@@ -270,7 +270,7 @@ describe('PopupWindowTransport', () => {
               type: 'message',
               data,
             });
-          } catch (error) {
+          } catch (_error) {
             // Ignore errors in test
           }
         };
@@ -910,7 +910,7 @@ describe('PopupWindowTransport', () => {
                 // Would handle connection here
               }
             }
-          } catch (error) {
+          } catch (_error) {
             // Ignore parsing errors for other messages (lines 243-245)
             // This is what we're testing
           }
@@ -1102,7 +1102,7 @@ describe('PopupWindowTransport', () => {
                 handleConnected();
               }
             }
-          } catch (error) {
+          } catch (_error) {
             // Ignore parsing errors for other messages (Lines 243-245)
           }
         };

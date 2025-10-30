@@ -18,7 +18,6 @@ import {
   useAccount,
   useConnect,
 } from '@walletmesh/modal-react';
-import React from 'react';
 
 /**
  * Example wallet configurations with proper SVG data URIs
@@ -113,7 +112,7 @@ function WalletDisplay() {
  * Helper function to convert SVG files to data URIs
  * This would typically run during your build process
  */
-function convertSvgToDataUri(svgContent: string): string {
+function _convertSvgToDataUri(svgContent: string): string {
   // Remove any whitespace and newlines for smaller size
   const minified = svgContent.replace(/\s+/g, ' ').replace(/> </g, '><').trim();
 

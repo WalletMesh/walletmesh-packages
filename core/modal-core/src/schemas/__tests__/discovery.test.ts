@@ -7,7 +7,6 @@ import { z } from 'zod';
 import {
   transportConfigSchema,
   capabilityRequirementsSchema,
-  capabilityIntersectionSchema,
   discoveryAccountSchema,
   qualifiedResponderSchema,
   validateQualifiedResponder,

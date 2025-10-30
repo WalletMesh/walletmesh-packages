@@ -15,9 +15,7 @@ export function SessionDebugger() {
   const [connectionDebugInfo, setConnectionDebugInfo] = useState<ConnectionDebugInfo | null>(null);
 
   // Get connection data from store using hook
-  const activeSessionId = useStore((state) => state.active.sessionId);
   const activeWalletId = useStore((state) => state.active.walletId);
-  const sessions = useStore((state) => state.entities.sessions);
   const wallets = useStore((state) => state.entities.wallets);
 
   useEffect(() => {
@@ -30,7 +28,7 @@ export function SessionDebugger() {
       chainId: chain?.chainId ?? null,
       chainType: chain?.chainType ?? null,
     });
-  }, [activeSessionId, activeWalletId, sessions, wallets, isConnected, address, chain]);
+  }, [activeWalletId, wallets, isConnected, address, chain]);
 
   if (!connectionDebugInfo) return null;
 

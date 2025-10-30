@@ -12,20 +12,18 @@
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CreateSessionParams, SessionState } from '../api/types/sessionState.js';
+import type { CreateSessionParams } from '../api/types/sessionState.js';
 import { ErrorFactory } from '../internal/core/errors/errorFactory.js';
 import { ERROR_CODES } from '../internal/core/errors/types.js';
 import { WalletRegistry } from '../internal/registries/wallets/WalletRegistry.js';
 import { SessionManager } from '../internal/session/SessionManager.js';
 import { connectionActions } from '../state/actions/connections.js';
-import { transactionActions } from '../state/actions/transactions.js';
 import { uiActions } from '../state/actions/ui.js';
 import {
   ChainType,
   createMockEvmProvider,
   createMockSolanaProvider,
   createTestStore,
-  testSetupPatterns,
 } from '../testing/index.js';
 
 // Mock provider for testing
@@ -88,13 +86,13 @@ const createMockSessionParams = (overrides: Partial<CreateSessionParams> = {}): 
 
 describe('Wallet Connection Integration', () => {
   let store: ReturnType<typeof createTestStore>;
-  let sessionManager: SessionManager;
+  let _sessionManager: SessionManager;
   let walletRegistry: WalletRegistry;
 
   beforeEach(() => {
     // Clear localStorage to prevent session persistence between tests
     global.localStorage?.clear();
-    sessionManager = new SessionManager();
+    _sessionManager = new SessionManager();
     store = createTestStore({
       enableDevtools: false,
       persistOptions: { enabled: false },
@@ -256,7 +254,6 @@ describe('Wallet Connection Integration', () => {
     it('should handle chain switch failures gracefully', async () => {
       // 1. Create session with provider that fails chain switching
       const failingProvider = createMockEvmProvider({
-        // biome-ignore lint/style/useNamingConvention: EIP-3326 RPC method name
         wallet_switchEthereumChain: new Error('Chain not supported'),
       });
 
@@ -289,7 +286,7 @@ describe('Wallet Connection Integration', () => {
         store,
         createMockSessionParams({ walletId: 'walletconnect' }),
       );
-      const coinbaseSession = await connectionActions.createSession(
+      const _coinbaseSession = await connectionActions.createSession(
         store,
         createMockSessionParams({ walletId: 'coinbase' }),
       );
@@ -430,7 +427,7 @@ describe('Wallet Connection Integration', () => {
           walletId: '',
           accounts: [],
         } as CreateSessionParams);
-      } catch (error) {
+      } catch (_error) {
         // Expected to fail
       }
 

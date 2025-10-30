@@ -284,7 +284,8 @@ export class CapabilityMatcher {
       }
     }
 
-    const canFulfill = missingTechnologies.length === 0 && missingFeatures.length === 0 && missingNetworks.length === 0;
+    const canFulfill =
+      missingTechnologies.length === 0 && missingFeatures.length === 0 && missingNetworks.length === 0;
 
     if (!canFulfill) {
       return {

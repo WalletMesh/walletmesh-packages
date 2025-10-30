@@ -15,6 +15,7 @@ import {
   useAztecTransaction,
   useAztecWallet,
 } from '@walletmesh/modal-react/aztec';
+import { useSessionError, type SessionError } from '@walletmesh/modal-react';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '../contexts/ToastContext.js';
@@ -30,7 +31,7 @@ const DApp: React.FC = () => {
 
   // Use modal-react hooks for wallet management
   const { aztecWallet } = useAztecWallet();
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
 
   // Use simulation hook for contract calls
   const { simulate: simulateInteraction } = useAztecSimulation();
@@ -73,19 +74,38 @@ const DApp: React.FC = () => {
     contract: tokenContract,
     isLoading: isTokenContractLoading,
     error: tokenContractError,
-  } = useAztecContract<any>(tokenAddress, tokenAddress ? (TokenContractArtifact as any) : null);
+  } = useAztecContract<unknown>(tokenAddress, tokenAddress ? (TokenContractArtifact as any) : null);
 
   const {
     contract: counterContract,
     isLoading: isCounterContractLoading,
     error: counterContractError,
-  } = useAztecContract<any>(counterAddress, counterAddress ? (CounterContractArtifact as any) : null);
+  } = useAztecContract<unknown>(counterAddress, counterAddress ? (CounterContractArtifact as any) : null);
 
   // State for UI display and transaction status
   const [tokenBalance, setTokenBalance] = useState<string>('');
   const [isRefreshingBalance, setIsRefreshingBalance] = useState<boolean>(false);
   const [counterValue, setCounterValue] = useState<string>('');
   const [isFetchingCounterValue, setIsFetchingCounterValue] = useState<boolean>(false);
+
+  // Use the session error hook for automatic session error handling
+  const { isSessionError } = useSessionError({
+    autoDisconnect: true,
+    onSessionError: (error: SessionError) => {
+      console.log('[DApp] 🚨 Session error detected', error);
+      showError(`Wallet session expired (code: ${error.code}). Please reconnect to continue.`);
+    },
+    disconnectReason: 'session_expired',
+  });
+
+  // Clear stale data when wallet disconnects
+  useEffect(() => {
+    if (!isConnected) {
+      console.log('[DApp] 🧹 Clearing stale data - wallet disconnected');
+      setTokenBalance('');
+      setCounterValue('');
+    }
+  }, [isConnected]);
 
   // Derive transaction execution state from the hook
   const isMintExecuting =
@@ -128,7 +148,7 @@ const DApp: React.FC = () => {
       const interaction = method(...args) as { simulate: () => Promise<T> };
       return await interaction.simulate();
     },
-    [externalAztecRpcUrl],
+    [],
   );
 
   const refreshTokenBalance = useCallback(async (): Promise<string | null> => {
@@ -140,7 +160,9 @@ const DApp: React.FC = () => {
     const ownerAddressHex = toAddressString(address);
 
     const fallbackSimulation = async () => {
-      const balance = await simulateInteraction(tokenContract.methods.balance_of_public(ownerAddressHex));
+      const balance = await simulateInteraction(
+        (tokenContract as any).methods.balance_of_public(ownerAddressHex),
+      );
       const balanceStr = String(balance);
       setTokenBalance(balanceStr);
       return balanceStr;
@@ -176,15 +198,7 @@ const DApp: React.FC = () => {
     } finally {
       setIsRefreshingBalance(false);
     }
-  }, [
-    tokenContract,
-    tokenAddress,
-    address,
-    simulateInteraction,
-    toAddressString,
-    externalAztecRpcUrl,
-    simulateUsingExternalRpc,
-  ]);
+  }, [tokenContract, tokenAddress, address, simulateInteraction, toAddressString, simulateUsingExternalRpc]);
 
   useEffect(() => {
     if (!tokenAddress) {
@@ -217,12 +231,16 @@ const DApp: React.FC = () => {
           setTokenBalance('');
         },
         onError: (error) => {
-          showError(`Token deployment failed: ${error.message}`);
+          // Session errors are handled automatically by useSessionError hook
+          if (!isSessionError(error)) {
+            showError(`Token deployment failed: ${error.message}`);
+          }
         },
       });
     } catch (error) {
       console.error('Token deployment failed:', error);
-      if (error instanceof Error) {
+      // Session errors are handled automatically by useSessionError hook
+      if (!isSessionError(error) && error instanceof Error) {
         showError(`Token deployment failed: ${error.message}`);
       }
     }
@@ -246,12 +264,16 @@ const DApp: React.FC = () => {
           showSuccess(`Counter deployed at ${deployedAddress.toString()}`);
         },
         onError: (error) => {
-          showError(`Counter deployment failed: ${error.message}`);
+          // Session errors are handled automatically by useSessionError hook
+          if (!isSessionError(error)) {
+            showError(`Counter deployment failed: ${error.message}`);
+          }
         },
       });
     } catch (error) {
       console.error('Counter deployment failed:', error);
-      if (error instanceof Error) {
+      // Session errors are handled automatically by useSessionError hook
+      if (!isSessionError(error) && error instanceof Error) {
         showError(`Counter deployment failed: ${error.message}`);
       }
     }
@@ -293,7 +315,10 @@ const DApp: React.FC = () => {
       showInfo('Minting tokens, please wait for confirmation...');
       const ownerAddress = toAztecAddress(address);
       const ownerAddressHex = ownerAddress.toString();
-      const interaction = tokenContract.methods.mint_to_public(ownerAddressHex, 10000000000000000000000n);
+      const interaction = (tokenContract as any).methods.mint_to_public(
+        ownerAddressHex,
+        10000000000000000000000n,
+      );
 
       // Use executeSync for blocking behavior with overlay
       await executeSync(interaction);
@@ -304,7 +329,8 @@ const DApp: React.FC = () => {
       showSuccess('Tokens minted successfully! You can now transfer them.');
     } catch (error) {
       console.error('Mint transaction failed:', error);
-      if (error instanceof Error) {
+      // Session errors are handled automatically by useSessionError hook
+      if (!isSessionError(error) && error instanceof Error) {
         showError(`Transaction failed: ${error.message}`);
       }
     }
@@ -350,7 +376,7 @@ const DApp: React.FC = () => {
       showInfo('Transferring tokens, please wait for confirmation...');
       const to = await getInitialTestAccounts().then((accounts) => toAztecAddress(accounts[1].address));
       const ownerAddress = toAztecAddress(address);
-      const interaction = tokenContract.methods.transfer_in_public(
+      const interaction = (tokenContract as any).methods.transfer_in_public(
         ownerAddress.toString(),
         to.toString(),
         100000n,
@@ -366,7 +392,8 @@ const DApp: React.FC = () => {
       showSuccess('Tokens transferred successfully!');
     } catch (error) {
       console.error('Transfer transaction failed:', error);
-      if (error instanceof Error) {
+      // Session errors are handled automatically by useSessionError hook
+      if (!isSessionError(error) && error instanceof Error) {
         showError(`Transaction failed: ${error.message}`);
       }
     }
@@ -422,7 +449,10 @@ const DApp: React.FC = () => {
 
     try {
       const ownerAddress = toAztecAddress(address);
-      const interaction = counterContract.methods.increment(ownerAddress.toString(), ownerAddress.toString());
+      const interaction = (counterContract as any).methods.increment(
+        ownerAddress.toString(),
+        ownerAddress.toString(),
+      );
 
       // Use executeAsync for background execution
       await executeAsync(interaction, {
@@ -459,8 +489,8 @@ const DApp: React.FC = () => {
       console.log('[DApp] Starting atomic batch execution...');
       const ownerAddressHex = toAddressString(address);
       const interactions = [
-        counterContract.methods.increment(ownerAddressHex, ownerAddressHex),
-        counterContract.methods.increment(ownerAddressHex, ownerAddressHex),
+        (counterContract as any).methods.increment(ownerAddressHex, ownerAddressHex),
+        (counterContract as any).methods.increment(ownerAddressHex, ownerAddressHex),
       ];
 
       console.log('[DApp] Calling executeBatch with atomic: true');
@@ -494,8 +524,8 @@ const DApp: React.FC = () => {
     try {
       const ownerAddressHex = toAddressString(address);
       const interactions = [
-        counterContract.methods.increment(ownerAddressHex, ownerAddressHex),
-        counterContract.methods.increment(ownerAddressHex, ownerAddressHex),
+        (counterContract as any).methods.increment(ownerAddressHex, ownerAddressHex),
+        (counterContract as any).methods.increment(ownerAddressHex, ownerAddressHex),
       ];
 
       // Use sequential mode (default) - separate transactions
@@ -534,9 +564,9 @@ const DApp: React.FC = () => {
 
       const interactions = [
         // First: Mint tokens to our account
-        tokenContract.methods.mint_to_public(ownerAddressHex, 5000000000000000000000n),
+        (tokenContract as any).methods.mint_to_public(ownerAddressHex, 5000000000000000000000n),
         // Second: Transfer some tokens to another account
-        tokenContract.methods.transfer_in_public(ownerAddressHex, recipient.toString(), 50000n, 0n),
+        (tokenContract as any).methods.transfer_in_public(ownerAddressHex, recipient.toString(), 50000n, 0n),
       ];
 
       // Execute both operations atomically - single transaction, single proof
@@ -580,10 +610,10 @@ const DApp: React.FC = () => {
           );
         } catch (error) {
           console.warn('[DApp] External RPC counter fetch failed, falling back to wallet RPC', error);
-          value = await simulateInteraction(counterContract.methods.get_counter(ownerAddressHex));
+          value = await simulateInteraction((counterContract as any).methods.get_counter(ownerAddressHex));
         }
       } else {
-        value = await simulateInteraction(counterContract.methods.get_counter(ownerAddressHex));
+        value = await simulateInteraction((counterContract as any).methods.get_counter(ownerAddressHex));
       }
 
       const valueStr = String(value);
@@ -613,9 +643,7 @@ const DApp: React.FC = () => {
             <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
               Initializing PXE and loading accounts
             </p>
-            <p style={{ fontSize: '12px', color: '#888' }}>
-              This may take 5-15 seconds on first connection
-            </p>
+            <p style={{ fontSize: '12px', color: '#888' }}>This may take 5-15 seconds on first connection</p>
           </div>
         }
         errorFallback={(error: Error) => <p style={{ color: 'red' }}>Error: {error.message}</p>}

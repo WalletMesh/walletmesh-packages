@@ -3,7 +3,7 @@
  * Tests missing patterns, logging scenarios, and error creation methods
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createMockLogger, createTestEnvironment, installCustomMatchers } from '../../../testing/index.js';
 import type { Logger } from '../logger/logger.js';
 import { ErrorHandler } from './errorHandler.js';

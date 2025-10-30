@@ -19,7 +19,7 @@ import type { Logger } from '../../internal/core/logger/logger.js';
 import { createMockLogger, createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
 import { ChainType } from '../../types.js';
 import type { BaseChainService, ChainServiceLoader } from './BaseChainService.js';
-import type { ChainServiceRegistryConfig, ChainServiceStatus } from './ChainServiceRegistry.js';
+import type { ChainServiceRegistryConfig } from './ChainServiceRegistry.js';
 import { ChainServiceRegistry } from './ChainServiceRegistry.js';
 
 // Install domain-specific matchers

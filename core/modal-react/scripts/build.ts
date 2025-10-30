@@ -13,11 +13,11 @@ import { buildCSS } from './build-css.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const DIST_DIR = path.join(__dirname, '..', 'dist');
-const SRC_DIR = path.join(__dirname, '..', 'src');
+const _SRC_DIR = path.join(__dirname, '..', 'src');
 const TSBUILDINFO = path.join(DIST_DIR, '.tsbuildinfo');
 
 // Check if TypeScript files need rebuilding
-function needsTypeScriptBuild(): boolean {
+function _needsTypeScriptBuild(): boolean {
   // If no dist directory or no tsbuildinfo, we need to build
   if (!fs.existsSync(DIST_DIR) || !fs.existsSync(TSBUILDINFO)) {
     return true;
@@ -29,7 +29,7 @@ function needsTypeScriptBuild(): boolean {
 }
 
 // Check if CSS files need rebuilding
-function needsCSSBuild(): boolean {
+function _needsCSSBuild(): boolean {
   const cacheFile = path.join(DIST_DIR, '.css-build-cache.json');
 
   // If no cache file, we need to build
@@ -42,7 +42,7 @@ function needsCSSBuild(): boolean {
 }
 
 // Run a command and capture output
-function runCommand(command: string, description: string): boolean {
+function _runCommand(command: string, description: string): boolean {
   console.log(`\n${description}`);
   try {
     execSync(command, {
@@ -71,7 +71,7 @@ function build(): void {
       stdio: 'inherit',
       cwd: path.join(__dirname, '..'),
     });
-  } catch (error) {
+  } catch (_error) {
     // TypeScript might exit with non-zero if there are type errors
     // But we still want to continue with CSS build
     console.error('TypeScript build encountered errors');
@@ -88,7 +88,7 @@ function build(): void {
 }
 
 // Check if dist exists and has content
-function checkDistExists(): boolean {
+function _checkDistExists(): boolean {
   if (!fs.existsSync(DIST_DIR)) {
     console.log('📝 No dist directory found, running full build...');
     return false;

@@ -29,7 +29,7 @@ import { formatError, getRecoveryMessage } from '@walletmesh/modal-core';
 import type { ChainType, ChainConfig } from '@walletmesh/modal-core';
 // Import built-in chain configs for targetChainType mapping
 import { ethereumMainnet, solanaMainnet, aztecSandbox } from '@walletmesh/modal-core/chains';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore } from '../hooks/internal/useStore.js';
 import { useAccount } from '../hooks/useAccount.js';
@@ -112,6 +112,7 @@ import { WalletMeshSandboxedWalletIcon } from './WalletMeshSandboxedIcon.js';
  */
 
 export function WalletMeshModal(): React.ReactElement | null {
+  const titleId = useId();
   const logger = createComponentLogger('WalletMeshModal');
   const { isOpen, close } = useConfig();
   const { isConnected, isConnecting, wallet, walletId, addresses } = useAccount();
@@ -281,7 +282,7 @@ export function WalletMeshModal(): React.ReactElement | null {
       }
       portalRootRef.current = null;
     };
-  }, []); // Only run once on mount/unmount
+  }, [logger.debug]); // Only run once on mount/unmount
 
   // Update pointer events based on modal state
   useEffect(() => {
@@ -480,7 +481,7 @@ export function WalletMeshModal(): React.ReactElement | null {
     return (
       <div>
         <div className={styles['modalHeader']}>
-          <h2 className={styles['modalTitle']} id="wallet-modal-title">
+          <h2 className={styles['modalTitle']} id={titleId}>
             Connect a wallet
           </h2>
           {isDiscovering && (
@@ -581,7 +582,7 @@ export function WalletMeshModal(): React.ReactElement | null {
       className={styles['modal']}
       onClick={handleOverlayClick}
       onKeyDown={handleOverlayKeyDown}
-      aria-labelledby="wallet-modal-title"
+      aria-labelledby={titleId}
       open
     >
       <div className={styles['modalContent']}>{renderContent()}</div>

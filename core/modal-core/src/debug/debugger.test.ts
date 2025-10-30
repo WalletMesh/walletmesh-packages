@@ -1,14 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChainType, createTestEnvironment } from '../testing/index.js';
 import type { ConnectionResult, ModalState, WalletInfo } from '../types.js';
-import { type DebugInfo, WalletMeshDebugger, walletMeshDebugger } from './debugger.js';
-
-// Type for global object modifications in tests
-interface GlobalObject {
-  window?: unknown;
-  navigator?: unknown;
-  console?: unknown;
-}
+import { WalletMeshDebugger, walletMeshDebugger } from './debugger.js';
 
 // Mock global objects
 const mockWindow = {

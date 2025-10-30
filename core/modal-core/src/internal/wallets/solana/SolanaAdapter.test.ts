@@ -1,14 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  createMockLogger,
   createMockSolanaProvider,
   createTestEnvironment,
   installCustomMatchers,
 } from '../../../testing/index.js';
 import { ChainType } from '../../../types.js';
-import { ErrorFactory } from '../../core/errors/errorFactory.js';
-import { Logger } from '../../core/logger/logger.js';
-import type { AdapterContext } from '../base/WalletAdapter.js';
 import { SolanaAdapter } from './SolanaAdapter.js';
 import { SolanaProvider } from '../../providers/solana/SolanaProvider.js';
 

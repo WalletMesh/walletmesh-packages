@@ -49,7 +49,7 @@ vi.mock('./useAztecWallet.js', () => ({
 
 // Mock aztec providers
 vi.mock('@walletmesh/modal-core/providers/aztec', () => ({
-  normalizeArtifact: vi.fn((artifact) => artifact),
+  normalizeArtifact: vi.fn((artifact: unknown) => artifact),
   ensureContractClassRegistered: vi.fn().mockResolvedValue(undefined),
 }));
 

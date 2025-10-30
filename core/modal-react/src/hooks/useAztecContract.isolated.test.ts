@@ -61,7 +61,7 @@ vi.mock('@walletmesh/modal-core/providers/aztec/lazy', () => ({
 // Mock aztec providers
 vi.mock('@walletmesh/modal-core/providers/aztec', () => ({
   ensureContractClassRegistered: vi.fn().mockResolvedValue(undefined),
-  normalizeArtifact: vi.fn((artifact) => artifact),
+  normalizeArtifact: vi.fn((artifact: unknown) => artifact),
 }));
 
 // Minimal wrapper

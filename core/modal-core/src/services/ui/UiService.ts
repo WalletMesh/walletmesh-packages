@@ -15,8 +15,8 @@ import { uiActions } from '../../state/actions/ui.js';
 import type { WalletMeshState } from '../../state/store.js';
 import type { ModalView, WalletInfo } from '../../types.js';
 import type { BaseServiceDependencies } from '../base/ServiceDependencies.js';
-import type { ChainService } from '../chain/ChainService.js';
 import type { SessionInfo } from '../session/SessionService.js';
+import { getChainName } from '../../utils/chainNameResolver.js';
 
 /**
  * UI service dependencies
@@ -24,7 +24,6 @@ import type { SessionInfo } from '../session/SessionService.js';
 export interface UIServiceDependencies extends BaseServiceDependencies {
   logger: Logger;
   store: StoreApi<WalletMeshState>;
-  chainService?: ChainService;
 }
 
 /**
@@ -176,7 +175,6 @@ export interface UIServiceConfig {
 export class UIService {
   private logger: Logger;
   private store: StoreApi<WalletMeshState>;
-  private chainService?: ChainService;
   private config: UIServiceConfig;
   private loadingMessage: string | undefined;
   private connectionProgress: number | undefined;
@@ -184,9 +182,6 @@ export class UIService {
   constructor(dependencies: UIServiceDependencies, config: UIServiceConfig = {}) {
     this.logger = dependencies.logger;
     this.store = dependencies.store;
-    if (dependencies.chainService !== undefined) {
-      this.chainService = dependencies.chainService;
-    }
     this.config = {
       defaultButtonOptions: {
         showAddress: true,
@@ -403,7 +398,7 @@ export class UIService {
 
         const chainName =
           mergedOptions.showChain && session?.chainId !== undefined
-            ? this.getChainName(session.chainId)
+            ? getChainName(session.chainId)
             : undefined;
 
         displayInfo = {
@@ -512,7 +507,7 @@ export class UIService {
     }
 
     if (mergedOptions.showChain && session.chainId !== undefined) {
-      const chainName = this.getChainName(session.chainId);
+      const chainName = getChainName(session.chainId);
       if (chainName !== undefined) {
         result.chainName = chainName;
       }
@@ -559,23 +554,5 @@ export class UIService {
     }
   }
 
-  /**
-   * Get chain name from chain ID
-   */
-  private getChainName(chainId?: string): string | undefined {
-    if (!chainId || !this.chainService) {
-      return undefined;
-    }
-
-    // This would normally call chainService.getChainInfo(chainId)
-    // For now, return a simple mapping
-    const chainNames: Record<string, string> = {
-      '1': 'Ethereum',
-      '137': 'Polygon',
-      '42161': 'Arbitrum',
-      '10': 'Optimism',
-    };
-
-    return chainNames[chainId];
-  }
+  // Note: getChainName() has been consolidated to src/utils/chainNameResolver.ts
 }

@@ -6,9 +6,7 @@ import { describe, it, expect } from 'vitest';
 import {
   expectSchemaToAccept,
   expectSchemaToReject,
-  testSchemaWithValidInputs,
   generateEvmAddress,
-  generateSolanaAddress,
   generateMockWalletInfo,
   generateMockChainConfig,
 } from './testUtils.js';

@@ -4,12 +4,9 @@
  */
 
 import type { QualifiedResponder } from '@walletmesh/discovery';
-import type { TransportConfig } from '@walletmesh/discovery/core';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DiscoveryAdapter } from '../../internal/wallets/discovery/DiscoveryAdapter.js';
 import { createMockLogger, createMockRegistry } from '../../testing/helpers/mocks.js';
-import { ChainType } from '../../types.js';
-import { DiscoveryService } from '../DiscoveryService.js';
 import {
   extractTransportConfig,
   getTransportConfigFromWallet,
@@ -17,12 +14,12 @@ import {
 } from '../types/discoveryMappings.js';
 
 describe('Transport Config Integration Tests', () => {
-  let mockLogger: ReturnType<typeof createMockLogger>;
-  let mockRegistry: ReturnType<typeof createMockRegistry>;
+  let _mockLogger: ReturnType<typeof createMockLogger>;
+  let _mockRegistry: ReturnType<typeof createMockRegistry>;
 
   beforeEach(() => {
-    mockLogger = createMockLogger();
-    mockRegistry = createMockRegistry();
+    _mockLogger = createMockLogger();
+    _mockRegistry = createMockRegistry();
   });
 
   afterEach(() => {

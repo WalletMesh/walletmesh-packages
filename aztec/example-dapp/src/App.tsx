@@ -92,7 +92,7 @@ function App() {
             showTechnicalDetails={process.env.NODE_ENV === 'development'}
           />
         )}
-        onError={(error: unknown, errorInfo: any) => {
+        onError={(error: unknown, errorInfo: unknown) => {
           // Log errors to console in development
           if (process.env.NODE_ENV === 'development') {
             console.error('WalletMesh Error:', error);

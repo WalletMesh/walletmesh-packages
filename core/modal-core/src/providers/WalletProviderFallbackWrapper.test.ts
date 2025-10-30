@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { WalletProvider } from '../api/types/providers.js';
-import { ErrorFactory } from '../internal/core/errors/errorFactory.js';
 import { ChainType } from '../types.js';
 import { WalletProviderFallbackWrapper } from './WalletProviderFallbackWrapper.js';
 

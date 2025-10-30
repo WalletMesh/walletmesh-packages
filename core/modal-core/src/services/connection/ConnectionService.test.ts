@@ -14,8 +14,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConnectionStatus } from '../../api/types/connectionStatus.js';
 import { createMockLogger, createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
-import type { WalletInfo } from '../../types.js';
-import type { ChainType } from '../../types.js';
 import type { HealthService } from '../health/HealthService.js';
 import type { WalletPreferenceService } from '../preferences/WalletPreferenceService.js';
 import type { SessionInfo, SessionMetadata } from '../session/SessionService.js';
@@ -23,7 +21,7 @@ import type { SessionService } from '../session/SessionService.js';
 import type { UIService } from '../ui/UiService.js';
 import type { ConnectionServiceDependencies } from './ConnectionService.js';
 import { ConnectionService } from './ConnectionService.js';
-import type { ConnectOptions, ConnectionValidation, DisconnectOptions } from './ConnectionService.js';
+import type { ConnectOptions } from './ConnectionService.js';
 
 // Install domain-specific matchers
 installCustomMatchers();

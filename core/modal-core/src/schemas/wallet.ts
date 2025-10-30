@@ -24,33 +24,36 @@ export const walletMetadataSchema = z.object({
    * Wallet icon as data URI containing an image (SVG, PNG, JPEG, WebP, or GIF)
    * Optional - if not provided, a generic wallet icon will be used
    */
-  icon: z.string().refine(
-    (val) => {
-      // Must be a data URI
-      if (!val.startsWith('data:image/')) {
-        return false;
-      }
+  icon: z
+    .string()
+    .refine(
+      (val) => {
+        // Must be a data URI
+        if (!val.startsWith('data:image/')) {
+          return false;
+        }
 
-      // Extract the MIME type (handle base64, direct, and URL-encoded formats)
-      // Match patterns:
-      // - data:image/svg+xml;base64,...  (base64 encoded)
-      // - data:image/svg+xml,...         (direct/raw)
-      // - data:image/svg+xml,%3Csvg...   (URL-encoded)
-      const mimeMatch = val.match(/^data:image\/([^;,%]+)/);
-      if (!mimeMatch) {
-        return false;
-      }
+        // Extract the MIME type (handle base64, direct, and URL-encoded formats)
+        // Match patterns:
+        // - data:image/svg+xml;base64,...  (base64 encoded)
+        // - data:image/svg+xml,...         (direct/raw)
+        // - data:image/svg+xml,%3Csvg...   (URL-encoded)
+        const mimeMatch = val.match(/^data:image\/([^;,%]+)/);
+        if (!mimeMatch) {
+          return false;
+        }
 
-      // Allow safe image formats
-      const allowedFormats = ['svg+xml', 'png', 'jpeg', 'jpg', 'webp', 'gif'];
-      const format = mimeMatch[1]?.toLowerCase();
+        // Allow safe image formats
+        const allowedFormats = ['svg+xml', 'png', 'jpeg', 'jpg', 'webp', 'gif'];
+        const format = mimeMatch[1]?.toLowerCase();
 
-      return format ? allowedFormats.includes(format) : false;
-    },
-    {
-      message: 'Icon must be a data URI with a safe image format (SVG, PNG, JPEG, WebP, or GIF)',
-    },
-  ).optional(),
+        return format ? allowedFormats.includes(format) : false;
+      },
+      {
+        message: 'Icon must be a data URI with a safe image format (SVG, PNG, JPEG, WebP, or GIF)',
+      },
+    )
+    .optional(),
 
   /**
    * Optional wallet description

@@ -14,15 +14,7 @@ import {
   polygonAmoy,
   polygonMainnet,
 } from './ethereum.js';
-import {
-  createAllChainsConfig,
-  createMainnetConfig,
-  createTestnetConfig,
-  filterChainsByGroup,
-  getRequiredChains,
-  isChainSupported,
-  markChainsRequired,
-} from './multichain.js';
+import { createMainnetConfig, createTestnetConfig } from './multichain.js';
 import { solanaDevnet, solanaMainnet, solanaTestnet } from './solana.js';
 
 describe('Chain Configurations', () => {

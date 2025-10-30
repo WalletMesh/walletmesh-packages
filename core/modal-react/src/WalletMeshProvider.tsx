@@ -845,7 +845,9 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
                 fallback={null}
               >
                 <AztecTransactionStatusOverlay
-                  {...(config.transactionOverlay?.headline && { headline: config.transactionOverlay.headline })}
+                  {...(config.transactionOverlay?.headline && {
+                    headline: config.transactionOverlay.headline,
+                  })}
                   {...(config.transactionOverlay?.description && {
                     description: config.transactionOverlay.description,
                   })}

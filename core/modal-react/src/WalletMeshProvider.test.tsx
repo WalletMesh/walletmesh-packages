@@ -22,9 +22,9 @@ vi.mock('@walletmesh/modal-core', () => ({
     isClient: true,
     isServer: false,
     hasHydrated: true,
-    serialize: vi.fn().mockImplementation((state) => JSON.stringify(state)),
-    deserialize: vi.fn().mockImplementation((serialized) => JSON.parse(serialized)),
-    extractSafeState: vi.fn().mockImplementation((state) => state),
+    serialize: vi.fn().mockImplementation((state: unknown) => JSON.stringify(state)),
+    deserialize: vi.fn().mockImplementation((serialized: string) => JSON.parse(serialized)),
+    extractSafeState: vi.fn().mockImplementation((state: unknown) => state),
   },
 }));
 
@@ -39,7 +39,7 @@ describe('WalletMeshProvider', () => {
     // Reset window object with matchMedia
     Object.defineProperty(global, 'window', {
       value: {
-        matchMedia: vi.fn().mockImplementation((query) => ({
+        matchMedia: vi.fn().mockImplementation((query: string) => ({
           matches: false,
           media: query,
           onchange: null,

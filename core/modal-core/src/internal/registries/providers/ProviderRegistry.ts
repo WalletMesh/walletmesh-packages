@@ -233,7 +233,6 @@ export class ProviderRegistry {
       entry.providerClass = module.default;
     } catch (error) {
       // Clear loading promise on error
-      // biome-ignore lint/performance/noDelete: Need to remove optional property
       delete entry.loadingPromise;
       throw ErrorFactory.configurationError(
         `Failed to load provider module for ${chainType}: ${error instanceof Error ? error.message : 'Unknown error'}`,

@@ -130,7 +130,6 @@ export class ServiceRegistry {
       const uiDependencies: UIServiceDependencies = {
         logger,
         store: this.store,
-        chainService,
       };
       const uiService = new UIService(uiDependencies);
 

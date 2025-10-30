@@ -47,7 +47,7 @@ export function createVanillaIconWrapper(options) {
   const errorRecovery = createIconErrorRecovery(RECOVERY_PRESETS.conservative);
 
   // Component state
-  let hasError = false;
+  let _hasError = false;
   let isLoading = true;
 
   // Generate container configuration using modal-core utility
@@ -110,7 +110,7 @@ export function createVanillaIconWrapper(options) {
   async function loadIcon() {
     // Clear existing content
     containerElement.innerHTML = '';
-    hasError = false;
+    _hasError = false;
     isLoading = true;
 
     // Update container state
@@ -202,7 +202,7 @@ export function createVanillaIconWrapper(options) {
           isLoading = false;
         }
       } else {
-        hasError = true;
+        _hasError = true;
         isLoading = false;
         containerElement.setAttribute('data-has-error', 'true');
 

@@ -108,7 +108,7 @@ describe('Icon Sandbox Tests', () => {
           // Find the message handler registered on window
           const windowAddEventListener = global.window.addEventListener as ReturnType<typeof vi.fn>;
           const messageHandlerCall = windowAddEventListener.mock.calls.find(
-            (call: unknown[]) => (call as [string, (event: MessageEvent) => void])[0] === 'message'
+            (call: unknown[]) => (call as [string, (event: MessageEvent) => void])[0] === 'message',
           );
 
           if (messageHandlerCall) {
@@ -593,7 +593,7 @@ describe('Icon Sandbox Tests', () => {
             }
             // Then simulate icon-loaded postMessage
             const messageHandler = mockAddEventListener.mock.calls.find(
-              (call: unknown[]) => (call as [string, (event: MessageEvent) => void])[0] === 'message'
+              (call: unknown[]) => (call as [string, (event: MessageEvent) => void])[0] === 'message',
             )?.[1];
             if (messageHandler) {
               (messageHandler as (event: MessageEvent) => void)({

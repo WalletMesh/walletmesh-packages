@@ -7,61 +7,81 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock the WalletMeshSandboxedIcon component to avoid DOM manipulation issues in tests
 vi.mock('./WalletMeshSandboxedIcon.js', () => ({
-  WalletMeshSandboxedIcon: vi.fn((props) => {
-    const { src, size = 24, className, onClick, alt, style, disabled, ...rest } = props;
-    const handleKeyDown = onClick
-      ? (e: React.KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onClick();
+  WalletMeshSandboxedIcon: vi.fn(
+    (props: {
+      src: string;
+      size?: number;
+      className?: string;
+      onClick?: () => void;
+      alt?: string;
+      style?: React.CSSProperties;
+      disabled?: boolean;
+      [key: string]: unknown;
+    }) => {
+      const { src, size = 24, className, onClick, alt, style, disabled, ...rest } = props;
+      const handleKeyDown = onClick
+        ? (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onClick();
+            }
           }
-        }
-      : undefined;
+        : undefined;
 
-    return (
-      <div
-        data-testid="sandboxed-icon"
-        className={className}
-        style={{ width: `${size}px`, height: `${size}px`, ...style }}
-        onClick={onClick}
-        onKeyDown={handleKeyDown}
-        aria-label={alt}
-        role={onClick ? 'button' : undefined}
-        tabIndex={onClick ? 0 : undefined}
-        data-disabled={disabled}
-        data-src={src}
-        data-size={size}
-        {...rest}
-      />
-    );
-  }),
-  WalletMeshSandboxedWalletIcon: vi.fn((props) => {
-    const { wallet, size = 24, className, onClick, style, disabled } = props;
-    const handleClick = onClick ? () => onClick(wallet.id) : undefined;
-    const handleKeyDown = handleClick
-      ? (e: React.KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleClick();
+      return (
+        <div
+          data-testid="sandboxed-icon"
+          className={className}
+          style={{ width: `${size}px`, height: `${size}px`, ...style }}
+          onClick={onClick}
+          onKeyDown={handleKeyDown}
+          aria-label={alt}
+          role={onClick ? 'button' : undefined}
+          tabIndex={onClick ? 0 : undefined}
+          data-disabled={disabled}
+          data-src={src}
+          data-size={size}
+          {...rest}
+        />
+      );
+    },
+  ),
+  WalletMeshSandboxedWalletIcon: vi.fn(
+    (props: {
+      wallet: { id: string; name: string; icon: string };
+      size?: number;
+      className?: string;
+      onClick?: (walletId: string) => void;
+      style?: React.CSSProperties;
+      disabled?: boolean;
+    }) => {
+      const { wallet, size = 24, className, onClick, style, disabled } = props;
+      const handleClick = onClick ? () => onClick(wallet.id) : undefined;
+      const handleKeyDown = handleClick
+        ? (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClick();
+            }
           }
-        }
-      : undefined;
+        : undefined;
 
-    return (
-      <div
-        data-testid="sandboxed-icon"
-        className={className}
-        style={{ width: `${size}px`, height: `${size}px`, ...style }}
-        onClick={handleClick}
-        onKeyDown={handleKeyDown}
-        aria-label={`${wallet.name} wallet icon${disabled ? ' (unsupported)' : ''}`}
-        role={onClick ? 'button' : undefined}
-        tabIndex={onClick ? 0 : undefined}
-        data-disabled={disabled}
-        data-wallet-id={wallet.id}
-      />
-    );
-  }),
+      return (
+        <div
+          data-testid="sandboxed-icon"
+          className={className}
+          style={{ width: `${size}px`, height: `${size}px`, ...style }}
+          onClick={handleClick}
+          onKeyDown={handleKeyDown}
+          aria-label={`${wallet.name} wallet icon${disabled ? ' (unsupported)' : ''}`}
+          role={onClick ? 'button' : undefined}
+          tabIndex={onClick ? 0 : undefined}
+          data-disabled={disabled}
+          data-wallet-id={wallet.id}
+        />
+      );
+    },
+  ),
 }));
 
 const { WalletMeshSandboxedIcon, WalletMeshSandboxedWalletIcon } = vi.mocked(

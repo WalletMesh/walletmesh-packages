@@ -8,13 +8,10 @@ import type {
   ConnectedProps,
   ConnectingProps,
   ErrorProps,
-  ReactAdapter,
   ReactAdapterConfig,
   ReactComponent,
   ReactComponentMap,
-  SvelteAdapter,
   SvelteAdapterConfig,
-  VueAdapter,
   VueAdapterConfig,
   WalletSelectionProps,
 } from './frameworkAdapters.js';
@@ -59,7 +56,7 @@ describe('Framework Adapter Types', () => {
     it('should properly type ConnectingProps', () => {
       const props: ConnectingProps = {
         state: { view: 'connecting', isOpen: true },
-        onAction: (action: string, payload?: unknown) => {
+        onAction: (action: string, _payload?: unknown) => {
           expect(typeof action).toBe('string');
         },
         walletId: 'metamask',
@@ -82,7 +79,7 @@ describe('Framework Adapter Types', () => {
     it('should properly type ConnectedProps', () => {
       const props: ConnectedProps = {
         state: { view: 'connected', isOpen: true },
-        onAction: (action: string, payload?: unknown) => {
+        onAction: (action: string, _payload?: unknown) => {
           expect(typeof action).toBe('string');
         },
         walletId: 'metamask',
@@ -119,7 +116,7 @@ describe('Framework Adapter Types', () => {
 
       const props: ErrorProps = {
         state: { view: 'error', isOpen: true },
-        onAction: (action: string, payload?: unknown) => {
+        onAction: (action: string, _payload?: unknown) => {
           expect(typeof action).toBe('string');
         },
         error: mockError,

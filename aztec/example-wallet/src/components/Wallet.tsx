@@ -1,5 +1,5 @@
 import { createAztecWalletNode } from '@walletmesh/aztec-rpc-wallet';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // Type definitions for window extensions
 declare global {
@@ -36,7 +36,7 @@ import {
   type ChainId,
   createLocalTransportPair,
   type HumanReadableChainPermissions,
-  MemorySessionStore,
+  LocalStorageSessionStore,
   type PermissionApprovalCallback,
   WalletRouter,
   type WalletRouterConfig,
@@ -72,6 +72,7 @@ import {
 =======
   createTransactionSummaryMiddleware,
   createOriginMiddleware,
+  createContextExtractionMiddleware,
 } from '@walletmesh/aztec-helpers';
 >>>>>>> 578f948e (refactor(aztec-helpers): move middleware to shared package and add comprehensive tests)
 import { createHistoryMiddleware, type HistoryEntry } from '../middlewares/historyMiddleware.js';
@@ -316,12 +317,23 @@ const Wallet: React.FC<WalletProps> = ({
     direction: 'asc' | 'desc';
   }>({ column: 'count', direction: 'desc' });
 
+  /** State for active sessions management */
+  const [activeSessions, setActiveSessions] = useState<
+    Array<{ id: string; origin: string; createdAt: number }>
+  >([]);
+  /** State for controlling active sessions display */
+  const [showActiveSessions, setShowActiveSessions] = useState(false);
+  /** State for tracking the current/active session ID */
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+
   /** Ref to ensure wallet setup runs only once. */
   const setupDoneRef = useRef(false);
   /** Ref to the WalletRouter instance. */
   const routerRef = useRef<WalletRouter | null>(null);
   /** Ref to track current auto-approve state for permission callbacks. */
   const autoApproveRef = useRef(autoApprove);
+  /** Ref to loadSessions function for router callbacks. */
+  const loadSessionsRef = useRef<(() => Promise<void>) | null>(null);
   /** Retry attempt counter */
   const [retryAttempt, setRetryAttempt] = useState(0);
 
@@ -619,6 +631,10 @@ const Wallet: React.FC<WalletProps> = ({
             throw error;
           }
         });
+
+        // Add context extraction middleware BEFORE other middleware
+        // This extracts origin and other context from _context field forwarded by router
+        aztecWalletNode.addMiddleware(createContextExtractionMiddleware());
 
         // Add POST-deserialization debugging middleware to see deserialized typed params
         aztecWalletNode.addPostDeserializationMiddleware(async (context, request, next) => {
@@ -921,6 +937,30 @@ const Wallet: React.FC<WalletProps> = ({
             const sessionId = context.session?.id;
             const origin = context.origin || 'unknown';
 
+            // DEBUG: Log session key lookup details to diagnose mismatch issues
+            const sessionKey = `${origin}_${sessionId}`;
+            console.log('🔍 [Permission Key Debug] Session key lookup details:', {
+              requestedSessionKey: sessionKey,
+              sessionId,
+              origin,
+              availableSessionKeys: Array.from(this.approvedMethods.keys()),
+              hasExactMatch: this.approvedMethods.has(sessionKey),
+              approvedMethodsSize: this.approvedMethods.size,
+              method,
+              chainId,
+            });
+
+            // DEBUG: Show what methods are actually approved for this session
+            const approvedSet = this.approvedMethods.get(sessionKey);
+            const methodKey = `${chainId}:${method}`;
+            console.log('🔍 [Permission Set Debug] Approved methods for this session:', {
+              sessionKey,
+              approvedMethodsInSet: approvedSet ? Array.from(approvedSet) : [],
+              approvedSetSize: approvedSet?.size || 0,
+              lookingForMethodKey: methodKey,
+              hasMethodInSet: approvedSet?.has(methodKey) || false,
+            });
+
             // Validate we have required fields
             if (!chainId) {
               console.error('[Wallet] checkCallPermissions: chainId is missing');
@@ -989,6 +1029,47 @@ const Wallet: React.FC<WalletProps> = ({
             // No session or no approval record, deny by default
             console.log('[Wallet] No session or approval record for method:', method);
             return false;
+          }
+
+          /**
+           * Restore approved methods from persisted sessions after page refresh
+           * This ensures that previously granted permissions are remembered
+           */
+          restoreApprovedMethodsFromSessions(sessions: Map<string, any>) {
+            console.log('[Wallet] Restoring approved methods from', sessions.size, 'sessions');
+
+            for (const [sessionId, session] of sessions.entries()) {
+              const origin = session.origin || 'unknown';
+              const sessionKey = `${origin}_${sessionId}`;
+              const approvedSet = new Set<string>();
+
+              // Extract approved methods from session permissions
+              if (session.permissions && typeof session.permissions === 'object') {
+                for (const [chainId, methods] of Object.entries(session.permissions)) {
+                  // Check if methods is an array (session store format)
+                  if (Array.isArray(methods)) {
+                    for (const method of methods) {
+                      const methodKey = `${chainId}:${method}`;
+                      approvedSet.add(methodKey);
+                    }
+                  }
+                  // Handle object format (if needed for compatibility)
+                  else if (typeof methods === 'object' && methods !== null) {
+                    for (const method of Object.keys(methods)) {
+                      const methodKey = `${chainId}:${method}`;
+                      approvedSet.add(methodKey);
+                    }
+                  }
+                }
+              }
+
+              if (approvedSet.size > 0) {
+                this.approvedMethods.set(sessionKey, approvedSet);
+                console.log(`[Wallet] Restored ${approvedSet.size} approved methods for session ${sessionKey}`);
+              }
+            }
+
+            console.log('[Wallet] Approved methods restoration complete. Total sessions:', this.approvedMethods.size);
           }
         }
 
@@ -1127,13 +1208,13 @@ const Wallet: React.FC<WalletProps> = ({
           ['aztec:31337', clientTransport],
         ]);
 
-        // Create session store with persistent configuration
-        const sessionStore = new MemorySessionStore({
-          lifetime: 24 * 60 * 60 * 1000, // 24 hours lifetime
-          refreshOnAccess: true, // Refresh expiry on each access
-        });
+        // Create persistent session store for dApp connections
+        // LocalStorageSessionStore Configuration:
+        // - Sessions no longer expire automatically
+        // - Sessions survive page refreshes and browser restarts
+        const sessionStore = new LocalStorageSessionStore();
 
-        console.log('[Wallet] Created session store with 24h lifetime and auto-refresh');
+        console.log('[Wallet] Using LocalStorageSessionStore for persistent sessions (no automatic expiry)');
 
         // Configure router with session store and optional proxy settings
         const routerConfig: WalletRouterConfig = {
@@ -1143,7 +1224,35 @@ const Wallet: React.FC<WalletProps> = ({
             debug: process.env.NODE_ENV === 'development',
           },
           debug: process.env.NODE_ENV === 'development',
+          // Callbacks for session lifecycle events
+          onSessionCreated: (sessionId, origin) => {
+            console.log('[Wallet] Session created callback:', { sessionId, origin });
+            // Trigger session list refresh
+            loadSessionsRef.current?.();
+          },
+          onSessionDeleted: (sessionId) => {
+            console.log('[Wallet] Session deleted callback:', { sessionId });
+            // Trigger session list refresh
+            loadSessionsRef.current?.();
+          },
         };
+
+        // Check for existing sessions BEFORE creating router
+        console.log('🔍 [Session Debug] Checking for existing sessions in localStorage...');
+        const existingSessions = await sessionStore.getAll();
+        console.log('🔍 [Session Debug] Existing sessions count:', existingSessions.size);
+        if (existingSessions.size > 0) {
+          console.log(
+            '🔍 [Session Debug] Existing sessions:',
+            Array.from(existingSessions.entries()).map(([id, session]) => ({
+              id,
+              origin: session.origin,
+              permissions: session.permissions ? Object.keys(session.permissions) : [],
+            })),
+          );
+        } else {
+          console.log('🔍 [Session Debug] No existing sessions found in localStorage');
+        }
 
         // Create the router with transports
         console.log('🟢🟢🟢 WALLET ROUTER ABOUT TO BE CREATED 🟢🟢🟢');
@@ -1151,9 +1260,24 @@ const Wallet: React.FC<WalletProps> = ({
         console.log('🟢🟢🟢 WALLET ROUTER CREATED SUCCESSFULLY 🟢🟢🟢');
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         // Add origin middleware to provide proper origin context
         router.addMiddleware(createOriginMiddleware(detectedOrigin));
 =======
+=======
+        // Log sessions after router creation
+        console.log('🔍 [Session Debug] Checking sessions after router creation...');
+        const sessionsAfterCreation = await sessionStore.getAll();
+        console.log('🔍 [Session Debug] Sessions after router creation:', sessionsAfterCreation.size);
+
+        // Restore approved methods from persisted sessions to enable reconnection without re-prompting
+        if (sessionsAfterCreation.size > 0) {
+          console.log('[Wallet] 🔄 Restoring permission state from persisted sessions...');
+          permissionManager.restoreApprovedMethodsFromSessions(sessionsAfterCreation);
+          console.log('[Wallet] ✓ Permission state restoration complete');
+        }
+
+>>>>>>> c28753c7 (refactor(aztec): implement unified simulation result system)
         // IMPORTANT: Add origin middleware FIRST, before any other middleware
         // This ensures the origin is available for session validation
         router.addMiddleware(createOriginMiddleware(detectedOrigin));
@@ -1249,6 +1373,38 @@ const Wallet: React.FC<WalletProps> = ({
             contextSession: context?.session?.id,
             sessionStore: sessionStore ? 'configured' : 'missing',
           });
+
+          // Track the current session ID when requests come in
+          if (context?.session?.id) {
+            setCurrentSessionId(context.session.id);
+          }
+
+          // Handle session restoration for reconnections
+          if (request.method === 'wm_connect') {
+            const params = request.params as { sessionId?: string; permissions?: Record<string, string[]> };
+            const requestedSessionId = params?.sessionId;
+
+            // Check if this is a reconnection with an existing session
+            if (requestedSessionId) {
+              const allSessions = await sessionStore.getAll();
+              const existingSession = allSessions.get(requestedSessionId);
+
+              if (existingSession) {
+                console.log('[Wallet] 🔄 Reconnection detected for session:', requestedSessionId);
+                console.log('[Wallet] Existing session origin:', existingSession.origin);
+                console.log('[Wallet] Existing session permissions:', existingSession.permissions);
+
+                // Restore permissions for this specific session
+                const sessionMap = new Map([[requestedSessionId, existingSession]]);
+                permissionManager.restoreApprovedMethodsFromSessions(sessionMap);
+                console.log('[Wallet] ✓ Permissions restored for reconnecting session');
+              } else {
+                console.log('[Wallet] ⚠️ Reconnection requested for unknown session:', requestedSessionId);
+              }
+            } else {
+              console.log('[Wallet] New connection request (no sessionId)');
+            }
+          }
 
           // Log session store state for debugging
           if (request.method === 'wm_connect' || request.method === 'wm_call') {
@@ -1461,6 +1617,90 @@ const Wallet: React.FC<WalletProps> = ({
     return timingSortConfig.direction === 'asc' ? ' ▲' : ' ▼';
   };
 
+  /** Load active sessions from session store */
+  const loadSessions = useCallback(async () => {
+    try {
+      const sessionStore = window.sessionStore as LocalStorageSessionStore | undefined;
+      if (!sessionStore) {
+        console.warn('[Wallet] Session store not available');
+        return;
+      }
+
+      const sessionsMap = await sessionStore.getAll();
+      const sessions = Array.from(sessionsMap.entries())
+        .map(([id, data]) => {
+          return {
+            id,
+            origin: data.origin,
+            createdAt: data.createdAt,
+          };
+        })
+        .sort((a, b) => b.createdAt - a.createdAt); // Sort by most recent first
+
+      setActiveSessions(sessions);
+      console.log('[Wallet] Loaded sessions:', sessions.length);
+    } catch (error) {
+      console.error('[Wallet] Failed to load sessions:', error);
+      showError('Failed to load active sessions');
+    }
+  }, [showError]);
+
+  // Store loadSessions in ref so it can be called from router callbacks
+  useEffect(() => {
+    loadSessionsRef.current = loadSessions;
+  }, [loadSessions]);
+
+  /** Revoke a specific session */
+  const revokeSession = async (sessionId: string) => {
+    try {
+      const router = window.walletRouter;
+      if (!router) {
+        console.error('[Wallet] Router not available');
+        showError('Router not available');
+        return;
+      }
+
+      // Call router to properly revoke session and notify dApp
+      await router.revokeSession(sessionId);
+      console.log('[Wallet] Revoked session:', sessionId);
+
+      // Reload sessions to update the UI
+      await loadSessions();
+    } catch (error) {
+      console.error('[Wallet] Failed to revoke session:', error);
+      showError('Failed to revoke session');
+    }
+  };
+
+  /** Revoke all active sessions */
+  const revokeAllSessions = async () => {
+    try {
+      const router = window.walletRouter;
+      if (!router) {
+        console.error('[Wallet] Router not available');
+        showError('Router not available');
+        return;
+      }
+
+      // Call router to properly revoke all sessions and notify dApps
+      await router.revokeAllSessions();
+      console.log('[Wallet] Revoked all sessions');
+
+      // Reload sessions to update the UI
+      await loadSessions();
+    } catch (error) {
+      console.error('[Wallet] Failed to revoke all sessions:', error);
+      showError('Failed to revoke all sessions');
+    }
+  };
+
+  /** Load sessions when wallet connects */
+  useEffect(() => {
+    if (isConnected) {
+      loadSessions();
+    }
+  }, [isConnected, loadSessions]);
+
   return (
     <div className="wallet-server">
       {pendingApproval && onApprovalResponse && (
@@ -1526,7 +1766,7 @@ const Wallet: React.FC<WalletProps> = ({
             <code className="account-address">{connectedAccount || 'Loading...'}</code>
           </p>
           {activeProvingCount > 0 && (
-            <div className="proving-banner" role="status" aria-live="polite">
+            <output className="proving-banner" aria-live="polite">
               <div className="proving-banner__header">
                 <span className="proving-banner__spinner" aria-hidden="true" />
                 <div>
@@ -1549,7 +1789,7 @@ const Wallet: React.FC<WalletProps> = ({
                 ))}
               </ul>
               <p className="proving-banner__hint">This can take a couple of minutes. Sit tight!</p>
-            </div>
+            </output>
           )}
           <div className="transaction-stats">
             <div className="stat-item">
@@ -1578,6 +1818,86 @@ const Wallet: React.FC<WalletProps> = ({
               <div className="stat-label">Total</div>
               <div className="stat-value total">{transactionStats.total}</div>
             </div>
+          </div>
+
+          {/* Active Sessions Section */}
+          <div className="active-sessions-container">
+            <button
+              type="button"
+              className="active-sessions-toggle"
+              onClick={() => setShowActiveSessions(!showActiveSessions)}
+              aria-expanded={showActiveSessions}
+            >
+              <span className="toggle-icon">{showActiveSessions ? '▼' : '▶'}</span>
+              Active Sessions
+              <span className="sessions-count">({activeSessions.length})</span>
+            </button>
+
+            {showActiveSessions && (
+              <div className="active-sessions-content">
+                {activeSessions.length === 0 ? (
+                  <p className="no-sessions-data">
+                    No active sessions. Connect from a dApp to create a session.
+                  </p>
+                ) : (
+                  <>
+                    <div className="sessions-header">
+                      <button
+                        type="button"
+                        className="revoke-all-button"
+                        onClick={revokeAllSessions}
+                        title="Revoke all active sessions"
+                      >
+                        Revoke All
+                      </button>
+                    </div>
+                    <div className="sessions-table-container">
+                      <table className="sessions-table">
+                        <thead>
+                          <tr>
+                            <th>Origin</th>
+                            <th>Session ID</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {activeSessions.map((session) => (
+                            <tr
+                              key={session.id}
+                              className={session.id === currentSessionId ? 'current-session-row' : ''}
+                            >
+                              <td className="origin-cell" title={session.origin}>
+                                {session.origin}
+                              </td>
+                              <td className="session-id-cell" title={session.id}>
+                                {session.id.substring(0, 8)}...
+                                {session.id === currentSessionId && (
+                                  <span className="current-session-indicator">
+                                    <span className="current-session-dot">●</span> Current
+                                  </span>
+                                )}
+                              </td>
+                              <td className="created-cell">{new Date(session.createdAt).toLocaleString()}</td>
+                              <td className="actions-cell">
+                                <button
+                                  type="button"
+                                  className="revoke-button"
+                                  onClick={() => revokeSession(session.id)}
+                                  title="Revoke this session"
+                                >
+                                  Revoke
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Timing Statistics Section */}

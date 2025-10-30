@@ -78,6 +78,74 @@ import { useWalletMeshStore } from '@walletmesh/modal-core';
 const store = useWalletMeshStore.getState();
 ```
 
+### Session Persistence Architecture
+
+**dApp-Side Persistence (Automatic):**
+- Sessions automatically persist to localStorage via Zustand persist middleware
+- Page refreshes: Sessions automatically rehydrate on app load
+- Browser restarts: Sessions restore if still valid on wallet side
+- No configuration needed - works out of the box with WalletMeshClient
+
+**Wallet-Side Persistence (Configurable):**
+- Wallets should use `LocalStorageSessionStore` instead of `MemorySessionStore`
+- Preserves dApp connections across wallet app refreshes
+- Example: `/aztec/example-wallet/src/components/Wallet.tsx`
+- See `@walletmesh/router` package documentation for details
+
+**What Gets Persisted:**
+- Session ID and router connection state
+- Connected wallet adapter type and configuration
+- Account addresses and chain information
+- Transport configuration for reconnection
+- Wallet metadata (name, icon, description)
+
+**Session Lifecycle:**
+1. User connects wallet → Session created in Zustand store
+2. Zustand persist middleware → Automatically saves to localStorage
+3. Page refresh → Zustand rehydrates from localStorage
+4. Modal-core loads session state → Adapter can use data for reconnection
+5. Wallet validates session → Either allows reconnection or rejects
+
+**Security:**
+- Sessions are validated on reconnection (wallet-side check)
+- Origin validation prevents cross-site session hijacking
+- Wallets control session lifetime and can invalidate anytime
+- No sensitive data (private keys) stored - only connection metadata
+
+**How It Works:**
+```typescript
+// dApp side - automatic persistence
+import { createWalletMeshClient } from '@walletmesh/modal-core';
+
+const client = createWalletMeshClient({
+  appName: 'My dApp',
+  chains: [...],
+});
+// Sessions persist automatically via Zustand!
+
+// After page refresh, sessions are automatically restored
+// No additional code needed
+```
+
+**Manual Reconnection (Advanced):**
+```typescript
+// If you need manual control over reconnection
+import { useStore } from '@walletmesh/modal-core';
+
+const store = useStore.getState();
+const sessions = store.entities.sessions;
+
+// Check for persisted sessions on app load
+const persistedSessions = Object.values(sessions).filter(
+  s => s.status === 'connected'
+);
+
+if (persistedSessions.length > 0) {
+  // Use provider.reconnect() to restore connection
+  // See @walletmesh/router documentation
+}
+```
+
 ### Architecture
 The package follows a layered architecture with 7 distinct layers:
 1. **Public API Layer** - Clean consumer interface
@@ -283,6 +351,8 @@ Modal Core has undergone comprehensive service consolidation to reduce complexit
 - Session-based architecture with `SimplifiedWalletMeshState`
 - No wrapper classes - direct Zustand usage
 - Combines client and modal state in a single store
+- **Wallet adapter session persistence**: Adapters use `SessionState.adapterReconstruction` for page refresh recovery
+- Automatic localStorage persistence via Zustand's persist middleware
 
 #### **Consolidated Business Logic Services** (`src/services/`)
 - Framework-agnostic services that encapsulate business logic
@@ -321,9 +391,16 @@ Modal Core has undergone comprehensive service consolidation to reduce complexit
 
 #### **Transport System** (`src/internal/transports/`)
 - Modular communication layer
-- Specialized implementations: Chrome extension, popup window
+- Specialized implementations: Chrome extension, popup window, cross-window, WebSocket
 - Base transport with connection resilience
 - Message queuing and retry mechanisms
+- **Origin Validation**: Standardized validation system for all transports
+  - `OriginValidator` utility (`src/internal/transports/validation/OriginValidator.ts`): Centralized origin validation logic
+  - `AbstractTransport` base methods: `validateOrigin()`, `validateWrappedOrigin()`, `captureOrigin()`, `getTrustedOrigin()`
+  - Browser-validated origins for postMessage transports (popup, cross-window)
+  - dApp origin validation for non-postMessage transports (extension, websocket)
+  - SSR-safe with proper undefined handling
+  - ~60% code reduction through shared validation logic
 
 #### **View Navigation** (`src/internal/modal/views/`)
 - Simple view navigation in `navigation.ts`
@@ -886,11 +963,53 @@ function MyComponent() {
 
 ### **Adding a New Transport**
 1. Extend `AbstractTransport` in `src/internal/transports/`
-2. Implement connection and messaging methods
+2. Implement required abstract methods:
+   - `connectInternal()` - Establish connection
+   - `disconnectInternal()` - Clean up connection
+   - `sendInternal(data)` - Send messages
+   - `getTransportType()` - Return transport identifier (e.g., 'popup', 'websocket')
 3. **CRITICAL**: Use ErrorFactory for all error handling (never `new Error()`)
-4. Add configuration schema in `src/schemas/configs.ts`
-5. Handle connection resilience and retry logic
-6. Export through `src/api/transports.ts`
+4. **Origin Validation**: Use standardized validation methods
+   - For postMessage transports: Call `this.captureOrigin(event.origin)` when receiving messages
+   - Override `isBrowserValidatedOrigin()` to return `true` for postMessage transports
+   - Use `this.validateOrigin(message)` to validate `_context.origin`
+   - For CrossWindowTransport-style wrapped messages: Use `this.validateWrappedOrigin(message, { requireOriginField: true })`
+   - See `PopupWindowTransport`, `CrossWindowTransport`, `ChromeExtensionTransport`, or `WebSocketTransport` for examples
+5. Add configuration schema in `src/schemas/configs.ts`
+6. Handle connection resilience and retry logic
+7. Export through `src/api/transports.ts`
+
+**Origin Validation Example:**
+```typescript
+class MyTransport extends AbstractTransport {
+  protected getTransportType(): string {
+    return 'my-transport';
+  }
+
+  // For postMessage transports
+  protected override isBrowserValidatedOrigin(): boolean {
+    return true; // Use browser-validated MessageEvent.origin
+  }
+
+  private handleMessage = (event: MessageEvent) => {
+    // Capture browser-validated origin
+    this.captureOrigin(event.origin);
+
+    const data = event.data;
+
+    // Validate _context.origin
+    const validation = this.validateOrigin(data);
+    if (!validation.valid && validation.error) {
+      this.log('error', 'Origin validation failed', validation.context);
+      this.emit({ type: 'error', error: validation.error });
+      return; // Reject message
+    }
+
+    // Process valid message
+    this.emit({ type: 'message', data });
+  };
+}
+```
 
 ### **Adding a New Connector**
 1. Create a new strategy implementing `WalletStrategy` in `src/internal/connectors/strategies/`
@@ -1602,6 +1721,99 @@ import { ErrorFactory } from '../core/errors/errorFactory.js';
 - ❌ Generic `new Error()` anywhere in the codebase
 
 ## Recent Cleanup (July 2025)
+
+### **WalletStorage Removal and Zustand Migration (January 2025)**
+
+A significant architectural improvement was made to eliminate dual storage confusion and consolidate all persistence in the Zustand store.
+
+#### **What Was Removed**
+- **`WalletStorage` class** (`src/internal/utils/dom/storage.ts`, 360 lines)
+- **`AdapterSessionData` interface** - Replaced by `SessionState.adapterReconstruction`
+- **Storage test files** (`storage.test.ts`, `storage.ssr.test.ts`)
+- **Storage exports** from `api/index.ts` and `api/wallets/index.ts`
+
+#### **What Changed**
+
+**Before (Dual Storage - Confusing):**
+```typescript
+// Adapters used WalletStorage for session persistence
+class MyAdapter extends AbstractWalletAdapter {
+  private storage: WalletStorage;
+
+  async persistSession() {
+    this.storage.saveAdapterSession(this.id, sessionData);
+  }
+
+  async restoreSession() {
+    const sessionData = this.storage.getAdapterSession(this.id);
+  }
+}
+
+// AND separately, Zustand store managed modal state
+// Result: Two storage systems, duplication, confusion
+```
+
+**After (Unified Zustand - Clear):**
+```typescript
+// Adapters now use Zustand store directly
+class MyAdapter extends AbstractWalletAdapter {
+  async persistSession(connection, sessionId) {
+    const store = useStore.getState();
+    // Update SessionState.adapterReconstruction in Zustand
+    useStore.setState({ /* ... */ });
+  }
+
+  async restoreSession() {
+    const store = useStore.getState();
+    const session = Object.values(store.entities.sessions)
+      .find(s => s.walletId === this.id);
+    this.persistedSession = session;
+  }
+}
+
+// Result: Single storage system, clear architecture
+```
+
+#### **Migration Path for External Adapters**
+
+If you've built custom wallet adapters that referenced `WalletStorage`:
+
+1. **Remove WalletStorage imports**:
+   ```typescript
+   // ❌ REMOVED
+   // import { WalletStorage, AdapterSessionData } from '@walletmesh/modal-core';
+
+   // ✅ Use SessionState instead
+   import type { SessionState } from '@walletmesh/modal-core';
+   ```
+
+2. **Update session persistence**:
+   - `persistSession()` - Call `super.persistSession()` which handles Zustand updates
+   - `restoreSession()` - Call `super.restoreSession()` which loads from Zustand
+   - `getPersistedSession()` - Returns full `SessionState` instead of `AdapterSessionData`
+
+3. **No action needed for most adapters**:
+   - If you didn't override session persistence methods, no changes required
+   - `AbstractWalletAdapter` handles everything automatically
+
+#### **Benefits**
+- ✅ **Single Storage Layer**: Eliminates dual storage confusion
+- ✅ **Consistency**: All persistence uses same mechanism
+- ✅ **Simpler Architecture**: -360 lines, one less service
+- ✅ **Better Type Safety**: Full `SessionState` context instead of minimal `AdapterSessionData`
+- ✅ **Richer Context**: Adapters get account info, permissions, chain details
+- ✅ **No Expiration Logic**: Session validity now managed by wallets, not modal
+
+#### **Related Changes**
+- **24-Hour Session Expiration Removed**: Client no longer enforces arbitrary session expiration
+  - Wallets now control session validity through their backend
+  - Modal respects wallet's session management decisions
+  - Expired sessions are rejected during reconnection, not filtered client-side
+
+#### **Files Modified**
+- `AbstractWalletAdapter.ts` - Migrated to Zustand store
+- `src/internal/utils/dom/index.ts` - Added migration documentation
+- `src/api/wallets/index.ts` - Removed WalletStorage exports, added migration notes
 
 ### **Recently Removed (v3.0.0)**
 The following deprecated features have been removed:

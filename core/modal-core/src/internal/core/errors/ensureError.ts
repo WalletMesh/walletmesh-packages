@@ -121,7 +121,7 @@ export function ensureModalError(value: unknown, context?: ErrorContext): ModalE
     code: ERROR_CODES.UNKNOWN_ERROR,
     message: error.message,
     category: 'general',
-    cause: error,  // ✅ Preserve the Error chain and stack trace
+    cause: error, // ✅ Preserve the Error chain and stack trace
     ...(context && { data: context }),
   });
 }

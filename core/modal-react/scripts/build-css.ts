@@ -141,7 +141,7 @@ export function buildCSS(): void {
     const needsCopy = !fs.existsSync(destPath) || hasFileChanged(file.src, cache);
 
     if (needsCopy) {
-      const copied = copyCSSFile(file);
+      const _copied = copyCSSFile(file);
       console.log(`  ✓ Copied: ${file.relative}`);
       copiedCount++;
     } else {

@@ -10,12 +10,13 @@ export default defineConfig({
     alias: {
       '@solana/web3.js': path.resolve(__dirname, 'src/internal/testing/mocks/solana-web3.ts'),
       '@walletmesh/jsonrpc': path.resolve(rootPath, 'core/jsonrpc/src/index.ts'),
-      '@walletmesh/discovery': path.resolve(rootPath, 'core/discovery/src/index.ts'),
-      '@walletmesh/discovery/responder': path.resolve(rootPath, 'core/discovery/src/responder.ts'),
+      '@walletmesh/discovery/extension': path.resolve(rootPath, 'core/discovery/src/extension.ts'),
+      '@walletmesh/discovery/responder': path.resolve(rootPath, 'core/discovery/src/responder/index.ts'),
       '@walletmesh/router': path.resolve(rootPath, 'core/router/src/index.ts'),
       '@walletmesh/aztec-rpc-wallet': path.resolve(rootPath, 'aztec/rpc-wallet/src/index.ts'),
       '@walletmesh/aztec-helpers': path.resolve(rootPath, 'aztec/helpers/src/index.ts'),
     },
+    conditions: ['import', 'module', 'browser', 'default'],
   },
   test: {
     globals: true,

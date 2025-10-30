@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockServiceDependencies } from '../../testing/index.js';
 import type { WalletInfo } from '../../types.js';
 import { WalletPreferenceService } from './WalletPreferenceService.js';
-import type { WalletHistoryEntry, WalletPreferenceServiceConfig, WalletPreferences } from './types.js';
+import type { WalletPreferenceServiceConfig, WalletPreferences } from './types.js';
 
 describe('WalletPreferenceService', () => {
   let service: WalletPreferenceService;

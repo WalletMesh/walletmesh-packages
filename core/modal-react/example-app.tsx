@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { WalletMeshProvider } from './src/WalletmeshProvider.js';
 import { ConnectButton } from './src/components/ConnectButton.js';

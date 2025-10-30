@@ -1,11 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestEnvironment } from '../../../testing/index.js';
-import type {
-  PopupConfig,
-  TransportConnectedEvent,
-  TransportDisconnectedEvent,
-  TransportMessageEvent,
-} from '../../../types.js';
+import type { PopupConfig } from '../../../types.js';
 import type { ErrorHandler } from '../../core/errors/errorHandler.js';
 import type { Logger } from '../../core/logger/logger.js';
 import { PopupWindow } from './PopupWindowTransport.ssr.js';
@@ -17,7 +12,7 @@ vi.mock('../../../api/utils/environment.js', () => ({
 }));
 
 vi.mock('../../utils/dom-essentials.js', () => ({
-  attachGlobalListener: vi.fn((target: string, event: string, handler: EventListener) => {
+  attachGlobalListener: vi.fn((_target: string, _event: string, handler: EventListener) => {
     const cleanup = vi.fn();
     mockMessageListeners.push({ handler, cleanup });
     return cleanup;
@@ -73,11 +68,11 @@ vi.mock('../AbstractTransport.ssr.js', () => ({
       return this.sendInternal(data);
     }
 
-    on(event: string, handler: (...args: unknown[]) => void): () => void {
+    on(_event: string, _handler: (...args: unknown[]) => void): () => void {
       return () => {};
     }
 
-    off(event: string, handler?: (...args: unknown[]) => void): void {}
+    off(_event: string, _handler?: (...args: unknown[]) => void): void {}
 
     // These will be overridden by PopupWindow
     protected async connectInternal(): Promise<void> {
@@ -88,7 +83,7 @@ vi.mock('../AbstractTransport.ssr.js', () => ({
       throw new Error('Not implemented');
     }
 
-    protected async sendInternal(data: unknown): Promise<void> {
+    protected async sendInternal(_data: unknown): Promise<void> {
       throw new Error('Not implemented');
     }
   },

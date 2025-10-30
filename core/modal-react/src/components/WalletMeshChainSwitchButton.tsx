@@ -130,12 +130,12 @@ export function WalletMeshChainSwitchButton({
       <span className={styles['chainName']}>{chainName}</span>
 
       {isCurrentChain && (
-        <span className={styles['currentIndicator']} aria-label="Current chain">
+        <span className={styles['currentIndicator']} aria-hidden="true">
           ✓
         </span>
       )}
 
-      {isSwitchingToThis && <div className={styles['switchingSpinner']} aria-label="Switching chain" />}
+      {isSwitchingToThis && <div className={styles['switchingSpinner']} aria-hidden="true" />}
     </button>
   );
 }

@@ -1,7 +1,6 @@
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ChainType } from '../../../types.js';
-import { ErrorFactory } from '../../core/errors/errorFactory.js';
 import { AztecAdapter, DEFAULT_AZTEC_PERMISSIONS } from './AztecAdapter.js';
 
 // Mock the dynamic import of @walletmesh/aztec-rpc-wallet

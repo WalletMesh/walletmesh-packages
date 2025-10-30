@@ -75,7 +75,7 @@ export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig
   // Chains must be explicitly specified
   if (!config.chains || config.chains.length === 0) {
     throw new Error(
-      'No chains specified in Aztec config. Please provide chains array with at least one chain (e.g., { chainId: "aztec:31337", label: "Aztec Sandbox" })'
+      'No chains specified in Aztec config. Please provide chains array with at least one chain (e.g., { chainId: "aztec:31337", label: "Aztec Sandbox" })',
     );
   }
 
@@ -235,6 +235,7 @@ export function createAztecConfig(config: AztecProviderConfig): WalletMeshConfig
     ...(config.wallets && { wallets: config.wallets }),
 
     // Optimized discovery configuration for Aztec
+    // biome-ignore lint/suspicious/noExplicitAny: Type compatibility issue with modal-core discovery config
     discovery: discoveryConfig as any,
 
     // Transaction overlay configuration

@@ -131,6 +131,21 @@ export class WebSocketTransport extends AbstractTransport {
         this.ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
+
+            // Validate _context.origin using shared validation logic
+            // For defense-in-depth, even though WebSocket has URL-based security
+            const validation = this.validateOrigin(data, {
+              additionalContext: {
+                wsUrl: this.wsConfig.url,
+              },
+            });
+
+            if (!validation.valid && validation.error) {
+              this.log('error', 'Origin validation failed: _context.origin mismatch', validation.context);
+              this.emit({ type: 'error', error: validation.error });
+              return; // Reject message
+            }
+
             this.emit({ type: 'message', data });
           } catch (error) {
             this.log('error', 'Failed to parse WebSocket message', {
@@ -139,7 +154,7 @@ export class WebSocketTransport extends AbstractTransport {
             });
           }
         };
-      } catch (error) {
+      } catch (_error) {
         reject(ErrorFactory.transportError('Failed to create WebSocket'));
       }
     });
@@ -182,7 +197,7 @@ export class WebSocketTransport extends AbstractTransport {
       const message = JSON.stringify(data);
       this.ws.send(message);
       this.log('debug', 'Message sent over WebSocket');
-    } catch (error) {
+    } catch (_error) {
       throw ErrorFactory.messageFailed('Failed to send WebSocket message');
     }
   }
@@ -270,5 +285,12 @@ export class WebSocketTransport extends AbstractTransport {
   override async destroy(): Promise<void> {
     this.stopReconnect();
     await this.disconnect();
+  }
+
+  /**
+   * Get transport type identifier
+   */
+  protected getTransportType(): string {
+    return 'websocket';
   }
 }

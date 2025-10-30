@@ -149,7 +149,9 @@ export function BackgroundTransactionIndicator({
 
     // Cleanup function to clear all timers
     return () => {
-      timersRef.current.forEach((timer) => clearTimeout(timer));
+      for (const timer of timersRef.current.values()) {
+        clearTimeout(timer);
+      }
       timersRef.current.clear();
     };
   }, [backgroundTransactions, completedDuration]);
@@ -212,7 +214,7 @@ export function BackgroundTransactionIndicator({
 
       {/* Expandable Drawer */}
       {isExpanded && (
-        <div className={styles['drawer']} role="region" aria-label="Background transactions">
+        <section className={styles['drawer']} aria-label="Background transactions">
           <div className={styles['drawerHeader']}>
             <h3 className={styles['drawerTitle']}>Background Transactions</h3>
             <button
@@ -269,7 +271,7 @@ export function BackgroundTransactionIndicator({
               </div>
             </div>
           )}
-        </div>
+        </section>
       )}
     </div>,
     target,

@@ -8,10 +8,9 @@ import {
   type HeartbeatConfig,
   type HeartbeatHandlers,
   HeartbeatManager,
-  type HeartbeatMetrics,
   createHeartbeatManager,
 } from './HeartbeatManager.js';
-import { type ControlMessage, ControlType, type PingPayload, type PongPayload } from './protocol.js';
+import { ControlType, type PingPayload, type PongPayload } from './protocol.js';
 
 describe('HeartbeatManager', () => {
   let heartbeatManager: HeartbeatManager;

@@ -1,6 +1,5 @@
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { vi as VitestMock } from 'vitest';
 import { LazyAztecRouterProvider, lazyRegisterAztecSerializers } from './lazy.js';
 
 // Mock the aztec-rpc-wallet module
@@ -50,7 +49,15 @@ describe('LazyAztecRouterProvider', () => {
 
     // First method call should trigger loading
     await provider.connect({ 'aztec:testnet': ['method1'] });
-    expect(AztecRouterProvider).toHaveBeenCalledWith(mockTransport, undefined);
+
+    // Verify AztecRouterProvider was called with transport and options object
+    expect(AztecRouterProvider).toHaveBeenCalledWith(
+      mockTransport,
+      expect.objectContaining({
+        context: undefined,
+        onSessionTerminated: expect.any(Function),
+      })
+    );
   });
 
   it('should proxy all methods to the real provider', async () => {

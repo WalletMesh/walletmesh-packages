@@ -4,7 +4,6 @@
 -->
 <script lang="ts">
 import {
-  type CreateSandboxedIconOptions,
   type DisabledIconStyle,
   type FallbackIconConfig,
   RECOVERY_PRESETS,
@@ -36,7 +35,7 @@ const dispatch = createEventDispatcher<{
 
 // Component state
 let containerElement: HTMLDivElement;
-let hasError = false;
+let _hasError = false;
 let isLoading = true;
 
 // Create error recovery instance
@@ -63,14 +62,14 @@ $: a11yAttributes = createIconAccessibilityAttributes({
 });
 
 // Event handlers
-function handleClick(event: Event) {
+function _handleClick(event: Event) {
   if (!isLoading && !disabled) {
     event.preventDefault();
     dispatch('click');
   }
 }
 
-function handleKeyDown(event: KeyboardEvent) {
+function _handleKeyDown(event: KeyboardEvent) {
   if (!isLoading && !disabled && (event.key === 'Enter' || event.key === ' ')) {
     event.preventDefault();
     dispatch('click');
@@ -83,7 +82,7 @@ async function loadIcon() {
 
   // Clear existing content
   containerElement.innerHTML = '';
-  hasError = false;
+  _hasError = false;
   isLoading = true;
 
   try {
@@ -148,7 +147,7 @@ async function loadIcon() {
         isLoading = false;
       }
     } else {
-      hasError = true;
+      _hasError = true;
       isLoading = false;
     }
   }

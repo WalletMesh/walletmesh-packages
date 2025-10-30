@@ -19,6 +19,7 @@
  *   to reconstruct complex Aztec objects from their JSON representations.
  */
 
+// biome-ignore lint/style/useNodejsImportProtocol: This code runs in browser environments where node: protocol is not available
 import { Buffer } from 'buffer';
 import type { NodeInfo } from '@aztec/aztec.js';
 import {
@@ -51,6 +52,7 @@ import {
   HashedValues,
   PrivateExecutionResult,
   type SimulationOverrides,
+  SimulationStatsSchema,
   TxProfileResult,
   TxProvingResult,
   TxReceipt,
@@ -89,6 +91,14 @@ const EventMetadataDefinitionSchema = z.object({
   eventSelector: schemas.EventSelector,
   abiType: AbiTypeSchema,
   fieldNames: z.array(z.string()),
+});
+
+// Schema for UnifiedSimulationResult
+const UnifiedSimulationResultSchema = z.object({
+  simulationType: z.enum(['transaction', 'utility']),
+  decodedResult: z.any().optional(),
+  stats: SimulationStatsSchema.optional(),
+  originalResult: z.union([TxSimulationResult.schema, UtilitySimulationResult.schema]),
 });
 
 // Schema for FunctionCall (since it doesn't have one in the Aztec codebase)
@@ -232,7 +242,7 @@ const RESULT_SERIALIZERS: Partial<
   aztec_wmBatchExecute: createResultSerializer<{ txHash: TxHash; receipt: TxReceipt; txStatusId: string }>(
     BatchExecuteResultSchema,
   ),
-  aztec_wmSimulateTx: createResultSerializer<TxSimulationResult>(TxSimulationResult.schema),
+  aztec_wmSimulateTx: createResultSerializer(UnifiedSimulationResultSchema),
   aztec_wmDeployContract: {
     result: {
       serialize: async (

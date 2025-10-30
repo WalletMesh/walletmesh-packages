@@ -88,7 +88,7 @@ const state: GlobalErrorHandlerState = {
  */
 const getProcess = createLazy(() => {
   // Check if we're in Node.js
-  if (typeof process !== 'undefined' && process.versions && process.versions.node) {
+  if (process?.versions?.node) {
     return process;
   }
   return null;

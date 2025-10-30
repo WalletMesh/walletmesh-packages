@@ -1,4 +1,5 @@
 import { createLogger } from '@aztec/foundation/log';
+import type { TxSimulationResult, UtilitySimulationResult } from '@aztec/stdlib/tx';
 import type { AztecWalletMethodMap } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
 
@@ -171,15 +172,26 @@ export function createTransactionHandlers() {
       }
 
       // Call with the parameters that the underlying wallet expects
-      // Cast to any to handle the extended simulateTx signature with scopes
-      return await (ctx.wallet as any).simulateTx(
+      // Cast to unknown then to extended type to handle the extended simulateTx signature with scopes
+      return (await (
+        ctx.wallet as unknown as {
+          simulateTx: (
+            txRequest: unknown,
+            simulatePublic?: boolean,
+            skipTxValidation?: boolean,
+            skipFeeEnforcement?: boolean,
+            overrides?: unknown,
+            scopes?: unknown[],
+          ) => Promise<unknown>;
+        }
+      ).simulateTx(
         txRequest,
         simulatePublic,
         skipTxValidation,
         skipFeeEnforcement,
         overrides,
         scopes,
-      );
+      )) as TxSimulationResult;
     },
 
     /**
@@ -241,8 +253,19 @@ export function createTransactionHandlers() {
         // Mandatory params
         throw new Error('Invalid parameters received in tuple for aztec_simulateUtility');
       }
-      // Cast to any to handle the extended simulateUtility signature with scopes
-      return await (ctx.wallet as any).simulateUtility(functionName, args, to, authWits, from, scopes);
+      // Cast to unknown then to extended type to handle the extended simulateUtility signature with scopes
+      return (await (
+        ctx.wallet as unknown as {
+          simulateUtility: (
+            functionName: string,
+            args: unknown[],
+            to: unknown,
+            authWits?: unknown[],
+            from?: unknown,
+            scopes?: unknown[],
+          ) => Promise<unknown>;
+        }
+      ).simulateUtility(functionName, args, to, authWits, from, scopes)) as UtilitySimulationResult;
     },
   };
 }

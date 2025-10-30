@@ -144,6 +144,7 @@ describe('WalletRouter', () => {
     const mockSession: SessionData = {
       id: 'test-session',
       origin: 'test-origin',
+      createdAt: Date.now(),
     };
 
     beforeEach(() => {
@@ -183,6 +184,7 @@ describe('WalletRouter', () => {
       const mockSessionData = {
         id: 'test-session',
         origin: 'test-origin',
+        createdAt: Date.now(),
       };
 
       mockSessionStore.validateAndRefresh.mockResolvedValue(mockSessionData);
@@ -253,6 +255,7 @@ describe('WalletRouter', () => {
     const mockSession: SessionData = {
       id: 'test-session',
       origin: 'test-origin',
+      createdAt: Date.now(),
     };
 
     beforeEach(() => {
@@ -387,6 +390,7 @@ describe('WalletRouter', () => {
     const mockSession: SessionData = {
       id: 'test-session',
       origin: 'test-origin',
+      createdAt: Date.now(),
     };
 
     beforeEach(() => {

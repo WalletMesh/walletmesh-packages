@@ -58,7 +58,7 @@ describe('crypto utilities', () => {
     });
 
     it('should generate an ID with timestamp', () => {
-      const now = Date.now();
+      const _now = Date.now();
       vi.spyOn(Date, 'now').mockReturnValue(1234567890);
 
       const id = generateId({ timestamp: true });

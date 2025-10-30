@@ -125,6 +125,8 @@ export const uiActions = {
         state.ui.loading.modal = validatedLoading;
       } else if (context === 'connection') {
         state.ui.loading.connection = validatedLoading;
+      } else if (context === 'reconnecting') {
+        state.ui.loading.reconnecting = validatedLoading;
       } else if (context === 'discovery') {
         state.ui.loading.discovery = validatedLoading;
       } else if (context === 'transaction') {
@@ -163,6 +165,7 @@ export const uiActions = {
         }
         // Clear relevant loading state
         if (context === 'connection') state.ui.loading.connection = false;
+        if (context === 'connection') state.ui.loading.reconnecting = false;
         if (context === 'discovery') state.ui.loading.discovery = false;
         if (context === 'transaction') state.ui.loading.transaction = false;
       } else {

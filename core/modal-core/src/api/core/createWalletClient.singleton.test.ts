@@ -228,8 +228,8 @@ describe('createWalletClient.singleton', () => {
       vi.mocked(createWalletMesh).mockResolvedValueOnce(mockClient1).mockResolvedValueOnce(mockClient2);
 
       // Create instances with different keys
-      const promise1 = getWalletClientInstance(mockConfig, {}, 'key1');
-      const promise2 = getWalletClientInstance(mockConfig, {}, 'key2');
+      const _promise1 = getWalletClientInstance(mockConfig, {}, 'key1');
+      const _promise2 = getWalletClientInstance(mockConfig, {}, 'key2');
 
       // Get existing instances
       const existing1 = getExistingInstance('key1');

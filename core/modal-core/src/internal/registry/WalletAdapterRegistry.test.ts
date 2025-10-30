@@ -6,7 +6,6 @@ import type { QualifiedResponder } from '@walletmesh/discovery';
 import type { ConnectionManager } from '@walletmesh/discovery';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockLogger } from '../../testing/helpers/mocks.js';
-import type { WalletAdapter } from '../adapters/wallet/WalletAdapter.js';
 import { AbstractWalletAdapter } from '../wallets/base/AbstractWalletAdapter.js';
 import { WalletAdapterRegistry } from './WalletAdapterRegistry.js';
 
@@ -93,7 +92,7 @@ describe('WalletAdapterRegistry', () => {
     });
 
     it('should register adapter with options', () => {
-      const validateConfig = vi.fn((config) => true);
+      const validateConfig = vi.fn((_config) => true);
 
       registry.register('MockAdapter', MockWalletAdapter, {
         validateConfig,

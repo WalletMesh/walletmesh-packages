@@ -179,7 +179,9 @@ describe('WalletMeshChainSwitchButton', async () => {
       render(<WalletMeshChainSwitchButton targetChain={defaultTargetChain} chainName="Ethereum Mainnet" />);
 
       expect(screen.getByText('✓')).toBeInTheDocument();
-      expect(screen.getByLabelText('Current chain')).toBeInTheDocument();
+      // Verify button indicates current chain via aria-pressed
+      const button = screen.getByRole('button');
+      expect(button).toHaveAttribute('aria-pressed', 'true');
     });
 
     it('should apply current class when on target chain', () => {
@@ -231,7 +233,10 @@ describe('WalletMeshChainSwitchButton', async () => {
 
       render(<WalletMeshChainSwitchButton targetChain={defaultTargetChain} chainName="Ethereum Mainnet" />);
 
-      expect(screen.getByLabelText('Switching chain')).toBeInTheDocument();
+      // Verify button indicates switching via aria-busy and visual spinner
+      const button = screen.getByRole('button');
+      expect(button).toHaveAttribute('aria-busy', 'true');
+      expect(button.querySelector('[class*="switchingSpinner"]')).toBeInTheDocument();
     });
 
     it('should apply switching class when switching', () => {

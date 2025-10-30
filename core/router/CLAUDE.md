@@ -65,6 +65,7 @@ The router manages connections to multiple blockchain wallets using a uniform in
    - Client-side API for applications to interact with wallets
    - Methods:
      - `connect()`: Establish connections with permissions
+     - `reconnect()`: Restore an existing session after page refresh or browser restart
      - `call()`: Execute a single method
      - `bulkCall()`: Execute multiple methods in sequence
      - `chain()`: Create an operation builder for method chaining
@@ -73,6 +74,8 @@ The router manages connections to multiple blockchain wallets using a uniform in
      - `disconnect()`: End the session
    - Properties:
      - `sessionId`: Current active session ID
+   - Events:
+     - `connection:restored`: Emitted when a session is successfully restored via reconnect
 
 3. **Permission System** (`src/permissions/`)
    - **PermissionManager Interface** (`src/types.ts`):
@@ -287,8 +290,27 @@ const updatedPermissions = await provider.updatePermissions({
 // Sessions are automatically created during connect()
 const { sessionId } = await provider.connect(...);
 
-// Sessions can be reconnected to
-const reconnectResult = await provider.reconnect(sessionId);
+// Save session ID for later reconnection (e.g., after page refresh)
+localStorage.setItem('wallet_session_id', sessionId);
+
+// Reconnect to an existing session (e.g., on page load)
+const savedSessionId = localStorage.getItem('wallet_session_id');
+if (savedSessionId) {
+  try {
+    const result = await provider.reconnect(savedSessionId);
+    if (result.status) {
+      console.log('Reconnected with permissions:', result.permissions);
+    }
+  } catch (error) {
+    console.error('Reconnection failed:', error);
+    localStorage.removeItem('wallet_session_id');
+  }
+}
+
+// Listen for successful reconnection
+provider.on('connection:restored', ({ sessionId, permissions }) => {
+  console.log(`Session ${sessionId} restored with permissions:`, permissions);
+});
 
 // Sessions can be explicitly terminated
 await provider.disconnect();
@@ -379,6 +401,96 @@ The router exposes these core methods through the JSON-RPC interface:
      available: true // or false
    }
    ```
+
+5. `connection:restored`: Emitted when a session is successfully restored via reconnect
+   ```typescript
+   {
+     sessionId: 'session123',
+     permissions: {
+       'eip155:1': {
+         eth_accounts: {
+           allowed: true,
+           shortDescription: 'View Accounts',
+           longDescription: 'Allow viewing your Ethereum addresses'
+         }
+       }
+     }
+   }
+   ```
+
+## Session Persistence Best Practices
+
+### For Wallet Developers
+
+Use `LocalStorageSessionStore` to persist dApp connections across wallet app refreshes:
+
+```typescript
+import { LocalStorageSessionStore, WalletRouter } from '@walletmesh/router';
+
+// Create persistent session store (survives browser restarts)
+const sessionStore = new LocalStorageSessionStore({
+  lifetime: 24 * 60 * 60 * 1000,  // 24 hours
+  refreshOnAccess: true,           // Extend lifetime on each access
+});
+
+// Use in WalletRouter
+const router = new WalletRouter(
+  transport,
+  walletsMap,
+  permissionManager,
+  { sessionStore }
+);
+```
+
+**Benefits:**
+- ✅ Sessions persist across wallet app page refreshes
+- ✅ Sessions persist across browser restarts
+- ✅ 24-hour automatic expiry with configurable lifetime
+- ✅ Session lifetime refreshes on wallet activity
+- ✅ Automatic cleanup of expired sessions
+
+### For dApp Developers
+
+Sessions automatically persist via modal-core's Zustand store:
+
+```typescript
+import { WalletMeshProvider } from '@walletmesh/modal-react';
+
+function App() {
+  return (
+    <WalletMeshProvider config={{ appName: 'My dApp' }}>
+      <YourApp />
+    </WalletMeshProvider>
+  );
+}
+
+// Sessions survive page refreshes automatically!
+// No additional configuration needed
+```
+
+**Manual reconnection** (optional):
+
+```typescript
+import { WalletRouterProvider } from '@walletmesh/router';
+
+// Save session ID for custom reconnection logic
+const { sessionId } = await provider.connect({...});
+localStorage.setItem('custom_session_key', sessionId);
+
+// Later, reconnect manually
+const savedSessionId = localStorage.getItem('custom_session_key');
+if (savedSessionId) {
+  try {
+    const result = await provider.reconnect(savedSessionId);
+    if (result.status) {
+      console.log('Reconnected!');
+    }
+  } catch (error) {
+    console.error('Reconnection failed:', error);
+    localStorage.removeItem('custom_session_key');
+  }
+}
+```
 
 ## Error Codes
 

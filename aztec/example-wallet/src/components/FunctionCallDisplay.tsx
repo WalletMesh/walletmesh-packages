@@ -98,9 +98,7 @@ const FunctionCallDisplay: React.FC<FunctionCallDisplayProps> = ({
               </div>
             );
           })}
-          <div style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
-            )
-          </div>
+          <div style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>)</div>
         </div>
       </div>
     </div>

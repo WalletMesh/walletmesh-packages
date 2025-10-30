@@ -9,6 +9,7 @@
  * @packageDocumentation
  */
 
+import { getProviderForSession } from '../internal/session/ProviderRegistry.js';
 import type { WalletProvider } from '../api/types/providers.js';
 import { useStore } from '../state/store.js';
 import type { SupportedChain } from '../types.js';
@@ -75,14 +76,21 @@ export function getChainProvider<T extends ChainType>(
     (session) => session.chain.chainId === chain.chainId && session.status === 'connected',
   );
 
-  if (!activeSession || !activeSession.provider?.instance) {
+  if (!activeSession) {
+    // biome-ignore lint/suspicious/noExplicitAny: Conditional return type requires any cast
+    return null as any;
+  }
+
+  // Get provider from registry (NOT from state, to avoid cross-origin errors)
+  const provider = getProviderForSession(activeSession.sessionId);
+  if (!provider) {
     // biome-ignore lint/suspicious/noExplicitAny: Conditional return type requires any cast
     return null as any;
   }
 
   // Return the provider with proper typing based on chain type
   // biome-ignore lint/suspicious/noExplicitAny: Conditional return type requires any cast
-  return activeSession.provider.instance as any;
+  return provider as any;
 }
 
 /**
@@ -110,7 +118,9 @@ export function getActiveProvider(): WalletProvider | null {
 
   if (!activeSession || activeSession.status !== 'connected') return null;
 
-  return (activeSession?.provider?.instance as unknown as WalletProvider) || null;
+  // Get provider from registry (NOT from state, to avoid cross-origin errors)
+  const provider = getProviderForSession(activeSessionId);
+  return (provider as unknown as WalletProvider) || null;
 }
 
 /**
@@ -146,17 +156,19 @@ export function getProvidersByChainType(): {
   };
 
   for (const session of sessions) {
-    if (!session.provider?.instance) continue;
+    // Get provider from registry (NOT from state, to avoid cross-origin errors)
+    const provider = getProviderForSession(session.sessionId);
+    if (!provider) continue;
 
-    const provider = session.provider.instance as unknown as WalletProvider;
+    const walletProvider = provider as unknown as WalletProvider;
     const chainType = session.chain.chainType as ChainType;
 
     switch (chainType) {
       case ChainType.Evm:
-        result.evm.push(provider as unknown as EvmProvider);
+        result.evm.push(walletProvider as unknown as EvmProvider);
         break;
       case ChainType.Solana:
-        result.solana.push(provider as unknown as SolanaProvider);
+        result.solana.push(walletProvider as unknown as SolanaProvider);
         break;
       // Note: Aztec support removed - use AztecRouterProvider from @walletmesh/aztec-rpc-wallet
     }
@@ -188,7 +200,11 @@ export function getProviderByChainId(chainId: string): WalletProvider | null {
     (s) => s.chain.chainId === chainId && s.status === 'connected',
   );
 
-  return (session?.provider?.instance as unknown as WalletProvider) || null;
+  if (!session) return null;
+
+  // Get provider from registry (NOT from state, to avoid cross-origin errors)
+  const provider = getProviderForSession(session.sessionId);
+  return (provider as unknown as WalletProvider) || null;
 }
 
 /**
@@ -214,10 +230,12 @@ export function getProviderByChainId(chainId: string): WalletProvider | null {
 export function hasProviderForChain(chain: SupportedChain): boolean {
   const state = useStore.getState();
 
-  return Object.values(state.entities.sessions).some(
-    (session) =>
-      session.chain.chainId === chain.chainId &&
-      session.status === 'connected' &&
-      session.provider?.instance != null,
-  );
+  return Object.values(state.entities.sessions).some((session) => {
+    if (session.chain.chainId !== chain.chainId || session.status !== 'connected') {
+      return false;
+    }
+    // Check provider registry (NOT state, to avoid cross-origin errors)
+    const provider = getProviderForSession(session.sessionId);
+    return provider != null;
+  });
 }

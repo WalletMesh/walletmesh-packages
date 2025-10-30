@@ -494,7 +494,7 @@ export const errorRecoveryUtils = {
       while (attempts < maxRetries) {
         try {
           return await operation();
-        } catch (error) {
+        } catch (_error) {
           attempts++;
 
           if (attempts >= maxRetries) {

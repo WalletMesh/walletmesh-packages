@@ -13,19 +13,14 @@
  * @group core
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { WalletInfo } from '../../core/types.js';
 import { createLogger } from '../../internal/core/logger/logger.js';
 import { createMockWalletInfo, createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
 import { ChainType } from '../../types.js';
 import type { ChainServiceDependencies } from './ChainService.js';
 import { ChainService } from './ChainService.js';
-import type {
-  ChainCompatibilityOptions,
-  ChainInfo,
-  ChainRequirementValidationResult,
-  ValidateChainParams,
-} from './types.js';
+import type { ChainCompatibilityOptions, ChainInfo, ValidateChainParams } from './types.js';
 
 // Install domain-specific matchers
 installCustomMatchers();

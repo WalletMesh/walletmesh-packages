@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeEach, vi } from 'vitest';
 import '@testing-library/jest-dom';
-import type { WalletInfo } from '@walletmesh/modal-core';
+import type { WalletInfo, WalletMeshState } from '@walletmesh/modal-core';
 
 // IMPROVED: Use the enhanced auto-mocking setup
 // import '../test-utils/improvedSetup.js';
@@ -43,7 +43,7 @@ if (typeof window !== 'undefined') {
 }
 
 // Intercept and suppress stderr output for expected test messages
-if (typeof process !== 'undefined' && process.stderr) {
+if (process?.stderr) {
   const originalStderrWrite = process.stderr.write;
   // biome-ignore lint/suspicious/noExplicitAny: Test setup requires dynamic type handling for process.stderr
   process.stderr.write = (chunk: any, ...args: any[]): boolean => {
@@ -264,7 +264,7 @@ vi.mock('@walletmesh/modal-core/testing', () => ({
 
 // Mock problematic Solana imports to prevent test failures
 vi.mock('@solana/web3.js', () => ({
-  PublicKey: vi.fn().mockImplementation((key) => ({
+  PublicKey: vi.fn().mockImplementation((key: string) => ({
     toString: () => key,
     toBase58: () => key,
     toBuffer: () => new Uint8Array(),
@@ -468,15 +468,15 @@ vi.mock('@walletmesh/modal-core', () => {
 
     // Utilities
     displayHelpers: {
-      truncateAddress: vi.fn((address) => `${address?.slice(0, 6)}...${address?.slice(-4)}`),
-      formatBalance: vi.fn((balance) => balance),
-      formatChainName: vi.fn((name) => name),
+      truncateAddress: vi.fn((address: string) => `${address?.slice(0, 6)}...${address?.slice(-4)}`),
+      formatBalance: vi.fn((balance: unknown) => balance),
+      formatChainName: vi.fn((name: string) => name),
     },
     formatters: {
-      formatAddress: vi.fn((address) => address),
-      formatBalance: vi.fn((balance) => balance),
-      formatChainId: vi.fn((chainId) => chainId),
-      formatTimestamp: vi.fn((timestamp) => new Date(timestamp).toISOString()),
+      formatAddress: vi.fn((address: string) => address),
+      formatBalance: vi.fn((balance: unknown) => balance),
+      formatChainId: vi.fn((chainId: string) => chainId),
+      formatTimestamp: vi.fn((timestamp: number) => new Date(timestamp).toISOString()),
     },
     CHAIN_NAMES: {
       aztec: 'Aztec',
@@ -498,8 +498,8 @@ vi.mock('@walletmesh/modal-core', () => {
     modalLogger: {
       debug: vi.fn(),
       info: vi.fn(),
-      warn: vi.fn((message, error) => console.warn(message, error)), // Call console.warn so tests can spy on it
-      error: vi.fn((message, error) => console.error(message, error)), // Call console.error so tests can spy on it
+      warn: vi.fn((message: string, error?: unknown) => console.warn(message, error)), // Call console.warn so tests can spy on it
+      error: vi.fn((message: string, error?: unknown) => console.error(message, error)), // Call console.error so tests can spy on it
       setLevel: vi.fn(),
       dispose: vi.fn(),
     },
@@ -550,7 +550,7 @@ vi.mock('@walletmesh/modal-core', () => {
 
     // Error Factory
     ErrorFactory: {
-      configurationError: vi.fn().mockImplementation((message, details) => {
+      configurationError: vi.fn().mockImplementation((message: string, details?: unknown) => {
         const error = new Error(message);
         Object.assign(error, {
           code: 'CONFIGURATION_ERROR',
@@ -560,7 +560,7 @@ vi.mock('@walletmesh/modal-core', () => {
         });
         return error;
       }),
-      connectionFailed: vi.fn().mockImplementation((message, details) => {
+      connectionFailed: vi.fn().mockImplementation((message: string, details?: unknown) => {
         const error = new Error(message);
         Object.assign(error, {
           code: 'CONNECTION_FAILED',
@@ -570,7 +570,7 @@ vi.mock('@walletmesh/modal-core', () => {
         });
         return error;
       }),
-      walletNotFound: vi.fn().mockImplementation((walletId) => {
+      walletNotFound: vi.fn().mockImplementation((walletId: string) => {
         const error = new Error(`Wallet ${walletId} not found`);
         Object.assign(error, {
           code: 'WALLET_NOT_FOUND',
@@ -580,7 +580,7 @@ vi.mock('@walletmesh/modal-core', () => {
         });
         return error;
       }),
-      invalidParams: vi.fn().mockImplementation((message, details) => {
+      invalidParams: vi.fn().mockImplementation((message: string, details?: unknown) => {
         const error = new Error(message);
         Object.assign(error, {
           code: 'INVALID_PARAMS',
@@ -590,7 +590,7 @@ vi.mock('@walletmesh/modal-core', () => {
         });
         return error;
       }),
-      transactionFailed: vi.fn().mockImplementation((message, details) => {
+      transactionFailed: vi.fn().mockImplementation((message: string, details?: unknown) => {
         const error = new Error(message);
         Object.assign(error, {
           code: 'TRANSACTION_FAILED',
@@ -600,7 +600,7 @@ vi.mock('@walletmesh/modal-core', () => {
         });
         return error;
       }),
-      notFound: vi.fn().mockImplementation((message) => {
+      notFound: vi.fn().mockImplementation((message: string) => {
         const error = new Error(message);
         Object.assign(error, {
           code: 'NOT_FOUND',
@@ -609,7 +609,7 @@ vi.mock('@walletmesh/modal-core', () => {
         });
         return error;
       }),
-      unknownError: vi.fn().mockImplementation((message) => {
+      unknownError: vi.fn().mockImplementation((message: string) => {
         const error = new Error(message);
         Object.assign(error, {
           code: 'UNKNOWN_ERROR',
@@ -690,9 +690,9 @@ vi.mock('@walletmesh/modal-core', () => {
     findWalletById: vi.fn().mockReturnValue(null),
     isWalletAvailable: vi.fn().mockReturnValue(false),
     getConnectionStatus: vi.fn().mockReturnValue('disconnected'),
-    getFilteredWallets: vi.fn().mockImplementation((state) => {
+    getFilteredWallets: vi.fn().mockImplementation((state: WalletMeshState) => {
       // Return wallets filtered by the wallet filter if present
-      const wallets = state?.connections?.wallets || [];
+      const wallets = (state as any)?.connections?.wallets || [];
       const filter = state?.ui?.walletFilter;
       return filter ? wallets.filter(filter) : wallets;
     }),
@@ -719,7 +719,7 @@ vi.mock('@walletmesh/modal-core', () => {
       UnknownObject: 'unknown_object',
       Unknown: 'unknown',
     },
-    formatError: vi.fn().mockImplementation((error) => {
+    formatError: vi.fn().mockImplementation((error: unknown) => {
       if (!error) {
         return {
           message: 'An unknown error occurred',
@@ -735,11 +735,16 @@ vi.mock('@walletmesh/modal-core', () => {
         'message' in error &&
         'category' in error
       ) {
+        const modalError = error as {
+          message: string;
+          code: string;
+          data?: { recoveryHint?: string; [key: string]: unknown };
+        };
         return {
-          message: error.message,
-          code: error.code,
-          recoveryHint: error.data?.recoveryHint,
-          details: error.data ? JSON.stringify(error.data, null, 2) : undefined,
+          message: modalError.message,
+          code: modalError.code,
+          recoveryHint: modalError.data?.recoveryHint,
+          details: modalError.data ? JSON.stringify(modalError.data, null, 2) : undefined,
           errorType: 'modal_error',
         };
       }
@@ -829,7 +834,7 @@ vi.mock('@walletmesh/modal-core', () => {
         errorType: 'unknown',
       };
     }),
-    getRecoveryMessage: vi.fn().mockImplementation((hint) => {
+    getRecoveryMessage: vi.fn().mockImplementation((hint: string) => {
       if (!hint) return undefined;
 
       const messages: Record<string, string> = {
@@ -877,12 +882,12 @@ vi.mock('@walletmesh/modal-core', () => {
       WalletNotFoundError: class WalletNotFoundError extends Error {},
       InvalidParamsError: class InvalidParamsError extends Error {},
     },
-    createWalletMeshError: vi.fn().mockImplementation((code, message, data) => {
+    createWalletMeshError: vi.fn().mockImplementation((code: string, message: string, data?: unknown) => {
       const error = new Error(message);
       Object.assign(error, { code, data });
       return error;
     }),
-    getErrorMessage: vi.fn().mockImplementation((error) => {
+    getErrorMessage: vi.fn().mockImplementation((error: unknown) => {
       if (error instanceof Error) return error.message;
       if (typeof error === 'string') return error;
       return 'Unknown error';
@@ -995,14 +1000,14 @@ vi.mock('@walletmesh/modal-core', () => {
 
     // SSR utilities
     useHasMounted: vi.fn().mockReturnValue(true),
-    useClientOnly: vi.fn().mockImplementation((value) => value),
-    safeBrowserAPI: vi.fn().mockImplementation((fn) => fn()),
+    useClientOnly: vi.fn().mockImplementation((value: unknown) => value),
+    safeBrowserAPI: vi.fn().mockImplementation((fn: () => unknown) => fn()),
     createSSRWalletMesh: vi.fn(),
-    serializeState: vi.fn().mockImplementation((state) => JSON.stringify(state)),
-    deserializeState: vi.fn().mockImplementation((state) => JSON.parse(state)),
+    serializeState: vi.fn().mockImplementation((state: unknown) => JSON.stringify(state)),
+    deserializeState: vi.fn().mockImplementation((state: string) => JSON.parse(state)),
 
     // Provider components
-    EvmProvider: vi.fn().mockImplementation(({ children }) => children),
+    EvmProvider: vi.fn().mockImplementation(({ children }: { children: unknown }) => children),
 
     // Connection progress utilities (from modal-core/utils/connectionProgress.ts)
     ConnectionStages: {
@@ -1012,18 +1017,30 @@ vi.mock('@walletmesh/modal-core', () => {
       CONNECTED: 'connected',
       FAILED: 'failed',
     },
-    createProgress: vi.fn().mockImplementation((stage, details) => ({
-      progress: stage === 'connected' ? 100 : stage === 'connecting' ? 40 : 10,
-      stage,
-      step: details || `${stage}...`,
-      ...(details && { details }),
-    })),
-    createCustomProgress: vi.fn().mockImplementation((progress, stage, step, details) => ({
-      progress,
-      stage,
-      step,
-      ...(details && { details }),
-    })),
+    createProgress: vi.fn().mockImplementation((stage: string, details?: string) => {
+      const result: { progress: number; stage: string; step: string; details?: string } = {
+        progress: stage === 'connected' ? 100 : stage === 'connecting' ? 40 : 10,
+        stage,
+        step: details || `${stage}...`,
+      };
+      if (details !== undefined) {
+        result.details = details;
+      }
+      return result;
+    }),
+    createCustomProgress: vi
+      .fn()
+      .mockImplementation((progress: number, stage: string, step: string, details?: unknown) => {
+        const result: { progress: number; stage: string; step: string; details?: unknown } = {
+          progress,
+          stage,
+          step,
+        };
+        if (details !== undefined) {
+          result.details = details;
+        }
+        return result;
+      }),
     getStageProgress: vi.fn().mockImplementation((stage: string) => {
       const map: Record<string, number> = {
         initializing: 10,
@@ -1056,9 +1073,11 @@ vi.mock('@walletmesh/modal-core', () => {
       const toProgress = progressMap[toStage] || 0;
       return Math.round(fromProgress + (toProgress - fromProgress) * Math.max(0, Math.min(1, factor)));
     }),
-    isTerminalStage: vi.fn().mockImplementation((stage) => stage === 'connected' || stage === 'failed'),
-    isInProgress: vi.fn().mockImplementation((stage) => stage !== 'connected' && stage !== 'failed'),
-    ConnectionProgressTracker: vi.fn().mockImplementation(function () {
+    isTerminalStage: vi
+      .fn()
+      .mockImplementation((stage: string) => stage === 'connected' || stage === 'failed'),
+    isInProgress: vi.fn().mockImplementation((stage: string) => stage !== 'connected' && stage !== 'failed'),
+    ConnectionProgressTracker: vi.fn().mockImplementation(() => {
       let currentStage = 'initializing';
       let currentProgress = {
         progress: 10,
@@ -1084,13 +1103,16 @@ vi.mock('@walletmesh/modal-core', () => {
           };
           return { ...currentProgress };
         }),
-        updateCustom: vi.fn().mockImplementation((progress, step, details) => {
-          currentProgress = {
+        updateCustom: vi.fn().mockImplementation((progress: number, step: string, details?: unknown) => {
+          const newProgress: { progress: number; stage: string; step: string; details?: unknown } = {
             progress,
             stage: currentStage,
             step,
-            ...(details && { details }),
           };
+          if (details !== undefined) {
+            newProgress.details = details;
+          }
+          currentProgress = newProgress;
           return { ...currentProgress };
         }),
         getCurrent: vi.fn().mockImplementation(() => ({ ...currentProgress })),
@@ -1111,7 +1133,7 @@ vi.mock('@walletmesh/modal-core', () => {
         }),
       };
     }),
-    createProgressTracker: vi.fn().mockImplementation(function () {
+    createProgressTracker: vi.fn().mockImplementation(() => {
       let currentStage = 'initializing';
       let currentProgress = {
         progress: 10,
@@ -1137,13 +1159,16 @@ vi.mock('@walletmesh/modal-core', () => {
           };
           return { ...currentProgress };
         }),
-        updateCustom: vi.fn().mockImplementation((progress, step, details) => {
-          currentProgress = {
+        updateCustom: vi.fn().mockImplementation((progress: number, step: string, details?: unknown) => {
+          const newProgress: { progress: number; stage: string; step: string; details?: unknown } = {
             progress,
             stage: currentStage,
             step,
-            ...(details && { details }),
           };
+          if (details !== undefined) {
+            newProgress.details = details;
+          }
+          currentProgress = newProgress;
           return { ...currentProgress };
         }),
         getCurrent: vi.fn().mockImplementation(() => ({ ...currentProgress })),
@@ -1166,50 +1191,63 @@ vi.mock('@walletmesh/modal-core', () => {
     }),
 
     // State derivation utilities (from modal-core/utils/stateDerivation.ts)
-    deriveConnectionStatus: vi.fn().mockImplementation((sessionStatus, currentView, isReconnecting) => ({
-      status: sessionStatus === 'connected' ? 'connected' : 'disconnected',
-      isConnected: sessionStatus === 'connected',
-      isConnecting: currentView === 'connecting' && !isReconnecting,
-      isReconnecting: isReconnecting || false,
-      isDisconnected: sessionStatus !== 'connected' && currentView !== 'connecting' && !isReconnecting,
-    })),
+    deriveConnectionStatus: vi
+      .fn()
+      .mockImplementation((sessionStatus: string, currentView: string, isReconnecting: boolean) => ({
+        status: sessionStatus === 'connected' ? 'connected' : 'disconnected',
+        isConnected: sessionStatus === 'connected',
+        isConnecting: currentView === 'connecting' && !isReconnecting,
+        isReconnecting: isReconnecting || false,
+        isDisconnected: sessionStatus !== 'connected' && currentView !== 'connecting' && !isReconnecting,
+      })),
     filterSessionsByStatus: vi
       .fn()
-      .mockImplementation((sessions, status) =>
-        sessions.filter((s: { status: string }) => s.status === (status || 'connected')),
+      .mockImplementation((sessions: unknown[], status: string) =>
+        (sessions as Array<{ status: string }>).filter((s) => s.status === (status || 'connected')),
       ),
     getConnectedWalletIds: vi
       .fn()
-      .mockImplementation((sessions) =>
-        sessions
-          .filter((s: { status: string }) => s.status === 'connected')
-          .map((s: { walletId: string }) => s.walletId),
+      .mockImplementation((sessions: unknown[]) =>
+        (sessions as Array<{ status: string; walletId: string }>)
+          .filter((s) => s.status === 'connected')
+          .map((s) => s.walletId),
       ),
     getActiveWalletSession: vi
       .fn()
       .mockImplementation(
-        (sessions) => sessions.find((s: { status: string }) => s.status === 'connected') || null,
+        (sessions: unknown[]) =>
+          (sessions as Array<{ status: string }>).find((s) => s.status === 'connected') || null,
       ),
-    getPrimaryAddress: vi.fn().mockImplementation((sessions) => {
-      const active = sessions.find((s: { status: string }) => s.status === 'connected');
+    getPrimaryAddress: vi.fn().mockImplementation((sessions: unknown[]) => {
+      const active = (sessions as Array<{ status: string; address?: string }>).find(
+        (s) => s.status === 'connected',
+      );
       return active?.address || null;
     }),
-    getCurrentChain: vi.fn().mockImplementation((sessions) => {
-      const active = sessions.find((s: { status: string }) => s.status === 'connected');
+    getCurrentChain: vi.fn().mockImplementation((sessions: unknown[]) => {
+      const active = (sessions as Array<{ status: string; chain?: unknown }>).find(
+        (s) => s.status === 'connected',
+      );
       return active?.chain || null;
     }),
-    isConnectedToChain: vi.fn().mockImplementation((sessions, chainId) => {
-      const active = sessions.find((s: { status: string }) => s.status === 'connected');
+    isConnectedToChain: vi.fn().mockImplementation((sessions: unknown[], chainId: string) => {
+      const active = (sessions as Array<{ status: string; chain?: { chainId?: string } }>).find(
+        (s) => s.status === 'connected',
+      );
       return active?.chain?.chainId === chainId;
     }),
     getSessionsByChainType: vi
       .fn()
-      .mockImplementation((sessions, chainType) =>
-        sessions.filter((s: { chain?: { chainType: string } }) => s.chain?.chainType === chainType),
+      .mockImplementation((sessions: unknown[], chainType: string) =>
+        (sessions as Array<{ chain?: { chainType: string } }>).filter(
+          (s) => s.chain?.chainType === chainType,
+        ),
       ),
     hasConnectedSession: vi
       .fn()
-      .mockImplementation((sessions) => sessions.some((s: { status: string }) => s.status === 'connected')),
+      .mockImplementation((sessions: unknown[]) =>
+        (sessions as Array<{ status: string }>).some((s) => s.status === 'connected'),
+      ),
   };
 });
 
@@ -1246,7 +1284,7 @@ vi.mock('../hooks/useWalletEvents.js', () => {
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   configurable: true,
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
     media: query,
     onchange: null,
@@ -1275,7 +1313,7 @@ beforeEach(() => {
   vi.useFakeTimers();
 
   // Clear localStorage before each test (if it exists and has clear method)
-  if (typeof window !== 'undefined' && window.localStorage && typeof window.localStorage.clear === 'function') {
+  if (window?.localStorage && typeof window.localStorage.clear === 'function') {
     window.localStorage.clear();
   }
 
@@ -1289,7 +1327,7 @@ beforeEach(() => {
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
       configurable: true,
-      value: vi.fn().mockImplementation((query) => ({
+      value: vi.fn().mockImplementation((query: string) => ({
         matches: false,
         media: query,
         onchange: null,
@@ -1309,7 +1347,7 @@ afterEach(() => {
     vi.clearAllTimers();
     // Keep fake timers active - beforeEach will reset them for next test
     // Removing vi.useRealTimers() prevents slow real timer delays during cleanup
-  } catch (error) {
+  } catch (_error) {
     // Ignore timer cleanup errors to prevent hanging
   }
 });
@@ -1321,7 +1359,7 @@ afterAll(() => {
   vi.clearAllTimers();
   vi.restoreAllMocks();
   // Force cleanup of any remaining handles
-  if (typeof global !== 'undefined' && global.gc) {
+  if (global?.gc) {
     global.gc();
   }
 });

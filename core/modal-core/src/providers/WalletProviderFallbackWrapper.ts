@@ -178,7 +178,7 @@ export class WalletProviderFallbackWrapper implements PublicProvider {
         'Provider type does not support generic request method. Use provider-specific methods instead.',
         'WalletProviderFallback',
       );
-    } catch (error) {
+    } catch (_error) {
       // Re-throw with proper error context
       throw ErrorFactory.transportError(
         `Wallet provider fallback RPC call failed: ${args.method}`,

@@ -80,6 +80,7 @@ const TestWalletMeshModal = () => {
   return (
     <dialog aria-labelledby="wallet-modal-title" open>
       <div>
+        {/* biome-ignore lint/correctness/useUniqueElementIds: Test mock component */}
         <h2 id="wallet-modal-title">Connect a wallet</h2>
         <div>
           {filteredWallets.map((wallet: { id: string; name: string; icon?: string }) => (

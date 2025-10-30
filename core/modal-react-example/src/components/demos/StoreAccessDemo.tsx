@@ -1,4 +1,10 @@
-import { ChainType, useAccount, useConfig, useWalletMeshContext } from '@walletmesh/modal-react/all';
+import {
+  ChainType,
+  useAccount,
+  useConfig,
+  useWalletMeshContext,
+  type WalletInfo,
+} from '@walletmesh/modal-react/all';
 import { useCallback, useState } from 'react';
 import styles from '../../styles/DemoCard.module.css';
 
@@ -41,12 +47,7 @@ interface ConfigurationDisplayProps {
       group?: string;
       icon?: string;
     }>;
-    wallets?: Array<{
-      id: string;
-      name: string;
-      icon?: string;
-      [key: string]: any;
-    }>;
+    wallets?: WalletInfo[];
     debug?: boolean;
     isOpen?: boolean;
     open?: () => void;
@@ -123,7 +124,9 @@ function ConfigurationDisplay({ config }: ConfigurationDisplayProps) {
         </div>
         <div className={styles.infoItem}>
           <span className={styles.label}>Wallets:</span>
-          <span className={styles.valueDefault}>{config.wallets?.join(', ') || 'None'}</span>
+          <span className={styles.valueDefault}>
+            {config.wallets?.map((w) => w.name).join(', ') || 'None'}
+          </span>
         </div>
         <div className={styles.infoItem}>
           <span className={styles.label}>Debug Mode:</span>

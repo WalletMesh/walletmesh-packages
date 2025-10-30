@@ -8,7 +8,6 @@ import {
   caip2Schema,
   caip2FormatSchema,
   caip2ParseSchema,
-  caip2DetailedSchema,
   evmCAIP2Schema,
   solanaCAIP2Schema,
   aztecCAIP2Schema,

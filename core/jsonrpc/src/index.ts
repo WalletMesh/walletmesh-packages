@@ -24,6 +24,8 @@ export {
   type ReceiveErrorHandlerConfig,
   type ReceiveErrorHandlerFunction,
 } from './error-handling/receiveErrorHandler.js';
+// Middleware utilities
+export { createTransportContextMiddleware } from './middlewares/index.js';
 export * from './node.js';
 export type { JSONRPCProxyConfig } from './proxy.js';
 export { JSONRPCProxy } from './proxy.js';

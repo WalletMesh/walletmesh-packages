@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState, useRef, useCallback } from 'react';
+import { useMemo, useEffect, useState, useRef, useCallback, useId } from 'react';
 import { createPortal } from 'react-dom';
 import type { TransactionStatus } from '@walletmesh/modal-core';
 import { useStore } from '../hooks/internal/useStore.js';
@@ -128,6 +128,8 @@ export function AztecTransactionStatusOverlay({
   allowEscapeKeyClose = true,
   disableFocusTrap = false,
 }: AztecTransactionStatusOverlayProps): React.ReactPortal | null {
+  const headlineId = useId();
+  const descriptionId = useId();
   const [target, setTarget] = useState<Element | null>(null);
   // Track dismissed transaction IDs to enable graceful closure after success/failure
   const [dismissedTxIds, setDismissedTxIds] = useState<Set<string>>(new Set());
@@ -334,18 +336,18 @@ export function AztecTransactionStatusOverlay({
       className={styles['overlay']}
       role="dialog"
       aria-modal="true"
-      aria-labelledby="tx-overlay-headline"
-      aria-describedby="tx-overlay-description"
+      aria-labelledby={headlineId}
+      aria-describedby={descriptionId}
     >
       <div ref={overlayContentRef} className={styles['content']} tabIndex={-1}>
         {/* Animated spinner */}
         <div className={styles['spinner']} aria-hidden="true" />
 
         {/* Main headline and description */}
-        <h2 id="tx-overlay-headline" className={styles['headline']}>
+        <h2 id={headlineId} className={styles['headline']}>
           {headline || defaultHeadline}
         </h2>
-        <p id="tx-overlay-description" className={styles['description']}>
+        <p id={descriptionId} className={styles['description']}>
           {description || defaultDescription}
         </p>
 

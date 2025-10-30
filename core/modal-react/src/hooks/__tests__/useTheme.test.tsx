@@ -1,6 +1,5 @@
 import { renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useTheme } from '../useTheme.js';
 
@@ -8,7 +7,7 @@ import { useTheme } from '../useTheme.js';
 vi.mock('../../utils/ssr-walletmesh.js', () => ({
   isServer: () => false,
   isBrowser: () => true,
-  safeBrowserAPI: vi.fn((fn, fallback) => {
+  safeBrowserAPI: vi.fn((fn: () => unknown, fallback: unknown): unknown => {
     try {
       return fn();
     } catch {

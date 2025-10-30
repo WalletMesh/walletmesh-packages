@@ -386,14 +386,6 @@ export { WalletRegistry } from '../internal/registries/wallets/WalletRegistry.js
  */
 export { AbstractWalletAdapter } from '../internal/wallets/base/AbstractWalletAdapter.js';
 
-/**
- * Storage utilities for wallet adapters
- * @see {@link WalletStorage}
- * @see {@link AdapterSessionData}
- */
-export { WalletStorage } from '../internal/utils/dom/storage.js';
-export type { AdapterSessionData } from '../internal/utils/dom/storage.js';
-
 // New provider system exports
 /**
  * Enhanced provider system with lazy-loading and multi-chain support.

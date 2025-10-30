@@ -1,7 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { SessionState } from '../api/types/sessionState.js';
 import {
-  CHAIN_IDS,
   TEST_ADDRESS,
   createMockSessionState,
   createMockWalletInfo,

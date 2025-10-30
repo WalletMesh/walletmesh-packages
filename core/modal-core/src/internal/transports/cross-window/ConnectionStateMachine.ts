@@ -86,7 +86,6 @@ export interface ConnectionMetrics {
 export class ConnectionStateMachine {
   private state = ConnectionState.Disconnected;
   private sessionId: string | undefined;
-  // @ts-expect-error - stored for future use
   private remoteOrigin: string | undefined;
   private sequenceNumber = 0;
   private metrics: ConnectionMetrics = {
@@ -113,6 +112,13 @@ export class ConnectionStateMachine {
    */
   getSessionId(): string | undefined {
     return this.sessionId;
+  }
+
+  /**
+   * Get remote origin
+   */
+  getRemoteOrigin(): string | undefined {
+    return this.remoteOrigin;
   }
 
   /**

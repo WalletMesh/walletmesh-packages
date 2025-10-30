@@ -548,7 +548,7 @@ export class ErrorFactory {
             // If toString returns [object Object], try to stringify the object
             try {
               errorMessage = JSON.stringify(error);
-            } catch (stringifyError) {
+            } catch (_stringifyError) {
               // Handle circular references or other stringify errors
               errorMessage = 'Unknown error occurred';
             }
@@ -560,7 +560,7 @@ export class ErrorFactory {
         // Try to stringify the object
         try {
           errorMessage = JSON.stringify(error);
-        } catch (stringifyError) {
+        } catch (_stringifyError) {
           // Handle circular references or other stringify errors
           errorMessage = 'Unknown error occurred';
         }

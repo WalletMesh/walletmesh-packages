@@ -3,6 +3,46 @@ import { WalletRouterProvider } from '@walletmesh/router';
 import { registerAztecSerializers } from './register-serializers.js';
 
 /**
+ * Callback function to handle session termination
+ */
+export type SessionTerminationHandler = (params: { sessionId: string; reason: string }) => void | Promise<void>;
+
+/**
+ * Configuration options for AztecRouterProvider
+ */
+export interface AztecRouterProviderOptions {
+  /**
+   * Optional context object passed to WalletRouterProvider
+   */
+  context?: Record<string, unknown>;
+
+  /**
+   * Optional pre-existing session ID to use without calling connect
+   */
+  sessionId?: string;
+
+  /**
+   * Optional callback to handle session termination events from the wallet.
+   * This is called when the wallet revokes the session (e.g., user disconnects from wallet UI).
+   *
+   * @param params - Session termination parameters
+   * @param params.sessionId - ID of the terminated session
+   * @param params.reason - Human-readable reason for termination
+   *
+   * @example
+   * ```typescript
+   * const provider = new AztecRouterProvider(transport, {
+   *   onSessionTerminated: ({ sessionId, reason }) => {
+   *     console.log(`Session ${sessionId} terminated: ${reason}`);
+   *     // Clean up your application state
+   *   }
+   * });
+   * ```
+   */
+  onSessionTerminated?: SessionTerminationHandler;
+}
+
+/**
  * An extended {@link WalletRouterProvider} specifically for Aztec network interactions.
  *
  * This class automatically registers all necessary Aztec-specific type serializers
@@ -14,6 +54,12 @@ import { registerAztecSerializers } from './register-serializers.js';
  * It simplifies the setup for dApp developers, as they do not need to manually
  * register serializers for Aztec types.
  *
+ * ## Session Termination Handling
+ *
+ * The provider automatically listens for `wm_sessionTerminated` events from the wallet.
+ * You can provide a custom handler via the `onSessionTerminated` option to clean up
+ * your application state when the session is terminated.
+ *
  * @example
  * ```typescript
  * import { AztecRouterProvider, createAztecWallet } from '@walletmesh/aztec-rpc-wallet';
@@ -22,8 +68,13 @@ import { registerAztecSerializers } from './register-serializers.js';
  * // 1. Create a JSON-RPC transport
  * const transport = new MyCustomTransport();
  *
- * // 2. Create the AztecRouterProvider instance
- * const provider = new AztecRouterProvider(transport);
+ * // 2. Create the AztecRouterProvider instance with session termination handler
+ * const provider = new AztecRouterProvider(transport, {
+ *   onSessionTerminated: ({ sessionId, reason }) => {
+ *     console.log(`Session ${sessionId} was terminated: ${reason}`);
+ *     // Clean up application state
+ *   }
+ * });
  *
  * // 3. Connect to the Aztec chain (e.g., testnet) and request permissions
  * await provider.connect({
@@ -44,6 +95,8 @@ import { registerAztecSerializers } from './register-serializers.js';
  * @see {@link AztecDappWallet} which is typically used with this provider.
  */
 export class AztecRouterProvider extends WalletRouterProvider {
+  private sessionTerminationCleanup?: () => void;
+
   /**
    * Constructs an instance of `AztecRouterProvider`.
    *
@@ -52,14 +105,68 @@ export class AztecRouterProvider extends WalletRouterProvider {
    *
    * @param transport - The {@link JSONRPCTransport} instance to be used for
    *                    communication between the dApp and the WalletRouter.
-   * @param context - Optional context object that can be passed to the
-   *                  `WalletRouterProvider` constructor.
-   * @param sessionId - Optional pre-existing session ID to use without calling connect.
+   * @param options - Optional configuration including context, sessionId, and event handlers.
+   *                 Can also be a plain context object for backward compatibility.
    */
-  constructor(transport: JSONRPCTransport, context?: Record<string, unknown>, sessionId?: string) {
-    super(transport, context, sessionId);
+  constructor(transport: JSONRPCTransport, options?: AztecRouterProviderOptions | Record<string, unknown>, sessionId?: string) {
+    // Handle backward compatibility: if options looks like a plain context object without our keys
+    const isLegacyFormat = options && !('onSessionTerminated' in options) && !('context' in options) && !('sessionId' in options);
+
+    const context = isLegacyFormat ? options as Record<string, unknown> : (options as AztecRouterProviderOptions)?.context;
+    const sid = isLegacyFormat ? sessionId : (options as AztecRouterProviderOptions)?.sessionId;
+    const onSessionTerminated = isLegacyFormat ? undefined : (options as AztecRouterProviderOptions)?.onSessionTerminated;
+
+    super(transport, context, sid);
 
     // Register all Aztec serializers on this provider instance
     registerAztecSerializers(this);
+
+    // Set up session termination handler if provided
+    if (onSessionTerminated) {
+      this.setupSessionTerminationListener(onSessionTerminated);
+    }
+  }
+
+  /**
+   * Set up listener for session termination events from the wallet
+   * @private
+   */
+  private setupSessionTerminationListener(handler: SessionTerminationHandler): void {
+    // Subscribe to wm_sessionTerminated notifications
+    this.sessionTerminationCleanup = this.onNotification('wm_sessionTerminated', (params) => {
+      const { sessionId, reason } = params as { sessionId: string; reason: string };
+
+      if (!sessionId) {
+        console.warn('[AztecRouterProvider] wm_sessionTerminated missing sessionId', params);
+        return;
+      }
+
+      console.log(`[AztecRouterProvider] Session ${sessionId} terminated by wallet: ${reason}`);
+
+      // Call the user-provided handler
+      try {
+        const result = handler({ sessionId, reason });
+        // Handle both sync and async handlers
+        if (result instanceof Promise) {
+          result.catch((error) => {
+            console.error('[AztecRouterProvider] Error in session termination handler:', error);
+          });
+        }
+      } catch (error) {
+        console.error('[AztecRouterProvider] Error in session termination handler:', error);
+      }
+    });
+  }
+
+  /**
+   * Clean up resources when disposing the provider
+   * @public
+   */
+  public dispose(): void {
+    // Clean up session termination listener
+    if (this.sessionTerminationCleanup) {
+      this.sessionTerminationCleanup();
+      delete this.sessionTerminationCleanup;
+    }
   }
 }

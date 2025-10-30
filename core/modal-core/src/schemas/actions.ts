@@ -181,12 +181,16 @@ export const createSessionParamsSchema = z.object({
   accounts: z.array(accountInfoSchema).min(1, 'At least one account is required'),
   activeAccountIndex: z.number().int().min(0).optional(),
   chain: chainSessionInfoSchema,
-  provider: z.unknown().refine((val) => val !== null && val !== undefined, 'Provider is required'),
+  // Provider is optional - can be retrieved from ProviderRegistry by sessionId
+  provider: z.unknown().optional(),
   permissions: permissionSetSchema.optional(),
   metadata: z.record(z.unknown()).optional(), // Generic record for now
   expiresAt: z.number().optional(),
   providerMetadata: providerMetadataSchema.optional(),
   sessionId: sessionIdSchema.optional(),
+  // adapterReconstruction is wallet-specific data that we pass through unchanged
+  // Use z.any() to avoid type conflicts with exactOptionalPropertyTypes
+  adapterReconstruction: z.any().optional(),
 });
 
 /**

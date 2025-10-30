@@ -22,8 +22,8 @@ vi.mock('@walletmesh/modal-core', () => ({
   getStoredTheme: vi.fn(() => null),
   storeTheme: vi.fn(),
   onSystemThemeChange: vi.fn(() => () => {}),
-  resolveTheme: vi.fn((mode, system) => (mode === 'system' ? system : mode)),
-  toggleTheme: vi.fn((current, _system) => (current === 'light' ? 'dark' : 'light')),
+  resolveTheme: vi.fn((mode: string, system: string) => (mode === 'system' ? system : mode)),
+  toggleTheme: vi.fn((current: string, _system: string) => (current === 'light' ? 'dark' : 'light')),
   themeConfigToCSSVariables: vi.fn(() => ({})),
   applyCSSVariables: vi.fn(),
   applyThemeClass: vi.fn(),
@@ -37,7 +37,7 @@ vi.mock('@walletmesh/modal-core', () => ({
     clearAll: vi.fn(),
   },
   ErrorFactory: {
-    configurationError: vi.fn().mockImplementation((message, details) => {
+    configurationError: vi.fn().mockImplementation((message: string, details?: unknown) => {
       const error = new Error(message);
       Object.assign(error, {
         code: 'CONFIGURATION_ERROR',
@@ -70,7 +70,7 @@ vi.mock('../definitions.js', () => ({
     spacing: {},
     borderRadius: {},
   },
-  getThemeByMode: vi.fn((mode) => ({
+  getThemeByMode: vi.fn((mode: string) => ({
     mode,
     colors: { primary: mode === 'dark' ? '#fff' : '#000' },
     shadows: {},
@@ -79,7 +79,10 @@ vi.mock('../definitions.js', () => ({
     spacing: {},
     borderRadius: {},
   })),
-  mergeThemeConfig: vi.fn((base, custom) => ({ ...base, ...custom })),
+  mergeThemeConfig: vi.fn((base: unknown, custom: unknown) => ({
+    ...(base as object),
+    ...(custom as object),
+  })),
 }));
 
 describe('ThemeContext', () => {

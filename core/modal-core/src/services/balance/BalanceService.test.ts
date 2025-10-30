@@ -4,7 +4,6 @@ import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 import { createLogger } from '../../internal/core/logger/logger.js';
 import {
   createMockEvmProvider,
-  createMockServiceDependencies,
   createMockSolanaProvider,
   createTestEnvironment,
   installCustomMatchers,
@@ -16,7 +15,7 @@ import type { BalanceServiceDependencies } from './BalanceService.js';
 installCustomMatchers();
 import type { BaseChainService } from '../chains/BaseChainService.js';
 import { BalanceService } from './BalanceService.js';
-import type { BalanceInfo, TokenInfo } from './types.js';
+import type { TokenInfo } from './types.js';
 
 // Test constants
 const TOKEN_ADDRESSES = {
@@ -82,7 +81,7 @@ describe('BalanceService', () => {
 
     // Create a mock chain service registry
     const mockChainServiceRegistry = {
-      getChainService: vi.fn().mockImplementation(async (chainId) => {
+      getChainService: vi.fn().mockImplementation(async (_chainId) => {
         return mockChainService;
       }),
       registerChainService: vi.fn(),

@@ -39,6 +39,7 @@ export class WalletRegistry {
   private discoveredWallets = new Map<string, DiscoveredWalletInfo>();
   private discoveredWalletAliases = new Map<string, string>();
   private eventTarget = new EventTarget();
+  private builtInWalletIds = new Set<string>();
 
   /**
    * Register a wallet adapter
@@ -63,6 +64,28 @@ export class WalletRegistry {
 
     this.adapters.set(adapter.id, adapter);
     this.emit('adapter:registered', adapter);
+  }
+
+  /**
+   * Register a built-in wallet adapter
+   *
+   * Registers a wallet adapter and marks it as built-in. Built-in adapters
+   * are pre-registered wallets that are part of the core package (e.g.,
+   * debug-wallet, aztec-example-wallet) and should not be treated as
+   * discovered wallets.
+   *
+   * @param adapter - The built-in wallet adapter to register
+   * @throws {Error} If an adapter with the same ID is already registered
+   *
+   * @example
+   * ```typescript
+   * const adapter = new DebugWallet();
+   * registry.registerBuiltIn(adapter);
+   * ```
+   */
+  registerBuiltIn(adapter: WalletAdapter): void {
+    this.register(adapter);
+    this.builtInWalletIds.add(adapter.id);
   }
 
   /**
@@ -219,6 +242,44 @@ export class WalletRegistry {
     }
 
     return walletInfos;
+  }
+
+  /**
+   * Check if a wallet is a built-in wallet
+   *
+   * Returns true if the wallet was registered using registerBuiltIn(),
+   * indicating it's a pre-registered wallet that's part of the core package.
+   *
+   * @param walletId - The ID of the wallet to check
+   * @returns True if the wallet is built-in, false otherwise
+   *
+   * @example
+   * ```typescript
+   * if (registry.isBuiltinWallet('debug-wallet')) {
+   *   console.log('This is a built-in wallet');
+   * }
+   * ```
+   */
+  isBuiltinWallet(walletId: string): boolean {
+    return this.builtInWalletIds.has(walletId);
+  }
+
+  /**
+   * Get list of all built-in wallet IDs
+   *
+   * Returns an array of wallet IDs for all wallets that were registered
+   * as built-in wallets.
+   *
+   * @returns Array of built-in wallet IDs
+   *
+   * @example
+   * ```typescript
+   * const builtInIds = registry.getBuiltinWalletIds();
+   * console.log('Built-in wallets:', builtInIds);
+   * ```
+   */
+  getBuiltinWalletIds(): string[] {
+    return Array.from(this.builtInWalletIds);
   }
 
   /**
@@ -459,7 +520,7 @@ export class WalletRegistry {
       try {
         const adapter = await this.loadBuiltinAdapter(adapterInfo.id);
         if (adapter) {
-          this.register(adapter);
+          this.registerBuiltIn(adapter);
           count++;
         }
       } catch (error) {

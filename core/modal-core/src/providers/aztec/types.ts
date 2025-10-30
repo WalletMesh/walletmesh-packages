@@ -42,8 +42,16 @@ export interface AztecDappWallet {
     executionPayloads: unknown[],
     sendOptions?: AztecSendOptions,
   ): Promise<{ txHash: unknown; receipt: TxReceipt; txStatusId: string }>;
-  /** Simulate a transaction via WalletMesh helper */
-  wmSimulateTx?(interaction: ContractFunctionInteraction): Promise<unknown>;
+  /**
+   * Simulate a transaction via WalletMesh helper.
+   * Returns a unified result containing decoded values and metadata.
+   */
+  wmSimulateTx?(interaction: ContractFunctionInteraction): Promise<{
+    simulationType: 'transaction' | 'utility';
+    decodedResult?: unknown;
+    stats?: unknown;
+    originalResult: unknown;
+  }>;
   /** Prove a transaction */
   proveTx(txRequest: unknown, fee?: unknown): Promise<unknown>;
   /** Send a proven transaction */

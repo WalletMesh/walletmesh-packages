@@ -12,7 +12,7 @@ import {
   useAztecWallet,
   useConnect,
 } from '@walletmesh/modal-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 // Import your contract artifact (from @aztec/noir-contracts.js or your own)
 // import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';

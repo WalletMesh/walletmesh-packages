@@ -65,7 +65,7 @@ export type { WalletProviderContext } from '../../internal/providers/base/BaseWa
  * Re-export nemi SDK Account provider
  */
 export {
-	createWalletMeshAccount,
-	WalletMeshAccount,
+  createWalletMeshAccount,
+  WalletMeshAccount,
 } from './nemi-account.js';
 export type { NemiAccount } from './nemi-account.js';

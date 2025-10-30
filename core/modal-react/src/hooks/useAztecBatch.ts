@@ -15,9 +15,7 @@ import {
 } from '@walletmesh/modal-core';
 import type { ContractFunctionInteraction, TxReceipt } from '@walletmesh/modal-core/providers/aztec/lazy';
 import type { AztecSendOptions } from '@walletmesh/modal-core/providers/aztec';
-import {
-  executeAtomicBatch,
-} from '@walletmesh/modal-core/providers/aztec';
+import { executeAtomicBatch } from '@walletmesh/modal-core/providers/aztec';
 import { useCallback, useState, useRef, useEffect, useMemo } from 'react';
 import { useAztecWallet } from './useAztecWallet.js';
 import { useStoreInstance } from './internal/useStore.js';
@@ -353,6 +351,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
             startTime: Date.now(),
             mode: 'async' as const,
             stages: {},
+            // biome-ignore lint/suspicious/noExplicitAny: Placeholder wait function
             wait: async () => ({}) as any,
           };
 
@@ -500,6 +499,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
 
             // Wait for this transaction to complete before starting the next
             const getTransaction = (id: string) => manager.getTransaction(id);
+            // biome-ignore lint/suspicious/noExplicitAny: Transaction type inferred from manager
             const tx = await new Promise<any>((resolve, reject) => {
               const checkStatus = () => {
                 const currentTx = getTransaction(txId);
@@ -523,6 +523,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
             receipts.push(tx.receipt);
           } catch (error) {
             errors.push({ index, error: error as Error });
+            // biome-ignore lint/suspicious/noExplicitAny: Null receipt for failed transaction
             receipts.push(null as any); // Placeholder for failed transaction
           }
         }
@@ -561,7 +562,7 @@ export function useAztecBatch(): UseAztecBatchReturn {
         }
       }
     },
-    [aztecWallet, isAvailable, logger, getTransactionManager],
+    [aztecWallet, isAvailable, logger, getTransactionManager, chain?.chainId, store],
   );
 
   // Clear statuses function

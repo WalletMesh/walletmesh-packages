@@ -24,13 +24,12 @@ import {
   useConnect,
   useWalletProvider,
 } from '@walletmesh/modal-react';
-import React from 'react';
 
 function BasicAccountInfo() {
   const { isConnected, address, chainId, chainType, isConnecting, isReconnecting, selectedWallet } =
     useAccount();
 
-  const { connect, disconnect, error: connectError } = useConnect();
+  const { disconnect, error: connectError } = useConnect();
   const {
     data: balance,
     isLoading: balanceLoading,

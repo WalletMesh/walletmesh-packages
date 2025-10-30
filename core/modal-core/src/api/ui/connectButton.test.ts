@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import type { WalletInfo } from '../../types.js';
 import {
   type ConnectButtonConnectionInfo,
@@ -363,7 +363,6 @@ describe('connectButton API', () => {
       expect(connectionUIService).toBeDefined();
       expect(connectionUIService.getButtonState).toBeDefined();
       expect(connectionUIService.formatAddress).toBeDefined();
-      expect(connectionUIService.getChainName).toBeDefined();
     });
 
     it('should provide button state functionality', () => {
@@ -377,11 +376,6 @@ describe('connectButton API', () => {
         'evm',
       );
       expect(formatted).toBe('0x1234...7890');
-    });
-
-    it('should provide chain name lookup', () => {
-      const name = connectionUIService.getChainName('eip155:1', 'evm');
-      expect(name).toBe('Ethereum');
     });
   });
 

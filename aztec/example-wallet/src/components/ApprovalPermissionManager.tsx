@@ -6,6 +6,7 @@ import type {
   PermissionManager,
   RouterContext,
   RouterMethodMap,
+  SessionStore,
 } from '@walletmesh/router';
 import type { FunctionArgNames } from '@walletmesh/aztec-helpers';
 
@@ -32,6 +33,12 @@ interface ApprovalPermissionManagerOptions {
    * List of methods that require approval. If not provided, defaults to transaction methods.
    */
   methodsRequiringApproval?: string[];
+
+  /**
+   * Session store for persisting permissions across page refreshes.
+   * If not provided, permissions will only be stored in memory.
+   */
+  sessionStore?: SessionStore;
 }
 
 /**
@@ -53,13 +60,15 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
   private approvedSessions: Map<string, Map<ChainId, Set<string>>> = new Map();
   private onApprovalRequest: ApprovalPermissionManagerOptions['onApprovalRequest'];
   private methodsRequiringApproval: Set<string>;
+  private sessionStore?: SessionStore;
 
   /**
    * Creates an instance of ApprovalPermissionManager.
-   * @param options - Configuration options, including the `onApprovalRequest` callback.
+   * @param options - Configuration options, including the `onApprovalRequest` callback and optional sessionStore.
    */
   constructor(options: ApprovalPermissionManagerOptions) {
     this.onApprovalRequest = options.onApprovalRequest;
+    this.sessionStore = options.sessionStore;
     this.methodsRequiringApproval = new Set(
       options.methodsRequiringApproval || [
         'aztec_getAddress',
@@ -163,6 +172,26 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
           allowed: true,
           shortDescription: method === '*' ? 'All methods' : method,
         };
+      }
+    }
+
+    // Persist permissions to SessionStore if available
+    if (this.sessionStore && sessionId) {
+      try {
+        const existingSession = await this.sessionStore.get(sessionId);
+        if (existingSession) {
+          // Update session with permissions
+          await this.sessionStore.set(sessionId, {
+            ...existingSession,
+            permissions,
+          });
+          console.log('[ApprovalPermissionManager] Persisted permissions to SessionStore:', {
+            sessionId,
+            permissions,
+          });
+        }
+      } catch (error) {
+        console.error('[ApprovalPermissionManager] Failed to persist permissions:', error);
       }
     }
 
@@ -280,7 +309,31 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
     });
 
     // Check if session has permission for this chain and method
-    const sessionChains = this.approvedSessions.get(sessionKey);
+    let sessionChains = this.approvedSessions.get(sessionKey);
+
+    // If not in memory, try to load from SessionStore
+    if (!sessionChains && this.sessionStore) {
+      try {
+        const sessionData = await this.sessionStore.get(sessionId);
+        if (sessionData?.permissions) {
+          console.log('[ApprovalPermissionManager] Loaded permissions from SessionStore:', {
+            sessionId,
+            permissions: sessionData.permissions,
+          });
+
+          // Restore permissions to memory for future lookups
+          const restoredChains = new Map<ChainId, Set<string>>();
+          for (const [chainId, methods] of Object.entries(sessionData.permissions)) {
+            restoredChains.set(chainId as ChainId, new Set(methods));
+          }
+          this.approvedSessions.set(sessionKey, restoredChains);
+          sessionChains = restoredChains;
+        }
+      } catch (error) {
+        console.error('[ApprovalPermissionManager] Failed to load permissions from SessionStore:', error);
+      }
+    }
+
     if (!sessionChains) {
       console.error('[ApprovalPermissionManager] SESSION NOT FOUND!', {
         lookingForKey: sessionKey,

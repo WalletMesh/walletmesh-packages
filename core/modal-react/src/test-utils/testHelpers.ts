@@ -13,8 +13,13 @@ import { vi } from 'vitest';
 import { MockWalletMeshProvider } from './MockWalletMeshProvider.js';
 import type { WalletMeshReactConfig } from '../types.js';
 
-// Use the actual type from modal-core/testing
-type MockStore = ReturnType<typeof createCoreStore>;
+// Define the return type for the store
+interface MockStore {
+  getState: () => WalletMeshState;
+  setState: (updater: ((state: WalletMeshState) => WalletMeshState) | Partial<WalletMeshState>) => void;
+  subscribe: (callback: (state: WalletMeshState) => void) => () => void;
+  destroy: () => void;
+}
 
 // SessionManager functionality has been removed from the simplified architecture
 
@@ -160,7 +165,7 @@ export function createAutoMockedStore(initialState?: Partial<WalletMeshState>): 
     ...initialState,
   };
 
-  return createCoreStore(mergedState);
+  return createCoreStore(mergedState) as unknown as MockStore;
 }
 
 /**
@@ -243,13 +248,20 @@ export function createConnectedWrapper(
   const mockStore = createAutoMockedStore();
   const state = mockStore.getState();
 
-  // Update the connections state with connected wallet
+  // Update the state with connected wallet
   mockStore.setState({
     ...state,
-    connections: {
-      ...state.connections,
-      activeSessions: [mockSession],
-      activeSessionId: 'test-session',
+    entities: {
+      ...state.entities,
+      sessions: {
+        ...state.entities.sessions,
+        'test-session': mockSession,
+      },
+    },
+    active: {
+      ...state.active,
+      sessionId: 'test-session',
+      walletId: mockSession.walletId,
     },
   });
 

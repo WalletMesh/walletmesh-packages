@@ -6,7 +6,6 @@
  */
 
 import { ConnectButton, WalletMeshProvider } from '@walletmesh/modal-react';
-import React from 'react';
 
 /**
  * Example 1: Minimal Setup

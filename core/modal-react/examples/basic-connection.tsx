@@ -22,11 +22,10 @@ import {
   useConnect,
   useDisconnect,
 } from '@walletmesh/modal-react';
-import React from 'react';
 
 function BasicConnection() {
   const { isConnected, address, chainType, isConnecting, isReconnecting } = useAccount();
-  const { connect, error: connectError } = useConnect();
+  const { error: connectError } = useConnect();
   const { disconnect, error: disconnectError } = useDisconnect();
   const { open } = useConfig();
 

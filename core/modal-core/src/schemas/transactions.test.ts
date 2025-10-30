@@ -8,7 +8,6 @@ import {
   solanaAddressSchema,
   aztecAddressSchema,
   transactionStatusSchema,
-  baseTransactionParamsSchema,
   evmTransactionParamsSchema,
   evmTransactionResultSchema,
   solanaTransactionParamsSchema,
@@ -16,7 +15,6 @@ import {
   aztecTransactionParamsSchema,
   aztecTransactionResultSchema,
   transactionRequestSchema,
-  transactionResultSchema,
   transactionInfoSchema,
   transactionQueryOptionsSchema,
 } from './transactions.js';

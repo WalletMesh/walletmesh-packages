@@ -95,11 +95,11 @@ function shouldIncludeDefaultEvmAdapter(
   }
 
   const walletConfig = options.walletConfig;
-  if (walletConfig?.include && walletConfig.include.includes('evm-wallet')) {
+  if (walletConfig?.include?.includes('evm-wallet')) {
     return true;
   }
 
-  if (walletConfig?.custom && walletConfig.custom.some((adapter) => adapter.id === 'evm-wallet')) {
+  if (walletConfig?.custom?.some((adapter) => adapter.id === 'evm-wallet')) {
     return true;
   }
 
@@ -119,11 +119,11 @@ function shouldIncludeDefaultSolanaAdapter(
   }
 
   const walletConfig = options.walletConfig;
-  if (walletConfig?.include && walletConfig.include.includes('solana-wallet')) {
+  if (walletConfig?.include?.includes('solana-wallet')) {
     return true;
   }
 
-  if (walletConfig?.custom && walletConfig.custom.some((adapter) => adapter.id === 'solana-wallet')) {
+  if (walletConfig?.custom?.some((adapter) => adapter.id === 'solana-wallet')) {
     return true;
   }
 
@@ -143,11 +143,11 @@ function shouldIncludeDefaultAztecAdapter(
   }
 
   const walletConfig = options.walletConfig;
-  if (walletConfig?.include && walletConfig.include.includes('aztec-wallet')) {
+  if (walletConfig?.include?.includes('aztec-wallet')) {
     return true;
   }
 
-  if (walletConfig?.custom && walletConfig.custom.some((adapter) => adapter.id === 'aztec-wallet')) {
+  if (walletConfig?.custom?.some((adapter) => adapter.id === 'aztec-wallet')) {
     return true;
   }
 

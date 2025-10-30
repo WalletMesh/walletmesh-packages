@@ -56,6 +56,10 @@ import type { ErrorHandler } from '../core/errors/errorHandler.js';
 import type { ModalError } from '../core/errors/types.js';
 import { isModalError } from '../core/errors/utils.js';
 import type { Logger } from '../core/logger/logger.js';
+import {
+	OriginValidator,
+	type OriginValidationResult,
+} from './validation/OriginValidator.js';
 
 /**
  * Base implementation for all transport types
@@ -109,6 +113,12 @@ export abstract class AbstractTransport implements Transport {
   protected logger: Logger;
 
   /**
+   * Captured browser-validated origin (for postMessage transports)
+   * Set by subclasses when they receive MessageEvent with validated origin
+   */
+  protected capturedOrigin?: string;
+
+  /**
    * Base constructor for transports
    *
    * @param config - Transport configuration options including timeouts
@@ -160,7 +170,7 @@ export abstract class AbstractTransport implements Transport {
   async connect(): Promise<void> {
     try {
       await this.connectWithRetry();
-    } catch (error) {
+    } catch (_error) {
       // Create transport error using ErrorFactory
       const modalError = ErrorFactory.connectionFailed('Failed to connect to transport', {
         context: 'connect',
@@ -214,7 +224,7 @@ export abstract class AbstractTransport implements Transport {
   async disconnect(): Promise<void> {
     try {
       await this.disconnectInternal();
-    } catch (error) {
+    } catch (_error) {
       // Create transport error using ErrorFactory
       const modalError = ErrorFactory.transportDisconnected('Failed to disconnect from transport', 'manual');
 
@@ -284,7 +294,7 @@ export abstract class AbstractTransport implements Transport {
           await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Create transport error using ErrorFactory
       const modalError = ErrorFactory.messageFailed('Failed to send message through transport', { data });
 
@@ -564,5 +574,213 @@ export abstract class AbstractTransport implements Transport {
 
       throw modalError;
     }
+  }
+
+  // ========================================
+  // Origin Validation Methods
+  // ========================================
+
+  /**
+   * Get the transport type identifier
+   *
+   * Used for error messages and logging. Subclasses must implement this
+   * to provide a descriptive transport type name.
+   *
+   * @returns Transport type identifier (e.g., 'popup', 'chrome-extension', 'websocket')
+   * @protected
+   * @abstract
+   *
+   * @example
+   * ```typescript
+   * class PopupTransport extends AbstractTransport {
+   *   protected getTransportType(): string {
+   *     return 'popup';
+   *   }
+   * }
+   * ```
+   */
+  protected abstract getTransportType(): string;
+
+  /**
+   * Check if this transport uses browser-validated origins
+   *
+   * PostMessage-based transports (popup, cross-window) receive origins
+   * directly from the browser via MessageEvent.origin, which is the most
+   * trusted source. Other transports may need to rely on dApp origin.
+   *
+   * @returns True if transport uses browser-validated origins
+   * @protected
+   *
+   * @example
+   * ```typescript
+   * // PostMessage transports
+   * protected isBrowserValidatedOrigin(): boolean {
+   *   return true; // MessageEvent.origin from browser
+   * }
+   *
+   * // Extension/WebSocket transports
+   * protected isBrowserValidatedOrigin(): boolean {
+   *   return false; // Uses window.location.origin
+   * }
+   * ```
+   */
+  protected isBrowserValidatedOrigin(): boolean {
+    // Default: Not browser-validated (extension, websocket, etc.)
+    // PostMessage transports should override to return true
+    return false;
+  }
+
+  /**
+   * Capture browser-validated origin from MessageEvent
+   *
+   * Should be called by postMessage-based transports when they receive
+   * a MessageEvent to store the browser-validated origin for validation.
+   *
+   * @param origin - Origin from MessageEvent.origin
+   * @protected
+   *
+   * @example
+   * ```typescript
+   * // In postMessage handler
+   * window.addEventListener('message', (event: MessageEvent) => {
+   *   this.captureOrigin(event.origin);
+   *   // ... process message
+   * });
+   * ```
+   */
+  protected captureOrigin(origin: string): void {
+    this.capturedOrigin = origin;
+  }
+
+  /**
+   * Get the trusted origin for validation
+   *
+   * Returns either the browser-validated origin (postMessage) or
+   * dApp origin (extension, websocket) depending on transport type.
+   *
+   * @returns The trusted origin or undefined if not available (SSR)
+   * @protected
+   */
+  protected getTrustedOrigin(): string | undefined {
+    // PostMessage transports: use captured browser-validated origin
+    if (this.isBrowserValidatedOrigin() && this.capturedOrigin) {
+      return this.capturedOrigin;
+    }
+
+    // Non-postMessage transports: use dApp origin
+    return OriginValidator.getDAppOrigin();
+  }
+
+  /**
+   * Validate message origin against trusted origin
+   *
+   * Validates that _context.origin in the message matches the trusted origin.
+   * The trusted origin depends on transport type:
+   * - PostMessage transports: Browser-validated MessageEvent.origin
+   * - Other transports: dApp's window.location.origin
+   *
+   * @param message - Message to validate
+   * @param options - Additional validation options
+   * @returns Validation result with error if validation fails
+   * @protected
+   *
+   * @example
+   * ```typescript
+   * // In message handler
+   * const validation = this.validateOrigin(message);
+   * if (!validation.valid) {
+   *   this.log('error', 'Origin validation failed', validation.context);
+   *   this.emit({ type: 'error', error: validation.error });
+   *   return; // Reject message
+   * }
+   * // ... process valid message
+   * ```
+   */
+  protected validateOrigin(
+    message: unknown,
+    options?: {
+      requireOriginField?: boolean;
+      additionalContext?: Record<string, unknown>;
+    },
+  ): OriginValidationResult {
+    const trustedOrigin = this.getTrustedOrigin();
+
+    return OriginValidator.validateContextOrigin(message, trustedOrigin, {
+      transportType: this.getTransportType(),
+      isBrowserValidated: this.isBrowserValidatedOrigin(),
+      ...(options?.requireOriginField !== undefined && {
+        requireOriginField: options.requireOriginField,
+      }),
+      ...(options?.additionalContext !== undefined && {
+        additionalContext: options.additionalContext,
+      }),
+    });
+  }
+
+  /**
+   * Validate wrapped message origin (for CrossWindowTransport)
+   *
+   * Validates the origin field in wrapped messages. This is used by
+   * CrossWindowTransport which wraps messages with metadata including origin.
+   *
+   * @param wrappedMessage - Wrapped message to validate
+   * @param options - Validation options
+   * @returns Validation result with error if validation fails
+   * @protected
+   *
+   * @example
+   * ```typescript
+   * // Validate wrapped message
+   * const validation = this.validateWrappedOrigin(wrappedMessage, {
+   *   requireOriginField: true // Strict validation
+   * });
+   * if (!validation.valid) {
+   *   this.emit({ type: 'error', error: validation.error });
+   *   return;
+   * }
+   * ```
+   */
+  protected validateWrappedOrigin(
+    wrappedMessage: unknown,
+    options?: {
+      requireOriginField?: boolean;
+      additionalContext?: Record<string, unknown>;
+    },
+  ): OriginValidationResult {
+    const trustedOrigin = this.getTrustedOrigin();
+
+    return OriginValidator.validateWrappedOrigin(wrappedMessage, trustedOrigin, {
+      transportType: this.getTransportType(),
+      isBrowserValidated: this.isBrowserValidatedOrigin(),
+      requireOriginField: options?.requireOriginField ?? false,
+      ...(options?.additionalContext !== undefined && {
+        additionalContext: options.additionalContext,
+      }),
+    });
+  }
+
+  /**
+   * Get message context for logging
+   *
+   * Extracts relevant context from a message for logging purposes.
+   * Default implementation provides basic message type and structure info.
+   * Subclasses can override to provide transport-specific context.
+   *
+   * @param message - Message to extract context from
+   * @returns Context object for logging
+   * @protected
+   *
+   * @example
+   * ```typescript
+   * const context = this.getMessageContext(message);
+   * this.log('debug', 'Processing message', context);
+   * ```
+   */
+  protected getMessageContext(message: unknown): Record<string, unknown> {
+    return {
+      hasContext: message && typeof message === 'object' && '_context' in message,
+      messageType: typeof message,
+      transportType: this.getTransportType(),
+    };
   }
 }

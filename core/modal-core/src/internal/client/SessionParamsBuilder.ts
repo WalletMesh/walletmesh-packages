@@ -259,9 +259,108 @@ export class SessionParamsBuilder {
       connection: {
         initiatedBy: 'user' as const,
         method: 'manual' as const,
-        ...(typeof navigator !== 'undefined' && navigator.userAgent && { userAgent: navigator.userAgent }),
+        ...(navigator?.userAgent && { userAgent: navigator.userAgent }),
       },
     };
+  }
+
+  /**
+   * Build adapter reconstruction data for hydration
+   *
+   * Extracts the necessary information to recreate the adapter after page reload.
+   * This is critical for discovered wallets which need to be reconstructed from
+   * persisted data.
+   *
+   * Enhanced to capture complete wallet metadata and responder data, eliminating
+   * the need for re-discovery on page reload.
+   *
+   * @returns Adapter reconstruction data if available
+   * @private
+   */
+  private buildAdapterReconstruction():
+    | {
+        adapterType: string;
+        blockchainType: string;
+        transportConfig: {
+          type: string;
+          config: Record<string, unknown>;
+        };
+        walletMetadata?: {
+          name: string;
+          icon: string;
+          description?: string;
+          homepage?: string;
+          [key: string]: unknown;
+        };
+        qualifiedResponder?: Record<string, unknown>;
+        sessionId?: string;
+      }
+    | undefined {
+    // Get adapter type from constructor name
+    const adapterType = this.adapter.constructor.name;
+
+    // Get blockchain type from chain type
+    const blockchainType = this.connection.chain.chainType;
+
+    // Try to extract transport config from adapter
+    // For DiscoveryAdapter and other adapters with transport
+    const adapterAny = this.adapter as any;
+
+    if (adapterAny.transport || adapterAny.transportConfig || adapterAny.qualifiedResponder) {
+      const transportType =
+        adapterAny.transportConfig?.type || adapterAny.qualifiedResponder?.transportConfig?.type || 'unknown';
+
+      // CRITICAL: Do NOT access adapterAny.transport.config directly!
+      // The transport object contains Window references that cause cross-origin errors
+      // when Immer tries to freeze them during state mutation
+      const transportConfig =
+        adapterAny.transportConfig?.config || adapterAny.qualifiedResponder?.transportConfig || {};
+
+      // Build wallet metadata from adapter
+      const walletMetadata = {
+        name: this.adapter.metadata.name || 'Unknown Wallet',
+        icon: this.adapter.metadata.icon || '',
+        ...(this.adapter.metadata.description && { description: this.adapter.metadata.description }),
+        ...(this.adapter.metadata.homepage && { homepage: this.adapter.metadata.homepage }),
+      };
+
+      // Extract session ID from wallet connection result
+      const sessionId = this.connection.sessionId;
+
+      console.log('[SessionParamsBuilder] buildAdapterReconstruction DEBUG:', {
+        sessionId,
+        hasSessionId: !!sessionId,
+        sessionIdType: typeof sessionId,
+        connectionKeys: Object.keys(this.connection),
+        willIncludeSessionId: !!sessionId,
+      });
+
+      // NOTE: qualifiedResponder is intentionally excluded from adapterReconstruction
+      // It contains circular references and Window objects that cause cross-origin errors
+      // Wallet metadata is now stored in walletMetadata field instead
+      const reconstruction = {
+        adapterType,
+        blockchainType,
+        transportConfig: {
+          type: transportType,
+          config: transportConfig,
+        },
+        walletMetadata,
+        ...(sessionId && { sessionId }),
+      };
+
+      console.log('[SessionParamsBuilder] buildAdapterReconstruction RESULT:', {
+        hasSessionId: 'sessionId' in reconstruction,
+        reconstructionSessionId: reconstruction.sessionId,
+        reconstructionKeys: Object.keys(reconstruction),
+      });
+
+      return reconstruction;
+    }
+
+    // If no transport info is available, return undefined
+    // This is fine for manually configured wallets that don't need reconstruction
+    return undefined;
   }
 
   /**
@@ -290,6 +389,13 @@ export class SessionParamsBuilder {
     // Add session ID if provided in options and not requesting new session
     if (this.options?.sessionId && this.options.requestNewSession !== true) {
       params.sessionId = this.options.sessionId;
+    }
+
+    // Add adapter reconstruction data if available
+    const adapterReconstruction = this.buildAdapterReconstruction();
+
+    if (adapterReconstruction) {
+      params.adapterReconstruction = adapterReconstruction;
     }
 
     return params;

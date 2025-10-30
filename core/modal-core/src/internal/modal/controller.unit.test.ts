@@ -12,25 +12,19 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import type { BlockchainProvider } from '../../api/types/chainProviders.js';
 import { connectionActions } from '../../state/actions/connections.js';
 import {
-  createMockClient,
-  createMockConnectionScenario,
   createMockErrorHandler,
   // createMockFrameworkAdapter, // Framework adapters removed
   createMockLogger,
   createMockModalController,
   createMockRegistry,
   createTestEnvironment,
-  createTestStore,
   createTypedMock,
   installCustomMatchers,
-  mockValidation,
 } from '../../testing/index.js';
 import { ChainType, type WalletInfo } from '../../types.js';
-import type { ModalController as ModalControllerType } from '../../types.js';
 import type { InternalWalletMeshClient, WalletMeshClient } from '../client/WalletMeshClient.js';
 import { ErrorFactory } from '../core/errors/errorFactory.js';
 import { ERROR_CODES } from '../core/errors/types.js';
-import type { WalletRegistry } from '../registries/wallets/WalletRegistry.js';
 import { ModalController } from './controller.js';
 
 // Install domain-specific matchers

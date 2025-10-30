@@ -150,7 +150,7 @@ describe('DiscoveryAdapter - Aztec Network Resolution', () => {
 
       // Should throw error when network cannot be determined
       expect(() => (adapter as any).getAztecNetworkFromDiscovery()).toThrow(
-        'Unable to determine Aztec network for wallet "Test Wallet"'
+        'Unable to determine Aztec network for wallet "Test Wallet"',
       );
     });
 
@@ -280,7 +280,7 @@ describe('DiscoveryAdapter - Aztec Network Resolution', () => {
 
       // Should throw error as no Aztec network is available
       expect(() => (adapter as any).getAztecNetworkFromDiscovery()).toThrow(
-        'Unable to determine Aztec network for wallet "EVM Wallet"'
+        'Unable to determine Aztec network for wallet "EVM Wallet"',
       );
     });
   });

@@ -40,7 +40,7 @@ let mockRouterProviderInstance: {
 
 vi.mock('@walletmesh/aztec-rpc-wallet', () => {
   return {
-    AztecRouterProvider: vi.fn().mockImplementation((transport, context, sessionId) => {
+    AztecRouterProvider: vi.fn().mockImplementation((_transport, _context, sessionId) => {
       mockRouterProviderInstance = {
         call: vi.fn().mockImplementation(({ method }) => {
           switch (method) {
@@ -124,6 +124,44 @@ vi.mock('@walletmesh/jsonrpc', () => ({
   })),
 }));
 
+// Mock LazyAztecRouterProvider
+let mockLazyProviderInstance: {
+  connect: ReturnType<typeof vi.fn>;
+  reconnect: ReturnType<typeof vi.fn>;
+  call: ReturnType<typeof vi.fn>;
+  disconnect: ReturnType<typeof vi.fn>;
+};
+
+vi.mock('../../../providers/aztec/lazy.js', () => ({
+  LazyAztecRouterProvider: vi.fn().mockImplementation(() => {
+    mockLazyProviderInstance = {
+      connect: vi.fn().mockResolvedValue({
+        sessionId: 'mock-session-id',
+        permissions: {},
+      }),
+      reconnect: vi.fn().mockResolvedValue({
+        sessionId: 'reconnected-session-id',
+        permissions: {},
+      }),
+      call: vi.fn().mockImplementation((_chainId, { method }) => {
+        switch (method) {
+          case 'aztec_getAddress':
+            return Promise.resolve({
+              toString: () => '0x123456789abcdef',
+              address: '0x123456789abcdef',
+            });
+          case 'aztec_getChainId':
+            return Promise.resolve('aztec:31337');
+          default:
+            return Promise.resolve({});
+        }
+      }),
+      disconnect: vi.fn().mockResolvedValue(undefined),
+    };
+    return mockLazyProviderInstance;
+  }),
+}));
+
 // Mock ErrorFactory
 vi.mock('../../core/errors/errorFactory.js', () => ({
   ErrorFactory: {
@@ -132,17 +170,17 @@ vi.mock('../../core/errors/errorFactory.js', () => ({
       wrappedError.name = 'ConnectorError';
       return wrappedError;
     }),
-    connectorError: vi.fn((walletId, message, code, data) => {
+    connectorError: vi.fn((_walletId, message, _code, _data) => {
       const error = new Error(message);
       error.name = 'ConnectorError';
       return error;
     }),
-    connectionFailed: vi.fn((message, details) => {
+    connectionFailed: vi.fn((message, _details) => {
       const error = new Error(message);
       error.name = 'ConnectionError';
       return error;
     }),
-    configurationError: vi.fn((message, details) => {
+    configurationError: vi.fn((message, _details) => {
       const error = new Error(message);
       error.name = 'ConfigurationError';
       return error;
@@ -166,7 +204,7 @@ describe('AztecExampleWalletAdapter', () => {
 
     // Reset the AztecRouterProvider mock to return a fresh instance each time
     const { AztecRouterProvider } = await import('@walletmesh/aztec-rpc-wallet');
-    vi.mocked(AztecRouterProvider).mockImplementation((transport, context, sessionId) => {
+    vi.mocked(AztecRouterProvider).mockImplementation((_transport, _context, sessionId) => {
       mockRouterProviderInstance = {
         call: vi.fn().mockImplementation(({ method }) => {
           switch (method) {
@@ -496,6 +534,121 @@ describe('AztecExampleWalletAdapter', () => {
       expect(adapter.capabilities.features.has('sign_message')).toBe(true);
       expect(adapter.capabilities.features.has('sign_typed_data')).toBe(true);
       expect(adapter.capabilities.features.has('multi_account')).toBe(true);
+    });
+  });
+
+  describe('Reconnection', () => {
+    let doConnectSpy: ReturnType<typeof vi.spyOn>;
+    let getPersistedSessionSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+      // Create a reusable mock connection
+      const mockConnection: WalletConnection = {
+        address: '0x123456789abcdef',
+        chainId: 'aztec:31337',
+        chainType: ChainType.Aztec,
+        provider: {
+          call: vi.fn(),
+          connect: vi.fn(),
+          disconnect: vi.fn(),
+        } as unknown,
+      };
+
+      // Spy on doConnect to test reconnection logic
+      doConnectSpy = vi
+        .spyOn(adapter as unknown as { doConnect: () => Promise<WalletConnection> }, 'doConnect')
+        .mockResolvedValue(mockConnection);
+      getPersistedSessionSpy = vi.spyOn(adapter, 'getPersistedSession');
+    });
+
+    afterEach(() => {
+      doConnectSpy.mockRestore();
+      getPersistedSessionSpy.mockRestore();
+    });
+
+    it('should call doConnect with isReconnection flag when reconnecting', async () => {
+      getPersistedSessionSpy.mockReturnValue({
+        sessionId: 'existing-session-id',
+        walletId: adapter.id,
+        status: 'connected',
+        address: '0x123456789abcdef',
+        chainId: 'aztec:31337',
+        chainType: ChainType.Aztec,
+        adapterReconstruction: {
+          adapterType: 'aztec-example',
+          blockchainType: 'aztec',
+          sessionId: 'existing-session-id',
+          transportConfig: {
+            type: 'popup',
+            config: {},
+          },
+        },
+      });
+
+      // Connect with isReconnection flag
+      const connection = await adapter.connect({
+        chainType: ChainType.Aztec,
+        isReconnection: true,
+      });
+
+      // Verify doConnect was called with the options including isReconnection
+      expect(doConnectSpy).toHaveBeenCalled();
+      const callOptions = doConnectSpy.mock.calls[0][0];
+      expect(callOptions).toHaveProperty('isReconnection', true);
+
+      // Verify connection was successful
+      expect(connection).toBeDefined();
+      expect(connection.address).toBe('0x123456789abcdef');
+      expect(connection.chainId).toBe('aztec:31337');
+    });
+
+    it('should call doConnect without isReconnection when not reconnecting', async () => {
+      getPersistedSessionSpy.mockReturnValue({
+        sessionId: 'existing-session-id',
+        walletId: adapter.id,
+        status: 'connected',
+        address: '0x123456789abcdef',
+        chainId: 'aztec:31337',
+        chainType: ChainType.Aztec,
+        adapterReconstruction: {
+          adapterType: 'aztec-example',
+          blockchainType: 'aztec',
+          sessionId: 'existing-session-id',
+          transportConfig: {
+            type: 'popup',
+            config: {},
+          },
+        },
+      });
+
+      // Connect without isReconnection flag
+      const connection = await adapter.connect({
+        chainType: ChainType.Aztec,
+      });
+
+      // Verify doConnect was called without isReconnection
+      expect(doConnectSpy).toHaveBeenCalled();
+      const callOptions = doConnectSpy.mock.calls[0][0];
+      expect(callOptions?.isReconnection).toBeFalsy();
+
+      // Verify connection was successful
+      expect(connection).toBeDefined();
+    });
+
+    it('should handle doConnect when no persisted session exists', async () => {
+      getPersistedSessionSpy.mockReturnValue(null);
+
+      // Connect with isReconnection flag
+      const connection = await adapter.connect({
+        chainType: ChainType.Aztec,
+        isReconnection: true,
+      });
+
+      // Verify doConnect was called
+      expect(doConnectSpy).toHaveBeenCalled();
+
+      // Verify connection was successful
+      expect(connection).toBeDefined();
     });
   });
 });

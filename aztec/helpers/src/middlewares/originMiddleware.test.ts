@@ -270,14 +270,14 @@ describe('originMiddleware', () => {
     });
 
     it('should handle window.parent === window (not in iframe) correctly', async () => {
-      const mockWindow = {
+      const mockWindow: { location: { origin: string }; parent?: unknown } = {
         location: {
           origin: 'https://wallet.example.com',
         },
       };
 
       // window.parent === window means not in iframe
-      (mockWindow as any).parent = mockWindow;
+      mockWindow.parent = mockWindow;
 
       Object.defineProperty(global, 'window', {
         value: mockWindow,
@@ -322,7 +322,9 @@ describe('originMiddleware', () => {
 
       const middleware = createOriginMiddleware('https://example.com');
 
-      await expect(middleware(mockContext, mockRequest, mockNext)).rejects.toThrow('Downstream middleware failed');
+      await expect(middleware(mockContext, mockRequest, mockNext)).rejects.toThrow(
+        'Downstream middleware failed',
+      );
     });
 
     it('should set context.origin before calling next()', async () => {
@@ -345,7 +347,11 @@ describe('originMiddleware', () => {
     it('should work with different request types', async () => {
       const middleware = createOriginMiddleware('https://example.com');
 
-      const requests: Array<JSONRPCRequest<RouterMethodMap, any>> = [
+      const requests: Array<
+        | JSONRPCRequest<RouterMethodMap, 'wm_connect'>
+        | JSONRPCRequest<RouterMethodMap, 'wm_call'>
+        | JSONRPCRequest<RouterMethodMap, 'wm_disconnect'>
+      > = [
         { jsonrpc: '2.0', id: 1, method: 'wm_connect', params: [] },
         { jsonrpc: '2.0', id: 2, method: 'wm_call', params: [{ call: { method: 'test', params: [] } }] },
         { jsonrpc: '2.0', id: 3, method: 'wm_disconnect', params: [] },

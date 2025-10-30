@@ -12,7 +12,7 @@ import type { SecurityPolicy } from '../types/security.js';
 import { DiscoveryResponder } from '../responder.js';
 import { CapabilityMatcher } from '../responder/CapabilityMatcher.js';
 import { type Logger, defaultLogger } from '../core/logger.js';
-import { getBrowserAPI, getExtensionId, type BrowserAPI } from './browserApi.js';
+import { getExtensionId } from './browserApi.js';
 
 /**
  * Callback to determine if discovery response should be sent to an origin.
@@ -77,7 +77,34 @@ export interface WalletDiscoveryConfig {
   /** Security policy for origin validation and rate limiting */
   securityPolicy?: SecurityPolicy;
 
-  /** Optional callback for custom announcement handling */
+  /**
+   * Callback for sending discovery responses (REQUIRED for port-based communication).
+   *
+   * This callback receives the discovery announcement and tab ID, and is responsible
+   * for sending the response through the appropriate channel (e.g., via a port connection
+   * to the content script).
+   *
+   * @param announcement - The discovery response to send to the dApp
+   * @param tabId - The browser tab ID where the request originated
+   *
+   * @example Port-based communication
+   * ```typescript
+   * const portsByTab = new Map<number, Port>();
+   *
+   * const walletDiscovery = new WalletDiscovery({
+   *   responderInfo: myWalletInfo,
+   *   onAnnouncement: (announcement, tabId) => {
+   *     const port = portsByTab.get(tabId);
+   *     if (port) {
+   *       port.postMessage({
+   *         type: 'discovery:wallet:response',
+   *         data: announcement
+   *       });
+   *     }
+   *   }
+   * });
+   * ```
+   */
   onAnnouncement?: (announcement: DiscoveryResponseEvent, tabId: number) => void;
 
   /** Optional logger instance */
@@ -224,7 +251,6 @@ export class WalletDiscovery {
   private isEnabled = false;
   private connectedOrigins = new Set<string>();
   private logger: Logger;
-  private browserAPI: BrowserAPI;
 
   /**
    * Creates a new WalletDiscovery instance.
@@ -232,9 +258,6 @@ export class WalletDiscovery {
    * @param configOrResponderInfo - Configuration object or just the responder info
    */
   constructor(configOrResponderInfo: WalletDiscoveryConfig | ResponderInfo) {
-    // Get browser API instance
-    this.browserAPI = getBrowserAPI();
-
     // Support both the full config object and just passing responder info directly
     if ('responderInfo' in configOrResponderInfo) {
       // Full config object
@@ -427,39 +450,34 @@ export class WalletDiscovery {
         name: this.responderInfo.name,
         icon: this.responderInfo.icon,
         matched: matchResult.intersection, // Only what dApp should see
-        ...(this.responderInfo.networks && this.responderInfo.networks.length > 0 && {
-          networks: this.responderInfo.networks,
-        }),
+        ...(this.responderInfo.networks &&
+          this.responderInfo.networks.length > 0 && {
+            networks: this.responderInfo.networks,
+          }),
         transportConfig: {
           type: 'extension',
           extensionId,
         },
       };
 
-      // Send to content script for relay to dApp
-      if (this.browserAPI.tabs) {
+      // Send response via onAnnouncement callback (port-based communication)
+      if (this.config.onAnnouncement) {
         try {
-          await this.browserAPI.tabs.sendMessage(tabId, {
-            type: 'discovery:wallet:response',
-            data: announcement,
-          });
+          this.config.onAnnouncement(announcement, tabId);
 
-          // Message sent successfully
+          // Announcement sent successfully
           this.stats.announcementsSent++;
           this.logger.info(`Discovery announcement sent to ${origin}`);
 
           // Call onResponseSent callback AFTER successful delivery
-          // This is where extension should mark origin as "discovered"
           if (this.config.onResponseSent) {
             this.config.onResponseSent(origin);
           }
-        } catch {
-          // Tab might not have content script or be closed
-          this.logger.warn(`Failed to send announcement to tab ${tabId}`);
-          // onResponseSent NOT called - origin remains not-discovered
+        } catch (error) {
+          this.logger.warn(`Failed to send announcement to tab ${tabId}`, error);
         }
       } else {
-        this.logger.warn('Browser tabs API not available');
+        this.logger.warn('No onAnnouncement callback configured - cannot send discovery response');
       }
     } else {
       // Silent rejection if can't fulfill (privacy-preserving)

@@ -17,7 +17,6 @@ import type { ConnectOptions } from '../../api/types/connectOptions.js';
 import type { CreateSessionParams } from '../../api/types/sessionState.js';
 import { connectionActions } from '../../state/actions/connections.js';
 import { uiActions } from '../../state/actions/ui.js';
-import { useStore } from '../../state/store.js';
 import {
   createMockModalController,
   createMockRegistry,
@@ -40,7 +39,6 @@ import type { ErrorHandler } from '../core/errors/errorHandler.js';
 import { ERROR_CODES } from '../core/errors/types.js';
 import { createCoreServices } from '../core/factories/serviceFactory.js';
 import type { Logger } from '../core/logger/logger.js';
-import type { WalletRegistry } from '../registries/wallets/WalletRegistry.js';
 import { ModalController } from './controller.js';
 
 // Install domain-specific matchers
@@ -327,7 +325,7 @@ describe('Modal Controller New Features Integration', () => {
     clientInstance = new MockWalletClient(mockProvider);
 
     // Set up default mock implementation for connect
-    clientInstance.connect.mockImplementation(async (walletId: string, options?: ConnectOptions) => {
+    clientInstance.connect.mockImplementation(async (walletId: string, _options?: ConnectOptions) => {
       // Create session in unified store like real client would
       const store = useStoreActual;
 
@@ -862,12 +860,12 @@ describe('Modal Controller New Features Integration', () => {
       it('should handle connection failure state', async () => {
         // Reset modal controller state
         await modalController.reset();
-        let errorState: string | ModalError | null = null;
+        let _errorState: string | ModalError | null = null;
 
         // Subscribe to error state changes
         const unsubscribe = modalController.subscribe((state) => {
           if (state.ui?.error) {
-            errorState = state.ui.errors['ui'];
+            _errorState = state.ui.errors['ui'];
           }
         });
 
@@ -933,7 +931,7 @@ describe('Modal Controller New Features Integration', () => {
         await modalController.open();
 
         // Subscribe
-        const unsubscribe = modalController.subscribe((state) => {
+        const unsubscribe = modalController.subscribe((_state) => {
           callCount++;
         });
 
@@ -1005,7 +1003,7 @@ describe('Modal Controller New Features Integration', () => {
             walletInfo,
           };
 
-          clientInstance.connect.mockImplementation(async (walletId: string) => {
+          clientInstance.connect.mockImplementation(async (_walletId: string) => {
             // Simple mock without session creation to avoid validation errors
             return mockConnectionResult;
           });

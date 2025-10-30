@@ -15,7 +15,7 @@ import {
   useAztecWallet,
   useConnect,
 } from '@walletmesh/modal-react';
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 // Example token contract artifact (would come from @aztec/noir-contracts.js)
 const TokenContractArtifact = {
@@ -56,7 +56,7 @@ function App() {
 function ConnectionManager() {
   const { connect, disconnect } = useConnect();
   const { isConnected, address } = useAccount();
-  const { aztecWallet, isAvailable } = useAztecWallet();
+  const { isAvailable } = useAztecWallet();
 
   return (
     <div style={{ marginBottom: '20px' }}>

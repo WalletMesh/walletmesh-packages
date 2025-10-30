@@ -35,12 +35,8 @@ const ArgumentDisplay: React.FC<ArgumentDisplayProps> = ({ value, paramInfo }) =
   return (
     <div className="argument-display" style={{ marginLeft: '1rem', marginBottom: '0.5rem' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-        <span style={{ fontWeight: 'bold' }}>
-          {paramInfo.name}
-        </span>
-        <span style={{ color: '#666', fontSize: '0.9em' }}>
-          ({paramInfo.typeString})
-        </span>
+        <span style={{ fontWeight: 'bold' }}>{paramInfo.name}</span>
+        <span style={{ color: '#666', fontSize: '0.9em' }}>({paramInfo.typeString})</span>
         {formatted.copyable && (
           <button
             type="button"

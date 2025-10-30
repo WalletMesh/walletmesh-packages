@@ -26,7 +26,6 @@
 
 <script setup lang="ts">
 import {
-  type CreateSandboxedIconOptions,
   type DisabledIconStyle,
   type FallbackIconConfig,
   RECOVERY_PRESETS,
@@ -81,9 +80,9 @@ const containerConfig = computed(() =>
   }),
 );
 
-const containerStyle = computed(() => containerConfig.value.containerStyles);
+const _containerStyle = computed(() => containerConfig.value.containerStyles);
 
-const a11yAttributes = computed(() =>
+const _a11yAttributes = computed(() =>
   createIconAccessibilityAttributes({
     alt: props.alt,
     disabled: props.disabled,
@@ -93,14 +92,14 @@ const a11yAttributes = computed(() =>
 );
 
 // Event handlers
-const handleClick = (event: Event) => {
+const _handleClick = (event: Event) => {
   if (!isLoading.value && !props.disabled) {
     event.preventDefault();
     emit('click');
   }
 };
 
-const handleKeyDown = (event: KeyboardEvent) => {
+const _handleKeyDown = (event: KeyboardEvent) => {
   if (!isLoading.value && !props.disabled && (event.key === 'Enter' || event.key === ' ')) {
     event.preventDefault();
     emit('click');

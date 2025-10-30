@@ -21,8 +21,10 @@ function createMockTransaction(overrides: Partial<TransactionResult>): Transacti
     walletId: 'aztec-example-wallet',
     status: 'proving',
     from: '0x1234567890123456789012345678901234567890',
+    // biome-ignore lint/suspicious/noExplicitAny: Test mock object
     request: {} as any,
     startTime: Date.now() - 5000,
+    // biome-ignore lint/suspicious/noExplicitAny: Test mock function
     wait: async () => ({}) as any,
     ...overrides,
   } as TransactionResult;
@@ -66,7 +68,7 @@ function createMockState(overrides?: Partial<WalletMeshState>): WalletMeshState 
 
 // Mock the useStore hook
 vi.mock('../hooks/internal/useStore.js', () => ({
-  useStore: vi.fn((selector) => {
+  useStore: vi.fn((selector: (state: WalletMeshState) => unknown) => {
     const mockState = createMockState({
       active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
       entities: {
@@ -147,8 +149,14 @@ describe('AztecTransactionStatusOverlay', () => {
       const overlay = document.querySelector('[role="dialog"]');
       expect(overlay).toBeTruthy();
       expect(overlay?.getAttribute('aria-modal')).toBe('true');
-      expect(overlay?.getAttribute('aria-labelledby')).toBe('tx-overlay-headline');
-      expect(overlay?.getAttribute('aria-describedby')).toBe('tx-overlay-description');
+
+      // Verify aria-labelledby and aria-describedby reference valid elements
+      const labelledBy = overlay?.getAttribute('aria-labelledby');
+      const describedBy = overlay?.getAttribute('aria-describedby');
+      expect(labelledBy).toBeTruthy();
+      expect(describedBy).toBeTruthy();
+      expect(document.getElementById(labelledBy!)).toBeTruthy();
+      expect(document.getElementById(describedBy!)).toBeTruthy();
     });
 
     it('should have elements with matching IDs for aria-labelledby and aria-describedby', async () => {
@@ -157,8 +165,12 @@ describe('AztecTransactionStatusOverlay', () => {
       // Advance timers to allow React to flush updates
       await vi.advanceTimersByTimeAsync(0);
 
-      expect(document.getElementById('tx-overlay-headline')).toBeTruthy();
-      expect(document.getElementById('tx-overlay-description')).toBeTruthy();
+      const overlay = document.querySelector('[role="dialog"]');
+      const labelledBy = overlay?.getAttribute('aria-labelledby');
+      const describedBy = overlay?.getAttribute('aria-describedby');
+
+      expect(document.getElementById(labelledBy!)).toBeTruthy();
+      expect(document.getElementById(describedBy!)).toBeTruthy();
     });
 
     it('should display custom headline and description', async () => {
@@ -167,8 +179,12 @@ describe('AztecTransactionStatusOverlay', () => {
       // Advance timers to allow React to flush updates
       await vi.advanceTimersByTimeAsync(0);
 
-      const headline = document.getElementById('tx-overlay-headline');
-      const description = document.getElementById('tx-overlay-description');
+      const overlay = document.querySelector('[role="dialog"]');
+      const labelledBy = overlay?.getAttribute('aria-labelledby');
+      const describedBy = overlay?.getAttribute('aria-describedby');
+
+      const headline = document.getElementById(labelledBy!);
+      const description = document.getElementById(describedBy!);
 
       expect(headline?.textContent).toBe('Custom Headline');
       expect(description?.textContent).toBe('Custom Description');
@@ -178,7 +194,7 @@ describe('AztecTransactionStatusOverlay', () => {
   describe('ESC Key Handling', () => {
     it('should close overlay when ESC is pressed and transaction is confirmed', async () => {
       // Mock confirmed transaction
-      vi.mocked(useStore).mockImplementation((selector) => {
+      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
         const mockState = createMockState({
           active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
           entities: {
@@ -229,7 +245,7 @@ describe('AztecTransactionStatusOverlay', () => {
 
     it('should not close overlay when allowEscapeKeyClose is false', async () => {
       // Mock confirmed transaction
-      vi.mocked(useStore).mockImplementation((selector) => {
+      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
         const mockState = createMockState({
           active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
           entities: {
@@ -262,7 +278,7 @@ describe('AztecTransactionStatusOverlay', () => {
 
     it('should close overlay when ESC is pressed and transaction is failed', async () => {
       // Mock failed transaction
-      vi.mocked(useStore).mockImplementation((selector) => {
+      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
         const mockState = createMockState({
           active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
           entities: {
@@ -320,7 +336,9 @@ describe('AztecTransactionStatusOverlay', () => {
       await vi.advanceTimersByTimeAsync(0);
 
       // Should not add beforeunload listener
-      const beforeUnloadCalls = beforeUnloadSpy.mock.calls.filter(([event]) => event === 'beforeunload');
+      const beforeUnloadCalls = beforeUnloadSpy.mock.calls.filter(
+        ([event]: [string, ...unknown[]]) => event === 'beforeunload',
+      );
       expect(beforeUnloadCalls.length).toBe(0);
 
       beforeUnloadSpy.mockRestore();
@@ -330,7 +348,7 @@ describe('AztecTransactionStatusOverlay', () => {
   describe('Auto-dismiss Behavior', () => {
     it('should auto-dismiss after 2.5 seconds when transaction is confirmed', async () => {
       // Mock confirmed transaction
-      vi.mocked(useStore).mockImplementation((selector) => {
+      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
         const mockState = createMockState({
           active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
           entities: {
@@ -365,7 +383,7 @@ describe('AztecTransactionStatusOverlay', () => {
 
     it('should auto-dismiss after 2.5 seconds when transaction is failed', async () => {
       // Mock failed transaction
-      vi.mocked(useStore).mockImplementation((selector) => {
+      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
         const mockState = createMockState({
           active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
           entities: {
@@ -402,7 +420,7 @@ describe('AztecTransactionStatusOverlay', () => {
   describe('Rendering', () => {
     it('should not render when no transactions are active', () => {
       // Mock no active transactions
-      vi.mocked(useStore).mockImplementation((selector) => {
+      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
         const mockState = createMockState({
           active: { transactionId: null, walletId: null, sessionId: null, selectedWalletId: null },
           entities: {
@@ -438,7 +456,7 @@ describe('AztecTransactionStatusOverlay', () => {
 
     it('should show multiple transactions when showBackgroundTransactions is true', async () => {
       // Mock multiple transactions
-      vi.mocked(useStore).mockImplementation((selector) => {
+      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
         const mockState = createMockState({
           active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
           entities: {

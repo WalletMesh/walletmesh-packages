@@ -1,8 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WalletConnection } from '../../../api/types/connection.js';
-import type { ModalError } from '../../../api/types/errors.js';
 import {
-  createMockErrorHandler,
   createMockEvmProvider,
   createMockLogger,
   createTestEnvironment,
@@ -12,7 +9,7 @@ import { ChainType } from '../../../types.js';
 import { ErrorFactory } from '../../core/errors/errorFactory.js';
 import { Logger } from '../../core/logger/logger.js';
 import { EvmProvider } from '../../providers/evm/EvmProvider.js';
-import type { AdapterContext, ConnectOptions, DetectionResult } from '../base/WalletAdapter.js';
+import type { AdapterContext } from '../base/WalletAdapter.js';
 import { EvmAdapter } from './EvmAdapter.js';
 
 // Install domain-specific matchers

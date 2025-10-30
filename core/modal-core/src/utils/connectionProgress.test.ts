@@ -10,7 +10,6 @@ import {
   interpolateProgress,
   isInProgress,
   isTerminalStage,
-  type ConnectionProgressInfo,
 } from './connectionProgress.js';
 
 describe('connectionProgress utils', () => {

@@ -107,7 +107,7 @@ describe('OriginValidator', () => {
 
       // These would normally use unicode characters that look like latin letters
       // For testing, we'll simulate detection
-      const suspiciousUrls = [
+      const _suspiciousUrls = [
         'https://metаmask.io', // Cyrillic 'а'
         'https://walletconnеct.com', // Cyrillic 'е'
         'https://mеtamask.io', // Cyrillic 'е'

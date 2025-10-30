@@ -177,8 +177,8 @@ describe('AztecAdapter - New Improvements', () => {
       const { AztecRouterProvider } = await import('@walletmesh/aztec-rpc-wallet');
       const mockAddress = {
         bytes: [
-          0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23,
-          0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
+          0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
+          0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef, 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef,
         ],
         toString: () => '[object Object]',
       };
@@ -427,7 +427,9 @@ describe('AztecAdapter - New Improvements', () => {
       expect((adapter as any).isValidAztecAddress('aztec1')).toBe(false);
 
       // Invalid - wrong prefix
-      expect((adapter as any).isValidAztecAddress('invalid1234567890123456789012345678901234567890')).toBe(false);
+      expect((adapter as any).isValidAztecAddress('invalid1234567890123456789012345678901234567890')).toBe(
+        false,
+      );
 
       // Invalid - not a string
       expect((adapter as any).isValidAztecAddress(null)).toBe(false);
@@ -583,18 +585,20 @@ describe('AztecAdapter - New Improvements', () => {
       } as unknown as JSONRPCTransport;
 
       // Mock AztecRouterProvider to call onMessage on the transport
-      (AztecRouterProvider as ReturnType<typeof vi.fn>).mockImplementationOnce((transport: JSONRPCTransport) => {
-        // Simulate what real AztecRouterProvider does - call onMessage to set up listener
-        if ('onMessage' in transport && typeof transport.onMessage === 'function') {
-          transport.onMessage(() => {});
-        }
+      (AztecRouterProvider as ReturnType<typeof vi.fn>).mockImplementationOnce(
+        (transport: JSONRPCTransport) => {
+          // Simulate what real AztecRouterProvider does - call onMessage to set up listener
+          if ('onMessage' in transport && typeof transport.onMessage === 'function') {
+            transport.onMessage(() => {});
+          }
 
-        return {
-          connect: vi.fn().mockResolvedValue({ sessionId: 'session-123' }),
-          disconnect: vi.fn(),
-          call: vi.fn().mockResolvedValue('aztec1qwertyuiopasdfghjklzxcvbnm1234567890abcdefghij'),
-        };
-      });
+          return {
+            connect: vi.fn().mockResolvedValue({ sessionId: 'session-123' }),
+            disconnect: vi.fn(),
+            call: vi.fn().mockResolvedValue('aztec1qwertyuiopasdfghjklzxcvbnm1234567890abcdefghij'),
+          };
+        },
+      );
 
       adapter = new AztecAdapter({
         transport: customTransport,

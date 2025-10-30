@@ -236,7 +236,7 @@ describe('useConnect', () => {
     });
     vi.mocked(useStoreActions).mockReturnValue(mockActions);
     vi.mocked(useStoreInstance).mockReturnValue(mockStore);
-    vi.mocked(useStore).mockImplementation((selector) => {
+    vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
       const state = mockStore.getState();
       return selector ? selector(state) : state;
     });
@@ -1235,7 +1235,7 @@ describe('useWalletAdapters', () => {
       { id: 'phantom', name: 'Phantom', icon: 'icon.png', chains: [ChainType.Solana] },
     ];
 
-    vi.mocked(useStore).mockImplementation((selector) => {
+    vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
       const state = createMockState({
         entities: {
           wallets: mockWallets.reduce(
@@ -1276,7 +1276,7 @@ describe('useIsConnecting', () => {
   });
 
   it('should return true when connecting', () => {
-    vi.mocked(useStore).mockImplementation((selector) => {
+    vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
       const state = {
         ui: {
           currentView: 'connecting',
@@ -1290,7 +1290,7 @@ describe('useIsConnecting', () => {
   });
 
   it('should return false when not connecting', () => {
-    vi.mocked(useStore).mockImplementation((selector) => {
+    vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
       const state = {
         ui: {
           currentView: 'walletSelection',
@@ -1314,7 +1314,7 @@ describe('useConnectionProgress', () => {
   });
 
   it('should return progress when connecting', () => {
-    vi.mocked(useStore).mockImplementation((selector) => {
+    vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
       const state = {
         ui: {
           currentView: 'connecting',
@@ -1328,7 +1328,7 @@ describe('useConnectionProgress', () => {
   });
 
   it('should return 0 when not connecting', () => {
-    vi.mocked(useStore).mockImplementation((selector) => {
+    vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
       const state = {
         ui: {
           currentView: 'walletSelection',
@@ -1342,7 +1342,7 @@ describe('useConnectionProgress', () => {
   });
 
   it('should handle error in progress generation', () => {
-    vi.mocked(useStore).mockImplementation((selector) => {
+    vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
       const state = {
         ui: {
           currentView: 'connecting',

@@ -6,7 +6,6 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Logger } from '../../internal/core/logger/logger.js';
 import type { WalletRegistry } from '../../internal/registries/wallets/WalletRegistry.js';
 import { createMockLogger, createMockRegistry } from '../../testing/index.js';
 import { setupDiscoveryInitiatorMock } from '../../testing/helpers/setupDiscoveryInitiatorMock.js';
@@ -158,7 +157,7 @@ describe('DiscoveryService Memory Leak Prevention', () => {
   afterEach(async () => {
     try {
       await discoveryService.destroy();
-    } catch (error) {
+    } catch (_error) {
       // Ignore errors during cleanup
     }
     resourceTracker.destroy();
@@ -183,9 +182,9 @@ describe('DiscoveryService Memory Leak Prevention', () => {
       expect(typeof unsubscribe3).toBe('function');
 
       // Track calls before destroy
-      const callCountBefore1 = handler1.mock.calls.length;
-      const callCountBefore2 = handler2.mock.calls.length;
-      const callCountBefore3 = handler3.mock.calls.length;
+      const _callCountBefore1 = handler1.mock.calls.length;
+      const _callCountBefore2 = handler2.mock.calls.length;
+      const _callCountBefore3 = handler3.mock.calls.length;
 
       // Start discovery to initialize internal components
       try {
@@ -291,7 +290,7 @@ describe('DiscoveryService Memory Leak Prevention', () => {
       try {
         // Scan should fail
         await expect(brokenService.scan()).rejects.toThrow();
-      } catch (error) {
+      } catch (_error) {
         // Expected to fail
       }
 

@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ErrorFactory } from '../../core/errors/errorFactory.js';
 import { EvmAdapter } from './EvmAdapter.js';
 
 describe('EvmAdapter Caching', () => {

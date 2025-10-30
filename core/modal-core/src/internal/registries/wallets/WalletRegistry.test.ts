@@ -1,8 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockWalletAdapter } from '../../../testing/index.js';
 import { ChainType } from '../../../types.js';
-import type { BaseWalletProvider } from '../../providers/base/BaseWalletProvider.js';
-import type { WalletAdapter } from '../../wallets/base/WalletAdapter.js';
 import { WalletRegistry } from './WalletRegistry.js';
 
 describe('WalletRegistry', () => {
@@ -59,6 +57,75 @@ describe('WalletRegistry', () => {
       registry.clear();
 
       expect(registry.getAllAdapters()).toHaveLength(0);
+    });
+  });
+
+  describe('Built-in Wallet Tracking', () => {
+    it('should register adapter as built-in', () => {
+      const adapter = createMockWalletAdapter('test-builtin');
+
+      registry.registerBuiltIn(adapter);
+
+      expect(registry.getAdapter('test-builtin')).toBe(adapter);
+      expect(registry.isBuiltinWallet('test-builtin')).toBe(true);
+    });
+
+    it('should track multiple built-in wallets', () => {
+      const adapter1 = createMockWalletAdapter('builtin1');
+      const adapter2 = createMockWalletAdapter('builtin2');
+
+      registry.registerBuiltIn(adapter1);
+      registry.registerBuiltIn(adapter2);
+
+      expect(registry.isBuiltinWallet('builtin1')).toBe(true);
+      expect(registry.isBuiltinWallet('builtin2')).toBe(true);
+    });
+
+    it('should distinguish built-in from regular adapters', () => {
+      const builtinAdapter = createMockWalletAdapter('builtin');
+      const regularAdapter = createMockWalletAdapter('regular');
+
+      registry.registerBuiltIn(builtinAdapter);
+      registry.register(regularAdapter);
+
+      expect(registry.isBuiltinWallet('builtin')).toBe(true);
+      expect(registry.isBuiltinWallet('regular')).toBe(false);
+    });
+
+    it('should return false for non-existent wallets', () => {
+      expect(registry.isBuiltinWallet('nonexistent')).toBe(false);
+    });
+
+    it('should return list of built-in wallet IDs', () => {
+      const adapter1 = createMockWalletAdapter('builtin1');
+      const adapter2 = createMockWalletAdapter('builtin2');
+      const regularAdapter = createMockWalletAdapter('regular');
+
+      registry.registerBuiltIn(adapter1);
+      registry.registerBuiltIn(adapter2);
+      registry.register(regularAdapter);
+
+      const builtinIds = registry.getBuiltinWalletIds();
+      expect(builtinIds).toHaveLength(2);
+      expect(builtinIds).toContain('builtin1');
+      expect(builtinIds).toContain('builtin2');
+      expect(builtinIds).not.toContain('regular');
+    });
+
+    it('should return empty array when no built-in wallets registered', () => {
+      const adapter = createMockWalletAdapter('regular');
+      registry.register(adapter);
+
+      expect(registry.getBuiltinWalletIds()).toHaveLength(0);
+    });
+
+    it('should throw error when registering duplicate built-in wallet', () => {
+      const adapter1 = createMockWalletAdapter('test');
+      const adapter2 = createMockWalletAdapter('test');
+
+      registry.registerBuiltIn(adapter1);
+
+      expect(() => registry.registerBuiltIn(adapter2)).toThrow();
     });
   });
 
@@ -236,7 +303,7 @@ describe('WalletRegistry', () => {
 
       it('should respect maxAdapters limit', async () => {
         await registry.loadBuiltinAdapters();
-        const beforeCount = registry.getAllAdapters().length;
+        const _beforeCount = registry.getAllAdapters().length;
 
         registry.clear();
         await registry.loadAdaptersFromDirectory('builtin', { maxAdapters: 1 });

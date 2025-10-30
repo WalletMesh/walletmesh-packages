@@ -1,7 +1,13 @@
 /**
  * Persistence configuration for the store
  *
- * Handles session persistence with proper serialization of Maps and Sets
+ * Handles session persistence with proper serialization of Maps and Sets.
+ *
+ * IMPORTANT: Provider instances are NOT persisted to prevent cross-origin errors.
+ * - Provider instances contain references to Window objects (popup, iframe)
+ * - These references cannot cross the cross-origin boundary
+ * - Attempting to serialize them causes SecurityError in Immer/Zustand
+ * - Provider instances are recreated from adapter reconstruction data on page reload
  *
  * @module state/persistConfig
  */
@@ -41,9 +47,12 @@ export function processRehydratedSessions(sessions: Map<string, SessionState>): 
     if (validateRehydratedSession(session)) {
       // Reset status to disconnected - will be updated when connection is re-established
       session.status = 'disconnected';
-      // Clear the provider instance as it can't be serialized
-      // Provider instance will be recreated when connection is re-established
+
+      // Ensure provider instance is null (should already be from partialize, but double-check)
+      // Provider instances contain Window references that cause cross-origin errors
+      // They are recreated by adapters during reconnection from adapterReconstruction data
       (session.provider as { instance: BlockchainProvider | null }).instance = null;
+
       validSessions.set(sessionId, session);
     }
   }

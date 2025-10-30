@@ -129,7 +129,7 @@ export function DiscoveryProtocolDemo() {
   });
 
   // Refs for cleanup - now supporting multiple responders
-  const respondersRef = useRef<Map<string, any>>(new Map());
+  const respondersRef = useRef<Map<string, DiscoveryResponder>>(new Map());
   const eventTargetsRef = useRef<Map<string, MockEventTarget>>(new Map());
 
   const { client } = useWalletMeshContext();

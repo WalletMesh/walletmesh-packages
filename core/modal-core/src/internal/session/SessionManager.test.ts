@@ -1,10 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type {
-  ChainSessionInfo,
-  CreateSessionParams,
-  SessionState,
-  SessionStatus,
-} from '../../api/types/sessionState.js';
+import type { ChainSessionInfo, CreateSessionParams, SessionState } from '../../api/types/sessionState.js';
 import {
   createMockEvmProvider,
   createMockSolanaProvider,
@@ -21,9 +16,7 @@ installCustomMatchers();
 const createMockProvider = (chainType: ChainType = ChainType.Evm) => {
   if (chainType === ChainType.Evm) {
     return createMockEvmProvider({
-      // biome-ignore lint/style/useNamingConvention: EIP-3326 RPC method name
       wallet_switchEthereumChain: null,
-      // biome-ignore lint/style/useNamingConvention: EIP-1474 RPC method name
       eth_chainId: '0x1',
     });
   }
@@ -904,7 +897,7 @@ describe('SessionManager', () => {
       const session1 = await sessionManager.createSession(params);
 
       // Create new session for different chain
-      const newSession = await sessionManager.switchChain(session1.sessionId, 'mainnet-beta');
+      const _newSession = await sessionManager.switchChain(session1.sessionId, 'mainnet-beta');
 
       // Get the original session - it should be disconnected
       const originalSession = sessionManager.getSession(session1.sessionId);

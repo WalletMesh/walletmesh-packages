@@ -16,6 +16,7 @@ describe('AllowAskDenyManager', () => {
   const mockSession: SessionData = {
     id: 'test-session',
     origin: 'test-origin',
+    createdAt: Date.now(),
   };
   const mockContext: RouterContext = {
     session: mockSession,

@@ -49,14 +49,14 @@ vi.mock('../../state/store.js', () => ({
 describe('Discovery Performance Tests (Working)', () => {
   let mockLogger: ReturnType<typeof createMockLogger>;
   let mockRegistry: ReturnType<typeof createMockRegistry>;
-  let mockInitiator: MockDiscoveryInitiator;
+  let _mockInitiator: MockDiscoveryInitiator;
 
   beforeEach(async () => {
     mockLogger = createMockLogger();
     mockRegistry = createMockRegistry();
     vi.useFakeTimers();
 
-    ({ mockInitiator } = await setupDiscoveryInitiatorMock({
+    ({ _mockInitiator } = await setupDiscoveryInitiatorMock({
       on: vi.fn(),
       off: vi.fn(),
       removeAllListeners: vi.fn(),

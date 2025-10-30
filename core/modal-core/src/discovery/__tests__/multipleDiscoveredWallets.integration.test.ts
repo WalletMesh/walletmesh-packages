@@ -70,7 +70,7 @@ vi.mock('../../api/transports/transports.js', () => ({
 
 describe('Multiple Discovered Wallets Integration', () => {
   let registry: WalletRegistry;
-  let logger: import('../../internal/core/logger/logger.js').Logger;
+  let _logger: import('../../internal/core/logger/logger.js').Logger;
 
   // Mock multiple wallet discovery responses
   const mockWalletResponse1: QualifiedResponder = {
@@ -190,7 +190,7 @@ describe('Multiple Discovered Wallets Integration', () => {
     // Create fresh instances
     registry = new WalletRegistry();
     const services = createComponentServices('DiscoveryTest');
-    logger = services.logger;
+    _logger = services.logger;
   });
 
   afterEach(() => {

@@ -207,14 +207,18 @@ export type ChainPermissions = Record<ChainId, string[]>;
 
 /**
  * Session data structure representing an active wallet connection.
- * Contains metadata about the session including its unique identifier
- * and the origin that initiated the connection.
+ * Contains metadata about the session including its unique identifier,
+ * the origin that initiated the connection, and approved permissions.
  */
 export interface SessionData {
   /** Unique session identifier */
   id: string;
   /** Origin of the session request (e.g., "https://app.example.com") */
   origin: string;
+  /** Approved permissions for this session (persisted across page refreshes) */
+  permissions?: ChainPermissions;
+  /** Timestamp when the session was created (milliseconds since epoch) */
+  createdAt: number;
 }
 
 /**
@@ -330,6 +334,16 @@ export interface RouterEventMap extends JSONRPCEventMap {
   };
 
   /**
+   * Emitted when a session is successfully restored via reconnect
+   * @property sessionId - The session ID that was restored
+   * @property permissions - Current permissions for the restored session
+   */
+  'connection:restored': {
+    sessionId: string;
+    permissions: HumanReadableChainPermissions;
+  };
+
+  /**
    * Emitted when a wallet's availability changes (added or removed)
    * @property chainId - The chain ID of the wallet whose availability changed
    * @property available - Whether the wallet is now available (true) or unavailable (false)
@@ -423,7 +437,7 @@ export interface RouterMethodMap extends JSONRPCMethodMap {
       timestamp?: number;
       [key: string]: unknown;
     };
-    result: void;
+    result: undefined;
   };
 
   /**

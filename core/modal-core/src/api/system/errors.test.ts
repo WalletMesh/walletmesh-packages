@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // Import the new test utilities
 import { createTestModalError, expectModalError } from '../../internal/testing/utils/errorTestUtils.js';
 import { createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
-import { ERROR_CODES, isModalError, ModalErrorImpl } from '../system/errors.js';
+import { ERROR_CODES, isModalError } from '../system/errors.js';
 // Import ErrorFactory directly from internal to bypass mocks
 import { ErrorFactory as InternalErrorFactory } from '../../internal/core/errors/errorFactory.js';
 

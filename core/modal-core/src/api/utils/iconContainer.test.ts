@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   type CreateIconContainerOptions,
-  type IconContainerConfig,
-  type LoadingStateConfig,
-  type NormalizedIconOptions,
   createIconAccessibilityAttributes,
   createIconContainerConfig,
   getIconContainerStyles,

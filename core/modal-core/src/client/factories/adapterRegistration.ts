@@ -36,10 +36,10 @@ export function registerBuiltinAdapters(
   // Apply wallet filters
   const adaptersToRegister = applyWalletFilters(defaultAdapters, config, logger);
 
-  // Register the filtered adapters
+  // Register the filtered adapters as built-in
   for (const adapter of adaptersToRegister) {
-    registry.register(adapter);
-    logger.debug('Registered adapter', {
+    registry.registerBuiltIn(adapter);
+    logger.debug('Registered built-in adapter', {
       id: adapter.id,
       name: adapter.metadata.name,
     });

@@ -114,11 +114,12 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    * @returns Cleanup function to remove the handler
    */
   onNotification(method: string, handler: (params: unknown) => void): () => void {
-    if (!this.notificationHandlers.has(method)) {
-      this.notificationHandlers.set(method, new Set());
+    let handlers = this.notificationHandlers.get(method);
+    if (!handlers) {
+      handlers = new Set();
+      this.notificationHandlers.set(method, handlers);
     }
 
-    const handlers = this.notificationHandlers.get(method)!;
     handlers.add(handler);
 
     return () => {
@@ -163,6 +164,68 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     const result = await this.callMethod('wm_connect', { permissions }, timeout);
     this._sessionId = result.sessionId;
     return result;
+  }
+
+  /**
+   * Reconnect to an existing session.
+   *
+   * Used to restore a previous session after page refresh or browser restart.
+   * The session must still be valid on the wallet side.
+   *
+   * @param sessionId - The session ID to reconnect to
+   * @param timeout - Optional timeout in milliseconds. If the request takes longer,
+   *                 it will be cancelled and throw a TimeoutError
+   * @returns Reconnection result with status and current permissions
+   * @throws {RouterError} With code 'invalidSession' if session is invalid or expired
+   * @throws {TimeoutError} If the request times out
+   * @see {@link RouterMethodMap['wm_reconnect']} for detailed request/response types
+   *
+   * @example
+   * ```typescript
+   * // Load saved session ID from storage
+   * const savedSessionId = localStorage.getItem('walletSessionId');
+   * if (savedSessionId) {
+   *   try {
+   *     const result = await provider.reconnect(savedSessionId);
+   *     if (result.status) {
+   *       console.log('Reconnected with permissions:', result.permissions);
+   *     }
+   *   } catch (error) {
+   *     console.error('Reconnection failed:', error);
+   *     localStorage.removeItem('walletSessionId');
+   *   }
+   * }
+   * ```
+   */
+  async reconnect(
+    sessionId: string,
+    timeout?: number,
+  ): Promise<{ status: boolean; permissions: HumanReadableChainPermissions }> {
+    if (!sessionId) {
+      throw new Error('Session ID is required for reconnection');
+    }
+
+    // Store the session ID for future operations
+    this._sessionId = sessionId;
+
+    try {
+      // Call the internal wm_reconnect method
+      const result = await this.callMethod('wm_reconnect', { sessionId }, timeout);
+
+      // Emit connection restored event if successful
+      if (result.status) {
+        this.emit('connection:restored', {
+          sessionId,
+          permissions: result.permissions,
+        });
+      }
+
+      return result;
+    } catch (error) {
+      // Clear invalid session ID
+      this._sessionId = undefined;
+      throw error;
+    }
   }
 
   /**

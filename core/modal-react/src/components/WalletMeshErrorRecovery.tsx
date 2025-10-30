@@ -291,30 +291,6 @@ export function WalletMeshErrorRecovery({
     }
   }, [error, modalError.category, onErrorTracked]);
 
-  // Auto-retry logic for wait_and_retry strategy
-  useEffect(() => {
-    if (!enableAutoRetry) return;
-    if (modalError.recoveryStrategy !== 'wait_and_retry') return;
-    if (retryCount >= (modalError.maxRetries || maxAutoRetries)) return;
-
-    const retryDelay = modalError.retryDelay || 5000;
-    let timeLeft = retryDelay / 1000;
-
-    setCountdown(timeLeft);
-
-    const countdownTimer = setInterval(() => {
-      timeLeft -= 1;
-      setCountdown(timeLeft);
-
-      if (timeLeft <= 0) {
-        clearInterval(countdownTimer);
-        handleRetry();
-      }
-    }, 1000);
-
-    return () => clearInterval(countdownTimer);
-  }, [modalError, retryCount, enableAutoRetry, maxAutoRetries]);
-
   // Handle retry action
   const handleRetry = useCallback(async () => {
     setIsRetrying(true);
@@ -340,6 +316,30 @@ export function WalletMeshErrorRecovery({
       setCountdown(null);
     }
   }, [onRetry, resetError, onActionTaken]);
+
+  // Auto-retry logic for wait_and_retry strategy
+  useEffect(() => {
+    if (!enableAutoRetry) return;
+    if (modalError.recoveryStrategy !== 'wait_and_retry') return;
+    if (retryCount >= (modalError.maxRetries || maxAutoRetries)) return;
+
+    const retryDelay = modalError.retryDelay || 5000;
+    let timeLeft = retryDelay / 1000;
+
+    setCountdown(timeLeft);
+
+    const countdownTimer = setInterval(() => {
+      timeLeft -= 1;
+      setCountdown(timeLeft);
+
+      if (timeLeft <= 0) {
+        clearInterval(countdownTimer);
+        handleRetry();
+      }
+    }, 1000);
+
+    return () => clearInterval(countdownTimer);
+  }, [modalError, retryCount, enableAutoRetry, maxAutoRetries, handleRetry]);
 
   // Handle disconnect action
   const handleDisconnect = useCallback(async () => {

@@ -23,20 +23,17 @@ import {
   createMockRegistry,
   createTestEnvironment,
   createTestStore,
-  createTypedMock,
   installCustomMatchers,
 } from '../../testing/index.js';
 // Note: Known Vitest issue with frozen objects from Zustand causing
 // "Cannot add property expected, object is not extensible" errors. This is a test
 // framework limitation, not a code issue. All test logic passes correctly.
 import { ChainType } from '../../types.js';
-import type { ModalController as ModalControllerType } from '../../types.js';
 // import type { FrameworkAdapter } from '../../types.js'; // Framework adapters removed
 import type { WalletMeshClient } from '../client/WalletMeshClient.js';
 import { ErrorFactory } from '../core/errors/errorFactory.js';
 import type { ErrorHandler } from '../core/errors/errorHandler.js';
 import type { Logger } from '../core/logger/logger.js';
-import type { WalletRegistry } from '../registries/wallets/WalletRegistry.js';
 import { ModalController } from './controller.js';
 
 // Install domain-specific matchers

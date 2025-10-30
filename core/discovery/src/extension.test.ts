@@ -1,15 +1,67 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { ResponderInfo } from './types/capabilities.js';
 import type { SecurityPolicy } from './types/security.js';
 import { setupFakeTimers, cleanupFakeTimers } from './testing/timingHelpers.js';
 
 describe('extension module exports', () => {
+  // Set up chrome mock for ContentScriptRelay tests
+  let chromeCleanup: (() => void) | null = null;
+
   beforeEach(() => {
     setupFakeTimers();
+
+    // Set up chrome mock for tests that create ContentScriptRelay
+    const mockPort = {
+      name: 'walletmesh-discovery',
+      onDisconnect: { addListener: vi.fn(), removeListener: vi.fn() },
+      onMessage: { addListener: vi.fn(), removeListener: vi.fn() },
+      postMessage: vi.fn(),
+      disconnect: vi.fn(),
+    };
+
+    const mockChrome = {
+      runtime: {
+        id: 'test-extension-id',
+        sendMessage: vi.fn(() => Promise.resolve(undefined)),
+        connect: vi.fn(() => mockPort),
+        onMessage: { addListener: vi.fn(), removeListener: vi.fn() },
+      },
+    };
+
+    const mockWindow = {
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+      location: { origin: 'https://example.com' },
+    };
+
+    // @ts-expect-error - Setting up globals for testing
+    global.chrome = mockChrome;
+    // @ts-expect-error - Setting up globals for testing
+    globalThis.chrome = mockChrome;
+    // @ts-expect-error - Setting up globals for testing
+    global.window = mockWindow;
+    // @ts-expect-error - Setting up globals for testing
+    globalThis.window = mockWindow;
+
+    chromeCleanup = () => {
+      // @ts-expect-error - Cleaning up globals
+      global.chrome = undefined;
+      // @ts-expect-error - Cleaning up globals
+      globalThis.chrome = undefined;
+      // @ts-expect-error - Cleaning up globals
+      global.window = undefined;
+      // @ts-expect-error - Cleaning up globals
+      globalThis.window = undefined;
+    };
   });
 
   afterEach(() => {
     cleanupFakeTimers();
+    if (chromeCleanup) {
+      chromeCleanup();
+      chromeCleanup = null;
+    }
   });
 
   it('should export ContentScriptRelay from content module', async () => {

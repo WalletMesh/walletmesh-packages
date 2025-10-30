@@ -12,11 +12,16 @@ import type { FeeOptions, TxExecutionOptions } from '@aztec/entrypoints/interfac
 import type { ExecutionPayload } from '@aztec/entrypoints/payload';
 import type { AztecSendOptions } from '../../types.js';
 import { createLogger } from '@aztec/foundation/log';
-import { FunctionType } from '@aztec/stdlib/abi';
+import { type AbiDecoded, FunctionType } from '@aztec/stdlib/abi';
 import { GasSettings } from '@aztec/stdlib/gas';
-import type { TxExecutionRequest, TxReceipt, TxSimulationResult } from '@aztec/stdlib/tx';
+import type {
+  TxExecutionRequest,
+  TxReceipt,
+  TxSimulationResult,
+  UtilitySimulationResult,
+} from '@aztec/stdlib/tx';
 import { JSONRPCError } from '@walletmesh/jsonrpc';
-import type { AztecWalletMethodMap } from '../../types.js';
+import type { AztecWalletMethodMap, UnifiedSimulationResult } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
 import { notifyTransactionStatus } from './transactionStatusNotifications.js';
 
@@ -113,8 +118,8 @@ export function createContractInteractionHandlers() {
     }
 
     if (sendOptions.txNonce !== undefined) {
-      // txNonce is unknown, cast appropriately
-      txOpts.txNonce = sendOptions.txNonce as any;
+      // txNonce is unknown, cast to Fr type
+      txOpts.txNonce = sendOptions.txNonce as Fr;
     }
 
     return txOpts;
@@ -178,28 +183,77 @@ export function createContractInteractionHandlers() {
     ctx: AztecHandlerContext,
     executionPayload: ExecutionPayload,
     txExecutionRequest?: TxExecutionRequest,
-  ): Promise<TxSimulationResult> {
+  ): Promise<UnifiedSimulationResult> {
     try {
       // Check if this is a utility function (view/pure function)
       if (isUtilityFunction(executionPayload)) {
-        logger.debug('Detected utility function - cannot simulate as transaction');
-        // Utility functions are read-only and should not be simulated as transactions.
-        // Throw an error to cause fallback to the interaction's native simulate() method.
-        throw new Error(
-          'Utility functions (view/pure) cannot be simulated as transactions. ' +
-            'Use the interaction\'s native simulate() method instead.',
-        );
+        logger.debug('Detected utility function - simulating as utility');
+
+        // Extract function details from the execution payload
+        const call = executionPayload.calls?.[0];
+        if (!call || !call.name || !call.to || !call.args) {
+          throw new Error(
+            'Invalid execution payload for utility function: missing required fields (name, to, or args)',
+          );
+        }
+
+        // Simulate the utility function
+        const functionName = call.name;
+        const args = call.args as unknown[];
+        const to = call.to as AztecAddress;
+        const authWits = executionPayload.authWitnesses as unknown[] | undefined;
+        const from = ctx.wallet.getAddress();
+
+        logger.debug(`Simulating utility function: ${functionName}`);
+        const simStartTime = Date.now();
+        // Cast to unknown then to the expected type to handle extended wallet interface
+        const utilityResult: UtilitySimulationResult = await (
+          ctx.wallet as unknown as {
+            simulateUtility: (
+              functionName: string,
+              args: unknown[],
+              to: AztecAddress,
+              authWits?: unknown[],
+              from?: AztecAddress,
+            ) => Promise<UtilitySimulationResult>;
+          }
+        ).simulateUtility(functionName, args, to, authWits, from);
+        logger.debug(`Utility simulation completed in ${Date.now() - simStartTime}ms`);
+
+        // Wrap in unified result format
+        return {
+          simulationType: 'utility',
+          decodedResult: utilityResult.result,
+          ...(utilityResult.stats && { stats: utilityResult.stats }),
+          originalResult: utilityResult,
+        };
       }
 
+      // It's a transaction - simulate normally
       const txRequest = txExecutionRequest || (await createTxExecutionRequest(ctx, executionPayload));
-      // Execute the transaction using the standard flow
       logger.debug('Starting transaction simulation...');
       const simStartTime = Date.now();
-      const simulationResult = await ctx.wallet.simulateTx(txRequest, true);
+      const txResult: TxSimulationResult = await ctx.wallet.simulateTx(txRequest, true);
       logger.debug(`Transaction simulation completed in ${Date.now() - simStartTime}ms`);
-      return simulationResult;
+
+      // Extract decoded return values from the transaction simulation
+      let decodedResult: unknown;
+      try {
+        const privateReturns = txResult.getPrivateReturnValues();
+        decodedResult = privateReturns;
+      } catch (error) {
+        logger.debug('Could not extract private return values:', error);
+      }
+
+      // Wrap in unified result format
+      return {
+        simulationType: 'transaction',
+        ...(decodedResult !== undefined && { decodedResult: decodedResult as AbiDecoded }),
+        ...(txResult.stats && { stats: txResult.stats }),
+        originalResult: txResult,
+      };
     } catch (error) {
-      logger.error('Transaction simulation failed:', error);
+      logger.error('Simulation failed:', error);
       throw error;
     }
   }
@@ -263,7 +317,9 @@ export function createContractInteractionHandlers() {
       await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
 
       const proveStartTime = Date.now();
-      const provingResult = await ctx.wallet.proveTx(txRequest, simulationResult.privateExecutionResult);
+      // Extract TxSimulationResult from unified result
+      const txSimResult = simulationResult.originalResult as TxSimulationResult;
+      const provingResult = await ctx.wallet.proveTx(txRequest, txSimResult.privateExecutionResult);
       const provingTime = Date.now() - proveStartTime;
       logger.debug(`Transaction proving completed in ${provingTime}ms`);
       logger.debug('Proving result:', provingResult);
@@ -454,7 +510,9 @@ export function createContractInteractionHandlers() {
       await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
 
       const proveStartTime = Date.now();
-      const provingResult = await ctx.wallet.proveTx(txRequest, simulationResult.privateExecutionResult);
+      // Extract TxSimulationResult from unified result
+      const txSimResult = simulationResult.originalResult as TxSimulationResult;
+      const provingResult = await ctx.wallet.proveTx(txRequest, txSimResult.privateExecutionResult);
       const provingTime = Date.now() - proveStartTime;
       logger.debug(
         `Batch transaction proving completed in ${provingTime}ms (single proof for all operations)`,
@@ -576,14 +634,19 @@ export function createContractInteractionHandlers() {
 
     /**
      * Handles the "aztec_wmSimulateTx" JSON-RPC method.
-     * This WalletMesh-specific method takes an {@link ExecutionPayload} and simulates
-     * the transaction, returning the {@link TxSimulationResult}.
+     * This WalletMesh-specific method takes an {@link ExecutionPayload} and simulates it,
+     * automatically detecting whether it's a utility (view/pure) function or a state-changing transaction.
+     *
+     * The result is wrapped in a {@link UnifiedSimulationResult} that provides:
+     * - A convenient `decodedResult` field with the return value
+     * - The original simulation result (`TxSimulationResult` or `UtilitySimulationResult`)
+     * - Metadata indicating which type of simulation was performed
      *
      * @param ctx - The {@link AztecHandlerContext}.
      * @param paramsTuple - A tuple containing the {@link ExecutionPayload}.
      *                      Defined by {@link AztecWalletMethodMap.aztec_wmSimulateTx.params}.
      * @param paramsTuple.0 - The {@link ExecutionPayload} to simulate.
-     * @returns A promise that resolves to the {@link TxSimulationResult}.
+     * @returns A promise that resolves to the {@link UnifiedSimulationResult}.
      *          Type defined by {@link AztecWalletMethodMap.aztec_wmSimulateTx.result}.
      */
     aztec_wmSimulateTx: async (

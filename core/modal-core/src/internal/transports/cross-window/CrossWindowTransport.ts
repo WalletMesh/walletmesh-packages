@@ -43,6 +43,7 @@
  * @internal
  */
 
+import type { TransportContext } from '@walletmesh/jsonrpc';
 import type {
   TransportConfig,
   TransportConnectedEvent,
@@ -116,6 +117,11 @@ export class CrossWindowTransport extends AbstractTransport {
   private isConnecting = false;
   private instanceId: string;
   private isWalletContext = false;
+  /**
+   * Last message origin from MessageEvent (browser-validated)
+   * Used for getMessageContext() to provide trusted origin information
+   */
+  private lastMessageOrigin?: string;
 
   protected override connected = false;
   protected override config: CrossWindowConfig;
@@ -325,6 +331,10 @@ export class CrossWindowTransport extends AbstractTransport {
         return;
       }
 
+      // Capture the browser-validated origin for validation and getLastMessageContext()
+      this.captureOrigin(event.origin);
+      this.lastMessageOrigin = event.origin;
+
       this.log('info', '📨 CrossWindowTransport received message from wallet', {
         instanceId: this.instanceId,
         origin: event.origin,
@@ -341,6 +351,24 @@ export class CrossWindowTransport extends AbstractTransport {
 
       // Handle wrapped messages
       if (messageData?.type === 'walletmesh_message') {
+        // Validate wrapped message origin using shared validation logic (strict mode)
+        const wrappedValidation = this.validateWrappedOrigin(messageData, {
+          requireOriginField: true, // Strict: origin field REQUIRED
+          additionalContext: {
+            targetOrigin: this.targetOrigin,
+            messageType: messageData.type,
+          },
+        });
+
+        if (!wrappedValidation.valid && wrappedValidation.error) {
+          this.log('error', 'Origin validation failed', wrappedValidation.context);
+          this.emit({
+            type: 'error',
+            error: wrappedValidation.error,
+          } as TransportErrorEvent);
+          return; // Reject message
+        }
+
         // Check message ID if specified - use receiveMessageId for filtering
         if (messageData.id && messageData.id !== this.receiveMessageId) {
           this.log('warn', '🚫 FILTERING OUT message with wrong ID', {
@@ -353,6 +381,22 @@ export class CrossWindowTransport extends AbstractTransport {
         }
         messageData = messageData.data;
         this.log('debug', 'Unwrapped walletmesh_message', { data: messageData });
+      }
+
+      // Validate _context.origin using shared validation logic
+      const contextValidation = this.validateOrigin(messageData, {
+        additionalContext: {
+          targetOrigin: this.targetOrigin,
+        },
+      });
+
+      if (!contextValidation.valid && contextValidation.error) {
+        this.log('error', 'Origin validation failed: _context.origin mismatch', contextValidation.context);
+        this.emit({
+          type: 'error',
+          error: contextValidation.error,
+        } as TransportErrorEvent);
+        return; // Reject message
       }
 
       // Check if it's a valid message to process
@@ -550,5 +594,47 @@ export class CrossWindowTransport extends AbstractTransport {
     await this.disconnect();
     this.targetWindow = null;
     super.destroy();
+  }
+
+  /**
+   * Get trusted context information for the most recently received message.
+   * Provides browser-validated origin from MessageEvent.origin, which is
+   * guaranteed to be accurate by the browser's security model.
+   *
+   * @returns TransportContext with browser-validated origin if available
+   *
+   * @example
+   * ```typescript
+   * const context = transport.getLastMessageContext();
+   * if (context) {
+   *   console.log('Message from origin:', context.origin);
+   *   console.log('Browser-validated:', context.trustedSource); // true
+   * }
+   * ```
+   */
+  public getLastMessageContext(): TransportContext | undefined {
+    if (!this.lastMessageOrigin) {
+      return undefined;
+    }
+
+    return {
+      origin: this.lastMessageOrigin,
+      trustedSource: true, // Browser-validated via MessageEvent.origin
+      transportType: 'cross-window',
+    };
+  }
+
+  /**
+   * Get transport type identifier
+   */
+  protected getTransportType(): string {
+    return 'cross-window';
+  }
+
+  /**
+   * Override to indicate this transport uses browser-validated origins
+   */
+  protected override isBrowserValidatedOrigin(): boolean {
+    return true;
   }
 }

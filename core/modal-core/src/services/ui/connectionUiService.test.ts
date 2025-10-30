@@ -2,11 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createMockLogger } from '../../testing/index.js';
 import type { WalletInfo } from '../../types.js';
 import type { ChainService } from '../chain/ChainService.js';
-import {
-  type ConnectButtonState,
-  ConnectionUIService,
-  type ConnectionUIServiceDependencies,
-} from './connectionUiService.js';
+import { ConnectionUIService, type ConnectionUIServiceDependencies } from './connectionUiService.js';
 
 describe('ConnectionUIService', () => {
   let service: ConnectionUIService;
@@ -301,56 +297,6 @@ describe('ConnectionUIService', () => {
   });
 
   describe('Chain Information', () => {
-    describe('getChainName', () => {
-      it('should get chain name from chain service when available', () => {
-        mockChainService.getChain = vi.fn().mockReturnValue({
-          name: 'Custom Chain',
-          icon: 'custom.svg',
-        });
-
-        const name = service.getChainName('custom:123');
-        expect(name).toBe('Custom Chain');
-        expect(mockChainService.getChain).toHaveBeenCalledWith('custom:123');
-      });
-
-      it('should return Ethereum for eip155:1', () => {
-        expect(service.getChainName('eip155:1')).toBe('Ethereum');
-      });
-
-      it('should return Polygon for eip155:137', () => {
-        expect(service.getChainName('eip155:137')).toBe('Polygon');
-      });
-
-      it('should return BSC for eip155:56', () => {
-        expect(service.getChainName('eip155:56')).toBe('BSC');
-      });
-
-      it('should return Solana for mainnet', () => {
-        expect(service.getChainName('solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp')).toBe('Solana');
-      });
-
-      it('should return Aztec Sandbox for aztec:31337', () => {
-        expect(service.getChainName('aztec:31337')).toBe('Aztec Sandbox');
-      });
-
-      it('should return chainId for unknown chains', () => {
-        expect(service.getChainName('unknown:999')).toBe('unknown:999');
-      });
-
-      it('should handle chain service errors gracefully', () => {
-        mockChainService.getChain = vi.fn().mockImplementation(() => {
-          throw new Error('Chain service error');
-        });
-
-        const name = service.getChainName('eip155:1');
-        expect(name).toBe('Ethereum');
-        expect(mockLogger.debug).toHaveBeenCalledWith(
-          'Failed to get chain info from service, falling back to hardcoded names',
-          expect.any(Object),
-        );
-      });
-    });
-
     describe('getChainIcon', () => {
       it('should get chain icon from chain service when available', () => {
         mockChainService.getChain = vi.fn().mockReturnValue({
@@ -391,10 +337,11 @@ describe('ConnectionUIService', () => {
     });
 
     describe('getChainDisplayName', () => {
-      it('should be an alias for getChainName', () => {
-        const name1 = service.getChainName('eip155:1', 'evm');
+      it('should delegate to centralized utility', () => {
+        const name1 = service.getChainDisplayName('eip155:1', 'evm');
         const name2 = service.getChainDisplayName('eip155:1', 'evm');
         expect(name1).toBe(name2);
+        expect(name1).toBe('Ethereum');
       });
     });
   });
@@ -564,9 +511,8 @@ describe('ConnectionUIService', () => {
       const minimalService = new ConnectionUIService(minimalDeps);
       expect(minimalService).toBeInstanceOf(ConnectionUIService);
 
-      // Should still work without chain service
-      const chainName = minimalService.getChainName('eip155:1');
-      expect(chainName).toBe('Ethereum');
+      // Service should work without chain service
+      expect(minimalService.getChainDisplayName('eip155:1', 'evm')).toBe('Ethereum');
     });
   });
 });

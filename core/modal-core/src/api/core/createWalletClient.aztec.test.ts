@@ -5,7 +5,7 @@
  * are configured, matching the behavior of EVM and Solana adapters.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import { createWalletMesh } from './createWalletClient.js';
 import { ChainType } from '../../types.js';
 

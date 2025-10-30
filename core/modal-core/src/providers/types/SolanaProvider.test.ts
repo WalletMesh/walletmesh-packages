@@ -5,16 +5,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createTestEnvironment, installCustomMatchers } from '../../testing/index.js';
 import {
-  type PublicKey,
   type SignAndSendTransactionOptions,
   type SolanaConnectOptions,
-  type SolanaProvider,
   type SolanaProviderState,
   type SolanaSignInInput,
   type SolanaSignInOutput,
   type SolanaTransaction,
   type SolanaWalletCapabilities,
-  type SolanaWalletFeature,
   WalletAccountError,
   WalletConnectionError,
   WalletDisconnectedError,

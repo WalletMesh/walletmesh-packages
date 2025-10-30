@@ -64,33 +64,17 @@ interface StoredSession {
  */
 export class MemorySessionStore implements SessionStore {
   private sessions = new Map<string, StoredSession>();
-  private config: SessionStoreConfig;
-
-  constructor(config: SessionStoreConfig = {}) {
-    this.config = config;
-  }
 
   async set(sessionId: string, data: SessionData): Promise<void> {
-    const expiresAt = this.config.lifetime ? Date.now() + this.config.lifetime : undefined;
-
-    this.sessions.set(sessionId, { data, expiresAt });
+    // Sessions no longer expire automatically
+    this.sessions.set(sessionId, { data, expiresAt: undefined });
   }
 
   async validateAndRefresh(sessionId: string): Promise<SessionData | undefined> {
     const stored = this.sessions.get(sessionId);
     if (!stored) return undefined;
 
-    // Check expiry
-    if (stored.expiresAt && Date.now() > stored.expiresAt) {
-      this.sessions.delete(sessionId);
-      return undefined;
-    }
-
-    // Refresh expiry if configured
-    if (this.config.refreshOnAccess && this.config.lifetime) {
-      stored.expiresAt = Date.now() + this.config.lifetime;
-    }
-
+    // Sessions no longer expire, just return the data
     return stored.data;
   }
 
@@ -100,18 +84,10 @@ export class MemorySessionStore implements SessionStore {
 
   async getAll(): Promise<Map<string, SessionData>> {
     const result = new Map<string, SessionData>();
-    const now = Date.now();
 
+    // Sessions no longer expire, return all sessions
     for (const [id, stored] of this.sessions) {
-      if (!stored.expiresAt || now <= stored.expiresAt) {
-        if (this.config.refreshOnAccess && this.config.lifetime) {
-          stored.expiresAt = now + this.config.lifetime;
-        }
-        result.set(id, stored.data);
-      } else {
-        // Remove expired sessions
-        this.sessions.delete(id);
-      }
+      result.set(id, stored.data);
     }
 
     return result;
@@ -126,17 +102,8 @@ export class MemorySessionStore implements SessionStore {
   }
 
   async cleanExpired(): Promise<number> {
-    let count = 0;
-    const now = Date.now();
-
-    for (const [id, stored] of this.sessions) {
-      if (stored.expiresAt && now > stored.expiresAt) {
-        this.sessions.delete(id);
-        count++;
-      }
-    }
-
-    return count;
+    // Sessions no longer expire automatically
+    return 0;
   }
 }
 
@@ -145,11 +112,6 @@ export class MemorySessionStore implements SessionStore {
  */
 export class LocalStorageSessionStore implements SessionStore {
   private readonly prefix = 'wm_session_';
-  private config: SessionStoreConfig;
-
-  constructor(config: SessionStoreConfig = {}) {
-    this.config = config;
-  }
 
   private checkAvailable(): void {
     if (typeof localStorage === 'undefined') {
@@ -160,9 +122,8 @@ export class LocalStorageSessionStore implements SessionStore {
   async set(sessionId: string, data: SessionData): Promise<void> {
     this.checkAvailable();
 
-    const expiresAt = this.config.lifetime ? Date.now() + this.config.lifetime : undefined;
-
-    const stored: StoredSession = { data, expiresAt };
+    // Sessions no longer expire automatically
+    const stored: StoredSession = { data, expiresAt: undefined };
     localStorage.setItem(this.prefix + sessionId, JSON.stringify(stored));
   }
 
@@ -174,18 +135,7 @@ export class LocalStorageSessionStore implements SessionStore {
 
     const stored: StoredSession = JSON.parse(item);
 
-    // Check expiry
-    if (stored.expiresAt && Date.now() > stored.expiresAt) {
-      localStorage.removeItem(this.prefix + sessionId);
-      return undefined;
-    }
-
-    // Refresh expiry if configured
-    if (this.config.refreshOnAccess && this.config.lifetime) {
-      stored.expiresAt = Date.now() + this.config.lifetime;
-      localStorage.setItem(this.prefix + sessionId, JSON.stringify(stored));
-    }
-
+    // Sessions no longer expire, just return the data
     return stored.data;
   }
 
@@ -197,25 +147,16 @@ export class LocalStorageSessionStore implements SessionStore {
     this.checkAvailable();
 
     const sessions = new Map<string, SessionData>();
-    const now = Date.now();
 
+    // Sessions no longer expire, return all sessions
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key?.startsWith(this.prefix)) {
         const data = localStorage.getItem(key);
         if (data) {
           const stored: StoredSession = JSON.parse(data);
-
-          if (!stored.expiresAt || now <= stored.expiresAt) {
-            const sessionId = key.slice(this.prefix.length);
-
-            if (this.config.refreshOnAccess && this.config.lifetime) {
-              stored.expiresAt = now + this.config.lifetime;
-              localStorage.setItem(key, JSON.stringify(stored));
-            }
-
-            sessions.set(sessionId, stored.data);
-          }
+          const sessionId = key.slice(this.prefix.length);
+          sessions.set(sessionId, stored.data);
         }
       }
     }
@@ -242,35 +183,11 @@ export class LocalStorageSessionStore implements SessionStore {
   }
 
   async cleanExpired(): Promise<number> {
-    this.checkAvailable();
-    let count = 0;
-    const now = Date.now();
-
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key?.startsWith(this.prefix)) {
-        const data = localStorage.getItem(key);
-        if (data) {
-          const stored: StoredSession = JSON.parse(data);
-          if (stored.expiresAt && now > stored.expiresAt) {
-            keysToRemove.push(key);
-            count++;
-          }
-        }
-      }
-    }
-
-    for (const key of keysToRemove) {
-      localStorage.removeItem(key);
-    }
-
-    return count;
+    // Sessions no longer expire automatically
+    return 0;
   }
 }
 
-// Import SessionData type and export a default memory store instance with 24h lifetime
+// Import SessionData type and export a default memory store instance
 import type { SessionData } from './types.js';
-export const defaultStore = new MemorySessionStore({
-  lifetime: 24 * 60 * 60 * 1000, // 24 hours
-});
+export const defaultStore = new MemorySessionStore();

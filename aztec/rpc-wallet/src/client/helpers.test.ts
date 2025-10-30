@@ -1,6 +1,6 @@
-import type { WalletRouterProvider } from '@walletmesh/router'; // Removed SessionData
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type AztecDappWallet, createAztecWallet } from './aztec-dapp-wallet.js';
+import type { AztecRouterProvider } from './aztec-router-provider.js';
 import { ALL_AZTEC_METHODS, connectAztec } from './helpers.js';
 
 // Mock the aztec-dapp-wallet module
@@ -14,12 +14,15 @@ const createMockProvider = () => {
   const on = vi.fn();
   const off = vi.fn();
   const call = vi.fn();
+  const dispose = vi.fn();
   return {
     connect,
     on,
     off,
     call,
-  } as unknown as WalletRouterProvider;
+    dispose,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any as AztecRouterProvider;
 };
 
 describe('helpers', () => {
