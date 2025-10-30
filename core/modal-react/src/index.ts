@@ -410,7 +410,6 @@ export {
 export {
   useConfig,
   type UseConfigReturn,
-  type RefreshWalletsOptions,
 } from './hooks/useConfig.js';
 export {
   useTheme,

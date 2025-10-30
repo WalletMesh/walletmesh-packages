@@ -353,14 +353,7 @@ export function useConnect(): UseConnectReturn {
   }));
 
   const wallets = useStore((state) => {
-    const walletsFromStore = Object.values(state.entities?.wallets || {});
-    console.log('[useConnect] Wallets from store:', {
-      count: walletsFromStore.length,
-      walletIds: walletsFromStore.map((w) => w.id),
-      availableWalletIds: state.meta?.availableWalletIds || [],
-      entities: Object.keys(state.entities?.wallets || {}),
-    });
-    return walletsFromStore;
+    return Object.values(state.entities?.wallets || {});
   });
   const activeSessions = useStore((state) => Object.values(state.entities?.sessions || {}));
 

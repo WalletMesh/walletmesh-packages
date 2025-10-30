@@ -41,11 +41,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AztecTransactionStatusOverlay } from './components/AztecTransactionStatusOverlay.js';
 import { BackgroundTransactionIndicator } from './components/BackgroundTransactionIndicator.js';
 import { WalletMeshModal } from './components/WalletMeshModal.js';
+import { WalletMeshErrorBoundary } from './components/WalletMeshErrorBoundary.js';
 
 import { WalletMeshContext } from './WalletMeshContext.js';
 import { ThemeProvider } from './theme/ThemeContext.js';
 import type { WalletMeshProviderProps } from './types.js';
 import { createComponentLogger } from './utils/logger.js';
+
+// Create logger for this component
+const logger = createComponentLogger('WalletMeshProvider');
 
 /**
  * Provider component for WalletMesh functionality.
@@ -834,37 +838,51 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
           <>
             {/* Sync transaction overlay (blocking, full-screen with auto-dismiss) */}
             {config.transactionOverlay?.enabled !== false && (
-              <AztecTransactionStatusOverlay
-                {...(config.transactionOverlay?.headline && { headline: config.transactionOverlay.headline })}
-                {...(config.transactionOverlay?.description && {
-                  description: config.transactionOverlay.description,
-                })}
-                {...(config.transactionOverlay?.disableNavigationGuard && {
-                  disableNavigationGuard: config.transactionOverlay.disableNavigationGuard,
-                })}
-                {...(config.transactionOverlay?.showBackgroundTransactions && {
-                  showBackgroundTransactions: config.transactionOverlay.showBackgroundTransactions,
-                })}
-                {...(config.transactionOverlay?.allowEscapeKeyClose !== undefined && {
-                  allowEscapeKeyClose: config.transactionOverlay.allowEscapeKeyClose,
-                })}
-                {...(config.transactionOverlay?.disableFocusTrap && {
-                  disableFocusTrap: config.transactionOverlay.disableFocusTrap,
-                })}
-              />
+              <WalletMeshErrorBoundary
+                onError={(error, errorInfo) => {
+                  logger.error('Transaction overlay error', { error, errorInfo });
+                }}
+                fallback={null}
+              >
+                <AztecTransactionStatusOverlay
+                  {...(config.transactionOverlay?.headline && { headline: config.transactionOverlay.headline })}
+                  {...(config.transactionOverlay?.description && {
+                    description: config.transactionOverlay.description,
+                  })}
+                  {...(config.transactionOverlay?.disableNavigationGuard && {
+                    disableNavigationGuard: config.transactionOverlay.disableNavigationGuard,
+                  })}
+                  {...(config.transactionOverlay?.showBackgroundTransactions && {
+                    showBackgroundTransactions: config.transactionOverlay.showBackgroundTransactions,
+                  })}
+                  {...(config.transactionOverlay?.allowEscapeKeyClose !== undefined && {
+                    allowEscapeKeyClose: config.transactionOverlay.allowEscapeKeyClose,
+                  })}
+                  {...(config.transactionOverlay?.disableFocusTrap && {
+                    disableFocusTrap: config.transactionOverlay.disableFocusTrap,
+                  })}
+                />
+              </WalletMeshErrorBoundary>
             )}
 
             {/* Background transaction indicator (non-blocking, floating badge) */}
             {config.backgroundTransactionIndicator?.enabled !== false && (
-              <BackgroundTransactionIndicator
-                position={config.backgroundTransactionIndicator?.position || 'bottom-right'}
-                {...(config.backgroundTransactionIndicator?.showCompleted !== undefined && {
-                  showCompleted: config.backgroundTransactionIndicator.showCompleted,
-                })}
-                {...(config.backgroundTransactionIndicator?.completedDuration && {
-                  completedDuration: config.backgroundTransactionIndicator.completedDuration,
-                })}
-              />
+              <WalletMeshErrorBoundary
+                onError={(error, errorInfo) => {
+                  logger.error('Background transaction indicator error', { error, errorInfo });
+                }}
+                fallback={null}
+              >
+                <BackgroundTransactionIndicator
+                  position={config.backgroundTransactionIndicator?.position || 'bottom-right'}
+                  {...(config.backgroundTransactionIndicator?.showCompleted !== undefined && {
+                    showCompleted: config.backgroundTransactionIndicator.showCompleted,
+                  })}
+                  {...(config.backgroundTransactionIndicator?.completedDuration && {
+                    completedDuration: config.backgroundTransactionIndicator.completedDuration,
+                  })}
+                />
+              </WalletMeshErrorBoundary>
             )}
           </>
         )}

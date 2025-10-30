@@ -362,7 +362,7 @@ export class DiscoveryService {
 
     const normalized: DiscoveryConfig = {
       enabled: config.enabled ?? true,
-      timeout: config.timeout ?? 5000,
+      timeout: config.timeout ?? 1000,
       retryInterval: config.retryInterval ?? 30000,
       maxAttempts: config.maxAttempts ?? 0,
       announce: config.announce ?? true,
@@ -546,20 +546,26 @@ export class DiscoveryService {
 
     this.emit({ type: 'discovery_started' });
 
-    const discoveredWallets = await this.performDiscovery();
-    const walletsWithTransport = this.getWalletsWithTransport();
+    try {
+      const discoveredWallets = await this.performDiscovery();
+      const walletsWithTransport = this.getWalletsWithTransport();
 
-    this.registerDiscoveredWallets(walletsWithTransport);
+      this.registerDiscoveredWallets(walletsWithTransport);
 
-    this.logger.debug('Discovery scan completed via scan()', {
-      discoveredWalletCount: discoveredWallets.length,
-      walletsWithTransport: walletsWithTransport.length,
-    });
+      this.logger.debug('Discovery scan completed via scan()', {
+        discoveredWalletCount: discoveredWallets.length,
+        walletsWithTransport: walletsWithTransport.length,
+      });
 
-    return walletsWithTransport.map((wallet) => ({
-      wallet,
-      adapter: null,
-    }));
+      return walletsWithTransport.map((wallet) => ({
+        wallet,
+        adapter: null,
+      }));
+    } catch (error) {
+      // Emit discovery error event before rethrowing
+      this.emit({ type: 'discovery_error', error: error as Error });
+      throw error;
+    }
   }
 
   /**
@@ -2026,6 +2032,9 @@ export class DiscoveryService {
       return discoveredWallets;
     } catch (error) {
       this.logger.error('Discovery scan failed', error);
+
+      // Emit discovery error event
+      this.emit({ type: 'discovery_error', error: error as Error });
 
       // Update UI state - discovery failed
       try {

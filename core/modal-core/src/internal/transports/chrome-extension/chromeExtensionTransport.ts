@@ -162,6 +162,8 @@ export class ChromeExtensionTransport extends AbstractTransport {
   private ready = false;
   private readyTimeout: ReturnType<typeof setTimeout> | null = null;
   private pendingQueue: unknown[] = [];
+  private connectionResolve: (() => void) | null = null;
+  private connectionReject: ((error: Error) => void) | null = null;
 
   /**
    * Current connection attempt timeout
@@ -280,34 +282,86 @@ export class ChromeExtensionTransport extends AbstractTransport {
                 return;
               }
 
-              // Clear timeout and mark as connected
-              this.clearTimeouts();
-              this.connected = true;
+              // Clear initial connection timeout
+              if (this.connectTimeout) {
+                clearTimeout(this.connectTimeout);
+                this.connectTimeout = null;
+              }
 
-              // Wait for explicit wallet readiness before sending any messages
+              // Store resolve/reject for later use when wallet_ready is received or times out
+              this.connectionResolve = resolve;
+              this.connectionReject = reject;
+
+              // Wait for explicit wallet_ready message before marking as connected
               this.ready = false;
               this.readyTimeout = setTimeout(
                 () => {
-                  (this.logger.warn || console.warn).call(
+                  (this.logger.error || this.logger.warn || console.error).call(
                     this.logger,
-                    'ChromeExtensionTransport: wallet_ready timeout; proceeding without explicit readiness',
+                    'ChromeExtensionTransport: wallet_ready timeout - connection failed',
                   );
-                  this.ready = true;
-                  this.flushQueue();
+
+                  // Clear other timeouts (but not readyTimeout since we're inside it)
+                  if (this.connectTimeout) {
+                    clearTimeout(this.connectTimeout);
+                    this.connectTimeout = null;
+                  }
+                  if (this.reconnectTimer) {
+                    clearTimeout(this.reconnectTimer);
+                    this.reconnectTimer = null;
+                  }
+
+                  // Save and clear connection callbacks
+                  const rejectCallback = this.connectionReject;
+                  this.connectionResolve = null;
+                  this.connectionReject = null;
+
+                  this.connected = false;
+                  this.readyTimeout = null; // Clear readyTimeout reference
+
+                  // Remove event listeners
+                  if (this.port) {
+                    if (this.port.onMessage) {
+                      this.port.onMessage.removeListener(this.handleMessage);
+                    }
+                    if (this.port.onDisconnect) {
+                      this.port.onDisconnect.removeListener(this.handleDisconnect);
+                    }
+                    try {
+                      this.port.disconnect();
+                    } catch (error) {
+                      // Ignore errors on disconnect
+                    }
+                    this.port = null;
+                  }
+
+                  // Create connection timeout error
+                  const error = ErrorFactory.connectionFailed(
+                    'Connection timeout: wallet_ready message not received',
+                    {
+                      transport: 'chrome-extension',
+                      timeout: this.config.timeout,
+                    }
+                  );
+
+                  // Emit error event
+                  this.emit({
+                    type: 'error',
+                    error,
+                  } as TransportEvent);
+
+                  // Reject the connection using the saved callback
+                  if (rejectCallback) {
+                    rejectCallback(error);
+                  }
                 },
-                Math.min(Math.max(this.config.timeout || 5000, 1000), 15000),
+                this.config.timeout,
               );
 
-              // Emit connected event
-              this.emit({
-                type: 'connected',
-              } as TransportEvent);
               (this.logger.info || this.logger.debug || console.info).call(
                 this.logger,
-                'ChromeExtensionTransport: connected',
+                'ChromeExtensionTransport: port established, waiting for wallet_ready message',
               );
-
-              resolve();
             });
           } catch (error) {
             this.clearTimeouts();
@@ -452,12 +506,36 @@ export class ChromeExtensionTransport extends AbstractTransport {
     try {
       const m = message as any;
       if ((m && m.type === 'wallet_ready') || (m && m.jsonrpc === '2.0' && m.method === 'wallet_ready')) {
+        (this.logger.info || this.logger.debug || console.info).call(
+          this.logger,
+          'ChromeExtensionTransport: received wallet_ready, marking as connected',
+        );
+
+        // Mark as ready and connected
         this.ready = true;
+        this.connected = true;
+
+        // Clear the ready timeout
         if (this.readyTimeout) {
           clearTimeout(this.readyTimeout);
           this.readyTimeout = null;
         }
+
+        // Flush any queued messages
         this.flushQueue();
+
+        // Emit connected event
+        this.emit({
+          type: 'connected',
+        } as TransportEvent);
+
+        // Resolve the connection promise if waiting
+        if (this.connectionResolve) {
+          this.connectionResolve();
+          this.connectionResolve = null;
+          this.connectionReject = null;
+        }
+
         return;
       }
       // Detect PXE readiness status; propagate as normal message so providers can subscribe
@@ -518,6 +596,10 @@ export class ChromeExtensionTransport extends AbstractTransport {
       clearTimeout(this.readyTimeout);
       this.readyTimeout = null;
     }
+
+    // Clear connection promise callbacks
+    this.connectionResolve = null;
+    this.connectionReject = null;
   }
 
   private flushQueue(): void {

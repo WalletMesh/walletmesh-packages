@@ -1496,10 +1496,6 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       // Emit event
       // Connection added - state automatically updated via session manager
 
-      // Close modal if it's open after a delay (let user see success)
-      if (this.modal) {
-        setTimeout(() => this.closeModal(), 1500);
-      }
 
       // Record successful connection in health tracking
       const health = this.adapterHealth.get(targetWalletId);
@@ -2209,19 +2205,45 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
    * Open the wallet selection modal.
    *
    * Shows the modal UI for users to select and connect wallets.
+   * Triggers wallet discovery before opening the modal to ensure
+   * wallets are available when the modal is displayed.
    *
-   * @param _options - Optional configuration (reserved for future use)
-   * @returns Promise that resolves when modal is opened
+   * @param options - Optional configuration including targetChainType for contextual discovery
+   * @returns Promise that resolves when discovery completes and modal is opened
    *
    * @example
    * ```typescript
    * // Open modal for wallet selection
    * await client.openModal();
+   *
+   * // Open modal for specific chain type
+   * await client.openModal({ targetChainType: ChainType.Aztec });
    * ```
    *
    * @public
    */
   async openModal(options?: { targetChainType?: ChainType }): Promise<void> {
+    // Trigger wallet discovery before opening modal
+    // This ensures wallets are discovered based on the target chain type
+    this.logger?.debug('Opening modal, starting discovery', {
+      targetChainType: options?.targetChainType
+    });
+
+    try {
+      // Build discovery options - only include chainTypes if targetChainType is specified
+      const discoveryOptions = options?.targetChainType
+        ? { chainTypes: [options.targetChainType] }
+        : {};
+
+      await this.discoverWallets(discoveryOptions);
+      this.logger?.debug('Discovery completed, opening modal UI');
+    } catch (error) {
+      // Log discovery error but still open modal
+      // Wallet discovery errors shouldn't prevent modal from opening
+      this.logger?.warn('Discovery failed, opening modal anyway', { error });
+    }
+
+    // Open modal UI
     if (this.modal) {
       this.modal.open(options);
     }

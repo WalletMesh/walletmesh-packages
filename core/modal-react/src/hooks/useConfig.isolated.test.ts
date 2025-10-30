@@ -168,26 +168,13 @@ describe('useConfig - Isolated Tests', () => {
     });
   });
 
-  describe('Discovery State', () => {
-    it('should expose discovery state', async () => {
-      const { useConfig } = await import('./useConfig.js');
-      const { result } = renderHook(() => useConfig(), { wrapper });
-
-      expect(typeof result.current.isDiscovering).toBe('boolean');
-    });
-
-    it('should provide refreshWallets function', async () => {
-      const { useConfig } = await import('./useConfig.js');
-      const { result } = renderHook(() => useConfig(), { wrapper });
-
-      expect(typeof result.current.refreshWallets).toBe('function');
-    });
-  });
-
   describe('Interface Completeness', () => {
     it('should expose all expected properties', async () => {
       const { useConfig } = await import('./useConfig.js');
       const { result } = renderHook(() => useConfig(), { wrapper });
+
+      // Client
+      expect(result.current).toHaveProperty('client');
 
       // Config properties
       expect(result.current).toHaveProperty('appName');
@@ -208,10 +195,6 @@ describe('useConfig - Isolated Tests', () => {
       expect(result.current).toHaveProperty('walletFilter');
       expect(result.current).toHaveProperty('setWalletFilter');
       expect(result.current).toHaveProperty('clearWalletFilter');
-
-      // Discovery
-      expect(result.current).toHaveProperty('isDiscovering');
-      expect(result.current).toHaveProperty('refreshWallets');
     });
   });
 });

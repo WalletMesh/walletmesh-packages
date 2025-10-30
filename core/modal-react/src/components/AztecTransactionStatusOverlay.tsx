@@ -387,13 +387,15 @@ export function AztecTransactionStatusOverlay({
             {transactionsToShow.map((tx) => {
               const txStatus = tx?.status as TransactionStatus;
               const hash = tx?.txHash;
+              // Convert hash to string if it's an object (e.g., Aztec TxHash)
+              const hashString = hash ? (typeof hash === 'string' ? hash : String(hash)) : null;
               const duration = tx?.startTime ? Date.now() - tx.startTime : 0;
 
               return (
                 <div key={tx?.txStatusId} className={styles['transaction']}>
                   <div className={styles['transactionHeader']}>
                     <span className={styles['transactionHash']}>
-                      {hash ? shorten(hash) : 'Processing...'}
+                      {hashString ? shorten(hashString) : 'Processing...'}
                     </span>
                     <span className={styles['transactionDuration']}>{formatDuration(duration)}</span>
                   </div>

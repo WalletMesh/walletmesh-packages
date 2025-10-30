@@ -749,6 +749,9 @@ describe('WalletMeshClient', () => {
 
       client = new WalletMeshClient(config, createMockRegistry(), createMockLogger());
       client.setModal(mockModal);
+
+      // Mock discoverWallets to prevent hanging
+      vi.spyOn(client, 'discoverWallets').mockResolvedValue([]);
     });
 
     it('should open modal', async () => {

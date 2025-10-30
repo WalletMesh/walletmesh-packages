@@ -16,7 +16,6 @@ import {
 import type { ChainType, WalletInfo } from '../../types.js';
 import { parseWithErrorFactory } from '../../utils/zodHelpers.js';
 import type { LoadingState, ModalView, WalletMeshState } from '../store.js';
-import { getAvailableWallets } from '../store.js';
 
 /**
  * Helper to properly handle immer state mutations
@@ -42,26 +41,9 @@ export const uiActions = {
 
     // Set filter if targetChainType is provided
     if (targetChainType) {
-      // Debug: Log available wallets before filtering
-      const state = store.getState();
-      const availableWallets = getAvailableWallets(state);
-      console.log('[openModal] Target chain type:', targetChainType);
-      console.log('[openModal] Available wallets:', availableWallets);
-      console.log(
-        '[openModal] Wallet chains:',
-        availableWallets.map((w) => ({ id: w.id, chains: w.chains })),
-      );
-
       // Create a filter function for the specified chain type
       const chainFilter = (wallet: WalletInfo) => {
-        const hasChain = wallet.chains?.includes(targetChainType);
-        console.log(
-          `[openModal] Wallet ${wallet.id} has chain ${targetChainType}:`,
-          hasChain,
-          'chains:',
-          wallet.chains,
-        );
-        return hasChain;
+        return wallet.chains?.includes(targetChainType) ?? false;
       };
       uiActions.setWalletFilter(store, chainFilter);
     }

@@ -120,6 +120,14 @@ vi.mock('../../../internal/transports/websocket/WebSocketTransport.js', () => ({
   })),
 }));
 
+// Valid test data that passes schema validation
+const VALID_ICON_DATA_URI = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2ZmNjkwMCIvPjwvc3ZnPg==';
+const VALID_UUID_METAMASK = '550e8400-e29b-41d4-a716-446655440000';
+const VALID_UUID_INJECTED = '550e8400-e29b-41d4-a716-446655440001';
+const VALID_UUID_POPUP = '550e8400-e29b-41d4-a716-446655440002';
+const VALID_UUID_IFRAME = '550e8400-e29b-41d4-a716-446655440003';
+const VALID_UUID_WEBSOCKET = '550e8400-e29b-41d4-a716-446655440004';
+
 describe('Discovery Flow Integration', () => {
   let discoveryService: DiscoveryService;
   let mockDiscoveryInitiator: Partial<DiscoveryInitiator>;
@@ -131,6 +139,14 @@ describe('Discovery Flow Integration', () => {
 
   beforeEach(async () => {
     vi.useFakeTimers();
+
+    // Mock window object for browser environment
+    global.window = {
+      location: { origin: 'https://test.example.com' },
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      postMessage: vi.fn(),
+    } as any;
 
     // Create mock logger
     logger = createMockLogger();
@@ -144,6 +160,12 @@ describe('Discovery Flow Integration', () => {
       hasAdapter: vi.fn().mockReturnValue(false),
       clear: vi.fn(),
       detectAvailableAdapters: vi.fn().mockResolvedValue([]),
+      registerDiscoveredWallet: vi.fn(),
+      getDiscoveredWallet: vi.fn(),
+      getAllDiscoveredWallets: vi.fn().mockReturnValue([]),
+      hasDiscoveredWallet: vi.fn().mockReturnValue(false),
+      removeDiscoveredWallet: vi.fn(),
+      clearDiscoveredWallets: vi.fn(),
     };
 
     mockAdapterRegistry = {
@@ -187,7 +209,10 @@ describe('Discovery Flow Integration', () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    vi.useRealTimers();
     discoveryService?.destroy();
+    // Clean up window mock
+    delete (global as any).window;
   });
 
   describe('Basic Discovery Flow', () => {
@@ -213,11 +238,11 @@ describe('Discovery Flow Integration', () => {
 
       // Mock successful discovery response
       const mockResponder: QualifiedResponder = {
-        responderId: 'metamask-123',
+        responderId: VALID_UUID_METAMASK,
         sessionId: 'session-123',
         rdns: 'io.metamask',
         name: 'MetaMask',
-        icon: 'https://metamask.io/icon.png',
+        icon: VALID_ICON_DATA_URI,
         matched: {
           required: {
             technologies: [{ type: 'evm' as const, interfaces: ['eip1193'] }],
@@ -253,7 +278,7 @@ describe('Discovery Flow Integration', () => {
       expect(wallets[0]).toMatchObject({
         id: 'io.metamask',
         name: 'MetaMask',
-        icon: 'https://metamask.io/icon.png',
+        icon: VALID_ICON_DATA_URI,
       });
 
       // Verify wallet was discovered
@@ -399,11 +424,11 @@ describe('Discovery Flow Integration', () => {
 
       // Mock successful discovery and connection
       const mockResponder: QualifiedResponder = {
-        responderId: 'metamask-123',
+        responderId: VALID_UUID_METAMASK,
         sessionId: 'session-123',
         rdns: 'io.metamask',
         name: 'MetaMask',
-        icon: 'https://metamask.io/icon.png',
+        icon: VALID_ICON_DATA_URI,
         matched: {
           required: {
             technologies: [{ type: 'evm' as const, interfaces: [] }],
@@ -422,8 +447,8 @@ describe('Discovery Flow Integration', () => {
       await discoveryService.scan();
       await vi.advanceTimersByTimeAsync(200);
 
-      // Connect to discovered wallet to create session
-      const connection = await discoveryService.connectToWallet('metamask-123', {
+      // Connect to discovered wallet to create session using the responderId
+      const connection = await discoveryService.connectToWallet(VALID_UUID_METAMASK, {
         requestedChains: ['eip155:1'],
       });
 
@@ -433,13 +458,13 @@ describe('Discovery Flow Integration', () => {
       // Session should be created with security
       const session = {
         origin: 'https://test.example.com',
-        walletId: 'metamask-123',
+        walletId: VALID_UUID_METAMASK,
         sessionId: connection.sessionId,
       };
 
       expect(session).toBeDefined();
       expect(session.origin).toBe('https://test.example.com');
-      expect(session.walletId).toBe('metamask-123');
+      expect(session.walletId).toBe(VALID_UUID_METAMASK);
     });
   });
 
@@ -475,11 +500,11 @@ describe('Discovery Flow Integration', () => {
 
       // Mock discovery response
       const mockResponder: QualifiedResponder = {
-        responderId: 'metamask-123',
+        responderId: VALID_UUID_METAMASK,
         sessionId: 'session-123',
         rdns: 'io.metamask',
         name: 'MetaMask',
-        icon: 'https://metamask.io/icon.png',
+        icon: VALID_ICON_DATA_URI,
         matched: {
           required: {
             technologies: [{ type: 'evm' as const, interfaces: [] }],
@@ -516,11 +541,11 @@ describe('Discovery Flow Integration', () => {
 
       // Mock WebSocket transport responder
       const mockResponder: QualifiedResponder = {
-        responderId: 'websocket-wallet-123',
+        responderId: VALID_UUID_WEBSOCKET,
         sessionId: 'session-123',
         rdns: 'com.wallet.websocket',
         name: 'WebSocket Wallet',
-        icon: 'https://wallet.com/icon.png',
+        icon: VALID_ICON_DATA_URI,
         matched: {
           required: {
             technologies: [{ type: 'evm' as const, interfaces: [] }],
@@ -557,11 +582,11 @@ describe('Discovery Flow Integration', () => {
       // Mock multiple responders
       const mockResponders: QualifiedResponder[] = [
         {
-          responderId: 'injected-wallet-123',
+          responderId: VALID_UUID_INJECTED,
           sessionId: 'session-123',
           rdns: 'com.injected',
           name: 'Injected Wallet',
-          icon: '',
+          icon: VALID_ICON_DATA_URI,
           matched: {
             required: {
               technologies: [{ type: 'evm' as const, interfaces: [] }],
@@ -570,11 +595,11 @@ describe('Discovery Flow Integration', () => {
           },
         },
         {
-          responderId: 'popup-wallet-123',
+          responderId: VALID_UUID_POPUP,
           sessionId: 'session-123',
           rdns: 'com.popup',
           name: 'Popup Wallet',
-          icon: '',
+          icon: VALID_ICON_DATA_URI,
           matched: {
             required: {
               technologies: [{ type: 'evm' as const, interfaces: [] }],
@@ -583,11 +608,11 @@ describe('Discovery Flow Integration', () => {
           },
         },
         {
-          responderId: 'iframe-wallet-123',
+          responderId: VALID_UUID_IFRAME,
           sessionId: 'session-123',
           rdns: 'com.iframe',
           name: 'IFrame Wallet',
-          icon: '',
+          icon: VALID_ICON_DATA_URI,
           matched: {
             required: {
               technologies: [{ type: 'evm' as const, interfaces: [] }],
@@ -635,11 +660,11 @@ describe('Discovery Flow Integration', () => {
 
       // Mock a wallet with session
       const mockResponder: QualifiedResponder = {
-        responderId: 'metamask-123',
+        responderId: VALID_UUID_METAMASK,
         sessionId: 'session-123',
         rdns: 'io.metamask',
         name: 'MetaMask',
-        icon: '',
+        icon: VALID_ICON_DATA_URI,
         matched: {
           required: {
             technologies: [{ type: 'evm' as const, interfaces: [] }],
@@ -656,8 +681,8 @@ describe('Discovery Flow Integration', () => {
 
       await discoveryService.scan();
 
-      // Connect to create session
-      const connection = await discoveryService.connectToWallet('metamask-123');
+      // Connect to create session using the responderId
+      const connection = await discoveryService.connectToWallet(VALID_UUID_METAMASK);
       expect(connection.sessionId).toBe('session-123');
 
       // Verify session was created and can be recovered

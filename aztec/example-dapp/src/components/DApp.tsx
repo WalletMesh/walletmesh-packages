@@ -14,10 +14,9 @@ import {
   useAztecSimulation,
   useAztecTransaction,
   useAztecWallet,
-  useConfig,
 } from '@walletmesh/modal-react/aztec';
 import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '../contexts/ToastContext.js';
 
 /**
@@ -32,9 +31,6 @@ const DApp: React.FC = () => {
   // Use modal-react hooks for wallet management
   const { aztecWallet } = useAztecWallet();
   const { address } = useAccount();
-
-  // Trigger wallet discovery on mount to find browser extensions
-  const { refreshWallets, wallets, isDiscovering } = useConfig();
 
   // Use simulation hook for contract calls
   const { simulate: simulateInteraction } = useAztecSimulation();
@@ -98,58 +94,8 @@ const DApp: React.FC = () => {
     activeTransaction?.status === 'sending';
   const hasBackgroundTransactions = backgroundTransactions.length > 0;
 
-  // Track if we've already attempted discovery to prevent infinite loops
-  const hasDiscoveredRef = useRef(false);
-
-  // Trigger discovery to find extension wallets (e.g., aztec-browser-wallet-poc)
-  // This combines with the static AztecExampleWalletAdapter from config
-  useEffect(() => {
-    // Only run discovery once per component lifetime to prevent infinite loops
-    if (hasDiscoveredRef.current) {
-      return;
-    }
-
-    hasDiscoveredRef.current = true;
-    console.log('[DApp] 🔍 Starting wallet discovery...');
-
-    refreshWallets()
-      .then(() => {
-        console.log('[DApp] ✅ Wallet discovery completed');
-      })
-      .catch((err) => {
-        console.error('[DApp] ❌ Wallet discovery failed:', err);
-        // Reset flag on error to allow retry on next mount
-        hasDiscoveredRef.current = false;
-      });
-  }, [refreshWallets]);
-
-  // Debug logging for discovered wallets with detailed information
-  useEffect(() => {
-    console.log('[DApp] 📊 Wallet list updated:', {
-      count: wallets.length,
-      isDiscovering,
-    });
-
-    if (wallets.length > 0) {
-      console.log('[DApp] 💼 Available wallets:');
-      wallets.forEach((wallet, index) => {
-        console.log(`  ${index + 1}. ${wallet.name}`, {
-          id: wallet.id,
-          chains: wallet.chains,
-          features: wallet.features,
-          icon: wallet.icon?.substring(0, 50) + '...',
-          // Check wallet object structure
-          hasTransportConfig: 'transportConfig' in wallet,
-          transportType: (wallet as any).transportConfig?.type,
-          extensionId: (wallet as any).transportConfig?.extensionId,
-          // Full wallet object for debugging (be careful with large objects)
-          _fullWallet: wallet,
-        });
-      });
-    } else if (!isDiscovering) {
-      console.log('[DApp] ⚠️ No wallets available');
-    }
-  }, [wallets, isDiscovering]);
+  // Wallet discovery happens automatically when user clicks connect button
+  // The modal handles displaying available wallets - no need to track them here
 
   const simulateUsingExternalRpc = useCallback(
     async <T,>(

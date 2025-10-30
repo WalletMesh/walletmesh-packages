@@ -42,7 +42,7 @@ export function AdvancedWalletManagement() {
 
   // Advanced wallet selection (using new simplified API)
   const { wallet: selectedWallet } = useAccount();
-  const { wallets, refreshWallets } = useConfig();
+  const { wallets } = useConfig();
 
   // Helper function to get wallet availability (simplified version)
   const walletAvailability = wallets.map((wallet) => ({
@@ -55,10 +55,9 @@ export function AdvancedWalletManagement() {
   const getRecommendedWallet = () =>
     walletAvailability.find((w) => w.isAvailable && w.supportsCurrentChain)?.wallet;
 
-  // Refresh wallets function
+  // Refresh wallets function (functionality removed - now shows current state)
   const refreshAvailability = () => {
-    refreshWallets();
-    addLog('🔄 Refreshed wallet availability');
+    addLog('ℹ️ Showing current wallet availability (auto-refresh removed)');
   };
 
   // Session management (simplified - using local state instead of removed useWalletSessions)

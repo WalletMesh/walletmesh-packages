@@ -189,6 +189,9 @@ async function createIframeWithCspDetection(options: IframeCreationOptions): Pro
     const iframe = document.createElement('iframe');
 
     // Apply sandbox restrictions (allow-same-origin needed for srcdoc)
+    // Note: This intentionally omits 'allow-scripts' for security.
+    // Browser console may show "Blocked script execution" warnings during iframe initialization,
+    // which are expected and benign - they indicate the security sandbox is working correctly.
     iframe.sandbox = 'allow-same-origin';
 
     // Set size and styling

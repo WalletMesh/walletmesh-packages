@@ -188,8 +188,15 @@ describe('ChromeExtensionTransport', () => {
       ...transportTestUtils.config,
     });
 
-    // Connect - queueMicrotask is mocked to execute immediately
-    await transport.connect();
+    // Start connection
+    const connectPromise = transport.connect();
+
+    // Send wallet_ready to complete connection
+    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
+    // Wait for connection to complete
+    await connectPromise;
 
     // biome-ignore lint/suspicious/noExplicitAny: Accessing private property for testing
     expect((transport as any).connected).toBe(true);
@@ -205,8 +212,15 @@ describe('ChromeExtensionTransport', () => {
     // biome-ignore lint/suspicious/noExplicitAny: Spying on private method for testing
     const emitSpy = vi.spyOn(transport as any, 'emit');
 
-    // Connect - queueMicrotask is mocked to execute immediately
-    await transport.connect();
+    // Start connection
+    const connectPromise = transport.connect();
+
+    // Send wallet_ready to complete connection
+    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
+    // Wait for connection to complete
+    await connectPromise;
 
     expect(emitSpy).toHaveBeenCalledWith({
       type: 'connected',
@@ -261,6 +275,10 @@ describe('ChromeExtensionTransport', () => {
 
     // Advance through AbstractTransport's retry attempts (3 retries * 1000ms each)
     await vi.advanceTimersByTimeAsync(5000);
+
+    // After retries succeed and port is created, send wallet_ready to complete connection
+    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+    mockPort.simulateMessage({ type: 'wallet_ready' });
 
     await connectPromise;
 
@@ -335,20 +353,21 @@ describe('ChromeExtensionTransport', () => {
       ...transportTestUtils.config,
     });
 
-    // Connect - queueMicrotask is mocked to execute immediately
-    await transport.connect();
+    // Start connection
+    const connectPromise = transport.connect();
 
+    // Simulate wallet_ready to complete the connection
     const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
+    // Wait for connection to complete
+    await connectPromise;
+
     const postMessageSpy = vi.spyOn(mockPort, 'postMessage');
 
     const testData = { message: 'hello' };
-    // Before wallet_ready, message should be queued; no immediate postMessage
+    // After wallet_ready, messages should be sent immediately
     await transport.send(testData);
-    expect(postMessageSpy).not.toHaveBeenCalled();
-
-    // Simulate wallet readiness to flush the queue
-    mockPort.simulateMessage({ type: 'wallet_ready' });
-
     expect(postMessageSpy).toHaveBeenCalledWith(testData);
   });
 
@@ -361,14 +380,21 @@ describe('ChromeExtensionTransport', () => {
     // biome-ignore lint/suspicious/noExplicitAny: Spying on private method for testing
     const emitSpy = vi.spyOn(transport as any, 'emit');
 
-    // Connect - queueMicrotask is mocked to execute immediately
-    await transport.connect();
+    // Start connection
+    const connectPromise = transport.connect();
+
+    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+
+    // Send wallet_ready to complete connection
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
+    // Wait for connection to complete
+    await connectPromise;
 
     // Reset the spy to clear any previous events
     emitSpy.mockReset();
 
     const testMessage = { type: 'test', data: 'message' };
-    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
 
     // Simulate receiving a message
     if (mockPort.simulateMessage) {
@@ -387,10 +413,17 @@ describe('ChromeExtensionTransport', () => {
       ...transportTestUtils.config,
     });
 
-    // Connect - queueMicrotask is mocked to execute immediately
-    await transport.connect();
+    // Start connection
+    const connectPromise = transport.connect();
 
     const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+
+    // Send wallet_ready to complete connection
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
+    // Wait for connection to complete
+    await connectPromise;
+
     const disconnectSpy = vi.spyOn(mockPort, 'disconnect');
 
     await transport.disconnect();
@@ -408,8 +441,16 @@ describe('ChromeExtensionTransport', () => {
       ...transportTestUtils.config,
     });
 
-    // Connect - queueMicrotask is mocked to execute immediately
-    await transport.connect();
+    // Start connection
+    const connectPromise = transport.connect();
+
+    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+
+    // Send wallet_ready to complete connection
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
+    // Wait for connection to complete
+    await connectPromise;
 
     // biome-ignore lint/suspicious/noExplicitAny: Spying on private method for testing
     const emitSpy = vi.spyOn(transport as any, 'emit');
@@ -431,16 +472,22 @@ describe('ChromeExtensionTransport', () => {
       ...transportTestUtils.config,
     });
 
-    // Connect - queueMicrotask is mocked to execute immediately
-    await transport.connect();
+    // Start connection
+    const connectPromise = transport.connect();
+
+    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+
+    // Send wallet_ready to complete connection
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
+    // Wait for connection to complete
+    await connectPromise;
 
     // biome-ignore lint/suspicious/noExplicitAny: Spying on private method for testing
     const emitSpy = vi.spyOn(transport as any, 'emit');
 
     // Reset the spy to clear any previous events
     emitSpy.mockReset();
-
-    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
 
     // Simulate disconnection from the extension side
     if (mockPort.simulateDisconnect) {
@@ -478,10 +525,16 @@ describe('ChromeExtensionTransport', () => {
       ...transportTestUtils.config,
     });
 
-    // Connect - queueMicrotask is mocked to execute immediately
-    await transport.connect();
+    // Start connection
+    const connectPromise = transport.connect();
 
     const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+
+    // Send wallet_ready to complete connection
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
+    // Wait for connection to complete
+    await connectPromise;
 
     // Force an error when posting a message
     vi.spyOn(mockPort, 'postMessage').mockImplementation(() => {
@@ -493,9 +546,6 @@ describe('ChromeExtensionTransport', () => {
 
     // Reset the spy to clear any previous events
     emitSpy.mockReset();
-
-    // Ensure readiness so send path executes immediately and throws
-    mockPort.simulateMessage({ type: 'wallet_ready' });
 
     const sendPromise = transport.send({ test: 'data' });
 
@@ -514,7 +564,7 @@ describe('ChromeExtensionTransport', () => {
     });
   });
 
-  it('should flush queued messages after readiness timeout when no wallet_ready is received', async () => {
+  it('should fail connection when wallet_ready is not received within timeout', async () => {
     const transport = createTestTransport({
       extensionId: 'test-extension-id',
       timeout: 200, // short timeout to trigger readiness timeout quickly
@@ -522,21 +572,17 @@ describe('ChromeExtensionTransport', () => {
       retryDelay: 50,
     });
 
-    await transport.connect();
+    // Start connection (don't await yet)
+    const connectPromise = transport.connect();
 
-    const mockPort = mockChrome.runtime.lastPort as MockChromePort;
-    const postMessageSpy = vi.spyOn(mockPort, 'postMessage');
+    // Run all timers to trigger the wallet_ready timeout
+    await vi.runAllTimersAsync();
 
-    // Send while not ready; should be queued initially
-    const payload = { message: 'queued' };
-    await transport.send(payload);
-    expect(postMessageSpy).not.toHaveBeenCalled();
-
-    // Advance timers beyond readiness timeout (min/max bounds applied in transport)
-    await vi.advanceTimersByTimeAsync(1000); // readiness timeout clamps to at least 1000ms
-
-    // After timeout, queue should flush
-    expect(postMessageSpy).toHaveBeenCalledWith(payload);
+    // Connection should fail - AbstractTransport wraps the error
+    await expect(connectPromise).rejects.toMatchObject({
+      message: 'Failed to connect to transport',
+      category: 'network',
+    });
   });
 
   it('should handle timeout when connection is already timed out during microtask', async () => {
@@ -578,10 +624,16 @@ describe('ChromeExtensionTransport', () => {
       ...transportTestUtils.config,
     });
 
-    // Connect - queueMicrotask is mocked to execute immediately
-    await transport.connect();
+    // Start connection
+    const connectPromise = transport.connect();
 
     const mockPort = mockChrome.runtime.lastPort as MockChromePort;
+
+    // Send wallet_ready to complete connection
+    mockPort.simulateMessage({ type: 'wallet_ready' });
+
+    // Wait for connection to complete
+    await connectPromise;
 
     // Mock port.disconnect to throw an error
     vi.spyOn(mockPort, 'disconnect').mockImplementation(() => {

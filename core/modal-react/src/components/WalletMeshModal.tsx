@@ -113,14 +113,28 @@ import { WalletMeshSandboxedWalletIcon } from './WalletMeshSandboxedIcon.js';
 
 export function WalletMeshModal(): React.ReactElement | null {
   const logger = createComponentLogger('WalletMeshModal');
-  const { isOpen, close, isDiscovering } = useConfig();
+  const { isOpen, close } = useConfig();
   const { isConnected, isConnecting, wallet, walletId, addresses } = useAccount();
-  const connectedWallets = addresses.length > 0 ? [{ id: wallet?.id || '', addresses }] : [];
   const { connect, wallets, error, reset, disconnect } = useConnect();
+
+  // Memoize connectedWallets to avoid recalculation on every render
+  const connectedWallets = useMemo(
+    () => (addresses.length > 0 ? [{ id: wallet?.id || '', addresses }] : []),
+    [addresses, wallet?.id],
+  );
+
+  // Read UI state directly from store (internal component usage)
   const targetChainType = useStore((state) => state.ui.targetChainType);
   const currentView = useStore((state) => state.ui.currentView);
   const switchingChainData = useStore((state) => state.ui.switchingChainData);
+  const isDiscovering = useStore((state) => state.ui.loading?.discovery || false);
   const portalRootRef = useRef<HTMLDivElement | null>(null);
+
+  // Memoize filtered wallets to avoid recalculation on every render
+  const filteredWallets = useMemo(
+    () => (targetChainType ? wallets.filter((wallet) => wallet.chains?.includes(targetChainType)) : wallets),
+    [targetChainType, wallets],
+  );
 
   // Debug logging for error state
   logger.debug('Current modal state:', {
@@ -463,20 +477,6 @@ export function WalletMeshModal(): React.ReactElement | null {
     }
 
     // Default: wallet selection
-    // Filter wallets by targetChainType if specified
-    const filteredWallets = targetChainType
-      ? wallets.filter((wallet) => wallet.chains?.includes(targetChainType))
-      : wallets;
-
-    console.log('[WalletMeshModal] Wallet selection view data:', {
-      totalWallets: wallets.length,
-      walletIds: wallets.map((w) => w.id),
-      filteredWallets: filteredWallets.length,
-      filteredWalletIds: filteredWallets.map((w) => w.id),
-      targetChainType,
-      isDiscovering,
-    });
-
     return (
       <div>
         <div className={styles['modalHeader']}>
