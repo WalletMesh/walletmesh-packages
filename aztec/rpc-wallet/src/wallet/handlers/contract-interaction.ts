@@ -22,6 +22,7 @@ import type {
 } from '@aztec/stdlib/tx';
 import { JSONRPCError } from '@walletmesh/jsonrpc';
 import type { AztecWalletMethodMap, UnifiedSimulationResult } from '../../types.js';
+import { isTxSimulationResult } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
 import { notifyTransactionStatus } from './transactionStatusNotifications.js';
 
@@ -318,7 +319,10 @@ export function createContractInteractionHandlers() {
 
       const proveStartTime = Date.now();
       // Extract TxSimulationResult from unified result
-      const txSimResult = simulationResult.originalResult as TxSimulationResult;
+      if (!isTxSimulationResult(simulationResult)) {
+        throw new JSONRPCError(-32603, 'Expected transaction simulation result but got utility simulation');
+      }
+      const txSimResult = simulationResult.originalResult;
       const provingResult = await ctx.wallet.proveTx(txRequest, txSimResult.privateExecutionResult);
       const provingTime = Date.now() - proveStartTime;
       logger.debug(`Transaction proving completed in ${provingTime}ms`);
@@ -511,7 +515,10 @@ export function createContractInteractionHandlers() {
 
       const proveStartTime = Date.now();
       // Extract TxSimulationResult from unified result
-      const txSimResult = simulationResult.originalResult as TxSimulationResult;
+      if (!isTxSimulationResult(simulationResult)) {
+        throw new JSONRPCError(-32603, 'Expected transaction simulation result but got utility simulation');
+      }
+      const txSimResult = simulationResult.originalResult;
       const provingResult = await ctx.wallet.proveTx(txRequest, txSimResult.privateExecutionResult);
       const provingTime = Date.now() - proveStartTime;
       logger.debug(

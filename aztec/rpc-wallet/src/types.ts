@@ -146,6 +146,46 @@ export interface UnifiedSimulationResult {
 }
 
 /**
+ * Type guard to check if a UnifiedSimulationResult represents a transaction simulation.
+ *
+ * @param result - The UnifiedSimulationResult to check
+ * @returns True if the result is a transaction simulation, narrowing the originalResult type to TxSimulationResult
+ *
+ * @example
+ * ```typescript
+ * if (isTxSimulationResult(result)) {
+ *   // TypeScript knows result.originalResult is TxSimulationResult
+ *   console.log('Gas used:', result.originalResult.gasUsed);
+ * }
+ * ```
+ */
+export function isTxSimulationResult(
+  result: UnifiedSimulationResult,
+): result is UnifiedSimulationResult & { originalResult: TxSimulationResult } {
+  return result.simulationType === 'transaction';
+}
+
+/**
+ * Type guard to check if a UnifiedSimulationResult represents a utility simulation.
+ *
+ * @param result - The UnifiedSimulationResult to check
+ * @returns True if the result is a utility simulation, narrowing the originalResult type to UtilitySimulationResult
+ *
+ * @example
+ * ```typescript
+ * if (isUtilitySimulationResult(result)) {
+ *   // TypeScript knows result.originalResult is UtilitySimulationResult
+ *   console.log('Raw result:', result.originalResult.result);
+ * }
+ * ```
+ */
+export function isUtilitySimulationResult(
+  result: UnifiedSimulationResult,
+): result is UnifiedSimulationResult & { originalResult: UtilitySimulationResult } {
+  return result.simulationType === 'utility';
+}
+
+/**
  * Defines the context object provided to all Aztec wallet-side JSON-RPC method handlers.
  * This context aggregates essential dependencies required by handlers to perform their operations.
  *

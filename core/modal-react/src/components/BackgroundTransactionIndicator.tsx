@@ -118,6 +118,24 @@ export function BackgroundTransactionIndicator({
       .filter((tx): tx is TransactionInfo => tx !== null);
   });
 
+  // Monitor active session for disconnection
+  const activeSessionId = useStore((state) => state.active.sessionId);
+
+  // Clear expanded state and timers when session disconnects
+  useEffect(() => {
+    if (activeSessionId === null && backgroundTransactions.length === 0) {
+      // Session disconnected and all transactions cleared - collapse the indicator
+      setIsExpanded(false);
+      setCompletedTransactionIds(new Set());
+
+      // Clear all pending timers
+      for (const timer of timersRef.current.values()) {
+        clearTimeout(timer);
+      }
+      timersRef.current.clear();
+    }
+  }, [activeSessionId, backgroundTransactions.length]);
+
   // Track completed transactions for auto-hide
   useEffect(() => {
     backgroundTransactions.forEach((tx) => {

@@ -216,6 +216,115 @@ describe('deepEqual', () => {
 
       expect(deepEqual(obj1, obj2)).toBe(true);
     });
+
+    it('should correctly handle different circular references (false positive prevention)', () => {
+      // This tests the bug where the old implementation would return true
+      // if it saw the same object again, even if compared to a different object
+
+      const circularRef1: Record<string, unknown> = { value: 1 };
+      circularRef1['self'] = circularRef1;
+
+      const circularRef2: Record<string, unknown> = { value: 2 };
+      circularRef2['self'] = circularRef2;
+
+      const obj1 = { a: 1, ref: circularRef1 };
+      const obj2 = { a: 1, ref: circularRef2 };
+
+      // Should return false because circularRef1.value !== circularRef2.value
+      expect(deepEqual(obj1, obj2)).toBe(false);
+    });
+
+    it('should detect different circular structures', () => {
+      // Object with self-reference
+      const selfRef: Record<string, unknown> = { type: 'self', value: 1 };
+      selfRef['self'] = selfRef;
+
+      // Object with different self-reference
+      const differentSelfRef: Record<string, unknown> = { type: 'self', value: 2 };
+      differentSelfRef['self'] = differentSelfRef;
+
+      expect(deepEqual(selfRef, differentSelfRef)).toBe(false);
+    });
+
+    it('should handle multiple circular references in same structure', () => {
+      // Create two circular references
+      const circular1: Record<string, unknown> = { id: 1 };
+      circular1['self'] = circular1;
+
+      const circular2: Record<string, unknown> = { id: 2 };
+      circular2['self'] = circular2;
+
+      // Object containing both circular references
+      const container1 = { first: circular1, second: circular2 };
+      const container2 = { first: circular1, second: circular2 };
+
+      // Should be true because they reference the same objects
+      expect(deepEqual(container1, container2)).toBe(true);
+    });
+
+    it('should handle complex circular reference chains', () => {
+      // Create a chain: A -> B -> C -> A
+      const objA: Record<string, unknown> = { name: 'A' };
+      const objB: Record<string, unknown> = { name: 'B' };
+      const objC: Record<string, unknown> = { name: 'C' };
+
+      objA['next'] = objB;
+      objB['next'] = objC;
+      objC['next'] = objA;
+
+      // Create similar chain with same structure
+      const objA2: Record<string, unknown> = { name: 'A' };
+      const objB2: Record<string, unknown> = { name: 'B' };
+      const objC2: Record<string, unknown> = { name: 'C' };
+
+      objA2['next'] = objB2;
+      objB2['next'] = objC2;
+      objC2['next'] = objA2;
+
+      expect(deepEqual(objA, objA2)).toBe(true);
+    });
+
+    it('should detect differences in circular reference chains', () => {
+      // Create a chain: A -> B -> C -> A
+      const objA: Record<string, unknown> = { name: 'A' };
+      const objB: Record<string, unknown> = { name: 'B' };
+      const objC: Record<string, unknown> = { name: 'C' };
+
+      objA['next'] = objB;
+      objB['next'] = objC;
+      objC['next'] = objA;
+
+      // Create different chain with different value
+      const objA2: Record<string, unknown> = { name: 'A' };
+      const objB2: Record<string, unknown> = { name: 'X' }; // Different value
+      const objC2: Record<string, unknown> = { name: 'C' };
+
+      objA2['next'] = objB2;
+      objB2['next'] = objC2;
+      objC2['next'] = objA2;
+
+      expect(deepEqual(objA, objA2)).toBe(false);
+    });
+
+    it('should handle arrays with circular references', () => {
+      const arr1: unknown[] = [1, 2, 3];
+      arr1.push(arr1); // Self-referencing array
+
+      const arr2: unknown[] = [1, 2, 3];
+      arr2.push(arr2); // Self-referencing array
+
+      expect(deepEqual(arr1, arr2)).toBe(true);
+    });
+
+    it('should detect different arrays with circular references', () => {
+      const arr1: unknown[] = [1, 2, 3];
+      arr1.push(arr1);
+
+      const arr2: unknown[] = [1, 2, 4]; // Different value
+      arr2.push(arr2);
+
+      expect(deepEqual(arr1, arr2)).toBe(false);
+    });
   });
 
   describe('real-world discovery protocol use cases', () => {

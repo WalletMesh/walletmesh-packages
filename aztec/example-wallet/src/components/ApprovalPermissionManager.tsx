@@ -63,6 +63,12 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
   private sessionStore?: SessionStore;
 
   /**
+   * Stores in-flight session store operations to prevent race conditions.
+   * Maps sessionId to a promise representing the current operation.
+   */
+  private readonly sessionLocks = new Map<string, Promise<void>>();
+
+  /**
    * Creates an instance of ApprovalPermissionManager.
    * @param options - Configuration options, including the `onApprovalRequest` callback and optional sessionStore.
    */
@@ -80,6 +86,48 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
         'aztec_getPrivateEvents',
       ],
     );
+  }
+
+  /**
+   * Executes a function with a lock on a specific session to prevent race conditions.
+   * Ensures that only one operation can modify a session's data at a time.
+   *
+   * The lock acquisition is atomic - we check for an existing lock and set our new lock
+   * atomically to prevent race conditions between checking and setting.
+   *
+   * @param sessionId - The session ID to lock on
+   * @param fn - The async function to execute while holding the lock
+   * @returns A promise that resolves with the function's return value
+   */
+  private async withSessionLock<T>(sessionId: string, fn: () => Promise<T>): Promise<T> {
+    // Atomically check for and handle existing lock
+    const existingLock = this.sessionLocks.get(sessionId);
+    if (existingLock) {
+      // Wait for existing lock to complete, then recursively try again
+      // This ensures we get our own lock atomically after the existing one completes
+      await existingLock;
+      return this.withSessionLock(sessionId, fn);
+    }
+
+    // Create a new lock for this operation
+    // This is now atomic with the check above since we return early if a lock exists
+    let resolveLock: () => void;
+    const lockPromise = new Promise<void>((resolve) => {
+      resolveLock = resolve;
+    });
+    this.sessionLocks.set(sessionId, lockPromise);
+
+    try {
+      // Execute the function
+      return await fn();
+    } finally {
+      // Release the lock
+      resolveLock!();
+      // Clean up if this is still the current lock
+      if (this.sessionLocks.get(sessionId) === lockPromise) {
+        this.sessionLocks.delete(sessionId);
+      }
+    }
   }
 
   /**
@@ -175,21 +223,23 @@ export class ApprovalPermissionManager implements PermissionManager<RouterMethod
       }
     }
 
-    // Persist permissions to SessionStore if available
+    // Persist permissions to SessionStore if available (with locking to prevent race conditions)
     if (this.sessionStore && sessionId) {
       try {
-        const existingSession = await this.sessionStore.get(sessionId);
-        if (existingSession) {
-          // Update session with permissions
-          await this.sessionStore.set(sessionId, {
-            ...existingSession,
-            permissions,
-          });
-          console.log('[ApprovalPermissionManager] Persisted permissions to SessionStore:', {
-            sessionId,
-            permissions,
-          });
-        }
+        await this.withSessionLock(sessionId, async () => {
+          const existingSession = await this.sessionStore!.get(sessionId);
+          if (existingSession) {
+            // Update session with permissions
+            await this.sessionStore!.set(sessionId, {
+              ...existingSession,
+              permissions,
+            });
+            console.log('[ApprovalPermissionManager] Persisted permissions to SessionStore:', {
+              sessionId,
+              permissions,
+            });
+          }
+        });
       } catch (error) {
         console.error('[ApprovalPermissionManager] Failed to persist permissions:', error);
       }

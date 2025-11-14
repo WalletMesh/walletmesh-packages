@@ -182,6 +182,16 @@ export const uiActions = {
   },
 
   /**
+   * Set session error (convenience method)
+   *
+   * Stores a session-related error in the UI state. This error will be
+   * detected by the useSessionError hook in modal-react.
+   */
+  setSessionError: (store: StoreApi<WalletMeshState>, error?: ModalError) => {
+    uiActions.setError(store, 'session', error);
+  },
+
+  /**
    * Clear error for a specific context
    */
   clearError: (store: StoreApi<WalletMeshState>, context: string) => {

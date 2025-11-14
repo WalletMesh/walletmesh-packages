@@ -421,6 +421,8 @@ export class LazyAztecRouterProvider {
 
   async disconnect(timeout?: number): Promise<void> {
     const provider = await this.ensureInitialized();
+    // Clean up notification subscriptions before disconnect
+    this.cleanupNotificationHandlers();
     return provider.disconnect(timeout);
   }
 

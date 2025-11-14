@@ -370,7 +370,7 @@ export class DiscoveryService {
 
     const normalized: DiscoveryConfig = {
       enabled: config.enabled ?? true,
-      timeout: config.timeout ?? 1000,
+      timeout: config.timeout ?? 2000,
       retryInterval: config.retryInterval ?? 30000,
       maxAttempts: config.maxAttempts ?? 0,
       announce: config.announce ?? true,

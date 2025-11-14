@@ -226,10 +226,11 @@ export function useSessionError(options: UseSessionErrorOptions = {}): UseSessio
         });
       }
 
-      // Clear the error from store after a brief delay
+      // Clear the error from store after disconnect completes
+      // Increased from 100ms to 1000ms to allow disconnect process to finish
       setTimeout(() => {
         clearSessionError();
-      }, 100);
+      }, 1000);
     },
     [autoDisconnect, onSessionError, disconnectReason, disconnect, clearSessionError],
   );

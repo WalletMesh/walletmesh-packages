@@ -427,7 +427,12 @@ export class WalletDiscovery {
 
           this.logger.debug(`Extension policy approved origin: ${origin}`);
         } catch (error) {
-          this.logger.error('Extension policy callback threw error', error);
+          this.logger.error('Extension policy callback threw error', {
+            origin,
+            sessionId: request.sessionId,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+          });
           this.stats.requestsRejected++;
           return; // Fail closed - don't send response on error
         }

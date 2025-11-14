@@ -14,6 +14,7 @@ import type { Logger } from '../../internal/core/logger/logger.js';
 import type { ChainType, SupportedChain } from '../../types.js';
 import { generateId } from '../../utils/crypto.js';
 import type { BaseServiceDependencies } from '../base/ServiceDependencies.js';
+import { convertToSessionError, handleProviderError, isSessionError } from '../../utils/sessionErrors.js';
 import { TransactionFormatter } from './TransactionFormatter.js';
 import { TransactionValidator } from './TransactionValidator.js';
 import type {
@@ -294,6 +295,48 @@ export class TransactionService {
   }
 
   /**
+   * Fail all active transactions when session ends
+   *
+   * Called when a wallet session is terminated or disconnected.
+   * Marks all pending transactions as failed and cleans up polling resources.
+   * This prevents transactions from getting stuck in a polling state after disconnect.
+   *
+   * @param sessionId - Optional session ID to match transactions
+   * @param reason - Reason for session termination
+   *
+   * @example
+   * ```typescript
+   * // Called when session disconnects
+   * txService.failAllActiveTransactions('session-123', 'Session disconnected');
+   * ```
+   */
+  failAllActiveTransactions(sessionId?: string, reason = 'Session disconnected'): void {
+    this.logger.info('Failing all active transactions due to session termination', { sessionId, reason });
+
+    const sessionError = ErrorFactory.connectionFailed(reason, { sessionId });
+
+    // Iterate through all active transactions
+    for (const [id, tx] of this.transactions.entries()) {
+      // Only fail transactions that are actively polling
+      if (tx.status === 'pending' || tx.status === 'sending' || tx.status === 'confirming') {
+        this.logger.debug('Failing transaction due to session termination', { id, hash: tx.txHash });
+
+        const txError = this.createTransactionError(sessionError, 'confirmation', id);
+        this.updateTransactionStatus(id, 'failed', txError);
+
+        // Clean up polling for this transaction
+        const confirmationData = this.confirmationPromises.get(tx.txHash);
+        if (confirmationData) {
+          if (confirmationData.timeout) clearTimeout(confirmationData.timeout);
+          if (confirmationData.interval) clearInterval(confirmationData.interval);
+          confirmationData.reject(txError);
+          this.confirmationPromises.delete(tx.txHash);
+        }
+      }
+    }
+  }
+
+  /**
    * Send a transaction
    *
    * Sends a blockchain transaction and monitors its confirmation status. Supports multiple
@@ -436,6 +479,9 @@ export class TransactionService {
         }
         hash = result;
       } catch (error) {
+        // Check for session errors and store them
+        handleProviderError(error);
+
         const txError = this.createTransactionError(error, 'signing', txId);
         this.updateTransactionStatus(txId, 'failed', txError);
         throw txError;
@@ -1025,6 +1071,27 @@ export class TransactionService {
         this.handleTransactionConfirmed(id, hash, receipt, chainType);
       }
     } catch (error) {
+      // Check if this is a session error - if so, fail the transaction immediately
+      if (isSessionError(error)) {
+        this.logger.warn('Session error during transaction receipt check', { id, hash });
+
+        // Fail the transaction immediately instead of continuing to poll
+        const sessionError = convertToSessionError(error);
+        const txError = this.createTransactionError(sessionError, 'confirmation', id);
+        this.updateTransactionStatus(id, 'failed', txError);
+
+        // Clear polling interval and timeout
+        const confirmationData = this.confirmationPromises.get(hash);
+        if (confirmationData) {
+          if (confirmationData.timeout) clearTimeout(confirmationData.timeout);
+          if (confirmationData.interval) clearInterval(confirmationData.interval);
+          confirmationData.reject(txError);
+          this.confirmationPromises.delete(hash);
+        }
+
+        return; // Stop polling
+      }
+
       // Continue polling on error
       this.logger.debug('Receipt not yet available:', error);
     }

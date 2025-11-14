@@ -8,6 +8,7 @@ import type { StoreApi } from 'zustand';
 import type { WalletMeshState } from '../store.js';
 import type { AztecTransactionResult, StageTiming } from '../types/aztecTransactions.js';
 import type { TransactionStatus } from '../../services/transaction/types.js';
+import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 
 /**
  * Helper to properly handle immer state mutations
@@ -244,6 +245,47 @@ export const aztecTransactionActions = {
         const tx = state.entities.transactions[txStatusId];
         return tx && tx.status !== 'confirmed' && tx.status !== 'failed';
       });
+    });
+  },
+
+  /**
+   * Fail all active Aztec transactions when session ends
+   *
+   * Called when a wallet session is terminated or disconnected.
+   * Marks all non-complete transactions as failed and removes them from background list.
+   *
+   * @param store - Zustand store instance
+   * @param reason - Reason for session termination
+   */
+  failAllActiveTransactions: (store: StoreApi<WalletMeshState>, reason = 'Session disconnected') => {
+    mutateState(store, (state) => {
+      const now = Date.now();
+
+      // Iterate through all transactions
+      for (const [txStatusId, tx] of Object.entries(state.entities.transactions)) {
+        const aztecTx = tx as AztecTransactionResult | undefined;
+
+        // Fail transactions that aren't already complete
+        if (aztecTx && aztecTx.status !== 'confirmed' && aztecTx.status !== 'failed') {
+          aztecTx.status = 'failed';
+          aztecTx.endTime = now;
+          aztecTx.error = ErrorFactory.connectionFailed(reason);
+
+          // Remove from background list
+          const bgIndex = state.meta.backgroundTransactionIds.indexOf(txStatusId);
+          if (bgIndex !== -1) {
+            state.meta.backgroundTransactionIds.splice(bgIndex, 1);
+          }
+
+          // Clear active transaction if it matches
+          if (state.active.transactionId === txStatusId) {
+            state.active.transactionId = null;
+          }
+        }
+      }
+
+      // Clear transaction status
+      state.meta.transactionStatus = 'idle';
     });
   },
 };

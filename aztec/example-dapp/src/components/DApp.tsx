@@ -160,6 +160,9 @@ const DApp: React.FC = () => {
     const ownerAddressHex = toAddressString(address);
 
     const fallbackSimulation = async () => {
+      if (!(tokenContract as any)?.methods?.balance_of_public) {
+        throw new Error('Token contract methods not available');
+      }
       const balance = await simulateInteraction(
         (tokenContract as any).methods.balance_of_public(ownerAddressHex),
       );
@@ -315,6 +318,10 @@ const DApp: React.FC = () => {
       showInfo('Minting tokens, please wait for confirmation...');
       const ownerAddress = toAztecAddress(address);
       const ownerAddressHex = ownerAddress.toString();
+
+      if (!(tokenContract as any)?.methods?.mint_to_public) {
+        throw new Error('Token contract methods not available');
+      }
       const interaction = (tokenContract as any).methods.mint_to_public(
         ownerAddressHex,
         10000000000000000000000n,
@@ -376,6 +383,10 @@ const DApp: React.FC = () => {
       showInfo('Transferring tokens, please wait for confirmation...');
       const to = await getInitialTestAccounts().then((accounts) => toAztecAddress(accounts[1].address));
       const ownerAddress = toAztecAddress(address);
+
+      if (!(tokenContract as any)?.methods?.transfer_in_public) {
+        throw new Error('Token contract methods not available');
+      }
       const interaction = (tokenContract as any).methods.transfer_in_public(
         ownerAddress.toString(),
         to.toString(),
@@ -449,6 +460,10 @@ const DApp: React.FC = () => {
 
     try {
       const ownerAddress = toAztecAddress(address);
+
+      if (!(counterContract as any)?.methods?.increment) {
+        throw new Error('Counter contract methods not available');
+      }
       const interaction = (counterContract as any).methods.increment(
         ownerAddress.toString(),
         ownerAddress.toString(),
@@ -488,6 +503,10 @@ const DApp: React.FC = () => {
     try {
       console.log('[DApp] Starting atomic batch execution...');
       const ownerAddressHex = toAddressString(address);
+
+      if (!(counterContract as any)?.methods?.increment) {
+        throw new Error('Counter contract methods not available');
+      }
       const interactions = [
         (counterContract as any).methods.increment(ownerAddressHex, ownerAddressHex),
         (counterContract as any).methods.increment(ownerAddressHex, ownerAddressHex),
@@ -523,6 +542,10 @@ const DApp: React.FC = () => {
 
     try {
       const ownerAddressHex = toAddressString(address);
+
+      if (!(counterContract as any)?.methods?.increment) {
+        throw new Error('Counter contract methods not available');
+      }
       const interactions = [
         (counterContract as any).methods.increment(ownerAddressHex, ownerAddressHex),
         (counterContract as any).methods.increment(ownerAddressHex, ownerAddressHex),
@@ -562,6 +585,9 @@ const DApp: React.FC = () => {
         toAztecAddress(accounts[1].address),
       );
 
+      if (!(tokenContract as any)?.methods?.mint_to_public || !(tokenContract as any)?.methods?.transfer_in_public) {
+        throw new Error('Token contract methods not available');
+      }
       const interactions = [
         // First: Mint tokens to our account
         (tokenContract as any).methods.mint_to_public(ownerAddressHex, 5000000000000000000000n),
@@ -610,9 +636,15 @@ const DApp: React.FC = () => {
           );
         } catch (error) {
           console.warn('[DApp] External RPC counter fetch failed, falling back to wallet RPC', error);
+          if (!(counterContract as any)?.methods?.get_counter) {
+            throw new Error('Counter contract methods not available');
+          }
           value = await simulateInteraction((counterContract as any).methods.get_counter(ownerAddressHex));
         }
       } else {
+        if (!(counterContract as any)?.methods?.get_counter) {
+          throw new Error('Counter contract methods not available');
+        }
         value = await simulateInteraction((counterContract as any).methods.get_counter(ownerAddressHex));
       }
 

@@ -27,7 +27,7 @@
  *
  * @param a - First value to compare
  * @param b - Second value to compare
- * @param visited - Internal set for tracking visited objects (circular reference detection)
+ * @param visited - Internal map for tracking visited object pairs (circular reference detection)
  * @returns true if values are deeply equal, false otherwise
  *
  * @example Basic usage
@@ -56,7 +56,7 @@
  * @category Utilities
  * @since 0.8.0
  */
-export function deepEqual(a: unknown, b: unknown, visited = new WeakSet()): boolean {
+export function deepEqual(a: unknown, b: unknown, visited = new WeakMap<object, Set<object>>()): boolean {
   // Handle same reference (fast path)
   if (a === b) {
     return true;
@@ -94,11 +94,18 @@ export function deepEqual(a: unknown, b: unknown, visited = new WeakSet()): bool
     return a.source === b.source && a.flags === b.flags;
   }
 
-  // Handle circular references
-  if (visited.has(a as object)) {
-    return true; // Assume equal if we've seen this object before
+  // Handle circular references by tracking object pairs
+  // Check if we've already compared these exact objects
+  const seenObjects = visited.get(a as object);
+  if (seenObjects && seenObjects.has(b as object)) {
+    return true; // Already comparing this pair, assume equal to prevent infinite loop
   }
-  visited.add(a as object);
+
+  // Track this comparison pair
+  if (!visited.has(a as object)) {
+    visited.set(a as object, new Set());
+  }
+  visited.get(a as object)!.add(b as object);
 
   // Handle Arrays
   if (Array.isArray(a) && Array.isArray(b)) {

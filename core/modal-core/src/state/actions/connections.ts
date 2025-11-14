@@ -32,6 +32,7 @@ import type { WalletInfo } from '../../types.js';
 import { generateSessionId } from '../../utils/crypto.js';
 import { parseWithErrorFactory } from '../../utils/zodHelpers.js';
 import type { WalletMeshState } from '../store.js';
+import { aztecTransactionActions } from './aztecTransactions.js';
 
 /**
  * Helper to properly handle immer state mutations
@@ -220,6 +221,9 @@ export const connectionActions = {
     // Remove provider from registry (cleanup)
     removeProviderForSession(validatedSessionId);
 
+    // Fail all Aztec transactions in store
+    aztecTransactionActions.failAllActiveTransactions(store, 'Session disconnected');
+
     mutateState(store, (state) => {
       // Remove session from entities
       delete state.entities.sessions[validatedSessionId];
@@ -229,6 +233,11 @@ export const connectionActions = {
         // Set the next available session as active, or null if none
         const remainingSessions = Object.keys(state.entities.sessions);
         state.active.sessionId = remainingSessions.length > 0 ? (remainingSessions[0] ?? null) : null;
+
+        // Reset UI state to wallet selection when disconnecting
+        if (remainingSessions.length === 0) {
+          state.ui.currentView = 'walletSelection';
+        }
       }
     });
   },

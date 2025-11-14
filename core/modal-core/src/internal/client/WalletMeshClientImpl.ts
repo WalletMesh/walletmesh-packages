@@ -25,6 +25,7 @@ import { ChainType, type SupportedChain, type WalletInfo } from '../../types.js'
 import type { DiscoveredWalletInfo } from '../../types.js';
 import { getChainName } from '../../utils/chainNameResolver.js';
 import { generateSessionId } from '../../utils/crypto.js';
+import { handleProviderError } from '../../utils/sessionErrors.js';
 import { ErrorFactory } from '../core/errors/errorFactory.js';
 import type { Logger } from '../core/logger/logger.js';
 import { createDebugLogger } from '../core/logger/logger.js';
@@ -2087,6 +2088,12 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     // Use the sessions from the store directly since SessionManager might be out of sync
     const sessionsToEnd = storeWalletSessions.length > 0 ? storeWalletSessions : sessions;
 
+    // Fail all active transactions for these sessions before ending them
+    const services = this.serviceRegistry.getServices();
+    for (const session of sessionsToEnd) {
+      services.transaction.failAllActiveTransactions(session.sessionId, 'Wallet disconnected');
+    }
+
     for (const session of sessionsToEnd) {
       this.logger?.info('[WalletMeshClient] Ending session', { sessionId: session.sessionId });
       await connectionActions.endSession(useStore, session.sessionId, { isDisconnect: true });
@@ -2104,6 +2111,13 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     if (this.adapterHealth.has(walletId)) {
       this.logger?.debug('Clearing health tracking for disconnected wallet', { walletId });
       this.adapterHealth.delete(walletId);
+    }
+
+    // Reset UI state to wallet selection if no sessions remain
+    const remainingSessions = Object.keys(useStore.getState().entities.sessions);
+    if (remainingSessions.length === 0) {
+      const { uiActions } = await import('../../state/actions/ui.js');
+      uiActions.setView(useStore, 'walletSelection');
     }
 
     this.withModalInternals((modal) => {
@@ -2346,6 +2360,9 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
         });
         this.logger?.debug('EVM chain switch successful', { chainId });
       } catch (switchError) {
+        // Check for session errors and store them
+        handleProviderError(switchError, session.sessionId);
+
         // Chain not added, try to add it
         const error = switchError as { code?: number };
         if (error.code === 4902) {
