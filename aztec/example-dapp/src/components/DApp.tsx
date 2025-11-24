@@ -5,7 +5,6 @@ import {
   AztecBatchProgressOverlay,
   AztecConnectButton,
   AztecWalletReady,
-  getDeploymentStageLabel,
   useAccount,
   useAztecAddress,
   useAztecBatch,
@@ -40,14 +39,12 @@ const DApp: React.FC = () => {
   const {
     deploySync: deployToken,
     isDeploying: isDeployingToken,
-    stage: tokenStage,
     deployedAddress: tokenAddress,
   } = useAztecDeploy();
 
   const {
     deploySync: deployCounter,
     isDeploying: isDeployingCounter,
-    stage: counterStage,
     deployedAddress: counterAddress,
   } = useAztecDeploy();
 
@@ -719,7 +716,7 @@ const DApp: React.FC = () => {
 
             {!tokenAddress ? (
               <button type="button" onClick={handleDeployToken} disabled={isDeployingToken}>
-                {isDeployingToken ? getDeploymentStageLabel(tokenStage) : 'Deploy Token Contract'}
+                {isDeployingToken ? 'Deploying...' : 'Deploy Token Contract'}
               </button>
             ) : (
               <>
@@ -783,7 +780,7 @@ const DApp: React.FC = () => {
 
             {!counterAddress ? (
               <button type="button" onClick={handleDeployCounter} disabled={isDeployingCounter}>
-                {isDeployingCounter ? getDeploymentStageLabel(counterStage) : 'Deploy Counter Contract'}
+                {isDeployingCounter ? 'Deploying...' : 'Deploy Counter Contract'}
               </button>
             ) : (
               <>

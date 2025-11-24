@@ -23,8 +23,8 @@ import type { ChainType } from '../../types.js';
  * 8. `confirmed` - Transaction has been confirmed on-chain
  * 9. `failed` - Transaction failed at any stage
  *
- * Note: The `initiated` and `proving` steps only occur for privacy-preserving chains like Aztec
- * where zero-knowledge proofs must be generated before submission.
+ * Note: The `initiated` and `proving` steps only occur for privacy-preserving
+ * chains like Aztec where zero-knowledge proofs must be generated before submission.
  *
  * @example
  * ```typescript

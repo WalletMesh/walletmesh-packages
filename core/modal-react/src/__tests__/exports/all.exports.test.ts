@@ -12,7 +12,7 @@ describe('@walletmesh/modal-react/all exports', () => {
   const modulePath = '../../all.js';
 
   describe('Core functionality', () => {
-    it.skip('should include all core exports', async () => {
+    it('should include all core exports', async () => {
       await testCoreExportsPresent(modulePath);
     });
 

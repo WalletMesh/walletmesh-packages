@@ -169,5 +169,129 @@ describe('Account Handlers', () => {
     it('should handle missing intent parameter', async () => {
       await expect(handlers.aztec_createAuthWit(context, [] as never)).rejects.toThrow();
     });
+
+    describe('notification emissions', () => {
+      it('should send initiated and confirmed notifications when not resumed from approval', async () => {
+        const frIntent = new Fr(42n);
+        const expectedAuthWit = {
+          witness: [new Fr(0x123n)],
+          predicate: '0xabc' as unknown as AztecAddress,
+        } as unknown as AuthWitness;
+        vi.mocked(mockWallet.createAuthWit).mockResolvedValue(expectedAuthWit);
+
+        // Context WITHOUT txStatusId (not resumed from approval)
+        const contextWithoutTxStatusId = createMockContext(mockWallet);
+
+        await handlers.aztec_createAuthWit(contextWithoutTxStatusId, [frIntent]);
+
+        // Should send both initiated and confirmed notifications
+        expect(contextWithoutTxStatusId.notify).toHaveBeenCalledTimes(2);
+
+        // First call: initiated
+        expect(contextWithoutTxStatusId.notify).toHaveBeenNthCalledWith(1, 'aztec_transactionStatus', {
+          txStatusId: expect.any(String),
+          status: 'initiated',
+          timestamp: expect.any(Number),
+        });
+
+        // Second call: confirmed
+        expect(contextWithoutTxStatusId.notify).toHaveBeenNthCalledWith(2, 'aztec_transactionStatus', {
+          txStatusId: expect.any(String),
+          status: 'confirmed',
+          timestamp: expect.any(Number),
+        });
+
+        // Both notifications should use the same txStatusId
+        const initiatedCall = vi
+          .mocked(contextWithoutTxStatusId.notify)
+          .mock.calls[0]![1] as Record<string, unknown>;
+        const confirmedCall = vi
+          .mocked(contextWithoutTxStatusId.notify)
+          .mock.calls[1]![1] as Record<string, unknown>;
+        expect(initiatedCall['txStatusId']).toBe(confirmedCall['txStatusId']);
+      });
+
+      it('should skip initiated notification when resumed from approval', async () => {
+        const frIntent = new Fr(42n);
+        const expectedAuthWit = {
+          witness: [new Fr(0x123n)],
+          predicate: '0xabc' as unknown as AztecAddress,
+        } as unknown as AuthWitness;
+        vi.mocked(mockWallet.createAuthWit).mockResolvedValue(expectedAuthWit);
+
+        // Context WITH txStatusId (resumed from approval)
+        const contextWithTxStatusId = createMockContext(mockWallet);
+        const approvalTxStatusId = 'approval-tx-id-123';
+        (contextWithTxStatusId as unknown as { txStatusId: string }).txStatusId = approvalTxStatusId;
+
+        await handlers.aztec_createAuthWit(contextWithTxStatusId, [frIntent]);
+
+        // Should only send confirmed notification (skip initiated)
+        expect(contextWithTxStatusId.notify).toHaveBeenCalledTimes(1);
+
+        // Only call: confirmed
+        expect(contextWithTxStatusId.notify).toHaveBeenCalledWith('aztec_transactionStatus', {
+          txStatusId: approvalTxStatusId,
+          status: 'confirmed',
+          timestamp: expect.any(Number),
+        });
+      });
+
+      it('should send failed notification on error when not resumed from approval', async () => {
+        const frIntent = new Fr(42n);
+        const error = new Error('AuthWit creation failed');
+        vi.mocked(mockWallet.createAuthWit).mockRejectedValue(error);
+
+        const contextWithoutTxStatusId = createMockContext(mockWallet);
+
+        await expect(handlers.aztec_createAuthWit(contextWithoutTxStatusId, [frIntent])).rejects.toThrow(
+          'AuthWit creation failed',
+        );
+
+        // Should send initiated and failed notifications
+        expect(contextWithoutTxStatusId.notify).toHaveBeenCalledTimes(2);
+
+        // First call: initiated
+        expect(contextWithoutTxStatusId.notify).toHaveBeenNthCalledWith(1, 'aztec_transactionStatus', {
+          txStatusId: expect.any(String),
+          status: 'initiated',
+          timestamp: expect.any(Number),
+        });
+
+        // Second call: failed
+        expect(contextWithoutTxStatusId.notify).toHaveBeenNthCalledWith(2, 'aztec_transactionStatus', {
+          txStatusId: expect.any(String),
+          status: 'failed',
+          error: 'AuthWit creation failed',
+          timestamp: expect.any(Number),
+        });
+      });
+
+      it('should send failed notification on error when resumed from approval', async () => {
+        const frIntent = new Fr(42n);
+        const error = new Error('AuthWit creation failed');
+        vi.mocked(mockWallet.createAuthWit).mockRejectedValue(error);
+
+        // Context WITH txStatusId (resumed from approval)
+        const contextWithTxStatusId = createMockContext(mockWallet);
+        const approvalTxStatusId = 'approval-tx-id-456';
+        (contextWithTxStatusId as unknown as { txStatusId: string }).txStatusId = approvalTxStatusId;
+
+        await expect(handlers.aztec_createAuthWit(contextWithTxStatusId, [frIntent])).rejects.toThrow(
+          'AuthWit creation failed',
+        );
+
+        // Should only send failed notification (skip initiated)
+        expect(contextWithTxStatusId.notify).toHaveBeenCalledTimes(1);
+
+        // Only call: failed
+        expect(contextWithTxStatusId.notify).toHaveBeenCalledWith('aztec_transactionStatus', {
+          txStatusId: approvalTxStatusId,
+          status: 'failed',
+          error: 'AuthWit creation failed',
+          timestamp: expect.any(Number),
+        });
+      });
+    });
   });
 });

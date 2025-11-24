@@ -115,7 +115,7 @@ export function WalletMeshModal(): React.ReactElement | null {
   const titleId = useId();
   const logger = createComponentLogger('WalletMeshModal');
   const { isOpen, close } = useConfig();
-  const { isConnected, isConnecting, wallet, walletId, addresses } = useAccount();
+  const { isConnected, isConnecting, isReconnecting, wallet, walletId, addresses } = useAccount();
   const { connect, wallets, error, reset, disconnect } = useConnect();
 
   // Memoize connectedWallets to avoid recalculation on every render
@@ -413,6 +413,17 @@ export function WalletMeshModal(): React.ReactElement | null {
     }
 
     // Show different views based on connection status
+    // Check for reconnection first (takes priority over connecting)
+    if (isReconnecting) {
+      return (
+        <div className={styles['connectingContainer']}>
+          <div className={styles['spinner']} />
+          <h3 className={styles['connectingTitle']}>Reconnecting</h3>
+          <p className={styles['connectingMessage']}>Restoring your previous session...</p>
+        </div>
+      );
+    }
+
     if (isConnecting) {
       return (
         <div className={styles['connectingContainer']}>

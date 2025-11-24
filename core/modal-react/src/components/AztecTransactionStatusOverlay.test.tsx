@@ -437,7 +437,25 @@ describe('AztecTransactionStatusOverlay', () => {
       expect(container.firstChild).toBeFalsy();
     });
 
-    it.skip('should render transaction details', async () => {
+    it('should render transaction details', async () => {
+      // Mock active transaction (restore default state)
+      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
+        const mockState = createMockState({
+          active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
+          entities: {
+            wallets: {},
+            sessions: {},
+            transactions: {
+              'tx-1': createMockTransaction({
+                txStatusId: 'tx-1',
+                status: 'proving',
+              }),
+            },
+          },
+        });
+        return selector(mockState);
+      });
+
       render(<AztecTransactionStatusOverlay />);
 
       // Advance timers to allow React to flush updates and trigger useEffect

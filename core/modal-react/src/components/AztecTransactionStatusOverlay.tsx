@@ -169,10 +169,18 @@ export function AztecTransactionStatusOverlay({
     }
 
     // Filter to show all transactions including confirmed/failed (for brief success display)
-    // Only exclude transactions that have been locally dismissed
+    // Exclude signing-only transactions (authwit, sign message, etc.) and dismissed transactions
     return txs.filter((tx) => {
       const status = tx?.status as TransactionStatus;
       const txId = tx?.txStatusId;
+      // Check if this is a signing-only operation (safe access with optional chaining)
+      const isSigningOnly = (tx as { isSigningOnly?: boolean })?.isSigningOnly || false;
+
+      // Never show signing-only operations in the overlay
+      if (isSigningOnly) {
+        return false;
+      }
+
       // Show transaction if it has a valid status and hasn't been dismissed
       return status && txId && !dismissedTxIds.has(txId);
     });

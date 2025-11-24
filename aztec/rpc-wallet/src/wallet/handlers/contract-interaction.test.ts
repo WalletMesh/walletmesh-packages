@@ -102,8 +102,8 @@ describe('createContractInteractionHandlers', () => {
       if (!mockContext.notify) throw new Error('notify should be defined in test');
       const notifyCalls = vi.mocked(mockContext.notify).mock.calls;
 
-      // Should have notifications for: initiated, simulating, proving, sending, pending
-      expect(notifyCalls.length).toBeGreaterThanOrEqual(5);
+      // Should have notifications for: initiated, proving, sending, pending (simulating skipped - no notification during simulation)
+      expect(notifyCalls.length).toBeGreaterThanOrEqual(4);
 
       // Verify all notifications use the same txStatusId
       const txStatusId = result.txStatusId;
@@ -121,20 +121,7 @@ describe('createContractInteractionHandlers', () => {
         timestamp: expect.any(Number),
       });
 
-      // Verify simulating notification
-      const simulatingCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'simulating',
-      );
-      expect(simulatingCall).toBeDefined();
-      expect(simulatingCall?.[1]).toMatchObject({
-        txStatusId,
-        status: 'simulating',
-        timestamp: expect.any(Number),
-      });
-
-      // Verify proving notification
+      // Verify proving notification (simulating skipped - no notification during simulation)
       const provingCall = notifyCalls.find(
         (call) =>
           call[0] === 'aztec_transactionStatus' &&
@@ -347,6 +334,7 @@ describe('createContractInteractionHandlers', () => {
 
       const mockSentTx = {
         getTxHash: vi.fn().mockResolvedValue(mockTxHash),
+        wait: vi.fn().mockResolvedValue({}),
       };
 
       const mockProvenTx = {
@@ -395,6 +383,7 @@ describe('createContractInteractionHandlers', () => {
 
       const mockSentTx = {
         getTxHash: vi.fn().mockResolvedValue(mockTxHash),
+        wait: vi.fn().mockResolvedValue({}),
       };
 
       const mockProvenTx = {
@@ -446,6 +435,7 @@ describe('createContractInteractionHandlers', () => {
 
       const mockSentTx = {
         getTxHash: vi.fn().mockResolvedValue(mockTxHash),
+        wait: vi.fn().mockResolvedValue({}),
       };
 
       const mockProvenTx = {
@@ -552,8 +542,8 @@ describe('createContractInteractionHandlers', () => {
       const notifyCalls = vi.mocked(mockContext.notify).mock.calls;
       const txStatusId = result.txStatusId;
 
-      // Should have notifications for: initiated, simulating, proving, sending, pending
-      expect(notifyCalls.length).toBeGreaterThanOrEqual(5);
+      // Should have notifications for: initiated, proving, sending, pending (simulating skipped - no notification during simulation)
+      expect(notifyCalls.length).toBeGreaterThanOrEqual(4);
 
       // Verify initiated
       const initiatedCall = notifyCalls.find(
@@ -567,19 +557,7 @@ describe('createContractInteractionHandlers', () => {
         timestamp: expect.any(Number),
       });
 
-      // Verify simulating
-      const simulatingCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'simulating',
-      );
-      expect(simulatingCall?.[1]).toMatchObject({
-        txStatusId,
-        status: 'simulating',
-        timestamp: expect.any(Number),
-      });
-
-      // Verify proving
+      // Verify proving (simulating skipped - no notification during simulation)
       const provingCall = notifyCalls.find(
         (call) =>
           call[0] === 'aztec_transactionStatus' &&

@@ -188,16 +188,30 @@ describe('Lazy Utilities', () => {
       expect(result.wallets).toHaveLength(2);
     });
 
-    it('should handle rejected promises', async () => {
-      const factory = vi.fn(() => Promise.reject(new Error('Async error')));
+    it('should handle rejected promises and allow retry', async () => {
+      let callCount = 0;
+      const factory = vi.fn(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.reject(new Error('Async error'));
+        }
+        return Promise.resolve('success');
+      });
       const lazyAsyncGetter = createLazyAsync(factory);
 
+      // First call fails
       await expect(lazyAsyncGetter()).rejects.toThrow('Async error');
       expect(factory).toHaveBeenCalledTimes(1);
 
-      // Should return the same rejected promise on subsequent calls
-      await expect(lazyAsyncGetter()).rejects.toThrow('Async error');
-      expect(factory).toHaveBeenCalledTimes(1); // Still only called once
+      // Retry should work (factory called again since failed promise is not cached)
+      const result = await lazyAsyncGetter();
+      expect(result).toBe('success');
+      expect(factory).toHaveBeenCalledTimes(2);
+
+      // Subsequent calls should return cached successful result
+      const result2 = await lazyAsyncGetter();
+      expect(result2).toBe('success');
+      expect(factory).toHaveBeenCalledTimes(2); // Not called again
     });
 
     it('should handle factory that returns resolved promise', async () => {

@@ -14,6 +14,8 @@ export interface WalletMeshConnectButtonProps {
   label?: string;
   /** Custom label for the connecting button */
   connectingLabel?: string;
+  /** Custom label for the reconnecting button */
+  reconnectingLabel?: string;
   /** Custom label for the connected button */
   connectedLabel?: string;
   /** Custom className for styling */
@@ -197,6 +199,7 @@ function getButtonStyles(
 export function WalletMeshConnectButton({
   label = 'Connect Wallet',
   connectingLabel = 'Connecting...',
+  reconnectingLabel = 'Reconnecting...',
   connectedLabel = 'Connected',
   className,
   style,
@@ -209,7 +212,7 @@ export function WalletMeshConnectButton({
   disabled = false,
   targetChainType,
 }: WalletMeshConnectButtonProps) {
-  const { isConnected, isConnecting, address, chain, chainType, wallet } = useAccount();
+  const { isConnected, isConnecting, isReconnecting, address, chain, chainType, wallet } = useAccount();
   const { open } = useConfig();
   const { isSwitching } = useSwitchChain();
   const currentView = useStore((state) => state.ui.currentView);
@@ -217,11 +220,18 @@ export function WalletMeshConnectButton({
   // Check if we're in chain switching state
   const isChainSwitching = isSwitching || currentView === 'switchingChain';
 
+  // Determine the correct connecting label based on state
+  const effectiveConnectingLabel = isReconnecting
+    ? reconnectingLabel
+    : isChainSwitching
+      ? 'Switching Chain...'
+      : connectingLabel;
+
   // Use modal-core connect button service for business logic
   const buttonState = useConnectButtonState(
     {
       isConnected,
-      isConnecting: isConnecting || isChainSwitching,
+      isConnecting: isConnecting || isChainSwitching || isReconnecting,
       address,
       chainId: chain?.chainId,
       chainType,
@@ -231,7 +241,7 @@ export function WalletMeshConnectButton({
       ...(targetChainType && { targetChainType }),
       labels: {
         connect: label,
-        connecting: isChainSwitching ? 'Switching Chain...' : connectingLabel,
+        connecting: effectiveConnectingLabel,
         connected: connectedLabel,
       },
       showAddress,
@@ -262,6 +272,28 @@ export function WalletMeshConnectButton({
   };
 
   const getButtonContent = () => {
+    // Special handling for reconnecting state (show spinner with reconnecting label)
+    if (isReconnecting) {
+      return (
+        <>
+          <span
+            style={{
+              display: 'inline-block',
+              width: '16px',
+              height: '16px',
+              borderWidth: '2px',
+              borderStyle: 'solid',
+              borderColor: 'currentColor',
+              borderTopColor: 'transparent',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+            }}
+          />
+          <span>{reconnectingLabel}</span>
+        </>
+      );
+    }
+
     // Special handling for chain switching state
     if (isChainSwitching) {
       return (

@@ -635,4 +635,123 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
       expect(clearTimeoutSpy).toHaveBeenCalled();
     });
   });
+
+  describe('Wallet Notification Coordination - Regression Test', () => {
+    /**
+     * This test verifies the transaction notification flow after user approval.
+     *
+     * The overlay now appears starting from the 'proving' stage
+     * (after user approval is completed in the wallet).
+     */
+    it('should show correct status progression as wallet sends notifications', async () => {
+      // This test simulates the notification flow from wallet after approval
+      const walletTxId = 'wallet-tx-lifecycle';
+
+      // Stage 1: User approves, wallet sends 'proving' notification (first visible status)
+      mockState.entities.transactions[walletTxId] = createMockTransaction(walletTxId, 'proving', {
+        startTime: Date.now(),
+      });
+      mockState.active.transactionId = walletTxId;
+
+      const { rerender } = render(<AztecTransactionStatusOverlay />);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      expect(screen.getByRole('heading', { name: 'Generating Proof' })).toBeInTheDocument();
+      expect(screen.getByText('Creating zero-knowledge proof (1-2 minutes)')).toBeInTheDocument();
+
+      // Stage 2: Wallet sends 'sending' notification
+      mockState.entities.transactions[walletTxId] = createMockTransaction(walletTxId, 'sending', {
+        startTime: Date.now(),
+      });
+
+      rerender(<AztecTransactionStatusOverlay />);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      expect(screen.getByRole('heading', { name: 'Sending' })).toBeInTheDocument();
+
+      // Stage 3: Wallet sends 'confirmed' notification
+      mockState.entities.transactions[walletTxId] = createMockTransaction(walletTxId, 'confirmed', {
+        startTime: Date.now(),
+      });
+
+      rerender(<AztecTransactionStatusOverlay />);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      expect(screen.getByRole('heading', { name: 'Confirmed' })).toBeInTheDocument();
+      expect(screen.getByText('Transaction successful')).toBeInTheDocument();
+    });
+
+    it('should handle case where dApp had old transaction ID and wallet creates new one', async () => {
+      const oldDappTxId = 'dapp-generated-id-old';
+      const walletTxId = 'wallet-generated-id-new';
+
+      // Old scenario: dApp created transaction with its own ID
+      // (this should NOT be the active transaction anymore)
+      mockState.entities.transactions[oldDappTxId] = createMockTransaction(oldDappTxId, 'sending', {
+        startTime: Date.now() - 5000, // Older transaction
+      });
+
+      // Wallet created its own transaction with 'proving' (first notification after approval)
+      mockState.entities.transactions[walletTxId] = createMockTransaction(walletTxId, 'proving', {
+        startTime: Date.now(),
+      });
+
+      // The ACTIVE transaction should be the wallet's ID
+      mockState.active.transactionId = walletTxId;
+
+      render(<AztecTransactionStatusOverlay />);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      // Verify: Shows wallet's status (proving), not dApp's old status (sending)
+      expect(screen.getByRole('heading', { name: 'Generating Proof' })).toBeInTheDocument();
+
+      // Verify: "proving" is the ACTIVE stage
+      const provingStage = document.querySelector('[data-stage="proving"]');
+      expect(provingStage).toHaveClass('_stage--active_8dd704');
+    });
+
+    it('should only display transaction that matches wallet notification ID', async () => {
+      const walletTxId = 'correct-wallet-tx-id';
+      const wrongTxId = 'wrong-tx-id';
+
+      // Setup: Two transactions in store
+      mockState.entities.transactions[wrongTxId] = createMockTransaction(wrongTxId, 'sending', {
+        startTime: Date.now() - 10000,
+      });
+
+      mockState.entities.transactions[walletTxId] = createMockTransaction(walletTxId, 'proving', {
+        startTime: Date.now(),
+      });
+
+      // Active transaction is the wallet's ID
+      mockState.active.transactionId = walletTxId;
+
+      render(<AztecTransactionStatusOverlay />);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      // Should show the wallet's transaction status
+      expect(screen.getByRole('heading', { name: 'Generating Proof' })).toBeInTheDocument();
+
+      // Verify the transaction ID shown matches wallet's ID
+      const state = mockState;
+      const activeTx = state.entities.transactions[state.active.transactionId!];
+      expect(activeTx?.txStatusId).toBe(walletTxId);
+      expect(activeTx?.status).toBe('proving');
+    });
+  });
 });

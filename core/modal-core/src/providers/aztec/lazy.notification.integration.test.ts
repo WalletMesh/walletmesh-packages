@@ -32,7 +32,11 @@ vi.mock('../../utils/lazy/index.js', () => ({
 // Mock store (can be hoisted since it's not dynamically imported)
 vi.mock('../../state/store.js', () => ({
   useStore: {
-    getState: vi.fn(),
+    getState: vi.fn().mockReturnValue({
+      entities: {
+        transactions: {},
+      },
+    }),
     setState: vi.fn(),
     subscribe: vi.fn(),
   },
@@ -41,6 +45,7 @@ vi.mock('../../state/store.js', () => ({
 // Mock store actions (can be hoisted since it's not dynamically imported)
 vi.mock('../../state/actions/aztecTransactions.js', () => ({
   aztecTransactionActions: {
+    addAztecTransaction: vi.fn(),
     updateAztecTransactionStatus: vi.fn(),
     updateAztecTransaction: vi.fn(),
   },
@@ -57,6 +62,7 @@ vi.mock('../../state/actions/connections.js', () => ({
 import { LazyAztecRouterProvider } from './lazy.js';
 import { aztecTransactionActions } from '../../state/actions/aztecTransactions.js';
 import { connectionActions } from '../../state/actions/connections.js';
+import { useStore } from '../../state/store.js';
 
 describe('LazyAztecRouterProvider - Notification Integration', () => {
   let mockTransport: JSONRPCTransport;
@@ -65,6 +71,13 @@ describe('LazyAztecRouterProvider - Notification Integration', () => {
   beforeEach(async () => {
     vi.useFakeTimers();
     notificationHandler = null;
+
+    // Configure the store mock to return proper state
+    vi.mocked(useStore.getState).mockReturnValue({
+      entities: {
+        transactions: {},
+      },
+    } as any);
 
     // Set up the mock AztecRouterProvider constructor
     mockAztecRouterProvider = vi.fn().mockImplementation(() => ({

@@ -39,6 +39,7 @@ export const createWalletNodePermissionMiddleware = (
     transactionSummary?: TransactionSummary;
     functionCallArgNames?: FunctionArgNames;
     origin?: string;
+    txStatusId?: string; // Add txStatusId to context type
   }
 > => {
   return async (context, request, next) => {
@@ -73,6 +74,12 @@ export const createWalletNodePermissionMiddleware = (
         return next();
       }
 
+      // Generate transaction status ID for tracking (before approval UI)
+      const txStatusId = crypto.randomUUID();
+      context.txStatusId = txStatusId; // Store in context for executeTransaction to use
+
+      console.log('[WalletNodePermission] Generated txStatusId for approval tracking:', txStatusId);
+
       // Get transaction data from context (populated by previous middleware)
       const transactionSummary = context.transactionSummary;
       const functionArgNames = context.functionCallArgNames;
@@ -82,9 +89,11 @@ export const createWalletNodePermissionMiddleware = (
         hasTransactionSummary: !!transactionSummary,
         hasFunctionArgNames: !!functionArgNames,
         functionCallsCount: transactionSummary?.functionCalls.length,
+        txStatusId,
       });
 
       // Show approval UI with transaction details or deserialized params
+      // Note: No status notification is sent during user approval to keep the UI clean
       const approved = await onApprovalRequest({
         origin: context.origin || 'wallet-node',
         chainId: 'aztec:31337',

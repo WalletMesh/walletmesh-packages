@@ -318,7 +318,7 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
   }
 
   private updateModalStatus(
-    status: 'connecting' | 'connected' | 'error',
+    status: 'connecting' | 'reconnecting' | 'connected' | 'error',
     payload: {
       walletId?: string;
       accounts?: string[];
@@ -332,6 +332,15 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
     this.withModalInternals((modal) => {
       switch (status) {
         case 'connecting': {
+          if (payload.walletId && modal.stores?.connection?.actions?.setConnecting) {
+            modal.stores.connection.actions.setConnecting(payload.walletId);
+          }
+          modal.setView?.('connecting');
+          break;
+        }
+        case 'reconnecting': {
+          // For reconnecting, use the same connecting view
+          // The modal component will detect isReconnecting from account state
           if (payload.walletId && modal.stores?.connection?.actions?.setConnecting) {
             modal.stores.connection.actions.setConnecting(payload.walletId);
           }
@@ -1747,7 +1756,9 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
       }
 
       if (targetWalletId) {
-        this.updateModalStatus('connecting', { walletId: targetWalletId });
+        // Set status to 'reconnecting' if this is a reconnection, otherwise 'connecting'
+        const status = options?.isReconnection ? 'reconnecting' : 'connecting';
+        this.updateModalStatus(status, { walletId: targetWalletId });
       }
 
       // Connect
@@ -3442,6 +3453,11 @@ export class WalletMeshClient implements WalletMeshClientInterface, InternalWall
                   },
                 },
               },
+            },
+            active: {
+              ...state.active,
+              sessionId: state.active.sessionId === sessionId ? null : state.active.sessionId,
+              walletId: state.active.walletId === walletId ? null : state.active.walletId,
             },
           };
 

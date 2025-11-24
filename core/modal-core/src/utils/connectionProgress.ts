@@ -15,6 +15,7 @@
  */
 export const ConnectionStages = {
   INITIALIZING: 'initializing',
+  RECONNECTING: 'reconnecting',
   CONNECTING: 'connecting',
   AUTHENTICATING: 'authenticating',
   CONNECTED: 'connected',
@@ -46,6 +47,7 @@ export interface ConnectionProgressInfo {
  */
 export const StageProgressMap: Record<ConnectionStage, number> = {
   [ConnectionStages.INITIALIZING]: 10,
+  [ConnectionStages.RECONNECTING]: 30,
   [ConnectionStages.CONNECTING]: 40,
   [ConnectionStages.AUTHENTICATING]: 70,
   [ConnectionStages.CONNECTED]: 100,
@@ -57,6 +59,7 @@ export const StageProgressMap: Record<ConnectionStage, number> = {
  */
 export const StageDescriptionMap: Record<ConnectionStage, string> = {
   [ConnectionStages.INITIALIZING]: 'Initializing connection...',
+  [ConnectionStages.RECONNECTING]: 'Restoring previous session...',
   [ConnectionStages.CONNECTING]: 'Connecting to wallet...',
   [ConnectionStages.AUTHENTICATING]: 'Authenticating...',
   [ConnectionStages.CONNECTED]: 'Connected successfully',

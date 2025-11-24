@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 describe('Chain isolation', () => {
   describe('Aztec isolation', () => {
-    it.skip('should not import EVM-specific code', async () => {
+    it('should not import EVM-specific code', async () => {
       const aztecModule = await import('../../aztec.js');
       const exports = Object.keys(aztecModule);
 
@@ -20,7 +20,7 @@ describe('Chain isolation', () => {
         const hasEvmExport = exports.some((exp) => exp.includes(pattern));
         expect(hasEvmExport, `Found unexpected EVM export containing "${pattern}"`).toBe(false);
       }
-    });
+    }, 15000); // Increase timeout to 15s for dynamic import
 
     it('should not import Solana-specific code', async () => {
       const aztecModule = await import('../../aztec.js');

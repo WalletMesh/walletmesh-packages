@@ -285,18 +285,25 @@ export function createContractInteractionHandlers() {
   ): Promise<{ txHash: TxHash; txStatusId: string }> {
     const startTime = Date.now();
 
-    // Generate unique transaction status ID for tracking
-    const txStatusId = crypto.randomUUID();
+    // Use existing txStatusId from context (set by approval middleware) or generate new one
+    // If txStatusId exists in context, it means approval was already completed
+    const txStatusId = (ctx as unknown as { txStatusId?: string }).txStatusId || crypto.randomUUID();
+    const isResumedFromApproval = !!(ctx as unknown as { txStatusId?: string }).txStatusId;
 
     logger.debug(
-      `Starting transaction execution. StatusId: ${txStatusId}, Wallet: ${ctx.wallet.getAddress().toString()}, Payload: ${executionPayload.calls.length} calls`,
+      `Starting transaction execution. StatusId: ${txStatusId}, Wallet: ${ctx.wallet.getAddress().toString()}, Payload: ${executionPayload.calls.length} calls, ResumedFromApproval: ${isResumedFromApproval}`,
     );
     logger.debug('Execution payload:', executionPayload);
 
     try {
       // Stage 0: Initiated (transaction received, ID generated)
-      logger.debug('Transaction initiated, sending initial notification...');
-      await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
+      // Only send if not already sent by approval middleware
+      if (!isResumedFromApproval) {
+        logger.debug('Transaction initiated, sending initial notification...');
+        await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
+      } else {
+        logger.debug('Transaction resumed from approval, skipping initiated notification');
+      }
 
       // Extract fee and tx options from sendOptions if provided
       const feeOpts = await extractFeeOptions(ctx, sendOptions);
@@ -306,23 +313,28 @@ export function createContractInteractionHandlers() {
       logger.debug('Using tx options:', txOpts);
 
       // Stage 1: Simulating (maps to Aztec's simulate())
+      // Note: No status notification sent during simulation
+      // Overlay will show when proving starts (first visible status after approval)
       logger.debug('Starting transaction simulation...');
-      await notifyTransactionStatus(ctx, { txStatusId, status: 'simulating' });
-
       const txRequest = await createTxExecutionRequest(ctx, executionPayload, feeOpts, txOpts);
+
+      // Simulate transaction (no status notification - overlay appears at proving stage)
       const simulationResult = await simulateTransaction(ctx, executionPayload, txRequest);
       logger.debug('Transaction simulation completed');
 
       // Stage 2: Proving (zero-knowledge proof generation)
-      logger.debug('Starting transaction proving...');
-      await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
-
-      const proveStartTime = Date.now();
       // Extract TxSimulationResult from unified result
       if (!isTxSimulationResult(simulationResult)) {
         throw new JSONRPCError(-32603, 'Expected transaction simulation result but got utility simulation');
       }
       const txSimResult = simulationResult.originalResult;
+
+      // Send proving notification RIGHT BEFORE actual proving starts
+      // This is the first status notification sent after user approval
+      logger.debug('Starting transaction proving...');
+      await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
+
+      const proveStartTime = Date.now();
       const provingResult = await ctx.wallet.proveTx(txRequest, txSimResult.privateExecutionResult);
       const provingTime = Date.now() - proveStartTime;
       logger.debug(`Transaction proving completed in ${provingTime}ms`);
@@ -358,6 +370,27 @@ export function createContractInteractionHandlers() {
         txStatusId, // ← Tracking ID for frontend coordination
         status: 'pending',
         txHash: txHash.toString(), // ← Blockchain hash
+      });
+
+      // Wait for transaction receipt
+      logger.debug('Waiting for transaction receipt...');
+      const waitStartTime = Date.now();
+
+      // Stage 5: Confirming (transaction included, waiting for confirmations)
+      await notifyTransactionStatus(ctx, {
+        txStatusId,
+        status: 'confirming',
+        txHash: txHash.toString(),
+      });
+
+      await ctx.wallet.getTxReceipt(txHash);
+      logger.debug(`Transaction confirmed in ${Date.now() - waitStartTime}ms`);
+
+      // Stage 6: Confirmed (transaction finalized)
+      await notifyTransactionStatus(ctx, {
+        txStatusId,
+        status: 'confirmed',
+        txHash: txHash.toString(),
       });
 
       return { txHash, txStatusId };
@@ -475,18 +508,25 @@ export function createContractInteractionHandlers() {
   ): Promise<{ txHash: TxHash; receipt: TxReceipt; txStatusId: string }> {
     const startTime = Date.now();
 
-    // Generate unique transaction status ID for tracking
-    const txStatusId = crypto.randomUUID();
+    // Use existing txStatusId from context (set by approval middleware) or generate new one
+    // If txStatusId exists in context, it means approval was already completed
+    const txStatusId = (ctx as unknown as { txStatusId?: string }).txStatusId || crypto.randomUUID();
+    const isResumedFromApproval = !!(ctx as unknown as { txStatusId?: string }).txStatusId;
 
     logger.debug(
-      `Starting batch transaction execution. StatusId: ${txStatusId}, Wallet: ${ctx.wallet.getAddress().toString()}, Payloads: ${executionPayloads.length}`,
+      `Starting batch transaction execution. StatusId: ${txStatusId}, Wallet: ${ctx.wallet.getAddress().toString()}, Payloads: ${executionPayloads.length}, ResumedFromApproval: ${isResumedFromApproval}`,
     );
     logger.debug('Execution payloads:', executionPayloads);
 
     try {
       // Stage 0: Initiated (batch received, ID generated)
-      logger.debug('Batch transaction initiated, sending initial notification...');
-      await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
+      // Only send if not already sent by approval middleware
+      if (!isResumedFromApproval) {
+        logger.debug('Batch transaction initiated, sending initial notification...');
+        await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
+      } else {
+        logger.debug('Batch transaction resumed from approval, skipping initiated notification');
+      }
 
       // Validate all payloads
       validateBatchPayloads(executionPayloads);
@@ -502,23 +542,28 @@ export function createContractInteractionHandlers() {
       logger.debug('Using tx options:', txOpts);
 
       // Stage 1: Simulating (maps to Aztec's simulate())
+      // Note: No status notification sent during simulation
+      // Overlay will show when proving starts (first visible status after approval)
       logger.debug('Starting batch transaction simulation...');
-      await notifyTransactionStatus(ctx, { txStatusId, status: 'simulating' });
 
       const txRequest = await createTxExecutionRequest(ctx, mergedPayload, feeOpts, txOpts);
+      // Simulate transaction (no status notification - overlay appears at proving stage)
       const simulationResult = await simulateTransaction(ctx, mergedPayload, txRequest);
       logger.debug('Batch transaction simulation completed');
 
       // Stage 2: Proving (zero-knowledge proof generation for entire batch)
-      logger.debug('Starting batch transaction proving...');
-      await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
-
-      const proveStartTime = Date.now();
       // Extract TxSimulationResult from unified result
       if (!isTxSimulationResult(simulationResult)) {
         throw new JSONRPCError(-32603, 'Expected transaction simulation result but got utility simulation');
       }
       const txSimResult = simulationResult.originalResult;
+
+      // Send proving notification RIGHT BEFORE actual proving starts
+      // This is the first status notification sent after user approval
+      logger.debug('Starting batch transaction proving...');
+      await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
+
+      const proveStartTime = Date.now();
       const provingResult = await ctx.wallet.proveTx(txRequest, txSimResult.privateExecutionResult);
       const provingTime = Date.now() - proveStartTime;
       logger.debug(
@@ -690,17 +735,24 @@ export function createContractInteractionHandlers() {
       const [params] = paramsTuple;
       const { artifact, args, constructorName } = params;
 
-      // Generate unique transaction status ID for tracking
-      const txStatusId = crypto.randomUUID();
+      // Use existing txStatusId from context (set by approval middleware) or generate new one
+      // If txStatusId exists in context, it means approval was already completed
+      const txStatusId = (ctx as unknown as { txStatusId?: string }).txStatusId || crypto.randomUUID();
+      const isResumedFromApproval = !!(ctx as unknown as { txStatusId?: string }).txStatusId;
 
       logger.debug(
-        `aztec_wmDeployContract: deploying ${artifact.name} with ${args.length} args. StatusId: ${txStatusId}`,
+        `aztec_wmDeployContract: deploying ${artifact.name} with ${args.length} args. StatusId: ${txStatusId}, ResumedFromApproval: ${isResumedFromApproval}`,
       );
 
       try {
         // Stage 0: Initiated (deployment request received, ID generated)
-        logger.debug('Deployment initiated, sending initial notification...');
-        await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
+        // Only send if not already sent by approval middleware
+        if (!isResumedFromApproval) {
+          logger.debug('Deployment initiated, sending initial notification...');
+          await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
+        } else {
+          logger.debug('Deployment resumed from approval, skipping initiated notification');
+        }
 
         // Create deployment method using the server-side wallet
         const deployMethod = Contract.deploy(ctx.wallet, artifact, args, constructorName);
@@ -750,12 +802,14 @@ export function createContractInteractionHandlers() {
         }
 
         // Stage 1: Proving (zero-knowledge proof generation)
-        logger.debug('Starting deployment proving...');
-        await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
-
         // Prove the deployment transaction
         let deployProvenTx: ProvenTx | undefined;
         try {
+          // Send proving notification RIGHT BEFORE actual proving starts (not at handler entry)
+          // This prevents "Generating Proof" from showing while approval modal is still visible
+          logger.debug('Starting deployment proving...');
+          await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
+
           const proveStartTime = Date.now();
           deployProvenTx = await deployMethod.prove(opts);
           logger.debug(`Deployment proving completed in ${Date.now() - proveStartTime}ms`);
@@ -842,6 +896,27 @@ export function createContractInteractionHandlers() {
         await notifyTransactionStatus(ctx, {
           txStatusId,
           status: 'pending',
+          txHash: txHash.toString(),
+        });
+
+        // Wait for deployment transaction receipt
+        logger.debug('Waiting for deployment transaction receipt...');
+        const waitStartTime = Date.now();
+
+        // Stage 4: Confirming (transaction included, waiting for confirmations)
+        await notifyTransactionStatus(ctx, {
+          txStatusId,
+          status: 'confirming',
+          txHash: txHash.toString(),
+        });
+
+        await deploySentTx.wait();
+        logger.debug(`Deployment transaction confirmed in ${Date.now() - waitStartTime}ms`);
+
+        // Stage 5: Confirmed (deployment finalized)
+        await notifyTransactionStatus(ctx, {
+          txStatusId,
+          status: 'confirmed',
           txHash: txHash.toString(),
         });
 

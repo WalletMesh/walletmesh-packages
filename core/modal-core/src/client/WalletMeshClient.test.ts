@@ -572,7 +572,7 @@ describe('WalletMeshClient', () => {
       client.setModal(mockModal);
     });
 
-    it.skip('should connect to a wallet', async () => {
+    it('should connect to a wallet', async () => {
       const mockAdapter = {
         id: 'metamask',
         metadata: {
@@ -626,6 +626,9 @@ describe('WalletMeshClient', () => {
       });
     });
 
+    // Skipped: Times out after 5000ms due to complex async modal state management
+    // with fake timers. The test appears to hang waiting for modal subscription callbacks.
+    // TODO: Simplify modal subscription mocking or refactor test to use real timers
     it.skip('should handle connection without wallet ID', async () => {
       // Mock initial modal state - closed
       mockModal.getState.mockReturnValue({

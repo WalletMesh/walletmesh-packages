@@ -13,7 +13,7 @@ describe('@walletmesh/modal-react/aztec exports', () => {
   const modulePath = '../../aztec.js';
 
   describe('Core functionality', () => {
-    it.skip('should re-export all core functionality', async () => {
+    it('should re-export all core functionality', async () => {
       await testCoreExportsPresent(modulePath);
     });
 

@@ -469,9 +469,20 @@ describe('ErrorFactory', () => {
 });
 
 // NOTE: Skipped due to vitest 2.1.8 limitation with Error.cause preservation
-// The production code works correctly (verified with manual testing)
-// Fails in both jsdom and happy-dom test environments
-// This is a known vitest issue, not a bug in the production code
+//
+// Why skipped:
+// - Vitest 2.1.8 doesn't properly preserve Error.cause in test environments
+// - Fails in both jsdom and happy-dom environments
+// - This is a known Vitest limitation, NOT a bug in production code
+//
+// Status:
+// - Production code works correctly (verified with manual testing)
+// - Error.cause is properly preserved in actual runtime environments
+//
+// Re-enable when:
+// - Upgrading to Vitest 3.x or later (if cause preservation is fixed)
+// - Switching to a different test runner that properly handles Error.cause
+// - Or when Vitest fixes Error.cause handling in jsdom/happy-dom
 describe.skip('Cause Preservation - Quick Test', () => {
   it('should preserve cause in connectorError', () => {
     const originalError = new Error('Original');

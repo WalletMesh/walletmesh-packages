@@ -443,7 +443,7 @@ export function useConnect(): UseConnectReturn {
 
       try {
         const handleProgress = (
-          stage: 'initializing' | 'connecting' | 'authenticating' | 'connected' | 'failed',
+          stage: 'initializing' | 'reconnecting' | 'connecting' | 'authenticating' | 'connected' | 'failed',
           details?: string,
         ) => {
           if (isMountedRef.current) {
@@ -453,8 +453,12 @@ export function useConnect(): UseConnectReturn {
           }
         };
 
-        // Initial progress
-        handleProgress('initializing', 'Initializing connection...');
+        // Initial progress - use reconnecting stage if this is a reconnection
+        if (options?.isReconnection) {
+          handleProgress('reconnecting', 'Restoring previous session...');
+        } else {
+          handleProgress('initializing', 'Initializing connection...');
+        }
 
         // Execute connection
         if (walletId) {

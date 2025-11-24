@@ -109,6 +109,8 @@ export interface SentTx {
   wait(): Promise<TxReceipt>;
   /** Transaction hash */
   txHash: string;
+  /** Transaction status tracking ID (used for coordinating status notifications) */
+  txStatusId?: string;
 }
 
 /**

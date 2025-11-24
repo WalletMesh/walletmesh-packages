@@ -78,6 +78,7 @@ interface AztecRouterProviderInterface {
   ) => Promise<{ sessionId: string; permissions: unknown }>;
   reconnect: (sessionId: string, timeout?: number) => Promise<{ sessionId: string; permissions: unknown }>;
   disconnect: () => Promise<void>;
+  ensureReady: () => Promise<void>;
   on: (event: string, listener: (...args: unknown[]) => void) => void;
   sessionId: string | undefined; // Session ID property available after connection
 }
@@ -112,7 +113,7 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
 
   private walletConfig: AztecExampleWalletConfig = {
     walletUrl: 'http://127.0.0.1:5174',
-    windowFeatures: 'width=400,height=600,resizable,scrollbars=yes',
+    windowFeatures: 'width=500,height=700,resizable,scrollbars=yes',
     connectionTimeout: 30000,
   };
 
@@ -744,6 +745,10 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
     // - Aztec serializer registration
     // - State management integration
     this.routerProvider = new LazyAztecRouterProvider(jsonRpcTransport);
+
+    // Wait for provider initialization to complete before proceeding
+    // This prevents race condition where connect() is called before dynamic import finishes
+    await this.routerProvider.ensureReady();
 
     modalLogger.info('✅ LazyAztecRouterProvider created and configured');
     console.log('[AztecExampleWalletAdapter] Router provider created successfully');

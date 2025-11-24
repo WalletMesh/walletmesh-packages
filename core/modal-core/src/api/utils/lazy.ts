@@ -51,7 +51,8 @@ export function createLazy<T>(factory: () => T): () => T {
  * Create a lazily initialized async value
  *
  * Similar to createLazy but for async factory functions. The promise is
- * cached after first call.
+ * cached after first call. If the promise rejects, the cache is cleared
+ * to allow retry on subsequent calls.
  *
  * @template T
  * @param {() => Promise<T>} factory - Async factory function
@@ -66,8 +67,9 @@ export function createLazy<T>(factory: () => T): () => T {
  *
  * // First call triggers the fetch
  * const wallets = await getWalletList();
- * // Subsequent calls return the same promise
+ * // Subsequent calls return the same promise (if successful)
  * const sameWallets = await getWalletList();
+ * // If first call failed, retry is possible
  * ```
  */
 export function createLazyAsync<T>(factory: () => Promise<T>): () => Promise<T> {
@@ -75,7 +77,10 @@ export function createLazyAsync<T>(factory: () => Promise<T>): () => Promise<T> 
 
   return () => {
     if (!promise) {
-      promise = factory();
+      promise = factory().catch((error) => {
+        promise = undefined; // Clear cache on failure to allow retry
+        throw error;
+      });
     }
     return promise;
   };

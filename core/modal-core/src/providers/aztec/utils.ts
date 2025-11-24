@@ -260,6 +260,7 @@ export async function executeTx(
 
       return {
         txHash,
+        txStatusId: result.txStatusId, // Include wallet's transaction status ID
         wait: async (): Promise<TxReceipt> => {
           // Use wallet's getTxReceipt to wait for confirmation
           const receipt = await waitForTxReceipt(wallet, txHash);

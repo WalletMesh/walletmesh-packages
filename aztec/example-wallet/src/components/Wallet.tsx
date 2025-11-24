@@ -1763,7 +1763,9 @@ const Wallet: React.FC<WalletProps> = ({
           </div>
           <p className="connection-status account-info">
             <strong>Account:</strong>{' '}
-            <code className="account-address">{connectedAccount || 'Loading...'}</code>
+            <code className="account-address" title={connectedAccount || ''}>
+              {connectedAccount || 'Loading...'}
+            </code>
           </p>
           {activeProvingCount > 0 && (
             <output className="proving-banner" aria-live="polite">

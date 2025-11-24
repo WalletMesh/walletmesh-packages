@@ -53,6 +53,7 @@ export interface TransactionStages {
  * - Execution mode (sync vs async)
  * - Detailed stage timing information
  * - Callback functions for lifecycle events
+ * - Signing-only operation flag
  */
 export interface AztecTransactionResult extends TransactionResult {
   /**
@@ -67,6 +68,13 @@ export interface AztecTransactionResult extends TransactionResult {
    * Used for performance monitoring and progress display
    */
   stages: TransactionStages;
+
+  /**
+   * Flag indicating if this is a signing-only operation (authwit, sign message, etc.)
+   * Signing-only operations should never trigger the transaction status overlay
+   * as they don't involve blockchain state changes or multi-stage execution
+   */
+  isSigningOnly?: boolean;
 }
 
 /**

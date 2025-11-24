@@ -16,6 +16,8 @@ import { aztecTransactionActions } from '../../state/actions/aztecTransactions.j
 import { useStore } from '../../state/store.js';
 import { createLazyModule } from '../../utils/lazy/index.js';
 import type { WalletMeshState } from '../../state/store.js';
+import type { AztecTransactionResult } from '../../state/types/aztecTransactions.js';
+import { ChainType } from '../../types.js';
 import type { AztecProviderFunctions } from './types.js';
 import { parseAztecTransactionStatusWithDiagnostics } from './types.js';
 
@@ -265,8 +267,13 @@ export class LazyAztecRouterProvider {
   private initPromise: Promise<void>;
   private realProvider: AztecRouterProviderInstance | null = null;
   private notificationCleanup: Array<() => void> = [];
+  private providerContext?: Record<string, unknown>;
 
   constructor(transport: JSONRPCTransport, context?: Record<string, unknown>) {
+    // Store context if provided
+    if (context) {
+      this.providerContext = context;
+    }
     // Initialize the real provider asynchronously
     this.initPromise = this.initialize(transport, context);
   }
@@ -336,25 +343,139 @@ export class LazyAztecRouterProvider {
               parseResult.data,
             );
 
+            const { txStatusId, status, txHash: notificationTxHash, error: notificationError } = parseResult.data;
+
+            // Check if transaction exists in store
+            const state = store.getState();
+            const existingTx = state.entities.transactions[txStatusId];
+
+            if (!existingTx) {
+              // Transaction doesn't exist yet - create it from the notification
+              // This can happen when wallet sends notifications before wmExecuteTx returns
+              console.log(
+                '[LazyAztecRouterProvider] Creating transaction from notification (notification arrived before wmExecuteTx returned)',
+                { txStatusId, status },
+              );
+
+              // Get chainId from context or default
+              const chainId = (this.providerContext?.['chainId'] as string) || 'aztec:31337';
+
+              // Detect signing-only operations based on initial status
+              // Signing operations (authwit, sign message) typically start at 'initiated' or 'confirmed'
+              // Blockchain transactions start at 'simulating' or other blockchain stages
+              const isSigningOnly = status === 'initiated' || status === 'confirmed';
+
+              const newTransaction: AztecTransactionResult = {
+                txStatusId,
+                txHash: notificationTxHash || '',
+                chainId,
+                chainType: ChainType.Aztec,
+                walletId: 'aztec-wallet', // TODO: Get from context
+                status,
+                from: '', // TODO: Get from wallet
+                request: {} as never, // TODO: Proper request object
+                startTime: Date.now(),
+                mode: 'sync', // Assume sync mode for wallet-initiated transactions
+                stages: {},
+                isSigningOnly, // Mark signing operations to prevent overlay display
+                wait: async () => {
+                  // Wait for transaction to complete
+                  return new Promise((resolve, reject) => {
+                    const checkStatus = () => {
+                      const tx = store.getState().entities.transactions[txStatusId];
+                      if (!tx) {
+                        reject(ErrorFactory.configurationError('Transaction not found', { txStatusId }));
+                        return;
+                      }
+
+                      if (tx.status === 'confirmed' && tx.receipt) {
+                        resolve(tx.receipt);
+                      } else if (tx.status === 'failed') {
+                        reject(tx.error || ErrorFactory.configurationError('Transaction failed'));
+                      } else {
+                        // Check again after a delay
+                        setTimeout(checkStatus, 500);
+                      }
+                    };
+
+                    checkStatus();
+                  });
+                },
+              };
+
+              aztecTransactionActions.addAztecTransaction(store, newTransaction);
+
+              // Set as active transaction to trigger sync overlay for blockchain transactions ONLY
+              // Never set signing-only operations (authwit, sign message) as active
+              // Only trigger overlay for multi-stage blockchain transactions
+              const isBlockchainTransaction =
+                !isSigningOnly &&
+                (status === 'simulating' ||
+                  status === 'proving' ||
+                  status === 'sending' ||
+                  status === 'pending' ||
+                  status === 'confirming');
+
+              if (isBlockchainTransaction) {
+                console.log(
+                  '[LazyAztecRouterProvider] Setting transaction as active to trigger overlay',
+                  { txStatusId, status, isSigningOnly },
+                );
+                store.setState((state) => {
+                  state.active.transactionId = txStatusId;
+                  return state;
+                });
+              } else if (isSigningOnly) {
+                console.log(
+                  '[LazyAztecRouterProvider] Signing-only operation detected, not setting as active (no overlay)',
+                  { txStatusId, status, isSigningOnly },
+                );
+              } else {
+                console.log(
+                  '[LazyAztecRouterProvider] Transaction not yet in blockchain stages, not setting as active (waiting)',
+                  { txStatusId, status },
+                );
+              }
+            }
+
             // Update transaction status in store
             aztecTransactionActions.updateAztecTransactionStatus(
               store,
-              parseResult.data.txStatusId, // ← Internal tracking ID
-              parseResult.data.status, // Types now match - no cast needed
+              txStatusId, // ← Internal tracking ID
+              status, // Types now match - no cast needed
             );
 
             // Update transaction hash if provided (blockchain identifier)
-            if (parseResult.data.txHash) {
-              aztecTransactionActions.updateAztecTransaction(store, parseResult.data.txStatusId, {
-                txHash: parseResult.data.txHash, // ← Blockchain hash
+            if (notificationTxHash) {
+              aztecTransactionActions.updateAztecTransaction(store, txStatusId, {
+                txHash: notificationTxHash, // ← Blockchain hash
               });
             }
 
             // Update error if provided
-            if (parseResult.data.error) {
-              aztecTransactionActions.updateAztecTransaction(store, parseResult.data.txStatusId, {
-                error: ErrorFactory.transactionFailed(parseResult.data.error),
+            if (notificationError) {
+              aztecTransactionActions.updateAztecTransaction(store, txStatusId, {
+                error: ErrorFactory.transactionFailed(notificationError),
               });
+            }
+
+            // Auto-dismiss overlay after transaction reaches terminal state
+            if (status === 'confirmed' || status === 'failed') {
+              console.log(
+                '[LazyAztecRouterProvider] Transaction reached terminal state, scheduling auto-dismiss',
+                { txStatusId, status },
+              );
+              setTimeout(() => {
+                const currentActive = store.getState().active.transactionId;
+                // Only clear if this is still the active transaction
+                if (currentActive === txStatusId) {
+                  console.log('[LazyAztecRouterProvider] Auto-dismissing overlay', { txStatusId });
+                  store.setState((state) => {
+                    state.active.transactionId = null;
+                    return state;
+                  });
+                }
+              }, 2500); // 2.5 seconds to show success/error state
             }
           } else {
             // Log detailed validation errors for debugging

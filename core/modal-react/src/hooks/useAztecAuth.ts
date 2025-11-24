@@ -230,6 +230,8 @@ export function useAztecAuth(): UseAztecAuthReturn {
       setError(null);
 
       try {
+        // The wallet handler will emit notifications that create and update the transaction
+        // The notification listener will automatically set it as active when it reaches "initiated" status
         const authWit = await createAuthWitForInteraction(wallet, interaction, description);
         return authWit;
       } catch (err) {

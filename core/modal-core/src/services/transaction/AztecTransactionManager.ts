@@ -62,18 +62,13 @@ export class AztecTransactionManager {
    * @returns Transaction receipt
    */
   async executeSync(interaction: ContractFunctionInteraction): Promise<unknown> {
-    const txStatusId = this.generateTxStatusId();
-    const transaction = this.createTransaction(txStatusId, 'sync');
-
     try {
-      // Add transaction to store (sync mode)
-      aztecTransactionActions.addAztecTransaction(this.store, transaction);
-
-      // Execute transaction with lifecycle tracking
-      return await this.executeWithLifecycle(interaction, transaction);
+      // Execute transaction and get wallet's txStatusId
+      // The wallet will send notifications with this ID
+      const { receipt } = await this.executeWithLifecycle(interaction, 'sync');
+      return receipt;
     } catch (error) {
-      // Update transaction as failed
-      this.updateStatus(txStatusId, 'failed');
+      // Error is already logged by executeWithLifecycle
       throw error;
     }
   }
@@ -93,59 +88,59 @@ export class AztecTransactionManager {
     interaction: ContractFunctionInteraction,
     callbacks?: TransactionCallbacks,
   ): Promise<string> {
-    const txStatusId = this.generateTxStatusId();
-    const transaction = this.createTransaction(txStatusId, 'async');
+    // Create placeholder transaction with temporary ID
+    const tempTxStatusId = this.generateTxStatusId();
+    const transaction = this.createTransaction(tempTxStatusId, 'async');
 
     // Add transaction to store (async mode - adds to background list)
     aztecTransactionActions.addAztecTransaction(this.store, transaction);
 
     // Execute in background
-    this.executeInBackground(interaction, transaction, callbacks);
+    this.executeInBackground(interaction, 'async', tempTxStatusId, callbacks);
 
     // Return transaction status ID immediately
-    return txStatusId;
+    // Note: The actual wallet txStatusId may be different and will replace this
+    return tempTxStatusId;
   }
 
   /**
    * Execute transaction with full lifecycle tracking
+   *
+   * @returns Object with txStatusId and receipt
    */
   private async executeWithLifecycle(
     interaction: ContractFunctionInteraction,
-    transaction: AztecTransactionResult,
-  ): Promise<unknown> {
-    // Small delay to ensure React has time to render the initial 'idle' state
-    // before transitioning to 'proving'
-    await new Promise((resolve) => setTimeout(resolve, 100));
-
-    // Stage 1: Proving - This encompasses simulation, proof generation, and sending
-    // The wallet handles these internally during executeTx()
-    this.updateStatus(transaction.txStatusId, 'proving');
-    aztecTransactionActions.startTransactionStage(this.store, transaction.txStatusId, 'proving');
-
-    // Execute transaction - this is the long operation (60-120 seconds)
-    // Handles simulation, proving, and sending internally
+    mode: TransactionMode,
+  ): Promise<{ txStatusId: string; receipt: unknown }> {
+    // Execute transaction to get wallet's txStatusId
+    // The wallet will send notifications ('initiated', 'proving', 'sending', etc.)
+    // with its own txStatusId, which will create/update the transaction in the store
     const sentTx = await executeTx(this.wallet, interaction);
+
+    // Use the wallet's transaction ID if provided, otherwise generate one
+    // The wallet may send notifications with a different txStatusId which will update the transaction
+    const txStatusId = sentTx.txStatusId ?? this.generateTxStatusId();
+
+    // Create transaction in store if wallet hasn't already (via notifications)
+    // This handles the case where notifications haven't arrived yet
+    const existingTx = this.getTransaction(txStatusId);
+    if (!existingTx) {
+      const transaction = this.createTransaction(txStatusId, mode);
+      aztecTransactionActions.addAztecTransaction(this.store, transaction);
+    }
 
     // Update transaction hash (blockchain identifier)
     if (sentTx.txHash) {
-      aztecTransactionActions.updateAztecTransaction(this.store, transaction.txStatusId, {
+      aztecTransactionActions.updateAztecTransaction(this.store, txStatusId, {
         txHash: sentTx.txHash,
       });
     }
 
-    // Stage 2: Confirming - waiting for network confirmation
-    this.updateStatus(transaction.txStatusId, 'confirming');
-    aztecTransactionActions.endTransactionStage(this.store, transaction.txStatusId, 'proving');
-    aztecTransactionActions.startTransactionStage(this.store, transaction.txStatusId, 'confirming');
-
-    // Wait for confirmation (few seconds)
+    // Wait for confirmation
+    // The wallet will send 'confirming' and 'confirmed' notifications
     const receipt = await sentTx.wait();
 
-    // Stage 3: Confirmed - transaction complete
-    this.updateStatus(transaction.txStatusId, 'confirmed');
-    aztecTransactionActions.endTransactionStage(this.store, transaction.txStatusId, 'confirming');
-
-    return receipt;
+    return { txStatusId, receipt };
   }
 
   /**
@@ -153,22 +148,36 @@ export class AztecTransactionManager {
    */
   private async executeInBackground(
     interaction: ContractFunctionInteraction,
-    transaction: AztecTransactionResult,
+    mode: TransactionMode,
+    tempTxStatusId: string,
     callbacks?: TransactionCallbacks,
   ): Promise<void> {
     try {
-      await this.executeWithLifecycle(interaction, transaction);
+      const { txStatusId } = await this.executeWithLifecycle(interaction, mode);
 
-      // Success callback
+      // Remove the temporary transaction if it's different from the wallet's
+      if (tempTxStatusId !== txStatusId) {
+        // Remove temp transaction from store
+        const state = this.store.getState();
+        if (state.entities.transactions[tempTxStatusId]) {
+          delete state.entities.transactions[tempTxStatusId];
+          this.store.setState(state);
+        }
+      }
+
+      // Success callback - get the transaction using the wallet's txStatusId
       if (callbacks?.onSuccess) {
-        const updatedTx = this.getTransaction(transaction.txStatusId);
-        if (updatedTx) {
-          callbacks.onSuccess(updatedTx);
+        const transaction = this.getTransaction(txStatusId);
+        if (transaction) {
+          callbacks.onSuccess(transaction);
         }
       }
     } catch (error) {
-      // Update status to failed
-      this.updateStatus(transaction.txStatusId, 'failed');
+      // Clean up temporary transaction if it exists
+      const tempTx = this.getTransaction(tempTxStatusId);
+      if (tempTx) {
+        this.updateStatus(tempTxStatusId, 'failed');
+      }
 
       // Error callback
       if (callbacks?.onError) {
