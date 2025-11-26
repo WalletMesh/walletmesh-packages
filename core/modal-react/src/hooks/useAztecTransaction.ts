@@ -9,7 +9,7 @@
  * @packageDocumentation
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   ErrorFactory,
   type AztecTransactionManager,
@@ -40,12 +40,18 @@ export interface UseAztecTransactionReturn {
   // Active transaction state (for sync mode)
   /** Currently active transaction (sync mode) */
   activeTransaction: AztecTransactionResult | null;
-  /** Whether a sync transaction is currently executing */
+  /** Whether a sync transaction is currently executing (legacy) */
   isLoading: boolean;
   /** Current transaction status */
   status: TransactionStatus;
   /** Error from last transaction */
   error: Error | null;
+
+  // Execution lock state (defense-in-depth against race conditions)
+  /** Whether the hook is currently waiting for wallet interaction (approval/signing) */
+  isWalletInteracting: boolean;
+  /** Combined execution state - true if any transaction operation is in progress */
+  isExecuting: boolean;
 
   // Background transactions state (for async mode)
   /** All background transactions (async mode) */
@@ -202,6 +208,11 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
   const store = useStoreInstance();
   const logger = useMemo(() => createComponentLogger('useAztecTransaction'), []);
 
+  // Execution lock - prevents concurrent transaction executions (defense-in-depth)
+  // Uses ref for synchronous check to prevent race conditions from rapid clicks
+  const executingRef = useRef(false);
+  const [isWalletInteracting, setIsWalletInteracting] = useState(false);
+
   // Subscribe to active transaction (sync mode)
   const activeTransactionId = useStore((state) => state.active?.transactionId);
   const activeTransaction = useStore((state) => {
@@ -222,9 +233,10 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
   const status = useStore((state) => state.meta.transactionStatus || 'idle');
   const error = useStore((state) => state.ui.errors?.['transaction'] || null);
 
-  // Derive loading state
+  // Derive loading state - only true when there's an active transaction that's not complete
   const isLoading = useMemo(() => {
-    return activeTransaction?.status !== 'confirmed' && activeTransaction?.status !== 'failed';
+    if (!activeTransaction) return false;
+    return activeTransaction.status !== 'confirmed' && activeTransaction.status !== 'failed';
   }, [activeTransaction]);
 
   // Count active background transactions
@@ -253,8 +265,20 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
   }, [isReady, aztecWallet, chain, store]);
 
   // Execute transaction synchronously (blocking with overlay)
+  // Includes execution lock to prevent concurrent executions (defense-in-depth)
   const executeSync = useCallback(
     async (interaction: ContractFunctionInteraction): Promise<unknown> => {
+      // CRITICAL: Synchronous check prevents race between rapid clicks
+      // This check happens BEFORE any async operation
+      if (executingRef.current) {
+        logger.warn('Transaction already in progress, rejecting concurrent execution');
+        throw new Error('Transaction already in progress');
+      }
+
+      // Acquire lock immediately (synchronous)
+      executingRef.current = true;
+      setIsWalletInteracting(true);
+
       logger.debug('Executing transaction synchronously', { mode: 'sync' });
 
       try {
@@ -265,6 +289,10 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
       } catch (err) {
         logger.error('Transaction failed', err);
         throw err;
+      } finally {
+        // Always release lock, even on error
+        executingRef.current = false;
+        setIsWalletInteracting(false);
       }
     },
     [getTransactionManager, logger],
@@ -303,6 +331,9 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
     uiActions.clearError(store, 'transaction');
   }, [store]);
 
+  // Combined execution state - true if any transaction operation is in progress
+  const isExecuting = isLoading || isWalletInteracting;
+
   return {
     // Methods
     execute,
@@ -313,6 +344,10 @@ export function useAztecTransaction(): UseAztecTransactionReturn {
     isLoading,
     status,
     error: error ? (error instanceof Error ? error : new Error(error.message || 'Transaction error')) : null,
+
+    // Execution lock state (defense-in-depth)
+    isWalletInteracting,
+    isExecuting,
 
     // Background transactions state (async mode)
     backgroundTransactions,

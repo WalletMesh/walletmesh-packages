@@ -8,6 +8,12 @@ import {
   type JSONRPCTransport,
 } from '@walletmesh/jsonrpc';
 
+import {
+  ApprovalQueueManager,
+  createApprovalQueueMiddleware,
+  type ApprovalContext,
+  type OnApprovalQueuedCallback,
+} from './approval/index.js';
 import { RouterError } from './errors.js';
 import { createPermissionsMiddleware, createSessionMiddleware } from './middleware.js';
 import { defaultStore, type SessionStore } from './session-store.js';
@@ -22,6 +28,35 @@ import type {
   SessionData,
   Wallets,
 } from './types.js';
+
+/**
+ * Configuration for the approval queue system.
+ * Enables request-based approval tracking to prevent race conditions.
+ */
+export interface ApprovalQueueRouterConfig {
+  /**
+   * Array of method names that require user approval.
+   * Each request for these methods will be queued and blocked until
+   * explicitly approved or denied by the user.
+   *
+   * @example ['aztec_wmExecuteTx', 'aztec_wmDeployContract', 'aztec_createAuthWit']
+   */
+  methodsRequiringApproval: string[];
+  /**
+   * Timeout in milliseconds for approval requests.
+   * After this time, the request will be automatically rejected.
+   * @default 300000 (5 minutes)
+   */
+  defaultTimeout?: number | undefined;
+  /**
+   * Callback invoked when a new approval is queued.
+   * The wallet UI should use this to display the approval dialog.
+   * The wallet must call `router.resolveApproval(requestId, approved)` to resolve.
+   *
+   * @param context - The approval context with request details
+   */
+  onApprovalQueued: OnApprovalQueuedCallback;
+}
 
 /**
  * Configuration options for the WalletRouter.
@@ -63,6 +98,25 @@ export interface WalletRouterConfig {
    * @param sessionId - The ID of the deleted session
    */
   onSessionDeleted?: (sessionId: string) => void;
+  /**
+   * Optional approval queue configuration.
+   * When provided, enables request-based approval tracking to prevent
+   * race conditions where concurrent requests could bypass user approval.
+   *
+   * @example
+   * ```typescript
+   * const router = new WalletRouter(transport, wallets, permissionManager, {
+   *   approvalQueue: {
+   *     methodsRequiringApproval: ['aztec_wmExecuteTx', 'aztec_createAuthWit'],
+   *     onApprovalQueued: async (ctx) => {
+   *       const approved = await showApprovalDialog(ctx);
+   *       router.resolveApproval(ctx.requestId, approved);
+   *     },
+   *   },
+   * });
+   * ```
+   */
+  approvalQueue?: ApprovalQueueRouterConfig;
 }
 
 /**
@@ -198,6 +252,14 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   private onSessionDeleted?: (sessionId: string) => void;
 
   /**
+   * Optional approval queue manager for request-based approval tracking.
+   * When configured, each request requiring approval gets its own entry
+   * keyed by the unique JSON-RPC request ID, preventing race conditions.
+   * @private
+   */
+  private approvalQueueManager?: ApprovalQueueManager;
+
+  /**
    * Creates a new WalletRouter instance for managing multi-chain wallet connections.
    *
    * @param transport - Transport layer for sending messages
@@ -259,6 +321,32 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     this.addMiddleware(
       createPermissionsMiddleware(this.permissionManager.checkPermissions.bind(this.permissionManager)),
     );
+
+    // Initialize approval queue if configured
+    if (config.approvalQueue) {
+      this.approvalQueueManager = new ApprovalQueueManager({
+        ...(config.approvalQueue.defaultTimeout !== undefined && {
+          defaultTimeout: config.approvalQueue.defaultTimeout,
+        }),
+        ...(config.debug !== undefined && { debug: config.debug }),
+      });
+
+      // Add approval queue middleware AFTER permission middleware
+      // This ensures requests are first validated for permissions, then queued for approval
+      this.addMiddleware(
+        createApprovalQueueMiddleware(
+          this.approvalQueueManager,
+          {
+            methodsRequiringApproval: config.approvalQueue.methodsRequiringApproval,
+            ...(config.approvalQueue.defaultTimeout !== undefined && {
+              timeout: config.approvalQueue.defaultTimeout,
+            }),
+            ...(config.debug !== undefined && { debug: config.debug }),
+          },
+          config.approvalQueue.onApprovalQueued,
+        ),
+      );
+    }
 
     // Register methods
     this.registerMethod('wm_connect', this.connect.bind(this));
@@ -450,6 +538,70 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     } else {
       console.log('[WalletRouter] All sessions revoked successfully');
     }
+  }
+
+  /**
+   * Resolves a pending approval request with the user's decision.
+   * This method is called by the wallet UI after the user approves or denies a request.
+   *
+   * @param requestId - The unique JSON-RPC request ID to resolve
+   * @param approved - true if user approved the request, false if denied
+   * @returns true if the approval was found and resolved, false if not found
+   *
+   * @example
+   * ```typescript
+   * // In wallet UI approval dialog
+   * const handleApprove = () => {
+   *   router.resolveApproval(approvalContext.requestId, true);
+   * };
+   *
+   * const handleDeny = () => {
+   *   router.resolveApproval(approvalContext.requestId, false);
+   * };
+   * ```
+   */
+  public resolveApproval(requestId: string | number, approved: boolean): boolean {
+    if (!this.approvalQueueManager) {
+      console.warn('[WalletRouter] Approval queue not configured');
+      return false;
+    }
+    return this.approvalQueueManager.resolveApproval(requestId, approved);
+  }
+
+  /**
+   * Gets all pending approval requests.
+   * This method is used by the wallet UI to display pending approvals.
+   *
+   * @returns Array of pending approval contexts
+   *
+   * @example
+   * ```typescript
+   * // In wallet UI
+   * const pendingApprovals = router.getPendingApprovals();
+   * console.log(`${pendingApprovals.length} pending approvals`);
+   *
+   * for (const approval of pendingApprovals) {
+   *   console.log(`Request ${approval.requestId}: ${approval.method}`);
+   * }
+   * ```
+   */
+  public getPendingApprovals(): ApprovalContext[] {
+    if (!this.approvalQueueManager) {
+      return [];
+    }
+    return this.approvalQueueManager.getAllPending();
+  }
+
+  /**
+   * Gets the count of pending approval requests.
+   *
+   * @returns Number of pending approvals
+   */
+  public getPendingApprovalCount(): number {
+    if (!this.approvalQueueManager) {
+      return 0;
+    }
+    return this.approvalQueueManager.getPendingCount();
   }
 
   /**

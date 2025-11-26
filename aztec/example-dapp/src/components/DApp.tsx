@@ -62,8 +62,8 @@ const DApp: React.FC = () => {
   const {
     executeSync,
     execute: executeAsync,
-    activeTransaction,
     backgroundTransactions,
+    isExecuting,
   } = useAztecTransaction();
 
   // Use contract hooks for Token and Counter contracts
@@ -104,11 +104,8 @@ const DApp: React.FC = () => {
     }
   }, [isConnected]);
 
-  // Derive transaction execution state from the hook
-  const isMintExecuting =
-    activeTransaction?.status === 'simulating' ||
-    activeTransaction?.status === 'proving' ||
-    activeTransaction?.status === 'sending';
+  // Transaction execution state from the hook
+  // isExecuting combines isLoading + isWalletInteracting for proper race condition protection
   const hasBackgroundTransactions = backgroundTransactions.length > 0;
 
   // Wallet discovery happens automatically when user clicks connect button
@@ -726,15 +723,16 @@ const DApp: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleMintTokens}
-                    disabled={isMintExecuting || isTokenContractLoading || isBatchExecuting}
+                    disabled={isExecuting || isTokenContractLoading || isBatchExecuting}
                   >
-                    {isMintExecuting ? '⏳ Processing...' : 'Mint Tokens (Sync)'}
+                    {isExecuting ? '⏳ Processing...' : 'Mint Tokens (Sync)'}
                   </button>
                   <button
                     type="button"
                     onClick={handleTransferTokens}
                     style={{ marginLeft: '5px' }}
                     disabled={
+                      isExecuting ||
                       isTokenContractLoading ||
                       isRefreshingBalance ||
                       !tokenBalance ||
@@ -748,7 +746,7 @@ const DApp: React.FC = () => {
                     type="button"
                     onClick={handleMintAndTransferAtomic}
                     style={{ marginLeft: '5px' }}
-                    disabled={isBatchExecuting || isTokenContractLoading}
+                    disabled={isExecuting || isBatchExecuting || isTokenContractLoading}
                     title="Mint and transfer tokens in a single atomic transaction"
                   >
                     {isBatchExecuting ? '⚡ Batch Processing...' : 'Mint + Transfer (Atomic)'}
@@ -758,7 +756,7 @@ const DApp: React.FC = () => {
                     onClick={handleGetTokenBalance}
                     style={{ marginLeft: '5px' }}
                     disabled={
-                      isMintExecuting || isTokenContractLoading || isRefreshingBalance || isBatchExecuting
+                      isExecuting || isTokenContractLoading || isRefreshingBalance || isBatchExecuting
                     }
                   >
                     {isRefreshingBalance ? '⏳ Fetching…' : 'Get Token Balance'}
@@ -796,7 +794,7 @@ const DApp: React.FC = () => {
                       borderRadius: '4px',
                       cursor: 'pointer',
                     }}
-                    disabled={isBatchExecuting || isCounterContractLoading}
+                    disabled={isExecuting || isBatchExecuting || isCounterContractLoading}
                   >
                     Increment Counter (Async)
                   </button>
@@ -811,7 +809,7 @@ const DApp: React.FC = () => {
                       cursor: 'pointer',
                       backgroundColor: isBatchExecuting ? '#e3f2fd' : '#fff',
                     }}
-                    disabled={isBatchExecuting || isCounterContractLoading}
+                    disabled={isExecuting || isBatchExecuting || isCounterContractLoading}
                     title="Increment twice in a single atomic transaction (1 tx, 1 proof)"
                   >
                     {isBatchExecuting ? '⚡ Atomic Batch...' : 'Increment Twice (Atomic)'}
@@ -827,7 +825,7 @@ const DApp: React.FC = () => {
                       cursor: 'pointer',
                       backgroundColor: isBatchExecuting ? '#fff3e0' : '#fff',
                     }}
-                    disabled={isBatchExecuting || isCounterContractLoading}
+                    disabled={isExecuting || isBatchExecuting || isCounterContractLoading}
                     title="Increment twice sequentially (2 separate transactions, 2 proofs)"
                   >
                     {isBatchExecuting ? '⚡ Sequential Batch...' : 'Increment Twice (Sequential)'}

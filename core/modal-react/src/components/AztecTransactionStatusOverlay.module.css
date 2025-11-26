@@ -213,6 +213,30 @@
   border: 1px solid rgba(56, 189, 248, 0.15);
 }
 
+/* Dismiss button for failed transactions */
+.dismissButton {
+  margin-top: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: var(--wm-overlay-button-bg, rgba(239, 68, 68, 0.2));
+  border: 1px solid var(--wm-overlay-button-border, rgba(239, 68, 68, 0.4));
+  border-radius: 0.5rem;
+  color: var(--wm-overlay-text-primary, #f8fafc);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dismissButton:hover {
+  background: var(--wm-overlay-button-bg-hover, rgba(239, 68, 68, 0.3));
+  border-color: var(--wm-overlay-button-border-hover, rgba(239, 68, 68, 0.6));
+}
+
+.dismissButton:focus {
+  outline: 2px solid var(--wm-overlay-focus-ring, rgba(239, 68, 68, 0.5));
+  outline-offset: 2px;
+}
+
 /* Animations */
 @keyframes wm-aztec-spin {
   to {

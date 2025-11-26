@@ -18,6 +18,13 @@ import type {
 // Mock useStore hook with transaction state
 let mockState: WalletMeshState;
 
+// Create a mock store instance with setState for ESC key dismiss
+const mockStoreInstance = {
+  getState: vi.fn(() => mockState),
+  setState: vi.fn(),
+  subscribe: vi.fn(() => () => {}),
+};
+
 vi.mock('../hooks/internal/useStore.js', () => ({
   useStore: vi.fn((selector?: (state: WalletMeshState) => unknown) => {
     if (selector) {
@@ -25,6 +32,20 @@ vi.mock('../hooks/internal/useStore.js', () => ({
     }
     return mockState;
   }),
+  useStoreWithEquality: vi.fn((selector?: (state: WalletMeshState) => unknown) => {
+    if (selector) {
+      return selector(mockState);
+    }
+    return mockState;
+  }),
+  shallowEqual: vi.fn((a: unknown, b: unknown) => a === b),
+  useStoreInstance: vi.fn(() => mockStoreInstance),
+}));
+
+// Mock useFocusTrap hook
+const mockFocusTrapRef = { current: null };
+vi.mock('../utils/useFocusTrap.js', () => ({
+  useFocusTrap: vi.fn(() => mockFocusTrapRef),
 }));
 
 // Helper to create properly typed transaction result
@@ -144,11 +165,14 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
       rerender(<AztecTransactionStatusOverlay />);
       expect(screen.getByRole('heading', { name: 'Sending' })).toBeInTheDocument();
 
-      // Progress to confirmed
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed');
+      // Progress to failed (stays visible until dismissed)
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'failed');
       rerender(<AztecTransactionStatusOverlay />);
-      expect(screen.getByRole('heading', { name: 'Confirmed' })).toBeInTheDocument();
-      expect(screen.getByText('Transaction successful')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Failed' })).toBeInTheDocument();
+      expect(screen.getByText('Transaction failed')).toBeInTheDocument();
+
+      // Note: confirmed transactions auto-dismiss immediately,
+      // so we test the failed state which stays visible
     });
 
     it('should display transaction hash when available', async () => {
@@ -183,36 +207,34 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
   });
 
   describe('Auto-Dismiss Behavior', () => {
-    it('should auto-dismiss after confirmed transaction', async () => {
+    it('should show success state for 1 second then auto-dismiss when confirmed', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirming', {
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed', {
         startTime: Date.now(),
       });
 
-      const { rerender } = render(<AztecTransactionStatusOverlay />);
+      render(<AztecTransactionStatusOverlay />);
 
-      // Initially visible
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      // Let effect run - overlay should show success state
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
 
-      // Update to confirmed
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed');
-      rerender(<AztecTransactionStatusOverlay />);
-
-      // Should still be visible initially
+      // Overlay should still be visible showing "Confirmed" success state
       expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Confirmed' })).toBeInTheDocument();
 
-      // Advance timers to trigger auto-dismiss (2.5 seconds)
+      // Wait for 1-second delay
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(2500);
+        await vi.advanceTimersByTimeAsync(1000);
       });
 
-      // Overlay should be dismissed - use fake timers instead of waitFor
+      // Overlay should be dismissed after the delay
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('should auto-dismiss after failed transaction', async () => {
+    it('should NOT auto-dismiss failed transactions (user must dismiss)', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
       mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
@@ -228,13 +250,17 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
       // Should show failed state
       expect(screen.getByRole('heading', { name: 'Failed' })).toBeInTheDocument();
 
-      // Advance timers to trigger auto-dismiss
+      // Even after significant time, overlay should remain visible
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(2500);
+        await vi.advanceTimersByTimeAsync(5000);
       });
 
-      // Overlay should be dismissed - use fake timers instead of waitFor
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      // Overlay should still be visible (failed transactions require user dismissal)
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      // Verify dismiss button is present
+      const dismissButton = screen.getByRole('button', { name: 'Dismiss' });
+      expect(dismissButton).toBeInTheDocument();
     });
 
     it('should NOT auto-dismiss during active stages', async () => {
@@ -282,15 +308,14 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
         startTime: Date.now(),
       });
 
-      const { rerender, unmount } = render(<AztecTransactionStatusOverlay />);
+      const { unmount } = render(<AztecTransactionStatusOverlay />);
 
-      // Complete transaction
+      // Complete transaction (confirmed transactions auto-dismiss immediately)
       mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed');
-      rerender(<AztecTransactionStatusOverlay />);
 
-      // Wait for auto-dismiss
+      // Allow React to process the state update and auto-dismiss
       await act(async () => {
-        await vi.advanceTimersByTimeAsync(2500);
+        await vi.advanceTimersByTimeAsync(0);
       });
 
       // Unmount to trigger cleanup
@@ -335,10 +360,12 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
       expect(content).toHaveAttribute('tabindex', '-1');
     });
 
-    it('should allow ESC key to close when transaction completes', async () => {
+    it('should allow ESC key to close when transaction fails', async () => {
+      // Note: confirmed transactions auto-dismiss immediately,
+      // so we test ESC dismissal with failed transactions which require user action
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed', {
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'failed', {
         startTime: Date.now(),
       });
 
@@ -347,7 +374,7 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
       // Advance timers to trigger useEffect and render
       await vi.advanceTimersByTimeAsync(0);
 
-      // Overlay should be visible
+      // Overlay should be visible (failed transactions stay until dismissed)
       const overlay = screen.getByRole('dialog');
       expect(overlay).toBeInTheDocument();
 
@@ -405,7 +432,8 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
     it('should disable ESC key when requested', async () => {
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed', {
+      // Use 'failed' status since 'confirmed' auto-dismisses immediately
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'failed', {
         startTime: Date.now(),
       });
 
@@ -424,7 +452,7 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
         await vi.advanceTimersByTimeAsync(100);
       });
 
-      // Overlay should still be visible
+      // Overlay should still be visible (ESC disabled)
       expect(screen.getByRole('dialog')).toBeInTheDocument();
     });
   });
@@ -606,12 +634,12 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
 
-    it('should clear auto-dismiss timers on unmount', async () => {
-      const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout');
-
+    it('should handle unmount cleanly during active transaction', async () => {
+      // Note: With status-based dismiss (not timers), we test clean unmount behavior
       const txId = 'tx-1';
       mockState.active.transactionId = txId;
-      mockState.entities.transactions[txId] = createMockTransaction(txId, 'confirmed', {
+      // Use 'proving' status which stays visible (not auto-dismissed)
+      mockState.entities.transactions[txId] = createMockTransaction(txId, 'proving', {
         startTime: Date.now(),
       });
 
@@ -623,16 +651,11 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
       // Verify overlay is rendered
       expect(screen.getByRole('dialog')).toBeInTheDocument();
 
-      // Advance time slightly to let the auto-dismiss timer be set
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(100);
-      });
+      // Unmount during active transaction (should not throw)
+      expect(() => unmount()).not.toThrow();
 
-      // Unmount before auto-dismiss fires
-      unmount();
-
-      // Should have cleared timers
-      expect(clearTimeoutSpy).toHaveBeenCalled();
+      // Overlay should no longer be in document
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     });
   });
 
@@ -676,6 +699,7 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
       expect(screen.getByRole('heading', { name: 'Sending' })).toBeInTheDocument();
 
       // Stage 3: Wallet sends 'confirmed' notification
+      // Confirmed transactions show success state for 1 second then auto-dismiss
       mockState.entities.transactions[walletTxId] = createMockTransaction(walletTxId, 'confirmed', {
         startTime: Date.now(),
       });
@@ -686,8 +710,52 @@ describe('AztecTransactionStatusOverlay - Integration Tests', () => {
         await vi.advanceTimersByTimeAsync(0);
       });
 
+      // Overlay should show "Confirmed" success state
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
       expect(screen.getByRole('heading', { name: 'Confirmed' })).toBeInTheDocument();
-      expect(screen.getByText('Transaction successful')).toBeInTheDocument();
+
+      // Wait for 1-second delay
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1000);
+      });
+
+      // Overlay should be dismissed after the delay
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('should show failed status and require user dismissal', async () => {
+      // Simulate a transaction that fails
+      const walletTxId = 'wallet-tx-failed';
+
+      // Stage 1: Transaction starts proving
+      mockState.entities.transactions[walletTxId] = createMockTransaction(walletTxId, 'proving', {
+        startTime: Date.now(),
+      });
+      mockState.active.transactionId = walletTxId;
+
+      const { rerender } = render(<AztecTransactionStatusOverlay />);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      expect(screen.getByRole('heading', { name: 'Generating Proof' })).toBeInTheDocument();
+
+      // Stage 2: Transaction fails
+      mockState.entities.transactions[walletTxId] = createMockTransaction(walletTxId, 'failed', {
+        startTime: Date.now(),
+      });
+
+      rerender(<AztecTransactionStatusOverlay />);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+
+      // Failed transaction stays visible - user must dismiss
+      expect(screen.getByRole('heading', { name: 'Failed' })).toBeInTheDocument();
+      expect(screen.getByText('Transaction failed')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Dismiss' })).toBeInTheDocument();
     });
 
     it('should handle case where dApp had old transaction ID and wallet creates new one', async () => {

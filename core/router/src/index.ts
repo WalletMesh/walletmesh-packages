@@ -14,7 +14,9 @@
  * - {@link JSONRPCWallet} type for wallet nodes.
  * - {@link createLocalTransportPair}, {@link createLocalTransport} for in-process communication.
  * - {@link ProviderSerializerRegistry} for managing method-specific serializers on the provider.
+ * - {@link ApprovalQueueManager} - Request-based approval queue to prevent race conditions.
  */
+export * from './approval/index.js';
 export * from './errors.js';
 export * from './localTransport.js';
 export { type ExecuteResult, OperationBuilder } from './operation.js';

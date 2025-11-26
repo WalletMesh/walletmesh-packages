@@ -240,6 +240,8 @@ interface WalletProps {
     functionArgNames?: FunctionArgNames;
     resolve: (approved: boolean) => void;
   } | null;
+  /** Number of pending approvals in the queue. Used to show queue indicator. */
+  approvalQueueLength?: number;
   /** Callback invoked when the user responds to an approval request. */
   onApprovalResponse?: (approved: boolean) => void;
   /** Callback passed to ApprovalPermissionManager to trigger the UI approval flow in App.tsx. */
@@ -272,6 +274,7 @@ interface WalletProps {
  */
 const Wallet: React.FC<WalletProps> = ({
   pendingApproval,
+  approvalQueueLength = 0,
   onApprovalResponse,
 <<<<<<< HEAD
   onAlwaysAllow,
@@ -328,8 +331,6 @@ const Wallet: React.FC<WalletProps> = ({
 
   /** Ref to ensure wallet setup runs only once. */
   const setupDoneRef = useRef(false);
-  /** Ref to the WalletRouter instance. */
-  const routerRef = useRef<WalletRouter | null>(null);
   /** Ref to track current auto-approve state for permission callbacks. */
   const autoApproveRef = useRef(autoApprove);
   /** Ref to loadSessions function for router callbacks. */
@@ -606,10 +607,6 @@ const Wallet: React.FC<WalletProps> = ({
 
         setConnectedAccount(wallet.getAddress().toString());
 
-        // Create shared state for passing approval requirements from router to wallet node
-        // Key: call signature (chainId:method:timestamp), Value: requires approval
-        const pendingApprovals = new Map<string, boolean>();
-
         // Create local transport pair for wallet node communication
         const [clientTransport, walletTransport] = createLocalTransportPair();
 
@@ -691,13 +688,7 @@ const Wallet: React.FC<WalletProps> = ({
         aztecWalletNode.addPostDeserializationMiddleware(createFunctionArgNamesMiddleware(pxe));
         aztecWalletNode.addPostDeserializationMiddleware(createTransactionSummaryMiddleware());
         aztecWalletNode.addPostDeserializationMiddleware(
-          createWalletNodePermissionMiddleware(
-            async (request) => {
-              return await (onApprovalRequest || (async () => true))(request);
-            },
-            autoApproveRef,
-            pendingApprovals, // Pass shared state
-          ),
+          createWalletNodePermissionMiddleware(autoApproveRef),
         );
         aztecWalletNode.addPostDeserializationMiddleware(
 >>>>>>> 9ae57d25 (WIP)
@@ -1003,27 +994,16 @@ const Wallet: React.FC<WalletProps> = ({
               // Method was approved during connection, now check if it needs per-transaction approval
               console.log('[Wallet] Method', method, 'was approved during connection');
 
-              // For ASK state methods, ALWAYS require approval on each transaction
+              // For ASK state methods, the router's approval queue will handle the actual approval
+              // We just need to allow the request to proceed to the router
               if (state === AllowAskDenyState.ASK) {
-                console.log('[Wallet] Method', method, 'is in ASK state, marking for wallet node approval');
-
-                // Mark this method as requiring approval via shared state
-                const approvalKey = `${chainId}:${method}`;
-                pendingApprovals.set(approvalKey, true);
-                console.log('[Wallet] Set pending approval for', approvalKey);
-
-                return true; // Allow to proceed to wallet node which will enforce approval
+                console.log('[Wallet] Method', method, 'is in ASK state, router approval queue will handle');
+                return true; // Allow to proceed - router's approval queue will block and show UI
               }
 
-              // For undefined state (not explicitly set), treat as ASK and require approval
+              // For undefined state (not explicitly set), treat as ASK
               console.log('[Wallet] Method', method, 'has undefined state, treating as ASK');
-
-              // Mark this method as requiring approval via shared state
-              const approvalKey = `${chainId}:${method}`;
-              pendingApprovals.set(approvalKey, true);
-              console.log('[Wallet] Set pending approval for', approvalKey);
-
-              return true; // Allow to proceed to wallet node which will enforce approval
+              return true; // Allow to proceed - router's approval queue will block and show UI
             }
 
             // No session or no approval record, deny by default
@@ -1216,6 +1196,9 @@ const Wallet: React.FC<WalletProps> = ({
 
         console.log('[Wallet] Using LocalStorageSessionStore for persistent sessions (no automatic expiry)');
 
+        // Store router reference for approval resolution
+        let routerRef: WalletRouter | null = null;
+
         // Configure router with session store and optional proxy settings
         const routerConfig: WalletRouterConfig = {
           sessionStore, // Add explicit session store
@@ -1234,6 +1217,59 @@ const Wallet: React.FC<WalletProps> = ({
             console.log('[Wallet] Session deleted callback:', { sessionId });
             // Trigger session list refresh
             loadSessionsRef.current?.();
+          },
+          // Approval queue configuration - fixes race condition by using request IDs
+          approvalQueue: {
+            methodsRequiringApproval: [
+              'aztec_wmExecuteTx',
+              'aztec_wmDeployContract',
+              'aztec_wmBatchExecute',
+              'aztec_createAuthWit',
+              'aztec_sendTx',
+              'aztec_proveTx',
+              'aztec_contractInteraction',
+              'aztec_registerSender',
+              'aztec_profileTx',
+              'aztec_simulateUtility',
+            ],
+            defaultTimeout: 300000, // 5 minutes
+            onApprovalQueued: (approvalContext) => {
+              console.log('[Wallet] Approval queued:', {
+                requestId: approvalContext.requestId,
+                method: approvalContext.method,
+                origin: approvalContext.origin,
+                txStatusId: approvalContext.txStatusId,
+              });
+
+              // Skip approval if auto-approve is enabled
+              if (autoApproveRef.current) {
+                console.log('[Wallet] Auto-approve enabled, resolving immediately');
+                routerRef?.resolveApproval(approvalContext.requestId, true);
+                return;
+              }
+
+              // Show the approval dialog using the existing onApprovalRequest callback
+              // The dialog will call router.resolveApproval when user responds
+              const showApproval = async () => {
+                try {
+                  const approved = await (onApprovalRequest || (async () => true))({
+                    origin: approvalContext.origin || 'unknown',
+                    chainId: approvalContext.chainId,
+                    method: approvalContext.method,
+                    params: approvalContext.params,
+                  });
+
+                  console.log('[Wallet] User decision for request', approvalContext.requestId, ':', approved);
+                  routerRef?.resolveApproval(approvalContext.requestId, approved);
+                } catch (error) {
+                  console.error('[Wallet] Error in approval dialog:', error);
+                  routerRef?.resolveApproval(approvalContext.requestId, false);
+                }
+              };
+
+              // Call async but don't await - the router will block until resolveApproval is called
+              void showApproval();
+            },
           },
         };
 
@@ -1257,6 +1293,7 @@ const Wallet: React.FC<WalletProps> = ({
         // Create the router with transports
         console.log('🟢🟢🟢 WALLET ROUTER ABOUT TO BE CREATED 🟢🟢🟢');
         const router = new WalletRouter(routerTransport, wallets, permissionManager, routerConfig);
+        routerRef = router; // Store reference for approval resolution in onApprovalQueued callback
         console.log('🟢🟢🟢 WALLET ROUTER CREATED SUCCESSFULLY 🟢🟢🟢');
 
 <<<<<<< HEAD
@@ -1441,8 +1478,6 @@ const Wallet: React.FC<WalletProps> = ({
 
         // Origin middleware already added above before other middleware
 >>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
-
-        routerRef.current = router;
 
         setIsConnected(true);
         setConnectionStatus('connected');
@@ -1704,25 +1739,42 @@ const Wallet: React.FC<WalletProps> = ({
   return (
     <div className="wallet-server">
       {pendingApproval && onApprovalResponse && (
-        <Approve
-          method={pendingApproval.method}
-          params={
-            pendingApproval.params as
-              | {
-                  functionCalls?:
-                    | { contractAddress: string; functionName: string; args: unknown[] }[]
-                    | undefined;
-                }
-              | undefined
-          }
-          origin={pendingApproval.origin}
-          functionArgNames={
-            pendingApproval.functionArgNames ?? requestHistory.find((h) => !h.status)?.functionArgNames
-          }
-          onApprove={handleApprove}
-          onDeny={handleDeny}
-          onEnableAutoApprove={onEnableAutoApprove || (() => {})}
-        />
+        <div>
+          {approvalQueueLength > 1 && (
+            <div
+              style={{
+                backgroundColor: '#fff3e0',
+                border: '1px solid #ffb74d',
+                borderRadius: '4px',
+                padding: '8px 12px',
+                marginBottom: '10px',
+                textAlign: 'center',
+                fontSize: '0.9em',
+              }}
+            >
+              📋 {approvalQueueLength} pending approvals (showing 1 of {approvalQueueLength})
+            </div>
+          )}
+          <Approve
+            method={pendingApproval.method}
+            params={
+              pendingApproval.params as
+                | {
+                    functionCalls?:
+                      | { contractAddress: string; functionName: string; args: unknown[] }[]
+                      | undefined;
+                  }
+                | undefined
+            }
+            origin={pendingApproval.origin}
+            functionArgNames={
+              pendingApproval.functionArgNames ?? requestHistory.find((h) => !h.status)?.functionArgNames
+            }
+            onApprove={handleApprove}
+            onDeny={handleDeny}
+            onEnableAutoApprove={onEnableAutoApprove || (() => {})}
+          />
+        </div>
       )}
 
       {connectionStatus === 'failed' ? (

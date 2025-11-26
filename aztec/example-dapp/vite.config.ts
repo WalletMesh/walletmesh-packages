@@ -11,6 +11,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
   return {
     cacheDir: './node_modules/.vite',
     resolve: {
+      // Force single instances of React and zustand to prevent hook errors
+      dedupe: ['react', 'react-dom', 'zustand'],
       alias: {
         pino: 'pino/browser',
         // Handle lodash modules
@@ -40,7 +42,8 @@ export default defineConfig(({ mode }: ConfigEnv) => {
       exclude: [
         '@aztec/bb.js',
         'barretenberg',
-        // WalletMesh workspace packages - prevent pre-bundling to avoid stale cache
+        // WalletMesh workspace packages - excluded from pre-bundling to avoid stale cache.
+        // The server.warmup config ensures these are still pre-loaded on server start.
         '@walletmesh/aztec-rpc-wallet',
         '@walletmesh/jsonrpc',
         '@walletmesh/router',
@@ -56,6 +59,10 @@ export default defineConfig(({ mode }: ConfigEnv) => {
         'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
       },
       host: '127.0.0.1',
+      // Pre-warm dynamically imported modules to prevent cold-start failures
+      warmup: {
+        clientFiles: ['./node_modules/@walletmesh/aztec-rpc-wallet/dist/index.js'],
+      },
     },
     assetsInclude: ['**/*.wasm'],
     define: {

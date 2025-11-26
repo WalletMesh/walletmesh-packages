@@ -503,7 +503,7 @@ describe('LazyAztecRouterProvider - Notification Integration', () => {
       await provider.connect({});
     });
 
-    it('should log notification receipt', async () => {
+    it('should not log debug output in production (debug logs removed)', async () => {
       const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       const notification = {
@@ -518,37 +518,15 @@ describe('LazyAztecRouterProvider - Notification Integration', () => {
       // Advance timers
       await vi.advanceTimersByTimeAsync(100);
 
-      // Should log notification receipt
-      expect(consoleLogSpy).toHaveBeenCalledWith(
+      // Should NOT log debug messages (Bug #14: Debug logging removed)
+      // This verifies that production builds don't have verbose logging
+      expect(consoleLogSpy).not.toHaveBeenCalledWith(
         expect.stringContaining('Received aztec_transactionStatus notification'),
-        notification,
+        expect.anything(),
       );
-
-      consoleLogSpy.mockRestore();
-    });
-
-    it('should log parsed notification data', async () => {
-      const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-      const notification = {
-        txStatusId: 'tx-1',
-        status: 'proving' as TransactionStatus,
-        timestamp: Date.now(),
-      };
-
-      // Emit notification
-      notificationHandler?.(notification);
-
-      // Advance timers
-      await vi.advanceTimersByTimeAsync(100);
-
-      // Should log parsed data
-      expect(consoleLogSpy).toHaveBeenCalledWith(
+      expect(consoleLogSpy).not.toHaveBeenCalledWith(
         expect.stringContaining('Parsed transaction status notification'),
-        expect.objectContaining({
-          txStatusId: 'tx-1',
-          status: 'proving',
-        }),
+        expect.anything(),
       );
 
       consoleLogSpy.mockRestore();

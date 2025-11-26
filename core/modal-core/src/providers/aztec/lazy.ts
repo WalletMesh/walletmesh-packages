@@ -290,7 +290,6 @@ export class LazyAztecRouterProvider {
   }
 
   private async initialize(transport: JSONRPCTransport, context?: Record<string, unknown>): Promise<void> {
-    console.log('[LazyAztecRouterProvider] Starting initialization...');
     const module = await aztecRouterModule.getModule();
 
     // Import connectionActions for session cleanup
@@ -302,15 +301,11 @@ export class LazyAztecRouterProvider {
       transport,
       {
         context,
-        onSessionTerminated: ({ sessionId, reason }: { sessionId: string; reason: string }) => {
-          console.log(`[LazyAztecRouterProvider] Session ${sessionId} terminated by wallet: ${reason}`);
-
+        onSessionTerminated: ({ sessionId }: { sessionId: string; reason: string }) => {
           // End the session in the store, which will trigger UI updates
           connectionActions.endSession(store, sessionId, { isDisconnect: true }).catch((error: unknown) => {
             console.error('[LazyAztecRouterProvider] Failed to end session:', error);
           });
-
-          console.log(`[LazyAztecRouterProvider] Session ${sessionId} cleanup initiated`);
         },
       },
     ) as unknown as AztecRouterProviderInstance;
@@ -333,15 +328,10 @@ export class LazyAztecRouterProvider {
 
       // Subscribe to transaction status for full lifecycle tracking
       const removeTxStatus = providerWithNotifications.onNotification('aztec_transactionStatus', (params) => {
-        console.log('[LazyAztecRouterProvider] Received aztec_transactionStatus notification:', params);
         try {
           const parseResult = parseAztecTransactionStatusWithDiagnostics(params);
 
           if (parseResult.success && parseResult.data) {
-            console.log(
-              '[LazyAztecRouterProvider] Parsed transaction status notification:',
-              parseResult.data,
-            );
 
             const { txStatusId, status, txHash: notificationTxHash, error: notificationError } = parseResult.data;
 
@@ -352,36 +342,58 @@ export class LazyAztecRouterProvider {
             if (!existingTx) {
               // Transaction doesn't exist yet - create it from the notification
               // This can happen when wallet sends notifications before wmExecuteTx returns
-              console.log(
-                '[LazyAztecRouterProvider] Creating transaction from notification (notification arrived before wmExecuteTx returned)',
-                { txStatusId, status },
-              );
 
-              // Get chainId from context or default
-              const chainId = (this.providerContext?.['chainId'] as string) || 'aztec:31337';
+              // Get context values from provider context
+              // Note: The notification schema doesn't include chainId/walletId/from,
+              // so we rely on context set during provider construction or via updateContext()
+              const chainId = (this.providerContext?.['chainId'] as string) || 'aztec:unknown';
+              const walletId = (this.providerContext?.['walletId'] as string) || 'aztec-wallet';
+              const fromAddress = (this.providerContext?.['address'] as string) || '';
 
-              // Detect signing-only operations based on initial status
-              // Signing operations (authwit, sign message) typically start at 'initiated' or 'confirmed'
-              // Blockchain transactions start at 'simulating' or other blockchain stages
-              const isSigningOnly = status === 'initiated' || status === 'confirmed';
+              // Detect signing-only operations using heuristic:
+              // Signing operations (authwit, sign message) typically have status 'initiated' or 'confirmed'
+              // without a txHash. Blockchain transactions typically have a txHash or start with 'simulating'.
+              // Note: Wallets can optionally send isSigningOnly flag in notification (future enhancement)
+              const isSigningOnly = (status === 'initiated' || status === 'confirmed') && !notificationTxHash;
 
               const newTransaction: AztecTransactionResult = {
                 txStatusId,
                 txHash: notificationTxHash || '',
                 chainId,
                 chainType: ChainType.Aztec,
-                walletId: 'aztec-wallet', // TODO: Get from context
+                walletId,
                 status,
-                from: '', // TODO: Get from wallet
-                request: {} as never, // TODO: Proper request object
+                from: fromAddress,
+                request: {} as never, // Will be updated if executeWithLifecycle completes
                 startTime: Date.now(),
                 mode: 'sync', // Assume sync mode for wallet-initiated transactions
                 stages: {},
                 isSigningOnly, // Mark signing operations to prevent overlay display
                 wait: async () => {
-                  // Wait for transaction to complete
+                  // Wait for transaction to complete with timeout protection
+                  const MAX_POLL_ITERATIONS = 600; // 5 minutes at 500ms intervals
+                  const POLL_TIMEOUT_MS = 300000; // 5 minute absolute timeout
+
                   return new Promise((resolve, reject) => {
+                    let iterations = 0;
+                    const startTime = Date.now();
+
                     const checkStatus = () => {
+                      iterations++;
+                      const elapsed = Date.now() - startTime;
+
+                      // Timeout protection to prevent infinite polling
+                      if (iterations > MAX_POLL_ITERATIONS || elapsed > POLL_TIMEOUT_MS) {
+                        reject(
+                          ErrorFactory.configurationError('Transaction polling timeout', {
+                            txStatusId,
+                            iterations,
+                            elapsed,
+                          }),
+                        );
+                        return;
+                      }
+
                       const tx = store.getState().entities.transactions[txStatusId];
                       if (!tx) {
                         reject(ErrorFactory.configurationError('Transaction not found', { txStatusId }));
@@ -408,33 +420,62 @@ export class LazyAztecRouterProvider {
               // Set as active transaction to trigger sync overlay for blockchain transactions ONLY
               // Never set signing-only operations (authwit, sign message) as active
               // Only trigger overlay for multi-stage blockchain transactions
+              // Include 'initiated' when it has a txHash (indicating a real blockchain tx)
               const isBlockchainTransaction =
                 !isSigningOnly &&
-                (status === 'simulating' ||
+                (status === 'initiated' || // Only shown if not signing-only (has txHash)
+                  status === 'simulating' ||
                   status === 'proving' ||
                   status === 'sending' ||
                   status === 'pending' ||
                   status === 'confirming');
 
               if (isBlockchainTransaction) {
-                console.log(
-                  '[LazyAztecRouterProvider] Setting transaction as active to trigger overlay',
-                  { txStatusId, status, isSigningOnly },
-                );
                 store.setState((state) => {
                   state.active.transactionId = txStatusId;
                   return state;
                 });
-              } else if (isSigningOnly) {
-                console.log(
-                  '[LazyAztecRouterProvider] Signing-only operation detected, not setting as active (no overlay)',
-                  { txStatusId, status, isSigningOnly },
-                );
-              } else {
-                console.log(
-                  '[LazyAztecRouterProvider] Transaction not yet in blockchain stages, not setting as active (waiting)',
-                  { txStatusId, status },
-                );
+              }
+              // Signing-only operations and transactions not yet in blockchain stages
+              // don't trigger the overlay - handled silently
+            } else {
+              // Transaction already exists - handle status updates for existing transactions
+              // This is critical for ensuring overlay stays visible during transaction lifecycle
+
+              // Check if this status indicates a blockchain transaction stage
+              const isBlockchainStatus =
+                status === 'simulating' ||
+                status === 'proving' ||
+                status === 'sending' ||
+                status === 'pending' ||
+                status === 'confirming';
+
+              // Terminal statuses also need activeTransactionId re-affirmed for the overlay
+              const isTerminalStatus = status === 'confirmed' || status === 'failed';
+
+              if (isBlockchainStatus) {
+                // Clear isSigningOnly flag - this is now definitely a blockchain transaction
+                // This handles the case where 'initiated' was received without txHash (incorrectly marking as signing-only)
+                if ((existingTx as { isSigningOnly?: boolean }).isSigningOnly) {
+                  aztecTransactionActions.updateAztecTransaction(store, txStatusId, {
+                    isSigningOnly: false,
+                  });
+                }
+              }
+
+              // Re-affirm activeTransactionId for sync-mode transactions
+              // This ensures the overlay stays visible for both blockchain stages AND terminal states
+              if (isBlockchainStatus || isTerminalStatus) {
+                const currentState = store.getState();
+                const txMode = (existingTx as AztecTransactionResult).mode;
+                const isSigningOnly = (existingTx as { isSigningOnly?: boolean }).isSigningOnly;
+                // Only re-affirm if this isn't a signing-only transaction (authwit)
+                if (txMode === 'sync' && !isSigningOnly && currentState.active.transactionId !== txStatusId) {
+                  store.setState((s) => {
+                    s.active.transactionId = txStatusId;
+                    return s;
+                  });
+                }
               }
             }
 
@@ -459,24 +500,9 @@ export class LazyAztecRouterProvider {
               });
             }
 
-            // Auto-dismiss overlay after transaction reaches terminal state
-            if (status === 'confirmed' || status === 'failed') {
-              console.log(
-                '[LazyAztecRouterProvider] Transaction reached terminal state, scheduling auto-dismiss',
-                { txStatusId, status },
-              );
-              setTimeout(() => {
-                const currentActive = store.getState().active.transactionId;
-                // Only clear if this is still the active transaction
-                if (currentActive === txStatusId) {
-                  console.log('[LazyAztecRouterProvider] Auto-dismissing overlay', { txStatusId });
-                  store.setState((state) => {
-                    state.active.transactionId = null;
-                    return state;
-                  });
-                }
-              }, 2500); // 2.5 seconds to show success/error state
-            }
+            // NOTE: Auto-dismiss is handled by AztecTransactionStatusOverlay component
+            // The overlay uses AUTO_DISMISS_DELAY (2500ms) to show success/error state
+            // before dismissing. We don't duplicate that timer here to avoid race conditions.
           } else {
             // Log detailed validation errors for debugging
             console.warn(
@@ -496,10 +522,8 @@ export class LazyAztecRouterProvider {
 
       // Note: Session termination (wm_sessionTerminated) is now handled by AztecRouterProvider itself
       // via the onSessionTerminated callback passed in the constructor above
-
-      console.log('[LazyAztecRouterProvider] Notification subscriptions ready');
     } finally {
-      console.log('[LazyAztecRouterProvider] Initialization complete');
+      // Initialization complete - no debug logging to avoid noise in production
     }
   }
 
@@ -528,6 +552,19 @@ export class LazyAztecRouterProvider {
    */
   public get isInitialized(): boolean {
     return this.realProvider !== null;
+  }
+
+  /**
+   * Update provider context (e.g., after chain switch)
+   *
+   * Use this to update chainId, address, or other context values
+   * when the connection state changes.
+   *
+   * @param newContext - Partial context to merge with existing context
+   * @public
+   */
+  public updateContext(newContext: Record<string, unknown>): void {
+    this.providerContext = { ...this.providerContext, ...newContext };
   }
 
   // Proxy all public methods to the real provider

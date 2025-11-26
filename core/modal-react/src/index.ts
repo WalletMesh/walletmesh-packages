@@ -505,6 +505,12 @@ export {
   type AztecTransactionResult,
 } from './hooks/useAztecTransaction.js';
 
+// Transaction lock hook (defense-in-depth for race condition prevention)
+export {
+  useTransactionLock,
+  type UseTransactionLockReturn,
+} from './hooks/useTransactionLock.js';
+
 // Aztec deployment hook
 export {
   useAztecDeploy,

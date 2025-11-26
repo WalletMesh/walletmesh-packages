@@ -32,7 +32,9 @@ interface ApprovalRequest {
 }
 
 function App() {
-  const [pendingApproval, setPendingApproval] = useState<ApprovalRequest | null>(null);
+  // Use an array queue instead of single pending approval to handle concurrent requests
+  // This ensures each request gets its own approval and prevents overwriting/orphaning
+  const [approvalQueue, setApprovalQueue] = useState<ApprovalRequest[]>([]);
   const [autoApprove, setAutoApprove] = useState(false);
 <<<<<<< HEAD
   const { showError } = useToast();
@@ -49,15 +51,18 @@ function App() {
     // Note: Auto-approve is handled in the Wallet component's permission manager
     // This handler is only called when user interaction is needed
 
-    // Show the approval UI
+    // Add to approval queue (FIFO) instead of overwriting
     return new Promise((resolve) => {
-      setPendingApproval({
+      const approvalRequest: ApprovalRequest = {
         ...request,
         resolve: (approved: boolean) => {
           resolve(approved);
-          setPendingApproval(null);
+          // Remove this specific request from queue when resolved
+          setApprovalQueue((prev) => prev.slice(1));
         },
-      });
+      };
+      // Add to end of queue
+      setApprovalQueue((prev) => [...prev, approvalRequest]);
     });
   };
 
@@ -166,8 +171,10 @@ function App() {
   }, [autoApprove, permissionManager]);
 
   const handleApprovalResponse = (approved: boolean) => {
-    if (pendingApproval) {
-      pendingApproval.resolve(approved);
+    // Resolve the FIRST item in queue (FIFO order)
+    const currentApproval = approvalQueue[0];
+    if (currentApproval) {
+      currentApproval.resolve(approved);
     }
   };
 
@@ -183,14 +190,24 @@ function App() {
     }
   };
 
+<<<<<<< HEAD
 =======
 >>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
   const handleEnableAutoApprove = () => {
     setAutoApprove(true);
     if (pendingApproval) {
       pendingApproval.resolve(true);
+=======
+    // Approve all pending approvals in the queue
+    for (const approval of approvalQueue) {
+      approval.resolve(true);
+>>>>>>> ae9a0494 (feat(router): add approval queue system for concurrent transaction handling)
     }
   };
+
+  // Get current pending approval (first in queue) for backward compatibility
+  const pendingApproval = approvalQueue[0] || null;
+  const approvalQueueLength = approvalQueue.length;
 
   return (
     <div className="App">
@@ -222,6 +239,7 @@ function App() {
 
         <Wallet
           pendingApproval={pendingApproval}
+          approvalQueueLength={approvalQueueLength}
           onApprovalResponse={handleApprovalResponse}
           onApprovalRequest={handleApprovalRequest}
           onEnableAutoApprove={handleEnableAutoApprove}

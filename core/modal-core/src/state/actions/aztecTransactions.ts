@@ -169,29 +169,21 @@ export const aztecTransactionActions = {
           }
         }
 
-        // If transaction is complete (confirmed or failed), remove from background list if needed
+        // If transaction is complete (confirmed or failed), remove from background list immediately
+        // The UI component (BackgroundTransactionIndicator) handles the visual delay before hiding
         if (status === 'confirmed' || status === 'failed') {
           if (!tx.endTime) {
             tx.endTime = now;
           }
           const bgIndex = state.meta.backgroundTransactionIds.indexOf(txStatusId);
           if (bgIndex !== -1) {
-            // Keep in background list briefly for UI to show completion
-            // The cleanup will happen on next transaction or after timeout
-            setTimeout(() => {
-              const currentState = store.getState();
-              const index = currentState.meta.backgroundTransactionIds.indexOf(txStatusId);
-              if (index !== -1) {
-                mutateState(store, (s) => {
-                  s.meta.backgroundTransactionIds.splice(index, 1);
-                });
-              }
-            }, 5000); // Remove after 5 seconds
+            // Remove immediately - UI handles display timing via completedDuration prop
+            state.meta.backgroundTransactionIds.splice(bgIndex, 1);
           }
-          // Clear active transaction if it's the one that completed
-          if (state.active.transactionId === txStatusId) {
-            state.active.transactionId = null;
-          }
+          // NOTE: Don't clear active.transactionId here - let the hooks handle it
+          // with a 2.5 second delay so users can see the success/failure state.
+          // Both useAztecDeploy.ts and LazyAztecRouterProvider.ts have their own
+          // setTimeout(..., 2500) to clear the overlay after showing the result.
         }
       }
     });

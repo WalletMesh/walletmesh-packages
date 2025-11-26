@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { TransactionStatus } from '@walletmesh/modal-core';
-import { useStore } from '../hooks/internal/useStore.js';
+import { useStore, useStoreWithEquality, shallowEqual } from '../hooks/internal/useStore.js';
 import { isBrowser } from '../utils/ssr-walletmesh.js';
 import styles from './BackgroundTransactionIndicator.module.css';
 
@@ -101,12 +101,18 @@ export function BackgroundTransactionIndicator({
   // Ref to track cleanup timers
   const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
-  // Get background transactions from store
-  const backgroundTransactions = useStore((state) => {
-    const backgroundTxIds = state.meta.backgroundTransactionIds || [];
+  // Get background transaction IDs (memoized with shallow comparison)
+  const backgroundTxIds = useStoreWithEquality(
+    (state) => state.meta.backgroundTransactionIds || [],
+    shallowEqual
+  );
+  const transactions = useStore((state) => state.entities.transactions);
+
+  // Derive background transactions with useMemo to avoid new array each render
+  const backgroundTransactions = useMemo(() => {
     return backgroundTxIds
       .map((id: string) => {
-        const tx = state.entities.transactions[id];
+        const tx = transactions[id];
         if (!tx) return null;
         return {
           id: tx.txStatusId,
@@ -116,28 +122,47 @@ export function BackgroundTransactionIndicator({
         } as TransactionInfo;
       })
       .filter((tx): tx is TransactionInfo => tx !== null);
-  });
+  }, [backgroundTxIds, transactions]);
 
   // Monitor active session for disconnection
   const activeSessionId = useStore((state) => state.active.sessionId);
 
   // Clear expanded state and timers when session disconnects
   useEffect(() => {
-    if (activeSessionId === null && backgroundTransactions.length === 0) {
-      // Session disconnected and all transactions cleared - collapse the indicator
+    // Clean up immediately on session disconnect, regardless of transaction count
+    // This prevents timer leaks if disconnect happens before store cleanup
+    if (activeSessionId === null) {
       setIsExpanded(false);
       setCompletedTransactionIds(new Set());
 
-      // Clear all pending timers
+      // Clear all pending timers immediately
       for (const timer of timersRef.current.values()) {
         clearTimeout(timer);
       }
       timersRef.current.clear();
     }
-  }, [activeSessionId, backgroundTransactions.length]);
+  }, [activeSessionId]);
+
+  // Track previous transaction IDs to detect removals
+  const prevTxIdsRef = useRef<Set<string>>(new Set());
 
   // Track completed transactions for auto-hide
   useEffect(() => {
+    const currentTxIds = new Set(backgroundTransactions.map((tx) => tx.id));
+
+    // Clear timers only for transactions that were removed from the list
+    // This prevents clearing timers for transactions that are still visible
+    for (const [txId, timer] of timersRef.current.entries()) {
+      if (!currentTxIds.has(txId)) {
+        clearTimeout(timer);
+        timersRef.current.delete(txId);
+      }
+    }
+
+    // Update previous IDs for next comparison
+    prevTxIdsRef.current = currentTxIds;
+
+    // Setup new timers for completed transactions
     backgroundTransactions.forEach((tx) => {
       if (tx.status === 'confirmed' || tx.status === 'failed') {
         // Only process if we haven't set a timer for this ID yet
@@ -165,14 +190,19 @@ export function BackgroundTransactionIndicator({
       }
     });
 
-    // Cleanup function to clear all timers
+    // Note: We intentionally don't clear all timers on unmount here
+    // The disconnect cleanup effect handles that case
+  }, [backgroundTransactions, completedDuration]);
+
+  // Cleanup all timers on component unmount
+  useEffect(() => {
     return () => {
       for (const timer of timersRef.current.values()) {
         clearTimeout(timer);
       }
       timersRef.current.clear();
     };
-  }, [backgroundTransactions, completedDuration]);
+  }, []);
 
   // Filter transactions based on showCompleted setting
   const visibleTransactions = useMemo(() => {
@@ -192,7 +222,7 @@ export function BackgroundTransactionIndicator({
   const shouldShow = visibleTransactions.length > 0;
 
   useEffect(() => {
-    if (!isBrowser) return;
+    if (!isBrowser()) return;
     if (container) {
       setTarget(container);
     } else {
@@ -207,7 +237,7 @@ export function BackgroundTransactionIndicator({
     }
   }, [shouldShow]);
 
-  if (!shouldShow || !isBrowser || !target) {
+  if (!shouldShow || !isBrowser() || !target) {
     return null;
   }
 

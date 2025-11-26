@@ -1,7 +1,7 @@
-import { useMemo, useEffect, useState, useRef, useCallback, useId } from 'react';
+import { useMemo, useEffect, useState, useCallback, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { TransactionStatus } from '@walletmesh/modal-core';
-import { useStore } from '../hooks/internal/useStore.js';
+import { useStore, useStoreInstance, useStoreWithEquality, shallowEqual } from '../hooks/internal/useStore.js';
 import { isBrowser } from '../utils/ssr-walletmesh.js';
 import { useFocusTrap } from '../utils/useFocusTrap.js';
 import styles from './AztecTransactionStatusOverlay.module.css';
@@ -133,6 +133,11 @@ export function AztecTransactionStatusOverlay({
   const [target, setTarget] = useState<Element | null>(null);
   // Track dismissed transaction IDs to enable graceful closure after success/failure
   const [dismissedTxIds, setDismissedTxIds] = useState<Set<string>>(new Set());
+  // Track dismiss timers for cleanup on unmount
+  const dismissTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  // Get store instance for setState calls
+  const store = useStoreInstance();
 
   // Setup focus trap for the overlay content
   const overlayContentRef = useFocusTrap<HTMLDivElement>({
@@ -148,11 +153,17 @@ export function AztecTransactionStatusOverlay({
     return state.entities.transactions[activeTransactionId];
   });
 
-  // Get background transactions (async mode)
-  const backgroundTransactions = useStore((state) => {
-    const backgroundTxIds = state.meta.backgroundTransactionIds || [];
-    return backgroundTxIds.map((id: string) => state.entities.transactions[id]).filter(Boolean);
-  });
+  // Get background transaction IDs (memoized with shallow comparison)
+  const backgroundTxIds = useStoreWithEquality(
+    (state) => state.meta.backgroundTransactionIds || [],
+    shallowEqual
+  );
+  const transactions = useStore((state) => state.entities.transactions);
+
+  // Derive background transactions with useMemo to avoid new array each render
+  const backgroundTransactions = useMemo(() => {
+    return backgroundTxIds.map((id: string) => transactions[id]).filter(Boolean);
+  }, [backgroundTxIds, transactions]);
 
   // Determine which transaction(s) to show
   const transactionsToShow = useMemo(() => {
@@ -189,63 +200,57 @@ export function AztecTransactionStatusOverlay({
   // Determine if overlay should be visible
   const shouldShowOverlay = transactionsToShow.length > 0;
 
-  // Track timers for auto-dismiss
-  const dismissTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
-
-  // Auto-dismiss confirmed/failed transactions after a delay to show success/error state
+  // Status-based auto-dismiss for confirmed transactions
+  // Show success state for 1 second before dismissing
+  // Failed transactions require user dismissal (ESC key or dismiss button)
   useEffect(() => {
-    const AUTO_DISMISS_DELAY = 2500; // 2.5 seconds to show success/error state
-
-    // Build set of current transaction IDs for efficient lookup
-    const currentTxIds = new Set(
-      transactionsToShow
-        .filter((tx): tx is NonNullable<typeof tx> => tx?.txStatusId != null)
-        .map((tx) => tx.txStatusId),
-    );
-
-    // Clean up timers for transactions no longer in view (prevents memory leak)
-    dismissTimersRef.current.forEach((timer, txId) => {
-      if (!currentTxIds.has(txId)) {
-        clearTimeout(timer);
-        dismissTimersRef.current.delete(txId);
-      }
-    });
-
-    // Create timers only for terminal state transactions that aren't already dismissed
     transactionsToShow.forEach((tx) => {
       const status = tx?.status as TransactionStatus;
       const txId = tx?.txStatusId;
 
-      // If transaction reached terminal state (confirmed or failed) and not already dismissed
-      if (
-        (status === 'confirmed' || status === 'failed') &&
-        txId &&
-        !dismissedTxIds.has(txId) &&
-        !dismissTimersRef.current.has(txId)
-      ) {
-        // Set up auto-dismiss timer
-        const timer = setTimeout(() => {
+      // Only auto-dismiss confirmed transactions (not failed)
+      // Show success state for 1 second before dismissing
+      if (status === 'confirmed' && txId && !dismissedTxIds.has(txId)) {
+        // Don't set another timer if one already exists for this txId
+        if (dismissTimersRef.current.has(txId)) {
+          return;
+        }
+
+        // Set a 1-second timer to show the success state before dismissing
+        const timerId = setTimeout(() => {
           setDismissedTxIds((prev) => {
             const next = new Set(prev);
             next.add(txId);
             return next;
           });
+
+          // Also clear active transaction in store
+          store.setState((state) => ({
+            ...state,
+            active: {
+              ...state.active,
+              transactionId: null,
+            },
+          }));
+
           // Clean up timer reference
           dismissTimersRef.current.delete(txId);
-        }, AUTO_DISMISS_DELAY);
+        }, 1000); // 1 second delay to show success state
 
-        dismissTimersRef.current.set(txId, timer);
+        dismissTimersRef.current.set(txId, timerId);
       }
+      // Failed transactions are NOT auto-dismissed - user must use ESC or dismiss button
     });
+  }, [transactionsToShow, dismissedTxIds, store]);
 
-    // Cleanup all timers on unmount
+  // Cleanup effect for dismiss timers on unmount
+  useEffect(() => {
     return () => {
-      dismissTimersRef.current.forEach((timer) => {
-        clearTimeout(timer);
-      });
+      // Clear all pending dismiss timers on unmount
+      dismissTimersRef.current.forEach((timerId) => clearTimeout(timerId));
       dismissTimersRef.current.clear();
     };
-  }, [transactionsToShow, dismissedTxIds]);
+  }, []);
 
   // Current status for headline
   const currentStatus = useMemo(() => {
@@ -292,7 +297,7 @@ export function AztecTransactionStatusOverlay({
 
   // ESC key handler - allow closing when in terminal state
   const handleDismissAll = useCallback(() => {
-    // Dismiss all visible transactions
+    // Dismiss all visible transactions in local state
     setDismissedTxIds((prev) => {
       const next = new Set(prev);
       transactionsToShow.forEach((tx) => {
@@ -302,7 +307,16 @@ export function AztecTransactionStatusOverlay({
       });
       return next;
     });
-  }, [transactionsToShow]);
+
+    // Also clear active transaction in store to prevent re-showing on state updates
+    store.setState((state) => ({
+      ...state,
+      active: {
+        ...state.active,
+        transactionId: null,
+      },
+    }));
+  }, [transactionsToShow, store]);
 
   useEffect(() => {
     if (!shouldShowOverlay || !allowEscapeKeyClose || !isBrowser()) {
@@ -421,6 +435,17 @@ export function AztecTransactionStatusOverlay({
         {/* Multiple transactions notice */}
         {transactionsToShow.length > 1 && (
           <p className={styles['multipleNotice']}>Processing {transactionsToShow.length} transactions</p>
+        )}
+
+        {/* Dismiss button for failed transactions */}
+        {currentStatus === 'failed' && (
+          <button
+            className={styles['dismissButton']}
+            onClick={handleDismissAll}
+            type="button"
+          >
+            Dismiss
+          </button>
         )}
       </div>
     </div>,

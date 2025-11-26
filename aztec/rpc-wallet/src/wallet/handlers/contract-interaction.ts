@@ -605,8 +605,24 @@ export function createContractInteractionHandlers() {
 
       // Wait for transaction receipt
       logger.debug('Waiting for batch transaction receipt...');
+      const waitStartTime = Date.now();
+
+      // Stage 5: Confirming (transaction included, waiting for confirmations)
+      await notifyTransactionStatus(ctx, {
+        txStatusId,
+        status: 'confirming',
+        txHash: txHash.toString(),
+      });
+
       const receipt = await ctx.wallet.getTxReceipt(txHash);
-      logger.debug('Batch transaction receipt received:', receipt);
+      logger.debug(`Batch transaction confirmed in ${Date.now() - waitStartTime}ms`);
+
+      // Stage 6: Confirmed (batch transaction finalized)
+      await notifyTransactionStatus(ctx, {
+        txStatusId,
+        status: 'confirmed',
+        txHash: txHash.toString(),
+      });
 
       return { txHash, receipt, txStatusId };
     } catch (error) {
