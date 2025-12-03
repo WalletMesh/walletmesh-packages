@@ -19,11 +19,11 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@aztec/accounts": "2.0.3",
-    "@aztec/aztec.js": "2.0.3",
-    "@aztec/noir-contracts.js": "2.0.3",
-    "@aztec/noir-test-contracts.js": "2.0.3",
-    "@aztec/noir-acvm_js": "2.0.3",
+    "@aztec/accounts": "v3.0.0-nightly.20251203",
+    "@aztec/aztec.js": "v3.0.0-nightly.20251203",
+    "@aztec/noir-contracts.js": "v3.0.0-nightly.20251203",
+    "@aztec/noir-test-contracts.js": "v3.0.0-nightly.20251203",
+    "@aztec/noir-acvm_js": "v3.0.0-nightly.20251203",
     "@walletmesh/aztec-rpc-wallet": "workspace:^",
     "@walletmesh/jsonrpc": "workspace:^",
     "@walletmesh/modal-react": "workspace:^",

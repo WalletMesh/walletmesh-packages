@@ -30,11 +30,11 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@aztec/aztec.js": "2.0.3",
-    "@aztec/blob-lib": "2.0.3",
-    "@aztec/entrypoints": "2.0.3",
-    "@aztec/foundation": "2.0.3",
-    "@aztec/stdlib": "2.0.3",
+    "@aztec/aztec.js": "v3.0.0-nightly.20251203",
+    "@aztec/blob-lib": "v3.0.0-nightly.20251203",
+    "@aztec/entrypoints": "v3.0.0-nightly.20251203",
+    "@aztec/foundation": "v3.0.0-nightly.20251203",
+    "@aztec/stdlib": "v3.0.0-nightly.20251203",
     "@walletmesh/jsonrpc": "workspace:^",
     "@walletmesh/router": "workspace:^",
     "zod": "^3.25.76"
