@@ -4,12 +4,11 @@
  * @module components/AztecTransactionStatusOverlay.test
  */
 
-import { render, screen, act } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AztecTransactionStatusOverlay } from './AztecTransactionStatusOverlay.js';
-
+import { act, render, screen } from '@testing-library/react';
 // Import types for creating mock states
 import type { TransactionResult, WalletMeshState } from '@walletmesh/modal-core';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { AztecTransactionStatusOverlay } from './AztecTransactionStatusOverlay.js';
 
 // Helper to create a properly structured transaction result
 function createMockTransaction(overrides: Partial<TransactionResult>): TransactionResult {
@@ -125,7 +124,6 @@ vi.mock('../hooks/internal/useStore.js', () => ({
   useStoreInstance: vi.fn(() => mockStoreInstance),
 }));
 
-
 // Mock useFocusTrap hook
 const mockFocusTrapRef = { current: null };
 vi.mock('../utils/useFocusTrap.js', () => ({
@@ -233,23 +231,28 @@ describe('AztecTransactionStatusOverlay', () => {
 
   describe('ESC Key Handling', () => {
     it('should auto-dismiss confirmed transactions after 1-second delay (no ESC needed)', async () => {
-      // Mock confirmed transaction
-      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
-        const mockState = createMockState({
-          active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
-          entities: {
-            wallets: {},
-            sessions: {},
-            transactions: {
-              'tx-1': createMockTransaction({
-                txStatusId: 'tx-1',
-                status: 'confirmed',
-              }),
-            },
+      // Create confirmed state for both useStore and store.getState()
+      const confirmedState = createMockState({
+        active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
+        entities: {
+          wallets: {},
+          sessions: {},
+          transactions: {
+            'tx-1': createMockTransaction({
+              txStatusId: 'tx-1',
+              status: 'confirmed',
+            }),
           },
-        });
-        return selector(mockState);
+        },
       });
+
+      // Mock confirmed transaction via useStore
+      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
+        return selector(confirmedState);
+      });
+
+      // Also update store.getState() to return confirmed state (used by auto-dismiss check)
+      mockStoreInstance.getState.mockReturnValue(confirmedState);
 
       render(<AztecTransactionStatusOverlay />);
 
@@ -408,23 +411,28 @@ describe('AztecTransactionStatusOverlay', () => {
 
   describe('Auto-dismiss Behavior', () => {
     it('should show success state for 1 second then auto-dismiss when transaction is confirmed', async () => {
-      // Mock confirmed transaction
-      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
-        const mockState = createMockState({
-          active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
-          entities: {
-            wallets: {},
-            sessions: {},
-            transactions: {
-              'tx-1': createMockTransaction({
-                txStatusId: 'tx-1',
-                status: 'confirmed',
-              }),
-            },
+      // Create confirmed state for both useStore and store.getState()
+      const confirmedState = createMockState({
+        active: { transactionId: 'tx-1', walletId: null, sessionId: null, selectedWalletId: null },
+        entities: {
+          wallets: {},
+          sessions: {},
+          transactions: {
+            'tx-1': createMockTransaction({
+              txStatusId: 'tx-1',
+              status: 'confirmed',
+            }),
           },
-        });
-        return selector(mockState);
+        },
       });
+
+      // Mock confirmed transaction via useStore
+      vi.mocked(useStore).mockImplementation((selector: (state: WalletMeshState) => unknown) => {
+        return selector(confirmedState);
+      });
+
+      // Also update store.getState() to return confirmed state (used by auto-dismiss check)
+      mockStoreInstance.getState.mockReturnValue(confirmedState);
 
       render(<AztecTransactionStatusOverlay />);
 

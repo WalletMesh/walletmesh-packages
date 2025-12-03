@@ -26,6 +26,11 @@ export type HistoryEntry = {
     stack?: string;
     details?: unknown;
   };
+  // Transaction status from wallet backend notifications
+  // Syncs with dApp overlay to show actual blockchain transaction progress
+  txStatusId?: string;
+  transactionStatus?: 'idle' | 'simulating' | 'proving' | 'sending' | 'pending' | 'confirming' | 'confirmed' | 'failed';
+  txHash?: string;
 };
 
 /**
@@ -129,7 +134,13 @@ export const createHistoryMiddleware = (
       const responseTimestamp = Date.now();
       const duration = responseTimestamp - requestTimestamp;
 
-      // Update with success status
+      // Extract txStatusId from response if present (for transaction methods)
+      const txStatusId =
+        result && typeof result === 'object' && 'txStatusId' in result
+          ? (result as { txStatusId?: string }).txStatusId
+          : undefined;
+
+      // Update with success status and txStatusId if available
       history = history.map((item) =>
         item.id === newHistoryId
           ? {
@@ -139,6 +150,7 @@ export const createHistoryMiddleware = (
               processingStatus: 'success',
               responseTimestamp,
               duration,
+              ...(txStatusId && { txStatusId }),
             }
           : item,
       );

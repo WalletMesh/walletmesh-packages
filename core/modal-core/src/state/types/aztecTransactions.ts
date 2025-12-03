@@ -75,6 +75,15 @@ export interface AztecTransactionResult extends TransactionResult {
    * as they don't involve blockchain state changes or multi-stage execution
    */
   isSigningOnly?: boolean;
+
+  /**
+   * The wallet's internal transaction status ID.
+   * When a placeholder transaction is created before the wallet call,
+   * the wallet will send notifications with its own txStatusId.
+   * This field maps the wallet's ID to our placeholder ID, allowing
+   * subsequent notifications to update the correct transaction.
+   */
+  walletTxStatusId?: string;
 }
 
 /**

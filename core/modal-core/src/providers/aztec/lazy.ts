@@ -13,11 +13,11 @@ import type { JSONRPCSerializer, JSONRPCTransport } from '@walletmesh/jsonrpc';
 import type { StoreApi } from 'zustand';
 import { ErrorFactory } from '../../internal/core/errors/errorFactory.js';
 import { aztecTransactionActions } from '../../state/actions/aztecTransactions.js';
-import { useStore } from '../../state/store.js';
-import { createLazyModule } from '../../utils/lazy/index.js';
 import type { WalletMeshState } from '../../state/store.js';
+import { useStore } from '../../state/store.js';
 import type { AztecTransactionResult } from '../../state/types/aztecTransactions.js';
 import { ChainType } from '../../types.js';
+import { createLazyModule } from '../../utils/lazy/index.js';
 import type { AztecProviderFunctions } from './types.js';
 import { parseAztecTransactionStatusWithDiagnostics } from './types.js';
 
@@ -297,18 +297,15 @@ export class LazyAztecRouterProvider {
     const store = useStore as unknown as StoreApi<WalletMeshState>;
 
     // Cast through unknown to avoid type checking issues with external module
-    this.realProvider = new module.AztecRouterProvider(
-      transport,
-      {
-        context,
-        onSessionTerminated: ({ sessionId }: { sessionId: string; reason: string }) => {
-          // End the session in the store, which will trigger UI updates
-          connectionActions.endSession(store, sessionId, { isDisconnect: true }).catch((error: unknown) => {
-            console.error('[LazyAztecRouterProvider] Failed to end session:', error);
-          });
-        },
+    this.realProvider = new module.AztecRouterProvider(transport, {
+      context,
+      onSessionTerminated: ({ sessionId }: { sessionId: string; reason: string }) => {
+        // End the session in the store, which will trigger UI updates
+        connectionActions.endSession(store, sessionId, { isDisconnect: true }).catch((error: unknown) => {
+          console.error('[LazyAztecRouterProvider] Failed to end session:', error);
+        });
       },
-    ) as unknown as AztecRouterProviderInstance;
+    }) as unknown as AztecRouterProviderInstance;
 
     // Listen for proving status notifications
     try {
@@ -332,14 +329,69 @@ export class LazyAztecRouterProvider {
           const parseResult = parseAztecTransactionStatusWithDiagnostics(params);
 
           if (parseResult.success && parseResult.data) {
-
-            const { txStatusId, status, txHash: notificationTxHash, error: notificationError } = parseResult.data;
+            const {
+              txStatusId,
+              status,
+              txHash: notificationTxHash,
+              error: notificationError,
+            } = parseResult.data;
 
             // Check if transaction exists in store
             const state = store.getState();
-            const existingTx = state.entities.transactions[txStatusId];
+            let existingTx = state.entities.transactions[txStatusId] as AztecTransactionResult | undefined;
+            let resolvedTxStatusId = txStatusId; // The ID we'll use for updates
+
+            // If not found by notification's txStatusId, check if any transaction has this as walletTxStatusId
+            // This handles subsequent notifications after a placeholder was mapped
+            if (!existingTx) {
+              const txByWalletId = Object.values(state.entities.transactions).find(
+                (tx) => (tx as AztecTransactionResult).walletTxStatusId === txStatusId,
+              ) as AztecTransactionResult | undefined;
+              if (txByWalletId) {
+                existingTx = txByWalletId;
+                resolvedTxStatusId = txByWalletId.txStatusId; // Use the placeholder's ID for updates
+                console.log('[LazyAztecRouterProvider:notification] Found transaction by walletTxStatusId mapping:', {
+                  walletTxStatusId: txStatusId,
+                  resolvedTxStatusId,
+                });
+              }
+            }
+
+            console.log('[LazyAztecRouterProvider:notification] Received aztec_transactionStatus:', {
+              txStatusId,
+              status,
+              existingTx: existingTx ? `FOUND (status: ${existingTx.status})` : 'NOT FOUND',
+              currentActiveId: state.active.transactionId,
+              resolvedTxStatusId,
+            });
 
             if (!existingTx) {
+              // Check if there's an active placeholder transaction we should use instead of creating new
+              const activeId = state.active.transactionId;
+              if (activeId) {
+                const activeTx = state.entities.transactions[activeId] as AztecTransactionResult | undefined;
+                // Use active transaction if it's a sync placeholder (status 'idle', no walletTxStatusId yet)
+                if (activeTx && activeTx.mode === 'sync' && activeTx.status === 'idle' && !activeTx.walletTxStatusId) {
+                  console.log('[LazyAztecRouterProvider:notification] Using existing placeholder transaction:', activeId);
+
+                  // Update the placeholder with notification data and map the wallet's ID
+                  aztecTransactionActions.updateAztecTransaction(store, activeId, {
+                    walletTxStatusId: txStatusId, // Map wallet's ID to our placeholder
+                    txHash: notificationTxHash || '',
+                  });
+                  aztecTransactionActions.updateAztecTransactionStatus(store, activeId, status);
+
+                  // Update error if provided
+                  if (notificationError) {
+                    aztecTransactionActions.updateAztecTransaction(store, activeId, {
+                      error: ErrorFactory.transactionFailed(notificationError),
+                    });
+                  }
+                  return; // Don't create new transaction - we've updated the placeholder
+                }
+              }
+
+              console.log('[LazyAztecRouterProvider:notification] Creating NEW transaction from notification');
               // Transaction doesn't exist yet - create it from the notification
               // This can happen when wallet sends notifications before wmExecuteTx returns
 
@@ -431,6 +483,7 @@ export class LazyAztecRouterProvider {
                   status === 'confirming');
 
               if (isBlockchainTransaction) {
+                console.log('[LazyAztecRouterProvider:notification] Setting active.transactionId (new tx):', txStatusId);
                 store.setState((state) => {
                   state.active.transactionId = txStatusId;
                   return state;
@@ -439,6 +492,7 @@ export class LazyAztecRouterProvider {
               // Signing-only operations and transactions not yet in blockchain stages
               // don't trigger the overlay - handled silently
             } else {
+              console.log('[LazyAztecRouterProvider:notification] Updating EXISTING transaction');
               // Transaction already exists - handle status updates for existing transactions
               // This is critical for ensuring overlay stays visible during transaction lifecycle
 
@@ -457,45 +511,62 @@ export class LazyAztecRouterProvider {
                 // Clear isSigningOnly flag - this is now definitely a blockchain transaction
                 // This handles the case where 'initiated' was received without txHash (incorrectly marking as signing-only)
                 if ((existingTx as { isSigningOnly?: boolean }).isSigningOnly) {
-                  aztecTransactionActions.updateAztecTransaction(store, txStatusId, {
+                  aztecTransactionActions.updateAztecTransaction(store, resolvedTxStatusId, {
                     isSigningOnly: false,
                   });
                 }
               }
 
               // Re-affirm activeTransactionId for sync-mode transactions
-              // This ensures the overlay stays visible for both blockchain stages AND terminal states
+              // This ensures the overlay stays visible throughout the entire transaction lifecycle
+              // IMPORTANT: Always check and set activeTransactionId for sync transactions in active states,
+              // even if it appears already set, to handle race conditions where it may have been cleared
               if (isBlockchainStatus || isTerminalStatus) {
                 const currentState = store.getState();
                 const txMode = (existingTx as AztecTransactionResult).mode;
                 const isSigningOnly = (existingTx as { isSigningOnly?: boolean }).isSigningOnly;
-                // Only re-affirm if this isn't a signing-only transaction (authwit)
-                if (txMode === 'sync' && !isSigningOnly && currentState.active.transactionId !== txStatusId) {
-                  store.setState((s) => {
-                    s.active.transactionId = txStatusId;
-                    return s;
-                  });
+
+                console.log('[LazyAztecRouterProvider:notification] Re-affirming activeTransactionId:', {
+                  txMode,
+                  isSigningOnly,
+                  currentActiveId: currentState.active.transactionId,
+                  resolvedTxStatusId,
+                });
+
+                // For sync-mode blockchain transactions, ensure activeTransactionId is set
+                // Handle case where activeTransactionId was cleared (null) or is different
+                if (txMode === 'sync' && !isSigningOnly) {
+                  const currentActiveId = currentState.active.transactionId;
+                  // Re-set if cleared (null/undefined) OR if pointing to different transaction
+                  if (!currentActiveId || currentActiveId !== resolvedTxStatusId) {
+                    console.log('[LazyAztecRouterProvider:notification] Setting active.transactionId (re-affirm):', resolvedTxStatusId);
+                    store.setState((s) => {
+                      s.active.transactionId = resolvedTxStatusId;
+                      return s;
+                    });
+                  }
                 }
               }
             }
 
-            // Update transaction status in store
+            // Update transaction status in store using the resolved ID
+            // (either the notification's txStatusId or the placeholder's ID if mapped)
             aztecTransactionActions.updateAztecTransactionStatus(
               store,
-              txStatusId, // ← Internal tracking ID
+              resolvedTxStatusId, // ← Use resolved ID (handles walletTxStatusId mapping)
               status, // Types now match - no cast needed
             );
 
             // Update transaction hash if provided (blockchain identifier)
             if (notificationTxHash) {
-              aztecTransactionActions.updateAztecTransaction(store, txStatusId, {
+              aztecTransactionActions.updateAztecTransaction(store, resolvedTxStatusId, {
                 txHash: notificationTxHash, // ← Blockchain hash
               });
             }
 
             // Update error if provided
             if (notificationError) {
-              aztecTransactionActions.updateAztecTransaction(store, txStatusId, {
+              aztecTransactionActions.updateAztecTransaction(store, resolvedTxStatusId, {
                 error: ErrorFactory.transactionFailed(notificationError),
               });
             }
@@ -520,8 +591,32 @@ export class LazyAztecRouterProvider {
       });
       this.notificationCleanup.push(removeTxStatus);
 
-      // Note: Session termination (wm_sessionTerminated) is now handled by AztecRouterProvider itself
-      // via the onSessionTerminated callback passed in the constructor above
+      // Subscribe to session termination events as a backup mechanism
+      // The onSessionTerminated callback in constructor handles the primary case,
+      // but notifications provide a second path for wallet-initiated terminations
+      const removeSessionTerminated = providerWithNotifications.onNotification(
+        'wm_sessionTerminated',
+        (params) => {
+          const { sessionId, reason } = params as { sessionId: string; reason: string };
+          console.log('[LazyAztecRouterProvider] Session terminated notification received:', {
+            sessionId,
+            reason,
+          });
+
+          // Clear active transaction state
+          store.setState((state) => {
+            state.active.transactionId = null;
+            return state;
+          });
+
+          // End the session in the store (this is redundant with onSessionTerminated callback,
+          // but ensures UI updates even if callback path fails)
+          connectionActions.endSession(store, sessionId, { isDisconnect: true }).catch((error: unknown) => {
+            console.error('[LazyAztecRouterProvider] Failed to end session from notification:', error);
+          });
+        },
+      );
+      this.notificationCleanup.push(removeSessionTerminated);
     } finally {
       // Initialization complete - no debug logging to avoid noise in production
     }
@@ -952,20 +1047,19 @@ export const clearStoredAuthWitnesses =
     'clearStoredAuthWitnesses',
   );
 
-// Re-export error utilities (these don't need lazy loading as they don't import heavy deps)
-export {
-  AztecError,
-  AztecContractError,
-  AztecAccountError,
-  AztecEventError,
-  AztecAuthError,
-  AZTEC_ERROR_CODE,
-  isRecoverableError,
-  getErrorRecoveryHint,
-  extractErrorDetails,
-} from './errors.js';
-
 // Re-export types from sub-modules
 export type { AccountInfo } from './account.js';
-export type { EventSubscription, EventQueryOptions } from './events.js';
 export type { AuthWitnessWithMetadata } from './auth.js';
+// Re-export error utilities (these don't need lazy loading as they don't import heavy deps)
+export {
+  AZTEC_ERROR_CODE,
+  AztecAccountError,
+  AztecAuthError,
+  AztecContractError,
+  AztecError,
+  AztecEventError,
+  extractErrorDetails,
+  getErrorRecoveryHint,
+  isRecoverableError,
+} from './errors.js';
+export type { EventQueryOptions, EventSubscription } from './events.js';

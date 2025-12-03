@@ -373,10 +373,10 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         }
 
         // Update transaction with actual hash and address
+        // (status transitions handled by wallet notifications)
         aztecTransactionActions.updateAztecTransaction(store, deploymentTxStatusId, {
           txHash: result.txStatusId, // Use wallet's txStatusId as our hash reference
         });
-        aztecTransactionActions.updateAztecTransactionStatus(store, deploymentTxStatusId, 'proving');
 
         // Store txStatusId for tracking
         setTxStatusId(deploymentTxStatusId);
@@ -506,14 +506,11 @@ export function useAztecDeploy(): UseAztecDeployReturn {
         const compatibleArtifact = normalizeArtifact(artifact);
         await ensureContractClassRegistered(aztecWallet, compatibleArtifact);
 
-        // Start proving stage
+        // End simulating stage - wallet notifications will drive subsequent stages
         aztecTransactionActions.endTransactionStage(store, deploymentTxStatusId, 'simulating');
-        aztecTransactionActions.updateAztecTransactionStatus(store, deploymentTxStatusId, 'proving');
-        aztecTransactionActions.startTransactionStage(store, deploymentTxStatusId, 'proving');
-        if (isMountedRef.current) {
-          setStage('proving');
-          options.onProgress?.('proving');
-        }
+        // DON'T manually set 'proving' - let wallet notifications drive the status
+        // The wallet will send 'proving', 'sending', 'confirming' notifications
+        // which will be handled by the notification handler in lazy.ts
 
         const deploySentTx = await aztecWallet.deployContract(
           compatibleArtifact as Parameters<typeof aztecWallet.deployContract>[0],
@@ -522,27 +519,16 @@ export function useAztecDeploy(): UseAztecDeployReturn {
 
         const txHash = deploySentTx.txHash || 'deployment';
 
-        // Update with transaction hash and move to sending
+        // Update with transaction hash - wallet notifications will drive status updates
+        // The wallet sends aztec_transactionStatus notifications as it progresses through
+        // proving → sending → confirming stages. The notification handler in lazy.ts
+        // will update the transaction status accordingly.
         aztecTransactionActions.updateAztecTransaction(store, deploymentTxStatusId, {
           txHash,
         });
-        aztecTransactionActions.endTransactionStage(store, deploymentTxStatusId, 'proving');
-        aztecTransactionActions.updateAztecTransactionStatus(store, deploymentTxStatusId, 'sending');
-        aztecTransactionActions.startTransactionStage(store, deploymentTxStatusId, 'sending');
-        if (isMountedRef.current) {
-          setStage('sending');
-          options.onProgress?.('sending');
-        }
 
         // Wait for deployment to complete
-        aztecTransactionActions.endTransactionStage(store, deploymentTxStatusId, 'sending');
-        aztecTransactionActions.updateAztecTransactionStatus(store, deploymentTxStatusId, 'confirming');
-        aztecTransactionActions.startTransactionStage(store, deploymentTxStatusId, 'confirming');
-        if (isMountedRef.current) {
-          setStage('confirming');
-          options.onProgress?.('confirming');
-        }
-
+        // Wallet notifications will update status during this wait
         const deployedContract = await deploySentTx.deployed();
         const contractAddress = deployedContract.address as AztecAddress;
 
@@ -556,8 +542,8 @@ export function useAztecDeploy(): UseAztecDeployReturn {
           txHash,
         };
 
-        // Mark as confirmed
-        aztecTransactionActions.endTransactionStage(store, deploymentTxStatusId, 'confirming');
+        // Mark as confirmed (safeguard - wallet notification should have already set this)
+        // Don't call endTransactionStage for 'confirming' since wallet notifications drive stages
         aztecTransactionActions.updateAztecTransactionStatus(store, deploymentTxStatusId, 'confirmed');
 
         logger.debug('Sync deployment successful', {

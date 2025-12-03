@@ -36,6 +36,9 @@ vi.mock('../../state/store.js', () => ({
       entities: {
         transactions: {},
       },
+      active: {
+        transactionId: null,
+      },
     }),
     setState: vi.fn(),
     subscribe: vi.fn(),
@@ -76,6 +79,9 @@ describe('LazyAztecRouterProvider - Notification Integration', () => {
     vi.mocked(useStore.getState).mockReturnValue({
       entities: {
         transactions: {},
+      },
+      active: {
+        transactionId: null,
       },
     } as any);
 

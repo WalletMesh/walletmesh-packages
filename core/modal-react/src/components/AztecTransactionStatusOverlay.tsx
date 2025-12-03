@@ -1,7 +1,12 @@
-import { useMemo, useEffect, useState, useCallback, useId, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import type { TransactionStatus } from '@walletmesh/modal-core';
-import { useStore, useStoreInstance, useStoreWithEquality, shallowEqual } from '../hooks/internal/useStore.js';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import {
+  shallowEqual,
+  useStore,
+  useStoreInstance,
+  useStoreWithEquality,
+} from '../hooks/internal/useStore.js';
 import { isBrowser } from '../utils/ssr-walletmesh.js';
 import { useFocusTrap } from '../utils/useFocusTrap.js';
 import styles from './AztecTransactionStatusOverlay.module.css';
@@ -147,16 +152,17 @@ export function AztecTransactionStatusOverlay({
   });
 
   // Get active transaction (sync mode)
-  const activeTransactionId = useStore((state) => state.active?.transactionId);
+  // Combined into single selector to avoid closure issues where activeTransaction
+  // selector would use stale activeTransactionId from previous render
   const activeTransaction = useStore((state) => {
-    if (!activeTransactionId) return null;
-    return state.entities.transactions[activeTransactionId];
+    const id = state.active?.transactionId;
+    return id ? state.entities.transactions[id] : null;
   });
 
   // Get background transaction IDs (memoized with shallow comparison)
   const backgroundTxIds = useStoreWithEquality(
     (state) => state.meta.backgroundTransactionIds || [],
-    shallowEqual
+    shallowEqual,
   );
   const transactions = useStore((state) => state.entities.transactions);
 
@@ -218,22 +224,31 @@ export function AztecTransactionStatusOverlay({
 
         // Set a 1-second timer to show the success state before dismissing
         const timerId = setTimeout(() => {
-          setDismissedTxIds((prev) => {
-            const next = new Set(prev);
-            next.add(txId);
-            return next;
-          });
+          // Double-check the transaction is still in terminal state before dismissing
+          // This handles race conditions where state might have changed
+          const currentTxState = store.getState().entities.transactions[txId];
+          const currentStatus = currentTxState?.status as TransactionStatus | undefined;
 
-          // Also clear active transaction in store
-          store.setState((state) => ({
-            ...state,
-            active: {
-              ...state.active,
-              transactionId: null,
-            },
-          }));
+          // Only dismiss if still in terminal state (confirmed or failed)
+          if (currentStatus === 'confirmed' || currentStatus === 'failed') {
+            setDismissedTxIds((prev) => {
+              const next = new Set(prev);
+              next.add(txId);
+              return next;
+            });
 
-          // Clean up timer reference
+            // Also clear active transaction in store
+            store.setState((state) => ({
+              ...state,
+              active: {
+                ...state.active,
+                transactionId: null,
+              },
+            }));
+          }
+          // If not in terminal state, don't dismiss - something updated the transaction
+
+          // Clean up timer reference (always do this)
           dismissTimersRef.current.delete(txId);
         }, 1000); // 1 second delay to show success state
 
@@ -439,11 +454,7 @@ export function AztecTransactionStatusOverlay({
 
         {/* Dismiss button for failed transactions */}
         {currentStatus === 'failed' && (
-          <button
-            className={styles['dismissButton']}
-            onClick={handleDismissAll}
-            type="button"
-          >
+          <button className={styles['dismissButton']} onClick={handleDismissAll} type="button">
             Dismiss
           </button>
         )}

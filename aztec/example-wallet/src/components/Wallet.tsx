@@ -335,6 +335,8 @@ const Wallet: React.FC<WalletProps> = ({
   const autoApproveRef = useRef(autoApprove);
   /** Ref to loadSessions function for router callbacks. */
   const loadSessionsRef = useRef<(() => Promise<void>) | null>(null);
+  /** Ref to wallet node for notification listeners. */
+  const walletNodeRef = useRef<ReturnType<typeof createAztecWalletNode> | null>(null);
   /** Retry attempt counter */
   const [retryAttempt, setRetryAttempt] = useState(0);
 
@@ -612,6 +614,37 @@ const Wallet: React.FC<WalletProps> = ({
 
         // Create Aztec wallet node with proper transport
         const aztecWalletNode = createAztecWalletNode(wallet, pxe, walletTransport);
+        walletNodeRef.current = aztecWalletNode;
+
+        // Subscribe to aztec_transactionStatus notifications to sync wallet UI with actual tx progress
+        // This ensures the wallet UI shows the same status as the dApp overlay
+        aztecWalletNode.on('notification', (notificationData: unknown) => {
+          const notification = notificationData as { method?: string; params?: unknown };
+          if (notification?.method === 'aztec_transactionStatus') {
+            const params = notification.params as {
+              txStatusId: string;
+              status: 'idle' | 'simulating' | 'proving' | 'sending' | 'pending' | 'confirming' | 'confirmed' | 'failed';
+              txHash?: string;
+            };
+
+            console.log('[Wallet] Transaction status notification:', params);
+
+            // Update request history with actual transaction status
+            setRequestHistory((prevHistory) =>
+              prevHistory.map((entry) => {
+                // Match by txStatusId (extracted from response in history middleware)
+                if (entry.txStatusId === params.txStatusId) {
+                  return {
+                    ...entry,
+                    transactionStatus: params.status,
+                    ...(params.txHash && { txHash: params.txHash }),
+                  };
+                }
+                return entry;
+              }),
+            );
+          }
+        });
 
         // Add PRE-deserialization debugging middleware to see raw serialized params
         aztecWalletNode.addMiddleware(async (_context, request, next) => {
@@ -2175,6 +2208,35 @@ const Wallet: React.FC<WalletProps> = ({
                             ? '❌ Error'
                             : '✅ Success'}
                       </span>
+                    </p>
+                  )}
+                  {request.transactionStatus && (
+                    <p className="request-details">
+                      <b>Transaction Status:</b>{' '}
+                      <span
+                        className={
+                          request.transactionStatus === 'confirmed'
+                            ? 'success-status'
+                            : request.transactionStatus === 'failed'
+                              ? 'error-status'
+                              : 'processing-status'
+                        }
+                      >
+                        {request.transactionStatus === 'idle' && '⏳ Starting'}
+                        {request.transactionStatus === 'simulating' && '🔧 Simulating'}
+                        {request.transactionStatus === 'proving' && '🔐 Generating Proof'}
+                        {request.transactionStatus === 'sending' && '📡 Sending'}
+                        {request.transactionStatus === 'pending' && '⏱️ Pending'}
+                        {request.transactionStatus === 'confirming' && '⏱️ Confirming'}
+                        {request.transactionStatus === 'confirmed' && '✅ Confirmed'}
+                        {request.transactionStatus === 'failed' && '❌ Failed'}
+                      </span>
+                      {request.txHash && (
+                        <span className="tx-hash" title={request.txHash}>
+                          {' '}
+                          ({request.txHash.slice(0, 8)}...{request.txHash.slice(-6)})
+                        </span>
+                      )}
                     </p>
                   )}
                   {request.error && (

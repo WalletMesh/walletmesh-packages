@@ -62,13 +62,34 @@ export class AztecTransactionManager {
    * @returns Transaction receipt
    */
   async executeSync(interaction: ContractFunctionInteraction): Promise<unknown> {
+    console.log('[AztecTransactionManager:executeSync] Starting executeSync');
+
+    // Create placeholder transaction IMMEDIATELY (before wallet call)
+    // This ensures the overlay appears during wallet approval
+    const placeholderTxStatusId = this.generateTxStatusId();
+    const placeholderTransaction = this.createTransaction(placeholderTxStatusId, 'sync');
+    aztecTransactionActions.addAztecTransaction(this.store, placeholderTransaction);
+
+    console.log('[AztecTransactionManager:executeSync] Created placeholder transaction:', placeholderTxStatusId);
+
     try {
-      // Execute transaction and get wallet's txStatusId
-      // The wallet will send notifications with this ID
-      const { receipt } = await this.executeWithLifecycle(interaction, 'sync');
+      // Execute transaction - wallet will send notifications
+      // Notification handler will detect our placeholder and update it (via walletTxStatusId mapping)
+      const { txStatusId, receipt } = await this.executeWithLifecycle(interaction, 'sync');
+
+      // Clean up placeholder if wallet returned a different txStatusId
+      // This handles the case where wallet notifications already created the transaction
+      if (placeholderTxStatusId !== txStatusId) {
+        console.log('[AztecTransactionManager:executeSync] Cleaning up placeholder:', placeholderTxStatusId, 'actual:', txStatusId);
+        aztecTransactionActions.removeAztecTransaction(this.store, placeholderTxStatusId);
+      }
+
+      console.log('[AztecTransactionManager:executeSync] Completed successfully');
       return receipt;
     } catch (error) {
-      // Error is already logged by executeWithLifecycle
+      console.log('[AztecTransactionManager:executeSync] Failed with error:', error);
+      // Mark placeholder as failed
+      aztecTransactionActions.updateAztecTransactionStatus(this.store, placeholderTxStatusId, 'failed');
       throw error;
     }
   }
@@ -112,21 +133,53 @@ export class AztecTransactionManager {
     interaction: ContractFunctionInteraction,
     mode: TransactionMode,
   ): Promise<{ txStatusId: string; receipt: unknown }> {
+    console.log('[AztecTransactionManager:executeWithLifecycle] Called executeTx, awaiting...');
+
     // Execute transaction to get wallet's txStatusId
     // The wallet will send notifications ('initiated', 'proving', 'sending', etc.)
     // with its own txStatusId, which will create/update the transaction in the store
     const sentTx = await executeTx(this.wallet, interaction);
 
-    // Use the wallet's transaction ID if provided, otherwise generate one
-    // The wallet may send notifications with a different txStatusId which will update the transaction
-    const txStatusId = sentTx.txStatusId ?? this.generateTxStatusId();
+    console.log('[AztecTransactionManager:executeWithLifecycle] executeTx returned:', {
+      txHash: sentTx.txHash,
+      txStatusId: sentTx.txStatusId,
+      hasTxStatusId: !!sentTx.txStatusId,
+    });
 
-    // Create transaction in store if wallet hasn't already (via notifications)
+    // Determine which txStatusId to use:
+    // 1. If wallet returned a txStatusId, use that
+    // 2. If not, check if notifications already created an active transaction
+    // 3. Only generate a new ID as last resort
+    let txStatusId: string;
+    if (sentTx.txStatusId) {
+      txStatusId = sentTx.txStatusId;
+      console.log('[AztecTransactionManager:executeWithLifecycle] Using txStatusId from wallet:', txStatusId);
+    } else {
+      // Check if notifications already created a transaction that's now active
+      const activeId = this.store.getState().active.transactionId;
+      if (activeId) {
+        // Use the existing active transaction created by notifications
+        txStatusId = activeId;
+        console.log('[AztecTransactionManager:executeWithLifecycle] Using active transaction from notifications:', txStatusId);
+      } else {
+        // No active transaction, generate new ID (fallback for edge cases)
+        txStatusId = this.generateTxStatusId();
+        console.log('[AztecTransactionManager:executeWithLifecycle] Generated new txStatusId (no active transaction):', txStatusId);
+      }
+    }
+
+    // Create transaction in store ONLY if wallet hasn't already (via notifications)
     // This handles the case where notifications haven't arrived yet
     const existingTx = this.getTransaction(txStatusId);
+
+    console.log('[AztecTransactionManager:executeWithLifecycle] existingTx:', existingTx ? 'FOUND' : 'NOT FOUND');
+
     if (!existingTx) {
+      console.log('[AztecTransactionManager:executeWithLifecycle] Creating new transaction with status idle');
       const transaction = this.createTransaction(txStatusId, mode);
       aztecTransactionActions.addAztecTransaction(this.store, transaction);
+    } else {
+      console.log('[AztecTransactionManager:executeWithLifecycle] Using existing transaction with status:', existingTx.status);
     }
 
     // Update transaction hash (blockchain identifier)
@@ -138,7 +191,9 @@ export class AztecTransactionManager {
 
     // Wait for confirmation
     // The wallet will send 'confirming' and 'confirmed' notifications
+    console.log('[AztecTransactionManager:executeWithLifecycle] Calling sentTx.wait()...');
     const receipt = await sentTx.wait();
+    console.log('[AztecTransactionManager:executeWithLifecycle] sentTx.wait() returned receipt');
 
     return { txStatusId, receipt };
   }

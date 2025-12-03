@@ -383,23 +383,17 @@ export function useAztecBatch(): UseAztecBatchReturn {
             });
           }
 
-          // Update local statuses with hash
-          if (isMountedRef.current) {
+          // Update local statuses with hash (status updates driven by wallet notifications)
+          if (isMountedRef.current && hash) {
             setTransactionStatuses((prev) =>
               prev.map((status) => ({
                 ...status,
-                status: 'confirming',
                 ...(hash && { hash }),
               })),
             );
           }
 
-          // Update to confirming status
-          aztecTransactionActions.updateAztecTransactionStatus(store, txStatusId, 'confirming');
-          aztecTransactionActions.endTransactionStage(store, txStatusId, 'proving');
-          aztecTransactionActions.startTransactionStage(store, txStatusId, 'confirming');
-
-          // Wait for receipt
+          // Wait for receipt (status transitions handled by wallet notifications)
           const receipt = await sentTx.wait();
 
           // Update to confirmed status

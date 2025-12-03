@@ -28,6 +28,20 @@ export const aztecTransactionActions = {
    */
   addAztecTransaction: (store: StoreApi<WalletMeshState>, transaction: AztecTransactionResult) => {
     mutateState(store, (state) => {
+      console.log('[aztecTransactionActions:addAztecTransaction] Adding transaction:', {
+        txStatusId: transaction.txStatusId,
+        status: transaction.status,
+        mode: transaction.mode,
+      });
+
+      const existing = state.entities.transactions[transaction.txStatusId];
+      if (existing) {
+        console.log('[aztecTransactionActions:addAztecTransaction] OVERWRITING existing transaction:', {
+          existingStatus: existing.status,
+          newStatus: transaction.status,
+        });
+      }
+
       // Add transaction to entities (keyed by status tracking ID)
       state.entities.transactions[transaction.txStatusId] = transaction;
 
@@ -38,6 +52,7 @@ export const aztecTransactionActions = {
         }
       } else {
         // If it's sync mode, set as active transaction
+        console.log('[aztecTransactionActions:addAztecTransaction] Setting active.transactionId to:', transaction.txStatusId, '(was:', state.active.transactionId, ')');
         state.active.transactionId = transaction.txStatusId;
       }
 
@@ -201,6 +216,27 @@ export const aztecTransactionActions = {
       const tx = state.entities.transactions[txStatusId] as AztecTransactionResult | undefined;
       if (tx) {
         Object.assign(tx, updates);
+      }
+    });
+  },
+
+  /**
+   * Remove an Aztec transaction from the store
+   */
+  removeAztecTransaction: (store: StoreApi<WalletMeshState>, txStatusId: string) => {
+    mutateState(store, (state) => {
+      // Remove from entities
+      delete state.entities.transactions[txStatusId];
+
+      // Remove from background list if present
+      const bgIndex = state.meta.backgroundTransactionIds.indexOf(txStatusId);
+      if (bgIndex !== -1) {
+        state.meta.backgroundTransactionIds.splice(bgIndex, 1);
+      }
+
+      // Clear active transaction if it was the removed one
+      if (state.active.transactionId === txStatusId) {
+        state.active.transactionId = null;
       }
     });
   },
