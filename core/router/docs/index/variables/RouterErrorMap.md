@@ -8,11 +8,11 @@
 
 > `const` **RouterErrorMap**: `object`
 
-Defined in: [core/router/src/errors.ts:6](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/router/src/errors.ts#L6)
+Defined in: [core/router/src/errors.ts:6](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/errors.ts#L6)
 
 Error codes and messages for the multi-chain router
 
-## Type declaration
+## Type Declaration
 
 ### insufficientPermissions
 

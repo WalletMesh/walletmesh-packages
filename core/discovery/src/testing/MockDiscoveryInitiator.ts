@@ -82,7 +82,7 @@ export class MockDiscoveryInitiator {
       required: this.config.requirements,
       ...(this.config.preferences && { optional: this.config.preferences }),
       // Use the origin from window.location if available (set by mockBrowserEnvironment)
-      ...(typeof window !== 'undefined' && window.location && { origin: window.location.origin }),
+      ...(window?.location && { origin: window.location.origin }),
     });
 
     await this.broadcastDiscoveryRequest(request);

@@ -83,13 +83,26 @@ export function createAztecWalletNode(
 
   // Create the handler context that will be passed to all method handlers
   // This context provides access to the wallet, PXE, and cache instances
-  const context: AztecHandlerContext = { wallet, pxe, cache };
+  const context: AztecHandlerContext = {
+    wallet,
+    pxe,
+    cache,
+    notify: async () => {
+      throw new Error('Aztec wallet node is not ready to emit notifications yet');
+    },
+  };
 
   // Create the JSON-RPC node with typed method map and handler context
   const node = new JSONRPCNode<AztecWalletMethodMap, JSONRPCEventMap, AztecHandlerContext>(
     transport,
     context,
   );
+
+  // Expose the node's notify helper through the handler context so individual handlers
+  // can emit lifecycle events (e.g., transaction status updates) without direct access to the node.
+  context.notify = async (method, params) => {
+    await node.notify(method, params);
+  };
 
   // Register all Aztec method handlers
   // The createAztecHandlers function returns a map of all available Aztec methods

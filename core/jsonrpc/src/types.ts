@@ -432,6 +432,55 @@ export type JSONRPCMiddleware<T extends JSONRPCMethodMap, C extends JSONRPCConte
 export type JSONRPCContext = Record<string, unknown>;
 
 /**
+ * Context information provided by transports that have access to trusted metadata.
+ * Some transports (like postMessage-based transports) can provide browser-validated
+ * origin information, while others may not have access to such trusted data.
+ *
+ * @example
+ * ```typescript
+ * // Browser-validated origin from postMessage
+ * const context: TransportContext = {
+ *   origin: 'https://app.example.com',
+ *   trustedSource: true,
+ *   transportType: 'popup'
+ * };
+ *
+ * // Origin forwarded through local transport
+ * const context: TransportContext = {
+ *   origin: 'https://app.example.com',
+ *   trustedSource: false,
+ *   transportType: 'local'
+ * };
+ * ```
+ */
+export interface TransportContext {
+  /**
+   * The origin of the message sender.
+   * For browser transports, this is typically from MessageEvent.origin.
+   * For forwarded messages, this may come from upstream context.
+   */
+  origin?: string;
+
+  /**
+   * Whether the origin is browser-validated (trusted).
+   * - `true`: Origin comes from browser API (e.g., MessageEvent.origin)
+   * - `false`: Origin is forwarded or self-reported (not browser-validated)
+   */
+  trustedSource: boolean;
+
+  /**
+   * The type of transport providing this context.
+   * Examples: 'popup', 'iframe', 'extension', 'local', 'websocket'
+   */
+  transportType: string;
+
+  /**
+   * Additional transport-specific metadata.
+   */
+  metadata?: Record<string, unknown>;
+}
+
+/**
  * Bidirectional transport interface for JSON-RPC communication.
  * Implement this to provide the actual transport mechanism for message delivery and reception.
  * The transport layer handles message serialization and delivery between nodes.
@@ -453,8 +502,9 @@ export type JSONRPCContext = Record<string, unknown>;
  *   }
  * };
  *
- * // postMessage transport with origin validation
+ * // postMessage transport with origin validation and context
  * const windowTransport: JSONRPCTransport = {
+ *   lastOrigin: undefined as string | undefined,
  *   send: async message => {
  *     if (!targetWindow) {
  *       throw new Error('Target window not available');
@@ -464,10 +514,16 @@ export type JSONRPCContext = Record<string, unknown>;
  *   onMessage: callback => {
  *     window.addEventListener('message', event => {
  *       if (event.origin === targetOrigin && event.data) {
+ *         this.lastOrigin = event.origin; // Capture trusted origin
  *         callback(event.data);
  *       }
  *     });
- *   }
+ *   },
+ *   getMessageContext: () => ({
+ *     origin: this.lastOrigin,
+ *     trustedSource: true,
+ *     transportType: 'popup'
+ *   })
  * };
  *
  * // HTTP long-polling transport
@@ -520,6 +576,59 @@ export interface JSONRPCTransport {
    * @param callback - Function to call when messages are received
    */
   onMessage(callback: (message: unknown) => void): void;
+
+  /**
+   * Get trusted context information for the most recently received message.
+   * This method is optional and should only be implemented by transports that
+   * have access to trusted metadata (e.g., browser-validated origin from MessageEvent).
+   *
+   * Transports that implement this method can provide:
+   * - Browser-validated origin (from MessageEvent.origin, Chrome runtime sender, etc.)
+   * - Forwarded context from upstream (e.g., local transport forwarding router context)
+   * - Transport-specific metadata
+   *
+   * @returns TransportContext if available, undefined otherwise
+   *
+   * @example
+   * ```typescript
+   * // PostMessage transport with browser-validated origin
+   * class PopupTransport implements JSONRPCTransport {
+   *   private lastMessageOrigin?: string;
+   *
+   *   onMessage(callback) {
+   *     window.addEventListener('message', (event: MessageEvent) => {
+   *       this.lastMessageOrigin = event.origin; // Browser-validated
+   *       callback(event.data);
+   *     });
+   *   }
+   *
+   *   getMessageContext(): TransportContext {
+   *     return {
+   *       origin: this.lastMessageOrigin,
+   *       trustedSource: true,  // Browser API
+   *       transportType: 'popup'
+   *     };
+   *   }
+   * }
+   *
+   * // Local transport forwarding router context
+   * class LocalTransport implements JSONRPCTransport {
+   *   private lastMessage?: any;
+   *
+   *   getMessageContext(): TransportContext | undefined {
+   *     if (this.lastMessage?._context?.origin) {
+   *       return {
+   *         origin: this.lastMessage._context.origin,
+   *         trustedSource: false, // Forwarded, not browser-validated
+   *         transportType: 'local'
+   *       };
+   *     }
+   *     return undefined;
+   *   }
+   * }
+   * ```
+   */
+  getMessageContext?(): TransportContext | undefined;
 }
 
 /**

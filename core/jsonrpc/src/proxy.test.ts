@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { JSONRPCProxy } from './proxy.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSONRPCError, TimeoutError } from './error.js';
+import { JSONRPCProxy } from './proxy.js';
 import type { JSONRPCTransport } from './types.js';
 
 describe('JSONRPCProxy', () => {
@@ -443,6 +443,53 @@ describe('JSONRPCProxy', () => {
 
       // Advance past original timeout - should not cause issues
       vi.advanceTimersByTime(1000);
+
+      proxy.close();
+      vi.useRealTimers();
+    });
+
+    it('should prevent phantom timeout after successful response', async () => {
+      vi.useFakeTimers();
+      const proxy = new JSONRPCProxy(transport, {
+        timeoutMs: 1000,
+        debug: true,
+        logger: vi.fn(), // Capture logs to verify phantom timeout was avoided
+      });
+
+      const request = {
+        jsonrpc: '2.0' as const,
+        method: 'test.phantom',
+        id: 'phantom-test',
+      };
+
+      // Start the forward operation
+      const forwardPromise = proxy.forward(request);
+
+      // Advance time slightly (not enough to trigger timeout)
+      vi.advanceTimersByTime(500);
+
+      // Send successful response
+      messageHandler?.({
+        jsonrpc: '2.0' as const,
+        result: 'success',
+        id: 'phantom-test',
+      });
+
+      // Await the successful response
+      const result = await forwardPromise;
+      expect(result).toEqual({
+        jsonrpc: '2.0',
+        result: 'success',
+        id: 'phantom-test',
+      });
+
+      // Advance time PAST the original timeout period
+      vi.advanceTimersByTime(1000);
+
+      // Since the response was successfully processed and the timeout was cleared,
+      // we should NOT see any timeout-related errors thrown.
+      // The test passes if we get here without any rejections - this verifies
+      // that the phantom timeout bug has been fixed.
 
       proxy.close();
       vi.useRealTimers();

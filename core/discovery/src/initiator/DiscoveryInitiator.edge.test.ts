@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DiscoveryInitiator } from './DiscoveryInitiator.js';
+import { DiscoveryInitiator } from '../initiator.js';
 import { MockEventTarget } from '../testing/MockEventTarget.js';
 import { createTestDiscoveryResponse, createTestDAppInfo } from '../testing/testUtils.js';
 import { setupFakeTimers, cleanupFakeTimers } from '../testing/timingHelpers.js';
@@ -22,8 +22,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
   describe('session management edge cases', () => {
     it('should handle missing session ID gracefully', async () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -32,9 +32,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget },
+      );
 
       // Access private property via type casting
       const privateListener = listener as unknown as {
@@ -49,8 +49,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
   describe('enhanceError edge cases', () => {
     it('should enhance "No active session" error (coverage: lines 413-416)', () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -59,9 +59,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget },
+      );
 
       const privateListener = listener as unknown as {
         enhanceError(error: Error): Error;
@@ -76,8 +76,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
     });
 
     it('should enhance "Cannot start discovery from state" error (coverage: lines 419-422)', () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -86,9 +86,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget },
+      );
 
       const privateListener = listener as unknown as {
         enhanceError(error: Error): Error;
@@ -103,8 +103,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
     });
 
     it('should enhance timeout error (coverage: lines 425-428)', () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -113,10 +113,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-        timeout: 5000,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget, timeout: 5000 },
+      );
 
       const privateListener = listener as unknown as {
         enhanceError(error: Error): Error;
@@ -131,8 +130,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
     });
 
     it('should enhance timeout error with default timeout', () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -141,9 +140,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget },
+      );
 
       const privateListener = listener as unknown as {
         enhanceError(error: Error): Error;
@@ -162,8 +161,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
       const initiatorInfo = createTestDAppInfo();
       initiatorInfo.url = 'not-a-valid-url';
 
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -173,8 +172,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
           features: [],
         },
         initiatorInfo,
-        eventTarget: mockEventTarget,
-      });
+        { eventTarget: mockEventTarget },
+      );
 
       const privateListener = listener as unknown as {
         getOrigin(): string;
@@ -196,8 +195,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
       // Remove URL to force fallback
       const modifiedInitiatorInfo = { ...initiatorInfo, url: undefined } as unknown as InitiatorInfo;
 
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -206,9 +205,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: modifiedInitiatorInfo,
-        eventTarget: mockEventTarget,
-      });
+        modifiedInitiatorInfo,
+        { eventTarget: mockEventTarget },
+      );
 
       const privateListener = listener as unknown as {
         getOrigin(): string;
@@ -234,8 +233,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
       // Remove URL to test window.location fallback
       const modifiedInitiatorInfo2 = { ...initiatorInfo, url: undefined } as unknown as InitiatorInfo;
 
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -244,9 +243,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: modifiedInitiatorInfo2,
-        eventTarget: mockEventTarget,
-      });
+        modifiedInitiatorInfo2,
+        { eventTarget: mockEventTarget },
+      );
 
       const privateListener = listener as unknown as {
         getOrigin(): string;
@@ -262,8 +261,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
   describe('state machine integration edge cases', () => {
     it('should handle state machine creation successfully', async () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -272,9 +271,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget },
+      );
 
       // Should be able to start discovery normally
       const discoveryPromise = listener.startDiscovery();
@@ -288,8 +287,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
     });
 
     it('should handle session management correctly', async () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -298,9 +297,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget },
+      );
 
       // Start discovery
       const discoveryPromise = listener.startDiscovery();
@@ -321,8 +320,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
   describe('concurrent discovery attempts', () => {
     it('should handle concurrent startDiscovery calls gracefully', async () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -331,10 +330,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-        timeout: 1000,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget, timeout: 1000 },
+      );
 
       // Start first discovery
       const discovery1 = listener.startDiscovery();
@@ -355,8 +353,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
   describe('getQualifiedResponder edge cases', () => {
     it('should return undefined for non-existent responderId (coverage: lines 248-249)', async () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -365,9 +363,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget },
+      );
 
       // Try to get a responder that doesn't exist
       const responder = listener.getQualifiedResponder('non-existent-id');
@@ -375,8 +373,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
     });
 
     it('should return responder after discovery (coverage: lines 248-249)', async () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -385,10 +383,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-        timeout: 1000,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget, timeout: 1000 },
+      );
 
       // Start discovery
       const discoveryPromise = listener.startDiscovery();
@@ -434,8 +431,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
   describe('stateMachine edge cases during cleanup', () => {
     it('should handle state machine already reset during cleanup (coverage: line 170)', async () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -444,10 +441,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-        timeout: 1000,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget, timeout: 1000 },
+      );
 
       // Start discovery
       const discoveryPromise = listener.startDiscovery();
@@ -473,8 +469,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
   describe('state machine transition error handling', () => {
     it('should handle state machine transition errors during completion (coverage: lines 216-219)', async () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -483,10 +479,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-        timeout: 1000,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget, timeout: 1000 },
+      );
 
       const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
@@ -521,8 +516,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
     });
 
     it('should handle state machine transition errors during stop (coverage: lines 266-268)', async () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -531,10 +526,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-        timeout: 2000,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget, timeout: 2000 },
+      );
 
       const consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
@@ -575,8 +569,8 @@ describe('DiscoveryInitiator Edge Cases', () => {
 
   describe('duplicate response internal error handling', () => {
     it('should handle missing first response during duplicate detection (coverage: lines 542-544)', async () => {
-      listener = new DiscoveryInitiator({
-        requirements: {
+      listener = new DiscoveryInitiator(
+        {
           technologies: [
             {
               type: 'evm' as const,
@@ -585,10 +579,9 @@ describe('DiscoveryInitiator Edge Cases', () => {
           ],
           features: [],
         },
-        initiatorInfo: createTestDAppInfo(),
-        eventTarget: mockEventTarget,
-        timeout: 2000,
-      });
+        createTestDAppInfo(),
+        { eventTarget: mockEventTarget, timeout: 2000 },
+      );
 
       const consoleSpy = createConsoleSpy({ methods: ['error'], mockFn: () => vi.fn() });
 

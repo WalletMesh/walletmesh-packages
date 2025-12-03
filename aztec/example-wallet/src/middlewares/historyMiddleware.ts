@@ -1,6 +1,7 @@
+import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCMiddleware } from '@walletmesh/jsonrpc';
-import type { AztecWalletMethodMap, AztecHandlerContext } from '@walletmesh/aztec-rpc-wallet';
 import type { FunctionArgNames } from './functionArgNamesMiddleware';
+import type { TransactionSummary } from './transactionSummaryMiddleware';
 
 export type RequestStatus = 'processing' | 'approved' | 'denied' | 'success' | 'error';
 
@@ -12,6 +13,7 @@ export type HistoryEntry = {
   status?: RequestStatus;
   functionArgNames?: FunctionArgNames;
   id?: number;
+  transactionSummary?: TransactionSummary;
   // New fields for enhanced tracking
   requestTimestamp: number;
   responseTimestamp?: number;
@@ -24,6 +26,11 @@ export type HistoryEntry = {
     stack?: string;
     details?: unknown;
   };
+  // Transaction status from wallet backend notifications
+  // Syncs with dApp overlay to show actual blockchain transaction progress
+  txStatusId?: string;
+  transactionStatus?: 'idle' | 'simulating' | 'proving' | 'sending' | 'pending' | 'confirming' | 'confirmed' | 'failed';
+  txHash?: string;
 };
 
 /**
@@ -32,7 +39,7 @@ export type HistoryEntry = {
  */
 function getDappOrigin(): string | undefined {
   // Method 1: Use document.referrer (most reliable for cross-origin scenarios)
-  if (typeof document !== 'undefined' && document.referrer) {
+  if (document?.referrer) {
     try {
       const referrerUrl = new URL(document.referrer);
       console.log('History middleware: Detected dApp origin from document.referrer:', referrerUrl.origin);
@@ -43,12 +50,12 @@ function getDappOrigin(): string | undefined {
   }
 
   // Method 2: Try to access window.opener.location.origin (only for same-origin scenarios)
-  if (typeof window !== 'undefined' && window.opener) {
+  if (window?.opener) {
     try {
       const origin = window.opener.location.origin;
       console.log('History middleware: Successfully detected dApp origin from window.opener:', origin);
       return origin;
-    } catch (e) {
+    } catch (_e) {
       // CORS error - this is expected in cross-origin scenarios
       console.log('History middleware: Cross-origin context detected, window.opener access blocked by CORS');
     }
@@ -60,7 +67,7 @@ function getDappOrigin(): string | undefined {
       const origin = window.parent.location.origin;
       console.log('History middleware: Detected dApp origin from window.parent:', origin);
       return origin;
-    } catch (e) {
+    } catch (_e) {
       // CORS error - this is expected in cross-origin scenarios
       console.log('History middleware: Cross-origin context detected, window.parent access blocked by CORS');
     }
@@ -74,7 +81,10 @@ export const createHistoryMiddleware = (
   onHistoryUpdate: (history: HistoryEntry[]) => void,
 ): JSONRPCMiddleware<
   AztecWalletMethodMap,
-  AztecHandlerContext & { functionCallArgNames?: FunctionArgNames }
+  AztecHandlerContext & {
+    functionCallArgNames?: FunctionArgNames;
+    transactionSummary?: TransactionSummary;
+  }
 > => {
   // Maintain history internally
   let history: HistoryEntry[] = [];
@@ -94,12 +104,21 @@ export const createHistoryMiddleware = (
     // Always set an origin, use 'unknown' as final fallback
     const detectedOrigin = origin || 'unknown';
 
+    console.log('[History] Creating history entry:', {
+      method: String(req.method),
+      hasTransactionSummary: !!context.transactionSummary,
+      hasFunctionArgNames: !!context.functionCallArgNames,
+      transactionSummaryFunctionCalls: (context.transactionSummary as TransactionSummary | undefined)
+        ?.functionCalls?.length,
+    });
+
     const entry: HistoryEntry = {
       method: String(req.method),
       params: req.params,
       origin: detectedOrigin,
       time: timestamp,
       functionArgNames: context.functionCallArgNames,
+      transactionSummary: context.transactionSummary as TransactionSummary | undefined,
       requestTimestamp,
       status: 'processing',
       processingStatus: 'processing',
@@ -115,7 +134,13 @@ export const createHistoryMiddleware = (
       const responseTimestamp = Date.now();
       const duration = responseTimestamp - requestTimestamp;
 
-      // Update with success status
+      // Extract txStatusId from response if present (for transaction methods)
+      const txStatusId =
+        result && typeof result === 'object' && 'txStatusId' in result
+          ? (result as { txStatusId?: string }).txStatusId
+          : undefined;
+
+      // Update with success status and txStatusId if available
       history = history.map((item) =>
         item.id === newHistoryId
           ? {
@@ -125,6 +150,7 @@ export const createHistoryMiddleware = (
               processingStatus: 'success',
               responseTimestamp,
               duration,
+              ...(txStatusId && { txStatusId }),
             }
           : item,
       );

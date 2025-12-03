@@ -51,13 +51,11 @@ export const ALL_AZTEC_METHODS = [
  * then instantiates and initializes the wallet.
  * Initialization includes fetching and caching essential data like the wallet address and chain ID.
  *
- * By default, it requests permissions for all methods defined in {@link ALL_AZTEC_METHODS}
- * on the 'aztec:mainnet' chain.
+ * By default, it requests permissions for all methods defined in {@link ALL_AZTEC_METHODS}.
  *
  * @param provider - The {@link AztecRouterProvider} instance to use for the connection.
  *                   This provider must be configured with appropriate transport and Aztec serializers.
- * @param chainId - The {@link AztecChainId} to connect to (e.g., 'aztec:mainnet', 'aztec:31337').
- *                  Defaults to 'aztec:mainnet'.
+ * @param chainId - The {@link AztecChainId} to connect to (e.g., 'aztec:mainnet', 'aztec:31337', 'aztec:testnet').
  * @param methods - An array of method names for which permissions are requested.
  *                  Defaults to {@link ALL_AZTEC_METHODS}.
  * @returns A promise that resolves to an object containing the `sessionId` for the connection
@@ -74,7 +72,7 @@ export const ALL_AZTEC_METHODS = [
  */
 export async function connectAztec(
   provider: AztecRouterProvider,
-  chainId: AztecChainId = 'aztec:mainnet',
+  chainId: AztecChainId,
   methods: readonly (keyof import('../types.js').AztecWalletMethodMap | string)[] = ALL_AZTEC_METHODS,
 ): Promise<{ sessionId: string; wallet: AztecDappWallet }> {
   // Establish connection

@@ -9,6 +9,7 @@
 
 import type { Logger } from '../core/logger.js';
 import { ConsoleLogger } from '../core/logger.js';
+import { getBrowserAPI, type BrowserAPI } from './browserApi.js';
 
 /**
  * Ultra-thin message relay for content scripts.
@@ -53,10 +54,16 @@ import { ConsoleLogger } from '../core/logger.js';
  */
 export class ContentScriptRelay {
   private isInitialized = false;
+  private port: chrome.runtime.Port | null = null;
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts = 5;
+  private reconnectDelay = 1000;
   private retryAttempts = 0;
   private maxRetryAttempts = 3;
-  private retryDelay = 1000; // 1 second
+  private retryDelay = 1000;
   private logger: Logger = new ConsoleLogger('[WalletMesh:ContentScript]');
+  private browserAPI: BrowserAPI;
+  private messageQueue: Array<unknown> = [];
 
   /**
    * Creates and initializes the content script relay.
@@ -65,6 +72,8 @@ export class ContentScriptRelay {
    * the page and the secure background script.
    */
   constructor() {
+    this.browserAPI = getBrowserAPI();
+    this.connect();
     this.initialize();
   }
 
@@ -82,7 +91,6 @@ export class ContentScriptRelay {
 
     try {
       this.setupPageToBackground();
-      this.setupBackgroundToPage();
       this.isInitialized = true;
       this.retryAttempts = 0; // Reset retry count on success
 
@@ -117,28 +125,128 @@ export class ContentScriptRelay {
   }
 
   /**
-   * Handle Chrome API errors with detailed error analysis.
-   *
-   * @param operation - The Chrome API operation that failed
-   * @param error - The error that occurred
+   * Establish long-lived port connection to background script.
+   * Automatically handles reconnection on disconnect.
    */
-  private handleChromeApiError(operation: string, error: unknown): void {
-    const errorMessage = error instanceof Error ? error.message : String(error);
+  private connect(): void {
+    if (!this.browserAPI.isAvailable) {
+      this.logger.warn('Browser extension API not available');
+      return;
+    }
 
-    // Categorize common Chrome extension errors
-    if (errorMessage.includes('Extension context invalidated')) {
-      this.logger.warn('Extension context invalidated - extension was reloaded or disabled');
-    } else if (errorMessage.includes('The message port closed before a response was received')) {
-      this.logger.warn('Background script not responding - may be starting up');
-    } else if (errorMessage.includes('Cannot access a chrome://')) {
-      this.logger.warn('Cannot access chrome:// URLs - expected behavior');
-    } else {
-      this.logger.warn(`Chrome API ${operation} failed:`, errorMessage);
+    if (!this.browserAPI.runtime.connect) {
+      this.logger.warn('Browser runtime.connect not available');
+      return;
+    }
+
+    try {
+      // Establish named port connection
+      this.port = this.browserAPI.runtime.connect({
+        name: 'walletmesh-discovery',
+      });
+
+      // Store port reference for listeners
+      const port = this.port;
+
+      // Handle disconnect with automatic reconnection
+      port.onDisconnect.addListener(() => {
+        this.logger.debug('Port disconnected from background script');
+        this.port = null;
+        this.handlePortDisconnect();
+      });
+
+      // Handle incoming messages from background script
+      port.onMessage.addListener((message: unknown) => {
+        this.handlePortMessage(message);
+      });
+
+      // Connection successful
+      this.reconnectAttempts = 0;
+      this.logger.info('Port connection established');
+
+      // Flush any queued messages
+      this.flushMessageQueue();
+    } catch (error) {
+      this.logger.error('Failed to establish port connection', error);
+      this.handlePortDisconnect();
     }
   }
 
   /**
-   * Set up message forwarding from page to background.
+   * Handle port disconnection with exponential backoff reconnection.
+   */
+  private handlePortDisconnect(): void {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      this.logger.error('Max port reconnection attempts reached');
+      return;
+    }
+
+    this.reconnectAttempts++;
+    const delay = Math.min(this.reconnectDelay * 2 ** (this.reconnectAttempts - 1), 10000); // Max 10 seconds
+
+    this.logger.debug(
+      `Reconnecting port in ${delay}ms (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`,
+    );
+
+    setTimeout(() => this.connect(), delay);
+  }
+
+  /**
+   * Process messages received from background script via port.
+   */
+  private handlePortMessage(message: unknown): void {
+    try {
+      // Type guard for message structure
+      if (typeof message === 'object' && message !== null && 'type' in message && 'data' in message) {
+        const typedMessage = message as { type: string; data: unknown };
+
+        if (typedMessage.type === 'discovery:wallet:response') {
+          // Forward to page context
+          window.dispatchEvent(
+            new CustomEvent('discovery:wallet:response', {
+              detail: typedMessage.data,
+            }),
+          );
+        }
+      }
+    } catch (error) {
+      this.logger.warn('Error processing port message', error);
+    }
+  }
+
+  /**
+   * Check if port connection is ready to send messages.
+   * Native readiness check - no custom ping/pong needed!
+   */
+  private isPortReady(): boolean {
+    return this.port !== null && this.port.name !== undefined;
+  }
+
+  /**
+   * Flush queued messages after port reconnection.
+   */
+  private flushMessageQueue(): void {
+    if (this.messageQueue.length === 0) return;
+
+    this.logger.debug(`Flushing ${this.messageQueue.length} queued messages`);
+
+    while (this.messageQueue.length > 0 && this.isPortReady()) {
+      const message = this.messageQueue.shift();
+      if (!this.port) break; // Safety check
+
+      try {
+        this.port.postMessage(message);
+      } catch (error) {
+        this.logger.error('Failed to flush queued message', error);
+        // Re-queue on failure
+        this.messageQueue.unshift(message);
+        break;
+      }
+    }
+  }
+
+  /**
+   * Set up message forwarding from page to background via persistent port.
    *
    * Listens for discovery:wallet:request events from dApps and forwards
    * them to the secure background script for processing.
@@ -146,86 +254,44 @@ export class ContentScriptRelay {
   private setupPageToBackground(): void {
     window.addEventListener('discovery:wallet:request', (event: Event) => {
       const customEvent = event as CustomEvent;
+
       try {
-        // Check if chrome runtime is available
-        if (typeof chrome === 'undefined' || !chrome.runtime?.sendMessage) {
-          this.logger.warn('Chrome runtime not available');
+        const messageData = {
+          type: 'discovery:wallet:request',
+          data: customEvent.detail,
+          origin: window.location.origin,
+          timestamp: Date.now(),
+        };
+
+        // Check if port is ready
+        if (!this.isPortReady() || !this.port) {
+          this.logger.debug('Port not ready, queuing message');
+          this.messageQueue.push(messageData);
+
+          // Attempt to reconnect if not already reconnecting
+          if (this.reconnectAttempts === 0) {
+            this.connect();
+          }
           return;
         }
 
-        // Forward discovery request to secure background
-        // Include origin for security validation
-        chrome.runtime
-          .sendMessage({
-            type: 'discovery:wallet:request',
-            data: customEvent.detail,
-            origin: window.location.origin,
-            timestamp: Date.now(),
-          })
-          .catch((error: unknown) => {
-            // Extension might be disabled or background script not ready
-            this.handleChromeApiError('sendMessage', error);
-          });
+        // Send via persistent port (no new channel created!)
+        this.port.postMessage(messageData);
       } catch (error) {
-        this.logger.warn('Error processing discovery request:', error);
+        this.logger.warn('Error forwarding discovery request', error);
+        // Reconnect on error
+        this.connect();
       }
     });
   }
 
   /**
-   * Set up message forwarding from background to page.
+   * Check if the relay is properly initialized and port is connected.
    *
-   * Listens for messages from the background script and forwards
-   * discovery announcements to the page as browser events.
-   */
-  private setupBackgroundToPage(): void {
-    // Check if chrome runtime is available
-    if (typeof chrome === 'undefined' || !chrome.runtime?.onMessage) {
-      this.logger.warn('Chrome runtime not available');
-      return;
-    }
-
-    chrome.runtime.onMessage.addListener(
-      (
-        message: unknown,
-        _sender: chrome.runtime.MessageSender,
-        sendResponse: (response?: unknown) => void,
-      ) => {
-        try {
-          // Type guard for message structure
-          if (typeof message === 'object' && message !== null && 'type' in message && 'data' in message) {
-            const typedMessage = message as { type: string; data: unknown };
-
-            if (typedMessage.type === 'discovery:wallet:response') {
-              // Forward discovery announcement to dApp
-              window.dispatchEvent(
-                new CustomEvent('discovery:wallet:response', {
-                  detail: typedMessage.data,
-                }),
-              );
-
-              // Acknowledge receipt
-              sendResponse({ success: true });
-            }
-          }
-        } catch (error) {
-          this.logger.warn('Error forwarding discovery announcement:', error);
-          sendResponse({ success: false, error: String(error) });
-        }
-
-        // Return false to indicate we don't need to keep the message channel open
-        return false;
-      },
-    );
-  }
-
-  /**
-   * Check if the relay is properly initialized.
-   *
-   * @returns True if relay is initialized and ready
+   * @returns True if relay is initialized and port is ready
    */
   isReady(): boolean {
-    return this.isInitialized;
+    return this.isInitialized && this.isPortReady();
   }
 
   /**
@@ -235,20 +301,41 @@ export class ContentScriptRelay {
    */
   getStatus(): {
     initialized: boolean;
+    portConnected: boolean;
+    queuedMessages: number;
     origin: string;
     userAgent: string;
-    chromeRuntimeAvailable: boolean;
+    browserAPIAvailable: boolean;
+    browserAPIType: 'chrome' | 'browser' | 'none';
     retryAttempts: number;
     maxRetryAttempts: number;
   } {
     return {
       initialized: this.isInitialized,
+      portConnected: this.isPortReady(),
+      queuedMessages: this.messageQueue.length,
       origin: window.location.origin,
       userAgent: navigator.userAgent,
-      chromeRuntimeAvailable: typeof chrome !== 'undefined' && !!chrome.runtime,
-      retryAttempts: this.retryAttempts,
-      maxRetryAttempts: this.maxRetryAttempts,
+      browserAPIAvailable: this.browserAPI.isAvailable,
+      browserAPIType: this.browserAPI.apiType,
+      retryAttempts: this.reconnectAttempts,
+      maxRetryAttempts: this.maxReconnectAttempts,
     };
+  }
+
+  /**
+   * Cleanup port connection and resources.
+   */
+  cleanup(): void {
+    if (this.port) {
+      try {
+        this.port.disconnect();
+      } catch (error) {
+        this.logger.debug('Port already disconnected', error);
+      }
+      this.port = null;
+    }
+    this.messageQueue = [];
   }
 }
 
@@ -273,7 +360,10 @@ export function getContentScriptRelay(): ContentScriptRelay {
   return globalRelay;
 }
 
-// Auto-initialize when running in a browser environment
-if (typeof window !== 'undefined' && typeof chrome !== 'undefined' && chrome.runtime) {
-  getContentScriptRelay();
+// Auto-initialize when running in a browser extension environment
+if (typeof window !== 'undefined') {
+  const api = getBrowserAPI();
+  if (api.isAvailable) {
+    getContentScriptRelay();
+  }
 }

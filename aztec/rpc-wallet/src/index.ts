@@ -53,11 +53,18 @@ export { AztecWalletError, AztecWalletErrorMap } from './errors.js';
  * - AztecChainId: Type-safe Aztec chain ID format (e.g., "aztec:mainnet")
  * - AztecWalletContext: Context object for wallet implementations
  * - AztecWalletMethodMap: Complete method map for all Aztec wallet methods
+ * - TransactionStatus: Transaction lifecycle status values
+ * - AztecTransactionStatusNotification: Transaction status notification payload
+ * - AztecWalletNotificationMap: Complete notification map for all wallet notifications
  */
 export type {
   AztecChainId,
   AztecWalletContext,
   AztecWalletMethodMap,
+  AztecSendOptions,
+  TransactionStatus,
+  AztecTransactionStatusNotification,
+  AztecWalletNotificationMap,
 } from './types.js';
 // Wallet-side exports
 /**

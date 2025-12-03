@@ -55,6 +55,14 @@ export function createContractHandlers() {
         contractToRegister.artifact = artifact;
       }
       await ctx.wallet.registerContract(contractToRegister);
+      if (artifact) {
+        try {
+          ctx.cache.storeArtifactForAddress(instance.address, artifact);
+          await ctx.cache.rememberContractClass(artifact);
+        } catch (error) {
+          logger.warn('Failed to cache contract artifact after registration', error);
+        }
+      }
       return true;
     },
 
@@ -80,6 +88,11 @@ export function createContractHandlers() {
       logger.debug(`[HANDLER] aztec_registerContractClass: artifact name = ${artifact?.name}`);
       // Artifact is not optional in the tuple type.
       await ctx.wallet.registerContractClass(artifact);
+      try {
+        await ctx.cache.rememberContractClass(artifact);
+      } catch (error) {
+        logger.warn('Failed to cache contract class artifact', error);
+      }
       return true;
     },
 

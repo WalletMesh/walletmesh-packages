@@ -13,20 +13,21 @@
  * @module jsonrpc
  */
 
-export * from './types.js';
 export * from './error.js';
-export * from './utils.js';
-export * from './node.js';
-export { JSONRPCProxy } from './proxy.js';
-export type { JSONRPCProxyConfig } from './proxy.js';
-
 // Enhanced error handling
 export {
-  ReceiveErrorHandler,
-  ReceiveErrorCategory,
-  ErrorSeverity,
-  type ReceiveErrorEvent,
-  type ReceiveErrorHandlerFunction,
-  type ReceiveErrorHandlerConfig,
   type ErrorRecoveryStrategy,
+  ErrorSeverity,
+  ReceiveErrorCategory,
+  type ReceiveErrorEvent,
+  ReceiveErrorHandler,
+  type ReceiveErrorHandlerConfig,
+  type ReceiveErrorHandlerFunction,
 } from './error-handling/receiveErrorHandler.js';
+// Middleware utilities
+export { createTransportContextMiddleware } from './middlewares/index.js';
+export * from './node.js';
+export type { JSONRPCProxyConfig } from './proxy.js';
+export { JSONRPCProxy } from './proxy.js';
+export * from './types.js';
+export * from './utils.js';

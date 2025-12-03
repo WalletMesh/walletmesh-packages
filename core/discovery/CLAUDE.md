@@ -85,11 +85,11 @@ When modifying the protocol, follow this checklist to ensure all components rema
 - **Note**: Security utilities are internal implementation details and exported only for specific use cases
 
 **Initiator Module** (`src/initiator/`):
-- `DiscoveryInitiator.ts`: Discovery broadcast and collection
+- `initiator.ts`: Discovery broadcast and collection
 - `factory.ts`: Factory functions for initiator setup
 
 **Responder Module** (`src/responder/`):
-- `DiscoveryResponder.ts`: Responder announcement logic
+- `responder.ts`: Responder announcement logic
 - `CapabilityMatcher.ts`: Capability intersection calculation
 - `factory.ts`: Factory functions for responder setup
 
@@ -97,6 +97,46 @@ When modifying the protocol, follow this checklist to ensure all components rema
 - Mock implementations for testing
 - Test scenario builders
 - Testing utilities
+
+**Extension Module** (`src/extension/`):
+- `browserApi.ts`: Cross-browser API abstraction layer
+- `ContentScriptRelay.ts`: Message relay for content scripts
+- `WalletDiscovery.ts`: Discovery implementation for background scripts
+- Supports Chrome, Firefox, Edge, Opera, and polyfilled extensions
+
+## Cross-Browser Extension Support
+
+### Browser API Abstraction
+
+The discovery package provides automatic cross-browser compatibility through a unified API abstraction layer:
+
+**Supported Browsers**:
+- Chrome (uses `chrome.*` namespace with callbacks)
+- Firefox (uses `browser.*` namespace with Promises)
+- Edge (uses `chrome.*` namespace)
+- Opera (uses `chrome.*` namespace)
+- Extensions using WebExtension polyfill
+
+**Auto-Detection**:
+The abstraction layer automatically detects which API is available:
+1. Checks for `browser.*` namespace first (Firefox, polyfilled)
+2. Falls back to `chrome.*` namespace (Chrome, Edge, Opera)
+3. Converts callback-based Chrome APIs to Promises automatically
+4. Provides consistent Promise-based interface across all browsers
+
+**Usage**:
+```typescript
+import { getBrowserAPI, ContentScriptRelay, WalletDiscovery } from '@walletmesh/discovery/extension';
+
+// Auto-detects and uses appropriate browser API
+const api = getBrowserAPI();
+console.log(`Running in: ${api.apiType}`); // 'chrome' | 'browser' | 'none'
+console.log(`Extension ID: ${api.runtime.id}`);
+
+// Components work automatically in all browsers
+const relay = new ContentScriptRelay(); // Works in Chrome and Firefox
+const discovery = new WalletDiscovery(config); // Works in all browsers
+```
 
 ## Protocol Design
 
@@ -1052,8 +1092,8 @@ const testScenario = createDiscoveryTestScenario({
 
 - `src/core/types.ts`: 4 message types and interfaces
 - `src/core/constants.ts`: 4 event types, protocol constants
-- `src/initiator/DiscoveryInitiator.ts`: Discovery logic
-- `src/responder/DiscoveryResponder.ts`: Announcement logic
+- `src/initiator.ts`: Discovery logic
+- `src/responder.ts`: Announcement logic
 - `src/responder/CapabilityMatcher.ts`: Capability intersection logic
 - `src/security/`: Security components
 
@@ -1079,7 +1119,67 @@ The key insight is that **security through simplicity** provides more effective 
 
 ## Recent Changes
 
-### Version 0.7.0 - Technology-Based Discovery (Current)
+### Version 0.8.0 - Cross-Browser Extension Support (Current)
+
+**Major Changes**:
+1. **Browser API Abstraction Layer**
+   - Added `browserApi.ts` module for auto-detecting browser extension APIs
+   - Supports both `chrome.*` (Chrome, Edge, Opera) and `browser.*` (Firefox, polyfilled) namespaces
+   - Automatically converts Chrome callback-based APIs to Promises
+   - Provides unified interface for extension development
+
+2. **Enhanced Extension Components**:
+   - `ContentScriptRelay` now auto-detects and uses appropriate browser API
+   - `WalletDiscovery` works seamlessly with both Chrome and Firefox extensions
+   - No code changes required for cross-browser compatibility
+
+3. **New Exports**:
+   ```typescript
+   import {
+     getBrowserAPI,        // Get unified browser API instance
+     isExtensionEnvironment, // Check if running in extension
+     getExtensionId,       // Get current extension ID
+     type BrowserAPI,      // TypeScript types for API
+     type BrowserRuntime,
+     type BrowserTabs,
+     type MessageSender
+   } from '@walletmesh/discovery/extension';
+   ```
+
+4. **Benefits**:
+   - Automatic compatibility with Firefox extensions
+   - Support for WebExtension polyfill users
+   - No breaking changes to existing Chrome extension code
+   - Future-proof for standardized browser API
+   - Consistent Promise-based interface across all browsers
+
+**Migration Guide**:
+- No changes required for existing Chrome extensions
+- Firefox extension developers can use the same code as Chrome
+- The abstraction layer handles all browser differences automatically
+- For direct API access, use `getBrowserAPI()` instead of `chrome` or `browser` globals
+
+**Example Usage**:
+```typescript
+// Works in both Chrome and Firefox
+import { getBrowserAPI, WalletDiscovery } from '@walletmesh/discovery/extension';
+
+const api = getBrowserAPI();
+const walletDiscovery = new WalletDiscovery(config);
+
+// Listen for messages using the unified API
+api.runtime.onMessage.addListener((message, sender) => {
+  if (message.type === 'discovery:request' && sender.tab?.id) {
+    walletDiscovery.handleDiscoveryRequest(
+      message.data,
+      message.origin,
+      sender.tab.id
+    );
+  }
+});
+```
+
+### Version 0.7.0 - Technology-Based Discovery
 
 **Breaking Changes - Backward Compatibility Removed**:
 1. **Protocol Types Updated**

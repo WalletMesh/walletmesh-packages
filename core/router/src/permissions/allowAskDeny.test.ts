@@ -1,21 +1,22 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AllowAskDenyManager, AllowAskDenyState } from './allowAskDeny.js';
+import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
+  BulkCallParams,
+  CallParams,
   ChainPermissions,
   HumanReadableChainPermissions,
   RouterContext,
-  SessionData,
   RouterMethodMap,
-  CallParams,
-  BulkCallParams,
+  SessionData,
 } from '../types.js';
-import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
+import { AllowAskDenyManager, AllowAskDenyState } from './allowAskDeny.js';
 
 describe('AllowAskDenyManager', () => {
   let manager: AllowAskDenyManager;
   const mockSession: SessionData = {
     id: 'test-session',
     origin: 'test-origin',
+    createdAt: Date.now(),
   };
   const mockContext: RouterContext = {
     session: mockSession,

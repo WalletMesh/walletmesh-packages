@@ -190,10 +190,10 @@ export function restoreBrowserEnvironment(): void {
  * await withMockWindow(
  *   { origin: 'https://trusted-dapp.com' },
  *   async () => {
- *     const announcer = new DiscoveryResponder({
- *       responderInfo: testWallet,
- *       securityPolicy: { allowedOrigins: ['https://trusted-dapp.com'] }
- *     });
+ *     const announcer = new DiscoveryResponder(
+ *       testWallet,
+ *       { security: { allowedOrigins: ['https://trusted-dapp.com'] } }
+ *     );
  *
  *     // Test origin validation
  *     expect(validateOrigin(window.location.origin, policy)).toBe(true);
@@ -435,8 +435,10 @@ export function createContentScriptMock(config: ContentScriptMockConfig = {}) {
   } = config;
 
   // Store original globals for cleanup
-  const originalWindow = globalThis.window;
-  const originalNavigator = globalThis.navigator;
+  const originalGlobalThisWindow = globalThis.window;
+  const originalGlobalWindow = (global as unknown as { window?: unknown }).window;
+  const originalGlobalThisNavigator = globalThis.navigator;
+  const originalGlobalNavigator = (global as unknown as { navigator?: unknown }).navigator;
 
   // Create mock window with spyable methods
   const mockWindow = {
@@ -461,29 +463,48 @@ export function createContentScriptMock(config: ContentScriptMockConfig = {}) {
     userAgent,
   };
 
-  // Set up global mocks
+  // Set up global mocks on both globalThis and global for Node.js compatibility
   // @ts-expect-error - Intentionally mocking globals
   globalThis.window = mockWindow;
+  // @ts-expect-error - Setting up window on global for Node.js environment
+  global.window = mockWindow;
   // @ts-expect-error - Intentionally mocking globals
   globalThis.navigator = mockNavigator;
+  // @ts-expect-error - Setting up navigator on global for Node.js environment
+  global.navigator = mockNavigator;
 
   return {
     window: mockWindow,
     navigator: mockNavigator,
     cleanup: () => {
-      // Restore original globals
-      if (originalWindow) {
-        globalThis.window = originalWindow;
+      // Restore original globals on globalThis
+      if (originalGlobalThisWindow) {
+        globalThis.window = originalGlobalThisWindow;
       } else {
         // @ts-expect-error - Remove window if it didn't exist originally
         globalThis.window = undefined;
       }
 
-      if (originalNavigator) {
-        globalThis.navigator = originalNavigator;
+      if (originalGlobalThisNavigator) {
+        globalThis.navigator = originalGlobalThisNavigator;
       } else {
         // @ts-expect-error - Remove navigator if it didn't exist originally
         globalThis.navigator = undefined;
+      }
+
+      // Restore original globals on global
+      if (originalGlobalWindow !== undefined) {
+        (global as unknown as { window: unknown }).window = originalGlobalWindow;
+      } else {
+        // @ts-expect-error - Remove window if it didn't exist originally
+        global.window = undefined;
+      }
+
+      if (originalGlobalNavigator !== undefined) {
+        (global as unknown as { navigator: unknown }).navigator = originalGlobalNavigator;
+      } else {
+        // @ts-expect-error - Remove navigator if it didn't exist originally
+        global.navigator = undefined;
       }
     },
   };

@@ -1,0 +1,122 @@
+{
+  "name": "@walletmesh/modal-react",
+  "version": "0.1.0",
+  "description": "React adapter for WalletMesh modal",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json",
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
+    },
+    "./aztec": {
+      "types": "./dist/aztec.d.ts",
+      "import": "./dist/aztec.js"
+    },
+    "./evm": {
+      "types": "./dist/evm.d.ts",
+      "import": "./dist/evm.js"
+    },
+    "./solana": {
+      "types": "./dist/solana.d.ts",
+      "import": "./dist/solana.js"
+    },
+    "./all": {
+      "types": "./dist/all.d.ts",
+      "import": "./dist/all.js"
+    },
+    "./testing": {
+      "types": "./testing.d.ts",
+      "import": "./testing.js"
+    },
+    "./development": {
+      "types": "./development.d.ts",
+      "import": "./development.js"
+    },
+    "./components/WalletMeshModal.module.css": "./dist/components/WalletMeshModal.module.css",
+    "./components/WalletMeshModal.css": "./dist/components/WalletMeshModal.css"
+  },
+  "files": [
+    "dist",
+    "testing.ts",
+    "testing.d.ts",
+    "development.ts",
+    "development.d.ts",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsx scripts/build.ts",
+    "build:ts": "tsc --build tsconfig.build.json --incremental",
+    "build:css": "tsx scripts/build-css.ts",
+    "build:force": "pnpm build:ts && pnpm build:css",
+    "copy-css": "mkdir -p dist/components && find src/components -name '*.css' ! -name '*.module.css' -exec cp {} dist/components/ \\;",
+    "copy-module-css": "mkdir -p dist/components && find src/components -name '*.module.css' -exec cp {} dist/components/ \\;",
+    "fix-css": "touch dist/components/WalletMeshModal.css && cat src/components/WalletMeshModal.module.css > dist/components/WalletMeshModal.css || true",
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.build.tsbuildinfo tsconfig.tsbuildinfo",
+    "rebuild": "pnpm clean && pnpm build",
+    "test": "NODE_OPTIONS='--max-old-space-size=16384' vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "lint": "biome lint",
+    "lint:fix": "biome lint --write",
+    "format": "biome format",
+    "format:fix": "biome format --write",
+    "docs": "typedoc",
+    "preversion": "pnpm test"
+  },
+  "peerDependencies": {
+    "@walletmesh/aztec-rpc-wallet": "^0.5.0",
+    "@nemi-fi/wallet-sdk": "^1.0.0",
+    "@solana/web3.js": "^1.0.0",
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@walletmesh/aztec-rpc-wallet": {
+      "optional": true
+    },
+    "@nemi-fi/wallet-sdk": {
+      "optional": true
+    },
+    "@solana/web3.js": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.60.5",
+    "@walletmesh/modal-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@nemi-fi/wallet-sdk": "^1.0.0",
+    "@solana/web3.js": "^1.95.8",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.12",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^4.4.1",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@walletmesh/aztec-rpc-wallet": "workspace:*",
+    "dequal": "^2.0.3",
+    "get-func-name": "^2.0.2",
+    "jsdom": "^26.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "strip-literal": "^2.1.1",
+    "tsup": "^8.4.0",
+    "type-detect": "^4.1.0",
+    "vitest": "^3.2.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -19,6 +19,7 @@ import {
 } from './securityHelpers.js';
 import { createTestSecurityPolicy } from './testUtils.js';
 import { createSecurityPolicy } from '../security.js';
+import { SECURITY_PRESETS } from '../presets/security.js';
 // biome-ignore lint/style/useImportType: MockEventTarget is instantiated with new, not just used as a type
 import { MockEventTarget } from './MockEventTarget.js';
 import { SessionTracker as SecuritySessionTracker, RateLimiter as SecurityRateLimiter } from '../security.js';
@@ -84,7 +85,7 @@ describe('securityHelpers', () => {
 
   describe('testOriginValidation', () => {
     it('should test basic origin validation', async () => {
-      const policy = createSecurityPolicy.strict();
+      const policy = createSecurityPolicy(SECURITY_PRESETS.strict);
       const testCases: OriginTestCase[] = [
         {
           origin: 'https://trusted.com',
@@ -164,7 +165,7 @@ describe('securityHelpers', () => {
     });
 
     it('should provide detailed failure information', async () => {
-      const policy = createSecurityPolicy.strict();
+      const policy = createSecurityPolicy(SECURITY_PRESETS.strict);
       const testCases: OriginTestCase[] = [
         {
           origin: 'ftp://invalid-protocol.com',
@@ -600,7 +601,7 @@ describe('securityHelpers', () => {
 
   describe('edge cases and error handling', () => {
     it('should handle invalid origins gracefully', async () => {
-      const policy = createSecurityPolicy.strict();
+      const policy = createSecurityPolicy(SECURITY_PRESETS.strict);
       const testCases: OriginTestCase[] = [
         {
           origin: 'not-a-url',

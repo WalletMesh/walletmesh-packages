@@ -1,21 +1,12 @@
 {
   "$schema": "https://typedoc-plugin-markdown.org/schema.json",
-  "plugin": [
-    "typedoc-plugin-markdown"
-  ],
-  "entryPoints": [
-    "src/index.ts"
-  ],
+  "plugin": ["typedoc-plugin-markdown"],
+  "entryPoints": ["src/index.ts"],
   "out": "docs",
-  "exclude": [
-    "**/*.test.ts"
-  ],
+  "exclude": ["**/*.test.ts"],
   "includeVersion": true,
   "excludePrivate": true,
-  "externalPattern": [
-    "**/node_modules/@walletmesh/router/**/*",
-    "**/node_modules/@walletmesh/jsonrpc/**/*"
-  ],
+  "externalPattern": ["**/node_modules/@walletmesh/router/**/*", "**/node_modules/@walletmesh/jsonrpc/**/*"],
   "externalSymbolLinkMappings": {
     "@walletmesh/router": {
       "RouterMethodMap": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/RouterMethodMap.md",
@@ -25,13 +16,51 @@
       "OperationBuilder": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/classes/OperationBuilder.md",
       "ChainPermissions": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/ChainPermissions.md",
       "MethodCall": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/interfaces/MethodCall.md",
-      "MethodResults": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/MethodResults.md"
+      "MethodResults": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/type-aliases/MethodResults.md",
+      "WalletRouter": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/classes/WalletRouter.md"
     },
     "@walletmesh/jsonrpc": {
       "JSONRPCTransport": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCTransport.md",
       "JSONRPCMiddleware": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/type-aliases/JSONRPCMiddleware.md",
       "JSONRPCEventMap": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCEventMap.md",
-      "JSONRPCSerializer": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCSerializer.md"
+      "JSONRPCSerializer": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCSerializer.md",
+      "JSONRPCNode": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md",
+      "JSONRPCContext": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCContext.md",
+      "JSONRPCError": "https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCError.md"
+    },
+    "@aztec/aztec.js": {
+      "AccountWallet": "https://docs.aztec.network/reference/aztec.js/interfaces/AccountWallet",
+      "PXE": "https://docs.aztec.network/reference/aztec.js/interfaces/PXE",
+      "Wallet": "https://docs.aztec.network/reference/aztec.js/interfaces/Wallet",
+      "AuthWitness": "https://docs.aztec.network/reference/aztec.js/classes/AuthWitness",
+      "AztecAddress": "https://docs.aztec.network/reference/aztec.js/classes/AztecAddress",
+      "CompleteAddress": "https://docs.aztec.network/reference/aztec.js/classes/CompleteAddress",
+      "Fr": "https://docs.aztec.network/reference/aztec.js/classes/Fr",
+      "L2Block": "https://docs.aztec.network/reference/aztec.js/classes/L2Block",
+      "TxHash": "https://docs.aztec.network/reference/aztec.js/classes/TxHash",
+      "TxReceipt": "https://docs.aztec.network/reference/aztec.js/classes/TxReceipt",
+      "TxExecutionRequest": "https://docs.aztec.network/reference/aztec.js/classes/TxExecutionRequest",
+      "Tx": "https://docs.aztec.network/reference/aztec.js/classes/Tx",
+      "ContractArtifact": "https://docs.aztec.network/reference/aztec.js/interfaces/ContractArtifact",
+      "ContractInstanceWithAddress": "https://docs.aztec.network/reference/aztec.js/interfaces/ContractInstanceWithAddress",
+      "ContractFunctionInteraction": "https://docs.aztec.network/reference/aztec.js/classes/ContractFunctionInteraction",
+      "NodeInfo": "https://docs.aztec.network/reference/aztec.js/interfaces/NodeInfo",
+      "PXEInfo": "https://docs.aztec.network/reference/aztec.js/interfaces/PXEInfo",
+      "GasFees": "https://docs.aztec.network/reference/aztec.js/interfaces/GasFees",
+      "ContractMetadata": "https://docs.aztec.network/reference/aztec.js/interfaces/ContractMetadata",
+      "ContractClassMetadata": "https://docs.aztec.network/reference/aztec.js/interfaces/ContractClassMetadata",
+      "EventMetadataDefinition": "https://docs.aztec.network/reference/aztec.js/interfaces/EventMetadataDefinition",
+      "ExecutionPayload": "https://docs.aztec.network/reference/aztec.js/interfaces/ExecutionPayload",
+      "PrivateExecutionResult": "https://docs.aztec.network/reference/aztec.js/interfaces/PrivateExecutionResult",
+      "TxProvingResult": "https://docs.aztec.network/reference/aztec.js/interfaces/TxProvingResult",
+      "TxSimulationResult": "https://docs.aztec.network/reference/aztec.js/interfaces/TxSimulationResult",
+      "TxProfileResult": "https://docs.aztec.network/reference/aztec.js/interfaces/TxProfileResult",
+      "UtilitySimulationResult": "https://docs.aztec.network/reference/aztec.js/interfaces/UtilitySimulationResult",
+      "IntentAction": "https://docs.aztec.network/reference/aztec.js/interfaces/IntentAction",
+      "IntentInnerHash": "https://docs.aztec.network/reference/aztec.js/interfaces/IntentInnerHash",
+      "SentTx": "https://docs.aztec.network/reference/aztec.js/classes/SentTx",
+      "DeploySentTx": "https://docs.aztec.network/reference/aztec.js/classes/DeploySentTx",
+      "Buffer": "https://nodejs.org/api/buffer.html#class-buffer"
     }
   }
 }

@@ -6,11 +6,11 @@
 
 # Function: createAztecWalletNode()
 
-> **createAztecWalletNode**(`wallet`, `pxe`, `transport`): `JSONRPCNode`\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md), [`JSONRPCEventMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCEventMap.md), [`AztecHandlerContext`](../interfaces/AztecHandlerContext.md)\>
+> **createAztecWalletNode**(`wallet`, `pxe`, `transport`): [`JSONRPCNode`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md)\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md), [`JSONRPCEventMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCEventMap.md), [`AztecHandlerContext`](../interfaces/AztecHandlerContext.md)\>
 
 Defined in: [aztec/rpc-wallet/src/wallet/create-node.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/wallet/create-node.ts#L76)
 
-Creates and configures a JSONRPCNode to serve as an Aztec wallet endpoint.
+Creates and configures a [JSONRPCNode](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md) to serve as an Aztec wallet endpoint.
 This node is intended to be used on the wallet-side (e.g., in a browser extension
 or a backend service managing user accounts) and can be connected to a
 WalletRouter instance.
@@ -20,15 +20,15 @@ The created node is equipped with:
 - Serializers for Aztec-specific data types, ensuring correct data exchange
   over JSON-RPC.
 - A context ([AztecHandlerContext](../interfaces/AztecHandlerContext.md)) providing handlers with access to the
-  necessary AccountWallet, PXE client, and a [ContractArtifactCache](../classes/ContractArtifactCache.md).
+  necessary [AccountWallet](https://docs.aztec.network/reference/aztec.js/interfaces/AccountWallet), PXE client, and a [ContractArtifactCache](../classes/ContractArtifactCache.md).
 
 ## Parameters
 
 ### wallet
 
-`AccountWallet`
+[`AccountWallet`](https://docs.aztec.network/reference/aztec.js/interfaces/AccountWallet)
 
-An instance of AccountWallet from `aztec.js`, representing
+An instance of [AccountWallet](https://docs.aztec.network/reference/aztec.js/interfaces/AccountWallet) from `aztec.js`, representing
                 the user's Aztec account and signing capabilities.
 
 ### pxe
@@ -50,9 +50,9 @@ A [JSONRPCTransport](https://github.com/WalletMesh/walletmesh-packages/tree/main
 
 ## Returns
 
-`JSONRPCNode`\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md), [`JSONRPCEventMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCEventMap.md), [`AztecHandlerContext`](../interfaces/AztecHandlerContext.md)\>
+[`JSONRPCNode`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md)\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md), [`JSONRPCEventMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCEventMap.md), [`AztecHandlerContext`](../interfaces/AztecHandlerContext.md)\>
 
-A fully configured JSONRPCNode instance, typed with
+A fully configured [JSONRPCNode](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md) instance, typed with
          [AztecWalletMethodMap](../interfaces/AztecWalletMethodMap.md) and [AztecHandlerContext](../interfaces/AztecHandlerContext.md), ready to
          process Aztec wallet requests.
 
@@ -89,7 +89,7 @@ const router = new WalletRouter(
 
 ## See
 
- - JSONRPCNode
+ - [JSONRPCNode](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md)
  - [AztecWalletMethodMap](../interfaces/AztecWalletMethodMap.md)
  - [AztecHandlerContext](../interfaces/AztecHandlerContext.md)
  - createAztecHandlers

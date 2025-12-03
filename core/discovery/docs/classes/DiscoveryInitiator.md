@@ -6,7 +6,7 @@
 
 # Class: DiscoveryInitiator
 
-Defined in: [core/discovery/src/initiator.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/initiator.ts#L85)
+Defined in: [core/discovery/src/initiator.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L85)
 
 Discovery initiator for dApps to find qualified wallets.
 
@@ -48,7 +48,7 @@ const initiator = new DiscoveryInitiator(
 
 > **new DiscoveryInitiator**(`requirements`, `initiatorInfo`, `options`, `preferences?`): `DiscoveryInitiator`
 
-Defined in: [core/discovery/src/initiator.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/initiator.ts#L106)
+Defined in: [core/discovery/src/initiator.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L106)
 
 Create a new DiscoveryInitiator instance.
 
@@ -88,7 +88,7 @@ Optional capability preferences for enhanced matching
 
 > **getQualifiedResponder**(`responderId`): `undefined` \| [`QualifiedResponder`](../interfaces/QualifiedResponder.md)
 
-Defined in: [core/discovery/src/initiator.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/initiator.ts#L227)
+Defined in: [core/discovery/src/initiator.ts:227](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L227)
 
 Get a specific qualified responder by ID.
 
@@ -108,7 +108,7 @@ Get a specific qualified responder by ID.
 
 > **getQualifiedResponders**(): [`QualifiedResponder`](../interfaces/QualifiedResponder.md)[]
 
-Defined in: [core/discovery/src/initiator.ts:220](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/initiator.ts#L220)
+Defined in: [core/discovery/src/initiator.ts:220](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L220)
 
 Get qualified responders found during discovery.
 
@@ -122,7 +122,7 @@ Get qualified responders found during discovery.
 
 > **isDiscovering**(): `boolean`
 
-Defined in: [core/discovery/src/initiator.ts:234](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/initiator.ts#L234)
+Defined in: [core/discovery/src/initiator.ts:234](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L234)
 
 Check if discovery is currently active.
 
@@ -136,7 +136,7 @@ Check if discovery is currently active.
 
 > **startDiscovery**(): `Promise`\<[`QualifiedResponder`](../interfaces/QualifiedResponder.md)[]\>
 
-Defined in: [core/discovery/src/initiator.ts:153](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/initiator.ts#L153)
+Defined in: [core/discovery/src/initiator.ts:153](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L153)
 
 Start discovery process to find qualified wallets.
 
@@ -152,7 +152,7 @@ Promise that resolves with array of qualified responders
 
 > **stopDiscovery**(): `void`
 
-Defined in: [core/discovery/src/initiator.ts:206](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/initiator.ts#L206)
+Defined in: [core/discovery/src/initiator.ts:206](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L206)
 
 Stop discovery process and cleanup resources.
 

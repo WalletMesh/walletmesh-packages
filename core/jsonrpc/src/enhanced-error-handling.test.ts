@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { JSONRPCNode } from './node.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSONRPCError } from './error.js';
+import { JSONRPCNode } from './node.js';
 import type { JSONRPCTransport } from './types.js';
 
 // Test interface to access private methods - using 'as any' in tests to access private methods

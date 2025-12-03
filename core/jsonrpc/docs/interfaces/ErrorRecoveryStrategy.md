@@ -6,7 +6,7 @@
 
 # Interface: ErrorRecoveryStrategy
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L69)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L69)
 
 Error recovery strategy
 
@@ -16,7 +16,7 @@ Error recovery strategy
 
 > **backoffMultiplier**: `number`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L73)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L73)
 
 Backoff multiplier for retries
 
@@ -26,7 +26,7 @@ Backoff multiplier for retries
 
 > **disconnectOnCritical**: `boolean`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L79)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L79)
 
 Whether to disconnect on critical errors
 
@@ -36,7 +36,7 @@ Whether to disconnect on critical errors
 
 > **initialRetryDelay**: `number`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L75)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L75)
 
 Initial retry delay in ms
 
@@ -46,7 +46,7 @@ Initial retry delay in ms
 
 > **maxRetries**: `number`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L71)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L71)
 
 Maximum retry attempts
 
@@ -56,6 +56,6 @@ Maximum retry attempts
 
 > **maxRetryDelay**: `number`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/934e9a1d3ee68619aca30a75a8aa0f0254f44ba7/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L77)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L77)
 
 Maximum retry delay in ms

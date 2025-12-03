@@ -8,7 +8,7 @@
 
 > **ErrorCategory** = `"protocol"` \| `"security"` \| `"capability"` \| `"connection"` \| `"internal"`
 
-Defined in: [core/discovery/src/types/core.ts:157](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/core.ts#L157)
+Defined in: [core/discovery/src/types/core.ts:157](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L157)
 
 Error category classification.
 

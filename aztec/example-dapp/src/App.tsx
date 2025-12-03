@@ -1,15 +1,127 @@
 import './App.css';
+import {
+  AztecExampleWalletAdapter,
+  AztecWalletMeshProvider,
+  ChainType,
+  WalletMeshErrorBoundary,
+  WalletMeshErrorRecovery,
+} from '@walletmesh/modal-react/aztec';
 import DApp from './components/DApp.js';
 import { ToastProvider } from './contexts/ToastContext.js';
 
 function App() {
   return (
-    <ToastProvider>
-      <div className="App">
-        <h1>Aztec DApp Example</h1>
-        <DApp />
-      </div>
-    </ToastProvider>
+    <AztecWalletMeshProvider
+      config={{
+        appName: 'Aztec DApp Demo',
+        appDescription: 'Example Aztec dApp using WalletMesh with zero-knowledge proofs',
+        // Provide explicit metadata for proper identification
+        appMetadata: {
+          // Explicitly set the origin for the dApp (helps with cross-origin communication)
+          origin: window.location.origin,
+          name: 'Aztec DApp Demo',
+          description: 'Example Aztec dApp using WalletMesh with zero-knowledge proofs',
+          url: window.location.href,
+          icon: '/favicon.ico',
+        },
+        // Explicitly specify which chain to use
+        chains: [
+          {
+            chainId: 'aztec:31337',
+            required: false,
+            label: 'Aztec Sandbox',
+          },
+        ],
+        // Include the Aztec Example Wallet for testing in development
+        // Pass the wallet info, not the class
+        wallets: [AztecExampleWalletAdapter.getWalletInfo()],
+        // Declare the permissions this dApp requires
+        permissions: [
+          // Account Methods (required for initialization)
+          'aztec_getAddress',
+          'aztec_getCompleteAddress', // ⚠️ CRITICAL: Required for wallet initialization - fetches complete address with public keys
+
+          // Chain/Node Methods (required for initialization and queries)
+          'aztec_getChainId', // ⚠️ CRITICAL: Required for wallet initialization - identifies the connected chain
+          'aztec_getVersion', // ⚠️ CRITICAL: Required for wallet initialization - verifies protocol compatibility
+          'aztec_getBlockNumber',
+          'aztec_getCurrentBaseFees',
+          'aztec_getNodeInfo',
+          'aztec_getPXEInfo',
+
+          // Transaction Methods (core functionality)
+          'aztec_sendTx',
+          'aztec_simulateTx',
+          'aztec_simulateUtility', // Required for "Get Counter Value" functionality
+          'aztec_getTxReceipt',
+          'aztec_proveTx',
+
+          // Contract Methods (deployment and interaction)
+          'aztec_getContracts',
+          'aztec_registerContract',
+          'aztec_registerContractClass',
+
+          // Auth Methods (authorization)
+          'aztec_createAuthWit',
+
+          // Event Methods (monitoring)
+          'aztec_getPrivateEvents',
+          'aztec_getPublicEvents',
+
+          // WalletMesh-specific Methods
+          'aztec_wmExecuteTx',
+          'aztec_wmBatchExecute',
+          'aztec_wmSimulateTx',
+          'aztec_wmDeployContract',
+        ],
+        // These wallets will be registered and appear as "discovered" wallets
+        // The AztecWalletMeshProvider will automatically filter for Aztec-compatible wallets
+        // All other configuration uses sensible defaults:
+        // - Auto-discovers Aztec wallets
+        // - Sets up discovery with appropriate timeouts
+        // - Enables debug mode in development
+      }}
+    >
+      <WalletMeshErrorBoundary
+        fallback={({ error, resetError }: { error: unknown; resetError: () => void }) => (
+          <WalletMeshErrorRecovery
+            error={error as Error}
+            resetError={resetError}
+            chainType={ChainType.Aztec}
+            enableAutoRetry={true}
+            showTechnicalDetails={process.env.NODE_ENV === 'development'}
+          />
+        )}
+        onError={(error: unknown, errorInfo: unknown) => {
+          // Log errors to console in development
+          if (process.env.NODE_ENV === 'development') {
+            console.error('WalletMesh Error:', error);
+            console.error('Error Info:', errorInfo);
+          }
+          // In production, you could send this to an error tracking service
+          // logToErrorService(error, errorInfo);
+        }}
+      >
+        <ToastProvider>
+          <div className="App">
+            <h1>Aztec DApp Example</h1>
+            <DApp />
+          </div>
+          {/*
+            Transaction overlays are now automatically injected by AztecWalletMeshProvider!
+
+            - AztecTransactionStatusOverlay: Shows full-screen blocking overlay for sync transactions (executeSync)
+            - BackgroundTransactionIndicator: Shows floating badge for async transactions (execute)
+
+            No manual rendering required - they automatically respond to transaction state.
+            To customize or disable, use the provider config:
+
+            transactionOverlay: { enabled: true, ... }
+            backgroundTransactionIndicator: { enabled: true, position: 'bottom-right', ... }
+          */}
+        </ToastProvider>
+      </WalletMeshErrorBoundary>
+    </AztecWalletMeshProvider>
   );
 }
 

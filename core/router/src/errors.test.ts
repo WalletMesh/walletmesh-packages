@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
-import { RouterError, RouterErrorMap } from './errors.js';
 import { JSONRPCError } from '@walletmesh/jsonrpc';
+import { describe, expect, it } from 'vitest';
+import { RouterError, RouterErrorMap } from './errors.js';
 
 describe('RouterErrorMap', () => {
   it('should contain all error codes and messages', () => {
@@ -13,6 +13,7 @@ describe('RouterErrorMap', () => {
       partialFailure: { code: -32005, message: 'Partial failure' },
       invalidRequest: { code: -32006, message: 'Invalid request parameters' },
       walletError: { code: -32007, message: 'Wallet returned an error' },
+      duplicateRequestId: { code: -32008, message: 'Duplicate request ID - approval already pending' },
       unknownError: { code: -32603, message: 'Internal error' },
     });
   });

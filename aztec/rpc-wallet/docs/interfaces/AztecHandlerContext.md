@@ -10,11 +10,11 @@ Defined in: [aztec/rpc-wallet/src/wallet/handlers/index.ts:26](https://github.co
 
 Defines the context object that is passed to all Aztec wallet JSON-RPC method handlers.
 This context provides handlers with the necessary dependencies to perform their operations.
-It extends the base JSONRPCContext with Aztec-specific instances.
+It extends the base [JSONRPCContext](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCContext.md) with Aztec-specific instances.
 
 ## Extends
 
-- `JSONRPCContext`
+- [`JSONRPCContext`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCContext.md)
 
 ## Indexable
 
@@ -46,9 +46,9 @@ An instance of PXE (Private Execution Environment) client
 
 ### wallet
 
-> **wallet**: `AccountWallet`
+> **wallet**: [`AccountWallet`](https://docs.aztec.network/reference/aztec.js/interfaces/AccountWallet)
 
 Defined in: [aztec/rpc-wallet/src/wallet/handlers/index.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/wallet/handlers/index.ts#L27)
 
-An instance of AccountWallet from `aztec.js`,
+An instance of [AccountWallet](https://docs.aztec.network/reference/aztec.js/interfaces/AccountWallet) from `aztec.js`,
                    representing the user's account and signing capabilities.

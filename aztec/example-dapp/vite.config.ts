@@ -1,14 +1,18 @@
 import react from '@vitejs/plugin-react';
+import type { ConfigEnv } from 'vite';
 import { defineConfig, loadEnv } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode }: ConfigEnv) => {
   const env = loadEnv(mode, process.cwd());
+
   return {
-    cacheDir: '/tmp/.vite',
+    cacheDir: './node_modules/.vite',
     resolve: {
+      // Force single instances of React and zustand to prevent hook errors
+      dedupe: ['react', 'react-dom', 'zustand'],
       alias: {
         pino: 'pino/browser',
         // Handle lodash modules
@@ -19,34 +23,70 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       nodePolyfills({
-        include: ['buffer', 'path', 'process'],
+        include: ['buffer', 'path', 'process', 'util', 'stream', 'events', 'tty'],
+        globals: {
+          Buffer: true,
+          process: true,
+        },
       }),
       viteStaticCopy({
         targets: [
           {
             src: './node_modules/@aztec/noir-acvm_js/web/acvm_js_bg.wasm',
             dest: 'assets',
-          }
+          },
         ],
       }),
     ],
+    optimizeDeps: {
+      exclude: [
+        '@aztec/bb.js',
+        'barretenberg',
+        // WalletMesh workspace packages - excluded from pre-bundling to avoid stale cache.
+        // The server.warmup config ensures these are still pre-loaded on server start.
+        '@walletmesh/aztec-rpc-wallet',
+        '@walletmesh/jsonrpc',
+        '@walletmesh/router',
+        '@walletmesh/modal-react',
+        '@walletmesh/modal-core',
+        '@walletmesh/discovery',
+      ],
+      include: ['react', 'react-dom', 'react/jsx-runtime'],
+    },
     server: {
       headers: {
         'Cross-Origin-Embedder-Policy': 'require-corp',
         'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
       },
       host: '127.0.0.1',
+      // Pre-warm dynamically imported modules to prevent cold-start failures
+      warmup: {
+        clientFiles: ['./node_modules/@walletmesh/aztec-rpc-wallet/dist/index.js'],
+      },
     },
     assetsInclude: ['**/*.wasm'],
     define: {
       'process.env': JSON.stringify({
         LOG_LEVEL: env.LOG_LEVEL || 'info',
-        VITE_WALLET_URL: env.VITE_WALLET_URL,
-        VITE_NODE_URL: env.VITE_NODE_URL,
+        VITE_AZTEC_RPC_URL: env.VITE_AZTEC_RPC_URL || 'https://sandbox.aztec.walletmesh.com/api/v1/public',
       }),
     },
     build: {
       sourcemap: true,
+      rollupOptions: {
+        external: [
+          // Externalize Node.js modules that shouldn't be bundled for browser
+          'node:fs',
+          'node:os',
+          'node:crypto',
+          // Externalize Solana dependencies (not needed for Aztec-only dApp)
+          '@solana/web3.js',
+          '@solana/wallet-adapter-base',
+          // Externalize other problematic server-side modules
+          'fs',
+          'os',
+        ],
+      },
     },
   };
 });

@@ -81,11 +81,13 @@ Understanding the dependency relationships between packages is crucial for devel
 @walletmesh/router (depends on jsonrpc)
     ↑
 @walletmesh/discovery (depends on jsonrpc)
-    ↑
-@walletmesh/modal-core (depends on router, discovery)
+
+@walletmesh/modal-core (depends on jsonrpc, discovery)
     ↑
 @walletmesh/modal-react (depends on modal-core)
 ```
+
+**Note**: `@walletmesh/modal-core` intentionally does NOT depend on `@walletmesh/router` to keep the bundle size minimal. Router functionality is accessed only through dynamic imports via the optional peer dependency `@walletmesh/aztec-rpc-wallet`. This allows users who only need EVM or Solana support to avoid unnecessary dependencies.
 
 **Aztec Package Hierarchy**:
 ```
@@ -141,6 +143,49 @@ Understanding the dependency relationships between packages is crucial for devel
 - **Type errors in dist** - Clean build: `rm -rf dist && pnpm build`
 - **Biome errors** - Run `pnpm lint:fix` first, check for naming convention issues
 - **Missing dependencies** - Run `pnpm install` in the root directory
+
+## Dependency Management Guidelines
+
+### Monorepo Structure
+This project follows pnpm monorepo best practices with shared development dependencies hoisted to the root level:
+
+**Root Dependencies (Hoisted)**:
+- `typescript` - TypeScript compiler used by all packages
+- `typedoc` - Documentation generation for all packages
+- `@biomejs/biome` - Linting and formatting across the monorepo
+- `vitest` - Testing framework (except modal-core which pins v2.1.8)
+- `@vitest/coverage-v8` - Test coverage tools
+- `rimraf` - File cleanup utility used by all packages
+- `@types/node` - Node.js type definitions
+
+**Package-Specific Dependencies**:
+- **Runtime dependencies**: React, specific libraries each package uses
+- **Unique dev tools**: Package-specific build scripts or configurations
+- **Version-specific needs**: modal-core pins vitest@2.1.8 for compatibility
+
+### Adding New Dependencies
+
+**For Shared Tools** (used by 3+ packages):
+1. Add to root `package.json` devDependencies
+2. Remove from individual packages
+3. Run `pnpm install` to update lockfile
+
+**For Package-Specific Dependencies**:
+1. Add to the specific package's dependencies/devDependencies
+2. Keep runtime dependencies local to packages that use them
+
+### Exception: modal-core Vitest Pinning
+The `@walletmesh/modal-core` package pins vitest to version 2.1.8 for compatibility reasons:
+- `vitest: 2.1.8` (pinned)
+- `@vitest/coverage-v8: 2.1.8` (pinned)
+
+This is intentional and should be preserved when updating other dependencies.
+
+### Benefits of This Structure
+- ✅ Reduced bundle size and installation time
+- ✅ Version consistency across packages
+- ✅ Simplified dependency management
+- ✅ Better caching with pnpm workspace protocol
 
 ## Code Style Guidelines
 - **Formatting**: Use Biome with 2-space indentation, single quotes for strings

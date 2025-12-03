@@ -1,22 +1,23 @@
+import { JSONRPCError } from './error.js';
+import { EventManager } from './event-manager.js';
+import { MessageValidator } from './message-validator.js';
+import { MethodManager } from './method-manager.js';
+import { MiddlewareManager } from './middleware-manager.js';
+import { RequestHandler } from './request-handler.js';
 import type {
-  JSONRPCMethodMap,
-  JSONRPCEventMap,
   JSONRPCContext,
+  JSONRPCEvent,
+  JSONRPCEventMap,
+  JSONRPCID,
+  JSONRPCMethodMap,
+  JSONRPCMiddleware,
+  JSONRPCParams,
   JSONRPCRequest,
   JSONRPCResponse,
-  JSONRPCEvent,
   JSONRPCSerializer,
-  JSONRPCMiddleware,
-  JSONRPCID,
-  JSONRPCParams,
   JSONRPCTransport,
+  MethodResponse,
 } from './types.js';
-import { EventManager } from './event-manager.js';
-import { MiddlewareManager } from './middleware-manager.js';
-import { MethodManager } from './method-manager.js';
-import { JSONRPCError } from './error.js';
-import { MessageValidator } from './message-validator.js';
-import { RequestHandler } from './request-handler.js';
 import { wrapHandler } from './utils.js';
 
 /**
@@ -73,7 +74,8 @@ export class JSONRPCNode<
 > {
   private methodManager: MethodManager<T, C>;
   private eventManager: EventManager<E>;
-  private middlewareManager: MiddlewareManager<T, C>;
+  private preDeserializationMiddlewareManager: MiddlewareManager<T, C>;
+  private postDeserializationMiddlewareManager: MiddlewareManager<T, C>;
   private requestHandler: RequestHandler<T, C>;
   private messageValidator: MessageValidator;
 
@@ -92,9 +94,53 @@ export class JSONRPCNode<
     this.methodManager = new MethodManager<T, C>();
     this.eventManager = new EventManager<E>();
     this.messageValidator = new MessageValidator();
-    this.requestHandler = new RequestHandler<T, C>(this.methodManager);
 
-    this.middlewareManager = new MiddlewareManager<T, C>((context, request) =>
+    // Create post-deserialization middleware manager
+    // The final handler gets the method and invokes it with deserialized params
+    // It converts MethodResponse to JSONRPCResponse for the middleware chain
+    this.postDeserializationMiddlewareManager = new MiddlewareManager<T, C>(async (context, request) => {
+      const method = this.methodManager.getMethod(request.method);
+
+      let methodResponse: MethodResponse<unknown>;
+
+      if (method) {
+        methodResponse = await method(context, request.method, request.params as T[keyof T]['params']);
+      } else {
+        // Try fallback handler
+        const fallback = this.methodManager.getFallbackHandler();
+        if (fallback) {
+          methodResponse = await fallback(context, String(request.method), request.params);
+        } else {
+          throw new JSONRPCError(-32601, 'Method not found', String(request.method));
+        }
+      }
+
+      // Convert MethodResponse to JSONRPCResponse
+      // This is a temporary conversion - RequestHandler will extract the data back out
+      if (methodResponse.success) {
+        return {
+          jsonrpc: '2.0' as const,
+          result: methodResponse.data,
+          id: request.id,
+        };
+      }
+
+      // For errors, throw JSONRPCError
+      throw new JSONRPCError(
+        methodResponse.error.code,
+        methodResponse.error.message,
+        methodResponse.error.data,
+      );
+    });
+
+    // Create request handler with both middleware managers
+    this.requestHandler = new RequestHandler<T, C>(
+      this.methodManager,
+      this.postDeserializationMiddlewareManager,
+    );
+
+    // Create pre-deserialization middleware manager (wraps request handler)
+    this.preDeserializationMiddlewareManager = new MiddlewareManager<T, C>((context, request) =>
       this.requestHandler.handleRequest(context, request),
     );
 
@@ -166,8 +212,29 @@ export class JSONRPCNode<
             params: serializedParams as JSONRPCParams,
             id,
           };
+
+          // Debug logging removed (transport is private)
+
+          const transportSendStartTime = Date.now();
           await this.transport.send(request);
+          const transportSendElapsed = Date.now() - transportSendStartTime;
+
+          console.log(`✅ JSONRPCNode.callMethod transport.send completed after ${transportSendElapsed}ms`, {
+            method,
+            id,
+            elapsed: transportSendElapsed,
+          });
         } catch (error) {
+          console.error('❌ JSONRPCNode.callMethod transport.send failed', {
+            method,
+            id,
+            error: error instanceof Error ? error.message : error,
+            errorType: typeof error,
+            errorName: error instanceof Error ? error.constructor.name : 'Unknown',
+            errorStack: error instanceof Error ? error.stack : undefined,
+            // Transport state removed (transport is private)
+          });
+
           reject(error);
           this.methodManager.rejectAllRequests(error instanceof Error ? error : new Error(String(error)));
         }
@@ -220,14 +287,47 @@ export class JSONRPCNode<
   }
 
   /**
-   * Adds a middleware function to the request processing chain.
-   * Middleware functions can intercept and modify incoming requests and outgoing responses.
+   * Send a JSON-RPC notification (request without id) to the remote endpoint.
+   *
+   * @param method - Method name of the notification
+   * @param params - Optional parameters payload
+   * @protected
+   */
+  protected async sendNotification(method: string, params?: JSONRPCParams): Promise<void> {
+    const notification: JSONRPCRequest<JSONRPCMethodMap, string> = {
+      jsonrpc: '2.0',
+      method,
+    };
+
+    if (params !== undefined) {
+      notification.params = params;
+    }
+
+    await this.transport.send(notification);
+  }
+
+  /**
+   * Adds a middleware function to the pre-deserialization request processing chain.
+   * Pre-deserialization middleware runs BEFORE params are deserialized, so it sees raw/serialized params.
+   * This is the default behavior for backward compatibility with existing middleware.
    *
    * @param middleware - The middleware function to add.
    * @returns A function that, when called, will remove this middleware.
    */
   public addMiddleware(middleware: JSONRPCMiddleware<T, C>): () => void {
-    return this.middlewareManager.addMiddleware(middleware);
+    return this.preDeserializationMiddlewareManager.addMiddleware(middleware);
+  }
+
+  /**
+   * Adds a middleware function to the post-deserialization request processing chain.
+   * Post-deserialization middleware runs AFTER params are deserialized, so it sees typed domain objects.
+   * Use this when your middleware needs to work with the actual deserialized parameter types.
+   *
+   * @param middleware - The middleware function to add.
+   * @returns A function that, when called, will remove this middleware.
+   */
+  public addPostDeserializationMiddleware(middleware: JSONRPCMiddleware<T, C>): () => void {
+    return this.postDeserializationMiddlewareManager.addMiddleware(middleware);
   }
 
   /**
@@ -277,7 +377,7 @@ export class JSONRPCNode<
 
   private async handleRequest(request: JSONRPCRequest<T, keyof T>): Promise<void> {
     try {
-      const response = await this.middlewareManager.execute(this.context, request);
+      const response = await this.preDeserializationMiddlewareManager.execute(this.context, request);
 
       if (request.id !== undefined) {
         await this.transport.send(response);
@@ -288,7 +388,12 @@ export class JSONRPCNode<
           jsonrpc: '2.0',
           error:
             error instanceof JSONRPCError
-              ? { code: error.code, message: error.message, data: error.data }
+              ? {
+                  code: error.code,
+                  message: error.message,
+                  // Ensure data is either undefined or a proper value, never null
+                  data: error.data === null ? undefined : error.data,
+                }
               : { code: -32000, message: error instanceof Error ? error.message : 'Unknown error' },
           id: request.id,
         };
@@ -298,7 +403,9 @@ export class JSONRPCNode<
   }
 
   private async handleResponse(response: JSONRPCResponse<T>): Promise<void> {
-    await this.methodManager.handleResponse(response.id, response.result, response.error);
+    // Ensure error is undefined if it's null to prevent downstream issues
+    const error = response.error === null ? undefined : response.error;
+    await this.methodManager.handleResponse(response.id, response.result, error);
   }
 
   private handleEvent(event: JSONRPCEvent<E, keyof E>): void {
@@ -319,6 +426,16 @@ export class JSONRPCNode<
     handler: (context: C, method: string, params: JSONRPCParams) => Promise<unknown>,
   ): void {
     this.methodManager.setFallbackHandler(wrapHandler(handler));
+  }
+
+  /**
+   * Gets the list of registered method names.
+   * Used for capability discovery following the wm_getSupportedMethods pattern.
+   *
+   * @returns Array of registered method names as strings.
+   */
+  public getRegisteredMethods(): string[] {
+    return this.methodManager.getRegisteredMethods();
   }
 
   /**
@@ -469,7 +586,8 @@ export class JSONRPCNode<
    */
   public async close(): Promise<void> {
     this.eventManager.removeAllHandlers();
-    this.middlewareManager.removeAllMiddleware();
+    this.preDeserializationMiddlewareManager.removeAllMiddleware();
+    this.postDeserializationMiddlewareManager.removeAllMiddleware();
     this.methodManager.rejectAllRequests(new Error('Node closed'));
   }
 }

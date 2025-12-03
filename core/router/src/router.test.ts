@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { WalletRouter } from './router.js';
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RouterError } from './errors.js';
-import type { SessionData } from './types.js';
 import { PermissivePermissionsManager } from './permissions/permissive.js';
+import { WalletRouter } from './router.js';
+import type { SessionData } from './types.js';
 
 describe('WalletRouter', () => {
   const mockTransport: JSONRPCTransport = {
@@ -144,6 +144,7 @@ describe('WalletRouter', () => {
     const mockSession: SessionData = {
       id: 'test-session',
       origin: 'test-origin',
+      createdAt: Date.now(),
     };
 
     beforeEach(() => {
@@ -183,6 +184,7 @@ describe('WalletRouter', () => {
       const mockSessionData = {
         id: 'test-session',
         origin: 'test-origin',
+        createdAt: Date.now(),
       };
 
       mockSessionStore.validateAndRefresh.mockResolvedValue(mockSessionData);
@@ -230,7 +232,7 @@ describe('WalletRouter', () => {
       );
 
       expect(result).toBe(true);
-      expect(mockSessionStore.delete).toHaveBeenCalledWith('test-origin_test-session');
+      expect(mockSessionStore.delete).toHaveBeenCalledWith('test-session');
       expect(mockTransport.send).toHaveBeenCalledWith(
         expect.objectContaining({
           event: 'wm_sessionTerminated',
@@ -253,6 +255,7 @@ describe('WalletRouter', () => {
     const mockSession: SessionData = {
       id: 'test-session',
       origin: 'test-origin',
+      createdAt: Date.now(),
     };
 
     beforeEach(() => {
@@ -387,6 +390,7 @@ describe('WalletRouter', () => {
     const mockSession: SessionData = {
       id: 'test-session',
       origin: 'test-origin',
+      createdAt: Date.now(),
     };
 
     beforeEach(() => {
@@ -445,7 +449,7 @@ describe('WalletRouter', () => {
           },
         },
       });
-      expect(mockSessionStore.set).toHaveBeenCalledWith('test-origin_test-session', mockSession);
+      expect(mockSessionStore.set).toHaveBeenCalledWith('test-session', mockSession);
     });
   });
 

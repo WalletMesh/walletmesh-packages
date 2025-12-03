@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ContentScriptRelay } from './ContentScriptRelay.js';
 import { setupFakeTimers, cleanupFakeTimers } from '../testing/timingHelpers.js';
-import { setupChromeEnvironment, createConsoleSpy, createContentScriptMock } from '../testing/index.js';
+import { type setupChromeEnvironment, createConsoleSpy, createContentScriptMock } from '../testing/index.js';
 
 // Mock Chrome API and browser environment
 let mockChrome: ReturnType<typeof setupChromeEnvironment>['chrome'];
@@ -23,6 +23,13 @@ let contentScriptMock: ReturnType<typeof createContentScriptMock>;
 describe('ContentScriptRelay', () => {
   let relay: ContentScriptRelay;
   let mockDiscoveryRequest: Record<string, unknown>;
+  let mockPort: {
+    name: string;
+    onDisconnect: { addListener: ReturnType<typeof vi.fn>; removeListener: ReturnType<typeof vi.fn> };
+    onMessage: { addListener: ReturnType<typeof vi.fn>; removeListener: ReturnType<typeof vi.fn> };
+    postMessage: ReturnType<typeof vi.fn>;
+    disconnect: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     setupFakeTimers();
@@ -35,12 +42,43 @@ describe('ContentScriptRelay', () => {
       mockFn: () => vi.fn(),
     });
 
-    // Set up standardized Chrome environment
-    const chromeEnv = setupChromeEnvironment({
-      extensionId: 'test-extension-id',
-    });
-    mockChrome = chromeEnv.chrome;
-    chromeCleanup = chromeEnv.cleanup;
+    // Create mock port first
+    mockPort = {
+      name: 'walletmesh-discovery',
+      onDisconnect: { addListener: vi.fn(), removeListener: vi.fn() },
+      onMessage: { addListener: vi.fn(), removeListener: vi.fn() },
+      postMessage: vi.fn(),
+      disconnect: vi.fn(),
+    };
+
+    // Set up Chrome environment with simple object literal (more reliable for testing)
+    const simpleMockChrome = {
+      runtime: {
+        id: 'test-extension-id',
+        sendMessage: vi.fn(() => Promise.resolve(undefined)),
+        connect: vi.fn(() => mockPort),
+        onMessage: { addListener: vi.fn(), removeListener: vi.fn() },
+      },
+      tabs: {
+        sendMessage: vi.fn(() => Promise.resolve(undefined)),
+        query: vi.fn(() => Promise.resolve([])),
+        get: vi.fn((tabId: number) => Promise.resolve({ id: tabId, url: 'https://example.com' })),
+      },
+    };
+
+    // Set up globals directly
+    // @ts-expect-error - Setting up chrome for testing
+    global.chrome = simpleMockChrome;
+    // @ts-expect-error - Setting up chrome for testing
+    globalThis.chrome = simpleMockChrome;
+
+    mockChrome = simpleMockChrome as unknown as ReturnType<typeof setupChromeEnvironment>['chrome'];
+    chromeCleanup = () => {
+      // @ts-expect-error - Cleaning up chrome
+      global.chrome = undefined;
+      // @ts-expect-error - Cleaning up chrome
+      globalThis.chrome = undefined;
+    };
 
     // Reset chrome mock implementation for each test
     (mockChrome.runtime.sendMessage as ReturnType<typeof vi.fn>).mockImplementation(() =>
@@ -77,6 +115,7 @@ describe('ContentScriptRelay', () => {
   describe('initialization', () => {
     it('should initialize properly', () => {
       expect(relay).toBeDefined();
+      // Port connection is established, so relay should be ready
       expect(relay.isReady()).toBe(true);
     });
 
@@ -87,8 +126,11 @@ describe('ContentScriptRelay', () => {
       );
     });
 
-    it('should set up background to page message forwarding', () => {
-      expect(mockChrome.runtime.onMessage.addListener).toHaveBeenCalledWith(expect.any(Function));
+    it('should establish port connection', () => {
+      // Verify that connect() was called on the runtime
+      expect(mockChrome.runtime.connect).toHaveBeenCalledWith({
+        name: 'walletmesh-discovery',
+      });
     });
 
     it('should handle multiple initialization attempts', () => {
@@ -99,7 +141,11 @@ describe('ContentScriptRelay', () => {
   });
 
   describe('page to background forwarding', () => {
-    it('should forward discovery:request events to background', () => {
+    it('should forward discovery:request events to background via port', () => {
+      // Get the mock port that was created
+      const mockPort = (mockChrome.runtime.connect as ReturnType<typeof vi.fn>).mock.results[0]?.value;
+      expect(mockPort).toBeDefined();
+
       // Simulate discovery request from page
       const discoveryEvent = new CustomEvent('discovery:wallet:request', {
         detail: mockDiscoveryRequest,
@@ -117,7 +163,8 @@ describe('ContentScriptRelay', () => {
         (eventListener as EventListener)(discoveryEvent);
       }
 
-      expect(mockChrome.runtime.sendMessage).toHaveBeenCalledWith({
+      // Check that port.postMessage was called with correct data
+      expect(mockPort.postMessage).toHaveBeenCalledWith({
         type: 'discovery:wallet:request',
         data: mockDiscoveryRequest,
         origin: 'https://dapp.example.com',
@@ -125,10 +172,13 @@ describe('ContentScriptRelay', () => {
       });
     });
 
-    it('should handle sendMessage failures gracefully', () => {
-      (mockChrome.runtime.sendMessage as ReturnType<typeof vi.fn>).mockImplementation(() =>
-        Promise.reject(new Error('Extension disabled')),
-      );
+    it('should handle port postMessage failures gracefully', () => {
+      const mockPort = (mockChrome.runtime.connect as ReturnType<typeof vi.fn>).mock.results[0]?.value;
+
+      // Mock postMessage to throw an error
+      mockPort.postMessage.mockImplementation(() => {
+        throw new Error('Port disconnected');
+      });
 
       const discoveryEvent = new CustomEvent('discovery:wallet:request', {
         detail: mockDiscoveryRequest,
@@ -138,7 +188,7 @@ describe('ContentScriptRelay', () => {
         contentScriptMock.window.addEventListener as ReturnType<typeof vi.fn>
       ).mock?.calls.find((call) => call[0] === 'discovery:wallet:request')?.[1];
 
-      // Should not throw
+      // Should not throw - error is caught and handled
       expect(() => {
         if (eventListener) {
           eventListener(discoveryEvent);
@@ -164,7 +214,7 @@ describe('ContentScriptRelay', () => {
     });
   });
 
-  describe('background to page forwarding', () => {
+  describe('background to page forwarding via port', () => {
     it('should forward discovery:wallet:response messages to page', () => {
       const mockAnnouncement = {
         type: 'discovery:wallet:response',
@@ -186,21 +236,20 @@ describe('ContentScriptRelay', () => {
         },
       };
 
-      // Get the message listener that was registered
-      const messageListener = (
-        mockChrome.runtime.onMessage.addListener as unknown as { mock?: { calls: unknown[][] } }
-      )?.mock?.calls[0]?.[0];
-      expect(messageListener).toBeDefined();
+      // Get the mock port and its onMessage listener
+      const mockPort = (mockChrome.runtime.connect as ReturnType<typeof vi.fn>).mock.results[0]?.value;
+      expect(mockPort).toBeDefined();
 
-      const mockSendResponse = vi.fn();
+      const portMessageListener = (mockPort.onMessage.addListener as ReturnType<typeof vi.fn>).mock
+        ?.calls[0]?.[0];
+      expect(portMessageListener).toBeDefined();
 
-      // Simulate message from background
-      if (messageListener && typeof messageListener === 'function') {
-        messageListener(
-          { type: 'discovery:wallet:response', data: mockAnnouncement },
-          { tab: { id: 123 } },
-          mockSendResponse,
-        );
+      // Simulate message from background via port
+      if (portMessageListener && typeof portMessageListener === 'function') {
+        portMessageListener({
+          type: 'discovery:wallet:response',
+          data: mockAnnouncement,
+        });
       }
 
       expect(contentScriptMock.window.dispatchEvent).toHaveBeenCalledWith(
@@ -209,23 +258,19 @@ describe('ContentScriptRelay', () => {
           detail: mockAnnouncement,
         }),
       );
-
-      expect(mockSendResponse).toHaveBeenCalledWith({ success: true });
     });
 
     it('should ignore non-discovery messages', () => {
-      const messageListener = (mockChrome.runtime.onMessage.addListener as ReturnType<typeof vi.fn>).mock
+      const mockPort = (mockChrome.runtime.connect as ReturnType<typeof vi.fn>).mock.results[0]?.value;
+      const portMessageListener = (mockPort.onMessage.addListener as ReturnType<typeof vi.fn>).mock
         ?.calls[0]?.[0];
-      const mockSendResponse = vi.fn();
 
       // Simulate non-discovery message
-      let result: unknown;
-      if (messageListener && typeof messageListener === 'function') {
-        result = messageListener({ type: 'other:message', data: {} }, { tab: { id: 123 } }, mockSendResponse);
+      if (portMessageListener && typeof portMessageListener === 'function') {
+        portMessageListener({ type: 'other:message', data: {} });
       }
 
       expect(contentScriptMock.window.dispatchEvent).not.toHaveBeenCalled();
-      expect(result).toBe(false); // Should not keep message channel open
     });
 
     it('should handle dispatchEvent errors gracefully', () => {
@@ -233,25 +278,19 @@ describe('ContentScriptRelay', () => {
         throw new Error('Dispatch failed');
       });
 
-      const messageListener = (mockChrome.runtime.onMessage.addListener as ReturnType<typeof vi.fn>).mock
+      const mockPort = (mockChrome.runtime.connect as ReturnType<typeof vi.fn>).mock.results[0]?.value;
+      const portMessageListener = (mockPort.onMessage.addListener as ReturnType<typeof vi.fn>).mock
         ?.calls[0]?.[0];
-      const mockSendResponse = vi.fn();
 
-      // Should not throw
+      // Should not throw - error is caught and handled
       expect(() => {
-        if (messageListener && typeof messageListener === 'function') {
-          messageListener(
-            { type: 'discovery:wallet:response', data: {} },
-            { tab: { id: 123 } },
-            mockSendResponse,
-          );
+        if (portMessageListener && typeof portMessageListener === 'function') {
+          portMessageListener({
+            type: 'discovery:wallet:response',
+            data: {},
+          });
         }
       }).not.toThrow();
-
-      expect(mockSendResponse).toHaveBeenCalledWith({
-        success: false,
-        error: 'Error: Dispatch failed',
-      });
     });
   });
 
@@ -261,11 +300,14 @@ describe('ContentScriptRelay', () => {
 
       expect(status).toEqual({
         initialized: true,
+        portConnected: true,
+        queuedMessages: 0,
         origin: 'https://dapp.example.com',
         userAgent: 'Test Browser',
-        chromeRuntimeAvailable: true,
+        browserAPIAvailable: true,
+        browserAPIType: 'chrome',
         retryAttempts: 0,
-        maxRetryAttempts: 3,
+        maxRetryAttempts: 5, // Updated from 3 to 5
       });
     });
 
@@ -338,81 +380,8 @@ describe('ContentScriptRelay', () => {
     });
   });
 
-  describe('chrome API error handling', () => {
-    it('should handle Extension context invalidated error (coverage: line 126)', () => {
-      const consoleSpy = createConsoleSpy({ silent: false });
-      relay = new ContentScriptRelay();
-
-      // Access private method for testing
-      const privateRelay = relay as unknown as {
-        handleChromeApiError(operation: string, error: unknown): void;
-      };
-
-      privateRelay.handleChromeApiError('sendMessage', new Error('Extension context invalidated'));
-
-      expect(consoleSpy.warn).toHaveBeenCalledWith(
-        '[WalletMesh:ContentScript] Extension context invalidated - extension was reloaded or disabled',
-      );
-
-      consoleSpy.restore();
-    });
-
-    it('should handle message port closed error (coverage: line 128)', () => {
-      const consoleSpy = createConsoleSpy({ silent: false });
-      relay = new ContentScriptRelay();
-
-      const privateRelay = relay as unknown as {
-        handleChromeApiError(operation: string, error: unknown): void;
-      };
-
-      privateRelay.handleChromeApiError(
-        'sendMessage',
-        new Error('The message port closed before a response was received'),
-      );
-
-      expect(consoleSpy.warn).toHaveBeenCalledWith(
-        '[WalletMesh:ContentScript] Background script not responding - may be starting up',
-      );
-
-      consoleSpy.restore();
-    });
-
-    it('should handle chrome:// URL access error (coverage: line 130)', () => {
-      const consoleSpy = createConsoleSpy({ silent: false });
-      relay = new ContentScriptRelay();
-
-      const privateRelay = relay as unknown as {
-        handleChromeApiError(operation: string, error: unknown): void;
-      };
-
-      privateRelay.handleChromeApiError('sendMessage', new Error('Cannot access a chrome:// URL'));
-
-      expect(consoleSpy.warn).toHaveBeenCalledWith(
-        '[WalletMesh:ContentScript] Cannot access chrome:// URLs - expected behavior',
-      );
-
-      consoleSpy.restore();
-    });
-
-    it('should handle non-Error objects in chrome API errors (coverage: line 122)', () => {
-      const consoleSpy = createConsoleSpy({ silent: false });
-      relay = new ContentScriptRelay();
-
-      const privateRelay = relay as unknown as {
-        handleChromeApiError(operation: string, error: unknown): void;
-      };
-
-      // Test with non-Error object - this triggers String(error) on line 122
-      privateRelay.handleChromeApiError('sendMessage', 'string error message');
-
-      expect(consoleSpy.warn).toHaveBeenCalledWith(
-        '[WalletMesh:ContentScript] Chrome API sendMessage failed:',
-        'string error message',
-      );
-
-      consoleSpy.restore();
-    });
-  });
+  // Note: "browser API error handling" tests removed - handleBrowserApiError method doesn't exist in Port-based implementation
+  // Error handling is now done inline within connect() and handlePortMessage() methods
 
   describe('error handling', () => {
     it('should handle initialization errors gracefully', () => {
@@ -509,6 +478,40 @@ describe('ContentScriptRelay', () => {
 
   describe('global relay instance', () => {
     it('should create global instance when imported', async () => {
+      // Set up environment with proper Port support before dynamic import
+      const mockPort = {
+        name: 'walletmesh-discovery',
+        onDisconnect: { addListener: vi.fn(), removeListener: vi.fn(), hasListener: vi.fn() },
+        onMessage: { addListener: vi.fn(), removeListener: vi.fn(), hasListener: vi.fn() },
+        postMessage: vi.fn(),
+        disconnect: vi.fn(),
+      };
+
+      const mockChromeForImport = {
+        runtime: {
+          id: 'test-extension-id',
+          sendMessage: vi.fn(),
+          connect: vi.fn(() => mockPort),
+          onMessage: { addListener: vi.fn(), removeListener: vi.fn() },
+        },
+      };
+
+      const mockWindowForImport = {
+        addEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+        location: { origin: 'https://dapp.example.com' },
+      };
+
+      // Save original globals
+      const originalWindow = (global as unknown as { window?: unknown }).window;
+      const originalChrome = (global as unknown as { chrome?: unknown }).chrome;
+
+      // Set up globals for dynamic import
+      // @ts-expect-error
+      global.window = mockWindowForImport;
+      // @ts-expect-error
+      global.chrome = mockChromeForImport;
+
       // Test the module-level auto-initialization
       const { getContentScriptRelay } = await import('./ContentScriptRelay.js');
 
@@ -519,6 +522,18 @@ describe('ContentScriptRelay', () => {
       // Should return same instance
       const sameRelay = getContentScriptRelay();
       expect(sameRelay).toBe(globalRelay);
+
+      // Restore original globals
+      if (originalWindow !== undefined) {
+        (global as unknown as { window: unknown }).window = originalWindow;
+      } else {
+        (global as unknown as { window?: unknown }).window = undefined;
+      }
+      if (originalChrome !== undefined) {
+        (global as unknown as { chrome: unknown }).chrome = originalChrome;
+      } else {
+        (global as unknown as { chrome?: unknown }).chrome = undefined;
+      }
     });
 
     it('should handle auto-initialization conditions (coverage: lines 204-205)', () => {
@@ -550,9 +565,19 @@ describe('ContentScriptRelay auto-initialization', () => {
 
   it('should auto-initialize when window and chrome are available (coverage: lines 263-264)', async () => {
     // Set up environment with window and chrome available
+    const mockPort = {
+      name: 'walletmesh-discovery',
+      onDisconnect: { addListener: vi.fn(), removeListener: vi.fn(), hasListener: vi.fn() },
+      onMessage: { addListener: vi.fn(), removeListener: vi.fn(), hasListener: vi.fn() },
+      postMessage: vi.fn(),
+      disconnect: vi.fn(),
+    };
+
     const mockChrome = {
       runtime: {
+        id: 'test-extension-id',
         sendMessage: vi.fn(),
+        connect: vi.fn(() => mockPort),
         onMessage: { addListener: vi.fn(), removeListener: vi.fn() },
       },
     };

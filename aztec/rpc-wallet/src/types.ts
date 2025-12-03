@@ -37,14 +37,28 @@ import type {
 import type {
   PrivateExecutionResult,
   SimulationOverrides,
+  SimulationStats,
   TxProfileResult,
   TxProvingResult,
   TxSimulationResult,
   UtilitySimulationResult,
 } from '@aztec/stdlib/tx';
+import type { AbiDecoded } from '@aztec/stdlib/abi';
 
 import type { WalletMethodMap } from '@walletmesh/router';
 import type { ContractArtifactCache } from './contractArtifactCache.js';
+
+/**
+ * Options for sending Aztec transactions.
+ *
+ * @public
+ */
+export interface AztecSendOptions {
+  from?: unknown;
+  fee?: unknown;
+  txNonce?: unknown;
+  cancellable?: boolean;
+}
 
 /**
  * Type-safe Aztec chain ID format following the CAIP-2 standard.
@@ -60,6 +74,116 @@ import type { ContractArtifactCache } from './contractArtifactCache.js';
  * ```
  */
 export type AztecChainId = `aztec:${string}`;
+
+/**
+ * Discriminated union indicating the type of simulation that was performed.
+ *
+ * - `'transaction'`: Result from simulating a state-changing transaction (private or public function)
+ * - `'utility'`: Result from simulating a read-only utility/view function
+ */
+export type SimulationType = 'transaction' | 'utility';
+
+/**
+ * Unified simulation result that can represent either transaction or utility simulations.
+ * This type allows `wmSimulateTx` to handle both utility and transaction functions seamlessly,
+ * providing a consistent API for dApps while preserving access to the original simulation results.
+ *
+ * @example
+ * ```typescript
+ * const result = await wallet.wmSimulateTx(interaction);
+ *
+ * // Simple usage - access decoded result regardless of type
+ * console.log('Return value:', result.decodedResult);
+ *
+ * // Type-specific usage with narrowing
+ * if (result.simulationType === 'utility') {
+ *   const utilityResult = result.originalResult; // Type: UtilitySimulationResult
+ *   console.log('Raw result:', utilityResult.result);
+ * } else {
+ *   const txResult = result.originalResult; // Type: TxSimulationResult
+ *   console.log('Gas used:', txResult.gasUsed);
+ * }
+ * ```
+ */
+export interface UnifiedSimulationResult {
+  /**
+   * Indicates which type of simulation was performed.
+   * This field acts as a discriminator for TypeScript type narrowing of `originalResult`.
+   */
+  simulationType: SimulationType;
+
+  /**
+   * The decoded return value from the simulation.
+   *
+   * - For transactions: Decoded from `privateExecutionResult` or `publicOutput`
+   * - For utilities: Direct decoded result from execution
+   *
+   * This provides easy access to the actual return value that dApps typically care about,
+   * without needing to know which type of simulation was performed or how to extract values.
+   */
+  decodedResult?: AbiDecoded;
+
+  /**
+   * Performance and execution statistics.
+   * Present for both transaction and utility simulations, providing timing and profiling data.
+   */
+  stats?: SimulationStats;
+
+  /**
+   * The original simulation result in its native format.
+   *
+   * - When `simulationType === 'transaction'`: This is a {@link TxSimulationResult} containing
+   *   full execution details including private/public execution, gas usage, and kernel inputs.
+   *   DApps can use this for advanced features like gas estimation, proof generation, etc.
+   *
+   * - When `simulationType === 'utility'`: This is a {@link UtilitySimulationResult} containing
+   *   the raw utility execution result.
+   *
+   * This field preserves backward compatibility and enables advanced use cases while the
+   * `decodedResult` field provides a simple, consistent interface for common usage.
+   */
+  originalResult: TxSimulationResult | UtilitySimulationResult;
+}
+
+/**
+ * Type guard to check if a UnifiedSimulationResult represents a transaction simulation.
+ *
+ * @param result - The UnifiedSimulationResult to check
+ * @returns True if the result is a transaction simulation, narrowing the originalResult type to TxSimulationResult
+ *
+ * @example
+ * ```typescript
+ * if (isTxSimulationResult(result)) {
+ *   // TypeScript knows result.originalResult is TxSimulationResult
+ *   console.log('Gas used:', result.originalResult.gasUsed);
+ * }
+ * ```
+ */
+export function isTxSimulationResult(
+  result: UnifiedSimulationResult,
+): result is UnifiedSimulationResult & { originalResult: TxSimulationResult } {
+  return result.simulationType === 'transaction';
+}
+
+/**
+ * Type guard to check if a UnifiedSimulationResult represents a utility simulation.
+ *
+ * @param result - The UnifiedSimulationResult to check
+ * @returns True if the result is a utility simulation, narrowing the originalResult type to UtilitySimulationResult
+ *
+ * @example
+ * ```typescript
+ * if (isUtilitySimulationResult(result)) {
+ *   // TypeScript knows result.originalResult is UtilitySimulationResult
+ *   console.log('Raw result:', result.originalResult.result);
+ * }
+ * ```
+ */
+export function isUtilitySimulationResult(
+  result: UnifiedSimulationResult,
+): result is UnifiedSimulationResult & { originalResult: UtilitySimulationResult } {
+  return result.simulationType === 'utility';
+}
 
 /**
  * Defines the context object provided to all Aztec wallet-side JSON-RPC method handlers.
@@ -84,6 +208,80 @@ export interface AztecWalletContext {
    * This helps optimize performance by avoiding redundant fetches of artifact data.
    */
   cache: ContractArtifactCache;
+}
+
+/**
+ * Transaction status values for full lifecycle tracking.
+ *
+ * Uses Aztec-native terminology:
+ * - 'initiated' - transaction has been received and ID generated (backend-only)
+ * - 'simulating' aligns with Aztec's simulate() method
+ * - 'proving' is unique to zero-knowledge systems
+ * - 'sending' aligns with Aztec's send() method
+ * - 'pending' is standard for awaiting confirmation
+ */
+export type TransactionStatus =
+  | 'idle'
+  | 'initiated'
+  | 'simulating'
+  | 'proving'
+  | 'sending'
+  | 'pending'
+  | 'confirming'
+  | 'confirmed'
+  | 'failed';
+
+/**
+ * Notification payload for transaction status updates.
+ *
+ * Sent from the backend wallet to the frontend at each transaction stage.
+ * The txStatusId is used to coordinate notifications with the frontend UI state.
+ */
+export interface AztecTransactionStatusNotification {
+  /**
+   * Status tracking identifier for coordinating notifications.
+   *
+   * Generated by the BACKEND at the start of transaction processing.
+   * This unique identifier allows the frontend to match status notifications
+   * to the correct transaction in the UI. This is NOT the blockchain transaction hash.
+   */
+  txStatusId: string;
+
+  /**
+   * Current status of the transaction lifecycle.
+   */
+  status: TransactionStatus;
+
+  /**
+   * Blockchain transaction hash (available after proving/sending).
+   *
+   * The actual on-chain identifier, available after the transaction
+   * has been broadcast to the network. This is different from txStatusId.
+   */
+  txHash?: string;
+
+  /**
+   * Millisecond timestamp of this status change.
+   */
+  timestamp: number;
+
+  /**
+   * Error message if status is 'failed'.
+   */
+  error?: string;
+}
+
+/**
+ * Defines the notification methods that can be sent from the wallet to the client.
+ * These are fire-and-forget messages that don't expect a response.
+ */
+export interface AztecWalletNotificationMap {
+  /**
+   * Notification emitted at each stage of the transaction lifecycle.
+   *
+   * Provides granular status updates from simulation through confirmation.
+   */
+  aztec_transactionStatus: { params: AztecTransactionStatusNotification; result: undefined };
 }
 
 /**
@@ -359,6 +557,7 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
    * @param params.2 to - {@link AztecAddress} of the contract/account.
    * @param params.3 authWits - Optional: Array of {@link AuthWitness}.
    * @param params.4 from - Optional: Sender {@link AztecAddress}.
+   * @param params.5 scopes - Optional: Array of {@link AztecAddress} scopes for the simulation.
    * @returns result - The {@link UtilitySimulationResult}.
    */
   aztec_simulateUtility: {
@@ -368,6 +567,7 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
       AztecAddress, // to
       (AuthWitness[] | undefined)?, // authWits
       (AztecAddress | undefined)?, // from
+      (AztecAddress[] | undefined)?, // scopes
     ];
     result: UtilitySimulationResult;
   };
@@ -414,22 +614,68 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
   /**
    * WalletMesh specific: Executes a contract function interaction using a pre-constructed {@link ExecutionPayload}.
    * The wallet handles simulation, proving, and sending.
-   * @param params - A tuple containing the execution payload.
+   *
+   * The backend automatically generates a unique `txStatusId` at the start of execution and sends
+   * status notifications (initiated, simulating, proving, sending, pending, failed) throughout
+   * the transaction lifecycle. The frontend receives notifications via the `aztec_transactionStatus`
+   * event and can correlate them using the returned `txStatusId`.
+   *
+   * @param params - A tuple containing the execution payload and optional send options.
    * @param params.0 executionPayload - The {@link ExecutionPayload} to execute.
-   * @returns result - The {@link TxHash} of the sent transaction.
+   * @param params.1 sendOptions - Optional {@link AztecSendOptions} for fee and transaction configuration.
+   * @returns result - An object containing both the blockchain transaction hash and the status tracking ID.
    */
   aztec_wmExecuteTx: {
-    params: [executionPayload: ExecutionPayload];
-    result: TxHash;
+    params: [executionPayload: ExecutionPayload, sendOptions?: AztecSendOptions];
+    result: {
+      txHash: TxHash;
+      txStatusId: string;
+    };
+  };
+
+  /**
+   * WalletMesh specific: Executes multiple contract interactions as a single atomic batch.
+   *
+   * Uses Aztec's native BatchCall to create one transaction with one proof for all operations.
+   * All operations succeed together or all fail together (atomic execution).
+   *
+   * The wallet receives the complete batch upfront, allowing it to display all operations
+   * to the user for approval before execution. This provides better security UX compared
+   * to approving operations one-by-one.
+   *
+   * The backend automatically generates a unique `txStatusId` and sends status notifications
+   * (initiated/simulating/proving/sending/pending/failed) throughout the batch lifecycle.
+   * The frontend can listen to `aztec_transactionStatus` events and correlate them using the
+   * returned `txStatusId`.
+   *
+   * @param params - Tuple containing array of execution payloads and optional send options
+   * @param params.0 executionPayloads - Array of {@link ExecutionPayload} objects to batch
+   * @param params.1 sendOptions - Optional {@link AztecSendOptions} for fee configuration
+   * @returns result - Object containing transaction hash, receipt, and status tracking ID
+   */
+  aztec_wmBatchExecute: {
+    params: [executionPayloads: ExecutionPayload[], sendOptions?: AztecSendOptions];
+    result: {
+      txHash: TxHash;
+      receipt: TxReceipt;
+      txStatusId: string;
+    };
   };
 
   /**
    * WalletMesh specific: Deploys a new contract using its artifact and constructor arguments.
    * The wallet handles address computation, proving, and sending the deployment transaction.
+   *
+   * The backend automatically generates a unique `txStatusId` at the start of deployment and sends
+   * status notifications (initiated, proving, sending, pending, failed) throughout
+   * the deployment lifecycle. The frontend receives notifications via the `aztec_transactionStatus`
+   * event and can correlate them using the returned `txStatusId`.
+   *
    * @param params - A tuple containing the deployment parameters.
    * @param params.0 deploymentParams - Object containing `artifact` ({@link ContractArtifact}), `args` (array),
    *                            and optional `constructorName` (string).
-   * @returns result - An object with `txHash` ({@link TxHash}) and `contractAddress` ({@link AztecAddress}).
+   * @returns result - An object with `txHash` ({@link TxHash}), `contractAddress` ({@link AztecAddress}),
+   *                   and `txStatusId` (string) for tracking deployment status.
    */
   aztec_wmDeployContract: {
     params: [
@@ -442,17 +688,24 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
     result: {
       txHash: TxHash;
       contractAddress: AztecAddress;
+      txStatusId: string;
     };
   };
 
   /**
    * WalletMesh specific: Simulates a contract function interaction using a pre-constructed {@link ExecutionPayload}.
+   *
+   * This method automatically detects whether the function is a utility (view/pure) function or a
+   * state-changing transaction, and performs the appropriate simulation. The result is wrapped in a
+   * {@link UnifiedSimulationResult} that provides both a convenient decoded result and access to the
+   * original simulation output.
+   *
    * @param params - A tuple containing the execution payload.
    * @param params.0 executionPayload - The {@link ExecutionPayload} to simulate.
-   * @returns result - The {@link TxSimulationResult}.
+   * @returns result - A {@link UnifiedSimulationResult} containing the decoded result and original simulation data.
    */
   aztec_wmSimulateTx: {
     params: [executionPayload: ExecutionPayload];
-    result: TxSimulationResult;
+    result: UnifiedSimulationResult;
   };
 }

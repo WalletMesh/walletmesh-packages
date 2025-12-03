@@ -8,13 +8,15 @@
   },
   "scripts": {
     "dev": "echo \"Error: Due to web worker limitations, use 'pnpm build && pnpm preview' instead of 'pnpm dev'\" && exit 1",
-    "build": "tsc -b && vite build",
+    "build": "tsx scripts/build.ts",
+    "build:force": "tsc --build && NODE_OPTIONS='--max-old-space-size=8192' vite build",
     "preview": "vite preview --port 5174",
     "clean": "rimraf dist node_modules",
     "lint": "biome lint",
-    "lint:fix": "biome lint --fix",
+    "lint:fix": "biome lint --write",
     "format": "biome format",
-    "format:fix": "biome format --fix"
+    "format:fix": "biome format --write",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@aztec/accounts": "2.0.3",
@@ -34,7 +36,8 @@
     "@walletmesh/jsonrpc": "workspace:^",
     "@walletmesh/router": "workspace:^",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "lodash-es": "^4.17.21"
   },
   "devDependencies": {
     "@types/react": "^19.1.12",

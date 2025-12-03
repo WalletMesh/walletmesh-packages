@@ -18,12 +18,15 @@ import type {
 import type { ResponderInfo, WebResponderInfo, CapabilityIntersection } from './types/capabilities.js';
 import type { SecurityPolicy, SessionOptions } from './types/security.js';
 import type { DiscoveryResponderConfig } from './types/testing.js';
-import { DISCOVERY_EVENTS, DISCOVERY_PROTOCOL_VERSION } from './core/constants.js';
+import { DISCOVERY_EVENTS, DISCOVERY_PROTOCOL_VERSION, ERROR_CODES } from './core/constants.js';
 import { SECURITY_PRESETS } from './presets/security.js';
+import { resolveSecurityPolicy } from './shared/security.js';
+import { validateResponderInfo } from './utils/validation.js';
 import { OriginValidator, RateLimiter } from './security.js';
+import { ProtocolError } from './utils/protocolError.js';
 import { CapabilityMatcher } from './responder/CapabilityMatcher.js';
 import { type Logger, defaultLogger } from './core/logger.js';
-import type { ProtocolStateMachine } from './core/ProtocolStateMachine.js';
+import { ProtocolStateMachine, type StateTransitionEvent } from './core/ProtocolStateMachine.js';
 
 /**
  * Options for DiscoveryResponder configuration.
@@ -98,8 +101,12 @@ export class DiscoveryResponder {
    * @param options Optional configuration (security, sessions, etc.)
    */
   constructor(responderInfo: ResponderInfo, options: DiscoveryResponderOptions = {}) {
+    validateResponderInfo(responderInfo);
+
     // Resolve security policy
-    const securityPolicy = this.resolveSecurityPolicy(options.security) ?? SECURITY_PRESETS['development'];
+    const securityPolicy =
+      resolveSecurityPolicy(options.security, { fallbackPreset: 'development' }) ??
+      SECURITY_PRESETS['development'];
 
     this.config = {
       responderInfo,
@@ -127,23 +134,6 @@ export class DiscoveryResponder {
       type: this.responderInfo.type,
       technologies: this.responderInfo.technologies.length,
     });
-  }
-
-  /**
-   * Resolve security policy from preset name or custom policy.
-   */
-  private resolveSecurityPolicy(
-    security?: keyof typeof SECURITY_PRESETS | SecurityPolicy,
-  ): SecurityPolicy | undefined {
-    if (!security) {
-      return SECURITY_PRESETS['development']; // Default to development for responders
-    }
-
-    if (typeof security === 'string') {
-      return SECURITY_PRESETS[security];
-    }
-
-    return security;
   }
 
   /**
@@ -183,7 +173,7 @@ export class DiscoveryResponder {
     try {
       this.eventTarget.removeEventListener(DISCOVERY_EVENTS.REQUEST, this.requestHandler as EventListener);
     } catch (error) {
-      this.logger.warn('[DiscoveryResponder] Error removing event listener', { error });
+      this.logger.warn('Error removing event listener:', error instanceof Error ? error : String(error));
     }
 
     this.isListening = false;
@@ -204,6 +194,11 @@ export class DiscoveryResponder {
    * Update responder information while maintaining discovery state.
    */
   updateResponderInfo(responderInfo: ResponderInfo): void {
+    if (!responderInfo) {
+      this.logger.warn('[DiscoveryResponder] Ignoring update with invalid responder info');
+      return;
+    }
+
     this.responderInfo = responderInfo;
     this.capabilityMatcher.updateResponderInfo(responderInfo);
 
@@ -250,8 +245,15 @@ export class DiscoveryResponder {
     this.stopListening();
 
     // Dispose all session state machines
-    for (const stateMachine of this.sessionStates.values()) {
-      stateMachine.dispose();
+    for (const [sessionKey, stateMachine] of this.sessionStates.entries()) {
+      try {
+        stateMachine.dispose();
+      } catch (error) {
+        this.logger.warn('[DiscoveryResponder] Error disposing session state machine', {
+          error,
+          sessionKey,
+        });
+      }
     }
     this.sessionStates.clear();
 
@@ -266,51 +268,61 @@ export class DiscoveryResponder {
   /**
    * Handle discovery request events.
    */
-  private async handleDiscoveryRequest(event: CustomEvent<DiscoveryRequestEvent>): Promise<void> {
+  private handleDiscoveryRequest(event: CustomEvent<DiscoveryRequestEvent>): void {
     const request = event.detail;
 
+    if (!request) {
+      this.logger.warn('Unexpected error processing discovery request from unknown:', 'Missing event detail');
+      return;
+    }
+
     try {
-      // Validate protocol version
-      if (request.version !== DISCOVERY_PROTOCOL_VERSION) {
-        this.logger.warn('[DiscoveryResponder] Protocol version mismatch', {
-          expected: DISCOVERY_PROTOCOL_VERSION,
-          received: request.version,
-        });
+      // Security validation
+      const securityChecks = this.performSecurityChecks(request);
+      if (!securityChecks.valid) {
         return;
       }
 
-      // Security validation
-      const securityChecks = await this.performSecurityChecks(request);
-      if (!securityChecks.valid) {
-        this.logger.warn('[DiscoveryResponder] Security check failed', {
-          reason: securityChecks.reason,
-          origin: request.origin,
-        });
-        return;
-      }
+      // Ensure session state machine exists for active tracking
+      this.getOrCreateSessionState(request);
 
       // Check capability intersection
+      if (!this.isValidRequest(request)) {
+        return;
+      }
+
       const intersection = this.capabilityMatcher.matchCapabilities(request);
       if (!intersection.canFulfill) {
-        this.logger.debug('[DiscoveryResponder] Cannot fulfill capability requirements', {
+        this.logger.debug('[Silent Failure] Cannot fulfill capability requirements', {
           sessionId: request.sessionId,
           origin: request.origin,
+          errorCode: ERROR_CODES.CAPABILITY_NOT_SUPPORTED,
         });
         return;
       }
 
       // Create and send response
       if (intersection.intersection) {
-        await this.sendDiscoveryResponse(
+        this.sendDiscoveryResponse(
           request,
           intersection.intersection as unknown as import('./types/capabilities.js').CapabilityIntersection,
         );
       }
     } catch (error) {
+      if (this.handleRequestProcessingError(error, request)) {
+        return;
+      }
+
+      const origin = request?.origin ?? 'unknown';
+      const sessionId = request?.sessionId ?? 'unknown';
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      this.logger.warn(`Unexpected error processing discovery request from ${origin}:`, errorMessage);
+
       this.logger.error('[DiscoveryResponder] Error handling discovery request', {
         error,
-        sessionId: request.sessionId,
-        origin: request.origin,
+        sessionId,
+        origin,
       });
     }
   }
@@ -318,22 +330,35 @@ export class DiscoveryResponder {
   /**
    * Perform comprehensive security checks on discovery request.
    */
-  private async performSecurityChecks(
-    request: DiscoveryRequestEvent,
-  ): Promise<{ valid: boolean; reason?: string }> {
+  private performSecurityChecks(request: DiscoveryRequestEvent): { valid: boolean; reason?: string } {
     // Origin validation
     const originResult = this.originValidator.validateOrigin(request.origin);
     if (!originResult.valid) {
+      this.logger.debug('[Silent Failure] Origin validation failed', {
+        origin: request.origin,
+        reason: originResult.reason,
+        errorCode: ERROR_CODES.ORIGIN_VALIDATION_FAILED,
+      });
       return { valid: false, ...(originResult.reason && { reason: originResult.reason }) };
     }
 
     // Rate limiting check
     if (!this.rateLimiter.isAllowed(request.origin)) {
+      this.logger.debug('[Silent Failure] Rate limit exceeded', {
+        origin: request.origin,
+        sessionId: request.sessionId,
+        errorCode: ERROR_CODES.RATE_LIMIT_EXCEEDED,
+      });
       return { valid: false, ...(true && { reason: 'Rate limit exceeded' }) };
     }
 
     // Session replay check
     if (this.usedSessions.has(request.sessionId)) {
+      this.logger.debug('[Silent Failure] Session replay detected', {
+        origin: request.origin,
+        sessionId: request.sessionId,
+        errorCode: ERROR_CODES.SESSION_REPLAY_DETECTED,
+      });
       return { valid: false, ...(true && { reason: 'Session ID already used' }) };
     }
 
@@ -346,18 +371,88 @@ export class DiscoveryResponder {
     return { valid: true };
   }
 
+  protected isValidRequest(request: DiscoveryRequestEvent): boolean {
+    if (request.version !== DISCOVERY_PROTOCOL_VERSION) {
+      this.logger.warn(
+        `[WalletMesh] Protocol version mismatch: expected ${DISCOVERY_PROTOCOL_VERSION}, got ${request.version ?? 'unknown'}`,
+      );
+      return false;
+    }
+
+    if (
+      !request.required ||
+      typeof request.required !== 'object' ||
+      !Array.isArray(request.required.technologies)
+    ) {
+      this.logger.warn('[WalletMesh] Invalid discovery request: malformed requirements');
+      return false;
+    }
+
+    return true;
+  }
+
+  protected handleRequestProcessingError(error: unknown, request?: DiscoveryRequestEvent): boolean {
+    if (error instanceof ProtocolError) {
+      switch (error.code) {
+        case ERROR_CODES.SESSION_REPLAY_DETECTED: {
+          const sessionId = request?.sessionId ?? 'unknown';
+          this.logger.debug(`[Silent Failure] Session replay detected for session: ${sessionId}`, {
+            errorCode: ERROR_CODES.SESSION_REPLAY_DETECTED,
+          });
+          return true;
+        }
+        case ERROR_CODES.CAPABILITY_NOT_SUPPORTED:
+        case ERROR_CODES.CHAIN_NOT_SUPPORTED: {
+          const origin = request?.origin ?? 'unknown';
+          this.logger.debug(`No capability match for request from: ${origin}`, {
+            errorCode: error.code,
+          });
+          return true;
+        }
+        case ERROR_CODES.RATE_LIMIT_EXCEEDED: {
+          this.logger.debug('[Silent Failure] Rate limit exceeded', {
+            errorCode: ERROR_CODES.RATE_LIMIT_EXCEEDED,
+          });
+          return true;
+        }
+        case ERROR_CODES.ORIGIN_VALIDATION_FAILED: {
+          this.logger.debug('[Silent Failure] Origin validation failed', {
+            errorCode: ERROR_CODES.ORIGIN_VALIDATION_FAILED,
+          });
+          return true;
+        }
+        default: {
+          this.logger.warn('[DiscoveryResponder] Protocol error processing discovery request', {
+            code: error.code,
+            origin: request?.origin,
+          });
+          return false;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  protected handleResponseSendingError(error: Error, request: DiscoveryRequestEvent): void {
+    const message = error.message ?? String(error);
+
+    if (message.toLowerCase().includes('dispatch')) {
+      this.logger.error(`[WalletMesh] Failed to dispatch response event for ${request.origin}:`, message);
+    } else {
+      this.logger.error(`[WalletMesh] Failed to send discovery response to ${request.origin}:`, message);
+    }
+  }
+
   /**
    * Send discovery response to qualified request.
    */
-  private async sendDiscoveryResponse(
-    request: DiscoveryRequestEvent,
-    intersection: CapabilityIntersection,
-  ): Promise<void> {
+  private sendDiscoveryResponse(request: DiscoveryRequestEvent, intersection: CapabilityIntersection): void {
     // Create transport config
     const transportConfig = this.createTransportConfig();
 
     // Create response event
-    const responderId = crypto.randomUUID();
+    const responderId = this.responderInfo.uuid;
     const response: DiscoveryResponseEvent = {
       type: 'discovery:wallet:response',
       version: DISCOVERY_PROTOCOL_VERSION,
@@ -367,6 +462,8 @@ export class DiscoveryResponder {
       name: this.responderInfo.name,
       icon: this.responderInfo.icon,
       matched: intersection,
+      ...(this.responderInfo.networks &&
+        this.responderInfo.networks.length > 0 && { networks: this.responderInfo.networks }),
       ...(transportConfig && { transportConfig }),
       ...(this.responderInfo.description && { description: this.responderInfo.description }),
       ...(this.responderInfo.version && { responderVersion: this.responderInfo.version }),
@@ -377,7 +474,12 @@ export class DiscoveryResponder {
 
     // Dispatch response
     const responseEvent = new CustomEvent(DISCOVERY_EVENTS.RESPONSE, { detail: response });
-    this.eventTarget.dispatchEvent(responseEvent);
+    try {
+      this.eventTarget.dispatchEvent(responseEvent);
+    } catch (error) {
+      this.handleResponseSendingError(error as Error, request);
+      return;
+    }
 
     this.logger.info('[DiscoveryResponder] Discovery response sent', {
       sessionId: request.sessionId,
@@ -419,5 +521,51 @@ export class DiscoveryResponder {
         responderType: this.responderInfo.type,
       },
     };
+  }
+
+  private getSessionKey(origin: string, sessionId: string): string {
+    return `${origin}:${sessionId}`;
+  }
+
+  private getOrCreateSessionState(request: DiscoveryRequestEvent): ProtocolStateMachine {
+    const sessionKey = this.getSessionKey(request.origin, request.sessionId);
+    let stateMachine = this.sessionStates.get(sessionKey);
+
+    if (!stateMachine) {
+      const sessionTimeout = this.config.sessionOptions?.maxAge ?? 30000;
+      stateMachine = new ProtocolStateMachine({ DISCOVERING: sessionTimeout });
+
+      stateMachine.on('stateChange', ((event: StateTransitionEvent) => {
+        this.logger.debug('[DiscoveryResponder] Session state transition', {
+          sessionKey,
+          from: event.fromState,
+          to: event.toState,
+        });
+      }) as unknown as (...args: unknown[]) => void);
+
+      stateMachine.on('error', ((error: Error) => {
+        this.logger.warn('[DiscoveryResponder] Session state machine error', {
+          error,
+          sessionId: request.sessionId,
+          origin: request.origin,
+        });
+      }) as unknown as (...args: unknown[]) => void);
+
+      this.sessionStates.set(sessionKey, stateMachine);
+    }
+
+    if (stateMachine.getState() === 'IDLE') {
+      try {
+        stateMachine.transition('DISCOVERING');
+      } catch (error) {
+        this.logger.warn('[DiscoveryResponder] Failed to start session state machine', {
+          error,
+          sessionId: request.sessionId,
+          origin: request.origin,
+        });
+      }
+    }
+
+    return stateMachine;
   }
 }

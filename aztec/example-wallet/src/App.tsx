@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useRef, useEffect } from 'react';
 import './App.css';
@@ -6,40 +7,62 @@ import { CustomPermissionManager } from './components/CustomPermissionManager.js
 import { AllowAskDenyState } from '@walletmesh/router/permissions';
 import { ToastProvider, useToast } from './contexts/ToastContext.js';
 import type { HumanReadableChainPermissions } from '@walletmesh/router';
+=======
+import { useState } from 'react';
+import './App.css';
+import Wallet from './components/Wallet.js';
+import { ToastProvider } from './contexts/ToastContext.js';
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
+=======
+import type { FunctionArgNames } from './middlewares/functionArgNamesMiddleware.js';
+>>>>>>> bd392add (feat(modal-react,modal-core): enhance Aztec transaction flow with simulation, summaries, and improved execution)
+=======
+import type { FunctionArgNames } from '@walletmesh/aztec-helpers';
+>>>>>>> 578f948e (refactor(aztec-helpers): move middleware to shared package and add comprehensive tests)
 
 interface ApprovalRequest {
   origin: string;
   chainId: string;
   method: string;
   params?: unknown;
+  functionArgNames?: FunctionArgNames;
   resolve: (approved: boolean) => void;
 }
 
 function App() {
-  const [pendingApproval, setPendingApproval] = useState<ApprovalRequest | null>(null);
+  // Use an array queue instead of single pending approval to handle concurrent requests
+  // This ensures each request gets its own approval and prevents overwriting/orphaning
+  const [approvalQueue, setApprovalQueue] = useState<ApprovalRequest[]>([]);
   const [autoApprove, setAutoApprove] = useState(false);
+<<<<<<< HEAD
   const { showError } = useToast();
+=======
+>>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 
   const handleApprovalRequest = async (request: {
     origin: string;
     chainId: string;
     method: string;
     params?: unknown;
+    functionArgNames?: FunctionArgNames;
   }): Promise<boolean> => {
-    // If auto-approve is enabled, automatically approve all requests
-    if (autoApprove) {
-      return true;
-    }
+    // Note: Auto-approve is handled in the Wallet component's permission manager
+    // This handler is only called when user interaction is needed
 
-    // Otherwise, show the approval UI
+    // Add to approval queue (FIFO) instead of overwriting
     return new Promise((resolve) => {
-      setPendingApproval({
+      const approvalRequest: ApprovalRequest = {
         ...request,
         resolve: (approved: boolean) => {
           resolve(approved);
-          setPendingApproval(null);
+          // Remove this specific request from queue when resolved
+          setApprovalQueue((prev) => prev.slice(1));
         },
-      });
+      };
+      // Add to end of queue
+      setApprovalQueue((prev) => [...prev, approvalRequest]);
     });
   };
 
@@ -148,11 +171,14 @@ function App() {
   }, [autoApprove, permissionManager]);
 
   const handleApprovalResponse = (approved: boolean) => {
-    if (pendingApproval) {
-      pendingApproval.resolve(approved);
+    // Resolve the FIRST item in queue (FIFO order)
+    const currentApproval = approvalQueue[0];
+    if (currentApproval) {
+      currentApproval.resolve(approved);
     }
   };
 
+<<<<<<< HEAD
   const handleAlwaysAllow = () => {
     if (pendingApproval) {
       permissionManager.current.updatePermissionState(
@@ -164,17 +190,30 @@ function App() {
     }
   };
 
+<<<<<<< HEAD
+=======
+>>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
   const handleEnableAutoApprove = () => {
     setAutoApprove(true);
     if (pendingApproval) {
       pendingApproval.resolve(true);
+=======
+    // Approve all pending approvals in the queue
+    for (const approval of approvalQueue) {
+      approval.resolve(true);
+>>>>>>> ae9a0494 (feat(router): add approval queue system for concurrent transaction handling)
     }
   };
+
+  // Get current pending approval (first in queue) for backward compatibility
+  const pendingApproval = approvalQueue[0] || null;
+  const approvalQueueLength = approvalQueue.length;
 
   return (
     <div className="App">
       <h1>WalletMesh Aztec Wallet</h1>
 
+<<<<<<< HEAD
       <div className="auto-approve-toggle">
         <label>
           <input type="checkbox" checked={autoApprove} onChange={(e) => setAutoApprove(e.target.checked)} />
@@ -185,6 +224,28 @@ function App() {
             ⚠️ Warning: All requests will be automatically approved without user confirmation.
           </p>
         )}
+=======
+        <div className="auto-approve-toggle">
+          <label>
+            <input type="checkbox" checked={autoApprove} onChange={(e) => setAutoApprove(e.target.checked)} />
+            Auto Approve All Requests
+          </label>
+          {autoApprove && (
+            <p className="auto-approve-warning">
+              ⚠️ Warning: All requests will be automatically approved without user confirmation.
+            </p>
+          )}
+        </div>
+
+        <Wallet
+          pendingApproval={pendingApproval}
+          approvalQueueLength={approvalQueueLength}
+          onApprovalResponse={handleApprovalResponse}
+          onApprovalRequest={handleApprovalRequest}
+          onEnableAutoApprove={handleEnableAutoApprove}
+          autoApprove={autoApprove}
+        />
+>>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
       </div>
 
       <Wallet

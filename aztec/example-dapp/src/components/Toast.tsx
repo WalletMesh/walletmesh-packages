@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import './Toast.css';
 
 /**
@@ -37,7 +38,7 @@ const Toast: React.FC<ToastProps> = ({ id, message, type, onClose }) => {
     <div className={`toast toast-${type}`}>
       <div className="toast-content">
         <span className="toast-message">{message}</span>
-        <button className="toast-close" onClick={() => onClose(id)} aria-label="Close">
+        <button type="button" className="toast-close" onClick={() => onClose(id)} aria-label="Close">
           ×
         </button>
       </div>

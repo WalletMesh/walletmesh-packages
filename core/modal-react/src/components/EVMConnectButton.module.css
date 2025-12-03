@@ -1,0 +1,207 @@
+/**
+ * EVM Connect Button Styles
+ *
+ * Provides EVM/Ethereum-themed styling for the connect button including
+ * transaction status animations and brand colors.
+ */
+
+.evmButtonContainer {
+  position: relative;
+  display: inline-block;
+}
+
+/* EVM/Ethereum brand styling */
+.evmButton {
+  background: linear-gradient(135deg, #627eea 0%, #4f46e5 100%);
+  color: #ffffff;
+  border: 1px solid #627eea;
+  transition: all 0.3s ease;
+}
+
+.evmButton:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #627eea 100%);
+  box-shadow: 0 0 20px rgba(98, 126, 234, 0.4);
+  border-color: #8b5cf6;
+}
+
+/* Transaction animation - subtle glow effect */
+.transacting {
+  animation: evm-glow 2s ease-in-out infinite;
+}
+
+@keyframes evm-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(98, 126, 234, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 0 25px rgba(98, 126, 234, 0.7),
+      0 0 40px rgba(139, 92, 246, 0.4);
+  }
+}
+
+/* Transaction badge - positioned in top right */
+.transactionBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #1f2937;
+  border: 1px solid #627eea;
+  border-radius: 16px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  animation: badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Rotating transaction icon */
+.transactionIcon {
+  display: inline-block;
+  animation: icon-spin 2s linear infinite;
+  font-size: 14px;
+}
+
+@keyframes icon-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Transaction text */
+.transactionText {
+  color: #627eea;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Network status indicator */
+.networkBadge {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  z-index: 10;
+}
+
+.networkBadge.mainnet {
+  background-color: #10b981;
+}
+
+.networkBadge.testnet {
+  background-color: #f59e0b;
+}
+
+.networkBadge.local {
+  background-color: #ef4444;
+}
+
+/* Gas fee estimation badge */
+.gasBadge {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(31, 41, 55, 0.9);
+  border: 1px solid #627eea;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.75em;
+  color: #627eea;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  opacity: 0;
+  animation: fade-in 0.3s ease-in-out forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Connection confirmation animation */
+.confirming .evmButton {
+  animation: confirm-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes confirm-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(98, 126, 234, 0.7);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 10px rgba(98, 126, 234, 0);
+  }
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .transactionBadge {
+    background: #000000;
+    border-color: #8b5cf6;
+  }
+
+  .gasBadge {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: #8b5cf6;
+    color: #8b5cf6;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .evmButtonContainer {
+    width: 100%;
+  }
+
+  .evmButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .transactionBadge,
+  .gasBadge {
+    font-size: 0.8em;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .evmButton {
+    border-width: 2px;
+    font-weight: 700;
+  }
+
+  .transactionBadge {
+    border-width: 2px;
+    font-weight: 600;
+  }
+}

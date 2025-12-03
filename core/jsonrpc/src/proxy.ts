@@ -1,6 +1,6 @@
 import { JSONRPCError, TimeoutError } from './error.js';
+import type { JSONRPCID, JSONRPCTransport } from './types.js';
 import { isJSONRPCID } from './utils.js';
-import type { JSONRPCTransport, JSONRPCID } from './types.js';
 
 export interface JSONRPCProxyConfig {
   /** Timeout for requests in milliseconds */
@@ -11,6 +11,11 @@ export interface JSONRPCProxyConfig {
   logger?: (message: string, data?: unknown) => void;
   /** Chain ID for logging context */
   chainId?: string;
+  /**
+   * Optional callback invoked when a notification (request without id) is received
+   * from the remote endpoint.
+   */
+  onNotification?: (method: string, params: unknown, rawMessage: unknown) => void;
 }
 
 /**
@@ -43,7 +48,7 @@ export class JSONRPCProxy {
     private transport: JSONRPCTransport,
     private config: JSONRPCProxyConfig = {},
   ) {
-    const { timeoutMs = 30000, debug = false } = config;
+    const { timeoutMs = 120000, debug = false } = config;
 
     this.log('Proxy initialized', {
       timeoutMs,
@@ -84,13 +89,20 @@ export class JSONRPCProxy {
 
     // Request - wait for response
     return new Promise((resolve, reject) => {
-      const timeoutMs = this.config.timeoutMs ?? 30000;
+      const timeoutMs = this.config.timeoutMs ?? 120000;
 
       // Set up timeout
       const timeout = setTimeout(() => {
-        this.pendingRequests.delete(id);
-        this.log('Request timeout', { id, method, timeoutMs });
-        reject(new TimeoutError(`Request timeout after ${timeoutMs}ms`, id));
+        // Defensive check: only timeout if the request is still pending
+        // This prevents phantom timeouts when the response has already been processed
+        if (this.pendingRequests.has(id)) {
+          this.pendingRequests.delete(id);
+          this.log('Request timeout', { id, method, timeoutMs });
+          reject(new TimeoutError(`Request timeout after ${timeoutMs}ms`, id));
+        } else {
+          // Phantom timeout avoided - request was already resolved
+          this.log('Phantom timeout avoided', { id, method, timeoutMs });
+        }
       }, timeoutMs);
 
       // Store pending request
@@ -123,22 +135,32 @@ export class JSONRPCProxy {
   private handleResponse(message: unknown): void {
     const id = this.extractId(message);
 
-    if (id !== undefined && this.pendingRequests.has(id)) {
-      const pending = this.pendingRequests.get(id) as NonNullable<
-        ReturnType<typeof this.pendingRequests.get>
-      >;
-      this.pendingRequests.delete(id);
-      clearTimeout(pending.timeout);
+    if (id !== undefined) {
+      const pending = this.pendingRequests.get(id);
+      if (pending) {
+        // Atomically remove the request and clear its timeout to prevent race conditions
+        // This must happen before we process the response to prevent phantom timeouts
+        this.pendingRequests.delete(id);
+        clearTimeout(pending.timeout);
 
-      this.log('Response received', {
-        id,
-        method: pending.method,
-        duration: Date.now() - pending.timestamp,
-      });
+        this.log('Response received', {
+          id,
+          method: pending.method,
+          duration: Date.now() - pending.timestamp,
+        });
 
-      pending.resolve(message);
+        pending.resolve(message);
+      }
     } else if (id === undefined) {
       // Handle events/notifications from the server
+      const method = this.extractMethod(message);
+      if (method) {
+        const params = this.extractParams(message);
+        this.log('Notification received', { method });
+        this.config.onNotification?.(method, params, message);
+        return;
+      }
+
       const event = this.extractEvent(message);
       if (event) {
         this.log('Event received', { event });
@@ -166,6 +188,16 @@ export class JSONRPCProxy {
     if (message && typeof message === 'object' && 'method' in message) {
       const method = (message as Record<string, unknown>).method;
       return typeof method === 'string' ? method : undefined;
+    }
+    return undefined;
+  }
+
+  /**
+   * Extract params from a message
+   */
+  private extractParams(message: unknown): unknown {
+    if (message && typeof message === 'object' && 'params' in message) {
+      return (message as Record<string, unknown>).params;
     }
     return undefined;
   }

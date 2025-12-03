@@ -20,19 +20,15 @@
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "lint": "biome lint",
-    "lint:fix": "biome lint --fix",
+    "lint:fix": "biome lint --write",
     "format": "biome format",
-    "format:fix": "biome format --fix",
+    "format:fix": "biome format --write",
     "docs": "typedoc",
     "version": "pnpm clean && pnpm build && pnpm run docs"
   },
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "typedoc": "^0.28.12",
-    "typedoc-plugin-markdown": "^4.8.1"
-  },
   "dependencies": {
     "@aztec/aztec.js": "2.0.3",
     "@aztec/blob-lib": "2.0.3",

@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { MemorySessionStore, LocalStorageSessionStore } from './session-store.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LocalStorageSessionStore, MemorySessionStore } from './session-store.js';
 import type { SessionData } from './types.js';
 
 const mockSession: SessionData = {
   id: 'test-session',
   origin: 'test-origin',
+  createdAt: Date.now(),
 };
 
 describe('MemorySessionStore', () => {
@@ -45,45 +46,41 @@ describe('MemorySessionStore', () => {
     expect(await store.get('test-id-2')).toBeUndefined();
   });
 
-  it('should handle session expiry', async () => {
-    const store = new MemorySessionStore({ lifetime: 1000 }); // 1 second lifetime
+  it('should not expire sessions', async () => {
+    const store = new MemorySessionStore(); // Config no longer accepted
     await store.set('test-id', mockSession);
 
     // Session should be valid initially
     let session = await store.validateAndRefresh('test-id');
     expect(session).toEqual(mockSession);
 
-    // Manually advance time past expiry
-    vi.advanceTimersByTime(1100); // 1.1 seconds
+    // Advance time - session should still be valid since expiration is disabled
+    vi.advanceTimersByTime(10000); // 10 seconds
 
-    // Session should be expired and removed
+    // Session should still be valid
     session = await store.validateAndRefresh('test-id');
-    expect(session).toBeUndefined();
-    expect(await store.get('test-id')).toBeUndefined();
+    expect(session).toEqual(mockSession);
   });
 
-  it('should refresh session expiry when configured', async () => {
-    const store = new MemorySessionStore({
-      lifetime: 1000,
-      refreshOnAccess: true,
-    });
+  it('should not refresh session expiry', async () => {
+    const store = new MemorySessionStore(); // Config no longer accepted
     await store.set('test-id', mockSession);
 
-    // Advance time close to expiry
+    // Advance time
     vi.advanceTimersByTime(900); // 0.9 seconds
 
-    // Access should refresh expiry
+    // Access session
     const session = await store.validateAndRefresh('test-id');
     expect(session).toEqual(mockSession);
 
-    // Session should still be valid after original expiry
+    // Session should still be valid since expiration is disabled
     vi.advanceTimersByTime(200); // 1.1 seconds total
     const refreshedSession = await store.validateAndRefresh('test-id');
     expect(refreshedSession).toEqual(mockSession);
   });
 
-  it('should get all valid sessions', async () => {
-    const store = new MemorySessionStore({ lifetime: 1000 });
+  it('should get all sessions without filtering', async () => {
+    const store = new MemorySessionStore(); // Config no longer accepted
     const now = Date.now();
 
     // Mock Date.now() to control time for each session
@@ -91,7 +88,7 @@ describe('MemorySessionStore', () => {
       .mockReturnValueOnce(now) // session1
       .mockReturnValueOnce(now) // session2
       .mockReturnValueOnce(now) // session4
-      .mockReturnValueOnce(now - 500) // session3 (will expire)
+      .mockReturnValueOnce(now - 500) // session3
       .mockReturnValue(now + 600); // time when getAll is called
 
     await store.set('session1', mockSession);
@@ -100,47 +97,45 @@ describe('MemorySessionStore', () => {
     await store.set('session3', { ...mockSession, id: 'test-session-3' });
 
     const allSessions = await store.getAll();
-    expect(allSessions.size).toBe(3); // Should only include non-expired sessions
+    expect(allSessions.size).toBe(4); // All sessions included since expiration is disabled
     expect(allSessions.get('session1')).toEqual(mockSession);
     expect(allSessions.get('session2')).toEqual({ ...mockSession, id: 'test-session-2' });
     expect(allSessions.get('session4')).toEqual({ ...mockSession, id: 'test-session-4' });
-    expect(allSessions.get('session3')).toBeUndefined();
+    expect(allSessions.get('session3')).toEqual({ ...mockSession, id: 'test-session-3' });
   });
 
-  it('should refresh expiry when getting all sessions if configured', async () => {
-    const store = new MemorySessionStore({
-      lifetime: 1000,
-      refreshOnAccess: true,
-    });
+  it('should not refresh expiry when getting all sessions', async () => {
+    const store = new MemorySessionStore(); // Config no longer accepted
     await store.set('session1', mockSession);
 
-    // Advance time close to expiry
+    // Advance time
     vi.advanceTimersByTime(900);
 
-    // GetAll should refresh expiry
+    // GetAll returns sessions
     await store.getAll();
 
-    // Session should still be valid after original expiry
+    // Session should still be valid since expiration is disabled
     vi.advanceTimersByTime(200);
     const session = await store.get('session1');
     expect(session).toEqual(mockSession);
   });
 
-  it('should clean expired sessions', async () => {
-    const store = new MemorySessionStore({ lifetime: 1000 });
+  it('should not clean sessions since expiration is disabled', async () => {
+    const store = new MemorySessionStore(); // Config no longer accepted
     await store.set('session1', mockSession);
     await store.set('session2', { ...mockSession, id: 'test-session-2' });
     await store.set('session3', { ...mockSession, id: 'test-session-3' });
 
-    // Advance time to expire some sessions
+    // Advance time
     vi.advanceTimersByTime(1100); // 1.1 seconds
 
-    // Add a new session that shouldn't expire
+    // Add a new session
     await store.set('session4', { ...mockSession, id: 'test-session-4' });
 
     const removed = await store.cleanExpired();
-    expect(removed).toBe(3); // First 3 sessions should be expired
-    expect(await store.get('session4')).toBeDefined(); // New session should remain
+    expect(removed).toBe(0); // No sessions expired since expiration is disabled
+    expect(await store.get('session1')).toBeDefined(); // All sessions should remain
+    expect(await store.get('session4')).toBeDefined();
   });
 });
 
@@ -165,8 +160,8 @@ describe('LocalStorageSessionStore', () => {
     mockLocalStorage.key.mockClear();
   });
 
-  it('should store sessions in localStorage with expiry when lifetime is set', async () => {
-    const store = new LocalStorageSessionStore({ lifetime: 1000 });
+  it('should store sessions in localStorage without expiry', async () => {
+    const store = new LocalStorageSessionStore(); // Config no longer accepted
     await store.set('test-id', mockSession);
     expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
       'wm_session_test-id',
@@ -175,7 +170,7 @@ describe('LocalStorageSessionStore', () => {
     expect(mockLocalStorage.setItem.mock.calls.length).toBe(1);
     const storedData = JSON.parse((mockLocalStorage.setItem.mock.calls[0] as [string, string])[1]);
     expect(storedData.data).toEqual(mockSession);
-    expect(storedData.expiresAt).toBeDefined();
+    expect(storedData.expiresAt).toBeUndefined(); // Expiration disabled
   });
 
   it('should store sessions in localStorage without expiry when lifetime is not set', async () => {
@@ -199,42 +194,37 @@ describe('LocalStorageSessionStore', () => {
     expect(mockLocalStorage.getItem).toHaveBeenCalledWith('wm_session_test-id');
   });
 
-  it('should handle session expiry in validateAndRefresh', async () => {
+  it('should not expire sessions in validateAndRefresh', async () => {
     const now = Date.now();
     const storedSession = {
       data: mockSession,
-      expiresAt: now - 1000, // Expired 1 second ago
+      expiresAt: now - 1000, // Would be expired, but expiration is disabled
     };
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify(storedSession));
 
     const retrieved = await store.validateAndRefresh('test-id');
-    expect(retrieved).toBeUndefined();
-    expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('wm_session_test-id');
+    expect(retrieved).toEqual(mockSession); // Still valid
+    expect(mockLocalStorage.removeItem).not.toHaveBeenCalled();
   });
 
-  it('should refresh session expiry when configured', async () => {
-    const store = new LocalStorageSessionStore({
-      lifetime: 1000,
-      refreshOnAccess: true,
-    });
+  it('should not refresh session expiry', async () => {
+    const store = new LocalStorageSessionStore(); // Config no longer accepted
 
     const now = Date.now();
     const storedSession = {
       data: mockSession,
-      expiresAt: now + 500, // Expires in 500ms
+      expiresAt: now + 500, // Would expire, but expiration is disabled
     };
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify(storedSession));
 
     const retrieved = await store.validateAndRefresh('test-id');
     expect(retrieved).toEqual(mockSession);
 
-    // Should have updated expiry
-    expect(mockLocalStorage.setItem.mock.calls.length).toBe(1);
-    const updatedSession = JSON.parse((mockLocalStorage.setItem.mock.calls[0] as [string, string])[1]);
-    expect(updatedSession.expiresAt).toBeGreaterThan(now + 900); // Close to now + 1000
+    // Should not update expiry since expiration is disabled
+    expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
   });
 
-  it('should get all valid sessions from localStorage', async () => {
+  it('should get all sessions from localStorage without filtering', async () => {
     const now = Date.now();
     mockLocalStorage.length = 4;
     mockLocalStorage.key
@@ -244,25 +234,23 @@ describe('LocalStorageSessionStore', () => {
       .mockReturnValueOnce('wm_session_3');
 
     mockLocalStorage.getItem
-      .mockReturnValueOnce(JSON.stringify({ data: mockSession, expiresAt: now + 1000 })) // Valid
+      .mockReturnValueOnce(JSON.stringify({ data: mockSession, expiresAt: now + 1000 }))
       .mockReturnValueOnce(
         JSON.stringify({ data: { ...mockSession, id: 'test-session-2' }, expiresAt: now + 1000 }),
-      ) // Valid
+      )
       .mockReturnValueOnce(
         JSON.stringify({ data: { ...mockSession, id: 'test-session-3' }, expiresAt: now - 1000 }),
-      ); // Expired
+      ); // Would be expired, but expiration is disabled
 
     const allSessions = await store.getAll();
-    expect(allSessions.size).toBe(2); // Should only include non-expired sessions
+    expect(allSessions.size).toBe(3); // All sessions included since expiration is disabled
     expect(allSessions.get('1')).toEqual(mockSession);
     expect(allSessions.get('2')).toEqual({ ...mockSession, id: 'test-session-2' });
+    expect(allSessions.get('3')).toEqual({ ...mockSession, id: 'test-session-3' });
   });
 
-  it('should refresh expiry when getting all localStorage sessions if configured', async () => {
-    const store = new LocalStorageSessionStore({
-      lifetime: 1000,
-      refreshOnAccess: true,
-    });
+  it('should not refresh expiry when getting all localStorage sessions', async () => {
+    const store = new LocalStorageSessionStore(); // Config no longer accepted
 
     const now = Date.now();
     mockLocalStorage.length = 1;
@@ -270,19 +258,17 @@ describe('LocalStorageSessionStore', () => {
     mockLocalStorage.getItem.mockReturnValue(
       JSON.stringify({
         data: mockSession,
-        expiresAt: now + 500, // Expires in 500ms
+        expiresAt: now + 500,
       }),
     );
 
     await store.getAll();
 
-    // Should have updated expiry
-    expect(mockLocalStorage.setItem).toHaveBeenCalled();
-    const updatedSession = JSON.parse((mockLocalStorage.setItem.mock.calls[0] as [string, string])[1]);
-    expect(updatedSession.expiresAt).toBeGreaterThan(now + 900); // Close to now + 1000
+    // Should not update expiry since expiration is disabled
+    expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
   });
 
-  it('should clean expired sessions', async () => {
+  it('should not clean sessions since expiration is disabled', async () => {
     const now = Date.now();
     mockLocalStorage.length = 3;
     mockLocalStorage.key
@@ -291,18 +277,17 @@ describe('LocalStorageSessionStore', () => {
       .mockReturnValueOnce('wm_session_3');
 
     mockLocalStorage.getItem
-      .mockReturnValueOnce(JSON.stringify({ data: mockSession, expiresAt: now - 1000 })) // Expired
-      .mockReturnValueOnce(JSON.stringify({ data: mockSession, expiresAt: now + 1000 })) // Valid
-      .mockReturnValueOnce(JSON.stringify({ data: mockSession, expiresAt: now - 2000 })); // Expired
+      .mockReturnValueOnce(JSON.stringify({ data: mockSession, expiresAt: now - 1000 })) // Would be expired
+      .mockReturnValueOnce(JSON.stringify({ data: mockSession, expiresAt: now + 1000 }))
+      .mockReturnValueOnce(JSON.stringify({ data: mockSession, expiresAt: now - 2000 })); // Would be expired
 
     const removed = await store.cleanExpired();
-    expect(removed).toBe(2);
-    expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('wm_session_1');
-    expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('wm_session_3');
-    expect(mockLocalStorage.removeItem).toHaveBeenCalledTimes(2);
+    expect(removed).toBe(0); // No sessions cleaned since expiration is disabled
+    expect(mockLocalStorage.removeItem).not.toHaveBeenCalled();
   });
 
   it('should return undefined for non-existent sessions', async () => {
+    mockLocalStorage.getItem.mockReset();
     mockLocalStorage.getItem.mockReturnValue(null);
     const retrieved = await store.get('non-existent');
     expect(retrieved).toBeUndefined();
@@ -314,6 +299,8 @@ describe('LocalStorageSessionStore', () => {
   });
 
   it('should clear only prefixed sessions from localStorage', async () => {
+    mockLocalStorage.removeItem.mockReset(); // Ensure clean state
+    mockLocalStorage.key.mockReset(); // Fully reset key mock
     mockLocalStorage.length = 3;
     mockLocalStorage.key
       .mockReturnValueOnce('wm_session_1')

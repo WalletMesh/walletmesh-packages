@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { JSONRPCContext, JSONRPCEventMap, JSONRPCMethodMap } from '@walletmesh/jsonrpc';
 import { JSONRPCNode } from '@walletmesh/jsonrpc';
-import { LocalTransport, createLocalTransportPair, createLocalTransport } from './localTransport.js';
-import type { JSONRPCMethodMap, JSONRPCEventMap, JSONRPCContext } from '@walletmesh/jsonrpc';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createLocalTransport, createLocalTransportPair, LocalTransport } from './localTransport.js';
 
 describe('LocalTransport', () => {
   let originalOnError: OnErrorEventHandler | null;

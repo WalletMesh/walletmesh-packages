@@ -8,7 +8,7 @@
 
 > **createDiscoveryResponder**(`config`): `DiscoveryResponder`
 
-Defined in: [core/discovery/src/responder/factory.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/responder/factory.ts#L64)
+Defined in: [core/discovery/src/responder/factory.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder/factory.ts#L64)
 
 Create a discovery announcer with comprehensive validation and configuration helpers.
 

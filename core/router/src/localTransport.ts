@@ -1,9 +1,10 @@
 import type {
-  JSONRPCTransport,
-  JSONRPCNode,
-  JSONRPCMethodMap,
-  JSONRPCEventMap,
   JSONRPCContext,
+  JSONRPCEventMap,
+  JSONRPCMethodMap,
+  JSONRPCNode,
+  JSONRPCTransport,
+  TransportContext,
 } from '@walletmesh/jsonrpc';
 
 /**
@@ -67,6 +68,10 @@ export class LocalTransport implements JSONRPCTransport {
   private remoteNode: JSONRPCNode<JSONRPCMethodMap, JSONRPCEventMap, JSONRPCContext> | null = null;
   private messageHandler: ((message: unknown) => void) | null = null;
   private options: LocalTransportOptions;
+  /**
+   * Last received message, used to extract context forwarded via _context field
+   */
+  private lastMessage?: unknown;
 
   /**
    * Creates an instance of LocalTransport.
@@ -125,6 +130,9 @@ export class LocalTransport implements JSONRPCTransport {
    * Receive a message and pass it to the registered handler
    */
   receive(message: unknown): void {
+    // Store the last message to extract context from it
+    this.lastMessage = message;
+
     if (this.messageHandler) {
       // Simulate async transport (browser-compatible)
       setTimeout(() => {
@@ -145,6 +153,37 @@ export class LocalTransport implements JSONRPCTransport {
         }
       }, 0);
     }
+  }
+
+  /**
+   * Get context information from the last received message.
+   * LocalTransport extracts context from the `_context` field that may be
+   * attached to messages by upstream components (e.g., router forwarding
+   * origin information to wallet nodes).
+   *
+   * @returns TransportContext if available in the last message, undefined otherwise
+   *
+   * @example
+   * ```typescript
+   * const transport = new LocalTransport();
+   * // After receiving a message with _context field...
+   * const context = transport.getMessageContext();
+   * if (context) {
+   *   console.log('Origin:', context.origin);
+   *   console.log('Trusted:', context.trustedSource); // false - forwarded context
+   * }
+   * ```
+   */
+  getMessageContext(): TransportContext | undefined {
+    const msg = this.lastMessage as any;
+    if (msg?._context?.origin) {
+      return {
+        origin: msg._context.origin,
+        trustedSource: false, // Not browser-validated, just forwarded
+        transportType: 'local',
+      };
+    }
+    return undefined;
   }
 }
 

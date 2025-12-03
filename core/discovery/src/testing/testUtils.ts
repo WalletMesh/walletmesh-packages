@@ -1,7 +1,9 @@
 import type { DiscoveryRequestEvent, DiscoveryResponseEvent, InitiatorInfo } from '../types/core.js';
 import type { ResponderInfo, CapabilityRequirements, CapabilityPreferences } from '../types/capabilities.js';
 import type { SecurityPolicy } from '../types/security.js';
+import type { DiscoveryInitiatorConfig } from '../types/testing.js';
 import { DISCOVERY_PROTOCOL_VERSION } from '../core/constants.js';
+import { DiscoveryInitiator } from '../initiator.js';
 
 /**
  * Create test wallet information for various blockchain types.
@@ -335,6 +337,36 @@ export function createTestDiscoveryRequest(
     },
     ...overrides,
   };
+}
+
+/**
+ * Create a DiscoveryInitiator instance with sensible defaults for testing.
+ */
+export function createTestDiscoveryInitiator(
+  overrides: Partial<DiscoveryInitiatorConfig> = {},
+): DiscoveryInitiator {
+  const requirements =
+    overrides.requirements ??
+    ({
+      technologies: [
+        {
+          type: 'evm' as const,
+          interfaces: ['eip-1193'],
+        },
+      ],
+      features: ['account-management', 'transaction-signing'],
+    } satisfies CapabilityRequirements);
+
+  const initiatorInfo = overrides.initiatorInfo ?? createTestDAppInfo();
+
+  const options = {
+    ...(overrides.timeout !== undefined && { timeout: overrides.timeout }),
+    ...(overrides.eventTarget && { eventTarget: overrides.eventTarget }),
+    ...(overrides.logger && { logger: overrides.logger }),
+    ...(overrides.securityPolicy && { security: overrides.securityPolicy }),
+  };
+
+  return new DiscoveryInitiator(requirements, initiatorInfo, options, overrides.preferences);
 }
 
 /**

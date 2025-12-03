@@ -1,5 +1,5 @@
 import type { JSONRPCMiddleware } from '@walletmesh/jsonrpc';
-import type { RouterMethodMap, RouterContext } from '@walletmesh/router';
+import type { RouterContext, RouterMethodMap } from '@walletmesh/router';
 
 /**
  * Gets the origin of the dApp that opened this wallet window.
@@ -7,7 +7,7 @@ import type { RouterMethodMap, RouterContext } from '@walletmesh/router';
  */
 function getDappOrigin(): string | undefined {
   // Method 1: Use document.referrer (most reliable for cross-origin scenarios)
-  if (typeof document !== 'undefined' && document.referrer) {
+  if (document?.referrer) {
     try {
       const referrerUrl = new URL(document.referrer);
       console.log('Detected dApp origin from document.referrer:', referrerUrl.origin);
@@ -18,12 +18,12 @@ function getDappOrigin(): string | undefined {
   }
 
   // Method 2: Try to access window.opener.location.origin (only for same-origin scenarios)
-  if (typeof window !== 'undefined' && window.opener) {
+  if (window?.opener) {
     try {
       const origin = window.opener.location.origin;
       console.log('Successfully detected dApp origin from window.opener:', origin);
       return origin;
-    } catch (e) {
+    } catch (_e) {
       // CORS error - this is expected in cross-origin scenarios
       console.log('Cross-origin context detected, window.opener access blocked by CORS');
     }
@@ -35,7 +35,7 @@ function getDappOrigin(): string | undefined {
       const origin = window.parent.location.origin;
       console.log('Detected dApp origin from window.parent:', origin);
       return origin;
-    } catch (e) {
+    } catch (_e) {
       // CORS error - this is expected in cross-origin scenarios
       console.log('Cross-origin context detected, window.parent access blocked by CORS');
     }

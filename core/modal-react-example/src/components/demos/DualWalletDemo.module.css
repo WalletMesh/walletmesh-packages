@@ -1,0 +1,359 @@
+/* Dual Wallet Demo Styles */
+
+.container {
+  padding: 24px;
+  background: var(--color-background);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.header {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.description {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Connection Section */
+.connectionSection {
+  margin-bottom: 32px;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.connectButtonGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .connectButtonGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.connectGroup {
+  background: var(--color-background-elevated);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+}
+
+.connectGroupTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 12px 0;
+}
+
+.walletStatus {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusLabel {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.statusValue {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Sessions Section */
+.sessionsSection {
+  margin-bottom: 32px;
+}
+
+.sessionsList {
+  display: grid;
+  gap: 16px;
+}
+
+.sessionCard {
+  background: var(--color-background-elevated);
+  border-radius: 12px;
+  padding: 20px;
+  border: 2px solid var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.sessionCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.activeSession {
+  border-color: #10b981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+}
+
+.sessionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sessionIcon {
+  font-size: 24px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--color-background);
+}
+
+.sessionInfo {
+  flex: 1;
+}
+
+.sessionType {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.sessionWallet {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.activeBadge {
+  background: #10b981;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sessionDetails {
+  margin-bottom: 16px;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.detailRow:last-child {
+  border-bottom: none;
+}
+
+.detailLabel {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.detailValue {
+  font-size: 14px;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-family: "SF Mono", "Monaco", "Consolas", monospace;
+}
+
+.sessionActions {
+  display: flex;
+  gap: 8px;
+}
+
+.switchButton {
+  flex: 1;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.switchButton:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.disconnectButton {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.disconnectButton:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.noSessions {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-text-secondary);
+}
+
+.noSessionsHint {
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+/* Global State Section */
+.globalStateSection {
+  margin-bottom: 32px;
+}
+
+.globalStateGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.globalStateItem {
+  background: var(--color-background-elevated);
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.globalStateLabel {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.globalStateValue {
+  font-size: 16px;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-family: "SF Mono", "Monaco", "Consolas", monospace;
+}
+
+/* Technical Section */
+.technicalSection {
+  margin-bottom: 32px;
+}
+
+.technicalDetails {
+  background: var(--color-background-elevated);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+}
+
+.technicalText {
+  font-size: 16px;
+  color: var(--color-text-primary);
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+.technicalList {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.technicalList li {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 12px 0;
+  padding-left: 0;
+  line-height: 1.5;
+}
+
+.technicalList li strong {
+  color: var(--color-text-primary);
+}
+
+/* Code Section */
+.codeSection {
+  margin-bottom: 0;
+}
+
+.codeBlock {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 20px;
+  overflow-x: auto;
+  margin: 0;
+  border: 1px solid var(--color-border);
+}
+
+.codeBlock code {
+  font-family: "SF Mono", "Monaco", "Consolas", monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #e5e7eb;
+  white-space: pre;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .description {
+    font-size: 14px;
+  }
+
+  .sessionActions {
+    flex-direction: column;
+  }
+
+  .globalStateGrid {
+    grid-template-columns: 1fr;
+  }
+}

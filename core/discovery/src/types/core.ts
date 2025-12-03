@@ -71,6 +71,7 @@ export interface DiscoveryResponseEvent extends BaseDiscoveryMessage {
   name: string;
   icon: string;
   matched: import('./capabilities.js').CapabilityIntersection;
+  networks?: string[];
   transportConfig?: TransportConfig;
   description?: string;
   responderVersion?: string;
@@ -201,7 +202,9 @@ export type DiscoveryRequestEventHandler = (event: CustomEvent<DiscoveryRequestE
  * @category Protocol
  * @since 0.1.0
  */
-export type DiscoveryResponseEventHandler = (event: CustomEvent<DiscoveryResponseEvent>) => void;
+export type DiscoveryResponseEventHandler = (
+  event: CustomEvent<DiscoveryResponseEvent> | MessageEvent<DiscoveryResponseEvent>,
+) => void;
 
 /**
  * Duplicate response detection details.

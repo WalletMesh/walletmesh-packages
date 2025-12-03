@@ -1,9 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
-import { createSessionMiddleware, createPermissionsMiddleware } from './middleware.js';
-import { RouterError } from './errors.js';
-import type { RouterContext, RouterMethodMap } from './types.js';
-import type { SessionStore } from './session-store.js';
 import type { JSONRPCRequest, JSONRPCResponse } from '@walletmesh/jsonrpc';
+import { describe, expect, it, vi } from 'vitest';
+import { RouterError } from './errors.js';
+import { createPermissionsMiddleware, createSessionMiddleware } from './middleware.js';
+import type { SessionStore } from './session-store.js';
+import type { RouterContext, RouterMethodMap } from './types.js';
 
 type RouterRequest = JSONRPCRequest<RouterMethodMap, keyof RouterMethodMap>;
 type RouterResponse = JSONRPCResponse<RouterMethodMap, keyof RouterMethodMap>;
@@ -25,12 +25,12 @@ describe('createSessionMiddleware', () => {
     } as RouterRequest;
     const context = {} as RouterContext;
 
-    const mockSession = { id: 'unknown_123', origin: 'unknown' };
+    const mockSession = { id: '123', origin: 'unknown' };
     mockSessionStore.validateAndRefresh = vi.fn().mockResolvedValue(mockSession);
-    mockSessionStore.getAll = vi.fn().mockResolvedValue(new Map([['unknown_123', mockSession]]));
+    mockSessionStore.getAll = vi.fn().mockResolvedValue(new Map([['123', mockSession]]));
 
     await middleware(context, request, mockNext);
-    expect(mockSessionStore.validateAndRefresh).toHaveBeenCalledWith('unknown_123');
+    expect(mockSessionStore.validateAndRefresh).toHaveBeenCalledWith('123');
   });
 
   it('should allow new session without sessionId for wm_connect', async () => {
@@ -97,7 +97,7 @@ describe('createSessionMiddleware', () => {
   });
 
   it('should validate and refresh existing session', async () => {
-    const mockSession = { id: 'test_123', permissions: {}, origin: 'test' };
+    const mockSession = { id: '123', permissions: {}, origin: 'test' };
     mockSessionStore.validateAndRefresh = vi.fn().mockResolvedValue(mockSession);
 
     const middleware = createSessionMiddleware(mockSessionStore);
@@ -109,7 +109,7 @@ describe('createSessionMiddleware', () => {
     const context = { origin: 'test', session: mockSession } as RouterContext;
 
     await middleware(context, request, mockNext);
-    expect(mockSessionStore.validateAndRefresh).toHaveBeenCalledWith('test_123');
+    expect(mockSessionStore.validateAndRefresh).toHaveBeenCalledWith('123');
     expect(context.session).toEqual(mockSession);
     expect(mockNext).toHaveBeenCalled();
   });

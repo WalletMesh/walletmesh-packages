@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DiscoveryResponder } from './DiscoveryResponder.js';
+import { DiscoveryResponder } from '../responder.js';
 import { MockEventTarget } from '../testing/MockEventTarget.js';
 import { createTestResponderInfo, createTestDiscoveryRequest } from '../testing/testUtils.js';
 import { setupFakeTimers, cleanupFakeTimers, advanceTimeAndWait } from '../testing/timingHelpers.js';
@@ -17,6 +17,15 @@ import type { SecurityPolicy } from '../types/security.js';
 import type { DiscoveryResponderConfig } from '../types/testing.js';
 import type { Logger } from '../core/logger.js';
 import type { ProtocolStateMachine } from '../core/ProtocolStateMachine.js';
+
+function createAnnouncer(config: DiscoveryResponderConfig): DiscoveryResponder {
+  return new DiscoveryResponder(config.responderInfo, {
+    ...(config.securityPolicy && { security: config.securityPolicy }),
+    ...(config.sessionOptions && { sessionOptions: config.sessionOptions }),
+    ...(config.eventTarget && { eventTarget: config.eventTarget }),
+    ...(config.logger && { logger: config.logger }),
+  });
+}
 
 describe('DiscoveryResponder', () => {
   let announcer: DiscoveryResponder;
@@ -37,10 +46,9 @@ describe('DiscoveryResponder', () => {
 
     responderInfo = createTestResponderInfo.ethereum();
 
-    announcer = new DiscoveryResponder({
-      responderInfo,
+    announcer = new DiscoveryResponder(responderInfo, {
       eventTarget,
-      securityPolicy: {
+      security: {
         requireHttps: false,
         allowLocalhost: true,
       },
@@ -80,7 +88,7 @@ describe('DiscoveryResponder', () => {
         },
       };
 
-      const secureAnnouncer = new DiscoveryResponder({
+      const secureAnnouncer = createAnnouncer({
         responderInfo,
         securityPolicy,
         eventTarget,
@@ -107,7 +115,7 @@ describe('DiscoveryResponder', () => {
         ],
         features: [],
       };
-      const minimalAnnouncer = new DiscoveryResponder({
+      const minimalAnnouncer = createAnnouncer({
         responderInfo: minimalResponderInfo,
         eventTarget,
       });
@@ -125,9 +133,9 @@ describe('DiscoveryResponder', () => {
       };
 
       // Should create with EventTarget polyfill
-      expect(() => new DiscoveryResponder(config)).not.toThrow();
+      expect(() => createAnnouncer(config)).not.toThrow();
 
-      const nonBrowserAnnouncer = new DiscoveryResponder(config);
+      const nonBrowserAnnouncer = createAnnouncer(config);
       expect(nonBrowserAnnouncer).toBeDefined();
 
       nonBrowserAnnouncer.cleanup();
@@ -140,8 +148,8 @@ describe('DiscoveryResponder', () => {
         securityPolicy: {}, // Empty policy
       };
 
-      expect(() => new DiscoveryResponder(config)).not.toThrow();
-      const testAnnouncer = new DiscoveryResponder(config);
+      expect(() => createAnnouncer(config)).not.toThrow();
+      const testAnnouncer = createAnnouncer(config);
       expect(testAnnouncer.isAnnouncerListening()).toBe(false);
       testAnnouncer.cleanup();
     });
@@ -169,8 +177,8 @@ describe('DiscoveryResponder', () => {
         eventTarget: mockEventTarget,
       };
 
-      expect(() => new DiscoveryResponder(config)).not.toThrow();
-      const testAnnouncer = new DiscoveryResponder(config);
+      expect(() => createAnnouncer(config)).not.toThrow();
+      const testAnnouncer = createAnnouncer(config);
       testAnnouncer.cleanup();
     });
   });
@@ -319,7 +327,7 @@ describe('DiscoveryResponder', () => {
       };
 
       const testEventTarget = new EventTarget();
-      const webAnnouncer = new DiscoveryResponder({
+      const webAnnouncer = createAnnouncer({
         responderInfo: webResponderInfo,
         eventTarget: testEventTarget,
         securityPolicy: {
@@ -361,7 +369,7 @@ describe('DiscoveryResponder', () => {
       };
 
       const testEventTarget = new EventTarget();
-      const rateLimitedAnnouncer = new DiscoveryResponder({
+      const rateLimitedAnnouncer = createAnnouncer({
         responderInfo,
         securityPolicy,
         eventTarget: testEventTarget,
@@ -393,7 +401,7 @@ describe('DiscoveryResponder', () => {
         requireHttps: true,
       };
 
-      const secureAnnouncer = new DiscoveryResponder({
+      const secureAnnouncer = createAnnouncer({
         responderInfo,
         securityPolicy,
         eventTarget,
@@ -425,7 +433,7 @@ describe('DiscoveryResponder', () => {
   // ===============================================
   describe('Error Handling', () => {
     beforeEach(() => {
-      announcer = new DiscoveryResponder({
+      announcer = createAnnouncer({
         responderInfo,
         eventTarget: mockEventTarget,
         securityPolicy: {
@@ -453,7 +461,7 @@ describe('DiscoveryResponder', () => {
 
       // Should have logged warning for protocol version mismatch
       expect(consoleSpy.warn).toHaveBeenCalledWith(
-        '[WalletMesh] Protocol version mismatch: expected 0.1.0, got 999.0.0',
+        expect.stringContaining('Protocol version mismatch: expected 0.1.0, got 999.0.0'),
       );
 
       consoleSpy.restore();
@@ -469,7 +477,7 @@ describe('DiscoveryResponder', () => {
       };
 
       // Create announcer with mock logger
-      const testAnnouncer = new DiscoveryResponder({
+      const testAnnouncer = createAnnouncer({
         responderInfo,
         eventTarget: mockEventTarget,
         securityPolicy: {
@@ -721,7 +729,7 @@ describe('DiscoveryResponder', () => {
       // Remove window to simulate Node.js environment
       (globalThis as unknown as Record<string, unknown>)['window'] = undefined;
 
-      const testAnnouncer = new DiscoveryResponder({
+      const testAnnouncer = createAnnouncer({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: {
@@ -754,7 +762,7 @@ describe('DiscoveryResponder', () => {
         globalThis.window = {} as Window & typeof globalThis;
       }
 
-      const testAnnouncer = new DiscoveryResponder({
+      const testAnnouncer = createAnnouncer({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: {
@@ -785,7 +793,7 @@ describe('DiscoveryResponder', () => {
       // Set window to undefined
       (globalThis as unknown as Record<string, unknown>)['window'] = undefined;
 
-      const testAnnouncer = new DiscoveryResponder({
+      const testAnnouncer = createAnnouncer({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: {
@@ -860,7 +868,7 @@ describe('DiscoveryResponder', () => {
       (globalThis as unknown as Record<string, unknown>)['window'] = undefined;
 
       try {
-        const noWindowAnnouncer = new DiscoveryResponder({
+        const noWindowAnnouncer = createAnnouncer({
           responderInfo: createTestResponderInfo.ethereum(),
           // No eventTarget provided, should create own
         });
@@ -874,7 +882,7 @@ describe('DiscoveryResponder', () => {
     });
 
     it('should handle empty security policy', () => {
-      const minimalAnnouncer = new DiscoveryResponder({
+      const minimalAnnouncer = createAnnouncer({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: {
@@ -987,12 +995,11 @@ describe('DiscoveryResponder', () => {
       ];
 
       for (const info of invalidResponderInfos) {
-        expect(
-          () =>
-            new DiscoveryResponder({
-              responderInfo: info as unknown as ResponderInfo,
-              eventTarget: mockEventTarget,
-            }),
+        expect(() =>
+          createAnnouncer({
+            responderInfo: info as unknown as ResponderInfo,
+            eventTarget: mockEventTarget,
+          }),
         ).toThrow(); // Constructor now validates and throws for invalid info
       }
     });
@@ -1140,7 +1147,7 @@ describe('DiscoveryResponder', () => {
     });
 
     it('should handle rate limiter edge cases', () => {
-      const rateLimitedAnnouncer = new DiscoveryResponder({
+      const rateLimitedAnnouncer = createAnnouncer({
         responderInfo: createTestResponderInfo.ethereum(),
         eventTarget: mockEventTarget,
         securityPolicy: {

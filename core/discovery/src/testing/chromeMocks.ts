@@ -42,6 +42,7 @@ type MockFunctionFactory = () => MockFunction;
 export class MockChromeRuntime {
   public readonly id: string;
   public readonly sendMessage: MockFunction;
+  public readonly connect: MockFunction;
   public readonly onMessage: {
     addListener: MockFunction;
     removeListener: MockFunction;
@@ -69,6 +70,29 @@ export class MockChromeRuntime {
     // Set up default implementation for sendMessage
     // biome-ignore lint/suspicious/noExplicitAny: Mock function setup requires any for test utilities
     (this.sendMessage as any).mockImplementation(() => Promise.resolve(undefined));
+
+    this.connect = createMock();
+
+    // Set up default implementation for connect (returns mock Port)
+    // biome-ignore lint/suspicious/noExplicitAny: Mock function setup requires any for test utilities
+    (this.connect as any).mockImplementation((connectInfo?: { name?: string }) => {
+      const mockPort = {
+        name: connectInfo?.name || 'test-port',
+        onDisconnect: {
+          addListener: createMock(),
+          removeListener: createMock(),
+          hasListener: createMock(),
+        },
+        onMessage: {
+          addListener: createMock(),
+          removeListener: createMock(),
+          hasListener: createMock(),
+        },
+        postMessage: createMock(),
+        disconnect: createMock(),
+      };
+      return mockPort;
+    });
 
     this.onMessage = {
       addListener: createMock(),
@@ -333,17 +357,26 @@ export function setupChromeEnvironment(
   chrome: MockChromeAPI;
   cleanup: () => void;
 } {
-  const originalChrome = (globalThis as unknown as { chrome?: unknown }).chrome;
+  const originalGlobalThisChrome = (globalThis as unknown as { chrome?: unknown }).chrome;
+  const originalGlobalChrome = (global as unknown as { chrome?: unknown }).chrome;
   const mockChrome = createMockChromeAPI(options);
 
-  // Set up global chrome object
+  // Set up chrome on both globalThis and global for Node.js compatibility
   (globalThis as unknown as { chrome: MockChromeAPI }).chrome = mockChrome;
+  // @ts-expect-error - Setting up chrome on global for Node.js environment
+  global.chrome = mockChrome;
 
   const cleanup = () => {
-    if (originalChrome !== undefined) {
-      (globalThis as unknown as { chrome: unknown }).chrome = originalChrome;
+    if (originalGlobalThisChrome !== undefined) {
+      (globalThis as unknown as { chrome: unknown }).chrome = originalGlobalThisChrome;
     } else {
       (globalThis as unknown as { chrome?: unknown }).chrome = undefined;
+    }
+    if (originalGlobalChrome !== undefined) {
+      (global as unknown as { chrome: unknown }).chrome = originalGlobalChrome;
+    } else {
+      // @ts-expect-error - Cleaning up chrome on global
+      global.chrome = undefined;
     }
   };
 

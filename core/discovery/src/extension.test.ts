@@ -1,15 +1,67 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type { ResponderInfo } from './types/capabilities.js';
 import type { SecurityPolicy } from './types/security.js';
 import { setupFakeTimers, cleanupFakeTimers } from './testing/timingHelpers.js';
 
 describe('extension module exports', () => {
+  // Set up chrome mock for ContentScriptRelay tests
+  let chromeCleanup: (() => void) | null = null;
+
   beforeEach(() => {
     setupFakeTimers();
+
+    // Set up chrome mock for tests that create ContentScriptRelay
+    const mockPort = {
+      name: 'walletmesh-discovery',
+      onDisconnect: { addListener: vi.fn(), removeListener: vi.fn() },
+      onMessage: { addListener: vi.fn(), removeListener: vi.fn() },
+      postMessage: vi.fn(),
+      disconnect: vi.fn(),
+    };
+
+    const mockChrome = {
+      runtime: {
+        id: 'test-extension-id',
+        sendMessage: vi.fn(() => Promise.resolve(undefined)),
+        connect: vi.fn(() => mockPort),
+        onMessage: { addListener: vi.fn(), removeListener: vi.fn() },
+      },
+    };
+
+    const mockWindow = {
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+      location: { origin: 'https://example.com' },
+    };
+
+    // @ts-expect-error - Setting up globals for testing
+    global.chrome = mockChrome;
+    // @ts-expect-error - Setting up globals for testing
+    globalThis.chrome = mockChrome;
+    // @ts-expect-error - Setting up globals for testing
+    global.window = mockWindow;
+    // @ts-expect-error - Setting up globals for testing
+    globalThis.window = mockWindow;
+
+    chromeCleanup = () => {
+      // @ts-expect-error - Cleaning up globals
+      global.chrome = undefined;
+      // @ts-expect-error - Cleaning up globals
+      globalThis.chrome = undefined;
+      // @ts-expect-error - Cleaning up globals
+      global.window = undefined;
+      // @ts-expect-error - Cleaning up globals
+      globalThis.window = undefined;
+    };
   });
 
   afterEach(() => {
     cleanupFakeTimers();
+    if (chromeCleanup) {
+      chromeCleanup();
+      chromeCleanup = null;
+    }
   });
 
   it('should export ContentScriptRelay from content module', async () => {
@@ -31,11 +83,11 @@ describe('extension module exports', () => {
   });
 
   it('should export createSecurityPolicy from security module', async () => {
-    const { createSecurityPolicy } = await import('./extension.js');
+    const { createSecurityPolicy, SECURITY_PRESETS } = await import('./extension.js');
     expect(createSecurityPolicy).toBeDefined();
     expect(createSecurityPolicy).toBeTypeOf('function');
-    expect(createSecurityPolicy.strict).toBeTypeOf('function');
-    expect(createSecurityPolicy.development).toBeTypeOf('function');
+    expect(SECURITY_PRESETS.strict.requireHttps).toBe(true);
+    expect(SECURITY_PRESETS.development.allowLocalhost).toBe(true);
   });
 
   it('should export validateOrigin from security module', async () => {
@@ -107,18 +159,19 @@ describe('extension module exports', () => {
   });
 
   it('should allow all exported components to work together', async () => {
-    const { ContentScriptRelay, WalletDiscovery, createSecurityPolicy, validateOrigin } = await import(
-      './extension.js'
-    );
+    const { ContentScriptRelay, WalletDiscovery, createSecurityPolicy, validateOrigin, SECURITY_PRESETS } =
+      await import('./extension.js');
 
     // Test security policy creation
-    const strictPolicy = createSecurityPolicy.strict();
+    const strictPolicy = createSecurityPolicy(SECURITY_PRESETS.strict);
     expect(strictPolicy).toBeDefined();
     expect(strictPolicy.requireHttps).toBe(true);
+    expect(strictPolicy.certificateValidation).toBe(true);
 
-    const devPolicy = createSecurityPolicy.development();
+    const devPolicy = createSecurityPolicy(SECURITY_PRESETS.development);
     expect(devPolicy).toBeDefined();
     expect(devPolicy.requireHttps).toBe(false);
+    expect(devPolicy.allowLocalhost).toBe(true);
 
     // Test origin validation
     const validResult = validateOrigin('https://example.com', strictPolicy);

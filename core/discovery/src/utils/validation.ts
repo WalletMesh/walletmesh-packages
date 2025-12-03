@@ -139,15 +139,13 @@ export function validateInitiatorInfo(info: InitiatorInfo): void {
     throw new ValidationError('Initiator name is required and must be a string', 'name', info.name);
   }
 
-  if (!info.url || typeof info.url !== 'string') {
-    throw new ValidationError('Initiator URL is required and must be a string', 'url', info.url);
-  }
-
-  // Validate URL format
-  try {
-    new URL(info.url);
-  } catch {
-    throw new ValidationError('Initiator URL must be a valid URL', 'url', info.url);
+  // URL can be omitted or invalid; initiator will fall back to window.location.origin or localhost
+  if (info.url && typeof info.url === 'string') {
+    try {
+      new URL(info.url);
+    } catch {
+      // Allow invalid here; constructor will compute a safe fallback origin
+    }
   }
 
   // Validate icon if provided
@@ -172,13 +170,7 @@ export function validateCapabilityRequirements(requirements: CapabilityRequireme
     );
   }
 
-  if (requirements.technologies.length === 0) {
-    throw new ValidationError(
-      'At least one technology is required',
-      'technologies',
-      requirements.technologies,
-    );
-  }
+  // Empty requirements are allowed (no strict technology constraint)
 
   // Validate each technology requirement
   for (const tech of requirements.technologies) {

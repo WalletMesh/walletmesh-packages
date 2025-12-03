@@ -1,13 +1,13 @@
 import { JSONRPCError, TimeoutError } from './error.js';
 import { ParameterSerializer } from './parameter-serializer.js';
 import type {
-  JSONRPCMethodMap,
-  JSONRPCSerializer,
+  FallbackMethodHandler,
   JSONRPCContext,
   JSONRPCID,
+  JSONRPCMethodMap,
   JSONRPCSerializedData,
+  JSONRPCSerializer,
   MethodHandler,
-  FallbackMethodHandler,
 } from './types.js';
 
 interface PendingRequest<R> {
@@ -90,6 +90,16 @@ export class MethodManager<
   getMethod<M extends keyof T>(name: M): MethodHandler<T, M, C> | undefined {
     const handler = this.methods.get(name) as MethodHandler<T, M, C> | undefined;
     return handler;
+  }
+
+  /**
+   * Returns list of all registered method names.
+   * Implements the wm_getSupportedMethods pattern for capability discovery.
+   *
+   * @returns Array of registered method names as strings.
+   */
+  getRegisteredMethods(): string[] {
+    return Array.from(this.methods.keys()).map(String);
   }
 
   /**
@@ -190,8 +200,20 @@ export class MethodManager<
 
     if (timeoutInSeconds > 0) {
       request.timeoutId = setTimeout(() => {
-        this.pendingRequests.delete(id);
-        reject(new TimeoutError('Request timed out', id));
+        // Defensive check: only timeout if the request is still pending
+        // This prevents phantom timeouts when the response has already been processed
+        const stillPending = this.pendingRequests.get(id);
+        if (stillPending === request) {
+          this.pendingRequests.delete(id);
+          reject(new TimeoutError('Request timed out', id));
+        } else {
+          // Phantom timeout avoided - request was already resolved
+          console.debug(
+            '[MethodManager] Phantom timeout avoided for request:',
+            id,
+            stillPending ? 'different request object' : 'request already completed',
+          );
+        }
       }, timeoutInSeconds * 1000);
     }
 
@@ -217,26 +239,97 @@ export class MethodManager<
       return false;
     }
 
+    // Atomically remove the request and clear its timeout to prevent race conditions
+    // This must happen before we process the response to prevent phantom timeouts
+    this.pendingRequests.delete(id);
     if (request.timeoutId) {
       clearTimeout(request.timeoutId);
     }
 
-    if (error) {
-      let errorData: string | Record<string, unknown> | undefined;
-      if (error.data === undefined || error.data === null) {
-        errorData = undefined;
-      } else if (typeof error.data === 'string') {
-        errorData = error.data;
-      } else if (typeof error.data === 'object') {
-        // Ensure we have a proper object
-        try {
-          errorData = error.data as Record<string, unknown>;
-        } catch {
-          errorData = undefined;
-        }
+    if (error !== undefined) {
+      // Log the error for debugging with full details
+      console.warn('[MethodManager] Handling error response:', {
+        id,
+        error,
+        errorType: typeof error,
+        errorString: JSON.stringify(error),
+        errorKeys: error && typeof error === 'object' ? Object.keys(error) : 'N/A',
+        errorCode: error && typeof error === 'object' ? (error as Record<string, unknown>).code : 'N/A',
+        errorMessage: error && typeof error === 'object' ? (error as Record<string, unknown>).message : 'N/A',
+        errorData: error && typeof error === 'object' ? (error as Record<string, unknown>).data : 'N/A',
+      });
+
+      // Ensure error is a proper object with required properties
+      if (typeof error !== 'object' || error === null) {
+        console.warn('[MethodManager] Invalid error object type:', typeof error, error);
+        request.reject(
+          new JSONRPCError(-32603, 'Internal error: Invalid error object', { originalError: String(error) }),
+        );
+        return true;
       }
-      request.reject(new JSONRPCError(error.code, error.message, errorData));
-      this.pendingRequests.delete(id);
+
+      let errorData: string | Record<string, unknown> | undefined;
+      let errorCode: number;
+      let errorMessage: string;
+
+      try {
+        // Safely access error properties with validation and fallbacks
+        const rawCode = (error as Record<string, unknown>).code;
+        const rawMessage = (error as Record<string, unknown>).message;
+        const rawData = (error as Record<string, unknown>).data;
+
+        // Validate and set error code
+        if (typeof rawCode === 'number' && !Number.isNaN(rawCode)) {
+          errorCode = rawCode;
+        } else {
+          errorCode = -32603;
+          console.warn('[MethodManager] Invalid error code, using default:', rawCode);
+        }
+
+        // Validate and set error message
+        if (typeof rawMessage === 'string') {
+          errorMessage = rawMessage;
+        } else if (rawMessage != null) {
+          // Try to convert to string if not null/undefined
+          errorMessage = String(rawMessage);
+          console.warn('[MethodManager] Non-string error message converted:', rawMessage);
+        } else {
+          errorMessage = 'Unknown error';
+        }
+
+        // Handle error data - ensure it's never null
+        if (rawData === undefined || rawData === null) {
+          errorData = undefined;
+        } else if (typeof rawData === 'string') {
+          errorData = rawData;
+        } else if (typeof rawData === 'object') {
+          // Ensure we have a proper object that can be serialized
+          try {
+            // Test if the object can be stringified (no circular refs, etc.)
+            JSON.stringify(rawData);
+            errorData = rawData as Record<string, unknown>;
+          } catch (serializeError) {
+            console.warn('[MethodManager] Error data cannot be serialized:', serializeError);
+            errorData = undefined;
+          }
+        } else {
+          // For other types, convert to string
+          errorData = String(rawData);
+        }
+      } catch (accessError) {
+        // If we can't access error properties at all, use defaults
+        console.error('[MethodManager] Cannot access error properties:', accessError);
+        errorCode = -32603;
+        errorMessage = 'Internal error: Cannot access error properties';
+        errorData = undefined; // Use undefined instead of an object to avoid issues
+      }
+
+      // Final validation before creating JSONRPCError
+      if (errorData === null) {
+        errorData = undefined;
+      }
+
+      request.reject(new JSONRPCError(errorCode, errorMessage, errorData));
     } else if (request.serializer?.result) {
       try {
         if (
@@ -254,22 +347,18 @@ export class MethodManager<
         } else {
           request.reject(new JSONRPCError(-32603, 'Invalid serialized result format'));
         }
-      } catch (err) {
+      } catch (_err) {
         request.reject(new JSONRPCError(-32000, 'Failed to deserialize result'));
-      } finally {
-        this.pendingRequests.delete(id);
       }
     } else {
       if (result === undefined || result === null) {
         request.resolve(result as T[keyof T]['result']);
-        this.pendingRequests.delete(id);
         return true;
       }
 
       const type = typeof result;
       if (type === 'string' || type === 'number' || type === 'boolean') {
         request.resolve(result as T[keyof T]['result']);
-        this.pendingRequests.delete(id);
         return true;
       }
 
@@ -277,17 +366,14 @@ export class MethodManager<
         try {
           JSON.stringify(result);
           request.resolve(result as T[keyof T]['result']);
-          this.pendingRequests.delete(id);
           return true;
         } catch {
           request.reject(new JSONRPCError(-32603, 'Result is not JSON-serializable'));
-          this.pendingRequests.delete(id);
           return true;
         }
       }
 
       request.reject(new JSONRPCError(-32603, 'Invalid result type'));
-      this.pendingRequests.delete(id);
     }
 
     return true;

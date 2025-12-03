@@ -207,6 +207,405 @@ describe('CapabilityMatcher', () => {
       });
     });
 
+    describe('network matching', () => {
+      it('should match when networks overlap', () => {
+        // Create Aztec wallet with specific networks
+        responderInfo = {
+          ...createTestResponderInfo.multiChain(),
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
+          networks: ['aztec:31337', 'aztec:mainnet'],
+        };
+        matcher = new CapabilityMatcher(responderInfo);
+
+        const request: DiscoveryRequestEvent = {
+          type: 'discovery:wallet:request',
+          version: '0.1.0',
+          sessionId: 'test-session',
+          required: {
+            technologies: [
+              {
+                type: 'aztec',
+                interfaces: ['aztec-wallet-api-v1'],
+              },
+            ],
+            features: [],
+            networks: ['aztec:31337'], // Request sandbox network
+          },
+          origin: 'https://example.com',
+          initiatorInfo: { name: 'Test App', icon: '', url: '' },
+        };
+
+        const result = matcher.matchCapabilities(request);
+
+        expect(result.canFulfill).toBe(true);
+        expect(result.intersection?.required.networks).toEqual(['aztec:31337']);
+      });
+
+      it('should fail when networks do not overlap', () => {
+        // Wallet only supports mainnet
+        responderInfo = {
+          ...createTestResponderInfo.multiChain(),
+          technologies: [
+            {
+              type: 'aztec',
+              interfaces: ['aztec-wallet-api-v1'],
+            },
+          ],
+          networks: ['aztec:mainnet'],
+        };
+        matcher = new CapabilityMatcher(responderInfo);
+
+        const request: DiscoveryRequestEvent = {
+          type: 'discovery:wallet:request',
+          version: '0.1.0',
+          sessionId: 'test-session',
+          required: {
+            technologies: [
+              {
+                type: 'aztec',
+                interfaces: ['aztec-wallet-api-v1'],
+              },
+            ],
+            features: [],
+            networks: ['aztec:31337'], // Request sandbox but wallet only has mainnet
+          },
+          origin: 'https://example.com',
+          initiatorInfo: { name: 'Test App', icon: '', url: '' },
+        };
+
+        const result = matcher.matchCapabilities(request);
+
+        expect(result.canFulfill).toBe(false);
+      });
+
+      it('should match when no networks specified', () => {
+        // Wallet specifies networks
+        responderInfo = {
+          ...createTestResponderInfo.ethereum(),
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
+          networks: ['eip155:1', 'eip155:137'],
+        };
+        matcher = new CapabilityMatcher(responderInfo);
+
+        // Request without networks
+        const request: DiscoveryRequestEvent = {
+          type: 'discovery:wallet:request',
+          version: '0.1.0',
+          sessionId: 'test-session',
+          required: {
+            technologies: [
+              {
+                type: 'evm',
+                interfaces: ['eip-1193'],
+              },
+            ],
+            features: [],
+            // No networks specified - should still match
+          },
+          origin: 'https://example.com',
+          initiatorInfo: { name: 'Test App', icon: '', url: '' },
+        };
+
+        const result = matcher.matchCapabilities(request);
+
+        expect(result.canFulfill).toBe(true);
+        // Networks are now always included when wallet supports them (even if not requested)
+        expect(result.intersection?.required.networks).toEqual(['eip155:1', 'eip155:137']);
+      });
+
+      it('should return all overlapping networks', () => {
+        // Wallet supports multiple networks
+        responderInfo = {
+          ...createTestResponderInfo.ethereum(),
+          technologies: [
+            {
+              type: 'evm',
+              interfaces: ['eip-1193'],
+            },
+          ],
+          networks: ['eip155:1', 'eip155:137', 'eip155:42161'],
+        };
+        matcher = new CapabilityMatcher(responderInfo);
+
+        // Request multiple networks
+        const request: DiscoveryRequestEvent = {
+          type: 'discovery:wallet:request',
+          version: '0.1.0',
+          sessionId: 'test-session',
+          required: {
+            technologies: [
+              {
+                type: 'evm',
+                interfaces: ['eip-1193'],
+              },
+            ],
+            features: [],
+            networks: ['eip155:1', 'eip155:137', 'eip155:10'], // Last one not supported
+          },
+          origin: 'https://example.com',
+          initiatorInfo: { name: 'Test App', icon: '', url: '' },
+        };
+
+        const result = matcher.matchCapabilities(request);
+
+        expect(result.canFulfill).toBe(true);
+        expect(result.intersection?.required.networks).toHaveLength(2);
+        expect(result.intersection?.required.networks).toContain('eip155:1');
+        expect(result.intersection?.required.networks).toContain('eip155:137');
+        expect(result.intersection?.required.networks).not.toContain('eip155:10');
+      });
+
+      // Edge case tests for network matching
+      describe('network matching edge cases', () => {
+        it('should handle empty network arrays on wallet', () => {
+          // Wallet with empty networks array
+          responderInfo = {
+            ...createTestResponderInfo.ethereum(),
+            technologies: [
+              {
+                type: 'evm',
+                interfaces: ['eip-1193'],
+              },
+            ],
+            networks: [],
+          };
+          matcher = new CapabilityMatcher(responderInfo);
+
+          const request: DiscoveryRequestEvent = {
+            type: 'discovery:wallet:request',
+            version: '0.1.0',
+            sessionId: 'test-session',
+            required: {
+              technologies: [
+                {
+                  type: 'evm',
+                  interfaces: ['eip-1193'],
+                },
+              ],
+              features: [],
+              networks: ['eip155:1'],
+            },
+            origin: 'https://example.com',
+            initiatorInfo: { name: 'Test App', icon: '', url: '' },
+          };
+
+          const result = matcher.matchCapabilities(request);
+
+          // Should fail since wallet has no networks
+          expect(result.canFulfill).toBe(false);
+        });
+
+        it('should handle empty network arrays on request', () => {
+          // Wallet with networks
+          responderInfo = {
+            ...createTestResponderInfo.ethereum(),
+            technologies: [
+              {
+                type: 'evm',
+                interfaces: ['eip-1193'],
+              },
+            ],
+            networks: ['eip155:1', 'eip155:137'],
+          };
+          matcher = new CapabilityMatcher(responderInfo);
+
+          const request: DiscoveryRequestEvent = {
+            type: 'discovery:wallet:request',
+            version: '0.1.0',
+            sessionId: 'test-session',
+            required: {
+              technologies: [
+                {
+                  type: 'evm',
+                  interfaces: ['eip-1193'],
+                },
+              ],
+              features: [],
+              networks: [],
+            },
+            origin: 'https://example.com',
+            initiatorInfo: { name: 'Test App', icon: '', url: '' },
+          };
+
+          const result = matcher.matchCapabilities(request);
+
+          // Should succeed and include wallet's networks in response
+          expect(result.canFulfill).toBe(true);
+          expect(result.intersection?.required.networks).toEqual(['eip155:1', 'eip155:137']);
+        });
+
+        it('should handle undefined networks on wallet', () => {
+          // Wallet without networks property
+          responderInfo = {
+            ...createTestResponderInfo.ethereum(),
+            technologies: [
+              {
+                type: 'evm',
+                interfaces: ['eip-1193'],
+              },
+            ],
+            // networks property is undefined
+          };
+          matcher = new CapabilityMatcher(responderInfo);
+
+          const request: DiscoveryRequestEvent = {
+            type: 'discovery:wallet:request',
+            version: '0.1.0',
+            sessionId: 'test-session',
+            required: {
+              technologies: [
+                {
+                  type: 'evm',
+                  interfaces: ['eip-1193'],
+                },
+              ],
+              features: [],
+              networks: ['eip155:1'],
+            },
+            origin: 'https://example.com',
+            initiatorInfo: { name: 'Test App', icon: '', url: '' },
+          };
+
+          const result = matcher.matchCapabilities(request);
+
+          // Should fail since wallet has no networks
+          expect(result.canFulfill).toBe(false);
+        });
+
+        it('should handle undefined networks on request', () => {
+          // Wallet with networks
+          responderInfo = {
+            ...createTestResponderInfo.ethereum(),
+            technologies: [
+              {
+                type: 'evm',
+                interfaces: ['eip-1193'],
+              },
+            ],
+            networks: ['eip155:1', 'eip155:137'],
+          };
+          matcher = new CapabilityMatcher(responderInfo);
+
+          const request: DiscoveryRequestEvent = {
+            type: 'discovery:wallet:request',
+            version: '0.1.0',
+            sessionId: 'test-session',
+            required: {
+              technologies: [
+                {
+                  type: 'evm',
+                  interfaces: ['eip-1193'],
+                },
+              ],
+              features: [],
+              // networks property is undefined
+            },
+            origin: 'https://example.com',
+            initiatorInfo: { name: 'Test App', icon: '', url: '' },
+          };
+
+          const result = matcher.matchCapabilities(request);
+
+          // Should succeed and include wallet's networks in response
+          expect(result.canFulfill).toBe(true);
+          expect(result.intersection?.required.networks).toEqual(['eip155:1', 'eip155:137']);
+        });
+
+        it('should handle both undefined networks', () => {
+          // Wallet without networks
+          responderInfo = {
+            ...createTestResponderInfo.ethereum(),
+            technologies: [
+              {
+                type: 'evm',
+                interfaces: ['eip-1193'],
+              },
+            ],
+            // networks undefined
+          };
+          matcher = new CapabilityMatcher(responderInfo);
+
+          const request: DiscoveryRequestEvent = {
+            type: 'discovery:wallet:request',
+            version: '0.1.0',
+            sessionId: 'test-session',
+            required: {
+              technologies: [
+                {
+                  type: 'evm',
+                  interfaces: ['eip-1193'],
+                },
+              ],
+              features: [],
+              // networks undefined
+            },
+            origin: 'https://example.com',
+            initiatorInfo: { name: 'Test App', icon: '', url: '' },
+          };
+
+          const result = matcher.matchCapabilities(request);
+
+          // Should succeed when both are undefined (network-agnostic matching)
+          expect(result.canFulfill).toBe(true);
+          expect(result.intersection?.required.networks).toBeUndefined();
+        });
+
+        it('should handle network matching with technology filtering', () => {
+          // Multi-chain wallet
+          responderInfo = {
+            ...createTestResponderInfo.multiChain(),
+            technologies: [
+              {
+                type: 'evm',
+                interfaces: ['eip-1193'],
+              },
+              {
+                type: 'solana',
+                interfaces: ['solana-wallet-standard'],
+              },
+            ],
+            networks: ['eip155:1', 'eip155:137', 'solana:mainnet'],
+          };
+          matcher = new CapabilityMatcher(responderInfo);
+
+          // Request only EVM with specific network
+          const request: DiscoveryRequestEvent = {
+            type: 'discovery:wallet:request',
+            version: '0.1.0',
+            sessionId: 'test-session',
+            required: {
+              technologies: [
+                {
+                  type: 'evm',
+                  interfaces: ['eip-1193'],
+                },
+              ],
+              features: [],
+              networks: ['eip155:1'],
+            },
+            origin: 'https://example.com',
+            initiatorInfo: { name: 'Test App', icon: '', url: '' },
+          };
+
+          const result = matcher.matchCapabilities(request);
+
+          expect(result.canFulfill).toBe(true);
+          // Should only include the requested EVM network
+          expect(result.intersection?.required.networks).toEqual(['eip155:1']);
+        });
+      });
+    });
+
     describe('getCapabilityDetails', () => {
       it('should return detailed capability information', () => {
         const details = matcher.getCapabilityDetails();

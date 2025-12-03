@@ -1,25 +1,62 @@
 import {
+  createTransportContextMiddleware,
+  JSONRPCError,
   JSONRPCNode,
   JSONRPCProxy,
-  type JSONRPCTransport,
+  type JSONRPCParams,
   type JSONRPCProxyConfig,
-  JSONRPCError,
+  type JSONRPCTransport,
 } from '@walletmesh/jsonrpc';
 
+import {
+  ApprovalQueueManager,
+  createApprovalQueueMiddleware,
+  type ApprovalContext,
+  type OnApprovalQueuedCallback,
+} from './approval/index.js';
 import { RouterError } from './errors.js';
+import { createPermissionsMiddleware, createSessionMiddleware } from './middleware.js';
 import { defaultStore, type SessionStore } from './session-store.js';
-import { createSessionMiddleware, createPermissionsMiddleware } from './middleware.js';
 import type {
   ChainId,
   ChainPermissions,
   MethodCall,
   PermissionManager,
   RouterContext,
-  RouterMethodMap,
   RouterEventMap,
+  RouterMethodMap,
   SessionData,
   Wallets,
 } from './types.js';
+
+/**
+ * Configuration for the approval queue system.
+ * Enables request-based approval tracking to prevent race conditions.
+ */
+export interface ApprovalQueueRouterConfig {
+  /**
+   * Array of method names that require user approval.
+   * Each request for these methods will be queued and blocked until
+   * explicitly approved or denied by the user.
+   *
+   * @example ['aztec_wmExecuteTx', 'aztec_wmDeployContract', 'aztec_createAuthWit']
+   */
+  methodsRequiringApproval: string[];
+  /**
+   * Timeout in milliseconds for approval requests.
+   * After this time, the request will be automatically rejected.
+   * @default 300000 (5 minutes)
+   */
+  defaultTimeout?: number | undefined;
+  /**
+   * Callback invoked when a new approval is queued.
+   * The wallet UI should use this to display the approval dialog.
+   * The wallet must call `router.resolveApproval(requestId, approved)` to resolve.
+   *
+   * @param context - The approval context with request details
+   */
+  onApprovalQueued: OnApprovalQueuedCallback;
+}
 
 /**
  * Configuration options for the WalletRouter.
@@ -48,6 +85,38 @@ export interface WalletRouterConfig {
    * @default false
    */
   debug?: boolean;
+  /**
+   * Optional callback invoked when a new session is created.
+   * Called after the session is successfully stored in the session store.
+   * @param sessionId - The ID of the newly created session
+   * @param origin - The origin that created the session
+   */
+  onSessionCreated?: (sessionId: string, origin: string) => void;
+  /**
+   * Optional callback invoked when a session is deleted.
+   * Called after the session is removed from the session store.
+   * @param sessionId - The ID of the deleted session
+   */
+  onSessionDeleted?: (sessionId: string) => void;
+  /**
+   * Optional approval queue configuration.
+   * When provided, enables request-based approval tracking to prevent
+   * race conditions where concurrent requests could bypass user approval.
+   *
+   * @example
+   * ```typescript
+   * const router = new WalletRouter(transport, wallets, permissionManager, {
+   *   approvalQueue: {
+   *     methodsRequiringApproval: ['aztec_wmExecuteTx', 'aztec_createAuthWit'],
+   *     onApprovalQueued: async (ctx) => {
+   *       const approved = await showApprovalDialog(ctx);
+   *       router.resolveApproval(ctx.requestId, approved);
+   *     },
+   *   },
+   * });
+   * ```
+   */
+  approvalQueue?: ApprovalQueueRouterConfig;
 }
 
 /**
@@ -82,6 +151,69 @@ export interface WalletRouterConfig {
  * // - Event forwarding
  * ```
  */
+
+/**
+ * Defensive utility functions for permission validation
+ */
+
+/**
+ * Sanitizes a ChainPermissions object by removing invalid entries
+ * @param permissions - The permissions object to sanitize
+ * @returns A clean ChainPermissions object with only valid entries
+ */
+function sanitizeChainPermissions(permissions: unknown): ChainPermissions {
+  if (!permissions || typeof permissions !== 'object' || Array.isArray(permissions)) {
+    return {};
+  }
+
+  const permissionsObj = permissions as Record<string, unknown>;
+  const sanitized: ChainPermissions = {};
+
+  for (const [chainId, methods] of Object.entries(permissionsObj)) {
+    // Skip if chainId is invalid
+    if (typeof chainId !== 'string' || !chainId.trim()) {
+      continue;
+    }
+
+    // Skip if methods is not an array
+    if (!Array.isArray(methods)) {
+      continue;
+    }
+
+    // Filter out invalid method entries
+    const validMethods = methods.filter(
+      (method) => typeof method === 'string' && method.trim().length > 0,
+    ) as string[];
+
+    // Only add chainId if it has at least one valid method
+    if (validMethods.length > 0) {
+      sanitized[chainId] = validMethods;
+    }
+  }
+
+  return sanitized;
+}
+
+/**
+ * Validates and sanitizes permissions with defensive fallbacks
+ * @param permissions - The permissions to validate
+ * @returns Sanitized permissions object (empty if invalid input)
+ */
+function validateAndSanitizePermissions(permissions: unknown): ChainPermissions {
+  // Return empty permissions for null/undefined input (defensive behavior)
+  if (!permissions || typeof permissions !== 'object') {
+    return {};
+  }
+
+  // Return empty permissions for array input (defensive behavior)
+  if (Array.isArray(permissions)) {
+    return {};
+  }
+
+  // Sanitize the permissions and return result (even if empty)
+  return sanitizeChainPermissions(permissions);
+}
+
 export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext> {
   /**
    * Store for managing session data persistence and lifecycle
@@ -106,6 +238,26 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * @private
    */
   private permissionManager: PermissionManager<RouterMethodMap, RouterContext>;
+
+  /**
+   * Optional callback for when a session is created
+   * @private
+   */
+  private onSessionCreated?: (sessionId: string, origin: string) => void;
+
+  /**
+   * Optional callback for when a session is deleted
+   * @private
+   */
+  private onSessionDeleted?: (sessionId: string) => void;
+
+  /**
+   * Optional approval queue manager for request-based approval tracking.
+   * When configured, each request requiring approval gets its own entry
+   * keyed by the unique JSON-RPC request ID, preventing race conditions.
+   * @private
+   */
+  private approvalQueueManager?: ApprovalQueueManager;
 
   /**
    * Creates a new WalletRouter instance for managing multi-chain wallet connections.
@@ -137,6 +289,12 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     this.config = config;
     this.sessionStore = config.sessionStore || defaultStore;
     this.permissionManager = permissionManager;
+    if (config.onSessionCreated) {
+      this.onSessionCreated = config.onSessionCreated;
+    }
+    if (config.onSessionDeleted) {
+      this.onSessionDeleted = config.onSessionDeleted;
+    }
 
     // Create proxies for each wallet transport with chain-specific configuration
     this.walletProxies = new Map();
@@ -148,8 +306,14 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       if (config.debug || config.proxyConfig?.debug) {
         proxyConfig.debug = true;
       }
+      proxyConfig.onNotification = (method, params) => {
+        this.handleWalletNotification(chainId, method, params);
+      };
       this.walletProxies.set(chainId, new JSONRPCProxy(walletTransport, proxyConfig));
     }
+
+    // Add transport context middleware FIRST to inject browser-validated origin
+    this.addMiddleware(createTransportContextMiddleware(transport));
 
     // Add middleware for session validation and permission checks
     this.addMiddleware(createSessionMiddleware(this.sessionStore));
@@ -157,6 +321,32 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     this.addMiddleware(
       createPermissionsMiddleware(this.permissionManager.checkPermissions.bind(this.permissionManager)),
     );
+
+    // Initialize approval queue if configured
+    if (config.approvalQueue) {
+      this.approvalQueueManager = new ApprovalQueueManager({
+        ...(config.approvalQueue.defaultTimeout !== undefined && {
+          defaultTimeout: config.approvalQueue.defaultTimeout,
+        }),
+        ...(config.debug !== undefined && { debug: config.debug }),
+      });
+
+      // Add approval queue middleware AFTER permission middleware
+      // This ensures requests are first validated for permissions, then queued for approval
+      this.addMiddleware(
+        createApprovalQueueMiddleware(
+          this.approvalQueueManager,
+          {
+            methodsRequiringApproval: config.approvalQueue.methodsRequiringApproval,
+            ...(config.approvalQueue.defaultTimeout !== undefined && {
+              timeout: config.approvalQueue.defaultTimeout,
+            }),
+            ...(config.debug !== undefined && { debug: config.debug }),
+          },
+          config.approvalQueue.onApprovalQueued,
+        ),
+      );
+    }
 
     // Register methods
     this.registerMethod('wm_connect', this.connect.bind(this));
@@ -213,6 +403,9 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     if (this.config.debug || this.config.proxyConfig?.debug) {
       proxyConfig.debug = true;
     }
+    proxyConfig.onNotification = (method, params) => {
+      this.handleWalletNotification(chainId, method, params);
+    };
 
     this.walletProxies.set(chainId, new JSONRPCProxy(transport, proxyConfig));
 
@@ -251,6 +444,185 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   }
 
   /**
+   * Revokes a specific session, terminating the connection with the dApp.
+   * This is the wallet-side API for session termination.
+   *
+   * @param sessionId - Session ID to revoke
+   * @returns Promise that resolves when session is revoked
+   * @throws {RouterError} With code 'invalidSession' if session doesn't exist
+   *
+   * @example
+   * ```typescript
+   * // Wallet UI: User clicks "Revoke Session" button
+   * await router.revokeSession('session123');
+   * ```
+   */
+  public async revokeSession(sessionId: string): Promise<void> {
+    // Fetch session from store
+    const session = await this.sessionStore.get(sessionId);
+    if (!session) {
+      throw new RouterError('invalidSession', `Session ${sessionId} not found`);
+    }
+
+    // Build context for disconnect
+    const context: RouterContext = {
+      session: {
+        id: session.id,
+        origin: session.origin,
+        createdAt: session.createdAt,
+      },
+      origin: session.origin,
+    };
+
+    try {
+      // Call internal disconnect method to handle cleanup and notifications
+      await this.disconnect(context, { sessionId });
+    } catch (error) {
+      // Log error but still consider session revoked (wallet-side authoritative)
+      console.warn('[WalletRouter] Error during session revocation', {
+        sessionId,
+        error: error instanceof Error ? error.message : error,
+      });
+      // Ensure session is deleted even if notification fails
+      await this.sessionStore.delete(sessionId);
+      this.onSessionDeleted?.(sessionId);
+      throw error;
+    }
+  }
+
+  /**
+   * Revokes all active sessions, terminating all dApp connections.
+   * This is the wallet-side API for bulk session termination.
+   *
+   * @returns Promise that resolves when all sessions are revoked
+   *
+   * @example
+   * ```typescript
+   * // Wallet UI: User clicks "Revoke All Sessions" button
+   * await router.revokeAllSessions();
+   * ```
+   */
+  public async revokeAllSessions(): Promise<void> {
+    // Get all sessions from store
+    const sessionsMap = await this.sessionStore.getAll();
+
+    if (!sessionsMap || sessionsMap.size === 0) {
+      console.log('[WalletRouter] No sessions to revoke');
+      return;
+    }
+
+    console.log(`[WalletRouter] Revoking ${sessionsMap.size} sessions`);
+
+    // Convert Map to array of sessions for processing
+    const sessions = Array.from(sessionsMap.values());
+
+    // Revoke each session individually to ensure proper cleanup and notifications
+    const results = await Promise.allSettled(
+      sessions.map(async (session) => {
+        try {
+          await this.revokeSession(session.id);
+        } catch (error) {
+          console.warn('[WalletRouter] Failed to revoke session', {
+            sessionId: session.id,
+            error: error instanceof Error ? error.message : error,
+          });
+          throw error;
+        }
+      }),
+    );
+
+    // Log any failures
+    const failures = results.filter((r) => r.status === 'rejected');
+    if (failures.length > 0) {
+      console.warn(`[WalletRouter] ${failures.length}/${sessions.length} sessions failed to revoke properly`);
+    } else {
+      console.log('[WalletRouter] All sessions revoked successfully');
+    }
+  }
+
+  /**
+   * Resolves a pending approval request with the user's decision.
+   * This method is called by the wallet UI after the user approves or denies a request.
+   *
+   * @param requestId - The unique JSON-RPC request ID to resolve
+   * @param approved - true if user approved the request, false if denied
+   * @returns true if the approval was found and resolved, false if not found
+   *
+   * @example
+   * ```typescript
+   * // In wallet UI approval dialog
+   * const handleApprove = () => {
+   *   router.resolveApproval(approvalContext.requestId, true);
+   * };
+   *
+   * const handleDeny = () => {
+   *   router.resolveApproval(approvalContext.requestId, false);
+   * };
+   * ```
+   */
+  public resolveApproval(requestId: string | number, approved: boolean): boolean {
+    if (!this.approvalQueueManager) {
+      console.warn('[WalletRouter] Approval queue not configured');
+      return false;
+    }
+    return this.approvalQueueManager.resolveApproval(requestId, approved);
+  }
+
+  /**
+   * Gets all pending approval requests.
+   * This method is used by the wallet UI to display pending approvals.
+   *
+   * @returns Array of pending approval contexts
+   *
+   * @example
+   * ```typescript
+   * // In wallet UI
+   * const pendingApprovals = router.getPendingApprovals();
+   * console.log(`${pendingApprovals.length} pending approvals`);
+   *
+   * for (const approval of pendingApprovals) {
+   *   console.log(`Request ${approval.requestId}: ${approval.method}`);
+   * }
+   * ```
+   */
+  public getPendingApprovals(): ApprovalContext[] {
+    if (!this.approvalQueueManager) {
+      return [];
+    }
+    return this.approvalQueueManager.getAllPending();
+  }
+
+  /**
+   * Gets the count of pending approval requests.
+   *
+   * @returns Number of pending approvals
+   */
+  public getPendingApprovalCount(): number {
+    if (!this.approvalQueueManager) {
+      return 0;
+    }
+    return this.approvalQueueManager.getPendingCount();
+  }
+
+  /**
+   * Forward wallet-originated notifications to connected clients.
+   *
+   * @param chainId - Chain that emitted the notification
+   * @param method - Method name from the wallet notification
+   * @param params - Parameters payload
+   * @private
+   */
+  private handleWalletNotification(chainId: ChainId, method: string, params: unknown): void {
+    void this.sendNotification(method, params as JSONRPCParams).catch((error) => {
+      console.warn('[WalletRouter] Failed to forward wallet notification', {
+        chainId,
+        method,
+        error: error instanceof Error ? error.message : error,
+      });
+    });
+  }
+
+  /**
    * Handles wm_connect method to establish a new session.
    * Creates a new session with requested permissions after approval.
    *
@@ -272,7 +644,10 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     }
 
     const { permissions } = params;
-    const chainIds = Object.keys(permissions);
+
+    // Defensive validation and sanitization of permissions
+    const sanitizedPermissions = validateAndSanitizePermissions(permissions);
+    const chainIds = Object.keys(sanitizedPermissions);
 
     if (chainIds.length === 0) {
       throw new RouterError('invalidRequest', 'No chains specified');
@@ -282,14 +657,25 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     const session: SessionData = {
       id: sessionId,
       origin,
+      createdAt: Date.now(),
     };
 
     context.session = session;
 
-    const approvedPermissions = await this.permissionManager.approvePermissions(context, permissions);
+    const approvedPermissions = await this.permissionManager.approvePermissions(
+      context,
+      sanitizedPermissions,
+    );
+
+    // Store the requested permissions in the session for reconnection
+    // sanitizedPermissions is already in ChainPermissions format - no conversion needed
+    session.permissions = sanitizedPermissions;
 
     // Store session data
-    await this.sessionStore.set(`${origin}_${sessionId}`, session);
+    await this.sessionStore.set(sessionId, session);
+
+    // Notify about new session creation
+    this.onSessionCreated?.(sessionId, origin);
 
     return { sessionId, permissions: approvedPermissions };
   }
@@ -316,7 +702,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     }
 
     const { sessionId } = params;
-    const session = await this.sessionStore.validateAndRefresh(`${origin}_${sessionId}`);
+    const session = await this.sessionStore.validateAndRefresh(sessionId);
 
     if (!session) {
       return { status: false, permissions: {} };
@@ -343,7 +729,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     params: RouterMethodMap['wm_disconnect']['params'],
   ): Promise<RouterMethodMap['wm_disconnect']['result']> {
     const { sessionId } = params;
-    const { origin, session } = context;
+    const { session } = context;
 
     if (!session) {
       throw new RouterError('invalidSession');
@@ -353,7 +739,10 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
       await this.permissionManager.cleanup(context, session.id);
     }
 
-    await this.sessionStore.delete(`${origin}_${sessionId}`);
+    await this.sessionStore.delete(sessionId);
+
+    // Notify about session deletion
+    this.onSessionDeleted?.(sessionId);
 
     // Emit session terminated event
     this.emit('wm_sessionTerminated', {
@@ -406,7 +795,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     params: RouterMethodMap['wm_updatePermissions']['params'],
   ): Promise<RouterMethodMap['wm_updatePermissions']['result']> {
     const { sessionId, permissions } = params;
-    const { origin, session } = context;
+    const { session } = context;
 
     if (!session) {
       throw new RouterError('invalidSession');
@@ -415,7 +804,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     // Update session with new permissions
     const approvedPermissions = await this.permissionManager.approvePermissions(context, permissions);
 
-    await this.sessionStore.set(`${origin}_${sessionId}`, session);
+    await this.sessionStore.set(sessionId, session);
 
     return approvedPermissions;
   }
@@ -433,14 +822,22 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
   protected async _call(
     proxy: JSONRPCProxy,
     methodCall: MethodCall,
+    context?: RouterContext,
   ): Promise<RouterMethodMap['wm_call']['result']> {
-    // Create inner JSON-RPC request
-    const innerRequest = {
+    // Create inner JSON-RPC request with context forwarding
+    const innerRequest: any = {
       jsonrpc: '2.0' as const,
       method: methodCall.method,
       params: methodCall.params,
       id: crypto.randomUUID(),
     };
+
+    // Attach context for local transports to extract
+    if (context?.origin) {
+      innerRequest._context = {
+        origin: context.origin,
+      };
+    }
 
     try {
       // Forward the raw message through the proxy
@@ -490,12 +887,12 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * @protected
    */
   protected async call(
-    _context: RouterContext,
+    context: RouterContext,
     params: RouterMethodMap['wm_call']['params'],
   ): Promise<RouterMethodMap['wm_call']['result']> {
     const { chainId, call } = params;
     const client = this.validateChain(chainId);
-    return await this._call(client, call);
+    return await this._call(client, call, context);
   }
 
   /**
@@ -510,7 +907,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
    * @protected
    */
   protected async bulkCall(
-    _context: RouterContext,
+    context: RouterContext,
     params: RouterMethodMap['wm_bulkCall']['params'],
   ): Promise<RouterMethodMap['wm_bulkCall']['result']> {
     const { chainId, calls } = params;
@@ -519,7 +916,7 @@ export class WalletRouter extends JSONRPCNode<RouterMethodMap, RouterEventMap, R
     const responses: unknown[] = [];
     try {
       for (const call of calls) {
-        responses.push(await this._call(client, call));
+        responses.push(await this._call(client, call, context));
       }
       return responses as RouterMethodMap['wm_bulkCall']['result'];
     } catch (error) {

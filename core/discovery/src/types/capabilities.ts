@@ -10,8 +10,6 @@
  * @since 0.1.0
  */
 
-import type { CHAIN_TYPES } from '../core/constants.js';
-
 /**
  * Technology requirement for discovery.
  *
@@ -68,6 +66,15 @@ export interface CapabilityRequirements {
    * See RESPONDER_FEATURES for standard values.
    */
   features: string[];
+
+  /**
+   * Specific networks required (CAIP-2 format).
+   * Examples: 'eip155:1' (Ethereum mainnet), 'aztec:31337' (Aztec sandbox), 'solana:mainnet'
+   * If specified, wallet must support at least one of these networks to match.
+   * Networks are independent of technology support - a wallet might support Aztec technology
+   * on multiple networks.
+   */
+  networks?: string[];
 }
 
 /**
@@ -92,17 +99,14 @@ export interface CapabilityPreferences {
    * These are "nice to have" capabilities beyond the required features.
    */
   features?: string[];
+
+  /**
+   * Additional networks that would be beneficial (CAIP-2 format).
+   * These networks are not required but having them increases wallet ranking.
+   */
+  networks?: string[];
 }
 
-/**
- * Technology capability match for discovery response.
- *
- * Represents a matched technology with the specific interface and features
- * that the wallet supports for that technology.
- *
- * @category Discovery
- * @since 0.3.0
- */
 export interface TechnologyMatch {
   /**
    * Blockchain technology type.
@@ -175,6 +179,12 @@ export interface CapabilityIntersection {
      * Global features that overlap between requirements and responder support.
      */
     features: string[];
+
+    /**
+     * Networks that overlap between requirements and responder support (CAIP-2 format).
+     * Only included if networks were specified in the request.
+     */
+    networks?: string[];
   };
 
   /**
@@ -191,104 +201,12 @@ export interface CapabilityIntersection {
      * Optional features that are supported.
      */
     features?: string[];
+
+    /**
+     * Optional networks that are supported (CAIP-2 format).
+     */
+    networks?: string[];
   };
-}
-
-/**
- * Chain type classification.
- *
- * @category Discovery
- * @since 0.1.0
- */
-export type ChainType = (typeof CHAIN_TYPES)[keyof typeof CHAIN_TYPES];
-
-/**
- * Network information for blockchain networks.
- *
- * @category Discovery
- * @since 0.1.0
- */
-export interface NetworkInfo {
-  name: string;
-  chainId: string;
-  nativeCurrency: {
-    name: string;
-    symbol: string;
-    decimals: number;
-  };
-  testnet: boolean;
-}
-
-/**
- * Transaction type classification.
- *
- * @category Discovery
- * @since 0.1.0
- */
-export interface TransactionType {
-  id: string;
-  name: string;
-  description: string;
-  parameters: ParameterSpec[];
-  supportsGasEstimation: boolean;
-  requiresUserApproval: boolean;
-}
-
-/**
- * Parameter specification for transaction types.
- *
- * @category Discovery
- * @since 0.1.0
- */
-export interface ParameterSpec {
-  name: string;
-  type: string;
-  required: boolean;
-  description: string;
-  validation?: ValidationRule[];
-}
-
-/**
- * Validation rule for parameters.
- *
- * @category Discovery
- * @since 0.1.0
- */
-export interface ValidationRule {
-  type: 'min' | 'max' | 'regex' | 'enum' | 'custom';
-  value: unknown;
-  message: string;
-}
-
-/**
- * Chain-specific feature declaration.
- *
- * @category Discovery
- * @since 0.1.0
- */
-export interface ChainFeature {
-  id: string;
-  name: string;
-  description: string;
-  supportsEstimation: boolean;
-  requiresNetwork: boolean;
-}
-
-/**
- * Complete chain capability declaration.
- *
- * @category Discovery
- * @since 0.1.0
- */
-export interface ChainCapability {
-  chainId: string;
-  chainType: ChainType;
-  network: NetworkInfo;
-  standards: string[];
-  rpcMethods: string[];
-  transactionTypes: TransactionType[];
-  signatureSchemes: string[];
-  features: ChainFeature[];
 }
 
 /**
@@ -366,6 +284,7 @@ export interface BaseResponderInfo {
   protocolVersion: string;
   technologies: TechnologyCapability[];
   features: ResponderFeature[];
+  networks?: string[];
   description?: string;
   homepage?: string;
   platform?: ResponderPlatform;
@@ -421,6 +340,8 @@ export interface QualifiedResponder {
   name: string;
   icon: string;
   matched: CapabilityIntersection;
+  networks?: string[];
+  sessionId?: string;
   transportConfig?: import('./core.js').TransportConfig;
   metadata?: {
     version?: string;

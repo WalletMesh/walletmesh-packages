@@ -30,7 +30,7 @@
   border: 1px solid var(--approve-border, #ccc);
   margin-bottom: 16px;
   text-align: left;
-  background-color: var(--approve-bg, transparent);
+  background-color: var(--approve-bg, #ffffff);
   color: var(--approve-text, inherit);
 }
 

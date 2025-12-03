@@ -1,4 +1,6 @@
 import type { AztecAddress, ContractArtifact, Wallet } from '@aztec/aztec.js';
+import type { Fr } from '@aztec/foundation/fields';
+import { getContractClassFromArtifact } from '@aztec/stdlib/contract';
 
 import { AztecWalletError } from './errors.js';
 
@@ -70,6 +72,22 @@ export class ContractArtifactCache {
    *                            is not registered with the wallet or cannot be found.
    *                            Also re-throws other errors encountered during wallet calls.
    */
+  private toKey(identifier: AztecAddress | Fr | string): string {
+    if (typeof identifier === 'string') {
+      return identifier;
+    }
+    return identifier.toString();
+  }
+
+  public storeArtifactForAddress(address: AztecAddress, artifact: ContractArtifact): void {
+    this.cache.set(address.toString(), artifact);
+  }
+
+  public async rememberContractClass(artifact: ContractArtifact): Promise<string> {
+    const { artifactHash } = await getContractClassFromArtifact(artifact);
+    return this.toKey(artifactHash);
+  }
+
   public async getContractArtifact(contractAddress: AztecAddress): Promise<ContractArtifact> {
     const addressStr = contractAddress.toString();
     const cached = this.cache.get(addressStr);

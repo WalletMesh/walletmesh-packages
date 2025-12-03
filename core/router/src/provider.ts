@@ -1,19 +1,22 @@
-import { JSONRPCNode, type JSONRPCSerializer } from '@walletmesh/jsonrpc';
-
+import {
+  JSONRPCNode,
+  type JSONRPCParams,
+  type JSONRPCSerializer,
+  type JSONRPCTransport,
+} from '@walletmesh/jsonrpc';
+import { RouterError, RouterErrorMap } from './errors.js';
+import { OperationBuilder } from './operation.js';
+import { ProviderSerializerRegistry } from './provider-serialization.js';
 import type {
   ChainId,
   ChainPermissions,
   HumanReadableChainPermissions,
   MethodCall,
   MethodResults,
-  RouterMethodMap,
-  RouterEventMap,
   RouterContext,
+  RouterEventMap,
+  RouterMethodMap,
 } from './types.js';
-
-import { RouterError } from './errors.js';
-import { OperationBuilder } from './operation.js';
-import { ProviderSerializerRegistry } from './provider-serialization.js';
 
 /**
  * Client-side provider for interacting with the multi-chain router.
@@ -62,6 +65,33 @@ import { ProviderSerializerRegistry } from './provider-serialization.js';
 export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEventMap, RouterContext> {
   private _sessionId: string | undefined;
   private serializerRegistry = new ProviderSerializerRegistry();
+  private notificationHandlers = new Map<string, Set<(params: unknown) => void>>();
+
+  /**
+   * Creates a new WalletRouterProvider instance.
+   *
+   * @param transport - The JSON-RPC transport for communication
+   * @param context - Optional context object for the JSON-RPC node
+   * @param sessionId - Optional pre-existing session ID to use without calling connect
+   */
+  constructor(transport: JSONRPCTransport, context?: RouterContext, sessionId?: string) {
+    super(transport, context);
+    if (sessionId) {
+      this._sessionId = sessionId;
+    }
+
+    this.addMiddleware(async (_context, request, next) => {
+      if (request.id === undefined && typeof request.method === 'string') {
+        this.dispatchNotification(request.method, request.params);
+        return {
+          jsonrpc: '2.0' as const,
+          id: undefined,
+          result: null,
+        };
+      }
+      return next();
+    });
+  }
 
   /**
    * Gets the current session ID if connected, undefined otherwise.
@@ -74,6 +104,30 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    */
   get sessionId(): string | undefined {
     return this._sessionId;
+  }
+
+  /**
+   * Register a handler for router-delivered notifications.
+   *
+   * @param method - Notification method name
+   * @param handler - Callback invoked with notification params
+   * @returns Cleanup function to remove the handler
+   */
+  onNotification(method: string, handler: (params: unknown) => void): () => void {
+    let handlers = this.notificationHandlers.get(method);
+    if (!handlers) {
+      handlers = new Set();
+      this.notificationHandlers.set(method, handlers);
+    }
+
+    handlers.add(handler);
+
+    return () => {
+      handlers.delete(handler);
+      if (handlers.size === 0) {
+        this.notificationHandlers.delete(method);
+      }
+    };
   }
 
   /**
@@ -113,6 +167,68 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
   }
 
   /**
+   * Reconnect to an existing session.
+   *
+   * Used to restore a previous session after page refresh or browser restart.
+   * The session must still be valid on the wallet side.
+   *
+   * @param sessionId - The session ID to reconnect to
+   * @param timeout - Optional timeout in milliseconds. If the request takes longer,
+   *                 it will be cancelled and throw a TimeoutError
+   * @returns Reconnection result with status and current permissions
+   * @throws {RouterError} With code 'invalidSession' if session is invalid or expired
+   * @throws {TimeoutError} If the request times out
+   * @see {@link RouterMethodMap['wm_reconnect']} for detailed request/response types
+   *
+   * @example
+   * ```typescript
+   * // Load saved session ID from storage
+   * const savedSessionId = localStorage.getItem('walletSessionId');
+   * if (savedSessionId) {
+   *   try {
+   *     const result = await provider.reconnect(savedSessionId);
+   *     if (result.status) {
+   *       console.log('Reconnected with permissions:', result.permissions);
+   *     }
+   *   } catch (error) {
+   *     console.error('Reconnection failed:', error);
+   *     localStorage.removeItem('walletSessionId');
+   *   }
+   * }
+   * ```
+   */
+  async reconnect(
+    sessionId: string,
+    timeout?: number,
+  ): Promise<{ status: boolean; permissions: HumanReadableChainPermissions }> {
+    if (!sessionId) {
+      throw new Error('Session ID is required for reconnection');
+    }
+
+    // Store the session ID for future operations
+    this._sessionId = sessionId;
+
+    try {
+      // Call the internal wm_reconnect method
+      const result = await this.callMethod('wm_reconnect', { sessionId }, timeout);
+
+      // Emit connection restored event if successful
+      if (result.status) {
+        this.emit('connection:restored', {
+          sessionId,
+          permissions: result.permissions,
+        });
+      }
+
+      return result;
+    } catch (error) {
+      // Clear invalid session ID
+      this._sessionId = undefined;
+      throw error;
+    }
+  }
+
+  /**
    * Disconnects the current session if one exists.
    * Cleans up session state and notifies the router to terminate the session.
    *
@@ -126,8 +242,33 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
     if (!this._sessionId) {
       return;
     }
-    await this.callMethod('wm_disconnect', { sessionId: this._sessionId }, timeout);
-    this._sessionId = undefined;
+
+    try {
+      await this.callMethod('wm_disconnect', { sessionId: this._sessionId }, timeout);
+    } catch (error) {
+      // Check if this is a transport-level error (e.g., window closed)
+      const isTransportError =
+        error &&
+        typeof error === 'object' &&
+        'message' in error &&
+        typeof error.message === 'string' &&
+        (error.message.includes('window closed') ||
+          error.message.includes('Not connected') ||
+          error.message.includes('disconnected'));
+
+      if (isTransportError) {
+        // Transport errors during disconnect are expected when the wallet window
+        // is already closed. Log for debugging but don't throw.
+        console.debug('[WalletRouterProvider] Transport already disconnected during disconnect:', error);
+      } else {
+        // For other errors, rethrow since they may indicate real problems
+        throw error;
+      }
+    } finally {
+      // Always clear session ID, even if disconnect message failed
+      // This ensures we don't try to use a stale session
+      this._sessionId = undefined;
+    }
   }
 
   /**
@@ -238,23 +379,121 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
       throw new RouterError('invalidSession');
     }
 
+    const startTime = Date.now();
+    console.log('🚀 WalletRouterProvider.call starting', {
+      chainId,
+      method: call.method,
+      sessionId: this._sessionId,
+      timeout,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Transport state check removed (transport is private in JSONRPCNode)
+
     // Serialize the method call parameters if a serializer is registered
     const serializedCall = await this.serializerRegistry.serializeCall(call as MethodCall<string>);
 
-    const result = await this.callMethod(
-      'wm_call',
-      {
+    try {
+      console.log('📤 WalletRouterProvider.call sending wm_call request', {
         chainId,
-        call: serializedCall as MethodCall,
+        method: call.method,
         sessionId: this._sessionId,
-      },
-      timeout,
-    );
+        timeout,
+        serializedCallMethod: serializedCall?.method,
+        hasParams: !!serializedCall?.params,
+        paramsType: typeof serializedCall?.params,
+      });
 
-    // Deserialize the result if a serializer is registered
-    const deserializedResult = await this.serializerRegistry.deserializeResult(call.method as string, result);
+      const result = await this.callMethod(
+        'wm_call',
+        {
+          chainId,
+          call: serializedCall as MethodCall,
+          sessionId: this._sessionId,
+        },
+        timeout,
+      );
 
-    return deserializedResult as RouterMethodMap[M]['result'];
+      const elapsed = Date.now() - startTime;
+      console.log(`✅ WalletRouterProvider.call succeeded after ${elapsed}ms`, {
+        chainId,
+        method: call.method,
+        sessionId: this._sessionId,
+        elapsed,
+        hasResult: !!result,
+        resultType: typeof result,
+        result: result,
+      });
+
+      // Deserialize the result if a serializer is registered
+      const deserializedResult = await this.serializerRegistry.deserializeResult(
+        call.method as string,
+        result,
+      );
+
+      return deserializedResult as RouterMethodMap[M]['result'];
+    } catch (error) {
+      const elapsed = Date.now() - startTime;
+
+      // Enhanced error logging with transport state
+      console.error(`❌ WalletRouterProvider.call failed after ${elapsed}ms`, {
+        chainId,
+        method: call.method,
+        sessionId: this._sessionId,
+        elapsed,
+        timeout,
+        error: error instanceof Error ? error.message : error,
+        errorType: typeof error,
+        errorName: error instanceof Error ? error.constructor.name : 'Unknown',
+        errorStack: error instanceof Error ? error.stack : undefined,
+        // Transport state logging removed (transport is private)
+      });
+
+      // Enhanced permission violation logging
+      if (error instanceof RouterError && error.code === RouterErrorMap.insufficientPermissions.code) {
+        console.error('🚫 PERMISSION VIOLATION DETECTED', {
+          chainId,
+          method: call.method,
+          sessionId: this._sessionId,
+          message: '❌ dApp tried to use a permission it does not have',
+          actionRequired: 'Add this method to your dApp permission declaration',
+          howToFix: `Include '${call.method}' in your connection options permissions array`,
+          example: `
+// In your dApp configuration:
+permissions: [
+  // ... other permissions
+  '${call.method}',  // <-- Add this method
+]`,
+          troubleshooting: {
+            '1_checkDappConfig': 'Verify your dApp declares this permission in connection options',
+            '2_checkWalletState': 'Check if wallet has this method in ALLOW or ASK state',
+            '3_reconnect': 'Try disconnecting and reconnecting to refresh permissions',
+            '4_updatePermissions': 'Use provider.updatePermissions() to request this permission dynamically',
+          },
+          docs: 'See WalletMesh permission system documentation for more details',
+        });
+
+        // Also log to console with clear formatting for developers
+        console.group('🚫 dApp Permission Violation');
+        console.error(`Method "${call.method}" was denied by wallet`);
+        console.info('💡 To fix this issue:');
+        console.info(`   1. Add "${call.method}" to your dApp's permissions configuration`);
+        console.info(`   2. Or use provider.updatePermissions() to request it dynamically`);
+        console.info(`   3. Or check if the wallet has this method in ALLOW state`);
+        console.groupEnd();
+      }
+
+      // Additional logging for transport-related errors
+      if (error instanceof Error && error.message.includes('Transport')) {
+        console.error('🔴 Transport-specific error details', {
+          message: error.message,
+          stack: error.stack,
+          // Transport details removed (transport is private in JSONRPCNode)
+        });
+      }
+
+      throw error;
+    }
   }
 
   /**
@@ -370,6 +609,31 @@ export class WalletRouterProvider extends JSONRPCNode<RouterMethodMap, RouterEve
    */
   public chain(chainId: ChainId): OperationBuilder<readonly []> {
     return new OperationBuilder(chainId, this, [] as const);
+  }
+
+  /**
+   * Dispatch an incoming notification to registered handlers.
+   *
+   * @param method - Notification method name
+   * @param params - Notification payload
+   * @private
+   */
+  private dispatchNotification(method: string, params: JSONRPCParams | undefined): void {
+    const handlers = this.notificationHandlers.get(method);
+    if (!handlers || handlers.size === 0) {
+      return;
+    }
+
+    for (const handler of handlers) {
+      try {
+        handler(params);
+      } catch (error) {
+        console.error('[WalletRouterProvider] Notification handler error', {
+          method,
+          error: error instanceof Error ? error.message : error,
+        });
+      }
+    }
   }
 
   /**

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MethodManager } from './method-manager.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSONRPCError } from './error.js';
-import type { JSONRPCSerializer, JSONRPCContext, MethodResponse } from './types.js';
+import { MethodManager } from './method-manager.js';
+import type { JSONRPCContext, JSONRPCSerializer, MethodResponse } from './types.js';
 
 describe('MethodManager', () => {
   type TestMethodMap = {
@@ -532,6 +532,109 @@ describe('MethodManager', () => {
       expect(error.message).toBe('Connection closed');
 
       vi.useRealTimers();
+    });
+  });
+
+  describe('Phantom Timeout Prevention', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should not trigger phantom timeout after successful response', async () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const requestId = 'test-phantom-timeout';
+
+      // Add a pending request with a 1 second timeout
+      manager.addPendingRequest(requestId, resolve, reject, 1);
+
+      // Simulate a successful response arriving before timeout
+      await manager.handleResponse(requestId, { success: true });
+
+      // Advance time past the timeout period
+      vi.advanceTimersByTime(1500);
+
+      // The resolve should have been called once from the response
+      expect(resolve).toHaveBeenCalledTimes(1);
+      expect(resolve).toHaveBeenCalledWith({ success: true });
+
+      // The reject should NOT have been called (phantom timeout prevented)
+      expect(reject).toHaveBeenCalledTimes(0);
+    });
+
+    it('should not trigger phantom timeout after error response', async () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const requestId = 'test-phantom-error-timeout';
+
+      // Add a pending request with a 1 second timeout
+      manager.addPendingRequest(requestId, resolve, reject, 1);
+
+      // Simulate an error response arriving before timeout
+      await manager.handleResponse(requestId, null, {
+        code: -32000,
+        message: 'Test error',
+      });
+
+      // Advance time past the timeout period
+      vi.advanceTimersByTime(1500);
+
+      // The reject should have been called once from the error response
+      expect(reject).toHaveBeenCalledTimes(1);
+      expect(reject).toHaveBeenCalledWith(expect.any(JSONRPCError));
+
+      // The resolve should NOT have been called
+      expect(resolve).toHaveBeenCalledTimes(0);
+    });
+
+    it('should still timeout if no response is received', async () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const requestId = 'test-real-timeout';
+
+      // Add a pending request with a 1 second timeout
+      manager.addPendingRequest(requestId, resolve, reject, 1);
+
+      // Advance time past the timeout period WITHOUT sending a response
+      vi.advanceTimersByTime(1500);
+
+      // The reject should have been called once from the timeout
+      expect(reject).toHaveBeenCalledTimes(1);
+      expect(reject).toHaveBeenCalledWith(expect.any(Error));
+
+      // The resolve should NOT have been called
+      expect(resolve).toHaveBeenCalledTimes(0);
+    });
+
+    it('should handle race condition where timeout and response arrive simultaneously', async () => {
+      const resolve = vi.fn();
+      const reject = vi.fn();
+      const requestId = 'test-race-condition';
+
+      // Add a pending request with a very short timeout
+      manager.addPendingRequest(requestId, resolve, reject, 0.001); // 1ms timeout
+
+      // Advance time to almost trigger timeout
+      vi.advanceTimersByTime(0.5);
+
+      // Handle response at the same time timeout would fire
+      const responsePromise = manager.handleResponse(requestId, { data: 'response' });
+      vi.advanceTimersByTime(1);
+
+      await responsePromise;
+
+      // Either the timeout or the response should win, but not both
+      const totalCalls = resolve.mock.calls.length + reject.mock.calls.length;
+      expect(totalCalls).toBe(1);
+
+      // If resolve was called, it should be with the response data
+      if (resolve.mock.calls.length > 0) {
+        expect(resolve).toHaveBeenCalledWith({ data: 'response' });
+      }
     });
   });
 });

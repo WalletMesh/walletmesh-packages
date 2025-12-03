@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { JSONRPCNode, TimeoutError, JSONRPCError } from './index.js';
-import type { JSONRPCContext, JSONRPCSerializer, JSONRPCRequest } from './types.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { JSONRPCError, JSONRPCNode, TimeoutError } from './index.js';
+import type { JSONRPCContext, JSONRPCRequest, JSONRPCSerializer } from './types.js';
 
 describe('JSONRPCNode', () => {
   type TestContext = JSONRPCContext & {

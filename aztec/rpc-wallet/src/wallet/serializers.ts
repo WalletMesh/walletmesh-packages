@@ -19,6 +19,8 @@
  *   to reconstruct complex Aztec objects from their JSON representations.
  */
 
+// biome-ignore lint/style/useNodejsImportProtocol: This code runs in browser environments where node: protocol is not available
+import { Buffer } from 'buffer';
 import type { NodeInfo } from '@aztec/aztec.js';
 import {
   AuthWitness,
@@ -49,6 +51,8 @@ import {
   Capsule,
   HashedValues,
   PrivateExecutionResult,
+  type SimulationOverrides,
+  SimulationStatsSchema,
   TxProfileResult,
   TxProvingResult,
   TxReceipt,
@@ -89,6 +93,14 @@ const EventMetadataDefinitionSchema = z.object({
   fieldNames: z.array(z.string()),
 });
 
+// Schema for UnifiedSimulationResult
+const UnifiedSimulationResultSchema = z.object({
+  simulationType: z.enum(['transaction', 'utility']),
+  decodedResult: z.any().optional(),
+  stats: SimulationStatsSchema.optional(),
+  originalResult: z.union([TxSimulationResult.schema, UtilitySimulationResult.schema]),
+});
+
 // Schema for FunctionCall (since it doesn't have one in the Aztec codebase)
 const FunctionCallSchema = z.object({
   name: z.string(),
@@ -117,7 +129,19 @@ const DeployContractParamsSchema = z.object({
 
 const DeployContractResultSchema = z.object({
   txHash: TxHash.schema,
-  contractAddress: AztecAddress.schema,
+  contractAddress: z.string().transform((s) => AztecAddress.fromString(s)),
+  txStatusId: z.string(),
+});
+
+const ExecuteTxResultSchema = z.object({
+  txHash: TxHash.schema,
+  txStatusId: z.string(),
+});
+
+const BatchExecuteResultSchema = z.object({
+  txHash: TxHash.schema,
+  receipt: TxReceipt.schema,
+  txStatusId: z.string(),
 });
 
 const logger = createLogger('aztec-rpc-wallet:serializers');
@@ -140,6 +164,10 @@ function createResultSerializer<R>(resultSchema?: ZodTypeAny): Pick<JSONRPCSeria
       },
     },
   };
+}
+
+function serializeTx(tx: Tx): string {
+  return tx.toBuffer().toString('base64');
 }
 
 const RESULT_SERIALIZERS: Partial<
@@ -178,7 +206,17 @@ const RESULT_SERIALIZERS: Partial<
   aztec_createAuthWit: createResultSerializer<AuthWitness>(AuthWitness.schema),
   aztec_profileTx: createResultSerializer<TxProfileResult>(TxProfileResult.schema),
   aztec_simulateUtility: createResultSerializer<UtilitySimulationResult>(UtilitySimulationResult.schema),
-  aztec_proveTx: createResultSerializer<TxProvingResult>(TxProvingResult.schema),
+  // Custom serializer for aztec_proveTx to ensure TxProvingResult methods are preserved
+  aztec_proveTx: {
+    result: {
+      serialize: async (method: string, value: TxProvingResult) => ({
+        method,
+        serialized: jsonStringify(value),
+      }),
+      deserialize: async (_method: string, data: JSONRPCSerializedData) =>
+        await jsonParseWithSchemaAsync<TxProvingResult>(data.serialized, TxProvingResult.schema),
+    },
+  },
   aztec_sendTx: createResultSerializer<TxHash>(TxHash.schema),
   aztec_getTxReceipt: createResultSerializer<TxReceipt>(TxReceipt.schema),
   aztec_simulateTx: createResultSerializer<TxSimulationResult>(TxSimulationResult.schema),
@@ -200,11 +238,38 @@ const RESULT_SERIALIZERS: Partial<
       deserialize: async (_, d) => JSON.parse(d.serialized),
     },
   },
-  aztec_wmExecuteTx: createResultSerializer<TxHash>(TxHash.schema),
-  aztec_wmSimulateTx: createResultSerializer<TxSimulationResult>(TxSimulationResult.schema),
-  aztec_wmDeployContract: createResultSerializer<{ txHash: TxHash; contractAddress: AztecAddress }>(
-    DeployContractResultSchema,
+  aztec_wmExecuteTx: createResultSerializer<{ txHash: TxHash; txStatusId: string }>(ExecuteTxResultSchema),
+  aztec_wmBatchExecute: createResultSerializer<{ txHash: TxHash; receipt: TxReceipt; txStatusId: string }>(
+    BatchExecuteResultSchema,
   ),
+  aztec_wmSimulateTx: createResultSerializer(UnifiedSimulationResultSchema),
+  aztec_wmDeployContract: {
+    result: {
+      serialize: async (
+        method: string,
+        value: { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string },
+      ) => {
+        // Convert AztecAddress to string before jsonStringify (like aztec_getSenders does)
+        // Check if contractAddress itself is a Promise and await it
+        const address =
+          value.contractAddress instanceof Promise ? await value.contractAddress : value.contractAddress;
+        const addressString = address.toString();
+        const serialized = jsonStringify({
+          txHash: value.txHash,
+          contractAddress: addressString,
+          txStatusId: value.txStatusId,
+        });
+        return {
+          method,
+          serialized,
+        };
+      },
+      deserialize: async (_method: string, data: JSONRPCSerializedData) => {
+        // Use the schema to parse and transform the result
+        return await DeployContractResultSchema.parseAsync(JSON.parse(data.serialized));
+      },
+    },
+  },
   wm_getSupportedMethods: {
     result: {
       serialize: async (m, v) => ({ method: m, serialized: jsonStringify(v) }),
@@ -263,7 +328,22 @@ async function createFallbackSerializer(method: string, value: unknown): Promise
 export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = {
   params: {
     serialize: async (method: string, value: unknown): Promise<JSONRPCSerializedData> => {
-      logger.debug(`Serializing params for method: ${method} (current fallback)`, value);
+      logger.debug(`Serializing params for method: ${method}`, value);
+
+      // Special handling for aztec_sendTx to properly serialize Tx instance
+      if (method === 'aztec_sendTx') {
+        const params = (value ?? {}) as { tx?: Tx };
+        const tx = params.tx;
+        if (!tx) {
+          throw new JSONRPCError(-32602, 'Invalid params for aztec_sendTx: Missing tx');
+        }
+
+        return {
+          method,
+          serialized: jsonStringify({ tx: serializeTx(tx) }),
+        };
+      }
+
       return createFallbackSerializer(method, value);
     },
     deserialize: async (method: string, data: JSONRPCSerializedData): Promise<JSONRPCParams> => {
@@ -406,8 +486,9 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
           return [txRequest, privateExecutionResult];
         }
         case 'aztec_sendTx': {
-          const txRaw = ensureParam<Record<string, unknown>>(dAppParams, 'tx');
-          const tx = await Tx.schema.parseAsync(txRaw);
+          const txSerialized = ensureParam<string>(dAppParams, 'tx', 'string');
+          const txBuffer = Buffer.from(txSerialized, 'base64');
+          const tx = Tx.fromBuffer(txBuffer);
           return [tx];
         }
         case 'aztec_getTxReceipt': {
@@ -419,13 +500,20 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
           const txRequestRaw = ensureParam<Record<string, unknown>>(dAppParams, 'txRequest');
           const txRequest = await TxExecutionRequest.schema.parseAsync(txRequestRaw);
           const simulatePublic = getOptionalParam<boolean>(dAppParams, 'simulatePublic', 'boolean');
-          const msgSenderStr = getOptionalParam<string>(dAppParams, 'msgSender', 'string');
-          const msgSender = msgSenderStr ? AztecAddress.fromString(msgSenderStr) : undefined;
           const skipTxValidation = getOptionalParam<boolean>(dAppParams, 'skipTxValidation', 'boolean');
           const skipFeeEnforcement = getOptionalParam<boolean>(dAppParams, 'skipFeeEnforcement', 'boolean');
+
+          // Create SimulationOverrides object if msgSender is provided
+          const msgSenderStr = getOptionalParam<string>(dAppParams, 'msgSender', 'string');
+          const overrides = msgSenderStr
+            ? ({ msgSender: AztecAddress.fromString(msgSenderStr) } as SimulationOverrides)
+            : undefined;
+
           const scopesRaw = getOptionalParam<string[]>(dAppParams, 'scopes');
           const scopes = scopesRaw?.map((s) => AztecAddress.fromString(s));
-          return [txRequest, simulatePublic, msgSender, skipTxValidation, skipFeeEnforcement, scopes];
+
+          // Return tuple in correct order: [txRequest, simulatePublic, skipTxValidation, skipFeeEnforcement, overrides, scopes]
+          return [txRequest, simulatePublic, skipTxValidation, skipFeeEnforcement, overrides, scopes];
         }
         case 'aztec_profileTx': {
           const txRequestRaw = ensureParam<Record<string, unknown>>(dAppParams, 'txRequest');
@@ -446,10 +534,14 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
           const toStr = ensureParam<string>(dAppParams, 'to', 'string');
           const to = AztecAddress.fromString(toStr);
           const authWitsRaw = getOptionalParam<Record<string, unknown>[]>(dAppParams, 'authWits');
-          const authWits = await authWitsRaw?.map((aw) => AuthWitness.schema.parseAsync(aw)); // Use AuthWitness from @aztec/aztec.js
+          const authWits = authWitsRaw
+            ? await Promise.all(authWitsRaw.map((aw) => AuthWitness.schema.parseAsync(aw)))
+            : undefined; // Use AuthWitness from @aztec/aztec.js
           const fromStr = getOptionalParam<string>(dAppParams, 'from', 'string');
           const from = fromStr ? AztecAddress.fromString(fromStr) : undefined;
-          return [functionName, args, to, authWits, from];
+          const scopesRaw = getOptionalParam<string[]>(dAppParams, 'scopes');
+          const scopes = scopesRaw?.map((s) => AztecAddress.fromString(s));
+          return [functionName, args, to, authWits, from, scopes];
         }
         case 'aztec_getPrivateEvents': {
           const contractAddressStr = ensureParam<string>(dAppParams, 'contractAddress', 'string');
@@ -478,7 +570,21 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
         case 'aztec_wmExecuteTx': {
           const executionPayloadRaw = ensureParam<Record<string, unknown>>(dAppParams, 'executionPayload');
           const executionPayload = await ExecutionPayloadSchema.parseAsync(executionPayloadRaw);
-          return [executionPayload];
+          const sendOptions = getOptionalParam<Record<string, unknown>>(dAppParams, 'sendOptions');
+          // AztecSendOptions is a simple object from modal-core, pass through without schema validation
+          return [executionPayload, sendOptions];
+        }
+        case 'aztec_wmBatchExecute': {
+          const executionPayloadsRaw = ensureParam<Record<string, unknown>[]>(
+            dAppParams,
+            'executionPayloads',
+          );
+          const executionPayloads = await Promise.all(
+            executionPayloadsRaw.map((payload) => ExecutionPayloadSchema.parseAsync(payload)),
+          );
+          const sendOptions = getOptionalParam<Record<string, unknown>>(dAppParams, 'sendOptions');
+          // AztecSendOptions is a simple object from modal-core, pass through without schema validation
+          return [executionPayloads, sendOptions];
         }
         case 'aztec_wmSimulateTx': {
           const executionPayloadRaw = ensureParam<Record<string, unknown>>(dAppParams, 'executionPayload');
@@ -548,24 +654,14 @@ export const AztecWalletSerializer: JSONRPCSerializer<JSONRPCParams, unknown> = 
  * @see {@link AztecWalletSerializer} which provides the serialization logic.
  */
 export function registerAztecSerializers(node: JSONRPCNode<AztecWalletMethodMap>) {
-  // This list should ideally cover all methods in AztecWalletMethodMap that require
-  // specific Aztec type serialization.
-  const aztecMethods: (keyof AztecWalletMethodMap)[] = [
+  // Methods that need full serialization (both params and results)
+  // Methods with no params or simple params (like aztec_getAddress) are NOT included
+  // because they don't need param deserialization on the wallet side
+  const fullSerializationMethods: (keyof AztecWalletMethodMap)[] = [
     'aztec_getBlock',
-    'aztec_getBlockNumber',
-    'aztec_getChainId',
-    'aztec_getVersion',
-    'aztec_getNodeInfo',
-    'aztec_getProvenBlockNumber',
-    'aztec_getPXEInfo',
-    'aztec_getCurrentBaseFees',
-    'aztec_getAddress',
-    'aztec_getCompleteAddress',
     'aztec_createAuthWit',
     'aztec_registerSender',
-    'aztec_getSenders',
     'aztec_removeSender',
-    'aztec_getContracts',
     'aztec_getContractMetadata',
     'aztec_getContractClassMetadata',
     'aztec_registerContract',
@@ -579,10 +675,38 @@ export function registerAztecSerializers(node: JSONRPCNode<AztecWalletMethodMap>
     'aztec_getPrivateEvents',
     'aztec_getPublicEvents',
     'aztec_wmExecuteTx',
+    'aztec_wmBatchExecute',
+    'aztec_wmSimulateTx',
     'aztec_wmDeployContract',
-    'wm_getSupportedMethods',
   ];
-  for (const method of aztecMethods) {
+
+  // Methods that only need result serialization (no params or simple params)
+  // These methods return complex Aztec types that must be serialized before sending
+  const resultOnlyMethods: (keyof AztecWalletMethodMap)[] = [
+    'aztec_getChainId', // Returns Fr - needs serialization
+    'aztec_getVersion', // Returns Fr - needs serialization
+    'aztec_getAddress', // Returns AztecAddress - needs serialization
+    'aztec_getCompleteAddress', // Returns CompleteAddress - needs serialization
+    'aztec_getBlockNumber', // Returns number
+    'aztec_getProvenBlockNumber', // Returns number
+    'aztec_getSenders', // Returns AztecAddress[] - needs serialization
+    'aztec_getContracts', // Returns AztecAddress[] - needs serialization
+    'aztec_getNodeInfo', // Returns NodeInfo - needs serialization
+    'aztec_getPXEInfo', // Returns PXEInfo - needs serialization
+    'aztec_getCurrentBaseFees', // Returns GasFees - needs serialization
+    'wm_getSupportedMethods', // Returns string[]
+  ];
+
+  // Register full serializers for methods that need both param and result serialization
+  for (const method of fullSerializationMethods) {
+    node.registerSerializer(method, AztecWalletSerializer);
+  }
+
+  // Register result-only serializers for methods that have no params but return complex types
+  for (const method of resultOnlyMethods) {
+    // These methods need result serialization but have no params or simple params
+    // We can reuse the full AztecWalletSerializer since its params handler
+    // already includes a fallback that handles empty params correctly
     node.registerSerializer(method, AztecWalletSerializer);
   }
 }

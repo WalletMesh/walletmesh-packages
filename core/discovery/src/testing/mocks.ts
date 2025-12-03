@@ -91,6 +91,7 @@ export function restoreBrowserEnvironment(): void {
  */
 export interface MockChromeRuntime {
   sendMessage: MockFunction;
+  connect?: MockFunction;
   onMessage: {
     addListener: MockFunction;
     removeListener: MockFunction;

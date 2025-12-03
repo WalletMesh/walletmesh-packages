@@ -1,14 +1,15 @@
-import { describe, it, expect, vi, type Mock } from 'vitest';
-import { RequestHandler } from './request-handler.js';
+import { describe, expect, it, type Mock, vi } from 'vitest';
 import { JSONRPCError } from './error.js';
 import type { MethodManager } from './method-manager.js';
+import { MiddlewareManager } from './middleware-manager.js';
+import { RequestHandler } from './request-handler.js';
 import type {
+  FallbackMethodHandler,
   JSONRPCContext,
-  MethodResponse,
   JSONRPCMethodDef,
   JSONRPCParams,
-  FallbackMethodHandler,
   JSONRPCRequest,
+  MethodResponse,
 } from './types.js';
 
 describe('RequestHandler', () => {
@@ -44,14 +45,58 @@ describe('RequestHandler', () => {
     return methodManager;
   };
 
+  // Create post-deserialization middleware manager
+  // This mimics what's in JSONRPCNode constructor
+  const createMiddlewareManager = (methodManager: MethodManager<TestMethods, TestContext>) => {
+    return new MiddlewareManager<TestMethods, TestContext>(async (context, request) => {
+      const method = methodManager.getMethod(request.method);
+
+      let methodResponse: MethodResponse<unknown>;
+
+      if (method) {
+        methodResponse = await method(
+          context,
+          request.method,
+          request.params as TestMethods[keyof TestMethods]['params'],
+        );
+      } else {
+        // Try fallback handler
+        const fallback = methodManager.getFallbackHandler();
+        if (fallback) {
+          methodResponse = await fallback(context, String(request.method), request.params);
+        } else {
+          throw new JSONRPCError(-32601, 'Method not found', String(request.method));
+        }
+      }
+
+      // Convert MethodResponse to JSONRPCResponse
+      if (methodResponse.success) {
+        return {
+          jsonrpc: '2.0' as const,
+          result: methodResponse.data,
+          id: request.id,
+        };
+      }
+
+      // For errors, throw JSONRPCError
+      throw new JSONRPCError(
+        methodResponse.error.code,
+        methodResponse.error.message,
+        methodResponse.error.data,
+      );
+    });
+  };
+
   describe('Method Not Found Handling', () => {
     it('should throw method not found error when no method or fallback handler exists', async () => {
       const methodManager = createMethodManager();
-      const handler = new RequestHandler<TestMethods, TestContext>(methodManager);
+      const middlewareManager = createMiddlewareManager(methodManager);
+      const handler = new RequestHandler<TestMethods, TestContext>(methodManager, middlewareManager);
 
       // Mock method manager to return no method and no fallback
       (methodManager.getMethod as Mock).mockReturnValue(undefined);
       (methodManager.getFallbackHandler as Mock).mockReturnValue(undefined);
+      (methodManager.deserializeParams as Mock).mockResolvedValue({ value: 'test' });
 
       const request = {
         jsonrpc: '2.0' as const,
@@ -71,7 +116,8 @@ describe('RequestHandler', () => {
 
     it('should use fallback handler when method not found but fallback exists', async () => {
       const methodManager = createMethodManager();
-      const handler = new RequestHandler<TestMethods, TestContext>(methodManager);
+      const middlewareManager = createMiddlewareManager(methodManager);
+      const handler = new RequestHandler<TestMethods, TestContext>(methodManager, middlewareManager);
 
       // Mock successful fallback handler response
       const fallbackResponse: MethodResponse<string> = {
@@ -113,7 +159,8 @@ describe('RequestHandler', () => {
   describe('Error Handling', () => {
     it('should throw error when method returns unsuccessful response', async () => {
       const methodManager = createMethodManager();
-      const handler = new RequestHandler<TestMethods, TestContext>(methodManager);
+      const middlewareManager = createMiddlewareManager(methodManager);
+      const handler = new RequestHandler<TestMethods, TestContext>(methodManager, middlewareManager);
 
       // Mock method that returns an error response
       const errorResponse: MethodResponse<string> = {
@@ -148,7 +195,8 @@ describe('RequestHandler', () => {
 
     it('should throw error when fallback handler returns unsuccessful response', async () => {
       const methodManager = createMethodManager();
-      const handler = new RequestHandler<TestMethods, TestContext>(methodManager);
+      const middlewareManager = createMiddlewareManager(methodManager);
+      const handler = new RequestHandler<TestMethods, TestContext>(methodManager, middlewareManager);
 
       // Mock fallback handler that returns an error response
       const errorResponse: MethodResponse<string> = {
@@ -184,7 +232,8 @@ describe('RequestHandler', () => {
 
     it('should throw invalid request error for malformed requests', async () => {
       const methodManager = createMethodManager();
-      const handler = new RequestHandler<TestMethods, TestContext>(methodManager);
+      const middlewareManager = createMiddlewareManager(methodManager);
+      const handler = new RequestHandler<TestMethods, TestContext>(methodManager, middlewareManager);
 
       // Create an invalid request by using null as the request object
       const invalidRequest = null as unknown as JSONRPCRequest<TestMethods, keyof TestMethods>;

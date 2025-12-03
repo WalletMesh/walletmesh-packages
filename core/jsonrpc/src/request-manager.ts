@@ -1,12 +1,12 @@
+import { JSONRPCError, TimeoutError } from './error.js';
 import type {
-  JSONRPCMethodMap,
-  JSONRPCID,
-  JSONRPCSerializer,
-  JSONRPCSerializedData,
   JSONRPCErrorInterface,
+  JSONRPCID,
+  JSONRPCMethodMap,
+  JSONRPCSerializedData,
+  JSONRPCSerializer,
 } from './types.js';
 import { isJSONRPCSerializedData } from './utils.js';
-import { JSONRPCError, TimeoutError } from './error.js';
 
 /**
  * Internal interface representing a pending JSON-RPC request.

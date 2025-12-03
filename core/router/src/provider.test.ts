@@ -1,8 +1,8 @@
-import { describe, expect, it, beforeEach, vi } from 'vitest';
-import { WalletRouterProvider } from './provider.js';
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { RouterError } from './errors.js';
 import { OperationBuilder } from './operation.js';
+import { WalletRouterProvider } from './provider.js';
 
 describe('WalletRouterProvider', () => {
   const mockCallMethod = vi.fn();
@@ -20,7 +20,6 @@ describe('WalletRouterProvider', () => {
       onMessage: vi.fn(),
     };
     provider = new WalletRouterProvider(mockTransport);
-    // @ts-ignore - mock private method
     provider.callMethod = mockCallMethod;
   });
 
@@ -151,6 +150,91 @@ describe('WalletRouterProvider', () => {
           'aztec:testnet': ['aztec_getAccount'],
         }),
       ).rejects.toThrow(new RouterError('invalidSession'));
+    });
+
+    it('reconnects with valid session', async () => {
+      const sessionId = 'test-session-123';
+      const permissions = {
+        'eip155:1': {
+          eth_accounts: {
+            allowed: true,
+            shortDescription: 'View Accounts',
+            longDescription: 'Allow viewing your Ethereum addresses',
+          },
+        },
+      };
+      mockCallMethod.mockResolvedValueOnce({ status: true, permissions });
+
+      const result = await provider.reconnect(sessionId);
+
+      expect(result.status).toBe(true);
+      expect(result.permissions).toEqual(permissions);
+      expect(provider.sessionId).toBe(sessionId);
+      expect(mockCallMethod).toHaveBeenCalledWith('wm_reconnect', { sessionId }, undefined);
+    });
+
+    it('reconnects with timeout parameter', async () => {
+      const sessionId = 'test-session-123';
+      const permissions = {};
+      mockCallMethod.mockResolvedValueOnce({ status: true, permissions });
+
+      await provider.reconnect(sessionId, 5000);
+
+      expect(mockCallMethod).toHaveBeenCalledWith('wm_reconnect', { sessionId }, 5000);
+    });
+
+    it('emits connection:restored event on successful reconnection', async () => {
+      const sessionId = 'test-session-123';
+      const permissions = { 'eip155:1': {} };
+      const emitSpy = vi.spyOn(provider, 'emit');
+
+      mockCallMethod.mockResolvedValueOnce({ status: true, permissions });
+
+      await provider.reconnect(sessionId);
+
+      expect(emitSpy).toHaveBeenCalledWith('connection:restored', {
+        sessionId,
+        permissions,
+      });
+    });
+
+    it('does not emit event when reconnection status is false', async () => {
+      const sessionId = 'test-session-123';
+      const emitSpy = vi.spyOn(provider, 'emit');
+
+      mockCallMethod.mockResolvedValueOnce({ status: false, permissions: {} });
+
+      await provider.reconnect(sessionId);
+
+      expect(emitSpy).not.toHaveBeenCalledWith('connection:restored', expect.anything());
+    });
+
+    it('throws on invalid session during reconnection', async () => {
+      const sessionId = 'invalid-session';
+      mockCallMethod.mockRejectedValueOnce(new RouterError('invalidSession'));
+
+      await expect(provider.reconnect(sessionId)).rejects.toThrow(new RouterError('invalidSession'));
+      expect(provider.sessionId).toBeUndefined();
+    });
+
+    it('clears session ID when reconnection fails', async () => {
+      const sessionId = 'test-session-123';
+      // First set a session ID
+      mockCallMethod.mockResolvedValueOnce({ sessionId });
+      await provider.connect({ 'eip155:1': ['eth_accounts'] });
+      expect(provider.sessionId).toBe(sessionId);
+
+      // Now try to reconnect with invalid session
+      const invalidSession = 'invalid-session';
+      mockCallMethod.mockRejectedValueOnce(new Error('Session not found'));
+
+      await expect(provider.reconnect(invalidSession)).rejects.toThrow('Session not found');
+      expect(provider.sessionId).toBeUndefined();
+    });
+
+    it('requires sessionId parameter for reconnection', async () => {
+      await expect(provider.reconnect('')).rejects.toThrow('Session ID is required for reconnection');
+      expect(provider.sessionId).toBeUndefined();
     });
   });
 

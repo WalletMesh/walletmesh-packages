@@ -13,7 +13,7 @@ Manages an in-memory cache for Aztec ContractArtifacts.
 This class is designed to optimize performance by reducing redundant fetches
 of contract artifacts. When an artifact is requested for a given contract address,
 the cache first checks its local store. If the artifact is not found (a cache miss),
-it uses the provided Wallet instance to retrieve the contract's metadata,
+it uses the provided [Wallet](https://docs.aztec.network/reference/aztec.js/interfaces/Wallet) instance to retrieve the contract's metadata,
 then its class metadata (which includes the artifact), stores it in the cache,
 and finally returns it. Subsequent requests for the same artifact will be served
 directly from the cache.
@@ -29,7 +29,7 @@ to provide efficient artifact access to RPC method handlers.
 ## See
 
  - [AztecHandlerContext](../interfaces/AztecHandlerContext.md)
- - Wallet
+ - [Wallet](https://docs.aztec.network/reference/aztec.js/interfaces/Wallet)
  - ContractArtifact
 
 ## Constructors
@@ -46,9 +46,9 @@ Creates a new `ContractArtifactCache` instance.
 
 ##### wallet
 
-`Wallet`
+[`Wallet`](https://docs.aztec.network/reference/aztec.js/interfaces/Wallet)
 
-The `aztec.js` Wallet instance that will be used to
+The `aztec.js` [Wallet](https://docs.aztec.network/reference/aztec.js/interfaces/Wallet) instance that will be used to
                 fetch contract metadata and artifacts if they are not found
                 in the cache. This wallet should be capable of calling
                 `getContractMetadata` and `getContractClassMetadata`.

@@ -6,7 +6,7 @@
 
 # Interface: DiscoveryError
 
-Defined in: [core/discovery/src/types/core.ts:262](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/core.ts#L262)
+Defined in: [core/discovery/src/types/core.ts:262](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L262)
 
 Base discovery error class.
 
@@ -24,7 +24,7 @@ Base discovery error class.
 
 > `optional` **category**: [`ErrorCategory`](../type-aliases/ErrorCategory.md)
 
-Defined in: [core/discovery/src/types/core.ts:264](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/core.ts#L264)
+Defined in: [core/discovery/src/types/core.ts:264](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L264)
 
 ***
 
@@ -44,7 +44,7 @@ Defined in: node\_modules/typescript/lib/lib.es2022.error.d.ts:26
 
 > `optional` **code**: `number`
 
-Defined in: [core/discovery/src/types/core.ts:263](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/core.ts#L263)
+Defined in: [core/discovery/src/types/core.ts:263](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L263)
 
 ***
 

@@ -6,10 +6,14 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { DiscoveryInitiator } from '../initiator/DiscoveryInitiator.js';
+import type { DiscoveryInitiator } from '../initiator.js';
 import { DuplicateResponseError } from '../types/core.js';
 import { MockEventTarget } from './MockEventTarget.js';
-import { createTestDiscoveryResponse, createTestDAppInfo } from './testUtils.js';
+import {
+  createTestDiscoveryResponse,
+  createTestDAppInfo,
+  createTestDiscoveryInitiator,
+} from './testUtils.js';
 import { setupFakeTimers, cleanupFakeTimers } from './timingHelpers.js';
 import { createConsoleSpy } from './consoleMocks.js';
 
@@ -23,7 +27,7 @@ describe('Duplicate Response Detection', () => {
     mockEventTarget = new MockEventTarget();
     consoleSpy = createConsoleSpy({ methods: ['warn'], mockFn: () => vi.fn() });
 
-    listener = new DiscoveryInitiator({
+    listener = createTestDiscoveryInitiator({
       requirements: {
         technologies: [
           {
@@ -112,7 +116,7 @@ describe('Duplicate Response Detection', () => {
 
     // Security violation should be logged
     expect(consoleSpy.warn).toHaveBeenCalledWith(
-      '[WalletMesh] SECURITY VIOLATION: Duplicate response detected',
+      '[WalletMesh] SECURITY VIOLATION: Duplicate response detected with DIFFERENT parameters',
       expect.objectContaining({
         rdns: 'com.example.wallet',
         duplicateResponderId: 'wallet-2',
@@ -240,7 +244,7 @@ describe('Duplicate Response Detection', () => {
 
     // Should log security violation for the duplicate
     expect(consoleSpy.warn).toHaveBeenCalledWith(
-      '[WalletMesh] SECURITY VIOLATION: Duplicate response detected',
+      '[WalletMesh] SECURITY VIOLATION: Duplicate response detected with DIFFERENT parameters',
       expect.objectContaining({
         rdns: 'com.suspicious.wallet',
         responseCount: 2,
@@ -274,7 +278,7 @@ describe('Duplicate Response Detection', () => {
     await discoveryPromise;
 
     // Create new listener for second discovery session (single-use pattern)
-    listener = new DiscoveryInitiator({
+    listener = createTestDiscoveryInitiator({
       requirements: {
         technologies: [
           {

@@ -6,7 +6,7 @@
 
 # Interface: OriginValidationResult
 
-Defined in: [core/discovery/src/types/security.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/security.ts#L75)
+Defined in: [core/discovery/src/types/security.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L75)
 
 Origin validation result for security checks.
 
@@ -23,7 +23,7 @@ validation status, and any failure reasons for audit logging.
 
 > **origin**: `string`
 
-Defined in: [core/discovery/src/types/security.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/security.ts#L77)
+Defined in: [core/discovery/src/types/security.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L77)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [core/discovery/src/types/security.ts:77](https://github.com/WalletM
 
 > `optional` **reason**: `string`
 
-Defined in: [core/discovery/src/types/security.ts:78](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/security.ts#L78)
+Defined in: [core/discovery/src/types/security.ts:78](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L78)
 
 ***
 
@@ -39,7 +39,7 @@ Defined in: [core/discovery/src/types/security.ts:78](https://github.com/WalletM
 
 > **timestamp**: `number`
 
-Defined in: [core/discovery/src/types/security.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/security.ts#L79)
+Defined in: [core/discovery/src/types/security.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L79)
 
 ***
 
@@ -47,4 +47,4 @@ Defined in: [core/discovery/src/types/security.ts:79](https://github.com/WalletM
 
 > **valid**: `boolean`
 
-Defined in: [core/discovery/src/types/security.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/a3808edd1bf54f866b4ce141295e0686b0d7d5bc/core/discovery/src/types/security.ts#L76)
+Defined in: [core/discovery/src/types/security.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L76)

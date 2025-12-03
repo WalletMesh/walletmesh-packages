@@ -274,7 +274,18 @@ export class CapabilityMatcher {
     const supportedFeatures = this.getSupportedFeatures();
     const missingFeatures = (required.features || []).filter((f) => !supportedFeatures.includes(f));
 
-    const canFulfill = missingTechnologies.length === 0 && missingFeatures.length === 0;
+    // Check network support
+    const supportedNetworks = this.responderInfo.networks || [];
+    const missingNetworks: string[] = [];
+    if (required.networks && required.networks.length > 0) {
+      const matchedNetworks = this.intersectArrays(required.networks, supportedNetworks);
+      if (matchedNetworks.length === 0) {
+        missingNetworks.push(...required.networks);
+      }
+    }
+
+    const canFulfill =
+      missingTechnologies.length === 0 && missingFeatures.length === 0 && missingNetworks.length === 0;
 
     if (!canFulfill) {
       return {
@@ -295,11 +306,25 @@ export class CapabilityMatcher {
       },
     };
 
+    // Always include networks if wallet supports any
+    // If request specifies networks, calculate intersection; otherwise include all supported networks
+    if (supportedNetworks.length > 0) {
+      if (required.networks && required.networks.length > 0) {
+        intersection.required.networks = this.intersectArrays(required.networks, supportedNetworks);
+      } else {
+        // No specific networks requested - include all supported networks
+        intersection.required.networks = supportedNetworks;
+      }
+    }
+
     // Add optional capabilities if requested
     if (optional) {
       intersection.optional = {};
       if (optional.features) {
         intersection.optional.features = this.intersectArrays(optional.features, supportedFeatures);
+      }
+      if (optional.networks) {
+        intersection.optional.networks = this.intersectArrays(optional.networks, supportedNetworks);
       }
     }
 
@@ -322,12 +347,14 @@ export class CapabilityMatcher {
       return null;
     }
 
-    // Find matching interfaces (at least one required)
+    // Find matching interfaces
     const matchedInterfaces = requirement.interfaces.filter((iface) =>
       supportedTech.interfaces.includes(iface),
     );
 
-    if (matchedInterfaces.length === 0) {
+    // If interfaces are specified, at least one must match
+    // If no interfaces specified (empty array), technology type match is sufficient
+    if (requirement.interfaces.length > 0 && matchedInterfaces.length === 0) {
       return null;
     }
 

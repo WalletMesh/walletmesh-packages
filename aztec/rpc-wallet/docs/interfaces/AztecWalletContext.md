@@ -42,9 +42,9 @@ getting node information, fetching blocks, and managing private state.
 
 ### wallet
 
-> **wallet**: `AccountWallet`
+> **wallet**: [`AccountWallet`](https://docs.aztec.network/reference/aztec.js/interfaces/AccountWallet)
 
 Defined in: [aztec/rpc-wallet/src/types.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/types.ts#L75)
 
-The `aztec.js` AccountWallet instance. This wallet holds the user's account keys
+The `aztec.js` [AccountWallet](https://docs.aztec.network/reference/aztec.js/interfaces/AccountWallet) instance. This wallet holds the user's account keys
 and provides methods for signing, creating transactions, and interacting with the PXE.
