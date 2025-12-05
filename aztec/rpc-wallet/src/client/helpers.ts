@@ -12,7 +12,7 @@ const logger = createLogger('aztec-rpc-wallet:helpers');
  * then instantiates and initializes the wallet.
  * Initialization includes fetching and caching essential data like the wallet address and chain ID.
  *
- * By default, it requests permissions for all methods defined in {@link ALL_AZTEC_METHODS}.
+ * By default, it requests permissions for all methods defined in {@link AZTEC_WALLET_METHODS}.
  *
  * @param provider - The {@link AztecWalletRouterProvider} instance to use for the connection.
  *                   This provider must be configured with appropriate transport and Aztec serializers.
@@ -25,10 +25,10 @@ const logger = createLogger('aztec-rpc-wallet:helpers');
  *
  * @example
  * ```typescript
- * const provider = new AztecRouterProvider(myTransport);
+ * const provider = new AztecWalletRouterProvider(myTransport);
  * const { sessionId, wallet } = await connectAztec(provider, 'aztec:testnet');
- * const address = wallet.getAddress(); // Wallet is ready to use
- * console.log('Connected with session ID:', sessionId, 'Wallet address:', address.toString());
+ * const chainInfo = await wallet.getChainInfo(); // Wallet is ready to use
+ * console.log('Connected with session ID:', sessionId);
  * ```
  */
 export async function connectAztec(

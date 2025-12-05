@@ -11,7 +11,7 @@ export type SessionTerminationHandler = (params: {
 }) => void | Promise<void>;
 
 /**
- * Configuration options for AztecRouterProvider
+ * Configuration options for AztecWalletRouterProvider
  */
 export interface AztecRPCWalletRouterProviderOptions {
   /**
@@ -65,43 +65,37 @@ export interface AztecRPCWalletRouterProviderOptions {
  *
  * @example
  * ```typescript
- * import { AztecRouterProvider, createAztecWallet } from '@walletmesh/aztec-rpc-wallet';
+ * import { AztecWalletRouterProvider, connectAztec } from '@walletmesh/aztec-rpc-wallet/client';
  * import { MyCustomTransport } from './my-custom-transport'; // Assuming a custom transport
  *
  * // 1. Create a JSON-RPC transport
  * const transport = new MyCustomTransport();
  *
- * // 2. Create the AztecRouterProvider instance with session termination handler
- * const provider = new AztecRouterProvider(transport, {
+ * // 2. Create the AztecWalletRouterProvider instance with session termination handler
+ * const provider = new AztecWalletRouterProvider(transport, {
  *   onSessionTerminated: ({ sessionId, reason }) => {
  *     console.log(`Session ${sessionId} was terminated: ${reason}`);
  *     // Clean up application state
  *   }
  * });
  *
- * // 3. Connect to the Aztec chain (e.g., testnet) and request permissions
- * await provider.connect({
- *   'aztec:testnet': ['aztec_getAddress', 'aztec_sendTx']
- * });
- *
- * // 4. Create an AztecDappWallet instance using the provider
- * const wallet = await createAztecWallet(provider, 'aztec:testnet');
+ * // 3. Connect to the Aztec chain and get a wallet instance
+ * const { sessionId, wallet } = await connectAztec(provider, 'aztec:testnet');
  *
  * // Now, calls made through 'wallet' will automatically handle Aztec type serialization:
- * const address = await wallet.getAddress(); // AztecAddress instance
- * // const txRequest = ...;
- * // const txHash = await wallet.sendTx(await wallet.proveTx(txRequest)); // Tx, TxHash instances
+ * const chainInfo = await wallet.getChainInfo(); // ChainInfo instance
+ * const accounts = await wallet.getAccounts(); // Array of AztecAddress instances
  * ```
  *
  * @see {@link WalletRouterProvider} for the base class functionality.
  * @see {@link registerAztecWalletSerializers} for the underlying serializer registration.
- * @see {@link AztecDappWallet} which is typically used with this provider.
+ * @see {@link AztecWalletProvider} which is typically used with this provider.
  */
 export class AztecWalletRouterProvider extends WalletRouterProvider {
   private sessionTerminationCleanup?: () => void;
 
   /**
-   * Constructs an instance of `AztecRouterProvider`.
+   * Constructs an instance of `AztecWalletRouterProvider`.
    *
    * Upon construction, it immediately registers all Aztec-specific serializers
    * with the underlying JSON-RPC node managed by the `WalletRouterProvider`.
@@ -111,11 +105,7 @@ export class AztecWalletRouterProvider extends WalletRouterProvider {
    * @param options - Optional configuration including context, sessionId, and event handlers.
    *                 Can also be a plain context object for backward compatibility.
    */
-  constructor(
-    transport: JSONRPCTransport,
-    options?: AztecRPCWalletRouterProviderOptions,
-  ) {
-
+  constructor(transport: JSONRPCTransport, options?: AztecRPCWalletRouterProviderOptions) {
     super(transport, options?.context, options?.sessionId);
 
     // Register all Aztec serializers on this provider instance
@@ -138,11 +128,11 @@ export class AztecWalletRouterProvider extends WalletRouterProvider {
       const { sessionId, reason } = params as { sessionId: string; reason: string };
 
       if (!sessionId) {
-        console.warn('[AztecRouterProvider] wm_sessionTerminated missing sessionId', params);
+        console.warn('[AztecWalletRouterProvider] wm_sessionTerminated missing sessionId', params);
         return;
       }
 
-      console.log(`[AztecRouterProvider] Session ${sessionId} terminated by wallet: ${reason}`);
+      console.log(`[AztecWalletRouterProvider] Session ${sessionId} terminated by wallet: ${reason}`);
 
       // Call the user-provided handler
       try {
@@ -150,7 +140,7 @@ export class AztecWalletRouterProvider extends WalletRouterProvider {
         // Handle both sync and async handlers
         if (result instanceof Promise) {
           result.catch((error) => {
-            console.error('[AztecRouterProvider] Error in session termination handler:', error);
+            console.error('[AztecWalletRouterProvider] Error in session termination handler:', error);
           });
         }
       } catch (error) {

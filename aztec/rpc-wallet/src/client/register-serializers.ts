@@ -7,7 +7,7 @@ import type { AztecWalletMethodMap } from '../types.js';
  * on a given {@link WalletRouterProvider} instance.
  *
  * This utility function ensures that any `WalletRouterProvider` (not just the specialized
- * {@link AztecRouterProvider}) can be configured to correctly handle serialization and
+ * {@link AztecWalletRouterProvider}) can be configured to correctly handle serialization and
  * deserialization of Aztec-specific data types (e.g., `AztecAddress`, `Fr`, `TxExecutionRequest`)
  * when interacting with an Aztec wallet.
  *
@@ -37,7 +37,7 @@ import type { AztecWalletMethodMap } from '../types.js';
  * ```
  *
  * @see {@link AztecWalletSerializer} for the actual serialization logic.
- * @see {@link AztecRouterProvider} for a provider that calls this automatically.
+ * @see {@link AztecWalletRouterProvider} for a provider that calls this automatically.
  * @see {@link AztecWalletMethodMap} for the list of methods and their types.
  */
 export function registerAztecWalletSerializers(provider: WalletRouterProvider): void {

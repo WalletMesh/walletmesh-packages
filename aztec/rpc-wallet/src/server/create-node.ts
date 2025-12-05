@@ -37,18 +37,19 @@ import type { AztecWalletHandlerContext } from './types.js';
  *
  * @example
  * ```typescript
- * import { createAztecWalletNode } from '@walletmesh/aztec-rpc-wallet';
+ * import { createAztecWalletNode } from '@walletmesh/aztec-rpc-wallet/server';
  * import { WalletRouter, createLocalTransportPair } from '@walletmesh/router';
+ * import type { Wallet } from '@aztec/aztec.js/wallet';
  * import { MyWallet, MyRouterTransport, MyPermissionManager } from './my-setup'; // User's setup
  *
  * // 1. Initialize Aztec Wallet
- * const accountWallet = new MyWallet();
+ * const wallet: Wallet = new MyWallet();
  *
  * // 2. Create a local transport pair for communication between router and wallet node
  * const [routerSideTransport, walletNodeSideTransport] = createLocalTransportPair();
  *
  * // 3. Create the Aztec Wallet Node
- * const aztecNode = createAztecWalletNode(accountWallet, pxe, walletNodeSideTransport);
+ * const aztecNode = createAztecWalletNode(wallet, walletNodeSideTransport);
  * // aztecNode will start listening for requests on walletNodeSideTransport
  *
  * // 4. Create and configure the WalletRouter
@@ -74,7 +75,7 @@ export function createAztecWalletNode(
   transport: JSONRPCTransport,
 ): JSONRPCNode<AztecWalletMethodMap, JSONRPCEventMap, AztecWalletHandlerContext> {
   // Create the handler context that will be passed to all method handlers
-  // This context provides access to the wallet, PXE, and cache instances
+  // This context provides access to the wallet instance
   const context: AztecWalletHandlerContext = {
     wallet,
     notify: async () => {

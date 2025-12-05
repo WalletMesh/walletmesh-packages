@@ -287,8 +287,8 @@ export const BASE_WALLET_METHODS = ['wm_getSupportedMethods', 'aztec_connect', '
  * Methods are loosely grouped by functionality (Chain/Node, Account, Sender, etc.).
  * "wm_" prefixed methods are typically WalletMesh-specific extensions or conveniences.
  *
- * @see {@link AztecDappWallet} for the client-side implementation that calls these methods.
- * @see {@link createAztecHandlers} for the wallet-side implementation that handles these methods.
+ * @see {@link AztecWalletProvider} for the client-side implementation that calls these methods.
+ * @see {@link registerAztecWalletHandlers} for the wallet-side implementation that handles these methods.
  */
 
 export interface AztecWalletMethodMap extends WalletMethodMap {

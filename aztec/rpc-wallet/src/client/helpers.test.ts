@@ -1,190 +1,115 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { type AztecDappWallet, createAztecWallet } from './aztec-dapp-wallet.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { AZTEC_WALLET_METHODS } from '../types.js';
 import type { AztecWalletRouterProvider } from './aztec-router-provider.js';
-import { ALL_AZTEC_METHODS, connectAztec } from './helpers.js';
+import { connectAztec } from './helpers.js';
+import { AztecWalletProvider } from './wallet.js';
 
-// Mock the aztec-dapp-wallet module
-vi.mock('./aztec-dapp-wallet.js', () => ({
-  createAztecWallet: vi.fn(),
+// Mock the wallet module
+vi.mock('./wallet.js', () => ({
+  AztecWalletProvider: vi.fn(),
 }));
 
-// Mock provider
-const createMockProvider = () => {
-  const connect = vi.fn();
-  const on = vi.fn();
-  const off = vi.fn();
-  const call = vi.fn();
-  const dispose = vi.fn();
-  return {
-    connect,
-    on,
-    off,
-    call,
-    dispose,
-    // biome-ignore lint/suspicious/noExplicitAny: mock
-  } as any as AztecWalletRouterProvider;
-};
-
 describe('helpers', () => {
-  let provider: ReturnType<typeof createMockProvider>;
+  let mockProvider: AztecWalletRouterProvider;
+  let mockConnect: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    provider = createMockProvider();
+    vi.useFakeTimers();
+    mockConnect = vi.fn();
+    mockProvider = {
+      connect: mockConnect,
+    } as unknown as AztecWalletRouterProvider;
     vi.clearAllMocks();
   });
 
-  describe('constants', () => {
-    it('should export ALL_AZTEC_METHODS with all available methods', () => {
-      // Should include essential methods
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getAddress');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getCompleteAddress');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getChainId');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getVersion');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_sendTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getTxReceipt');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_simulateTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getNodeInfo');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getBlockNumber');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getCurrentBaseFees');
-
-      // Should include additional methods
-      expect(ALL_AZTEC_METHODS).toContain('aztec_registerSender');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getSenders');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_removeSender');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_registerContract');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_registerContractClass');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getContractMetadata');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getContractClassMetadata');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_proveTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_profileTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_simulateUtility');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getPrivateEvents');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getPublicEvents');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getPXEInfo');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getBlock');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_createAuthWit');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_wmDeployContract');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_wmExecuteTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_wmSimulateTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_wmDeployContract');
-
-      // Check total length
-      expect(ALL_AZTEC_METHODS).toHaveLength(28);
-    });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   describe('connectAztec', () => {
-    it('should connect and create wallet with default chainId and methods', async () => {
+    it('should connect with default methods and create wallet', async () => {
       const mockConnectResult = {
         sessionId: 'test-session',
-        permissions: { 'aztec:mainnet': {} }, // Mock HumanReadableChainPermissions
+        permissions: {
+          'aztec:testnet': {
+            methods: AZTEC_WALLET_METHODS,
+            metadata: {},
+          },
+        },
       };
-      const mockWallet = { address: '0x123' } as unknown as AztecDappWallet;
+      const mockWallet = {} as AztecWalletProvider;
 
-      vi.mocked(provider.connect).mockResolvedValue(mockConnectResult);
-      vi.mocked(createAztecWallet).mockResolvedValue(mockWallet);
+      mockConnect.mockResolvedValue(mockConnectResult);
+      vi.mocked(AztecWalletProvider).mockImplementation(() => mockWallet);
 
-      const result = await connectAztec(provider, 'aztec:mainnet');
+      const result = await connectAztec(mockProvider, 'aztec:testnet');
 
-      expect(provider.connect).toHaveBeenCalledWith({
-        'aztec:mainnet': ALL_AZTEC_METHODS,
+      expect(mockConnect).toHaveBeenCalledWith({
+        'aztec:testnet': expect.arrayContaining([...AZTEC_WALLET_METHODS] as string[]),
       });
-      expect(createAztecWallet).toHaveBeenCalledWith(provider, 'aztec:mainnet');
+      expect(AztecWalletProvider).toHaveBeenCalledWith(mockProvider, 'aztec:testnet');
       expect(result).toEqual({
-        sessionId: mockConnectResult.sessionId,
+        sessionId: 'test-session',
         wallet: mockWallet,
       });
     });
 
-    it('should connect and create wallet with custom chainId', async () => {
+    it('should connect with custom chainId', async () => {
       const mockConnectResult = {
         sessionId: 'test-session',
-        permissions: { 'aztec:custom': {} },
+        permissions: {
+          'aztec:mainnet': {
+            methods: AZTEC_WALLET_METHODS,
+            metadata: {},
+          },
+        },
       };
-      const mockWallet = { address: '0x123' } as unknown as AztecDappWallet;
-      const customChainId = 'aztec:custom';
+      const mockWallet = {} as AztecWalletProvider;
 
-      vi.mocked(provider.connect).mockResolvedValue(mockConnectResult);
-      vi.mocked(createAztecWallet).mockResolvedValue(mockWallet);
+      mockConnect.mockResolvedValue(mockConnectResult);
+      vi.mocked(AztecWalletProvider).mockImplementation(() => mockWallet);
 
-      const result = await connectAztec(provider, customChainId);
+      const result = await connectAztec(mockProvider, 'aztec:mainnet');
 
-      expect(provider.connect).toHaveBeenCalledWith({
-        [customChainId]: ALL_AZTEC_METHODS,
+      expect(mockConnect).toHaveBeenCalledWith({
+        'aztec:mainnet': expect.arrayContaining([...AZTEC_WALLET_METHODS] as string[]),
       });
-      expect(createAztecWallet).toHaveBeenCalledWith(provider, customChainId);
-      expect(result).toEqual({
-        sessionId: mockConnectResult.sessionId,
-        wallet: mockWallet,
-      });
+      expect(AztecWalletProvider).toHaveBeenCalledWith(mockProvider, 'aztec:mainnet');
+      expect(result.sessionId).toBe('test-session');
     });
 
-    it('should connect and create wallet with custom methods', async () => {
+    it('should connect with custom methods', async () => {
+      const customMethods = ['aztec_getChainInfo', 'aztec_getAccounts'] as const;
       const mockConnectResult = {
         sessionId: 'test-session',
-        permissions: { 'aztec:mainnet': {} },
+        permissions: {
+          'aztec:testnet': {
+            methods: customMethods,
+            metadata: {},
+          },
+        },
       };
-      const mockWallet = { address: '0x123' } as unknown as AztecDappWallet;
-      const customMethods = ['aztec_getAddress', 'aztec_sendTx'];
+      const mockWallet = {} as AztecWalletProvider;
 
-      vi.mocked(provider.connect).mockResolvedValue(mockConnectResult);
-      vi.mocked(createAztecWallet).mockResolvedValue(mockWallet);
+      mockConnect.mockResolvedValue(mockConnectResult);
+      vi.mocked(AztecWalletProvider).mockImplementation(() => mockWallet);
 
-      const result = await connectAztec(provider, 'aztec:mainnet', customMethods);
+      const result = await connectAztec(mockProvider, 'aztec:testnet', customMethods);
 
-      expect(provider.connect).toHaveBeenCalledWith({
-        'aztec:mainnet': customMethods,
+      expect(mockConnect).toHaveBeenCalledWith({
+        'aztec:testnet': [...customMethods],
       });
-      expect(createAztecWallet).toHaveBeenCalledWith(provider, 'aztec:mainnet');
-      expect(result).toEqual({
-        sessionId: mockConnectResult.sessionId,
-        wallet: mockWallet,
-      });
-    });
-
-    it('should connect and create wallet with custom chainId and methods', async () => {
-      const mockConnectResult = {
-        sessionId: 'test-session',
-        permissions: { 'aztec:testnet': {} },
-      };
-      const mockWallet = { address: '0x123' } as unknown as AztecDappWallet;
-      const customChainId = 'aztec:testnet';
-      const customMethods = ['aztec_getAddress'];
-
-      vi.mocked(provider.connect).mockResolvedValue(mockConnectResult);
-      vi.mocked(createAztecWallet).mockResolvedValue(mockWallet);
-
-      const result = await connectAztec(provider, customChainId, customMethods);
-
-      expect(provider.connect).toHaveBeenCalledWith({
-        [customChainId]: customMethods,
-      });
-      expect(createAztecWallet).toHaveBeenCalledWith(provider, customChainId);
-      expect(result).toEqual({
-        sessionId: mockConnectResult.sessionId,
-        wallet: mockWallet,
-      });
+      expect(AztecWalletProvider).toHaveBeenCalledWith(mockProvider, 'aztec:testnet');
+      expect(result.sessionId).toBe('test-session');
     });
 
     it('should handle connection failure', async () => {
       const error = new Error('Connection failed');
-      vi.mocked(provider.connect).mockRejectedValue(error);
+      mockConnect.mockRejectedValue(error);
 
-      await expect(connectAztec(provider, 'aztec:mainnet')).rejects.toThrow('Connection failed');
-      expect(createAztecWallet).not.toHaveBeenCalled();
-    });
-
-    it('should handle wallet creation failure', async () => {
-      const mockConnectResult = {
-        sessionId: 'test-session',
-        permissions: { 'aztec:mainnet': {} },
-      };
-      const error = new Error('Wallet creation failed');
-
-      vi.mocked(provider.connect).mockResolvedValue(mockConnectResult);
-      vi.mocked(createAztecWallet).mockRejectedValue(error);
-
-      await expect(connectAztec(provider, 'aztec:mainnet')).rejects.toThrow('Wallet creation failed');
+      await expect(connectAztec(mockProvider, 'aztec:testnet')).rejects.toThrow('Connection failed');
+      expect(AztecWalletProvider).not.toHaveBeenCalled();
     });
   });
 });
