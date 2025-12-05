@@ -1,15 +1,11 @@
 import { Buffer } from 'node:buffer';
-import {
-  AztecAddress,
-  type ContractArtifact,
-  type ContractInstanceWithAddress,
-  Fr,
-  type FunctionArtifact,
-  FunctionSelector,
-  PublicKeys,
-  type PXE,
-} from '@aztec/aztec.js';
-import { FunctionType } from '@aztec/stdlib/abi'; // Corrected import path
+import { type ContractArtifact, FunctionSelector } from '@aztec/aztec.js/abi';
+import { AztecAddress } from '@aztec/aztec.js/addresses';
+import type { ContractInstanceWithAddress } from '@aztec/aztec.js/contracts';
+import { Fr } from '@aztec/aztec.js/fields';
+import { PublicKeys } from '@aztec/aztec.js/keys';
+import type { Wallet } from '@aztec/aztec.js/wallet';
+import { type FunctionArtifact, type FunctionArtifactWithContractName, FunctionType } from '@aztec/stdlib/abi'; // Corrected import path
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   getContractArtifactFromContractAddress,
@@ -18,7 +14,7 @@ import {
 } from './helpers.js';
 
 describe('aztec helpers', () => {
-  let mockPXE: PXE;
+  let mockWallet: Wallet;
   let mockContractAddress: AztecAddress;
   let mockContractClassId: Fr;
 
@@ -26,11 +22,11 @@ describe('aztec helpers', () => {
     mockContractAddress = await AztecAddress.random();
     mockContractClassId = Fr.random();
 
-    // Create mock PXE
-    mockPXE = {
+    // Create mock Wallet
+    mockWallet = {
       getContractMetadata: vi.fn(),
       getContractClassMetadata: vi.fn(),
-    } as unknown as PXE;
+    } as unknown as Wallet;
   });
 
   describe('getContractArtifactFromContractAddress', () => {
@@ -57,39 +53,39 @@ describe('aztec helpers', () => {
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
 
-      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
         isContractPublished: true,
       });
-      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractClassMetadata).mockResolvedValue({
         artifact: mockArtifact,
         isContractClassPubliclyRegistered: true,
       });
 
       // First call - should fetch from PXE
-      const result1 = await getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString());
+      const result1 = await getContractArtifactFromContractAddress(mockWallet, mockContractAddress.toString());
       expect(result1).toEqual(mockArtifact);
-      expect(mockPXE.getContractMetadata).toHaveBeenCalledTimes(1);
-      expect(mockPXE.getContractClassMetadata).toHaveBeenCalledTimes(1);
+      expect(mockWallet.getContractMetadata).toHaveBeenCalledTimes(1);
+      expect(mockWallet.getContractClassMetadata).toHaveBeenCalledTimes(1);
 
       // Second call - should use cache
-      const result2 = await getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString());
+      const result2 = await getContractArtifactFromContractAddress(mockWallet, mockContractAddress.toString());
       expect(result2).toEqual(mockArtifact);
-      expect(mockPXE.getContractMetadata).toHaveBeenCalledTimes(1); // No additional calls
-      expect(mockPXE.getContractClassMetadata).toHaveBeenCalledTimes(1); // No additional calls
+      expect(mockWallet.getContractMetadata).toHaveBeenCalledTimes(1); // No additional calls
+      expect(mockWallet.getContractClassMetadata).toHaveBeenCalledTimes(1); // No additional calls
     });
 
     it('should throw if contract is not registered', async () => {
-      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractMetadata).mockResolvedValue({
         contractInstance: undefined,
         isContractInitialized: false,
         isContractPublished: false,
       });
 
       await expect(
-        getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString()),
-      ).rejects.toThrow('not registered in the PXE');
+        getContractArtifactFromContractAddress(mockWallet, mockContractAddress.toString()),
+      ).rejects.toThrow('not registered in the Wallet');
     });
 
     it('should throw if artifact is not found', async () => {
@@ -103,30 +99,31 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
         isContractPublished: true,
       });
-      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractClassMetadata).mockResolvedValue({
         artifact: undefined,
         isContractClassPubliclyRegistered: false,
       });
 
       await expect(
-        getContractArtifactFromContractAddress(mockPXE, mockContractAddress.toString()),
-      ).rejects.toThrow('not registered in the PXE');
+        getContractArtifactFromContractAddress(mockWallet, mockContractAddress.toString()),
+      ).rejects.toThrow('not registered in the Wallet');
     });
   });
 
   describe('getFunctionArtifactFromContractAddress', () => {
-    const mockFunctionArtifact: FunctionArtifact = {
+    const mockFunctionArtifact: FunctionArtifactWithContractName = {
       name: 'testFunction',
       parameters: [{ name: 'param1', type: { kind: 'field' }, visibility: 'public' }],
       bytecode: Buffer.from([]),
+      contractName: 'TestContract',
       debugSymbols: '',
       functionType: FunctionType.PUBLIC,
-      isInternal: false,
+      isOnlySelf: false,
       returnTypes: [{ kind: 'field' }],
       isStatic: false,
       errorTypes: {},
@@ -144,12 +141,12 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
         isContractPublished: true,
       });
-      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractClassMetadata).mockResolvedValue({
         artifact: {
           name: 'TestContract',
           functions: [mockFunctionArtifact],
@@ -163,7 +160,7 @@ describe('aztec helpers', () => {
       });
 
       const result = await getFunctionArtifactFromContractAddress(
-        mockPXE,
+        mockWallet,
         mockContractAddress.toString(),
         'testFunction',
       );
@@ -201,18 +198,18 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
         isContractPublished: true,
       });
-      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractClassMetadata).mockResolvedValue({
         artifact: mockArtifact,
         isContractClassPubliclyRegistered: true,
       });
 
       const result = await getFunctionArtifactFromContractAddress(
-        mockPXE,
+        mockWallet,
         mockContractAddress.toString(),
         mockSelector,
       );
@@ -235,12 +232,12 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
         isContractPublished: true,
       });
-      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractClassMetadata).mockResolvedValue({
         artifact: {
           name: 'TestContract',
           functions: [],
@@ -254,7 +251,7 @@ describe('aztec helpers', () => {
       });
 
       await expect(
-        getFunctionArtifactFromContractAddress(mockPXE, mockContractAddress.toString(), 'nonexistent'),
+        getFunctionArtifactFromContractAddress(mockWallet, mockContractAddress.toString(), 'nonexistent'),
       ).rejects.toThrow('Unknown function');
     });
   });
@@ -270,7 +267,7 @@ describe('aztec helpers', () => {
         bytecode: Buffer.from([]),
         debugSymbols: '',
         functionType: FunctionType.PUBLIC,
-        isInternal: false,
+        isOnlySelf: false,
         returnTypes: [{ kind: 'field' }],
         isStatic: false,
         errorTypes: {},
@@ -287,12 +284,12 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
         isContractPublished: true,
       });
-      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractClassMetadata).mockResolvedValue({
         artifact: {
           name: 'TestContract',
           functions: [mockFunctionArtifact],
@@ -306,7 +303,7 @@ describe('aztec helpers', () => {
       });
 
       const result = await getFunctionParameterInfoFromContractAddress(
-        mockPXE,
+        mockWallet,
         mockContractAddress.toString(),
         'testFunction',
       );
@@ -334,7 +331,7 @@ describe('aztec helpers', () => {
         bytecode: Buffer.from([]),
         debugSymbols: '',
         functionType: FunctionType.PUBLIC,
-        isInternal: false,
+        isOnlySelf: false,
         returnTypes: [{ kind: 'field' }],
         isStatic: false,
         errorTypes: {},
@@ -351,12 +348,12 @@ describe('aztec helpers', () => {
         publicKeys: await PublicKeys.random(),
         address: mockContractAddress,
       } as ContractInstanceWithAddress;
-      vi.mocked(mockPXE.getContractMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractMetadata).mockResolvedValue({
         contractInstance: mockInstance,
         isContractInitialized: true,
         isContractPublished: true,
       });
-      vi.mocked(mockPXE.getContractClassMetadata).mockResolvedValue({
+      vi.mocked(mockWallet.getContractClassMetadata).mockResolvedValue({
         artifact: {
           name: 'TestContract',
           functions: [mockFunctionArtifact],
@@ -370,7 +367,7 @@ describe('aztec helpers', () => {
       });
 
       const result = await getFunctionParameterInfoFromContractAddress(
-        mockPXE,
+        mockWallet,
         mockContractAddress.toString(),
         'testFunction',
       );

@@ -8,7 +8,7 @@
  * @packageDocumentation
  */
 
-import type { AbiType } from '@aztec/aztec.js';
+import type { AbiType } from '@aztec/aztec.js/abi';
 import type { FormattedValue } from './types.js';
 
 /**

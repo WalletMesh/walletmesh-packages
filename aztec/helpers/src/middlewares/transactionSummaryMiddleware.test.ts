@@ -6,7 +6,7 @@ import {
   type TransactionSummary,
 } from './transactionSummaryMiddleware.js';
 import type { FunctionArgNames } from './functionArgNamesMiddleware.js';
-import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
+import type { AztecWalletHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 
 describe('transactionSummaryMiddleware', () => {
@@ -394,7 +394,7 @@ describe('transactionSummaryMiddleware', () => {
   describe('createTransactionSummaryMiddleware', () => {
     let middleware: ReturnType<typeof createTransactionSummaryMiddleware>;
     let mockNext: ReturnType<typeof vi.fn>;
-    let mockContext: AztecHandlerContext & {
+    let mockContext: AztecWalletHandlerContext & {
       functionCallArgNames?: FunctionArgNames;
       transactionSummary?: TransactionSummary;
     };
@@ -402,7 +402,7 @@ describe('transactionSummaryMiddleware', () => {
     beforeEach(() => {
       middleware = createTransactionSummaryMiddleware();
       mockNext = vi.fn().mockResolvedValue({ result: 'success' });
-      mockContext = {} as AztecHandlerContext & {
+      mockContext = {} as AztecWalletHandlerContext & {
         functionCallArgNames?: FunctionArgNames;
         transactionSummary?: TransactionSummary;
       };

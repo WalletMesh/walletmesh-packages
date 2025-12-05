@@ -1,7 +1,8 @@
-import type { AbiType, PXE } from '@aztec/aztec.js';
+import type { AbiType } from '@aztec/aztec.js/abi';
+import type { Wallet } from '@aztec/aztec.js/wallet';
 import { getEnhancedParameterInfo } from '../helpers.js';
 import type { EnhancedParameterInfo } from '../types.js';
-import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
+import type { AztecWalletHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCMiddleware } from '@walletmesh/jsonrpc';
 
 export type FunctionArgNames = Record<string, Record<string, EnhancedParameterInfo[]>>;
@@ -17,12 +18,12 @@ const deploymentArtifactCache = new Map<string, { name: string; artifact: unknow
  * Extracts function argument names for an array of execution payloads (batch execute).
  * This is a helper function that can be used in router-level middleware.
  *
- * @param pxe - The PXE instance to query contract ABIs
+ * @param wallet - The Wallet instance to query contract ABIs
  * @param executionPayloads - Array of execution payloads containing calls
  * @returns Function argument names organized by contract address and function name
  */
 export async function extractFunctionArgNamesForBatch(
-  pxe: PXE,
+  wallet: Wallet,
   executionPayloads: ExecutionPayload[],
 ): Promise<FunctionArgNames> {
   const functionCallArgNames: FunctionArgNames = {};
@@ -41,7 +42,7 @@ export async function extractFunctionArgNamesForBatch(
 
       try {
         const contractAddress = call.to.toString();
-        const paramInfo = await getEnhancedParameterInfo(pxe, contractAddress, call.name);
+        const paramInfo = await getEnhancedParameterInfo(wallet, contractAddress, call.name);
 
         if (!functionCallArgNames[contractAddress]) {
           functionCallArgNames[contractAddress] = {};
@@ -61,12 +62,12 @@ export async function extractFunctionArgNamesForBatch(
  * Extracts function argument names for a single execution payload.
  * This is a helper function that can be used in router-level middleware.
  *
- * @param pxe - The PXE instance to query contract ABIs
+ * @param wallet - The Wallet instance to query contract ABIs
  * @param executionPayload - Single execution payload containing calls
  * @returns Function argument names organized by contract address and function name
  */
 export async function extractFunctionArgNamesForSingle(
-  pxe: PXE,
+  wallet: Wallet,
   executionPayload: ExecutionPayload,
 ): Promise<FunctionArgNames> {
   const functionCallArgNames: FunctionArgNames = {};
@@ -84,7 +85,7 @@ export async function extractFunctionArgNamesForSingle(
 
     try {
       const contractAddress = call.to.toString();
-      const paramInfo = await getEnhancedParameterInfo(pxe, contractAddress, call.name);
+      const paramInfo = await getEnhancedParameterInfo(wallet, contractAddress, call.name);
 
       if (!functionCallArgNames[contractAddress]) {
         functionCallArgNames[contractAddress] = {};
@@ -129,10 +130,10 @@ interface DeploymentParams {
  * Updated to support the latest @walletmesh/aztec-rpc-wallet methods.
  */
 export const createFunctionArgNamesMiddleware = (
-  pxe: PXE,
+  wallet: Wallet,
 ): JSONRPCMiddleware<
   AztecWalletMethodMap,
-  AztecHandlerContext & { functionCallArgNames?: FunctionArgNames }
+  AztecWalletHandlerContext & { functionCallArgNames?: FunctionArgNames }
 > => {
   return async (context, req, next) => {
     console.log('[FunctionArgNamesMiddleware] Processing request:', {
@@ -189,10 +190,10 @@ export const createFunctionArgNamesMiddleware = (
                 let paramInfo: EnhancedParameterInfo[];
 
                 try {
-                  // First, try to get from PXE (for already deployed contracts)
-                  paramInfo = await getEnhancedParameterInfo(pxe, contractAddress, call.name);
-                } catch (pxeError) {
-                  console.log('[FunctionArgNamesMiddleware] PXE lookup failed, trying fallbacks:', {
+                  // First, try to get from Wallet (for already deployed contracts)
+                  paramInfo = await getEnhancedParameterInfo(wallet, contractAddress, call.name);
+                } catch (walletError) {
+                  console.log('[FunctionArgNamesMiddleware] Wallet lookup failed, trying fallbacks:', {
                     contractAddress,
                     functionName: call.name,
                     cacheSize: deploymentArtifactCache.size,
@@ -225,11 +226,11 @@ export const createFunctionArgNamesMiddleware = (
                         typeString: p.type?.kind || 'unknown',
                       }));
                     } else {
-                      throw pxeError; // Function not found in cached artifact
+                      throw walletError; // Function not found in cached artifact
                     }
                   } else {
                     // No fallback available, re-throw original error
-                    throw pxeError;
+                    throw walletError;
                   }
                 }
 
@@ -292,10 +293,10 @@ export const createFunctionArgNamesMiddleware = (
                 let paramInfo: EnhancedParameterInfo[];
 
                 try {
-                  // First, try to get from PXE (for already deployed contracts)
-                  paramInfo = await getEnhancedParameterInfo(pxe, contractAddress, call.name);
-                } catch (pxeError) {
-                  console.log('[FunctionArgNamesMiddleware] PXE lookup failed, trying fallbacks:', {
+                  // First, try to get from Wallet (for already deployed contracts)
+                  paramInfo = await getEnhancedParameterInfo(wallet, contractAddress, call.name);
+                } catch (walletError) {
+                  console.log('[FunctionArgNamesMiddleware] Wallet lookup failed, trying fallbacks:', {
                     contractAddress,
                     functionName: call.name,
                     cacheSize: deploymentArtifactCache.size,
@@ -328,11 +329,11 @@ export const createFunctionArgNamesMiddleware = (
                         typeString: p.type?.kind || 'unknown',
                       }));
                     } else {
-                      throw pxeError; // Function not found in cached artifact
+                      throw walletError; // Function not found in cached artifact
                     }
                   } else {
                     // No fallback available, re-throw original error
-                    throw pxeError;
+                    throw walletError;
                   }
                 }
 

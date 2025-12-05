@@ -5,7 +5,7 @@
  * @packageDocumentation
  */
 
-import type { AbiType } from '@aztec/aztec.js';
+import type { AbiType } from '@aztec/aztec.js/abi';
 
 /**
  * Enhanced parameter information that preserves full ABI type
