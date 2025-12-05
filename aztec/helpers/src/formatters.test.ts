@@ -6,7 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { formatArgumentValue } from './formatters.js';
-import type { AbiType } from '@aztec/aztec.js';
+import type { AbiType } from '@aztec/aztec.js/abi';
 
 describe('formatArgumentValue', () => {
   describe('field type formatting', () => {

@@ -1,5 +1,5 @@
-import type { AztecAddress } from '@aztec/aztec.js';
-import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
+import type { AztecAddress } from '@aztec/aztec.js/addresses';
+import type { AztecWalletHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCMiddleware } from '@walletmesh/jsonrpc';
 import type { SessionData } from '@walletmesh/router';
 import type { FunctionArgNames } from './functionArgNamesMiddleware.js';
@@ -130,7 +130,7 @@ function buildBatchSummary(payloads: ExecutionPayload[] | undefined): Transactio
 
 export const createTransactionSummaryMiddleware = (): JSONRPCMiddleware<
   AztecWalletMethodMap,
-  AztecHandlerContext & {
+  AztecWalletHandlerContext & {
     functionCallArgNames?: FunctionArgNames;
     transactionSummary?: TransactionSummary;
   }

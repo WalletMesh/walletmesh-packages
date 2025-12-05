@@ -1,33 +1,34 @@
-import type { AbiType, ContractArtifact, FunctionArtifact, FunctionSelector, PXE } from '@aztec/aztec.js';
-import { AztecAddress } from '@aztec/aztec.js';
-import { getFunctionArtifact } from '@aztec/stdlib/abi';
+import type { AbiType, ContractArtifact, FunctionSelector } from '@aztec/aztec.js/abi';
+import type { Wallet } from '@aztec/aztec.js/wallet';
+import { AztecAddress } from '@aztec/aztec.js/addresses';
+import { getFunctionArtifact, type FunctionArtifactWithContractName } from '@aztec/stdlib/abi';
 import type { EnhancedParameterInfo } from './types.js';
 
 /**
  * @internal
- * Cache for contract artifacts to avoid redundant fetches from the PXE.
+ * Cache for contract artifacts to avoid redundant fetches from the Wallet.
  * Keyed by contract address string.
  */
 const contractArtifactCache = new Map<string, ContractArtifact>();
 
 /**
  * @internal
- * Cache for contract artifacts by class ID to avoid redundant fetches from the PXE.
+ * Cache for contract artifacts by class ID to avoid redundant fetches from the Wallet.
  * Keyed by contract class ID hex string.
  */
 const contractClassArtifactCache = new Map<string, ContractArtifact>();
 
 /**
  * Retrieves the contract artifact for a given contract address.
- * Fetches from the PXE service and caches the result.
+ * Fetches from the Wallet service and caches the result.
  *
- * @param pxe - An initialized PXE client instance.
+ * @param wallet - An initialized Wallet client instance.
  * @param contractAddress - The Aztec address of the contract as a string.
  * @returns A promise that resolves to the {@link ContractArtifact}.
- * @throws If the contract or its artifact is not registered in the PXE.
+ * @throws If the contract or its artifact is not registered in the Wallet.
  */
 export async function getContractArtifactFromContractAddress(
-  pxe: PXE,
+  wallet: Wallet,
   contractAddress: string,
 ): Promise<ContractArtifact> {
   // TODO: do we need to make the cache aware of different networks?
@@ -37,20 +38,20 @@ export async function getContractArtifactFromContractAddress(
   }
 
   const aztecAddr = AztecAddress.fromString(contractAddress);
-  const contractMetadata = await pxe.getContractMetadata(aztecAddr);
+  const contractMetadata = await wallet.getContractMetadata(aztecAddr);
   const instance = contractMetadata?.contractInstance;
   if (!instance) {
-    throw new Error(`Contract ${contractAddress} is not registered in the PXE, or metadata is incomplete.`);
+    throw new Error(`Contract ${contractAddress} is not registered in the Wallet, or metadata is incomplete.`);
   }
 
   // Use currentContractClassId as it reflects the active class for the instance
   // Pass true to includeArtifact parameter to ensure the artifact is returned
-  const contractClassMetadata = await pxe.getContractClassMetadata(instance.currentContractClassId, true);
+  const contractClassMetadata = await wallet.getContractClassMetadata(instance.currentContractClassId, true);
 
   const artifact = contractClassMetadata?.artifact;
   if (!artifact) {
     throw new Error(
-      `Artifact for contract class ID ${instance.currentContractClassId.toString()} is not registered in the PXE, or metadata is incomplete.`,
+      `Artifact for contract class ID ${instance.currentContractClassId.toString()} is not registered in the Wallet, or metadata is incomplete.`,
     );
   }
 
@@ -60,16 +61,16 @@ export async function getContractArtifactFromContractAddress(
 
 /**
  * Retrieves the contract artifact for a given contract class ID.
- * Fetches from the PXE service and caches the result.
+ * Fetches from the Wallet service and caches the result.
  * This is useful when the contract instance doesn't exist yet but the class is registered.
  *
- * @param pxe - An initialized PXE client instance.
+ * @param wallet - An initialized Wallet client instance.
  * @param contractClassId - The contract class ID (can be string or object with toString()).
  * @returns A promise that resolves to the {@link ContractArtifact}.
- * @throws If the contract class or its artifact is not registered in the PXE.
+ * @throws If the contract class or its artifact is not registered in the Wallet.
  */
 export async function getContractArtifactFromClassId(
-  pxe: PXE,
+  wallet: Wallet,
   contractClassId: string | { toString(): string },
 ): Promise<ContractArtifact> {
   const classIdString = typeof contractClassId === 'string' ? contractClassId : contractClassId.toString();
@@ -81,16 +82,16 @@ export async function getContractArtifactFromClassId(
   }
 
   // Import Fr to handle class ID conversion if needed
-  const { Fr } = await import('@aztec/aztec.js');
+  const { Fr } = await import('@aztec/aztec.js/fields');
   const classIdFr = Fr.fromHexString(classIdString);
 
   // Pass true to includeArtifact parameter to ensure the artifact is returned
-  const contractClassMetadata = await pxe.getContractClassMetadata(classIdFr, true);
+  const contractClassMetadata = await wallet.getContractClassMetadata(classIdFr, true);
 
   const artifact = contractClassMetadata?.artifact;
   if (!artifact) {
     throw new Error(
-      `Artifact for contract class ID ${classIdString} is not registered in the PXE, or metadata is incomplete.`,
+      `Artifact for contract class ID ${classIdString} is not registered in the Wallet, or metadata is incomplete.`,
     );
   }
 
@@ -101,18 +102,18 @@ export async function getContractArtifactFromClassId(
 /**
  * Retrieves the function artifact for a specific function within a contract.
  *
- * @param pxe - An initialized PXE client instance.
+ * @param wallet - An initialized Wallet client instance.
  * @param contractAddress - The Aztec address of the contract as a string.
  * @param functionNameOrSelector - The name of the function (string) or its {@link FunctionSelector}.
- * @returns A promise that resolves to the {@link FunctionArtifact}.
+ * @returns A promise that resolves to the {@link FunctionArtifactWithContractName}.
  * @throws If the contract artifact or the specific function artifact cannot be found.
  */
 export async function getFunctionArtifactFromContractAddress(
-  pxe: PXE,
+  wallet: Wallet,
   contractAddress: string,
   functionNameOrSelector: string | FunctionSelector,
-): Promise<FunctionArtifact> {
-  const artifact = await getContractArtifactFromContractAddress(pxe, contractAddress);
+): Promise<FunctionArtifactWithContractName> {
+  const artifact = await getContractArtifactFromContractAddress(wallet, contractAddress);
   return await getFunctionArtifact(artifact, functionNameOrSelector);
 }
 
@@ -129,19 +130,19 @@ export type FunctionParameterInfo = {
 /**
  * Retrieves simplified parameter information (name and type string) for a specific function.
  *
- * @param pxe - An initialized PXE client instance.
+ * @param wallet - An initialized Wallet client instance.
  * @param contractAddress - The Aztec address of the contract as a string.
  * @param functionNameOrSelector - The name of the function (string) or its {@link FunctionSelector}.
  * @returns A promise that resolves to an array of {@link FunctionParameterInfo} objects.
  * @throws If the contract or function artifact cannot be found.
  */
 export async function getFunctionParameterInfoFromContractAddress(
-  pxe: PXE,
+  wallet: Wallet,
   contractAddress: string,
   functionNameOrSelector: string | FunctionSelector,
 ): Promise<FunctionParameterInfo[]> {
   const functionArtifact = await getFunctionArtifactFromContractAddress(
-    pxe,
+    wallet,
     contractAddress,
     functionNameOrSelector,
   );
@@ -183,7 +184,7 @@ function formatAbiTypeString(type: AbiType): string {
  * This function returns complete parameter information including the full ABI type object,
  * which enables type-aware value formatting in the UI.
  *
- * @param pxe - An initialized PXE client instance.
+ * @param wallet - An initialized Wallet client instance.
  * @param contractAddress - The Aztec address of the contract as a string.
  * @param functionNameOrSelector - The name of the function (string) or its {@link FunctionSelector}.
  * @returns A promise that resolves to an array of {@link EnhancedParameterInfo} objects.
@@ -191,7 +192,7 @@ function formatAbiTypeString(type: AbiType): string {
  *
  * @example
  * ```typescript
- * const paramInfo = await getEnhancedParameterInfo(pxe, contractAddress, 'transfer');
+ * const paramInfo = await getEnhancedParameterInfo(wallet, contractAddress, 'transfer');
  * // Returns:
  * // [
  * //   { name: 'recipient', abiType: { kind: 'field' }, typeString: 'field' },
@@ -202,12 +203,12 @@ function formatAbiTypeString(type: AbiType): string {
  * @public
  */
 export async function getEnhancedParameterInfo(
-  pxe: PXE,
+  wallet: Wallet,
   contractAddress: string,
   functionNameOrSelector: string | FunctionSelector,
 ): Promise<EnhancedParameterInfo[]> {
   const functionArtifact = await getFunctionArtifactFromContractAddress(
-    pxe,
+    wallet,
     contractAddress,
     functionNameOrSelector,
   );

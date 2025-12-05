@@ -1,4 +1,4 @@
-import { AztecAddress, CompleteAddress } from '@aztec/aztec.js';
+import { AztecAddress, CompleteAddress } from '@aztec/aztec.js/addresses';
 // import { jsonStringify } from '@aztec/foundation/json-rpc'; // Unused
 import type {
   JSONRPCRequest,

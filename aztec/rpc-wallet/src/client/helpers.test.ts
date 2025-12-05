@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type AztecDappWallet, createAztecWallet } from './aztec-dapp-wallet.js';
 import type { AztecWalletRouterProvider } from './aztec-router-provider.js';
-import { ALL_AZTEC_METHODS, connectAztec } from './helpers.js';
+import { connectAztec } from './helpers.js';
+import { AZTEC_WALLET_METHODS } from '../types.js';
 
 // Mock the aztec-dapp-wallet module
 vi.mock('./aztec-dapp-wallet.js', () => ({
@@ -36,40 +37,39 @@ describe('helpers', () => {
   describe('constants', () => {
     it('should export ALL_AZTEC_METHODS with all available methods', () => {
       // Should include essential methods
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getAddress');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getCompleteAddress');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getChainId');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getVersion');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_sendTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getTxReceipt');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_simulateTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getNodeInfo');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getBlockNumber');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getCurrentBaseFees');
-
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getAddress');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getCompleteAddress');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getChainId');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getVersion');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_sendTx');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getTxReceipt');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_simulateTx');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getNodeInfo');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getBlockNumber');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getCurrentBaseFees');
       // Should include additional methods
-      expect(ALL_AZTEC_METHODS).toContain('aztec_registerSender');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getSenders');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_removeSender');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_registerContract');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_registerContractClass');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getContractMetadata');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getContractClassMetadata');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_proveTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_profileTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_simulateUtility');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getPrivateEvents');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getPublicEvents');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getPXEInfo');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_getBlock');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_createAuthWit');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_wmDeployContract');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_wmExecuteTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_wmSimulateTx');
-      expect(ALL_AZTEC_METHODS).toContain('aztec_wmDeployContract');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_registerSender');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getSenders');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_removeSender');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_registerContract');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_registerContractClass');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getContractMetadata');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getContractClassMetadata');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_proveTx');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_profileTx');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_simulateUtility');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getPrivateEvents');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getPublicEvents');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getPXEInfo');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_getBlock');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_createAuthWit');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_wmDeployContract');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_wmExecuteTx');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_wmSimulateTx');
+      expect(AZTEC_WALLET_METHODS).toContain('aztec_wmDeployContract');
 
       // Check total length
-      expect(ALL_AZTEC_METHODS).toHaveLength(28);
+      expect(AZTEC_WALLET_METHODS).toHaveLength(28);
     });
   });
 
@@ -87,7 +87,7 @@ describe('helpers', () => {
       const result = await connectAztec(provider, 'aztec:mainnet');
 
       expect(provider.connect).toHaveBeenCalledWith({
-        'aztec:mainnet': ALL_AZTEC_METHODS,
+        'aztec:mainnet': AZTEC_WALLET_METHODS,
       });
       expect(createAztecWallet).toHaveBeenCalledWith(provider, 'aztec:mainnet');
       expect(result).toEqual({
@@ -110,7 +110,7 @@ describe('helpers', () => {
       const result = await connectAztec(provider, customChainId);
 
       expect(provider.connect).toHaveBeenCalledWith({
-        [customChainId]: ALL_AZTEC_METHODS,
+        [customChainId]: AZTEC_WALLET_METHODS,
       });
       expect(createAztecWallet).toHaveBeenCalledWith(provider, customChainId);
       expect(result).toEqual({
