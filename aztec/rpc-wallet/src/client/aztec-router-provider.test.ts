@@ -7,7 +7,7 @@ import type {
   // JSONRPCMethodMap, // Unused
 } from '@walletmesh/jsonrpc';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AztecRouterProvider } from './aztec-router-provider.js';
+import { AztecWalletRouterProvider } from './aztec-router-provider.js';
 
 // Define a minimal method map for testing purposes
 // import type { JSONRPCParams } from '@walletmesh/jsonrpc'; // Unused
@@ -40,7 +40,7 @@ interface WmCallParams {
 }
 describe('AztecRouterProvider', () => {
   let mockTransport: JSONRPCTransport;
-  let provider: AztecRouterProvider;
+  let provider: AztecWalletRouterProvider;
   let sendMock: ReturnType<typeof vi.fn>;
   // biome-ignore lint/suspicious/noExplicitAny: Test mock simplification
   let messageHandler: (msg: JSONRPCResponse<any, any>) => void;
@@ -58,7 +58,7 @@ describe('AztecRouterProvider', () => {
         return () => {};
       },
     };
-    provider = new AztecRouterProvider(mockTransport);
+    provider = new AztecWalletRouterProvider(mockTransport);
   });
 
   describe('serialization', () => {

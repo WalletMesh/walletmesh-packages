@@ -1,6 +1,6 @@
 import type { WalletRouterProvider } from '@walletmesh/router';
+import { SERIALIZERS } from '../serializers.js';
 import type { AztecWalletMethodMap } from '../types.js';
-import { AztecWalletSerializer } from '../wallet/serializers.js';
 
 /**
  * Registers the {@link AztecWalletSerializer} for all relevant Aztec JSON-RPC methods
@@ -40,70 +40,12 @@ import { AztecWalletSerializer } from '../wallet/serializers.js';
  * @see {@link AztecRouterProvider} for a provider that calls this automatically.
  * @see {@link AztecWalletMethodMap} for the list of methods and their types.
  */
-export function registerAztecSerializers(provider: WalletRouterProvider): void {
-  // List of all Aztec wallet methods that need the AztecWalletSerializer.
-  // This list should ideally be kept in sync with ALL_AZTEC_METHODS or derived from AztecWalletMethodMap.
-  // Note: 'aztec_createTxExecutionRequest' is a client-side method, not a direct RPC method name.
-  // The actual RPC methods involved in tx creation are typically aztec_proveTx, aztec_sendTx, etc.
-  // However, if it were an RPC method, it would be listed here.
-  // For now, using a manually curated list that matches most of AztecWalletMethodMap.
-  const aztecMethods: (keyof AztecWalletMethodMap)[] = [
-    // Chain/Node Methods
-    'aztec_getBlock',
-    'aztec_getBlockNumber',
-    'aztec_getChainId',
-    'aztec_getVersion',
-    'aztec_getNodeInfo',
-    'aztec_getProvenBlockNumber',
-    'aztec_getPXEInfo',
-    'aztec_getCurrentBaseFees',
-
-    // Account Methods
-    'aztec_getAddress',
-    'aztec_getCompleteAddress',
-
-    // AuthWitness Methods
-    'aztec_createAuthWit',
-
-    // Sender Methods
-    'aztec_registerSender',
-    'aztec_getSenders',
-    'aztec_removeSender',
-
-    // Contract Methods
-    'aztec_getContracts',
-    'aztec_getContractMetadata',
-    'aztec_getContractClassMetadata',
-    'aztec_registerContract',
-    'aztec_registerContractClass',
-
-    // Transaction Methods
-    // 'aztec_createTxExecutionRequest', // This is a client-side method, not an RPC method.
-    'aztec_proveTx',
-    'aztec_sendTx',
-    'aztec_getTxReceipt',
-    'aztec_simulateTx',
-    'aztec_profileTx',
-    'aztec_simulateUtility',
-
-    // Event Methods
-    'aztec_getPrivateEvents',
-    'aztec_getPublicEvents',
-
-    // Contract Interaction Methods (WalletMesh specific)
-    'aztec_wmExecuteTx',
-    'aztec_wmBatchExecute',
-    'aztec_wmSimulateTx',
-    'aztec_wmDeployContract',
-
-    // Base WalletMesh method often included
-    'wm_getSupportedMethods',
-  ];
-
-  // Register the unified Aztec serializer for all methods
-  for (const method of aztecMethods) {
-    // The AztecWalletSerializer is already set up with all the proper
-    // serialization logic for each method
-    provider.registerMethodSerializer(method as string, AztecWalletSerializer);
+export function registerAztecWalletSerializers(provider: WalletRouterProvider): void {
+  for (const method of Object.keys(SERIALIZERS)) {
+    if (!SERIALIZERS[method]) {
+      // This should never trigger
+      throw new Error(`No serializer found for method: ${method}`);
+    }
+    provider.registerMethodSerializer(method, SERIALIZERS[method]);
   }
 }

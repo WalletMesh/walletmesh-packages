@@ -5,12 +5,12 @@
  * This module provides the wallet-side implementation for handling Aztec JSON-RPC requests.
  */
 
-import type { AccountWallet, PXE } from '@aztec/aztec.js';
+import type { Wallet } from '@aztec/aztec.js/wallet';
 import { type JSONRPCEventMap, JSONRPCNode, type JSONRPCTransport } from '@walletmesh/jsonrpc';
-import { ContractArtifactCache } from '../contractArtifactCache.js';
-import type { AztecWalletMethodMap } from '../types.js';
-import { type AztecHandlerContext, createAztecHandlers } from './handlers/index.js';
-import { registerAztecSerializers } from './serializers.js';
+import type { AztecWalletEventMap, AztecWalletMethodMap } from '../types.js';
+import { registerAztecWalletHandlers } from './handlers.js';
+import { registerAztecWalletSerializers } from './register-serializers.js';
+import type { AztecWalletHandlerContext } from './types.js';
 
 /**
  * Creates and configures a {@link JSONRPCNode} to serve as an Aztec wallet endpoint.
@@ -22,31 +22,27 @@ import { registerAztecSerializers } from './serializers.js';
  * - Handlers for all Aztec RPC methods defined in {@link AztecWalletMethodMap}.
  * - Serializers for Aztec-specific data types, ensuring correct data exchange
  *   over JSON-RPC.
- * - A context ({@link AztecHandlerContext}) providing handlers with access to the
- *   necessary {@link AccountWallet}, {@link PXE} client, and a {@link ContractArtifactCache}.
+ * - A context ({@link AztecWalletHandlerContext}) providing handlers with access to a
+ *   {@link Wallet}
  *
- * @param wallet - An instance of {@link AccountWallet} from `aztec.js`, representing
+ * @param wallet - An instance of {@link Wallet} from `aztec.js`, representing
  *                 the user's Aztec account and signing capabilities.
- * @param pxe - An instance of {@link PXE} (Private Execution Environment) client from
- *              `aztec.js`, used for interacting with the Aztec network (e.g., simulating
- *              transactions, getting node info).
  * @param transport - A {@link JSONRPCTransport} instance that the node will use for
  *                    sending and receiving JSON-RPC messages. This transport typically
  *                    connects to a corresponding transport on the client/dApp side,
  *                    often via the {@link WalletRouter}.
  * @returns A fully configured {@link JSONRPCNode} instance, typed with
- *          {@link AztecWalletMethodMap} and {@link AztecHandlerContext}, ready to
+ *          {@link AztecWalletMethodMap} and {@link AztecWalletHandlerContext}, ready to
  *          process Aztec wallet requests.
  *
  * @example
  * ```typescript
  * import { createAztecWalletNode } from '@walletmesh/aztec-rpc-wallet';
  * import { WalletRouter, createLocalTransportPair } from '@walletmesh/router';
- * import { MyAccountWallet, MyPXE, MyRouterTransport, MyPermissionManager } from './my-setup'; // User's setup
+ * import { MyWallet, MyRouterTransport, MyPermissionManager } from './my-setup'; // User's setup
  *
- * // 1. Initialize Aztec AccountWallet and PXE
- * const accountWallet = new MyAccountWallet();
- * const pxe = new MyPXE();
+ * // 1. Initialize Aztec Wallet
+ * const accountWallet = new MyWallet();
  *
  * // 2. Create a local transport pair for communication between router and wallet node
  * const [routerSideTransport, walletNodeSideTransport] = createLocalTransportPair();
@@ -69,31 +65,25 @@ import { registerAztecSerializers } from './serializers.js';
  * ```
  * @see {@link JSONRPCNode}
  * @see {@link AztecWalletMethodMap}
- * @see {@link AztecHandlerContext}
+ * @see {@link AztecWalletHandlerContext}
  * @see {@link createAztecHandlers}
- * @see {@link registerAztecSerializers} (wallet-side version)
+ * @see {@link registerAztecWalletSerializers} (wallet-side version)
  */
 export function createAztecWalletNode(
-  wallet: AccountWallet,
-  pxe: PXE,
+  wallet: Wallet,
   transport: JSONRPCTransport,
-): JSONRPCNode<AztecWalletMethodMap, JSONRPCEventMap, AztecHandlerContext> {
-  // Initialize the contract artifact cache for this wallet
-  const cache = new ContractArtifactCache(wallet);
-
+): JSONRPCNode<AztecWalletMethodMap, JSONRPCEventMap, AztecWalletHandlerContext> {
   // Create the handler context that will be passed to all method handlers
   // This context provides access to the wallet, PXE, and cache instances
-  const context: AztecHandlerContext = {
+  const context: AztecWalletHandlerContext = {
     wallet,
-    pxe,
-    cache,
     notify: async () => {
       throw new Error('Aztec wallet node is not ready to emit notifications yet');
     },
   };
 
   // Create the JSON-RPC node with typed method map and handler context
-  const node = new JSONRPCNode<AztecWalletMethodMap, JSONRPCEventMap, AztecHandlerContext>(
+  const node = new JSONRPCNode<AztecWalletMethodMap, AztecWalletEventMap, AztecWalletHandlerContext>(
     transport,
     context,
   );
@@ -104,28 +94,8 @@ export function createAztecWalletNode(
     await node.notify(method, params);
   };
 
-  // Register all Aztec method handlers
-  // The createAztecHandlers function returns a map of all available Aztec methods
-  const handlers = createAztecHandlers();
-  for (const [methodStr, handlerFunc] of Object.entries(handlers)) {
-    const typedMethodKey = methodStr as keyof AztecWalletMethodMap;
-    // Cast the handler to the specific type expected by registerMethod
-    // This relies on createAztecHandlers() providing correctly typed handlers
-    // for each method string.
-    // methodStr is already a string, which is expected by the first param of registerMethod.
-    // typedMethodKey is used for strong typing of params and result.
-    node.registerMethod(
-      methodStr, // Use the string key here
-      handlerFunc as (
-        context: AztecHandlerContext,
-        params: AztecWalletMethodMap[typeof typedMethodKey]['params'],
-      ) => Promise<AztecWalletMethodMap[typeof typedMethodKey]['result']>,
-    );
-  }
-
-  // Register serializers for all Aztec types
-  // This enables proper serialization/deserialization of Aztec objects over JSON-RPC
-  registerAztecSerializers(node);
+  registerAztecWalletHandlers(node);
+  registerAztecWalletSerializers(node);
 
   // Return the configured node
   return node;

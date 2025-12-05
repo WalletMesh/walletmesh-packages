@@ -1,16 +1,19 @@
 import type { JSONRPCTransport } from '@walletmesh/jsonrpc';
 import { WalletRouterProvider } from '@walletmesh/router';
-import { registerAztecSerializers } from './register-serializers.js';
+import { registerAztecWalletSerializers } from './register-serializers.js';
 
 /**
  * Callback function to handle session termination
  */
-export type SessionTerminationHandler = (params: { sessionId: string; reason: string }) => void | Promise<void>;
+export type SessionTerminationHandler = (params: {
+  sessionId: string;
+  reason: string;
+}) => void | Promise<void>;
 
 /**
  * Configuration options for AztecRouterProvider
  */
-export interface AztecRouterProviderOptions {
+export interface AztecRPCWalletRouterProviderOptions {
   /**
    * Optional context object passed to WalletRouterProvider
    */
@@ -91,10 +94,10 @@ export interface AztecRouterProviderOptions {
  * ```
  *
  * @see {@link WalletRouterProvider} for the base class functionality.
- * @see {@link registerAztecSerializers} for the underlying serializer registration.
+ * @see {@link registerAztecWalletSerializers} for the underlying serializer registration.
  * @see {@link AztecDappWallet} which is typically used with this provider.
  */
-export class AztecRouterProvider extends WalletRouterProvider {
+export class AztecWalletRouterProvider extends WalletRouterProvider {
   private sessionTerminationCleanup?: () => void;
 
   /**
@@ -108,20 +111,18 @@ export class AztecRouterProvider extends WalletRouterProvider {
    * @param options - Optional configuration including context, sessionId, and event handlers.
    *                 Can also be a plain context object for backward compatibility.
    */
-  constructor(transport: JSONRPCTransport, options?: AztecRouterProviderOptions | Record<string, unknown>, sessionId?: string) {
-    // Handle backward compatibility: if options looks like a plain context object without our keys
-    const isLegacyFormat = options && !('onSessionTerminated' in options) && !('context' in options) && !('sessionId' in options);
+  constructor(
+    transport: JSONRPCTransport,
+    options?: AztecRPCWalletRouterProviderOptions,
+  ) {
 
-    const context = isLegacyFormat ? options as Record<string, unknown> : (options as AztecRouterProviderOptions)?.context;
-    const sid = isLegacyFormat ? sessionId : (options as AztecRouterProviderOptions)?.sessionId;
-    const onSessionTerminated = isLegacyFormat ? undefined : (options as AztecRouterProviderOptions)?.onSessionTerminated;
-
-    super(transport, context, sid);
+    super(transport, options?.context, options?.sessionId);
 
     // Register all Aztec serializers on this provider instance
-    registerAztecSerializers(this);
+    registerAztecWalletSerializers(this);
 
     // Set up session termination handler if provided
+    const onSessionTerminated = options?.onSessionTerminated;
     if (onSessionTerminated) {
       this.setupSessionTerminationListener(onSessionTerminated);
     }

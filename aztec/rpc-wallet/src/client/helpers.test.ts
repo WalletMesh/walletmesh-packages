@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type AztecDappWallet, createAztecWallet } from './aztec-dapp-wallet.js';
-import type { AztecRouterProvider } from './aztec-router-provider.js';
+import type { AztecWalletRouterProvider } from './aztec-router-provider.js';
 import { ALL_AZTEC_METHODS, connectAztec } from './helpers.js';
 
 // Mock the aztec-dapp-wallet module
@@ -21,8 +21,8 @@ const createMockProvider = () => {
     off,
     call,
     dispose,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any as AztecRouterProvider;
+    // biome-ignore lint/suspicious/noExplicitAny: mock
+  } as any as AztecWalletRouterProvider;
 };
 
 describe('helpers', () => {

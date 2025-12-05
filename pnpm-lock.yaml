@@ -269,9 +269,15 @@ importers:
       '@aztec/foundation':
         specifier: v3.0.0-nightly.20251203
         version: 3.0.0-nightly.20251203
+      '@aztec/pxe':
+        specifier: 3.0.0-nightly.20251203
+        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@aztec/stdlib':
         specifier: v3.0.0-nightly.20251203
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
+      '@aztec/wallet-sdk':
+        specifier: 3.0.0-nightly.20251203
+        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletmesh/jsonrpc':
         specifier: workspace:^
         version: link:../../core/jsonrpc
@@ -838,6 +844,10 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  '@aztec/wallet-sdk@3.0.0-nightly.20251203':
+    resolution: {integrity: sha512-xFWp8wxUVmAgES/lelKg79VXlghAo9s8JGm2UYIA8pbHfPaSbiVIR0hmF9vGrNZ57x7AOJ/1evGWp1G8QuDn3A==}
+    engines: {node: '>=20.10'}
 
   '@aztec/world-state@3.0.0-nightly.20251203':
     resolution: {integrity: sha512-HzW0B7C4GR/K4L/j7ZpH2+UVYyDjJkiU6vWDpLASbJkH5sXMClgEyjrHfjBDdOKHB5uemwnBamgRja8DcAW1dA==}
@@ -2305,13 +2315,13 @@ packages:
     resolution: {integrity: sha512-gUu9hwfWvvEDBBmgtAowQCojwZmJ5mcLn3aufeCsitijs3+f2NsrPtlAWIR6OPiqljl96GVCUbLe0HyqIpVaoA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
-      vite: '>=6.1.6'
+      vite: '>=6.0.15'
 
   '@vitejs/plugin-react@5.0.4':
     resolution: {integrity: sha512-La0KD0vGkVkSk6K+piWDKRUyg8Rl5iAIKRMH0vMJI0Eg47bq1eOxmoObAaQG37WMW9MSyk7Cs8EIWwJC1PtzKA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
-      vite: '>=6.1.6'
+      vite: '>=6.0.15'
 
   '@vitest/coverage-v8@2.1.8':
     resolution: {integrity: sha512-2Y7BPlKH18mAZYAW1tYByudlCYrQyl5RGvnnDYJKW5tCiO5qg3KSAy3XAxcxKz900a0ZXxWtKrMuZLe3lKBpJw==}
@@ -5020,7 +5030,7 @@ packages:
   vite-plugin-node-polyfills@0.24.0:
     resolution: {integrity: sha512-GA9QKLH+vIM8NPaGA+o2t8PDfFUl32J8rUp1zQfMKVJQiNkOX4unE51tR6ppl6iKw5yOrDAdSH7r/UIFLCVhLw==}
     peerDependencies:
-      vite: '>=6.1.6'
+      vite: '>=6.0.15'
 
   vite-plugin-static-copy@3.1.2:
     resolution: {integrity: sha512-aVmYOzptLVOI2b1jL+cmkF7O6uhRv1u5fvOkQgbohWZp2CbR22kn9ZqkCUIt9umKF7UhdbsEpshn1rf4720QFg==}
@@ -5031,7 +5041,7 @@ packages:
   vite-plugin-top-level-await@1.6.0:
     resolution: {integrity: sha512-bNhUreLamTIkoulCR9aDXbTbhLk6n1YE8NJUTTxl5RYskNRtzOR0ASzSjBVRtNdjIfngDXo11qOsybGLNsrdww==}
     peerDependencies:
-      vite: '>=6.1.6'
+      vite: '>=6.0.15'
 
   vite@5.4.20:
     resolution: {integrity: sha512-j3lYzGC3P+B5Yfy/pfKNgVEg4+UtcIJcVRt2cDjIOmhLourAqPqf8P7acgxeiSgUB7E3p2P8/3gNIgDLpwzs4g==}
@@ -6451,6 +6461,24 @@ snapshots:
       typescript: 5.9.2
     transitivePeerDependencies:
       - bufferutil
+      - utf-8-validate
+      - zod
+
+  '@aztec/wallet-sdk@3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
+    dependencies:
+      '@aztec/aztec.js': 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
+      '@aztec/constants': 3.0.0-nightly.20251203
+      '@aztec/entrypoints': 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
+      '@aztec/foundation': 3.0.0-nightly.20251203
+      '@aztec/pxe': 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@aztec/stdlib': 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
+    transitivePeerDependencies:
+      - aws-crt
+      - bufferutil
+      - debug
+      - encoding
+      - supports-color
+      - typescript
       - utf-8-validate
       - zod
 
@@ -10046,7 +10074,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.0.8(typescript@5.9.2)(zod@3.25.76)
+      abitype: 1.1.0(typescript@5.9.2)(zod@3.25.76)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.2
@@ -10061,7 +10089,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.0.8(typescript@5.9.2)(zod@3.25.76)
+      abitype: 1.1.0(typescript@5.9.2)(zod@3.25.76)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.2
