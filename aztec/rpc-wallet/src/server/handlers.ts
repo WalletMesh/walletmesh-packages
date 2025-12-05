@@ -1,5 +1,5 @@
 import { createLogger } from '@aztec/foundation/log';
-import type { JSONRPCNode } from '@walletmesh/jsonrpc';
+import { JSONRPCError, type JSONRPCNode } from '@walletmesh/jsonrpc';
 import type { AztecWalletEventMap, AztecWalletMethodMap } from '../types.js';
 import type { AztecWalletHandlerContext } from './types.js';
 
@@ -124,6 +124,35 @@ export const HANDLERS: Record<keyof AztecWalletMethodMap, unknown> = {
     logger.debug('aztec_batch');
     const [batchedMethods] = paramsTuple;
     return ctx.wallet.batch(batchedMethods);
+  },
+
+  aztec_wmExecuteTx: async (
+    _ctx: AztecWalletHandlerContext,
+    _paramsTuple: AztecWalletMethodMap['aztec_wmExecuteTx']['params'], // Will be `[ExecutionPayload, AztecSendOptions]`
+  ): Promise<AztecWalletMethodMap['aztec_wmExecuteTx']['result']> => {
+    logger.debug('aztec_wmExecuteTx');
+    throw new JSONRPCError(-32601, 'Method not implemented');
+  },
+  aztec_wmBatchExecute: async (
+    _ctx: AztecWalletHandlerContext,
+    _paramsTuple: AztecWalletMethodMap['aztec_wmBatchExecute']['params'], // Will be `[ExecutionPayload[], AztecSendOptions | undefined]`
+  ): Promise<AztecWalletMethodMap['aztec_wmBatchExecute']['result']> => {
+    logger.debug('aztec_wmBatchExecute');
+    throw new JSONRPCError(-32601, 'Method not implemented');
+  },
+  aztec_wmDeployContract: async (
+    _ctx: AztecWalletHandlerContext,
+    _paramsTuple: AztecWalletMethodMap['aztec_wmDeployContract']['params'], // Will be `[{ artifact: ContractArtifact; args: unknown[]; constructorName?: string }]`
+  ): Promise<AztecWalletMethodMap['aztec_wmDeployContract']['result']> => {
+    logger.debug('aztec_wmDeployContract');
+    throw new JSONRPCError(-32601, 'Method not implemented');
+  },
+  aztec_wmSimulateTx: async (
+    _ctx: AztecWalletHandlerContext,
+    _paramsTuple: AztecWalletMethodMap['aztec_wmSimulateTx']['params'], // Will be `[ExecutionPayload, SimulateOptions]`
+  ): Promise<AztecWalletMethodMap['aztec_wmSimulateTx']['result']> => {
+    logger.debug('aztec_wmSimulateTx');
+    throw new JSONRPCError(-32601, 'Method not implemented');
   },
 };
 
