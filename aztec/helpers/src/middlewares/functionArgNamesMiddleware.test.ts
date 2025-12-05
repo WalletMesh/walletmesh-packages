@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import type { PXE, AbiType } from '@aztec/aztec.js';
+import type { AbiType } from '@aztec/aztec.js/abi';
+import type { Wallet } from '@aztec/aztec.js/wallet';
 import {
   extractFunctionArgNamesForBatch,
   extractFunctionArgNamesForSingle,
@@ -7,7 +8,7 @@ import {
   type FunctionArgNames,
 } from './functionArgNamesMiddleware.js';
 import type { EnhancedParameterInfo } from '../types.js';
-import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
+import type { AztecWalletHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 
 // Mock the helpers module
@@ -16,11 +17,11 @@ vi.mock('../helpers.js', () => ({
 }));
 
 describe('functionArgNamesMiddleware', () => {
-  let mockPxe: PXE;
+  let mockPxe: Wallet;
   let mockGetEnhancedParameterInfo: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    mockPxe = {} as PXE;
+    mockPxe = {} as Wallet;
     // Get the mocked function
     const { getEnhancedParameterInfo } = await import('../helpers.js');
     mockGetEnhancedParameterInfo = vi.mocked(getEnhancedParameterInfo);
@@ -360,6 +361,7 @@ describe('functionArgNamesMiddleware', () => {
     });
 
     it('should return empty object for undefined execution payload', async () => {
+      // biome-ignore lint/suspicious/noExplicitAny: testing undefined input
       const result = await extractFunctionArgNamesForSingle(mockPxe, undefined as any);
       expect(result).toEqual({});
       expect(mockGetEnhancedParameterInfo).not.toHaveBeenCalled();
@@ -436,12 +438,12 @@ describe('functionArgNamesMiddleware', () => {
   describe('createFunctionArgNamesMiddleware', () => {
     let middleware: ReturnType<typeof createFunctionArgNamesMiddleware>;
     let mockNext: ReturnType<typeof vi.fn>;
-    let mockContext: AztecHandlerContext & { functionCallArgNames?: FunctionArgNames };
+    let mockContext: AztecWalletHandlerContext & { functionCallArgNames?: FunctionArgNames };
 
     beforeEach(() => {
       middleware = createFunctionArgNamesMiddleware(mockPxe);
       mockNext = vi.fn().mockResolvedValue({ result: 'success' });
-      mockContext = {} as AztecHandlerContext & { functionCallArgNames?: FunctionArgNames };
+      mockContext = {} as AztecWalletHandlerContext & { functionCallArgNames?: FunctionArgNames };
       mockGetEnhancedParameterInfo.mockClear();
     });
 
