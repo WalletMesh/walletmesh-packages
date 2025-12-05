@@ -60,7 +60,7 @@ import { AbiDecodedSchema } from '@aztec/stdlib/schemas';
 import { TxProfileResult, TxReceipt, TxSimulationResult, UtilitySimulationResult } from '@aztec/stdlib/tx';
 import type { JSONRPCParams, JSONRPCSerializedData, JSONRPCSerializer } from '@walletmesh/jsonrpc';
 import { type ZodTypeAny, z } from 'zod';
-import type { AztecWalletMethodMap } from './types.js';
+import type { AztecSendOptions, AztecWalletMethodMap, UnifiedSimulationResult } from './types.js';
 
 const logger = createLogger('aztec-rpc-wallet:serializers');
 
@@ -77,6 +77,20 @@ const CallIntentSchema = z.object({
 const AliasedAztecAddressSchema = z.object({
   alias: z.string(),
   item: AztecAddress.schema,
+});
+
+const AztecSendOptionsSchema = z.object({
+  from: z.unknown().optional(),
+  fee: z.unknown().optional(),
+  txNonce: z.unknown().optional(),
+  cancellable: z.boolean().optional(),
+});
+
+const UnifiedSimulationResultSchema = z.object({
+  simulationType: z.enum(['transaction', 'utility']),
+  decodedResult: AbiDecodedSchema.optional(),
+  stats: z.unknown().optional(), // SimulationStats doesn't have a schema, use unknown
+  originalResult: z.union([TxSimulationResult.schema, UtilitySimulationResult.schema]),
 });
 
 function createSerializer<P, R>({
@@ -181,8 +195,8 @@ export const SERIALIZERS: Record<keyof AztecWalletMethodMap, JSONRPCSerializer<J
     paramSchema: z.tuple([ExecutionPayloadSchema, SendOptionsSchema]),
     resultSchema: TxHash.schema,
   }),
-  aztec_createAuthWit: createSerializer<[Fr | IntentInnerHash | CallIntent], AuthWitness>({
-    paramSchema: z.tuple([z.union([Fr.schema, IntentInnerHashSchema, CallIntentSchema])]),
+  aztec_createAuthWit: createSerializer<[AztecAddress, Fr | IntentInnerHash | CallIntent], AuthWitness>({
+    paramSchema: z.tuple([AztecAddress.schema, z.union([Fr.schema, IntentInnerHashSchema, CallIntentSchema])]),
     resultSchema: AuthWitness.schema,
   }),
   /**
@@ -208,5 +222,47 @@ export const SERIALIZERS: Record<keyof AztecWalletMethodMap, JSONRPCSerializer<J
         TxSimulationResult.schema, // simulateTx
       ]),
     ),
+  }),
+  aztec_wmExecuteTx: createSerializer<
+    [ExecutionPayload, AztecSendOptions],
+    { txHash: TxHash; txStatusId: string }
+  >({
+    paramSchema: z.tuple([ExecutionPayloadSchema, AztecSendOptionsSchema]),
+    resultSchema: z.object({
+      txHash: TxHash.schema,
+      txStatusId: z.string(),
+    }),
+  }),
+  aztec_wmBatchExecute: createSerializer<
+    [ExecutionPayload[], AztecSendOptions | undefined],
+    { txHash: TxHash; receipt: TxReceipt; txStatusId: string }
+  >({
+    paramSchema: z.tuple([z.array(ExecutionPayloadSchema), AztecSendOptionsSchema.optional()]),
+    resultSchema: z.object({
+      txHash: TxHash.schema,
+      receipt: TxReceipt.schema,
+      txStatusId: z.string(),
+    }),
+  }),
+  aztec_wmDeployContract: createSerializer<
+    [{ artifact: ContractArtifact; args: unknown[]; constructorName?: string }],
+    { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string }
+  >({
+    paramSchema: z.tuple([
+      z.object({
+        artifact: ContractArtifactSchema,
+        args: z.array(z.unknown()),
+        constructorName: z.string().optional(),
+      }),
+    ]),
+    resultSchema: z.object({
+      txHash: TxHash.schema,
+      contractAddress: AztecAddress.schema,
+      txStatusId: z.string(),
+    }),
+  }),
+  aztec_wmSimulateTx: createSerializer<[ExecutionPayload, SimulateOptions], UnifiedSimulationResult>({
+    paramSchema: z.tuple([ExecutionPayloadSchema, SimulateOptionsSchema]),
+    resultSchema: UnifiedSimulationResultSchema,
   }),
 };

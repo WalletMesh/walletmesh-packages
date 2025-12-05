@@ -507,20 +507,26 @@ describe('serializers', () => {
   describe('aztec_createAuthWit', () => {
     it('should serialize and deserialize params with Fr', async () => {
       const serializer = SERIALIZERS['aztec_createAuthWit'];
-      const params: [Fr | IntentInnerHash | CallIntent] = [Fr.random()];
+      const from = await AztecAddress.random();
+      const params: [AztecAddress, Fr | IntentInnerHash | CallIntent] = [from, Fr.random()];
 
       const serialized = await serializer!.params.serialize('aztec_createAuthWit', params);
       const deserialized = (await serializer!.params.deserialize('aztec_createAuthWit', serialized)) as [
+        AztecAddress,
         Fr | IntentInnerHash | CallIntent,
       ];
 
-      expect(deserialized[0]).toBeInstanceOf(Fr);
-      expect((deserialized[0] as Fr).toString()).toBe((params[0] as Fr).toString());
+      expect(deserialized[0]).toBeInstanceOf(AztecAddress);
+      expect(deserialized[0].toString()).toBe(from.toString());
+      expect(deserialized[1]).toBeInstanceOf(Fr);
+      expect((deserialized[1] as Fr).toString()).toBe((params[1] as Fr).toString());
     });
 
     it('should serialize and deserialize params with IntentInnerHash', async () => {
       const serializer = SERIALIZERS['aztec_createAuthWit'];
-      const params: [Fr | IntentInnerHash | CallIntent] = [
+      const from = await AztecAddress.random();
+      const params: [AztecAddress, Fr | IntentInnerHash | CallIntent] = [
+        from,
         {
           consumer: await AztecAddress.random(),
           innerHash: Fr.random(),
@@ -529,17 +535,22 @@ describe('serializers', () => {
 
       const serialized = await serializer!.params.serialize('aztec_createAuthWit', params);
       const deserialized = (await serializer!.params.deserialize('aztec_createAuthWit', serialized)) as [
+        AztecAddress,
         Fr | IntentInnerHash | CallIntent,
       ];
 
-      expect(deserialized[0]).toBeDefined();
-      expect((deserialized[0] as IntentInnerHash).consumer).toBeInstanceOf(AztecAddress);
-      expect((deserialized[0] as IntentInnerHash).innerHash).toBeInstanceOf(Fr);
+      expect(deserialized[0]).toBeInstanceOf(AztecAddress);
+      expect(deserialized[0].toString()).toBe(from.toString());
+      expect(deserialized[1]).toBeDefined();
+      expect((deserialized[1] as IntentInnerHash).consumer).toBeInstanceOf(AztecAddress);
+      expect((deserialized[1] as IntentInnerHash).innerHash).toBeInstanceOf(Fr);
     });
 
     it('should serialize and deserialize params with CallIntent', async () => {
       const serializer = SERIALIZERS['aztec_createAuthWit'];
-      const params: [Fr | IntentInnerHash | CallIntent] = [
+      const from = await AztecAddress.random();
+      const params: [AztecAddress, Fr | IntentInnerHash | CallIntent] = [
+        from,
         {
           caller: await AztecAddress.random(),
           call: {
@@ -557,12 +568,15 @@ describe('serializers', () => {
 
       const serialized = await serializer!.params.serialize('aztec_createAuthWit', params);
       const deserialized = (await serializer!.params.deserialize('aztec_createAuthWit', serialized)) as [
+        AztecAddress,
         Fr | IntentInnerHash | CallIntent,
       ];
 
-      expect(deserialized[0]).toBeDefined();
-      expect((deserialized[0] as CallIntent).caller).toBeInstanceOf(AztecAddress);
-      expect((deserialized[0] as CallIntent).call).toBeDefined();
+      expect(deserialized[0]).toBeInstanceOf(AztecAddress);
+      expect(deserialized[0].toString()).toBe(from.toString());
+      expect(deserialized[1]).toBeDefined();
+      expect((deserialized[1] as CallIntent).caller).toBeInstanceOf(AztecAddress);
+      expect((deserialized[1] as CallIntent).call).toBeDefined();
     });
 
     it('should serialize and deserialize result', async () => {
