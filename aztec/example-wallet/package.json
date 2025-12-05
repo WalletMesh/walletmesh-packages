@@ -30,7 +30,6 @@
     "@aztec/noir-test-contracts.js": "v3.0.0-nightly.20251203",
     "@aztec/pxe": "v3.0.0-nightly.20251203",
     "@aztec/simulator": "v3.0.0-nightly.20251203",
-    "@walletmesh/aztec": "workspace:^",
     "@walletmesh/aztec-helpers": "workspace:^",
     "@walletmesh/aztec-rpc-wallet": "workspace:^",
     "@walletmesh/jsonrpc": "workspace:^",
