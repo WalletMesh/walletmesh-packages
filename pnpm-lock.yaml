@@ -6,6 +6,48 @@ settings:
 
 catalogs:
   default:
+    '@aztec/accounts':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/aztec.js':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/bb-prover':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/bb.js':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/blob-lib':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/entrypoints':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/foundation':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/noir-acvm_js':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/noir-contracts.js':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/noir-noirc_abi':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/noir-test-contracts.js':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/pxe':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/simulator':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
+    '@aztec/stdlib':
+      specifier: v3.0.0-nightly.20251203
+      version: 3.0.0-nightly.20251203
     '@biomejs/biome':
       specifier: 2.2.4
       version: 2.2.4
@@ -91,20 +133,20 @@ importers:
   aztec/example-dapp:
     dependencies:
       '@aztec/accounts':
-        specifier: v3.0.0-nightly.20251203
-        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
+        specifier: 'catalog:'
+        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/aztec.js':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/noir-acvm_js':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203
       '@aztec/noir-contracts.js':
-        specifier: v3.0.0-nightly.20251203
-        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
+        specifier: 'catalog:'
+        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/noir-test-contracts.js':
-        specifier: v3.0.0-nightly.20251203
-        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
+        specifier: 'catalog:'
+        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@walletmesh/aztec-rpc-wallet':
         specifier: workspace:^
         version: link:../rpc-wallet
@@ -152,37 +194,37 @@ importers:
   aztec/example-wallet:
     dependencies:
       '@aztec/accounts':
-        specifier: v3.0.0-nightly.20251203
-        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
+        specifier: 'catalog:'
+        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/aztec.js':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/bb-prover':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@aztec/bb.js':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203
       '@aztec/foundation':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203
       '@aztec/noir-acvm_js':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203
       '@aztec/noir-contracts.js':
-        specifier: v3.0.0-nightly.20251203
-        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
+        specifier: 'catalog:'
+        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/noir-noirc_abi':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203
       '@aztec/noir-test-contracts.js':
-        specifier: v3.0.0-nightly.20251203
-        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
+        specifier: 'catalog:'
+        version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/pxe':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@aztec/simulator':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletmesh/aztec-helpers':
         specifier: workspace:^
@@ -237,10 +279,10 @@ importers:
   aztec/helpers:
     dependencies:
       '@aztec/aztec.js':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/stdlib':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@walletmesh/aztec-rpc-wallet':
         specifier: workspace:*
@@ -255,22 +297,22 @@ importers:
   aztec/rpc-wallet:
     dependencies:
       '@aztec/aztec.js':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/blob-lib':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203
       '@aztec/entrypoints':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/foundation':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203
       '@aztec/pxe':
         specifier: 3.0.0-nightly.20251203
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@aztec/stdlib':
-        specifier: v3.0.0-nightly.20251203
+        specifier: 'catalog:'
         version: 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/wallet-sdk':
         specifier: 3.0.0-nightly.20251203
@@ -5684,7 +5726,7 @@ snapshots:
 
   '@aws/lambda-invoke-store@0.2.2': {}
 
-  '@aztec/accounts@3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)':
+  '@aztec/accounts@3.0.0-nightly.20251203(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@aztec/aztec.js': 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@aztec/entrypoints': 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
@@ -6023,7 +6065,7 @@ snapshots:
 
   '@aztec/noir-acvm_js@3.0.0-nightly.20251203': {}
 
-  '@aztec/noir-contracts.js@3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)':
+  '@aztec/noir-contracts.js@3.0.0-nightly.20251203(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@aztec/aztec.js': 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
       tslib: 2.8.1
@@ -6097,7 +6139,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@aztec/noir-test-contracts.js@3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)':
+  '@aztec/noir-test-contracts.js@3.0.0-nightly.20251203(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@aztec/aztec.js': 3.0.0-nightly.20251203(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.3)(utf-8-validate@5.0.10)
       tslib: 2.8.1

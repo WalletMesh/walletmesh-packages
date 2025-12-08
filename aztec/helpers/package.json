@@ -27,8 +27,8 @@
     "version": "pnpm clean && pnpm build && pnpm run docs"
   },
   "dependencies": {
-    "@aztec/aztec.js": "v3.0.0-nightly.20251203",
-    "@aztec/stdlib": "v3.0.0-nightly.20251203"
+    "@aztec/aztec.js": "catalog:",
+    "@aztec/stdlib": "catalog:"
   },
   "peerDependencies": {
     "@walletmesh/jsonrpc": "workspace:*",
