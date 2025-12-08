@@ -2,20 +2,60 @@ packages:
   - core/*
   - aztec/*
 
+catalog:
+  '@aztec/accounts': v3.0.0-nightly.20251203
+  '@aztec/aztec.js': v3.0.0-nightly.20251203
+  '@aztec/bb-prover': v3.0.0-nightly.20251203
+  '@aztec/bb.js': v3.0.0-nightly.20251203
+  '@aztec/blob-lib': v3.0.0-nightly.20251203
+  '@aztec/builder': v3.0.0-nightly.20251203
+  '@aztec/constants': v3.0.0-nightly.20251203
+  '@aztec/entrypoints': v3.0.0-nightly.20251203
+  '@aztec/ethereum': v3.0.0-nightly.20251203
+  '@aztec/foundation': v3.0.0-nightly.20251203
+  '@aztec/key-store': v3.0.0-nightly.20251203
+  '@aztec/kv-store': v3.0.0-nightly.20251203
+  '@aztec/l1-artifacts': v3.0.0-nightly.20251203
+  '@aztec/merkle-tree': v3.0.0-nightly.20251203
+  '@aztec/native': v3.0.0-nightly.20251203
+  '@aztec/noir-acvm_js': v3.0.0-nightly.20251203
+  '@aztec/noir-contracts.js': v3.0.0-nightly.20251203
+  '@aztec/noir-noir_codegen': v3.0.0-nightly.20251203
+  '@aztec/noir-noirc_abi': v3.0.0-nightly.20251203
+  '@aztec/noir-protocol-circuits-types': v3.0.0-nightly.20251203
+  '@aztec/noir-test-contracts.js': v3.0.0-nightly.20251203
+  '@aztec/noir-types': v3.0.0-nightly.20251203
+  '@aztec/protocol-contracts': v3.0.0-nightly.20251203
+  '@aztec/pxe': v3.0.0-nightly.20251203
+  '@aztec/simulator': v3.0.0-nightly.20251203
+  '@aztec/stdlib': v3.0.0-nightly.20251203
+  '@aztec/telemetry-client': v3.0.0-nightly.20251203
+  '@aztec/test-wallet': v3.0.0-nightly.20251203
+  '@aztec/world-state': v3.0.0-nightly.20251203
+  '@biomejs/biome': 2.2.4
+  '@changesets/cli': ^2.29.7
+  '@vitest/coverage-v8': 3.2.4
+  typedoc: ^0.28.14
+  typedoc-plugin-markdown: ^4.9.0
+  typescript: 5.9.3
+  vitest: 3.2.4
+
+catalogMode: strict
+
 ignoredBuiltDependencies:
   - '@swc/core'
+  - bufferutil
   - classic-level
   - esbuild
   - lmdb
   - msgpackr-extract
   - protobufjs
+  - utf-8-validate
 
 linkWorkspacePackages: true
 
 onlyBuiltDependencies:
-  - bufferutil
   - c-kzg
-  - utf-8-validate
 
 overrides:
   lodash@<4.17.21: '>=4.17.21'

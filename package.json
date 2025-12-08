@@ -3,7 +3,7 @@
   "description": "WalletMesh Core Monorepo",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@10.12.1",
+  "packageManager": "pnpm@10.25.0+sha512.5e82639027af37cf832061bcc6d639c219634488e0f2baebe785028a793de7b525ffcd3f7ff574f5e9860654e098fe852ba8ac5dd5cefe1767d23a020a92f501",
   "publishConfig": {
     "access": "restricted"
   },
@@ -14,7 +14,6 @@
   "scripts": {
     "build": "pnpm -r run build",
     "build:sequential": "pnpm -r --sequential run build",
-    "rebuild:c-kzg": "node scripts/rebuild-c-kzg.cjs",
     "test": "pnpm -r run test",
     "coverage": "pnpm -r run coverage",
     "type-check": "pnpm build && pnpm -r run type-check",
@@ -34,20 +33,15 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
-    "@biomejs/biome": "^2.2.4",
-    "@changesets/cli": "^2.29.7",
+    "@biomejs/biome": "catalog:",
+    "@changesets/cli": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "@types/node": "^24.5.2",
-    "@vitest/coverage-v8": "^3.2.4",
-    "glob": "^11.0.3",
-    "node-gyp": "^11.4.2",
     "rimraf": "^6.0.1",
     "tsx": "^4.20.6",
-    "typedoc": "^0.28.13",
-    "typedoc-plugin-markdown": "^4.9.0",
-    "typescript": "^5.9.2",
-    "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "lodash": "^4.17.21"
+    "typedoc": "catalog:",
+    "typedoc-plugin-markdown": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
