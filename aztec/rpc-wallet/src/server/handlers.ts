@@ -69,7 +69,7 @@ export const HANDLERS: Record<keyof AztecWalletMethodMap, unknown> = {
   },
   aztec_registerContract: async (
     ctx: AztecWalletHandlerContext,
-    _paramsTuple: AztecWalletMethodMap['aztec_registerContract']['params'], // Will be `[ExecutionPayload]`
+    _paramsTuple: AztecWalletMethodMap['aztec_registerContract']['params'], // Will be `[ContractInstanceWithAddress, ContractArtifact?]`
   ): Promise<AztecWalletMethodMap['aztec_registerContract']['result']> => {
     logger.debug('aztec_registerContract');
     const [instance, artifact] = _paramsTuple;

@@ -48,9 +48,9 @@
     "@aztec/blob-lib": "catalog:",
     "@aztec/entrypoints": "catalog:",
     "@aztec/foundation": "catalog:",
-    "@aztec/pxe": "3.0.0-nightly.20251203",
+    "@aztec/pxe": "catalog:",
     "@aztec/stdlib": "catalog:",
-    "@aztec/wallet-sdk": "3.0.0-nightly.20251203",
+    "@aztec/wallet-sdk": "catalog:",
     "@walletmesh/jsonrpc": "workspace:^",
     "@walletmesh/router": "workspace:^",
     "zod": "^3.25.76"

@@ -1,4 +1,4 @@
-import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
+import type { AztecWalletHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FunctionArgNames } from './functionArgNamesMiddleware.js';
@@ -21,7 +21,7 @@ describe('walletNodePermissionMiddleware', () => {
     it('should deny sensitive methods without requiresUserApproval flag', async () => {
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {};
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {};
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmBatchExecute'> = {
         jsonrpc: '2.0',
         method: 'aztec_wmBatchExecute',
@@ -41,7 +41,7 @@ describe('walletNodePermissionMiddleware', () => {
       mockOnApprovalRequest.mockResolvedValue(true);
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {};
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {};
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmBatchExecute'> = {
         jsonrpc: '2.0',
         method: 'aztec_wmBatchExecute',
@@ -60,7 +60,7 @@ describe('walletNodePermissionMiddleware', () => {
     it('should deny aztec_wmExecuteTx without approval flag', async () => {
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {};
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {};
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmExecuteTx'> = {
         jsonrpc: '2.0',
         method: 'aztec_wmExecuteTx',
@@ -76,7 +76,7 @@ describe('walletNodePermissionMiddleware', () => {
     it('should deny aztec_wmDeployContract without approval flag', async () => {
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {};
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {};
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmDeployContract'> = {
         jsonrpc: '2.0',
         method: 'aztec_wmDeployContract',
@@ -92,7 +92,7 @@ describe('walletNodePermissionMiddleware', () => {
     it('should allow non-sensitive methods without approval flag', async () => {
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {};
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {};
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_getAddress'> = {
         jsonrpc: '2.0',
         method: 'aztec_getAddress',
@@ -113,7 +113,7 @@ describe('walletNodePermissionMiddleware', () => {
       mockAutoApproveRef.current = true;
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {
         requiresUserApproval: true,
       };
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmBatchExecute'> = {
@@ -136,7 +136,7 @@ describe('walletNodePermissionMiddleware', () => {
       mockOnApprovalRequest.mockResolvedValue(true);
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & {
+      const context: AztecWalletHandlerContext & {
         requiresUserApproval?: boolean;
         origin?: string;
       } = {
@@ -167,7 +167,7 @@ describe('walletNodePermissionMiddleware', () => {
       mockOnApprovalRequest.mockResolvedValue(true);
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {
         requiresUserApproval: true,
       };
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmBatchExecute'> = {
@@ -190,7 +190,7 @@ describe('walletNodePermissionMiddleware', () => {
       mockOnApprovalRequest.mockResolvedValue(false);
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {
         requiresUserApproval: true,
       };
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmBatchExecute'> = {
@@ -222,7 +222,7 @@ describe('walletNodePermissionMiddleware', () => {
         ],
       };
 
-      const context: AztecHandlerContext & {
+      const context: AztecWalletHandlerContext & {
         requiresUserApproval?: boolean;
         transactionSummary?: TransactionSummary;
       } = {
@@ -265,7 +265,7 @@ describe('walletNodePermissionMiddleware', () => {
         },
       };
 
-      const context: AztecHandlerContext & {
+      const context: AztecWalletHandlerContext & {
         requiresUserApproval?: boolean;
         functionCallArgNames?: FunctionArgNames;
       } = {
@@ -318,7 +318,7 @@ describe('walletNodePermissionMiddleware', () => {
         },
       };
 
-      const context: AztecHandlerContext & {
+      const context: AztecWalletHandlerContext & {
         requiresUserApproval?: boolean;
         transactionSummary?: TransactionSummary;
         functionCallArgNames?: FunctionArgNames;
@@ -351,7 +351,7 @@ describe('walletNodePermissionMiddleware', () => {
     it('should pass through requests without requiresUserApproval flag', async () => {
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {
         requiresUserApproval: false,
       };
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_getAddress'> = {
@@ -372,7 +372,7 @@ describe('walletNodePermissionMiddleware', () => {
       mockOnApprovalRequest.mockResolvedValue(true);
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {
         requiresUserApproval: true,
       };
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmBatchExecute'> = {
@@ -398,7 +398,7 @@ describe('walletNodePermissionMiddleware', () => {
         functionCalls: [],
       };
 
-      const context: AztecHandlerContext & {
+      const context: AztecWalletHandlerContext & {
         requiresUserApproval?: boolean;
         transactionSummary?: TransactionSummary;
       } = {
@@ -429,7 +429,7 @@ describe('walletNodePermissionMiddleware', () => {
       mockOnApprovalRequest.mockRejectedValue(approvalError);
       const middleware = createWalletNodePermissionMiddleware(mockOnApprovalRequest, mockAutoApproveRef);
 
-      const context: AztecHandlerContext & { requiresUserApproval?: boolean } = {
+      const context: AztecWalletHandlerContext & { requiresUserApproval?: boolean } = {
         requiresUserApproval: true,
       };
       const request: JSONRPCRequest<AztecWalletMethodMap, 'aztec_wmBatchExecute'> = {

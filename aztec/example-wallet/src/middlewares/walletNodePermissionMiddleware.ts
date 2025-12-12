@@ -1,8 +1,7 @@
-import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
+import type { FunctionArgNames, TransactionSummary } from '@walletmesh/aztec-helpers';
+import type { AztecWalletHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCMiddleware } from '@walletmesh/jsonrpc';
 import type { RefObject } from 'react';
-import type { FunctionArgNames } from './functionArgNamesMiddleware.js';
-import type { TransactionSummary } from './transactionSummaryMiddleware.js';
 
 /**
  * Wallet node level permission middleware that handles auto-approve mode.
@@ -25,7 +24,7 @@ export const createWalletNodePermissionMiddleware = (
   autoApproveRef: RefObject<boolean>,
 ): JSONRPCMiddleware<
   AztecWalletMethodMap,
-  AztecHandlerContext & {
+  AztecWalletHandlerContext & {
     requiresUserApproval?: boolean;
     transactionSummary?: TransactionSummary;
     functionCallArgNames?: FunctionArgNames;

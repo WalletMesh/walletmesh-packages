@@ -1,7 +1,6 @@
-import type { AztecHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
+import type { FunctionArgNames, TransactionSummary } from '@walletmesh/aztec-helpers';
+import type { AztecWalletHandlerContext, AztecWalletMethodMap } from '@walletmesh/aztec-rpc-wallet';
 import type { JSONRPCMiddleware } from '@walletmesh/jsonrpc';
-import type { FunctionArgNames } from './functionArgNamesMiddleware';
-import type { TransactionSummary } from './transactionSummaryMiddleware';
 
 export type RequestStatus = 'processing' | 'approved' | 'denied' | 'success' | 'error';
 
@@ -29,7 +28,15 @@ export type HistoryEntry = {
   // Transaction status from wallet backend notifications
   // Syncs with dApp overlay to show actual blockchain transaction progress
   txStatusId?: string;
-  transactionStatus?: 'idle' | 'simulating' | 'proving' | 'sending' | 'pending' | 'confirming' | 'confirmed' | 'failed';
+  transactionStatus?:
+    | 'idle'
+    | 'simulating'
+    | 'proving'
+    | 'sending'
+    | 'pending'
+    | 'confirming'
+    | 'confirmed'
+    | 'failed';
   txHash?: string;
 };
 
@@ -81,7 +88,7 @@ export const createHistoryMiddleware = (
   onHistoryUpdate: (history: HistoryEntry[]) => void,
 ): JSONRPCMiddleware<
   AztecWalletMethodMap,
-  AztecHandlerContext & {
+  AztecWalletHandlerContext & {
     functionCallArgNames?: FunctionArgNames;
     transactionSummary?: TransactionSummary;
   }

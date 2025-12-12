@@ -56,7 +56,7 @@ describe('createAztecWalletNode', () => {
   });
 
   it('should create a JSONRPCNode with correct transport and context', () => {
-    const node = createAztecWalletNode(mockWallet, mockTransport);
+    const node = createAztecWalletNode({ wallet: mockWallet, transport: mockTransport });
 
     expect(JSONRPCNode).toHaveBeenCalledWith(
       mockTransport,
@@ -69,7 +69,7 @@ describe('createAztecWalletNode', () => {
   });
 
   it('should set up context with wallet instance', () => {
-    createAztecWalletNode(mockWallet, mockTransport);
+    createAztecWalletNode({ wallet: mockWallet, transport: mockTransport });
 
     const callArgs = vi.mocked(JSONRPCNode).mock.calls[0];
     expect(callArgs).toBeDefined();
@@ -84,7 +84,7 @@ describe('createAztecWalletNode', () => {
   });
 
   it('should wire context notify function to node.notify', async () => {
-    createAztecWalletNode(mockWallet, mockTransport);
+    createAztecWalletNode({ wallet: mockWallet, transport: mockTransport });
 
     // Get the context that was passed to JSONRPCNode
     const callArgs = vi.mocked(JSONRPCNode).mock.calls[0];
@@ -107,14 +107,14 @@ describe('createAztecWalletNode', () => {
   });
 
   it('should register handlers', () => {
-    createAztecWalletNode(mockWallet, mockTransport);
+    createAztecWalletNode({ wallet: mockWallet, transport: mockTransport });
 
     expect(handlersModule.registerAztecWalletHandlers).toHaveBeenCalledWith(mockNode);
     expect(handlersModule.registerAztecWalletHandlers).toHaveBeenCalledTimes(1);
   });
 
   it('should register serializers', () => {
-    createAztecWalletNode(mockWallet, mockTransport);
+    createAztecWalletNode({ wallet: mockWallet, transport: mockTransport });
 
     expect(serializersModule.registerAztecWalletSerializers).toHaveBeenCalledWith(mockNode);
     expect(serializersModule.registerAztecWalletSerializers).toHaveBeenCalledTimes(1);

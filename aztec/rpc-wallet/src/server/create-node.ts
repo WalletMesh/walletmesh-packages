@@ -5,12 +5,12 @@
  * This module provides the wallet-side implementation for handling Aztec JSON-RPC requests.
  */
 
-import type { Wallet } from '@aztec/aztec.js/wallet';
 import { type JSONRPCEventMap, JSONRPCNode, type JSONRPCTransport } from '@walletmesh/jsonrpc';
 import type { AztecWalletEventMap, AztecWalletMethodMap } from '../types.js';
 import { registerAztecWalletHandlers } from './handlers.js';
 import { registerAztecWalletSerializers } from './register-serializers.js';
 import type { AztecWalletHandlerContext } from './types.js';
+import type { AztecServerWallet } from './wallet.js';
 
 /**
  * Creates and configures a {@link JSONRPCNode} to serve as an Aztec wallet endpoint.
@@ -70,10 +70,13 @@ import type { AztecWalletHandlerContext } from './types.js';
  * @see {@link createAztecHandlers}
  * @see {@link registerAztecWalletSerializers} (wallet-side version)
  */
-export function createAztecWalletNode(
-  wallet: Wallet,
-  transport: JSONRPCTransport,
-): JSONRPCNode<AztecWalletMethodMap, JSONRPCEventMap, AztecWalletHandlerContext> {
+export function createAztecWalletNode({
+  transport,
+  wallet,
+}: {
+  transport: JSONRPCTransport;
+  wallet: AztecServerWallet;
+}): JSONRPCNode<AztecWalletMethodMap, JSONRPCEventMap, AztecWalletHandlerContext> {
   // Create the handler context that will be passed to all method handlers
   // This context provides access to the wallet instance
   const context: AztecWalletHandlerContext = {
@@ -84,7 +87,7 @@ export function createAztecWalletNode(
   };
 
   // Create the JSON-RPC node with typed method map and handler context
-  const node = new JSONRPCNode<AztecWalletMethodMap, AztecWalletEventMap, AztecWalletHandlerContext>(
+  const jsonRpcNode = new JSONRPCNode<AztecWalletMethodMap, AztecWalletEventMap, AztecWalletHandlerContext>(
     transport,
     context,
   );
@@ -92,12 +95,12 @@ export function createAztecWalletNode(
   // Expose the node's notify helper through the handler context so individual handlers
   // can emit lifecycle events (e.g., transaction status updates) without direct access to the node.
   context.notify = async (method, params) => {
-    await node.notify(method, params);
+    await jsonRpcNode.notify(method, params);
   };
 
-  registerAztecWalletHandlers(node);
-  registerAztecWalletSerializers(node);
+  registerAztecWalletHandlers(jsonRpcNode);
+  registerAztecWalletSerializers(jsonRpcNode);
 
   // Return the configured node
-  return node;
+  return jsonRpcNode;
 }

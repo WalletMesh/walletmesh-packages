@@ -1,42 +1,13 @@
-import { type ConfigEnv, defineConfig, loadEnv, type UserConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
+import { type ConfigEnv, defineConfig, loadEnv, type UserConfig } from 'vite';
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }: ConfigEnv) => {
   const env = loadEnv(mode, process.cwd());
   return {
     cacheDir: './node_modules/.vite',
-    resolve: {
-      alias: {
-        pino: 'pino/browser',
-        // Handle lodash modules
-        'lodash.chunk': 'lodash/chunk',
-        'lodash.isequal': 'lodash/isEqual',
-      },
-    },
     plugins: [
       react(),
-      nodePolyfills({
-        include: ['buffer', 'path', 'process', 'tty', 'net'],
-        globals: {
-          process: true,
-          Buffer: true,
-        },
-      }),
-      viteStaticCopy({
-        targets: [
-          {
-            src: `./node_modules/@aztec/noir-acvm_js/web/acvm_js_bg.wasm`,
-            dest: 'assets',
-          },
-          {
-            src: `./node_modules/@aztec/noir-noirc_abi/web/noirc_abi_wasm_bg.wasm`,
-            dest: 'assets',
-          },
-        ],
-      }),
     ],
     server: {
       headers: {

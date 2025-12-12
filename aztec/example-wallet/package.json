@@ -21,8 +21,8 @@
   "dependencies": {
     "@aztec/accounts": "catalog:",
     "@aztec/aztec.js": "catalog:",
-    "@aztec/bb.js": "catalog:",
     "@aztec/bb-prover": "catalog:",
+    "@aztec/bb.js": "catalog:",
     "@aztec/foundation": "catalog:",
     "@aztec/noir-acvm_js": "catalog:",
     "@aztec/noir-contracts.js": "catalog:",
@@ -30,13 +30,15 @@
     "@aztec/noir-test-contracts.js": "catalog:",
     "@aztec/pxe": "catalog:",
     "@aztec/simulator": "catalog:",
+    "@aztec/test-wallet": "catalog:",
+    "@aztec/wallet-sdk": "catalog:",
     "@walletmesh/aztec-helpers": "workspace:^",
     "@walletmesh/aztec-rpc-wallet": "workspace:^",
     "@walletmesh/jsonrpc": "workspace:^",
     "@walletmesh/router": "workspace:^",
+    "lodash-es": "^4.17.21",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "lodash-es": "^4.17.21"
+    "react-dom": "^19.1.1"
   },
   "devDependencies": {
     "@types/react": "^19.1.12",

@@ -1,3 +1,4 @@
+import type { FunctionArgNames } from '@walletmesh/aztec-helpers';
 import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 import type {
   ChainId,
@@ -8,7 +9,6 @@ import type {
   RouterMethodMap,
   SessionStore,
 } from '@walletmesh/router';
-import type { FunctionArgNames } from '@walletmesh/aztec-helpers';
 
 /**
  * Options for configuring the {@link ApprovalPermissionManager}.

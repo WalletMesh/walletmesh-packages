@@ -1,6 +1,6 @@
+import { type EnhancedParameterInfo, formatArgumentValue } from '@walletmesh/aztec-helpers';
 import type React from 'react';
 import { useState } from 'react';
-import { formatArgumentValue, type EnhancedParameterInfo } from '@walletmesh/aztec-helpers';
 
 type ArgumentDisplayProps = {
   value: unknown;

@@ -196,7 +196,10 @@ export const SERIALIZERS: Record<keyof AztecWalletMethodMap, JSONRPCSerializer<J
     resultSchema: TxHash.schema,
   }),
   aztec_createAuthWit: createSerializer<[AztecAddress, Fr | IntentInnerHash | CallIntent], AuthWitness>({
-    paramSchema: z.tuple([AztecAddress.schema, z.union([Fr.schema, IntentInnerHashSchema, CallIntentSchema])]),
+    paramSchema: z.tuple([
+      AztecAddress.schema,
+      z.union([Fr.schema, IntentInnerHashSchema, CallIntentSchema]),
+    ]),
     resultSchema: AuthWitness.schema,
   }),
   /**
