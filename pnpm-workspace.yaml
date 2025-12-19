@@ -42,4 +42,7 @@ overrides:
   lodash.chunk: npm:lodash@4.17.21
   lodash.omit: npm:lodash@4.17.21
 
+patchedDependencies:
+  vite-plugin-node-polyfills@0.24.0: patches/vite-plugin-node-polyfills@0.24.0.patch
+
 preferWorkspacePackages: true

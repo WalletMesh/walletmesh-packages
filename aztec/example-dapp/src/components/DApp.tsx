@@ -223,11 +223,11 @@ const DApp: React.FC = () => {
       // deploySync waits for deployment confirmation before returning
       // Hook handles artifact compatibility internally
       await deployToken(TokenContractArtifact as any, [address, 'TokenName', 'TKN', 18], {
-        onSuccess: (deployedAddress) => {
-          showSuccess(`Token deployed at ${deployedAddress.toString()}`);
+        onSuccess: (deployedAddress: unknown) => {
+          showSuccess(`Token deployed at ${String(deployedAddress)}`);
           setTokenBalance('');
         },
-        onError: (error) => {
+        onError: (error: Error) => {
           // Session errors are handled automatically by useSessionError hook
           if (!isSessionError(error)) {
             showError(`Token deployment failed: ${error.message}`);
@@ -257,10 +257,10 @@ const DApp: React.FC = () => {
       // deploySync waits for deployment confirmation before returning
       // Hook handles artifact compatibility internally
       await deployCounter(CounterContractArtifact as any, [0, address], {
-        onSuccess: (deployedAddress) => {
-          showSuccess(`Counter deployed at ${deployedAddress.toString()}`);
+        onSuccess: (deployedAddress: unknown) => {
+          showSuccess(`Counter deployed at ${String(deployedAddress)}`);
         },
-        onError: (error) => {
+        onError: (error: Error) => {
           // Session errors are handled automatically by useSessionError hook
           if (!isSessionError(error)) {
             showError(`Counter deployment failed: ${error.message}`);
@@ -422,7 +422,7 @@ const DApp: React.FC = () => {
         onSuccess: () => {
           showSuccess('Counter incremented');
         },
-        onError: (error) => {
+        onError: (error: Error) => {
           showError(`Transaction failed: ${error.message}`);
         },
       });

@@ -14,6 +14,7 @@ export default defineConfig(({ mode }: ConfigEnv) => {
         // Handle lodash modules
         'lodash.chunk': 'lodash/chunk',
         'lodash.isequal': 'lodash/isEqual',
+        buffer: 'buffer',
       },
     },
     plugins: [
