@@ -31,6 +31,11 @@ overrides:
 
 pnpmfileChecksum: sha256-CS8aRkX9uJ8DiSCd7WujdrqoIHVh5SpxYiihgCHb9V8=
 
+patchedDependencies:
+  vite-plugin-node-polyfills@0.24.0:
+    hash: 6f59949b840539c5881305eeaf37824002ddb51a176b6ac4242aaa317298ede7
+    path: patches/vite-plugin-node-polyfills@0.24.0.patch
+
 importers:
 
   .:
@@ -80,19 +85,22 @@ importers:
     dependencies:
       '@aztec/accounts':
         specifier: 2.0.3
-        version: 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@aztec/aztec.js':
         specifier: 2.0.3
-        version: 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@aztec/bb.js':
+        specifier: 2.0.3
+        version: 2.0.3
       '@aztec/noir-acvm_js':
         specifier: 2.0.3
         version: 2.0.3
       '@aztec/noir-contracts.js':
         specifier: 2.0.3
-        version: 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@aztec/noir-test-contracts.js':
         specifier: 2.0.3
-        version: 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletmesh/aztec-rpc-wallet':
         specifier: workspace:^
         version: link:../rpc-wallet
@@ -108,6 +116,9 @@ importers:
       react-dom:
         specifier: ^19.1.1
         version: 19.1.1(react@19.1.1)
+      zustand:
+        specifier: ^5.0.8
+        version: 5.0.8(@types/react@19.1.15)(immer@10.1.3)(react@19.1.1)
     devDependencies:
       '@types/react':
         specifier: ^19.1.12
@@ -129,7 +140,7 @@ importers:
         version: 0.3.0(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
       vite-plugin-node-polyfills:
         specifier: ^0.24.0
-        version: 0.24.0(rollup@4.52.3)(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
+        version: 0.24.0(patch_hash=6f59949b840539c5881305eeaf37824002ddb51a176b6ac4242aaa317298ede7)(rollup@4.52.3)(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
       vite-plugin-static-copy:
         specifier: ^3.1.2
         version: 3.1.2(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
@@ -206,6 +217,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^5.0.2
         version: 5.0.4(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
+      cross-env:
+        specifier: ^10.1.0
+        version: 10.1.0
       globals:
         specifier: ^16.3.0
         version: 16.4.0
@@ -217,7 +231,7 @@ importers:
         version: 0.3.0(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
       vite-plugin-node-polyfills:
         specifier: ^0.24.0
-        version: 0.24.0(rollup@4.52.3)(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
+        version: 0.24.0(patch_hash=6f59949b840539c5881305eeaf37824002ddb51a176b6ac4242aaa317298ede7)(rollup@4.52.3)(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
       vite-plugin-static-copy:
         specifier: ^3.1.2
         version: 3.1.2(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
@@ -247,7 +261,7 @@ importers:
     dependencies:
       '@aztec/aztec.js':
         specifier: 2.0.3
-        version: 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@walletmesh/aztec-helpers':
         specifier: workspace:^
         version: link:../helpers
@@ -295,6 +309,57 @@ importers:
 
   core/modal-core:
     dependencies:
+      '@aztec/accounts':
+        specifier: 2.0.3
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@aztec/aztec.js':
+        specifier: 2.0.3
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@aztec/bb.js':
+        specifier: 2.0.3
+        version: 2.0.3
+      '@aztec/blob-lib':
+        specifier: 2.0.3
+        version: 2.0.3
+      '@aztec/constants':
+        specifier: 2.0.3
+        version: 2.0.3
+      '@aztec/entrypoints':
+        specifier: 2.0.3
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
+      '@aztec/ethereum':
+        specifier: 2.0.3
+        version: 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
+      '@aztec/foundation':
+        specifier: 2.0.3
+        version: 2.0.3
+      '@aztec/l1-artifacts':
+        specifier: 2.0.3
+        version: 2.0.3
+      '@aztec/noir-acvm_js':
+        specifier: 2.0.3
+        version: 2.0.3
+      '@aztec/noir-contracts.js':
+        specifier: 2.0.3
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@aztec/noir-noirc_abi':
+        specifier: 2.0.3
+        version: 2.0.3
+      '@aztec/noir-test-contracts.js':
+        specifier: 2.0.3
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@aztec/noir-types':
+        specifier: 2.0.3
+        version: 2.0.3
+      '@aztec/protocol-contracts':
+        specifier: 2.0.3
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
+      '@aztec/pxe':
+        specifier: 2.0.3
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
+      '@aztec/stdlib':
+        specifier: 2.0.3
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
       '@tanstack/query-core':
         specifier: ^5.89.0
         version: 5.90.2
@@ -354,6 +419,9 @@ importers:
         specifier: workspace:*
         version: link:../modal-core
     devDependencies:
+      '@aztec/aztec.js':
+        specifier: 2.0.3
+        version: 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
       '@nemi-fi/wallet-sdk':
         specifier: ^1.0.0
         version: 1.1.2(bufferutil@4.0.9)(encoding@0.1.13)(react@19.1.1)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -483,7 +551,7 @@ importers:
         version: 7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1)
       vite-plugin-node-polyfills:
         specifier: ^0.24.0
-        version: 0.24.0(rollup@4.52.3)(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
+        version: 0.24.0(patch_hash=6f59949b840539c5881305eeaf37824002ddb51a176b6ac4242aaa317298ede7)(rollup@4.52.3)(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1))
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@24.5.2)(happy-dom@15.11.7)(jsdom@26.1.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(tsx@4.20.6)(yaml@2.8.1)
@@ -905,6 +973,9 @@ packages:
   '@csstools/css-tokenizer@3.0.4':
     resolution: {integrity: sha512-Vd/9EVDiu6PPJt9yAh6roZP6El1xHrdvIVGjyBsHR0RYwNHgL7FJPyIIW4fANJNG6FtyZfvlRPpFI4ZM/lubvw==}
     engines: {node: '>=18'}
+
+  '@epic-web/invariant@1.0.0':
+    resolution: {integrity: sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA==}
 
   '@esbuild/aix-ppc64@0.25.10':
     resolution: {integrity: sha512-0NFWnA+7l41irNuaSVlLfgNT12caWJVLzp5eAVhZ0z1qpxbockccEt3s+149rE64VUI3Ml2zt8Nv5JVc4QXTsw==}
@@ -2411,6 +2482,11 @@ packages:
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
 
+  cross-env@10.1.0:
+    resolution: {integrity: sha512-GsYosgnACZTADcmEyJctkJIoqAhHjttw7RsFrVoJNXbsWWqaq6Ym+7kZjq6mS45O0jij6vtiReppKQEtqWy6Dw==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
@@ -3209,6 +3285,7 @@ packages:
   keygrip@1.1.0:
     resolution: {integrity: sha512-iYSchDJ+liQ8iwbSI2QqsQOvqv58eJCEanyJPJi+Khyu8smkcKSFUCbPwzFcL7YVtZ6eONjqRX/38caJ7QjRAQ==}
     engines: {node: '>= 0.6'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   koa-bodyparser@4.4.1:
     resolution: {integrity: sha512-kBH3IYPMb+iAXnrxIhXnW+gXV8OTzCu8VPDqvcDHW9SQrbkHmqPQtiZwrltNmSq6/lpipHnT7k7PsjlVD7kK0w==}
@@ -4538,23 +4615,23 @@ packages:
     resolution: {integrity: sha512-fWMp40J+PEh9uXrYUD5Afqn4nrAFSYFfZeu+7XqyuCsFhwpTSJ4ZlnTz7JBED0Rht6dyKujVXWe8E/ns/Sqjng==}
     hasBin: true
     peerDependencies:
-      vite: '>=6.1.6'
+      vite: '>=6.0.15'
 
   vite-plugin-node-polyfills@0.24.0:
     resolution: {integrity: sha512-GA9QKLH+vIM8NPaGA+o2t8PDfFUl32J8rUp1zQfMKVJQiNkOX4unE51tR6ppl6iKw5yOrDAdSH7r/UIFLCVhLw==}
     peerDependencies:
-      vite: '>=6.1.6'
+      vite: '>=6.0.15'
 
   vite-plugin-static-copy@3.1.2:
     resolution: {integrity: sha512-aVmYOzptLVOI2b1jL+cmkF7O6uhRv1u5fvOkQgbohWZp2CbR22kn9ZqkCUIt9umKF7UhdbsEpshn1rf4720QFg==}
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
-      vite: '>=6.1.6'
+      vite: '>=6.0.15'
 
   vite-plugin-top-level-await@1.6.0:
     resolution: {integrity: sha512-bNhUreLamTIkoulCR9aDXbTbhLk6n1YE8NJUTTxl5RYskNRtzOR0ASzSjBVRtNdjIfngDXo11qOsybGLNsrdww==}
     peerDependencies:
-      vite: '>=6.1.6'
+      vite: '>=6.0.15'
 
   vite@5.4.20:
     resolution: {integrity: sha512-j3lYzGC3P+B5Yfy/pfKNgVEg4+UtcIJcVRt2cDjIOmhLourAqPqf8P7acgxeiSgUB7E3p2P8/3gNIgDLpwzs4g==}
@@ -4889,23 +4966,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@aztec/accounts@2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@aztec/aztec.js': 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      '@aztec/entrypoints': 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      '@aztec/ethereum': 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      '@aztec/foundation': 2.0.3
-      '@aztec/stdlib': 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - encoding
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
   '@aztec/aztec.js@1.1.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
       '@aztec/constants': 1.1.2
@@ -4928,27 +4988,6 @@ snapshots:
       - zod
 
   '@aztec/aztec.js@2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
-    dependencies:
-      '@aztec/constants': 2.0.3
-      '@aztec/entrypoints': 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      '@aztec/ethereum': 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      '@aztec/foundation': 2.0.3
-      '@aztec/l1-artifacts': 2.0.3
-      '@aztec/protocol-contracts': 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      '@aztec/stdlib': 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      axios: 1.12.2
-      tslib: 2.8.1
-      viem: 2.23.7(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - encoding
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
-  '@aztec/aztec.js@2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)':
     dependencies:
       '@aztec/constants': 2.0.3
       '@aztec/entrypoints': 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)
@@ -5253,19 +5292,6 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@aztec/noir-contracts.js@2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@aztec/aztec.js': 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - encoding
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
   '@aztec/noir-noir_codegen@1.1.2':
     dependencies:
       '@aztec/noir-types': 1.1.2
@@ -5329,19 +5355,6 @@ snapshots:
   '@aztec/noir-test-contracts.js@2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)':
     dependencies:
       '@aztec/aztec.js': 2.0.3(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - encoding
-      - supports-color
-      - typescript
-      - utf-8-validate
-      - zod
-
-  '@aztec/noir-test-contracts.js@2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)':
-    dependencies:
-      '@aztec/aztec.js': 2.0.3(bufferutil@4.0.9)(typescript@5.9.2)(utf-8-validate@5.0.10)
       tslib: 2.8.1
     transitivePeerDependencies:
       - bufferutil
@@ -5865,6 +5878,8 @@ snapshots:
       '@csstools/css-tokenizer': 3.0.4
 
   '@csstools/css-tokenizer@3.0.4': {}
+
+  '@epic-web/invariant@1.0.0': {}
 
   '@esbuild/aix-ppc64@0.25.10':
     optional: true
@@ -7409,6 +7424,11 @@ snapshots:
 
   create-require@1.1.1: {}
 
+  cross-env@10.1.0:
+    dependencies:
+      '@epic-web/invariant': 1.0.0
+      cross-spawn: 7.0.6
+
   cross-spawn@7.0.6:
     dependencies:
       path-key: 3.1.1
@@ -8714,10 +8734,10 @@ snapshots:
   ox@0.6.7(typescript@5.9.2)(zod@3.25.76):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
-      '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
-      '@scure/bip32': 1.6.2
-      '@scure/bip39': 1.5.4
+      '@noble/curves': 1.9.7
+      '@noble/hashes': 1.8.0
+      '@scure/bip32': 1.7.0
+      '@scure/bip39': 1.6.0
       abitype: 1.0.8(typescript@5.9.2)(zod@3.25.76)
       eventemitter3: 5.0.1
     optionalDependencies:
@@ -9738,7 +9758,7 @@ snapshots:
       vite: 7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1)
       vlq: 2.0.4
 
-  vite-plugin-node-polyfills@0.24.0(rollup@4.52.3)(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1)):
+  vite-plugin-node-polyfills@0.24.0(patch_hash=6f59949b840539c5881305eeaf37824002ddb51a176b6ac4242aaa317298ede7)(rollup@4.52.3)(vite@7.1.7(@types/node@24.5.2)(tsx@4.20.6)(yaml@2.8.1)):
     dependencies:
       '@rollup/plugin-inject': 5.0.5(rollup@4.52.3)
       node-stdlib-browser: 1.3.1

@@ -1,0 +1,46 @@
+diff --git a/dist/index.js b/dist/index.js
+index 5795ac8a8c2da559d7a5ea83a0c7f116d32d47ad..fb24f01e0501de1f28c966be49fa26b8b35fef16 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -6,7 +6,31 @@ import T from "node-stdlib-browser/helpers/esbuild/plugin";
+ const v = (s, l) => c(s) === c(l), o = (s, l) => s ? s === !0 ? !0 : s === l : !1, $ = (s) => s.startsWith("node:"), w = (s) => {
+   const l = s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+   return new RegExp(`^${l}$`);
+-}, c = (s) => s.replace(/^node:/, ""), g = {
++}, c = (s) => s.replace(/^node:/, ""), 
++// Shim specifiers that need to be resolved during Rollup build
++shimSpecifiers = [
++  "vite-plugin-node-polyfills/shims/buffer",
++  "vite-plugin-node-polyfills/shims/global", 
++  "vite-plugin-node-polyfills/shims/process"
++],
++// Create shims resolver plugin for Rollup to resolve shim imports from external packages
++createShimsResolverPlugin = (requireFn) => {
++  const shimPaths = {};
++  for (const specifier of shimSpecifiers) {
++    try {
++      shimPaths[specifier] = requireFn.resolve(specifier);
++    } catch (e) {}
++  }
++  return {
++    name: "vite-plugin-node-polyfills:shims-resolver",
++    resolveId(id) {
++      if (shimPaths[id]) {
++        return shimPaths[id];
++      }
++    }
++  };
++},
++g = {
+   buffer: [
+     "import __buffer_polyfill from 'vite-plugin-node-polyfills/shims/buffer'",
+     "globalThis.Buffer = globalThis.Buffer || __buffer_polyfill"
+@@ -75,7 +99,7 @@ const v = (s, l) => c(s) === c(l), o = (s, l) => s ? s === !0 ? !0 : s === l : !
+                 n(t);
+               });
+             },
+-            ...Object.keys(a).length > 0 ? d ? { inject: a } : { plugins: [x(a)] } : {}
++            ...Object.keys(a).length > 0 ? d ? { inject: a } : { plugins: [createShimsResolverPlugin(f), x(a)] } : {}
+           }
+         },
+         esbuild: {
