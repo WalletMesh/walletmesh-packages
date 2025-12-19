@@ -24,7 +24,6 @@ import { JSONRPCError } from '@walletmesh/jsonrpc';
 import type { AztecWalletMethodMap, UnifiedSimulationResult } from '../../types.js';
 import { isTxSimulationResult } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
-import { notifyTransactionStatus } from './transactionStatusNotifications.js';
 
 const logger = createLogger('aztec-rpc-wallet:contract-interaction:handler');
 
@@ -263,48 +262,28 @@ export function createContractInteractionHandlers() {
    * @internal
    * Helper function to execute a transaction from an {@link ExecutionPayload}.
    * This consolidates the common flow:
-   * 1. Generate unique transaction status ID
-   * 2. Send 'initiated' notification
-   * 3. Create TxExecutionRequest and simulate transaction
-   * 4. Prove transaction
-   * 5. Send transaction
-   *
-   * Transaction status notifications (initiated/simulating/proving/sending/pending/failed) are
-   * automatically sent at each lifecycle stage. The backend generates a unique `txStatusId` that
-   * is returned along with the transaction hash to allow frontend correlation.
+   * 1. Create TxExecutionRequest and simulate transaction
+   * 2. Prove transaction
+   * 3. Send transaction
    *
    * @param ctx - The {@link AztecHandlerContext}.
    * @param executionPayload - The {@link ExecutionPayload} for the transaction.
    * @param sendOptions - Optional {@link AztecSendOptions} for fee and transaction configuration.
-   * @returns A promise resolving to an object containing both the blockchain tx hash and status tracking ID.
+   * @returns A promise resolving to an object containing the blockchain tx hash.
    */
   async function executeTransaction(
     ctx: AztecHandlerContext,
     executionPayload: ExecutionPayload,
     sendOptions?: AztecSendOptions,
-  ): Promise<{ txHash: TxHash; txStatusId: string }> {
+  ): Promise<{ txHash: TxHash }> {
     const startTime = Date.now();
 
-    // Use existing txStatusId from context (set by approval middleware) or generate new one
-    // If txStatusId exists in context, it means approval was already completed
-    const txStatusId = (ctx as unknown as { txStatusId?: string }).txStatusId || crypto.randomUUID();
-    const isResumedFromApproval = !!(ctx as unknown as { txStatusId?: string }).txStatusId;
-
     logger.debug(
-      `Starting transaction execution. StatusId: ${txStatusId}, Wallet: ${ctx.wallet.getAddress().toString()}, Payload: ${executionPayload.calls.length} calls, ResumedFromApproval: ${isResumedFromApproval}`,
+      `Starting transaction execution. Wallet: ${ctx.wallet.getAddress().toString()}, Payload: ${executionPayload.calls.length} calls`,
     );
     logger.debug('Execution payload:', executionPayload);
 
     try {
-      // Stage 0: Initiated (transaction received, ID generated)
-      // Only send if not already sent by approval middleware
-      if (!isResumedFromApproval) {
-        logger.debug('Transaction initiated, sending initial notification...');
-        await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
-      } else {
-        logger.debug('Transaction resumed from approval, skipping initiated notification');
-      }
-
       // Extract fee and tx options from sendOptions if provided
       const feeOpts = await extractFeeOptions(ctx, sendOptions);
       const txOpts = await extractTxOptions(ctx, sendOptions);
@@ -312,28 +291,19 @@ export function createContractInteractionHandlers() {
       logger.debug('Using fee options:', feeOpts);
       logger.debug('Using tx options:', txOpts);
 
-      // Stage 1: Simulating (maps to Aztec's simulate())
-      // Note: No status notification sent during simulation
-      // Overlay will show when proving starts (first visible status after approval)
+      // Stage 1: Simulating
       logger.debug('Starting transaction simulation...');
       const txRequest = await createTxExecutionRequest(ctx, executionPayload, feeOpts, txOpts);
-
-      // Simulate transaction (no status notification - overlay appears at proving stage)
       const simulationResult = await simulateTransaction(ctx, executionPayload, txRequest);
       logger.debug('Transaction simulation completed');
 
       // Stage 2: Proving (zero-knowledge proof generation)
-      // Extract TxSimulationResult from unified result
       if (!isTxSimulationResult(simulationResult)) {
         throw new JSONRPCError(-32603, 'Expected transaction simulation result but got utility simulation');
       }
       const txSimResult = simulationResult.originalResult;
 
-      // Send proving notification RIGHT BEFORE actual proving starts
-      // This is the first status notification sent after user approval
       logger.debug('Starting transaction proving...');
-      await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
-
       const proveStartTime = Date.now();
       const provingResult = await ctx.wallet.proveTx(txRequest, txSimResult.privateExecutionResult);
       const provingTime = Date.now() - proveStartTime;
@@ -344,68 +314,23 @@ export function createContractInteractionHandlers() {
       const tx = await provingResult.toTx();
       logger.debug('Transaction created:', tx);
 
-      let txHashString: string | undefined;
-      try {
-        txHashString = tx?.getTxHash?.()?.toString?.();
-      } catch (hashError) {
-        logger.debug('Unable to derive tx hash after proving', {
-          error: hashError instanceof Error ? hashError.message : hashError,
-        });
-      }
-
-      // Stage 3: Sending (maps to Aztec's send())
+      // Stage 3: Sending
       logger.debug('Sending transaction to network...');
-      await notifyTransactionStatus(ctx, {
-        txStatusId,
-        status: 'sending',
-        ...(txHashString && { txHash: txHashString }), // ← Blockchain hash now available
-      });
-
       const sendStartTime = Date.now();
       const txHash = await ctx.wallet.sendTx(tx);
       logger.debug(`Transaction sent in ${Date.now() - sendStartTime}ms, hash: ${txHash.toString()}`);
 
-      // Stage 4: Pending (waiting for confirmation)
-      await notifyTransactionStatus(ctx, {
-        txStatusId, // ← Tracking ID for frontend coordination
-        status: 'pending',
-        txHash: txHash.toString(), // ← Blockchain hash
-      });
-
       // Wait for transaction receipt
       logger.debug('Waiting for transaction receipt...');
       const waitStartTime = Date.now();
-
-      // Stage 5: Confirming (transaction included, waiting for confirmations)
-      await notifyTransactionStatus(ctx, {
-        txStatusId,
-        status: 'confirming',
-        txHash: txHash.toString(),
-      });
-
       await ctx.wallet.getTxReceipt(txHash);
       logger.debug(`Transaction confirmed in ${Date.now() - waitStartTime}ms`);
 
-      // Stage 6: Confirmed (transaction finalized)
-      await notifyTransactionStatus(ctx, {
-        txStatusId,
-        status: 'confirmed',
-        txHash: txHash.toString(),
-      });
-
-      return { txHash, txStatusId };
+      return { txHash };
     } catch (error) {
       const totalTime = Date.now() - startTime;
       logger.error(`Transaction execution failed after ${totalTime}ms}`);
       logger.error('Error details:', error);
-
-      // Send failed notification
-      await notifyTransactionStatus(ctx, {
-        txStatusId,
-        status: 'failed',
-        error: error instanceof Error ? error.message : String(error),
-      });
-
       throw error;
     }
   }
@@ -486,48 +411,32 @@ export function createContractInteractionHandlers() {
    * @internal
    * Helper function to execute a batch of transactions atomically from multiple {@link ExecutionPayload} objects.
    * This consolidates the batch flow:
-   * 1. Generate unique transaction status ID
-   * 2. Send 'initiated' notification
-   * 3. Validate all payloads
-   * 4. Merge payloads into single atomic batch
-   * 5. Create TxExecutionRequest using BatchCall
-   * 6. Simulate, prove, and send the batch transaction
-   * 7. Wait for receipt
+   * 1. Validate all payloads
+   * 2. Merge payloads into single atomic batch
+   * 3. Create TxExecutionRequest using BatchCall
+   * 4. Simulate, prove, and send the batch transaction
+   * 5. Wait for receipt
    *
    * All operations succeed together or all fail together (atomic execution).
    *
    * @param ctx - The {@link AztecHandlerContext}.
    * @param executionPayloads - Array of {@link ExecutionPayload} objects to execute as batch.
    * @param sendOptions - Optional {@link AztecSendOptions} for fee configuration.
-   * @returns A promise resolving to an object containing the blockchain tx hash, receipt, and status tracking ID.
+   * @returns A promise resolving to an object containing the blockchain tx hash and receipt.
    */
   async function executeBatchTransaction(
     ctx: AztecHandlerContext,
     executionPayloads: ExecutionPayload[],
     sendOptions?: AztecSendOptions,
-  ): Promise<{ txHash: TxHash; receipt: TxReceipt; txStatusId: string }> {
+  ): Promise<{ txHash: TxHash; receipt: TxReceipt }> {
     const startTime = Date.now();
 
-    // Use existing txStatusId from context (set by approval middleware) or generate new one
-    // If txStatusId exists in context, it means approval was already completed
-    const txStatusId = (ctx as unknown as { txStatusId?: string }).txStatusId || crypto.randomUUID();
-    const isResumedFromApproval = !!(ctx as unknown as { txStatusId?: string }).txStatusId;
-
     logger.debug(
-      `Starting batch transaction execution. StatusId: ${txStatusId}, Wallet: ${ctx.wallet.getAddress().toString()}, Payloads: ${executionPayloads.length}, ResumedFromApproval: ${isResumedFromApproval}`,
+      `Starting batch transaction execution. Wallet: ${ctx.wallet.getAddress().toString()}, Payloads: ${executionPayloads.length}`,
     );
     logger.debug('Execution payloads:', executionPayloads);
 
     try {
-      // Stage 0: Initiated (batch received, ID generated)
-      // Only send if not already sent by approval middleware
-      if (!isResumedFromApproval) {
-        logger.debug('Batch transaction initiated, sending initial notification...');
-        await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
-      } else {
-        logger.debug('Batch transaction resumed from approval, skipping initiated notification');
-      }
-
       // Validate all payloads
       validateBatchPayloads(executionPayloads);
 
@@ -541,28 +450,19 @@ export function createContractInteractionHandlers() {
       logger.debug('Using fee options:', feeOpts);
       logger.debug('Using tx options:', txOpts);
 
-      // Stage 1: Simulating (maps to Aztec's simulate())
-      // Note: No status notification sent during simulation
-      // Overlay will show when proving starts (first visible status after approval)
+      // Stage 1: Simulating
       logger.debug('Starting batch transaction simulation...');
-
       const txRequest = await createTxExecutionRequest(ctx, mergedPayload, feeOpts, txOpts);
-      // Simulate transaction (no status notification - overlay appears at proving stage)
       const simulationResult = await simulateTransaction(ctx, mergedPayload, txRequest);
       logger.debug('Batch transaction simulation completed');
 
       // Stage 2: Proving (zero-knowledge proof generation for entire batch)
-      // Extract TxSimulationResult from unified result
       if (!isTxSimulationResult(simulationResult)) {
         throw new JSONRPCError(-32603, 'Expected transaction simulation result but got utility simulation');
       }
       const txSimResult = simulationResult.originalResult;
 
-      // Send proving notification RIGHT BEFORE actual proving starts
-      // This is the first status notification sent after user approval
       logger.debug('Starting batch transaction proving...');
-      await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
-
       const proveStartTime = Date.now();
       const provingResult = await ctx.wallet.proveTx(txRequest, txSimResult.privateExecutionResult);
       const provingTime = Date.now() - proveStartTime;
@@ -575,68 +475,23 @@ export function createContractInteractionHandlers() {
       const tx = await provingResult.toTx();
       logger.debug('Transaction created:', tx);
 
-      let txHashString: string | undefined;
-      try {
-        txHashString = tx?.getTxHash?.()?.toString?.();
-      } catch (hashError) {
-        logger.debug('Unable to derive tx hash after proving', {
-          error: hashError instanceof Error ? hashError.message : hashError,
-        });
-      }
-
-      // Stage 3: Sending (maps to Aztec's send())
+      // Stage 3: Sending
       logger.debug('Sending batch transaction to network...');
-      await notifyTransactionStatus(ctx, {
-        txStatusId,
-        status: 'sending',
-        ...(txHashString && { txHash: txHashString }),
-      });
-
       const sendStartTime = Date.now();
       const txHash = await ctx.wallet.sendTx(tx);
       logger.debug(`Batch transaction sent in ${Date.now() - sendStartTime}ms, hash: ${txHash.toString()}`);
 
-      // Stage 4: Pending (waiting for confirmation)
-      await notifyTransactionStatus(ctx, {
-        txStatusId,
-        status: 'pending',
-        txHash: txHash.toString(),
-      });
-
       // Wait for transaction receipt
       logger.debug('Waiting for batch transaction receipt...');
       const waitStartTime = Date.now();
-
-      // Stage 5: Confirming (transaction included, waiting for confirmations)
-      await notifyTransactionStatus(ctx, {
-        txStatusId,
-        status: 'confirming',
-        txHash: txHash.toString(),
-      });
-
       const receipt = await ctx.wallet.getTxReceipt(txHash);
       logger.debug(`Batch transaction confirmed in ${Date.now() - waitStartTime}ms`);
 
-      // Stage 6: Confirmed (batch transaction finalized)
-      await notifyTransactionStatus(ctx, {
-        txStatusId,
-        status: 'confirmed',
-        txHash: txHash.toString(),
-      });
-
-      return { txHash, receipt, txStatusId };
+      return { txHash, receipt };
     } catch (error) {
       const totalTime = Date.now() - startTime;
       logger.error(`Batch transaction execution failed after ${totalTime}ms}`);
       logger.error('Error details:', error);
-
-      // Send failed notification
-      await notifyTransactionStatus(ctx, {
-        txStatusId,
-        status: 'failed',
-        error: error instanceof Error ? error.message : String(error),
-      });
-
       throw error;
     }
   }
@@ -647,18 +502,13 @@ export function createContractInteractionHandlers() {
      * This WalletMesh-specific method takes an {@link ExecutionPayload} and handles
      * the full lifecycle of simulating, proving, and sending the transaction.
      *
-     * The backend automatically generates a unique `txStatusId` and sends status notifications
-     * (initiated/simulating/proving/sending/pending/failed) throughout the transaction lifecycle.
-     * The frontend can listen to `aztec_transactionStatus` events and correlate them using the
-     * returned `txStatusId`.
-     *
      * @param ctx - The {@link AztecHandlerContext}.
      * @param paramsTuple - A tuple containing the {@link ExecutionPayload} and optional {@link AztecSendOptions}.
      *                      Defined by {@link AztecWalletMethodMap.aztec_wmExecuteTx.params}.
      * @param paramsTuple.0 - The {@link ExecutionPayload} to execute.
      * @param paramsTuple.1 - Optional {@link AztecSendOptions} for fee and transaction configuration.
-     * @returns A promise that resolves to an object containing the blockchain transaction hash
-     *          and the status tracking ID. Type defined by {@link AztecWalletMethodMap.aztec_wmExecuteTx.result}.
+     * @returns A promise that resolves to an object containing the blockchain transaction hash.
+     *          Type defined by {@link AztecWalletMethodMap.aztec_wmExecuteTx.result}.
      */
     aztec_wmExecuteTx: async (
       ctx: AztecHandlerContext,
@@ -679,18 +529,13 @@ export function createContractInteractionHandlers() {
      * to the user for approval before execution. This provides better security UX compared
      * to approving operations one-by-one.
      *
-     * The backend automatically generates a unique `txStatusId` and sends status notifications
-     * (initiated/simulating/proving/sending/pending/failed) throughout the batch lifecycle.
-     * The frontend can listen to `aztec_transactionStatus` events and correlate them using the
-     * returned `txStatusId`.
-     *
      * @param ctx - The {@link AztecHandlerContext}.
      * @param paramsTuple - A tuple containing an array of {@link ExecutionPayload} objects and optional {@link AztecSendOptions}.
      *                      Defined by {@link AztecWalletMethodMap.aztec_wmBatchExecute.params}.
      * @param paramsTuple.0 executionPayloads - Array of {@link ExecutionPayload} objects to execute as batch.
      * @param paramsTuple.1 sendOptions - Optional {@link AztecSendOptions} for fee configuration.
-     * @returns A promise that resolves to an object containing the blockchain transaction hash,
-     *          receipt, and status tracking ID. Type defined by {@link AztecWalletMethodMap.aztec_wmBatchExecute.result}.
+     * @returns A promise that resolves to an object containing the blockchain transaction hash and receipt.
+     *          Type defined by {@link AztecWalletMethodMap.aztec_wmBatchExecute.result}.
      */
     aztec_wmBatchExecute: async (
       ctx: AztecHandlerContext,
@@ -751,25 +596,9 @@ export function createContractInteractionHandlers() {
       const [params] = paramsTuple;
       const { artifact, args, constructorName } = params;
 
-      // Use existing txStatusId from context (set by approval middleware) or generate new one
-      // If txStatusId exists in context, it means approval was already completed
-      const txStatusId = (ctx as unknown as { txStatusId?: string }).txStatusId || crypto.randomUUID();
-      const isResumedFromApproval = !!(ctx as unknown as { txStatusId?: string }).txStatusId;
-
-      logger.debug(
-        `aztec_wmDeployContract: deploying ${artifact.name} with ${args.length} args. StatusId: ${txStatusId}, ResumedFromApproval: ${isResumedFromApproval}`,
-      );
+      logger.debug(`aztec_wmDeployContract: deploying ${artifact.name} with ${args.length} args`);
 
       try {
-        // Stage 0: Initiated (deployment request received, ID generated)
-        // Only send if not already sent by approval middleware
-        if (!isResumedFromApproval) {
-          logger.debug('Deployment initiated, sending initial notification...');
-          await notifyTransactionStatus(ctx, { txStatusId, status: 'initiated' });
-        } else {
-          logger.debug('Deployment resumed from approval, skipping initiated notification');
-        }
-
         // Create deployment method using the server-side wallet
         const deployMethod = Contract.deploy(ctx.wallet, artifact, args, constructorName);
 
@@ -795,14 +624,6 @@ export function createContractInteractionHandlers() {
           logger.debug(`Computed contract address: ${contractAddress.toString()}`);
         } catch (error) {
           logger.error(`Failed to compute contract address for ${artifact.name}:`, error);
-
-          // Send failed notification
-          await notifyTransactionStatus(ctx, {
-            txStatusId,
-            status: 'failed',
-            error: error instanceof Error ? error.message : String(error),
-          });
-
           throw new JSONRPCError(-32603, `Failed to compute contract address for ${artifact.name}`, {
             stage: 'address_computation',
             contractName: artifact.name,
@@ -818,27 +639,14 @@ export function createContractInteractionHandlers() {
         }
 
         // Stage 1: Proving (zero-knowledge proof generation)
-        // Prove the deployment transaction
         let deployProvenTx: ProvenTx | undefined;
         try {
-          // Send proving notification RIGHT BEFORE actual proving starts (not at handler entry)
-          // This prevents "Generating Proof" from showing while approval modal is still visible
           logger.debug('Starting deployment proving...');
-          await notifyTransactionStatus(ctx, { txStatusId, status: 'proving' });
-
           const proveStartTime = Date.now();
           deployProvenTx = await deployMethod.prove(opts);
           logger.debug(`Deployment proving completed in ${Date.now() - proveStartTime}ms`);
         } catch (error) {
           logger.error(`Failed to prove deployment for ${artifact.name}:`, error);
-
-          // Send failed notification
-          await notifyTransactionStatus(ctx, {
-            txStatusId,
-            status: 'failed',
-            error: error instanceof Error ? error.message : String(error),
-          });
-
           throw new JSONRPCError(-32603, `Failed to prove contract deployment for ${artifact.name}`, {
             stage: 'proof_generation',
             contractName: artifact.name,
@@ -855,13 +663,10 @@ export function createContractInteractionHandlers() {
         }
 
         // Stage 2: Sending (submitting deployment transaction to network)
-        logger.debug('Sending deployment transaction to network...');
-        await notifyTransactionStatus(ctx, { txStatusId, status: 'sending' });
-
-        // Send the deployment transaction
         let deploySentTx: SentTx | undefined;
         let txHash: TxHash | undefined;
         try {
+          logger.debug('Sending deployment transaction to network...');
           const sendStartTime = Date.now();
           deploySentTx = await deployProvenTx.send();
           txHash = await deploySentTx.getTxHash();
@@ -870,14 +675,6 @@ export function createContractInteractionHandlers() {
           );
         } catch (error) {
           logger.error(`Failed to send deployment transaction for ${artifact.name}:`, error);
-
-          // Send failed notification
-          await notifyTransactionStatus(ctx, {
-            txStatusId,
-            status: 'failed',
-            error: error instanceof Error ? error.message : String(error),
-          });
-
           throw new JSONRPCError(-32603, `Failed to send deployment transaction for ${artifact.name}`, {
             stage: 'transaction_send',
             contractName: artifact.name,
@@ -894,13 +691,6 @@ export function createContractInteractionHandlers() {
         }
 
         if (!txHash) {
-          // Send failed notification
-          await notifyTransactionStatus(ctx, {
-            txStatusId,
-            status: 'failed',
-            error: 'Failed to get transaction hash after deployment',
-          });
-
           throw new JSONRPCError(-32603, 'Failed to get transaction hash after deployment', {
             stage: 'transaction_hash',
             contractName: artifact.name,
@@ -908,38 +698,15 @@ export function createContractInteractionHandlers() {
           });
         }
 
-        // Stage 3: Pending (waiting for confirmation)
-        await notifyTransactionStatus(ctx, {
-          txStatusId,
-          status: 'pending',
-          txHash: txHash.toString(),
-        });
-
         // Wait for deployment transaction receipt
         logger.debug('Waiting for deployment transaction receipt...');
         const waitStartTime = Date.now();
-
-        // Stage 4: Confirming (transaction included, waiting for confirmations)
-        await notifyTransactionStatus(ctx, {
-          txStatusId,
-          status: 'confirming',
-          txHash: txHash.toString(),
-        });
-
         await deploySentTx.wait();
         logger.debug(`Deployment transaction confirmed in ${Date.now() - waitStartTime}ms`);
-
-        // Stage 5: Confirmed (deployment finalized)
-        await notifyTransactionStatus(ctx, {
-          txStatusId,
-          status: 'confirmed',
-          txHash: txHash.toString(),
-        });
 
         return {
           txHash,
           contractAddress,
-          txStatusId,
         };
       } catch (error) {
         // If error is already a JSONRPCError, re-throw it
@@ -947,15 +714,8 @@ export function createContractInteractionHandlers() {
           throw error;
         }
 
-        // Otherwise wrap it with general deployment error and send failed notification
+        // Otherwise wrap it with general deployment error
         logger.error(`Contract deployment failed for ${artifact.name}:`, error);
-
-        await notifyTransactionStatus(ctx, {
-          txStatusId,
-          status: 'failed',
-          error: error instanceof Error ? error.message : String(error),
-        });
-
         throw new JSONRPCError(-32603, `Contract deployment failed for ${artifact.name}`, {
           stage: 'general',
           contractName: artifact.name,

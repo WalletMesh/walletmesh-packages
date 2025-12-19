@@ -33,7 +33,7 @@ const DApp: React.FC = () => {
   const { address, isConnected } = useAccount();
 
   // Use simulation hook for contract calls
-  const { simulate: simulateInteraction } = useAztecSimulation();
+  const { simulateUtility } = useAztecSimulation();
 
   // Use Aztec-specific hooks for deployment
   const {
@@ -154,13 +154,13 @@ const DApp: React.FC = () => {
     const ownerAddressHex = toAddressString(address);
 
     const fallbackSimulation = async () => {
-      if (!(tokenContract as any)?.methods?.balance_of_public) {
-        throw new Error('Token contract methods not available');
-      }
-      const balance = await simulateInteraction(
-        (tokenContract as any).methods.balance_of_public(ownerAddressHex),
-      );
-      const balanceStr = String(balance);
+      // Use simulateUtility instead of simulateInteraction for view functions.
+      // This returns a much smaller payload, avoiding Chrome extension message size limits.
+      const balance = await simulateUtility(tokenAddress, 'balance_of_public', [ownerAddressHex]);
+      const balanceStr =
+        balance !== null && typeof (balance as { toString?: () => unknown })?.toString === 'function'
+          ? (balance as { toString: () => string }).toString()
+          : String(balance);
       setTokenBalance(balanceStr);
       return balanceStr;
     };
@@ -195,7 +195,7 @@ const DApp: React.FC = () => {
     } finally {
       setIsRefreshingBalance(false);
     }
-  }, [tokenContract, tokenAddress, address, simulateInteraction, toAddressString, simulateUsingExternalRpc]);
+  }, [tokenContract, tokenAddress, address, simulateUtility, toAddressString, simulateUsingExternalRpc]);
 
   useEffect(() => {
     if (!tokenAddress) {
@@ -280,30 +280,8 @@ const DApp: React.FC = () => {
    * Mints tokens to the connected account using the deployed Token contract.
    * Uses sync mode (blocking with overlay).
    */
-<<<<<<< HEAD
-  const mintTokens = async () => {
-    if (wallet && tokenAddress) {
-      setIsMinting(true);
-      try {
-        const tokenContract = await Contract.at(tokenAddress, TokenContractArtifact, wallet);
-        const tx = tokenContract.methods.mint_to_public(account, 10000000000000000000000n).send({ from: wallet.getAddress() });
-        const receipt = await tx.wait();
-        if (receipt.status !== TxStatus.SUCCESS) {
-          showError(`Minting failed: ${receipt.error}`);
-          throw new Error(`Minting failed: ${receipt.error}`);
-        }
-        showSuccess('Tokens minted successfully');
-      } catch (error: any) {
-        console.error('Mint transaction failed:', error);
-        showError(`Transaction failed: ${error.message}`);
-      } finally {
-        setIsMinting(false);
-      }
-    } else {
-=======
   const handleMintTokens = async () => {
     if (!aztecWallet || !tokenContract || !address) {
->>>>>>> ebf6afe2 (fix(aztec-rpc-wallet): add missing scopes parameter to simulateUtility method)
       showError('Please deploy a token contract first.');
       return;
     }
@@ -324,8 +302,15 @@ const DApp: React.FC = () => {
       // Use executeSync for blocking behavior with overlay
       await executeSync(interaction);
 
-      // Automatically refresh balance after successful mint
-      await refreshTokenBalance();
+      // Automatically refresh balance after successful mint (with timeout to avoid hang)
+      try {
+        await Promise.race([
+          refreshTokenBalance(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Balance refresh timeout')), 15000)),
+        ]);
+      } catch (e) {
+        console.warn('[DApp] Balance refresh failed or timed out:', e);
+      }
 
       showSuccess('Tokens minted successfully! You can now transfer them.');
     } catch (error) {
@@ -341,29 +326,8 @@ const DApp: React.FC = () => {
    * Transfers tokens from the connected account to a test account.
    * Uses sync mode (blocking with overlay).
    */
-<<<<<<< HEAD
-  const transferTokens = async () => {
-    if (wallet && tokenAddress) {
-      setIsTransferring(true);
-      try {
-        const tokenContract = await Contract.at(tokenAddress, TokenContractArtifact, wallet);
-        const to = await getInitialTestAccounts().then(accounts => accounts[1].address);
-        const tx = tokenContract.methods.transfer_in_public(account, to.toString(), 100000n, 0n).send({ from: wallet.getAddress() });
-        const receipt = await tx.wait();
-        if (receipt.status != TxStatus.SUCCESS) {
-          throw new Error(`Transfer failed: ${receipt.error}`);
-        }
-        showSuccess(`Transferred tokens to ${to.toString()}`);
-      } catch (error: any) {
-        showError(`Transaction failed: ${error.message}`);
-      } finally {
-        setIsTransferring(false);
-      }
-    } else {
-=======
   const handleTransferTokens = async () => {
     if (!aztecWallet || !tokenContract || !address) {
->>>>>>> ebf6afe2 (fix(aztec-rpc-wallet): add missing scopes parameter to simulateUtility method)
       showError('Please deploy a token contract first.');
       return;
     }
@@ -391,8 +355,15 @@ const DApp: React.FC = () => {
       // Use executeSync for blocking behavior with overlay
       await executeSync(interaction);
 
-      // Automatically refresh balance after successful transfer
-      await refreshTokenBalance();
+      // Automatically refresh balance after successful transfer (with timeout to avoid hang)
+      try {
+        await Promise.race([
+          refreshTokenBalance(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Balance refresh timeout')), 15000)),
+        ]);
+      } catch (e) {
+        console.warn('[DApp] Balance refresh failed or timed out:', e);
+      }
 
       showSuccess('Tokens transferred successfully!');
     } catch (error) {
@@ -407,25 +378,8 @@ const DApp: React.FC = () => {
   /**
    * Checks and displays the token balance of the connected account.
    */
-<<<<<<< HEAD
-  const checkTokenBalance = async () => {
-    if (wallet && tokenAddress) {
-      setIsCheckingBalance(true);
-      try {
-        const tokenContract = await Contract.at(tokenAddress, TokenContractArtifact, wallet);
-        const balance = await tokenContract.methods.balance_of_public(account).simulate({ from: wallet.getAddress() });
-        setTokenBalance(balance.toString());
-        showInfo(`Token balance: ${balance.toString()}`);
-      } catch (error: any) {
-        showError(`Simulation failed: ${error.message}`);
-      } finally {
-        setIsCheckingBalance(false);
-      }
-    } else {
-=======
   const handleGetTokenBalance = async () => {
     if (!aztecWallet || !tokenContract || !address) {
->>>>>>> ebf6afe2 (fix(aztec-rpc-wallet): add missing scopes parameter to simulateUtility method)
       showError('Please deploy a token contract first.');
       return;
     }
@@ -592,8 +546,15 @@ const DApp: React.FC = () => {
       // Execute both operations atomically - single transaction, single proof
       await executeBatch(interactions as any, { atomic: true });
 
-      // Refresh balance after successful atomic batch
-      await refreshTokenBalance();
+      // Refresh balance after successful atomic batch (with timeout to avoid hang)
+      try {
+        await Promise.race([
+          refreshTokenBalance(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Balance refresh timeout')), 15000)),
+        ]);
+      } catch (e) {
+        console.warn('[DApp] Balance refresh failed or timed out:', e);
+      }
 
       showSuccess('Mint + Transfer completed atomically! All operations succeeded in 1 transaction.');
     } catch (error) {
@@ -630,16 +591,12 @@ const DApp: React.FC = () => {
           );
         } catch (error) {
           console.warn('[DApp] External RPC counter fetch failed, falling back to wallet RPC', error);
-          if (!(counterContract as any)?.methods?.get_counter) {
-            throw new Error('Counter contract methods not available');
-          }
-          value = await simulateInteraction((counterContract as any).methods.get_counter(ownerAddressHex));
+          // Use simulateUtility for view functions - returns smaller payload
+          value = await simulateUtility(counterAddress, 'get_counter', [ownerAddressHex]);
         }
       } else {
-        if (!(counterContract as any)?.methods?.get_counter) {
-          throw new Error('Counter contract methods not available');
-        }
-        value = await simulateInteraction((counterContract as any).methods.get_counter(ownerAddressHex));
+        // Use simulateUtility for view functions - returns smaller payload
+        value = await simulateUtility(counterAddress, 'get_counter', [ownerAddressHex]);
       }
 
       const valueStr = String(value);

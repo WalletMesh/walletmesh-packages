@@ -735,15 +735,14 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
 
     const chainId = aztecChain.chainId;
 
-    // Create LazyAztecRouterProvider which handles notifications automatically
+    // Create LazyAztecRouterProvider for Aztec wallet communication
     modalLogger.info('🚀 Creating LazyAztecRouterProvider with chainId', { chainId });
     console.log('[AztecExampleWalletAdapter] Creating router provider with chainId:', chainId);
 
     // LazyAztecRouterProvider handles:
     // - Lazy loading of @walletmesh/aztec-rpc-wallet
-    // - Automatic proving status notification subscription
     // - Aztec serializer registration
-    // - State management integration
+    // - Session termination notifications
     this.routerProvider = new LazyAztecRouterProvider(jsonRpcTransport);
 
     // Wait for provider initialization to complete before proceeding

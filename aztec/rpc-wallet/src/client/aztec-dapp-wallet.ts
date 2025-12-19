@@ -953,9 +953,6 @@ export class AztecDappWallet implements Wallet {
    * to the `aztec_wmExecuteTx` method on the remote wallet.
    * The remote wallet is expected to handle fee configuration, proof generation, and submission.
    *
-   * The remote wallet automatically generates a unique `txStatusId` and sends status notifications
-   * (initiated/simulating/proving/sending/pending/failed) throughout the transaction lifecycle.
-   *
    * @param interaction - The {@link ContractFunctionInteraction} representing the desired contract call.
    * @param sendOptions - Optional send options for fee configuration, nonce, and cancellable flag
    * @returns A {@link SentTx} object that can be used to track the transaction.
@@ -980,12 +977,9 @@ export class AztecDappWallet implements Wallet {
     const result = (await this.routerProvider.call(this.chainId, {
       method: 'aztec_wmExecuteTx',
       params,
-    })) as { txHash: TxHash; txStatusId: string };
+    })) as { txHash: TxHash };
 
-    // Log the txStatusId for debugging/tracking purposes
-    logger.debug(
-      `Transaction initiated with statusId: ${result.txStatusId}, txHash: ${result.txHash.toString()}`,
-    );
+    logger.debug(`Transaction initiated with txHash: ${result.txHash.toString()}`);
 
     const txHashPromise = () => Promise.resolve(result.txHash);
     return new SentTx(this, txHashPromise);
@@ -997,18 +991,15 @@ export class AztecDappWallet implements Wallet {
    * executed atomically using Aztec's native BatchCall functionality. All operations
    * succeed together or all fail together.
    *
-   * The remote wallet automatically generates a unique `txStatusId` and sends status notifications
-   * (initiated/simulating/proving/sending/pending/failed) throughout the batch transaction lifecycle.
-   *
    * @param executionPayloads - Array of {@link ExecutionPayload} objects to execute as a batch
    * @param sendOptions - Optional send options for fee configuration
-   * @returns An object containing txHash, receipt, and txStatusId for tracking
+   * @returns An object containing txHash and receipt
    * @see {@link AztecWalletMethodMap.aztec_wmBatchExecute}
    */
   async wmBatchExecute(
     executionPayloads: ExecutionPayload[],
     sendOptions?: unknown,
-  ): Promise<{ txHash: TxHash; receipt: TxReceipt; txStatusId: string }> {
+  ): Promise<{ txHash: TxHash; receipt: TxReceipt }> {
     const params: { executionPayloads: ExecutionPayload[]; sendOptions?: unknown } = {
       executionPayloads,
     };
@@ -1020,11 +1011,10 @@ export class AztecDappWallet implements Wallet {
     const result = (await this.routerProvider.call(this.chainId, {
       method: 'aztec_wmBatchExecute',
       params,
-    })) as { txHash: TxHash; receipt: TxReceipt; txStatusId: string };
+    })) as { txHash: TxHash; receipt: TxReceipt };
 
-    // Log the txStatusId for debugging/tracking purposes
     logger.debug(
-      `Atomic batch transaction initiated with statusId: ${result.txStatusId}, txHash: ${result.txHash.toString()}, operations: ${executionPayloads.length}`,
+      `Atomic batch transaction initiated with txHash: ${result.txHash.toString()}, operations: ${executionPayloads.length}`,
     );
 
     return result;
@@ -1076,23 +1066,20 @@ export class AztecDappWallet implements Wallet {
 
   /**
    * Deploys a contract using its artifact and constructor arguments.
-   * This WalletMesh-specific helper method returns the raw RPC result including txStatusId
-   * for transaction status tracking. Useful for React hooks that need to track deployment status.
-   *
-   * The remote wallet automatically generates a unique `txStatusId` and sends status notifications
-   * (initiated/simulating/proving/sending/pending/failed) throughout the deployment lifecycle.
+   * This WalletMesh-specific helper method returns the raw RPC result.
+   * Useful for React hooks that need to track deployment status.
    *
    * @param artifact - The {@link ContractArtifact} of the contract to deploy.
    * @param args - An array of arguments for the contract's constructor.
    * @param constructorName - Optional name of the constructor function if the artifact has multiple.
-   * @returns An object containing txHash, contractAddress, and txStatusId for tracking.
+   * @returns An object containing txHash and contractAddress.
    * @see {@link AztecWalletMethodMap.aztec_wmDeployContract}
    */
   async wmDeployContract(
     artifact: ContractArtifact,
     args: unknown[],
     constructorName?: string,
-  ): Promise<{ txHash: TxHash; contractAddress: AztecAddress; txStatusId: string }> {
+  ): Promise<{ txHash: TxHash; contractAddress: AztecAddress }> {
     // Send the deployment request to the remote wallet
     const result = (await this.routerProvider.call(this.chainId, {
       method: 'aztec_wmDeployContract',
@@ -1101,11 +1088,10 @@ export class AztecDappWallet implements Wallet {
         args,
         constructorName,
       },
-    })) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };
+    })) as { txHash: TxHash; contractAddress: AztecAddress };
 
-    // Log the txStatusId for debugging/tracking purposes
     logger.debug(
-      `Contract deployment initiated with statusId: ${result.txStatusId}, txHash: ${result.txHash.toString()}, contractAddress: ${result.contractAddress.toString()}`,
+      `Contract deployment initiated with txHash: ${result.txHash.toString()}, contractAddress: ${result.contractAddress.toString()}`,
     );
 
     return result;
@@ -1136,11 +1122,10 @@ export class AztecDappWallet implements Wallet {
         args,
         constructorName,
       },
-    })) as { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string };
+    })) as { txHash: TxHash; contractAddress: AztecAddress };
 
-    // Log the txStatusId for debugging/tracking purposes
     logger.debug(
-      `Contract deployment initiated with statusId: ${result.txStatusId}, txHash: ${result.txHash.toString()}, contractAddress: ${result.contractAddress.toString()}`,
+      `Contract deployment initiated with txHash: ${result.txHash.toString()}, contractAddress: ${result.contractAddress.toString()}`,
     );
 
     // Create a promise that resolves with the transaction hash

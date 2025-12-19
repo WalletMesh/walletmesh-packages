@@ -130,18 +130,15 @@ const DeployContractParamsSchema = z.object({
 const DeployContractResultSchema = z.object({
   txHash: TxHash.schema,
   contractAddress: z.string().transform((s) => AztecAddress.fromString(s)),
-  txStatusId: z.string(),
 });
 
 const ExecuteTxResultSchema = z.object({
   txHash: TxHash.schema,
-  txStatusId: z.string(),
 });
 
 const BatchExecuteResultSchema = z.object({
   txHash: TxHash.schema,
   receipt: TxReceipt.schema,
-  txStatusId: z.string(),
 });
 
 const logger = createLogger('aztec-rpc-wallet:serializers');
@@ -238,16 +235,14 @@ const RESULT_SERIALIZERS: Partial<
       deserialize: async (_, d) => JSON.parse(d.serialized),
     },
   },
-  aztec_wmExecuteTx: createResultSerializer<{ txHash: TxHash; txStatusId: string }>(ExecuteTxResultSchema),
-  aztec_wmBatchExecute: createResultSerializer<{ txHash: TxHash; receipt: TxReceipt; txStatusId: string }>(
-    BatchExecuteResultSchema,
-  ),
+  aztec_wmExecuteTx: createResultSerializer<{ txHash: TxHash }>(ExecuteTxResultSchema),
+  aztec_wmBatchExecute: createResultSerializer<{ txHash: TxHash; receipt: TxReceipt }>(BatchExecuteResultSchema),
   aztec_wmSimulateTx: createResultSerializer(UnifiedSimulationResultSchema),
   aztec_wmDeployContract: {
     result: {
       serialize: async (
         method: string,
-        value: { txHash: TxHash; contractAddress: AztecAddress; txStatusId: string },
+        value: { txHash: TxHash; contractAddress: AztecAddress },
       ) => {
         // Convert AztecAddress to string before jsonStringify (like aztec_getSenders does)
         // Check if contractAddress itself is a Promise and await it
@@ -257,7 +252,6 @@ const RESULT_SERIALIZERS: Partial<
         const serialized = jsonStringify({
           txHash: value.txHash,
           contractAddress: addressString,
-          txStatusId: value.txStatusId,
         });
         return {
           method,

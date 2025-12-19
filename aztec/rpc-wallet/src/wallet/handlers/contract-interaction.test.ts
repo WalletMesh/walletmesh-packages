@@ -67,7 +67,6 @@ describe('createContractInteractionHandlers', () => {
 
       expect(result).toEqual({
         txHash: mockTxHash,
-        txStatusId: expect.any(String),
       });
       expect(mockContext.wallet.getCurrentBaseFees).toHaveBeenCalled();
       expect(mockContext.wallet.createTxExecutionRequest).toHaveBeenCalled();
@@ -90,120 +89,13 @@ describe('createContractInteractionHandlers', () => {
       expect(feeOpts?.gasSettings).toBeDefined();
     });
 
-    it('should automatically send transaction status notifications with backend-generated ID', async () => {
-      const result = await handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload]);
-
-      // Verify the backend generated a txStatusId and returned it
-      expect(result.txStatusId).toBeDefined();
-      expect(typeof result.txStatusId).toBe('string');
-      expect(result.txStatusId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i); // UUID format
-
-      // Verify notifications were sent for each stage
-      if (!mockContext.notify) throw new Error('notify should be defined in test');
-      const notifyCalls = vi.mocked(mockContext.notify).mock.calls;
-
-      // Should have notifications for: initiated, proving, sending, pending (simulating skipped - no notification during simulation)
-      expect(notifyCalls.length).toBeGreaterThanOrEqual(4);
-
-      // Verify all notifications use the same txStatusId
-      const txStatusId = result.txStatusId;
-
-      // Verify initiated notification (sent first)
-      const initiatedCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'initiated',
-      );
-      expect(initiatedCall).toBeDefined();
-      expect(initiatedCall?.[1]).toMatchObject({
-        txStatusId,
-        status: 'initiated',
-        timestamp: expect.any(Number),
-      });
-
-      // Verify proving notification (simulating skipped - no notification during simulation)
-      const provingCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'proving',
-      );
-      expect(provingCall).toBeDefined();
-      expect(provingCall?.[1]).toMatchObject({
-        txStatusId,
-        status: 'proving',
-        timestamp: expect.any(Number),
-      });
-
-      // Verify sending notification
-      const sendingCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'sending',
-      );
-      expect(sendingCall).toBeDefined();
-      expect(sendingCall?.[1]).toMatchObject({
-        txStatusId,
-        status: 'sending',
-        timestamp: expect.any(Number),
-      });
-
-      // Verify pending notification (includes txHash)
-      const pendingCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'pending',
-      );
-      expect(pendingCall).toBeDefined();
-      expect(pendingCall?.[1]).toMatchObject({
-        txStatusId,
-        status: 'pending',
-        txHash: mockTxHash.toString(),
-        timestamp: expect.any(Number),
-      });
-    });
-
-    it('should send error notification when transaction fails', async () => {
+    it('should propagate errors when transaction fails', async () => {
       const errorMessage = 'Simulation failed';
 
       // Make simulation fail
       vi.mocked(mockContext.wallet.simulateTx).mockRejectedValueOnce(new Error(errorMessage));
 
-      await expect(handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload])).rejects.toThrow();
-
-      // Verify error notification was sent with a backend-generated txStatusId
-      if (!mockContext.notify) throw new Error('notify should be defined in test');
-      const notifyCalls = vi.mocked(mockContext.notify).mock.calls;
-      const failedCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'failed',
-      );
-
-      expect(failedCall).toBeDefined();
-      expect(failedCall?.[1]).toMatchObject({
-        txStatusId: expect.any(String),
-        status: 'failed',
-        error: expect.stringContaining(errorMessage),
-        timestamp: expect.any(Number),
-      });
-    });
-
-    it('should continue transaction execution even if notifications fail', async () => {
-      // Make notify fail
-      if (!mockContext.notify) throw new Error('notify should be defined in test');
-      vi.mocked(mockContext.notify).mockRejectedValue(new Error('Notification failed'));
-
-      // Transaction should still complete successfully
-      const result = await handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload]);
-
-      expect(result).toEqual({
-        txHash: mockTxHash,
-        txStatusId: expect.any(String),
-      });
-      // Verify wallet methods were still called
-      expect(mockContext.wallet.simulateTx).toHaveBeenCalled();
-      expect(mockContext.wallet.proveTx).toHaveBeenCalled();
-      expect(mockContext.wallet.sendTx).toHaveBeenCalled();
+      await expect(handlers.aztec_wmExecuteTx(mockContext, [mockExecutionPayload])).rejects.toThrow(errorMessage);
     });
 
     it('should accept and use custom fee options from sendOptions', async () => {
@@ -362,7 +254,6 @@ describe('createContractInteractionHandlers', () => {
       expect(result).toEqual({
         txHash: mockTxHash,
         contractAddress: mockAddress,
-        txStatusId: expect.any(String),
       });
       expect(Contract.deploy).toHaveBeenCalledWith(mockContext.wallet, mockArtifact, mockArgs, undefined);
       expect(mockDeployMethod.prove).toHaveBeenCalled();
@@ -412,7 +303,6 @@ describe('createContractInteractionHandlers', () => {
       expect(result).toEqual({
         txHash: mockTxHash,
         contractAddress: mockAddress,
-        txStatusId: expect.any(String),
       });
       expect(Contract.deploy).toHaveBeenCalledWith(
         mockContext.wallet,
@@ -503,11 +393,7 @@ describe('createContractInteractionHandlers', () => {
       expect(result).toEqual({
         txHash: mockTxHash,
         receipt: mockTxReceipt,
-        txStatusId: expect.any(String),
       });
-
-      // Verify UUID format
-      expect(result.txStatusId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 
       // Verify wallet methods were called
       expect(mockContext.wallet.getCurrentBaseFees).toHaveBeenCalled();
@@ -533,68 +419,6 @@ describe('createContractInteractionHandlers', () => {
       expect(mergedPayload.calls).toHaveLength(3);
     });
 
-    it('should send transaction status notifications for all lifecycle stages', async () => {
-      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
-
-      const result = await handlers.aztec_wmBatchExecute(mockContext, [[payload1]]);
-
-      if (!mockContext.notify) throw new Error('notify should be defined in test');
-      const notifyCalls = vi.mocked(mockContext.notify).mock.calls;
-      const txStatusId = result.txStatusId;
-
-      // Should have notifications for: initiated, proving, sending, pending (simulating skipped - no notification during simulation)
-      expect(notifyCalls.length).toBeGreaterThanOrEqual(4);
-
-      // Verify initiated
-      const initiatedCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'initiated',
-      );
-      expect(initiatedCall?.[1]).toMatchObject({
-        txStatusId,
-        status: 'initiated',
-        timestamp: expect.any(Number),
-      });
-
-      // Verify proving (simulating skipped - no notification during simulation)
-      const provingCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'proving',
-      );
-      expect(provingCall?.[1]).toMatchObject({
-        txStatusId,
-        status: 'proving',
-        timestamp: expect.any(Number),
-      });
-
-      // Verify sending
-      const sendingCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'sending',
-      );
-      expect(sendingCall?.[1]).toMatchObject({
-        txStatusId,
-        status: 'sending',
-        timestamp: expect.any(Number),
-      });
-
-      // Verify pending (includes txHash)
-      const pendingCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'pending',
-      );
-      expect(pendingCall?.[1]).toMatchObject({
-        txStatusId,
-        status: 'pending',
-        txHash: mockTxHash.toString(),
-        timestamp: expect.any(Number),
-      });
-    });
-
     it('should validate execution payloads and reject empty array', async () => {
       await expect(handlers.aztec_wmBatchExecute(mockContext, [[]])).rejects.toThrow(
         'executionPayloads array cannot be empty',
@@ -617,31 +441,14 @@ describe('createContractInteractionHandlers', () => {
       );
     });
 
-    it('should send failed notification when batch transaction fails', async () => {
+    it('should propagate errors when batch transaction fails', async () => {
       const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
       const errorMessage = 'Simulation failed during batch';
 
       // Make simulation fail
       vi.mocked(mockContext.wallet.simulateTx).mockRejectedValueOnce(new Error(errorMessage));
 
-      await expect(handlers.aztec_wmBatchExecute(mockContext, [[payload1]])).rejects.toThrow();
-
-      // Verify error notification was sent
-      if (!mockContext.notify) throw new Error('notify should be defined in test');
-      const notifyCalls = vi.mocked(mockContext.notify).mock.calls;
-      const failedCall = notifyCalls.find(
-        (call) =>
-          call[0] === 'aztec_transactionStatus' &&
-          (call[1] as Record<string, unknown>)['status'] === 'failed',
-      );
-
-      expect(failedCall).toBeDefined();
-      expect(failedCall?.[1]).toMatchObject({
-        txStatusId: expect.any(String),
-        status: 'failed',
-        error: expect.stringContaining(errorMessage),
-        timestamp: expect.any(Number),
-      });
+      await expect(handlers.aztec_wmBatchExecute(mockContext, [[payload1]])).rejects.toThrow(errorMessage);
     });
 
     it('should accept and use custom fee options from sendOptions', async () => {
@@ -737,28 +544,6 @@ describe('createContractInteractionHandlers', () => {
       const feeOpts = createTxCall?.[1];
       expect(feeOpts).toBeDefined();
       expect(feeOpts?.paymentMethod).toBeInstanceOf(FeeJuicePaymentMethod);
-    });
-
-    it('should continue batch execution even if notifications fail', async () => {
-      const payload1 = createMockPayload([{ to: mockAddress, selector: 'transfer', args: [100] }]);
-
-      // Make notify fail
-      if (!mockContext.notify) throw new Error('notify should be defined in test');
-      vi.mocked(mockContext.notify).mockRejectedValue(new Error('Notification failed'));
-
-      // Transaction should still complete successfully
-      const result = await handlers.aztec_wmBatchExecute(mockContext, [[payload1]]);
-
-      expect(result).toEqual({
-        txHash: mockTxHash,
-        receipt: mockTxReceipt,
-        txStatusId: expect.any(String),
-      });
-
-      // Verify wallet methods were still called
-      expect(mockContext.wallet.simulateTx).toHaveBeenCalled();
-      expect(mockContext.wallet.proveTx).toHaveBeenCalled();
-      expect(mockContext.wallet.sendTx).toHaveBeenCalled();
     });
 
     it('should return receipt in the result for immediate use', async () => {

@@ -12,15 +12,6 @@ declare global {
   }
 }
 
-<<<<<<< HEAD
-import {
-  WalletRouter,
-  type ChainId,
-  createLocalTransportPair,
-  type WalletRouterConfig,
-} from '@walletmesh/router'
-=======
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { getInitialTestAccounts } from '@aztec/accounts/testing';
 import {
@@ -44,11 +35,6 @@ import {
 
 import Approve from './Approve.js';
 import './Wallet.css';
-<<<<<<< HEAD
-import FunctionCallDisplay from './FunctionCallDisplay.js';
-import ParameterDisplay from './ParameterDisplay.js';
-import { createOriginMiddleware } from '../middlewares/originMiddleware.js';
-=======
 import type { JSONRPCRequest } from '@walletmesh/jsonrpc';
 import type { RouterContext, RouterMethodMap } from '@walletmesh/router';
 import {
@@ -58,23 +44,13 @@ import {
   type AskCallback,
 } from '@walletmesh/router/permissions';
 import { useToast } from '../contexts/ToastContext.js';
-<<<<<<< HEAD
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
-import { createFunctionArgNamesMiddleware } from '../middlewares/functionArgNamesMiddleware.js';
-import type { FunctionArgNames } from '../middlewares/functionArgNamesMiddleware.js';
-=======
 import {
   createFunctionArgNamesMiddleware,
   type FunctionArgNames,
-<<<<<<< HEAD
-} from '../middlewares/functionArgNamesMiddleware.js';
->>>>>>> 9ae57d25 (WIP)
-=======
   createTransactionSummaryMiddleware,
   createOriginMiddleware,
   createContextExtractionMiddleware,
 } from '@walletmesh/aztec-helpers';
->>>>>>> 578f948e (refactor(aztec-helpers): move middleware to shared package and add comprehensive tests)
 import { createHistoryMiddleware, type HistoryEntry } from '../middlewares/historyMiddleware.js';
 import { createWalletNodePermissionMiddleware } from '../middlewares/walletNodePermissionMiddleware.js';
 import { createWalletSideTransport } from '../transports/CrossWindowTransport.js';
@@ -254,13 +230,8 @@ interface WalletProps {
   }) => Promise<boolean>;
   /** Callback invoked when the user enables auto-approve from an approval prompt. */
   onEnableAutoApprove?: () => void;
-<<<<<<< HEAD
-  /** Instance of the permission manager for the router. */
-  permissionManager: CustomPermissionManager;
-=======
   /** Whether auto-approve mode is enabled. */
   autoApprove?: boolean;
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 }
 
 /**
@@ -276,17 +247,11 @@ const Wallet: React.FC<WalletProps> = ({
   pendingApproval,
   approvalQueueLength = 0,
   onApprovalResponse,
-<<<<<<< HEAD
-  onAlwaysAllow,
-  onEnableAutoApprove,
-  permissionManager,
-=======
   onApprovalRequest,
   onEnableAutoApprove,
   autoApprove = false,
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 }) => {
-  console.log('🔵🔵🔵 WALLET COMPONENT RENDERING 🔵🔵🔵');
+  console.log('[Wallet] WALLET COMPONENT RENDERING');
   /** State for storing and displaying the history of requests received by the router. */
   const [requestHistory, setRequestHistory] = useState<HistoryEntry[]>([]);
   /** State to track if wallet_ready message has been sent to prevent duplicates */
@@ -420,41 +385,41 @@ const Wallet: React.FC<WalletProps> = ({
     if (errorMessage.includes('fetch failed') || errorMessage.includes('ECONNREFUSED')) {
       if (isLocalNode) {
         return (
-          `❌ Cannot connect to local Aztec sandbox at ${currentNodeUrl}\n\n` +
-          '🔧 To fix this:\n' +
+          `Cannot connect to local Aztec sandbox at ${currentNodeUrl}\n\n` +
+          'To fix this:\n' +
           '1. Start your local Aztec sandbox: aztec sandbox\n' +
           "2. Ensure it's running on the expected port\n" +
           '3. Check firewall/security settings'
         );
       }
       return (
-        `❌ Cannot connect to Aztec node at ${currentNodeUrl}\n\n` +
-        '🔧 Possible causes:\n' +
-        '• Network connection issues\n' +
-        '• Server is down or unreachable\n' +
-        '• Firewall blocking the connection'
+        `Cannot connect to Aztec node at ${currentNodeUrl}\n\n` +
+        'Possible causes:\n' +
+        '- Network connection issues\n' +
+        '- Server is down or unreachable\n' +
+        '- Firewall blocking the connection'
       );
     }
 
     if (errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
       return (
-        `⚠️ Aztec node at ${currentNodeUrl} returned 503 Service Unavailable\n\n` +
-        '📊 This means:\n' +
-        '• The server is running but the Aztec service is not ready\n' +
-        '• The node might be syncing or starting up\n' +
-        '• There may be maintenance in progress\n\n' +
-        '🔄 Try again in a few moments...'
+        `Aztec node at ${currentNodeUrl} returned 503 Service Unavailable\n\n` +
+        'This means:\n' +
+        '- The server is running but the Aztec service is not ready\n' +
+        '- The node might be syncing or starting up\n' +
+        '- There may be maintenance in progress\n\n' +
+        'Try again in a few moments...'
       );
     }
 
     if (errorMessage.includes('timeout')) {
       return (
-        `⏱️ Connection to ${currentNodeUrl} timed out\n\n` +
-        '🐌 Possible reasons:\n' +
-        '• Slow network connection\n' +
-        '• Server is overloaded\n' +
-        '• Request took longer than 60 seconds\n\n' +
-        '💡 Try refreshing the page or check your connection'
+        `Connection to ${currentNodeUrl} timed out\n\n` +
+        'Possible reasons:\n' +
+        '- Slow network connection\n' +
+        '- Server is overloaded\n' +
+        '- Request took longer than 60 seconds\n\n' +
+        'Try refreshing the page or check your connection'
       );
     }
 
@@ -468,27 +433,87 @@ const Wallet: React.FC<WalletProps> = ({
 
     if (errorMessage.includes('WASM') || errorMessage.includes('wasm')) {
       return (
-        '🔧 Failed to initialize WebAssembly components\n\n' +
+        'Failed to initialize WebAssembly components\n\n' +
         'Please refresh the page and ensure your browser supports WebAssembly'
       );
     }
 
     if (errorMessage.includes('PXE')) {
       return (
-        '🔐 Failed to create Private Execution Environment\n\n' +
+        'Failed to create Private Execution Environment\n\n' +
         'This is needed for secure transaction processing. Please try again.'
       );
     }
 
     if (errorMessage.includes('account') || errorMessage.includes('wallet')) {
       return (
-        '👛 Failed to set up your wallet account\n\n' +
+        'Failed to set up your wallet account\n\n' +
         'The account initialization process failed. Please try again.'
       );
     }
 
     // Return the original message if no pattern matches
-    return `❌ Error: ${errorMessage}`;
+    return `Error: ${errorMessage}`;
+  };
+
+  // Helper function to detect dApp origin consistently
+  const detectDappOrigin = (): string | undefined => {
+    let detectedOrigin: string | undefined;
+
+    // Method 1: Try URL parameter first (most reliable, passed by dApp)
+    // This is the REQUIRED method for secure communication
+    if (window?.location.search) {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dappOriginParam = urlParams.get('dappOrigin');
+        if (dappOriginParam) {
+          detectedOrigin = decodeURIComponent(dappOriginParam);
+          // Validate the origin format
+          try {
+            const url = new URL(detectedOrigin);
+            detectedOrigin = url.origin; // Use normalized origin
+            console.log('[Wallet] dApp origin detected and validated from URL parameter:', detectedOrigin);
+            return detectedOrigin;
+          } catch (e) {
+            console.error('[Wallet] Invalid dApp origin format in URL parameter:', dappOriginParam, e);
+            return undefined;
+          }
+        }
+      } catch (e) {
+        console.warn('[Wallet] Failed to parse URL parameters:', e);
+      }
+    }
+
+    // Method 2: Try document.referrer (less reliable fallback)
+    if (document?.referrer) {
+      try {
+        const referrerUrl = new URL(document.referrer);
+        detectedOrigin = referrerUrl.origin;
+        console.log('[Wallet] dApp origin detected from document.referrer (less secure):', detectedOrigin);
+        showWarning(
+          'Security Warning: Using referrer for origin detection. Please update dApp to pass origin in URL.',
+        );
+        return detectedOrigin;
+      } catch (e) {
+        console.warn('[Wallet] Failed to parse document.referrer:', e);
+      }
+    }
+
+    // Method 3: Try window.opener.location.origin (only for same-origin - rarely works)
+    if (window?.opener) {
+      try {
+        detectedOrigin = window.opener.location.origin;
+        console.log('[Wallet] dApp origin detected from window.opener (same-origin only):', detectedOrigin);
+        return detectedOrigin;
+      } catch (_e) {
+        console.log('[Wallet] Cross-origin context detected, cannot access window.opener.location');
+      }
+    }
+
+    console.error(
+      '[Wallet] SECURITY ERROR: Could not determine dApp origin. URL parameter "dappOrigin" is required.',
+    );
+    return undefined;
   };
 
   /** Effect to set up the wallet router, Aztec node, PXE, and account wallet on component mount. */
@@ -616,36 +641,6 @@ const Wallet: React.FC<WalletProps> = ({
         const aztecWalletNode = createAztecWalletNode(wallet, pxe, walletTransport);
         walletNodeRef.current = aztecWalletNode;
 
-        // Subscribe to aztec_transactionStatus notifications to sync wallet UI with actual tx progress
-        // This ensures the wallet UI shows the same status as the dApp overlay
-        aztecWalletNode.on('notification', (notificationData: unknown) => {
-          const notification = notificationData as { method?: string; params?: unknown };
-          if (notification?.method === 'aztec_transactionStatus') {
-            const params = notification.params as {
-              txStatusId: string;
-              status: 'idle' | 'simulating' | 'proving' | 'sending' | 'pending' | 'confirming' | 'confirmed' | 'failed';
-              txHash?: string;
-            };
-
-            console.log('[Wallet] Transaction status notification:', params);
-
-            // Update request history with actual transaction status
-            setRequestHistory((prevHistory) =>
-              prevHistory.map((entry) => {
-                // Match by txStatusId (extracted from response in history middleware)
-                if (entry.txStatusId === params.txStatusId) {
-                  return {
-                    ...entry,
-                    transactionStatus: params.status,
-                    ...(params.txHash && { txHash: params.txHash }),
-                  };
-                }
-                return entry;
-              }),
-            );
-          }
-        });
-
         // Add PRE-deserialization debugging middleware to see raw serialized params
         aztecWalletNode.addMiddleware(async (_context, request, next) => {
           console.log('[DEBUG-PRE] Incoming request (SERIALIZED):');
@@ -703,19 +698,6 @@ const Wallet: React.FC<WalletProps> = ({
           }
         });
 
-<<<<<<< HEAD
-        // Add middleware to the wallet node for function arg names, summaries, and history
-        aztecWalletNode.addMiddleware(createFunctionArgNamesMiddleware(pxe));
-<<<<<<< HEAD
-<<<<<<< HEAD
-        aztecWalletNode.addMiddleware(createHistoryMiddleware((entries) => {
-          setRequestHistory(entries as HistoryEntry[]);
-=======
-=======
-        aztecWalletNode.addMiddleware(createTransactionSummaryMiddleware());
->>>>>>> bd392add (feat(modal-react,modal-core): enhance Aztec transaction flow with simulation, summaries, and improved execution)
-        aztecWalletNode.addMiddleware(
-=======
         // Add middleware to the wallet node
         // Use POST-deserialization middleware for middleware that needs typed/deserialized params
         aztecWalletNode.addPostDeserializationMiddleware(createFunctionArgNamesMiddleware(pxe));
@@ -724,10 +706,8 @@ const Wallet: React.FC<WalletProps> = ({
           createWalletNodePermissionMiddleware(autoApproveRef),
         );
         aztecWalletNode.addPostDeserializationMiddleware(
->>>>>>> 9ae57d25 (WIP)
           createHistoryMiddleware((entries) => {
             setRequestHistory(entries as HistoryEntry[]);
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 
             // Update transaction statistics
             const historyEntries = entries as HistoryEntry[];
@@ -736,53 +716,6 @@ const Wallet: React.FC<WalletProps> = ({
             const errorCount = historyEntries.filter((e) => e.processingStatus === 'error').length;
             const totalCount = historyEntries.length;
 
-<<<<<<< HEAD
-          setTransactionStats({
-            pending: pendingCount,
-            total: totalCount,
-            successful: successCount,
-            errors: errorCount,
-          });
-
-          // Calculate timing statistics
-          const newTimingStats: TimingStatistics = {};
-          historyEntries
-            .filter(entry => entry.processingStatus === 'success' && entry.duration !== undefined)
-            .forEach(entry => {
-              const method = entry.method;
-              const duration = entry.duration as number;
-
-              if (!newTimingStats[method]) {
-                newTimingStats[method] = {
-                  count: 0,
-                  min: Infinity,
-                  max: -Infinity,
-                  avg: 0,
-                  stdDev: 0,
-                  times: [],
-                };
-              }
-
-              newTimingStats[method].times.push(duration);
-            });
-
-          // Calculate statistics for each method
-          Object.keys(newTimingStats).forEach(method => {
-            const stats = newTimingStats[method];
-            const times = stats.times;
-
-            stats.count = times.length;
-            stats.min = Math.min(...times);
-            stats.max = Math.max(...times);
-            stats.avg = times.reduce((a, b) => a + b, 0) / times.length;
-
-            // Calculate standard deviation
-            const variance = times.reduce((acc, time) => {
-              return acc + Math.pow(time - stats.avg, 2);
-            }, 0) / times.length;
-            stats.stdDev = Math.sqrt(variance);
-          });
-=======
             setTransactionStats({
               pending: pendingCount,
               total: totalCount,
@@ -797,7 +730,6 @@ const Wallet: React.FC<WalletProps> = ({
               .forEach((entry) => {
                 const method = entry.method;
                 const duration = entry.duration as number;
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 
                 if (!newTimingStats[method]) {
                   newTimingStats[method] = {
@@ -939,7 +871,7 @@ const Wallet: React.FC<WalletProps> = ({
             context: RouterContext,
             request: JSONRPCRequest<RouterMethodMap, 'wm_call', RouterMethodMap['wm_call']['params']>,
           ): Promise<boolean> {
-            console.log('🚨🚨🚨 [Wallet] checkCallPermissions CALLED 🚨🚨🚨');
+            console.log('[Wallet] checkCallPermissions CALLED');
             const params = request.params as RouterMethodMap['wm_call']['params'];
             console.log('[Wallet] checkCallPermissions params:', params);
 
@@ -963,7 +895,7 @@ const Wallet: React.FC<WalletProps> = ({
 
             // DEBUG: Log session key lookup details to diagnose mismatch issues
             const sessionKey = `${origin}_${sessionId}`;
-            console.log('🔍 [Permission Key Debug] Session key lookup details:', {
+            console.log('[Permission Key Debug] Session key lookup details:', {
               requestedSessionKey: sessionKey,
               sessionId,
               origin,
@@ -977,7 +909,7 @@ const Wallet: React.FC<WalletProps> = ({
             // DEBUG: Show what methods are actually approved for this session
             const approvedSet = this.approvedMethods.get(sessionKey);
             const methodKey = `${chainId}:${method}`;
-            console.log('🔍 [Permission Set Debug] Approved methods for this session:', {
+            console.log('[Permission Set Debug] Approved methods for this session:', {
               sessionKey,
               approvedMethodsInSet: approvedSet ? Array.from(approvedSet) : [],
               approvedSetSize: approvedSet?.size || 0,
@@ -1086,22 +1018,6 @@ const Wallet: React.FC<WalletProps> = ({
           }
         }
 
-<<<<<<< HEAD
-        // Method 2: Fallback to window.opener.location.origin (only for same-origin scenarios)
-        if (!detectedOrigin && typeof window !== 'undefined' && window.opener) {
-          try {
-            detectedOrigin = dappWindow.location.origin;
-            dappOrigin = detectedOrigin || '*';
-            console.log('Detected dApp origin from window.opener:', detectedOrigin);
-          } catch (e) {
-            // Cross-origin access might be blocked, use wildcard
-            // This is expected behavior in cross-origin scenarios
-            console.log('Cross-origin context detected, using wildcard for dApp origin');
-          }
-        }
-
-        const routerTransport = createDappToWalletTransport(dappWindow, dappOrigin);
-=======
         const permissionManager = new DebugAllowAskDenyManager(
           // approvePermissionsCallback: Handle initial connection permissions
           async (context, permissionRequest) => {
@@ -1214,7 +1130,6 @@ const Wallet: React.FC<WalletProps> = ({
             return initialState;
           })(),
         );
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 
         // Create wallets map with the client transport
         const wallets = new Map<ChainId, import('@walletmesh/jsonrpc').JSONRPCTransport>([
@@ -1307,12 +1222,12 @@ const Wallet: React.FC<WalletProps> = ({
         };
 
         // Check for existing sessions BEFORE creating router
-        console.log('🔍 [Session Debug] Checking for existing sessions in localStorage...');
+        console.log('[Session Debug] Checking for existing sessions in localStorage...');
         const existingSessions = await sessionStore.getAll();
-        console.log('🔍 [Session Debug] Existing sessions count:', existingSessions.size);
+        console.log('[Session Debug] Existing sessions count:', existingSessions.size);
         if (existingSessions.size > 0) {
           console.log(
-            '🔍 [Session Debug] Existing sessions:',
+            '[Session Debug] Existing sessions:',
             Array.from(existingSessions.entries()).map(([id, session]) => ({
               id,
               origin: session.origin,
@@ -1320,34 +1235,27 @@ const Wallet: React.FC<WalletProps> = ({
             })),
           );
         } else {
-          console.log('🔍 [Session Debug] No existing sessions found in localStorage');
+          console.log('[Session Debug] No existing sessions found in localStorage');
         }
 
         // Create the router with transports
-        console.log('🟢🟢🟢 WALLET ROUTER ABOUT TO BE CREATED 🟢🟢🟢');
+        console.log('[Wallet] WALLET ROUTER ABOUT TO BE CREATED');
         const router = new WalletRouter(routerTransport, wallets, permissionManager, routerConfig);
         routerRef = router; // Store reference for approval resolution in onApprovalQueued callback
-        console.log('🟢🟢🟢 WALLET ROUTER CREATED SUCCESSFULLY 🟢🟢🟢');
+        console.log('[Wallet] WALLET ROUTER CREATED SUCCESSFULLY');
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-        // Add origin middleware to provide proper origin context
-        router.addMiddleware(createOriginMiddleware(detectedOrigin));
-=======
-=======
         // Log sessions after router creation
-        console.log('🔍 [Session Debug] Checking sessions after router creation...');
+        console.log('[Session Debug] Checking sessions after router creation...');
         const sessionsAfterCreation = await sessionStore.getAll();
-        console.log('🔍 [Session Debug] Sessions after router creation:', sessionsAfterCreation.size);
+        console.log('[Session Debug] Sessions after router creation:', sessionsAfterCreation.size);
 
         // Restore approved methods from persisted sessions to enable reconnection without re-prompting
         if (sessionsAfterCreation.size > 0) {
-          console.log('[Wallet] 🔄 Restoring permission state from persisted sessions...');
+          console.log('[Wallet] Restoring permission state from persisted sessions...');
           permissionManager.restoreApprovedMethodsFromSessions(sessionsAfterCreation);
-          console.log('[Wallet] ✓ Permission state restoration complete');
+          console.log('[Wallet] Permission state restoration complete');
         }
 
->>>>>>> c28753c7 (refactor(aztec): implement unified simulation result system)
         // IMPORTANT: Add origin middleware FIRST, before any other middleware
         // This ensures the origin is available for session validation
         router.addMiddleware(createOriginMiddleware(detectedOrigin));
@@ -1400,7 +1308,7 @@ const Wallet: React.FC<WalletProps> = ({
                     if (event.data?.type === 'wallet_ready_ack' && event.origin === dappOrigin) {
                       clearTimeout(timeout);
                       window.removeEventListener('message', handler);
-                      console.log('[Wallet] ✓ Received wallet_ready acknowledgment from dApp');
+                      console.log('[Wallet] Received wallet_ready acknowledgment from dApp');
                       resolve();
                     }
                   };
@@ -1408,11 +1316,11 @@ const Wallet: React.FC<WalletProps> = ({
                   window.addEventListener('message', handler);
                 });
 
-                console.log('[Wallet] ✓ wallet_ready message sent and acknowledged');
+                console.log('[Wallet] wallet_ready message sent and acknowledged');
                 window.walletReadySent = true;
                 break; // Success - exit retry loop
               } catch (error) {
-                console.warn(`[Wallet] ⚠ wallet_ready attempt ${i + 1} failed:`, error);
+                console.warn(`[Wallet] wallet_ready attempt ${i + 1} failed:`, error);
                 if (i === retries - 1) {
                   // On final failure, send anyway without waiting for ack
                   console.log('[Wallet] Sending final wallet_ready without waiting for ack');
@@ -1460,16 +1368,16 @@ const Wallet: React.FC<WalletProps> = ({
               const existingSession = allSessions.get(requestedSessionId);
 
               if (existingSession) {
-                console.log('[Wallet] 🔄 Reconnection detected for session:', requestedSessionId);
+                console.log('[Wallet] Reconnection detected for session:', requestedSessionId);
                 console.log('[Wallet] Existing session origin:', existingSession.origin);
                 console.log('[Wallet] Existing session permissions:', existingSession.permissions);
 
                 // Restore permissions for this specific session
                 const sessionMap = new Map([[requestedSessionId, existingSession]]);
                 permissionManager.restoreApprovedMethodsFromSessions(sessionMap);
-                console.log('[Wallet] ✓ Permissions restored for reconnecting session');
+                console.log('[Wallet] Permissions restored for reconnecting session');
               } else {
-                console.log('[Wallet] ⚠️ Reconnection requested for unknown session:', requestedSessionId);
+                console.log('[Wallet] Reconnection requested for unknown session:', requestedSessionId);
               }
             } else {
               console.log('[Wallet] New connection request (no sessionId)');
@@ -1510,7 +1418,6 @@ const Wallet: React.FC<WalletProps> = ({
         });
 
         // Origin middleware already added above before other middleware
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 
         setIsConnected(true);
         setConnectionStatus('connected');
@@ -1541,73 +1448,9 @@ const Wallet: React.FC<WalletProps> = ({
     setupWalletRouter();
   }, [onApprovalRequest, showError, showWarning]);
 
-<<<<<<< HEAD
-  }, [permissionManager, showError, showSuccess]);
-=======
-  // Helper function to detect dApp origin consistently
-  const detectDappOrigin = (): string | undefined => {
-    let detectedOrigin: string | undefined;
-
-    // Method 1: Try URL parameter first (most reliable, passed by dApp)
-    // This is the REQUIRED method for secure communication
-    if (window?.location.search) {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const dappOriginParam = urlParams.get('dappOrigin');
-        if (dappOriginParam) {
-          detectedOrigin = decodeURIComponent(dappOriginParam);
-          // Validate the origin format
-          try {
-            const url = new URL(detectedOrigin);
-            detectedOrigin = url.origin; // Use normalized origin
-            console.log('[Wallet] dApp origin detected and validated from URL parameter:', detectedOrigin);
-            return detectedOrigin;
-          } catch (e) {
-            console.error('[Wallet] Invalid dApp origin format in URL parameter:', dappOriginParam, e);
-            return undefined;
-          }
-        }
-      } catch (e) {
-        console.warn('[Wallet] Failed to parse URL parameters:', e);
-      }
-    }
-
-    // Method 2: Try document.referrer (less reliable fallback)
-    if (document?.referrer) {
-      try {
-        const referrerUrl = new URL(document.referrer);
-        detectedOrigin = referrerUrl.origin;
-        console.log('[Wallet] dApp origin detected from document.referrer (less secure):', detectedOrigin);
-        showWarning(
-          'Security Warning: Using referrer for origin detection. Please update dApp to pass origin in URL.',
-        );
-        return detectedOrigin;
-      } catch (e) {
-        console.warn('[Wallet] Failed to parse document.referrer:', e);
-      }
-    }
-
-    // Method 3: Try window.opener.location.origin (only for same-origin - rarely works)
-    if (window?.opener) {
-      try {
-        detectedOrigin = window.opener.location.origin;
-        console.log('[Wallet] dApp origin detected from window.opener (same-origin only):', detectedOrigin);
-        return detectedOrigin;
-      } catch (_e) {
-        console.log('[Wallet] Cross-origin context detected, cannot access window.opener.location');
-      }
-    }
-
-    console.error(
-      '[Wallet] SECURITY ERROR: Could not determine dApp origin. URL parameter "dappOrigin" is required.',
-    );
-    return undefined;
-  };
-
   // Note: wallet_ready message is sent in the router setup useEffect above
   // We don't need a separate useEffect for this as it causes duplicate sends
   // The router setup already handles sending wallet_ready when appropriate
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
 
   /** Handles the "Approve" action from the approval UI. */
   const handleApprove = () => {
@@ -1785,7 +1628,7 @@ const Wallet: React.FC<WalletProps> = ({
                 fontSize: '0.9em',
               }}
             >
-              📋 {approvalQueueLength} pending approvals (showing 1 of {approvalQueueLength})
+              {approvalQueueLength} pending approvals (showing 1 of {approvalQueueLength})
             </div>
           )}
           <Approve
@@ -1812,21 +1655,21 @@ const Wallet: React.FC<WalletProps> = ({
 
       {connectionStatus === 'failed' ? (
         <div className="error-container">
-          <p className="connection-status error">❌ Connection Failed</p>
+          <p className="connection-status error">Connection Failed</p>
           <div className="error-details">
             <div className="error-message-container">
               {connectionError?.split('\n').map((line, index) => (
                 <p
                   key={`error-line-${index}-${line.substring(0, 10)}`}
-                  className={`error-message ${line.startsWith('🔧') || line.startsWith('💡') || line.startsWith('📊') || line.startsWith('•') ? 'error-help' : ''}`}
+                  className={`error-message ${line.startsWith('To fix') || line.startsWith('Try') || line.startsWith('Possible') || line.startsWith('-') ? 'error-help' : ''}`}
                 >
                   {line}
                 </p>
               ))}
             </div>
-            {retryAttempt > 0 && <p className="retry-info">🔄 Retry attempt: {retryAttempt}</p>}
+            {retryAttempt > 0 && <p className="retry-info">Retry attempt: {retryAttempt}</p>}
             <button type="button" className="retry-button" onClick={handleRetryConnection}>
-              🔄 Retry Connection
+              Retry Connection
             </button>
           </div>
         </div>
@@ -1838,10 +1681,10 @@ const Wallet: React.FC<WalletProps> = ({
         <>
           <div className="connection-header">
             <p className="connection-status connected">
-              ✅ Wallet Ready
+              Wallet Ready
               {nodeUrl && (
                 <span className="node-info" title={`Connected to ${nodeUrl}`}>
-                  • {nodeUrl.includes('localhost') ? 'Local' : 'Remote'} Node
+                  - {nodeUrl.includes('localhost') ? 'Local' : 'Remote'} Node
                 </span>
               )}
             </p>
@@ -1990,10 +1833,7 @@ const Wallet: React.FC<WalletProps> = ({
           {/* Timing Statistics Section */}
           <div className="timing-stats-container">
             <button
-<<<<<<< HEAD
-=======
               type="button"
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
               className="timing-stats-toggle"
               onClick={() => setShowTimingStats(!showTimingStats)}
               aria-expanded={showTimingStats}
@@ -2014,42 +1854,6 @@ const Wallet: React.FC<WalletProps> = ({
                     <table className="timing-stats-table">
                       <thead>
                         <tr>
-<<<<<<< HEAD
-                          <th
-                            className="sortable-header"
-                            onClick={() => handleSort('method')}
-                          >
-                            Method{getSortIndicator('method')}
-                          </th>
-                          <th
-                            className="sortable-header"
-                            onClick={() => handleSort('count')}
-                          >
-                            Count{getSortIndicator('count')}
-                          </th>
-                          <th
-                            className="sortable-header"
-                            onClick={() => handleSort('min')}
-                          >
-                            Min{getSortIndicator('min')}
-                          </th>
-                          <th
-                            className="sortable-header"
-                            onClick={() => handleSort('max')}
-                          >
-                            Max{getSortIndicator('max')}
-                          </th>
-                          <th
-                            className="sortable-header"
-                            onClick={() => handleSort('avg')}
-                          >
-                            Avg{getSortIndicator('avg')}
-                          </th>
-                          <th
-                            className="sortable-header"
-                            onClick={() => handleSort('stdDev')}
-                          >
-=======
                           <th className="sortable-header" onClick={() => handleSort('method')}>
                             Method{getSortIndicator('method')}
                           </th>
@@ -2066,7 +1870,6 @@ const Wallet: React.FC<WalletProps> = ({
                             Avg{getSortIndicator('avg')}
                           </th>
                           <th className="sortable-header" onClick={() => handleSort('stdDev')}>
->>>>>>> c65878d3 (feat(examples): add comprehensive example applications)
                             Std Dev{getSortIndicator('stdDev')}
                           </th>
                         </tr>
@@ -2115,7 +1918,7 @@ const Wallet: React.FC<WalletProps> = ({
                   checked={statusFilters.processing}
                   onChange={(e) => setStatusFilters((prev) => ({ ...prev, processing: e.target.checked }))}
                 />
-                ⏳ Processing
+                Processing
               </label>
               <label className="filter-label">
                 <input
@@ -2123,7 +1926,7 @@ const Wallet: React.FC<WalletProps> = ({
                   checked={statusFilters.success}
                   onChange={(e) => setStatusFilters((prev) => ({ ...prev, success: e.target.checked }))}
                 />
-                ✅ Success
+                Success
               </label>
               <label className="filter-label">
                 <input
@@ -2131,7 +1934,7 @@ const Wallet: React.FC<WalletProps> = ({
                   checked={statusFilters.error}
                   onChange={(e) => setStatusFilters((prev) => ({ ...prev, error: e.target.checked }))}
                 />
-                ❌ Error
+                Error
               </label>
             </div>
           </div>
@@ -2170,7 +1973,7 @@ const Wallet: React.FC<WalletProps> = ({
                   {request.method === 'aztec_wmBatchExecute' && request.transactionSummary?.functionCalls ? (
                     <>
                       <p className="request-details" style={{ color: '#4a90e2', fontWeight: 'bold' }}>
-                        ⚡ Batch Transaction ({request.transactionSummary.functionCalls.length} operations)
+                        Batch Transaction ({request.transactionSummary.functionCalls.length} operations)
                       </p>
                       {request.transactionSummary.functionCalls.map((call, idx) => (
                         <div key={`batch-call-${request.time}-${idx}`}>
@@ -2203,10 +2006,10 @@ const Wallet: React.FC<WalletProps> = ({
                         }
                       >
                         {request.processingStatus === 'processing'
-                          ? '⏳ Processing'
+                          ? 'Processing'
                           : request.processingStatus === 'error'
-                            ? '❌ Error'
-                            : '✅ Success'}
+                            ? 'Error'
+                            : 'Success'}
                       </span>
                     </p>
                   )}
@@ -2222,14 +2025,14 @@ const Wallet: React.FC<WalletProps> = ({
                               : 'processing-status'
                         }
                       >
-                        {request.transactionStatus === 'idle' && '⏳ Starting'}
-                        {request.transactionStatus === 'simulating' && '🔧 Simulating'}
-                        {request.transactionStatus === 'proving' && '🔐 Generating Proof'}
-                        {request.transactionStatus === 'sending' && '📡 Sending'}
-                        {request.transactionStatus === 'pending' && '⏱️ Pending'}
-                        {request.transactionStatus === 'confirming' && '⏱️ Confirming'}
-                        {request.transactionStatus === 'confirmed' && '✅ Confirmed'}
-                        {request.transactionStatus === 'failed' && '❌ Failed'}
+                        {request.transactionStatus === 'idle' && 'Starting'}
+                        {request.transactionStatus === 'simulating' && 'Simulating'}
+                        {request.transactionStatus === 'proving' && 'Generating Proof'}
+                        {request.transactionStatus === 'sending' && 'Sending'}
+                        {request.transactionStatus === 'pending' && 'Pending'}
+                        {request.transactionStatus === 'confirming' && 'Confirming'}
+                        {request.transactionStatus === 'confirmed' && 'Confirmed'}
+                        {request.transactionStatus === 'failed' && 'Failed'}
                       </span>
                       {request.txHash && (
                         <span className="tx-hash" title={request.txHash}>

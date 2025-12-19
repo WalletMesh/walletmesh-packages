@@ -1,7 +1,6 @@
 import { createLogger } from '@aztec/foundation/log';
 import type { AztecWalletMethodMap } from '../../types.js';
 import type { AztecHandlerContext } from './index.js';
-import { notifyTransactionStatus } from './transactionStatusNotifications.js';
 
 const logger = createLogger('aztec-rpc-wallet:account');
 
@@ -96,45 +95,9 @@ export function createAccountHandlers() {
         throw new Error('Invalid intent parameter received in tuple');
       }
 
-      // Generate txStatusId for tracking notifications (reuse from middleware if available)
-      // If txStatusId exists in context, it means approval was already completed
-      const txStatusId = (ctx as unknown as { txStatusId?: string }).txStatusId || crypto.randomUUID();
-      const isResumedFromApproval = !!(ctx as unknown as { txStatusId?: string }).txStatusId;
-      logger.debug(`[HANDLER] aztec_createAuthWit: using txStatusId = ${txStatusId}, resumed from approval = ${isResumedFromApproval}`);
-
-      // Stage 0: Initiated (authwit request received, ID generated)
-      // Only send if not already sent by approval middleware
-      if (!isResumedFromApproval) {
-        logger.debug('[HANDLER] aztec_createAuthWit: sending initiated notification');
-        await notifyTransactionStatus(ctx, {
-          txStatusId,
-          status: 'initiated',
-        });
-      } else {
-        logger.debug('[HANDLER] aztec_createAuthWit: resumed from approval, skipping initiated notification');
-      }
-
-      try {
-        // Create the auth witness
-        const authWit = await ctx.wallet.createAuthWit(intent);
-
-        // Emit 'confirmed' status notification on success
-        await notifyTransactionStatus(ctx, {
-          txStatusId,
-          status: 'confirmed',
-        });
-
-        return authWit;
-      } catch (error) {
-        // Emit 'failed' status notification on error
-        await notifyTransactionStatus(ctx, {
-          txStatusId,
-          status: 'failed',
-          error: error instanceof Error ? error.message : String(error),
-        });
-
-        throw error;
-      }
+      // Create the auth witness
+      const authWit = await ctx.wallet.createAuthWit(intent);
+      return authWit;
     },
   };
 }

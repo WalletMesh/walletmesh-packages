@@ -58,6 +58,17 @@ export interface AztecDappWallet {
   sendTx(tx: unknown): Promise<unknown>;
   /** Simulate a transaction without executing */
   simulateTx(txRequest: unknown, simulatePublic?: boolean, msgSender?: unknown): Promise<unknown>;
+  /**
+   * Simulate a utility (view) function call.
+   * Returns a smaller payload than simulateTx, suitable for read-only operations.
+   */
+  simulateUtility?(
+    functionName: string,
+    args: unknown[],
+    to: unknown,
+    authWits?: unknown[],
+    from?: unknown,
+  ): Promise<unknown>;
   /** Get transaction receipt by hash */
   getTxReceipt(txHash: unknown): Promise<TxReceipt | null>;
   /** Register a contract class */

@@ -984,3 +984,56 @@ export async function withAztecWallet<T>(
     throw ErrorFactory.transportError(`${errorMessage}: ${message}`);
   }
 }
+
+/**
+ * Simulate a utility (view) function call on an Aztec contract.
+ *
+ * This is optimized for read-only operations like balance queries. Unlike simulateTx,
+ * this returns a smaller payload containing only the function result, making it suitable
+ * for operations that go through Chrome extension messaging which has size limits.
+ *
+ * @param wallet - The Aztec wallet instance
+ * @param contractAddress - The address of the contract to call
+ * @param functionName - The name of the utility function to call
+ * @param args - Arguments for the function call
+ * @returns The result of the utility function call
+ *
+ * @example
+ * ```typescript
+ * const balance = await simulateUtility(
+ *   wallet,
+ *   tokenContractAddress,
+ *   'balance_of_public',
+ *   [ownerAddress]
+ * );
+ * ```
+ *
+ * @public
+ */
+export async function simulateUtility(
+  wallet: AztecDappWallet | null,
+  contractAddress: unknown,
+  functionName: string,
+  args: unknown[] = [],
+): Promise<unknown> {
+  if (!wallet) {
+    throw ErrorFactory.connectionFailed('No Aztec wallet available');
+  }
+
+  if (!wallet.simulateUtility) {
+    throw ErrorFactory.transportError(
+      'Wallet does not support simulateUtility. This may be an older wallet version.',
+    );
+  }
+
+  try {
+    const result = await wallet.simulateUtility(functionName, args, contractAddress);
+    // UtilitySimulationResult contains a 'values' array with the return values
+    // Return the raw result and let the caller extract what they need
+    return result;
+  } catch (error) {
+    throw ErrorFactory.transportError(
+      `Failed to simulate utility function ${functionName}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    );
+  }
+}

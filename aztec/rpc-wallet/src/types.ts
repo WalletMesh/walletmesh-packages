@@ -615,21 +615,15 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
    * WalletMesh specific: Executes a contract function interaction using a pre-constructed {@link ExecutionPayload}.
    * The wallet handles simulation, proving, and sending.
    *
-   * The backend automatically generates a unique `txStatusId` at the start of execution and sends
-   * status notifications (initiated, simulating, proving, sending, pending, failed) throughout
-   * the transaction lifecycle. The frontend receives notifications via the `aztec_transactionStatus`
-   * event and can correlate them using the returned `txStatusId`.
-   *
    * @param params - A tuple containing the execution payload and optional send options.
    * @param params.0 executionPayload - The {@link ExecutionPayload} to execute.
    * @param params.1 sendOptions - Optional {@link AztecSendOptions} for fee and transaction configuration.
-   * @returns result - An object containing both the blockchain transaction hash and the status tracking ID.
+   * @returns result - An object containing the blockchain transaction hash.
    */
   aztec_wmExecuteTx: {
     params: [executionPayload: ExecutionPayload, sendOptions?: AztecSendOptions];
     result: {
       txHash: TxHash;
-      txStatusId: string;
     };
   };
 
@@ -643,22 +637,16 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
    * to the user for approval before execution. This provides better security UX compared
    * to approving operations one-by-one.
    *
-   * The backend automatically generates a unique `txStatusId` and sends status notifications
-   * (initiated/simulating/proving/sending/pending/failed) throughout the batch lifecycle.
-   * The frontend can listen to `aztec_transactionStatus` events and correlate them using the
-   * returned `txStatusId`.
-   *
    * @param params - Tuple containing array of execution payloads and optional send options
    * @param params.0 executionPayloads - Array of {@link ExecutionPayload} objects to batch
    * @param params.1 sendOptions - Optional {@link AztecSendOptions} for fee configuration
-   * @returns result - Object containing transaction hash, receipt, and status tracking ID
+   * @returns result - Object containing transaction hash and receipt
    */
   aztec_wmBatchExecute: {
     params: [executionPayloads: ExecutionPayload[], sendOptions?: AztecSendOptions];
     result: {
       txHash: TxHash;
       receipt: TxReceipt;
-      txStatusId: string;
     };
   };
 
@@ -666,16 +654,10 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
    * WalletMesh specific: Deploys a new contract using its artifact and constructor arguments.
    * The wallet handles address computation, proving, and sending the deployment transaction.
    *
-   * The backend automatically generates a unique `txStatusId` at the start of deployment and sends
-   * status notifications (initiated, proving, sending, pending, failed) throughout
-   * the deployment lifecycle. The frontend receives notifications via the `aztec_transactionStatus`
-   * event and can correlate them using the returned `txStatusId`.
-   *
    * @param params - A tuple containing the deployment parameters.
    * @param params.0 deploymentParams - Object containing `artifact` ({@link ContractArtifact}), `args` (array),
    *                            and optional `constructorName` (string).
-   * @returns result - An object with `txHash` ({@link TxHash}), `contractAddress` ({@link AztecAddress}),
-   *                   and `txStatusId` (string) for tracking deployment status.
+   * @returns result - An object with `txHash` ({@link TxHash}) and `contractAddress` ({@link AztecAddress}).
    */
   aztec_wmDeployContract: {
     params: [
@@ -688,7 +670,6 @@ export interface AztecWalletMethodMap extends WalletMethodMap {
     result: {
       txHash: TxHash;
       contractAddress: AztecAddress;
-      txStatusId: string;
     };
   };
 

@@ -59,6 +59,7 @@ export {
   executeAtomicBatch,
   simulateTx,
   simulateInteraction,
+  simulateUtility,
   waitForTxReceipt,
   getAddress,
   getCompleteAddress,

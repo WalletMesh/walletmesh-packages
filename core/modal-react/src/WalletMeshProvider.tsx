@@ -38,7 +38,6 @@ import type { ChainType, QueryManager, WalletMeshConfig, SupportedChain } from '
 // Import built-in chain configs for shorthand mapping
 import { ethereumMainnet, solanaMainnet, aztecSandbox } from '@walletmesh/modal-core/chains';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { AztecTransactionStatusOverlay } from './components/AztecTransactionStatusOverlay.js';
 import { BackgroundTransactionIndicator } from './components/BackgroundTransactionIndicator.js';
 import { WalletMeshModal } from './components/WalletMeshModal.js';
 import { WalletMeshErrorBoundary } from './components/WalletMeshErrorBoundary.js';
@@ -836,37 +835,6 @@ export function WalletMeshProvider({ children, config, queryClient }: WalletMesh
         {/* Auto-inject transaction overlays */}
         {config.autoInjectTransactionOverlays !== false && (
           <>
-            {/* Sync transaction overlay (blocking, full-screen with auto-dismiss) */}
-            {config.transactionOverlay?.enabled !== false && (
-              <WalletMeshErrorBoundary
-                onError={(error, errorInfo) => {
-                  logger.error('Transaction overlay error', { error, errorInfo });
-                }}
-                fallback={null}
-              >
-                <AztecTransactionStatusOverlay
-                  {...(config.transactionOverlay?.headline && {
-                    headline: config.transactionOverlay.headline,
-                  })}
-                  {...(config.transactionOverlay?.description && {
-                    description: config.transactionOverlay.description,
-                  })}
-                  {...(config.transactionOverlay?.disableNavigationGuard && {
-                    disableNavigationGuard: config.transactionOverlay.disableNavigationGuard,
-                  })}
-                  {...(config.transactionOverlay?.showBackgroundTransactions && {
-                    showBackgroundTransactions: config.transactionOverlay.showBackgroundTransactions,
-                  })}
-                  {...(config.transactionOverlay?.allowEscapeKeyClose !== undefined && {
-                    allowEscapeKeyClose: config.transactionOverlay.allowEscapeKeyClose,
-                  })}
-                  {...(config.transactionOverlay?.disableFocusTrap && {
-                    disableFocusTrap: config.transactionOverlay.disableFocusTrap,
-                  })}
-                />
-              </WalletMeshErrorBoundary>
-            )}
-
             {/* Background transaction indicator (non-blocking, floating badge) */}
             {config.backgroundTransactionIndicator?.enabled !== false && (
               <WalletMeshErrorBoundary

@@ -389,6 +389,7 @@ export class ChromeExtensionTransport extends AbstractTransport {
     }
 
     try {
+      // Send raw JSON-RPC message - wallet adds type field for routing
       (this.logger.info || this.logger.debug || console.info).call(
         this.logger,
         'ChromeExtensionTransport: sending message',

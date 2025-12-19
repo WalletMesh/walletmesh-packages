@@ -8,7 +8,7 @@
 
 import { ErrorFactory } from '@walletmesh/modal-core';
 import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec/lazy';
-import { simulateInteraction } from '@walletmesh/modal-core/providers/aztec';
+import { simulateInteraction, simulateUtility as simulateUtilityFn } from '@walletmesh/modal-core/providers/aztec';
 import { useCallback, useState } from 'react';
 import { useAztecWallet } from './useAztecWallet.js';
 
@@ -49,6 +49,21 @@ export interface UseAztecSimulationOptions<TDecoded = unknown> {
 export interface UseAztecSimulationReturn<TDecoded = unknown> {
   /** Simulate a contract function interaction */
   simulate: (interaction: ContractFunctionInteraction) => Promise<UnifiedSimulationResult<TDecoded>>;
+  /**
+   * Simulate a utility (view) function call directly.
+   * This is optimized for read-only operations and returns a smaller payload than simulate(),
+   * making it suitable for Chrome extension messaging which has size limits.
+   *
+   * @param contractAddress - The address of the contract
+   * @param functionName - The name of the utility function to call
+   * @param args - Arguments for the function call
+   * @returns The result of the utility function
+   */
+  simulateUtility: <T = unknown>(
+    contractAddress: unknown,
+    functionName: string,
+    args?: unknown[],
+  ) => Promise<T>;
   /** Whether a simulation is currently in progress */
   isSimulating: boolean;
   /** Any error that occurred during simulation */
@@ -124,8 +139,38 @@ export function useAztecSimulation<TDecoded = unknown>(
     [aztecWallet, options],
   );
 
+  const simulateUtility = useCallback(
+    async <T = unknown>(contractAddress: unknown, functionName: string, args: unknown[] = []): Promise<T> => {
+      if (!aztecWallet) {
+        const err = ErrorFactory.connectionFailed('Aztec wallet is not ready');
+        setError(err);
+        options.onError?.(err);
+        throw err;
+      }
+
+      setIsSimulating(true);
+      setError(null);
+
+      try {
+        const result = await simulateUtilityFn(aztecWallet, contractAddress, functionName, args);
+        // UtilitySimulationResult has a 'values' array - extract the first value for convenience
+        const values = (result as { values?: unknown[] })?.values;
+        return (values?.[0] ?? result) as T;
+      } catch (err) {
+        const simError = err instanceof Error ? err : ErrorFactory.transportError('Utility simulation failed');
+        setError(simError);
+        options.onError?.(simError);
+        throw simError;
+      } finally {
+        setIsSimulating(false);
+      }
+    },
+    [aztecWallet, options],
+  );
+
   return {
     simulate,
+    simulateUtility,
     isSimulating,
     error,
     result,
