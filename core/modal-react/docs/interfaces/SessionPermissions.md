@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionPermissions
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:76
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:183
 
 Session permissions structure
 
@@ -16,7 +16,7 @@ Session permissions structure
 
 > `optional` **autoSign**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:82
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:189
 
 Whether auto-sign is permitted
 
@@ -26,7 +26,7 @@ Whether auto-sign is permitted
 
 > `optional` **chainSpecific**: `Record`\<`string`, `unknown`\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:86
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:193
 
 Custom chain-specific permissions
 
@@ -36,7 +36,7 @@ Custom chain-specific permissions
 
 > **events**: `string`[]
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:80
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:187
 
 Events the dApp can subscribe to
 
@@ -46,7 +46,7 @@ Events the dApp can subscribe to
 
 > `optional` **maxTransactionValue**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:84
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:191
 
 Maximum transaction value (if applicable)
 
@@ -56,7 +56,7 @@ Maximum transaction value (if applicable)
 
 > **methods**: `string`[]
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:78
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:185
 
 Methods the dApp can call
 
@@ -66,6 +66,6 @@ Methods the dApp can call
 
 > `optional` **walletSpecific**: `Record`\<`string`, `unknown`\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:88
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:195
 
 Wallet-specific permissions

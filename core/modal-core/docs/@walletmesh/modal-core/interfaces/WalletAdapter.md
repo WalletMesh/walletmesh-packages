@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -16,14 +16,6 @@ Implementations of this interface provide wallet-specific functionality
 > `readonly` **capabilities**: [`WalletCapabilities`](WalletCapabilities.md)
 
 Capabilities and requirements of this wallet
-
-***
-
-### connection
-
-> `readonly` **connection**: `null` \| [`WalletConnection`](WalletConnection.md)
-
-Current connection if connected
 
 ***
 

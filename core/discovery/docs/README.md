@@ -1,4 +1,4 @@
-**@walletmesh/discovery v0.1.2**
+**@walletmesh/discovery v0.1.3**
 
 ***
 
@@ -82,83 +82,64 @@ yarn add @walletmesh/discovery
 ### For Initiators (Discovery)
 
 ```typescript
-import { createDiscoveryInitiator } from '@walletmesh/discovery/initiator';
+import { runDiscovery } from '@walletmesh/discovery/initiator';
 import type { CapabilityRequirements } from '@walletmesh/discovery/types';
 
-// Define what your initiator needs
 const requirements: CapabilityRequirements = {
   technologies: [{
     type: 'evm',
-    interfaces: ['eip-1193']
+    interfaces: ['eip-1193'],
+    features: ['eip-712'],
   }],
-  features: ['account-management', 'transaction-signing']
+  features: ['account-management', 'transaction-signing'],
 };
 
-// Create discovery initiator
-const initiator = createDiscoveryInitiator({
-  initiatorInfo: {
+const qualifiedResponders = await runDiscovery({
+  requirements,
+  initiator: {
     name: 'My DeFi App',
     url: 'https://my-defi-app.com',
-    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+PC9zdmc+'
+    icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSI+PC9zdmc+',
   },
-  requirements,
   preferences: {
-    features: ['hardware-wallet']
-  }
+    features: ['hardware-wallet'],
+  },
+  options: {
+    security: 'production',
+    timeout: 10_000,
+  },
 });
-
-// Listen for discovery events
-initiator.on('discovery:wallet:complete', (event) => {
-  console.log(`Discovery completed: ${event.reason}, found ${event.respondersFound} responders`);
-});
-
-initiator.on('discovery:wallet:error', (event) => {
-  console.error(`Discovery error: ${event.errorMessage} (code: ${event.errorCode})`);
-});
-
-// Start discovery
-const qualifiedResponders = await initiator.startDiscovery();
 
 console.log('Found qualified responders:', qualifiedResponders);
-// Each responder includes capability intersection
 ```
 
 ### For Responders (Announcing)
 
 ```typescript
-import { createDiscoveryResponder, createResponderInfo } from '@walletmesh/discovery/responder';
+import { startResponder } from '@walletmesh/discovery/responder';
+import type { ResponderInfo } from '@walletmesh/discovery/types';
 
-// Define your responder's capabilities
-const responderInfo = createResponderInfo.ethereum({
+const responderInfo: ResponderInfo = {
   uuid: 'my-awesome-wallet',
   rdns: 'com.mycompany.wallet',
   name: 'My Awesome Wallet',
   icon: 'data:image/png;base64,...',
+  type: 'extension',
   version: '1.0.0',
-  // Optional: Specify how dApps should connect
-  transportConfig: {
-    type: 'extension',
-    extensionId: 'nkbihfbeogaeaoehlefnkodbefgpgknn'
-  }
-  // Additional Ethereum-specific capabilities are auto-included
+  protocolVersion: '0.1.0',
+  technologies: [{ type: 'evm', interfaces: ['eip-1193'], features: ['eip-712'] }],
+  features: [{ id: 'account-management', name: 'Account Management' }],
+};
+
+const { stop } = startResponder({
+  responder: responderInfo,
+  options: {
+    security: 'production',
+  },
 });
 
-// Create responder with security policy
-const responder = createDiscoveryResponder({
-  responderInfo,
-  securityPolicy: {
-    allowedOrigins: ['https://trusted-dapp.com'],
-    requireHttps: true,
-    rateLimit: {
-      enabled: true,
-      maxRequests: 10,
-      windowMs: 60000
-    }
-  }
-});
-
-// Start listening for capability requests
-responder.startListening();
+// Later when shutting down
+stop();
 ```
 
 ## Modular Imports
@@ -171,10 +152,11 @@ import type { CapabilityRequirements } from '@walletmesh/discovery/types';
 import { DISCOVERY_PROTOCOL_VERSION } from '@walletmesh/discovery';
 
 // Initiator-side functionality
-import { createDiscoveryInitiator, DiscoveryInitiator } from '@walletmesh/discovery/initiator';
+import { runDiscovery, DiscoveryInitiator } from '@walletmesh/discovery/initiator';
 
-// Responder-side functionality  
-import { createDiscoveryResponder, CapabilityMatcher } from '@walletmesh/discovery/responder';
+// Responder-side functionality
+import { startResponder, DiscoveryResponder } from '@walletmesh/discovery/responder';
+import { CapabilityMatcher } from '@walletmesh/discovery/responder';
 
 // Browser extension components
 import { ContentScriptRelay, WalletDiscovery } from '@walletmesh/discovery/extension';

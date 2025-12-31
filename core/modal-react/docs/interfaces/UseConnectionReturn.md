@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseConnectionReturn
 
-Defined in: [core/modal-react/src/types.ts:467](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L467)
+Defined in: [core/modal-react/src/types.ts:600](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L600)
 
 Connection hook return type
 Provides connection state and methods with loading states
@@ -17,7 +17,7 @@ Provides connection state and methods with loading states
 
 > **address**: `null` \| `string`
 
-Defined in: [core/modal-react/src/types.ts:477](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L477)
+Defined in: [core/modal-react/src/types.ts:610](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L610)
 
 Primary connected address
 
@@ -27,7 +27,7 @@ Primary connected address
 
 > **chain**: `null` \| \{ `chainId`: `string`; `chainType`: [`ChainType`](../enumerations/ChainType.md); `group?`: `string`; `icon?`: `string`; `interfaces?`: `string`[]; `label?`: `string`; `name`: `string`; `required`: `boolean`; \}
 
-Defined in: [core/modal-react/src/types.ts:479](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L479)
+Defined in: [core/modal-react/src/types.ts:612](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L612)
 
 Current chain
 
@@ -37,7 +37,7 @@ Current chain
 
 > **connect**: (`walletId?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/types.ts:469](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L469)
+Defined in: [core/modal-react/src/types.ts:602](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L602)
 
 Connect to a wallet
 
@@ -57,7 +57,7 @@ Connect to a wallet
 
 > **connectedWallets**: [`WalletInfo`](WalletInfo.md)[]
 
-Defined in: [core/modal-react/src/types.ts:481](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L481)
+Defined in: [core/modal-react/src/types.ts:614](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L614)
 
 Connected wallets
 
@@ -67,7 +67,7 @@ Connected wallets
 
 > **disconnect**: (`walletId?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/types.ts:471](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L471)
+Defined in: [core/modal-react/src/types.ts:604](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L604)
 
 Disconnect from a specific wallet
 
@@ -87,7 +87,7 @@ Disconnect from a specific wallet
 
 > **isConnected**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:475](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L475)
+Defined in: [core/modal-react/src/types.ts:608](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L608)
 
 Whether any wallet is connected
 
@@ -97,7 +97,7 @@ Whether any wallet is connected
 
 > **isConnecting**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:473](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L473)
+Defined in: [core/modal-react/src/types.ts:606](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L606)
 
 Whether connection is in progress
 
@@ -107,6 +107,6 @@ Whether connection is in progress
 
 > **provider**: `unknown`
 
-Defined in: [core/modal-react/src/types.ts:483](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L483)
+Defined in: [core/modal-react/src/types.ts:616](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L616)
 
 Current provider instance

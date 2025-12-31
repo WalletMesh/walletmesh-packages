@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -43,7 +43,7 @@ results.forEach(result => {
 
 > **new DiscoveryService**(`config`, `registry`, `logger`, `_adapterRegistry?`, `connectionManager?`): `DiscoveryService`
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:230
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:229
 
 #### Parameters
 
@@ -77,7 +77,7 @@ Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:230
 
 > **connectAndGetAdapter**(`walletId`, `options?`): `Promise`\<[`WalletAdapter`](../interfaces/WalletAdapter.md)\>
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:348
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:352
 
 Connect to wallet and get adapter
 
@@ -107,7 +107,7 @@ Connect to wallet and get adapter
 
 > **connectToWallet**(`walletId`, `options?`): `Promise`\<\{ `chains`: `string`[]; `rdns`: `string`; `sessionId`: `string`; `walletId`: `string`; \}\>
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:385
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:389
 
 Connect to a discovered wallet using the discovery protocol
 
@@ -143,7 +143,7 @@ Promise that resolves to connection details
 
 > **createWalletAdapter**(`walletId`, `config?`): `Promise`\<[`WalletAdapter`](../interfaces/WalletAdapter.md)\>
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:336
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:340
 
 Create a wallet adapter for a discovered wallet
 
@@ -169,7 +169,7 @@ Create a wallet adapter for a discovered wallet
 
 > **destroy**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:459
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:463
 
 Clean up discovery service resources
 
@@ -183,7 +183,7 @@ Clean up discovery service resources
 
 > **getAvailableWallets**(): [`DiscoveredWallet`](../interfaces/DiscoveredWallet.md)[]
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:263
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:267
 
 Get available discovered wallets
 
@@ -199,7 +199,7 @@ Array of available discovered wallets
 
 > **getChromeExtensionWallets**(): `DiscoveryResult`[]
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:376
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:380
 
 Get Chrome extension wallets
 
@@ -213,7 +213,7 @@ Get Chrome extension wallets
 
 > **getConnectedWallets**(): `ConnectionState`[]
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:416
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:420
 
 Get all connected wallets
 
@@ -225,11 +225,27 @@ Array of connected wallet states
 
 ***
 
+### getConnectionManager()
+
+> **getConnectionManager**(): `null` \| `DiscoveryConnectionManager`
+
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:234
+
+Get the connection manager for creating adapters
+
+#### Returns
+
+`null` \| `DiscoveryConnectionManager`
+
+The connection manager instance, or null if not initialized
+
+***
+
 ### getConnectionState()
 
 > **getConnectionState**(`walletId`): `undefined` \| `ConnectionState`
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:409
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:413
 
 Get connection state for a wallet
 
@@ -253,7 +269,7 @@ Connection state or undefined
 
 > **getDiscoveredAdapters**(): `DiscoveryAdapter`[]
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:361
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:365
 
 Get all discovered wallet adapters
 
@@ -267,7 +283,7 @@ Get all discovered wallet adapters
 
 > **getDiscoveredWallet**(`walletId`): `undefined` \| [`DiscoveredWallet`](../interfaces/DiscoveredWallet.md)
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:271
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:275
 
 Get a specific discovered wallet
 
@@ -291,7 +307,7 @@ Discovered wallet or undefined if not found
 
 > **getDiscoveredWallets**(): [`DiscoveredWallet`](../interfaces/DiscoveredWallet.md)[]
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:256
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:260
 
 Get all discovered wallets
 
@@ -307,7 +323,7 @@ Array of discovered wallets
 
 > **getOrCreateAdapter**(`walletId`): `Promise`\<[`WalletAdapter`](../interfaces/WalletAdapter.md)\>
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:343
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:347
 
 Get or create wallet adapter
 
@@ -327,7 +343,7 @@ Get or create wallet adapter
 
 > **getQualifiedWallet**(`walletId`): `undefined` \| `QualifiedResponder`
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:401
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:405
 
 Get the qualified wallet information for a discovered wallet
 
@@ -351,7 +367,7 @@ Qualified wallet information or undefined
 
 > **getRecoverableSessions**(): `object`[]
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:431
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:435
 
 Get session recovery information
 
@@ -367,7 +383,7 @@ Array of recoverable sessions
 
 > **getSecureSessions**(): `SecureSession`[]
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:442
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:446
 
 Get secure sessions for current origin
 
@@ -383,7 +399,7 @@ Array of secure sessions
 
 > **getWalletAdapter**(`walletId`): `Promise`\<`null` \| [`WalletAdapter`](../interfaces/WalletAdapter.md)\>
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:356
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:360
 
 Get a specific wallet adapter
 
@@ -403,7 +419,7 @@ Get a specific wallet adapter
 
 > **getWalletsByChain**(`chainType`): `DiscoveryResult`[]
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:366
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:370
 
 Get wallet by chain support
 
@@ -423,7 +439,7 @@ Get wallet by chain support
 
 > **getWalletsByTransportType**(`transportType`): `DiscoveryResult`[]
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:371
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:375
 
 Get wallets by transport type
 
@@ -443,7 +459,7 @@ Get wallets by transport type
 
 > **getWalletsWithTransport**(): `QualifiedResponder`[]
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:331
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:335
 
 Get all wallets with transport configuration
 
@@ -457,7 +473,7 @@ Get all wallets with transport configuration
 
 > **getWalletWithTransport**(`walletId`): `undefined` \| `QualifiedResponder`
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:326
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:330
 
 Get wallet information with transport configuration
 
@@ -477,7 +493,7 @@ Get wallet information with transport configuration
 
 > **initializeDiscovery**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:240
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:244
 
 Prepare discovery components without starting a scan.
 Allows callers to set up responders ahead of invoking `scan()`.
@@ -492,7 +508,7 @@ Allows callers to set up responders ahead of invoking `scan()`.
 
 > **isWalletAvailable**(`walletId`): `boolean`
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:279
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:283
 
 Check if a wallet is available
 
@@ -516,7 +532,7 @@ True if wallet is available
 
 > **isWalletConnected**(`walletId`): `boolean`
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:424
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:428
 
 Check if a wallet is connected
 
@@ -540,7 +556,7 @@ True if connected
 
 > **on**(`event`, `handler`): () => `void`
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:296
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:300
 
 Subscribe to discovery events
 
@@ -574,7 +590,7 @@ Unsubscribe function
 
 > **once**(`event`, `handler`): () => `void`
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:305
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:309
 
 Subscribe to discovery events once
 
@@ -608,7 +624,7 @@ Unsubscribe function
 
 > **onEnhanced**(`event`, `handler`): () => `void`
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:313
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:317
 
 Subscribe to enhanced discovery events
 
@@ -642,7 +658,7 @@ Unsubscribe function
 
 > **refreshWallet**(`walletId`): `Promise`\<`null` \| [`DiscoveredWallet`](../interfaces/DiscoveredWallet.md)\>
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:287
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:291
 
 Force refresh of a specific wallet's availability
 
@@ -666,7 +682,7 @@ Promise that resolves to updated wallet info
 
 > **reset**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:320
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:324
 
 Reset discovery service to initial state for fresh discovery
 This allows the service to be reused for multiple discovery sessions
@@ -681,7 +697,7 @@ This allows the service to be reused for multiple discovery sessions
 
 > **scan**(`config?`): `Promise`\<`DiscoveryResult`[]\>
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:249
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:253
 
 Execute a discovery scan and register discovered wallets.
 
@@ -704,7 +720,7 @@ allowing callers to run targeted discovery passes without mutating previous stat
 
 > **validateSecureSession**(`sessionId`): `object`
 
-Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:450
+Defined in: core/modal-core/dist/client/DiscoveryService.d.ts:454
 
 Validate a secure session
 

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: AccountSelectionRecord
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:387
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:514
 
 Account selection record for tracking account switches
 
@@ -16,7 +16,7 @@ Account selection record for tracking account switches
 
 > `optional` **error**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:401
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:528
 
 Error if selection failed
 
@@ -26,7 +26,7 @@ Error if selection failed
 
 > **fromAccount**: `null` \| `AccountInfo`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:391
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:518
 
 Previous account (null for initial selection)
 
@@ -36,7 +36,7 @@ Previous account (null for initial selection)
 
 > **reason**: `"user_request"` \| `"dapp_request"` \| `"auto_switch"` \| `"default"`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:397
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:524
 
 Why the selection occurred
 
@@ -46,7 +46,7 @@ Why the selection occurred
 
 > **selectionId**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:389
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:516
 
 Unique identifier for this selection
 
@@ -56,7 +56,7 @@ Unique identifier for this selection
 
 > **successful**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:399
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:526
 
 Whether the selection was successful
 
@@ -66,7 +66,7 @@ Whether the selection was successful
 
 > **timestamp**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:395
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:522
 
 When the selection occurred
 
@@ -76,6 +76,6 @@ When the selection occurred
 
 > **toAccount**: `AccountInfo`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:393
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:520
 
 New account

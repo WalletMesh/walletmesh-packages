@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: RateLimitConfig
 
-Defined in: [core/discovery/src/types/security.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L60)
+Defined in: [core/discovery/src/types/security.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L60)
 
 Rate limiting configuration for request throttling.
 
@@ -23,7 +23,7 @@ of requests from a single origin within a time window.
 
 > **enabled**: `boolean`
 
-Defined in: [core/discovery/src/types/security.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L63)
+Defined in: [core/discovery/src/types/security.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L63)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [core/discovery/src/types/security.ts:63](https://github.com/WalletM
 
 > **maxRequests**: `number`
 
-Defined in: [core/discovery/src/types/security.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L61)
+Defined in: [core/discovery/src/types/security.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L61)
 
 ***
 
@@ -39,4 +39,4 @@ Defined in: [core/discovery/src/types/security.ts:61](https://github.com/WalletM
 
 > **windowMs**: `number`
 
-Defined in: [core/discovery/src/types/security.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L62)
+Defined in: [core/discovery/src/types/security.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L62)

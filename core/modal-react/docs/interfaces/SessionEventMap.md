@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionEventMap
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:406
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:533
 
 Session event types
 
@@ -16,7 +16,7 @@ Session event types
 
 > **session:account-switched**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:423
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:550
 
 #### selectionRecord
 
@@ -32,7 +32,7 @@ Defined in: core/modal-core/dist/api/types/sessionState.d.ts:423
 
 > **session:accounts-discovered**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:427
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:554
 
 #### accounts
 
@@ -48,7 +48,7 @@ Defined in: core/modal-core/dist/api/types/sessionState.d.ts:427
 
 > **session:chain-switched**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:419
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:546
 
 #### sessionId
 
@@ -64,7 +64,7 @@ Defined in: core/modal-core/dist/api/types/sessionState.d.ts:419
 
 > **session:created**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:407
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:534
 
 #### session
 
@@ -76,7 +76,7 @@ Defined in: core/modal-core/dist/api/types/sessionState.d.ts:407
 
 > **session:ended**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:431
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:558
 
 #### reason
 
@@ -92,7 +92,7 @@ Defined in: core/modal-core/dist/api/types/sessionState.d.ts:431
 
 > **session:error**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:439
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:566
 
 #### error
 
@@ -108,7 +108,7 @@ Defined in: core/modal-core/dist/api/types/sessionState.d.ts:439
 
 > **session:expired**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:435
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:562
 
 #### expiresAt
 
@@ -124,11 +124,11 @@ Defined in: core/modal-core/dist/api/types/sessionState.d.ts:435
 
 > **session:status-changed**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:414
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:541
 
 #### previousStatus
 
-> **previousStatus**: [`SessionStatus`](../type-aliases/SessionStatus.md)
+> **previousStatus**: `SessionStatus`
 
 #### sessionId
 
@@ -136,7 +136,7 @@ Defined in: core/modal-core/dist/api/types/sessionState.d.ts:414
 
 #### status
 
-> **status**: [`SessionStatus`](../type-aliases/SessionStatus.md)
+> **status**: `SessionStatus`
 
 ***
 
@@ -144,7 +144,7 @@ Defined in: core/modal-core/dist/api/types/sessionState.d.ts:414
 
 > **session:updated**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:410
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:537
 
 #### changes
 

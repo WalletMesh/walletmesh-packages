@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletSessionContext
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:164
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:271
 
 Multi-chain wallet session context
 
@@ -19,7 +19,7 @@ multi-chain wallet connection.
 
 > **activeSessionId**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:170
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:277
 
 Currently active session ID
 
@@ -29,7 +29,7 @@ Currently active session ID
 
 > **allSessions**: `Map`\<`string`, `string`\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:168
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:275
 
 All sessions within this wallet connection
 
@@ -39,7 +39,7 @@ All sessions within this wallet connection
 
 > **switchHistory**: `string`[]
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:172
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:279
 
 Session switch history
 
@@ -49,7 +49,7 @@ Session switch history
 
 > **walletMetadata**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:180
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:287
 
 Wallet session metadata
 
@@ -75,7 +75,7 @@ Wallet session metadata
 
 > **walletPermissions**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:174
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:281
 
 Wallet-level permissions
 
@@ -97,6 +97,6 @@ Wallet-level permissions
 
 > **walletSessionId**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:166
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:273
 
 ID of the parent wallet session

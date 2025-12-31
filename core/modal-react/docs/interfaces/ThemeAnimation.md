@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ThemeAnimation
 
-Defined in: [core/modal-react/src/theme/types.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L87)
+Defined in: [core/modal-react/src/theme/types.ts:98](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L98)
 
 Animation and transition settings
 
@@ -16,7 +16,7 @@ Animation and transition settings
 
 > **duration**: `object`
 
-Defined in: [core/modal-react/src/theme/types.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L88)
+Defined in: [core/modal-react/src/theme/types.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L99)
 
 #### fast
 
@@ -36,7 +36,7 @@ Defined in: [core/modal-react/src/theme/types.ts:88](https://github.com/WalletMe
 
 > **easing**: `object`
 
-Defined in: [core/modal-react/src/theme/types.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L93)
+Defined in: [core/modal-react/src/theme/types.ts:104](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L104)
 
 #### default
 

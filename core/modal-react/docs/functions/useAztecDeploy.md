@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useAztecDeploy**(): [`UseAztecDeployReturn`](../interfaces/UseAztecDeployReturn.md)
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:188](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecDeploy.ts#L188)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:254](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L254)
 
 Hook for deploying Aztec contracts
 
@@ -38,15 +38,48 @@ The hook automatically handles:
 ## Examples
 
 ```tsx
+// Async mode (non-blocking) - returns txStatusId immediately
 import { useAztecDeploy } from '@walletmesh/modal-react';
 import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';
 
-function DeployToken() {
-  const { deploy, isDeploying, stage, deployedAddress } = useAztecDeploy();
+function DeployTokenAsync() {
+  const { deploy, txStatusId, deployedAddress } = useAztecDeploy();
 
   const handleDeploy = async () => {
-    // No need for type conversion - hook handles compatibility
-    const result = await deploy(
+    // Returns txStatusId immediately, deployment runs in background
+    const statusId = await deploy(
+      TokenContractArtifact,
+      [ownerAddress, 'MyToken', 'MTK', 18],
+      {
+        onStart: () => console.log('Deployment initiated'),
+        onError: (error) => console.error('Deployment failed:', error),
+      }
+    );
+    console.log('Track deployment with statusId:', statusId);
+    // Listen to aztec_transactionStatus events for progress updates
+  };
+
+  return (
+    <div>
+      <button onClick={handleDeploy}>Deploy Token (Async)</button>
+      {txStatusId && <p>Tracking: {txStatusId}</p>}
+      {deployedAddress && <p>Deployed at: {deployedAddress.toString()}</p>}
+    </div>
+  );
+}
+```
+
+```tsx
+// Sync mode (blocking) - waits for completion with overlay
+import { useAztecDeploy } from '@walletmesh/modal-react';
+import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';
+
+function DeployTokenSync() {
+  const { deploySync, isDeploying, stage, deployedAddress } = useAztecDeploy();
+
+  const handleDeploy = async () => {
+    // Blocks until deployment completes, shows transaction overlay
+    const result = await deploySync(
       TokenContractArtifact,
       [ownerAddress, 'MyToken', 'MTK', 18],
       {
@@ -58,12 +91,13 @@ function DeployToken() {
         },
       }
     );
+    console.log('Full result:', result);
   };
 
   return (
     <div>
       <button onClick={handleDeploy} disabled={isDeploying}>
-        {isDeploying ? `${stage}...` : 'Deploy Token'}
+        {isDeploying ? `${stage}...` : 'Deploy Token (Sync)'}
       </button>
       {deployedAddress && (
         <p>Deployed at: {deployedAddress.toString()}</p>

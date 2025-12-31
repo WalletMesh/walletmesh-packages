@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -6,16 +6,7 @@
 
 # Interface: TechnologyMatch
 
-Defined in: [core/discovery/src/types/capabilities.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/capabilities.ts#L106)
-
-Technology capability match for discovery response.
-
-Represents a matched technology with the specific interface and features
-that the wallet supports for that technology.
-
-## Since
-
-0.3.0
+Defined in: [core/discovery/src/types/capabilities.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L110)
 
 ## Properties
 
@@ -23,7 +14,7 @@ that the wallet supports for that technology.
 
 > **features**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:122](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/capabilities.ts#L122)
+Defined in: [core/discovery/src/types/capabilities.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L126)
 
 Supported features for this technology.
 Subset of what the wallet supports that matches the requirement.
@@ -34,7 +25,7 @@ Subset of what the wallet supports that matches the requirement.
 
 > **interfaces**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/capabilities.ts#L116)
+Defined in: [core/discovery/src/types/capabilities.ts:120](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L120)
 
 Supported interfaces for this technology.
 Subset of what the wallet supports that matches the requirement.
@@ -45,6 +36,6 @@ Subset of what the wallet supports that matches the requirement.
 
 > **type**: `"evm"` \| `"solana"` \| `"aztec"`
 
-Defined in: [core/discovery/src/types/capabilities.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/capabilities.ts#L110)
+Defined in: [core/discovery/src/types/capabilities.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L114)
 
 Blockchain technology type.

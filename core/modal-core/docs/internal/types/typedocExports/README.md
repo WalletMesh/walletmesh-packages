@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -280,7 +280,7 @@ Re-exports [HealthStatus](../../../@walletmesh/modal-core/type-aliases/HealthSta
 
 ### InternalWalletMeshClient
 
-Re-exports [InternalWalletMeshClient](../../../@walletmesh/modal-core/interfaces/InternalWalletMeshClient.md)
+Re-exports [InternalWalletMeshClient](../../../@walletmesh/modal-core/type-aliases/InternalWalletMeshClient.md)
 
 ***
 

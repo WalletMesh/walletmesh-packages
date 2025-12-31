@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -39,6 +39,12 @@ Discovery response event sent by qualified responders.
 ### name
 
 > **name**: `string`
+
+***
+
+### networks?
+
+> `optional` **networks**: `string`[]
 
 ***
 

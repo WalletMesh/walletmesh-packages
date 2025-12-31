@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createSandboxedIcon**(`options`): `Promise`\<`HTMLIFrameElement`\>
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:79
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:85
 
 Creates a sandboxed iframe for displaying an SVG icon safely
 

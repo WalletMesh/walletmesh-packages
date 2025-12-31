@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useAztecContract**\<`T`\>(`address?`, `artifact?`): [`UseAztecContractReturn`](../interfaces/UseAztecContractReturn.md)\<`T`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecContract.ts:129](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecContract.ts#L129)
+Defined in: [core/modal-react/src/hooks/useAztecContract.ts:137](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecContract.ts#L137)
 
 Hook for managing Aztec contract instances
 
@@ -34,7 +34,7 @@ The contract address (optional)
 
 The contract artifact containing ABI (optional)
 
-`null` | [`ContractArtifact`](../type-aliases/ContractArtifact.md)
+`null` | `AztecContractArtifact`
 
 ## Returns
 
@@ -64,7 +64,7 @@ import { useAztecContract } from '@walletmesh/modal-react';
 import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';
 
 function TokenInteraction({ tokenAddress }) {
-  const { contract, isLoading, error, execute, simulate } = useAztecContract(
+  const { contract, isLoading, error } = useAztecContract(
     tokenAddress,
     TokenContractArtifact
   );
@@ -74,18 +74,15 @@ function TokenInteraction({ tokenAddress }) {
   if (!contract) return <div>No contract loaded</div>;
 
   const handleTransfer = async () => {
-    // No type casting needed - execute handles wallet interaction
-    const receipt = await execute(
-      contract.methods.transfer(recipient, amount)
-    );
+    // Use native Aztec.js fluent API
+    const sentTx = await contract.methods.transfer(recipient, amount).send();
+    const receipt = await sentTx.wait();
     console.log('Transfer complete:', receipt);
   };
 
   const checkBalance = async () => {
-    // Simulate read-only calls
-    const balance = await simulate(
-      contract.methods.balance_of(userAddress)
-    );
+    // Use native simulate() method
+    const balance = await contract.methods.balance_of(userAddress).simulate();
     console.log('Balance:', balance);
   };
 
@@ -99,7 +96,7 @@ function TokenInteraction({ tokenAddress }) {
 ```
 
 ```tsx
-// With dynamic loading
+// With dynamic loading and native Aztec.js patterns
 function ContractLoader() {
   const [address, setAddress] = useState(null);
   const [artifact, setArtifact] = useState(null);
@@ -114,11 +111,21 @@ function ContractLoader() {
     setArtifact(await fetchArtifact());
   };
 
+  const executeMethod = async () => {
+    if (!contract) return;
+    // Use native Aztec.js API
+    const sentTx = await contract.methods.someMethod().send();
+    await sentTx.wait();
+  };
+
   return (
     <div>
       <button onClick={loadContract}>Load Contract</button>
       <button onClick={refetch} disabled={!address || isLoading}>
         Refresh Contract
+      </button>
+      <button onClick={executeMethod} disabled={!contract}>
+        Execute Method
       </button>
     </div>
   );

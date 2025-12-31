@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -7,6 +7,13 @@
 # Interface: BlockchainProvider
 
 Common base interface for all blockchain providers
+
+This interface extends CommonProviderInterface to ensure consistency with
+the WalletProvider system.
+
+## Extends
+
+- `CommonProviderInterface`
 
 ## Extended by
 
@@ -19,23 +26,35 @@ Common base interface for all blockchain providers
 
 > **disconnect**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
 
-Disconnect the provider
+Disconnect from provider
 
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
 
+Promise that resolves when disconnection is complete
+
+#### Inherited from
+
+`CommonProviderInterface.disconnect`
+
 ***
 
-### getAddresses()
+### getAccounts()
 
-> **getAddresses**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string`[]\>
+> **getAccounts**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string`[]\>
 
-Get the current account addresses
+Get connected accounts/addresses
 
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string`[]\>
+
+Promise resolving to array of account addresses
+
+#### Inherited from
+
+`CommonProviderInterface.getAccounts`
 
 ***
 
@@ -43,11 +62,17 @@ Get the current account addresses
 
 > **getChainId**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string` \| `number`\>
 
-Get the current chain ID
+Get current chain ID
 
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string` \| `number`\>
+
+Promise resolving to chain ID as string or number
+
+#### Inherited from
+
+`CommonProviderInterface.getChainId`
 
 ***
 
@@ -63,13 +88,21 @@ Remove event listener
 
 `string`
 
+Event name to stop listening for
+
 ##### listener
 
 (...`args`) => `void`
 
+Callback function to remove
+
 #### Returns
 
 `void`
+
+#### Inherited from
+
+`CommonProviderInterface.off`
 
 ***
 
@@ -85,13 +118,21 @@ Add event listener
 
 `string`
 
+Event name to listen for
+
 ##### listener
 
 (...`args`) => `void`
 
+Callback function to invoke when event occurs
+
 #### Returns
 
 `void`
+
+#### Inherited from
+
+`CommonProviderInterface.on`
 
 ***
 
@@ -107,9 +148,16 @@ Remove all event listeners
 
 `string`
 
+Optional event name to remove all listeners for.
+               If not provided, removes all listeners for all events.
+
 #### Returns
 
 `void`
+
+#### Inherited from
+
+`CommonProviderInterface.removeAllListeners`
 
 ***
 

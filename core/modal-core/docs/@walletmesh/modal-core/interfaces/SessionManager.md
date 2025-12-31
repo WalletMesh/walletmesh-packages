@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -334,7 +334,7 @@ Update session status
 
 ##### status
 
-[`SessionStatus`](../type-aliases/SessionStatus.md)
+`SessionStatus`
 
 #### Returns
 

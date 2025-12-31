@@ -1,4 +1,4 @@
-**@walletmesh/modal-react v0.1.0**
+**@walletmesh/modal-react v0.1.1**
 
 ***
 
@@ -52,6 +52,7 @@ function App() {
 
 - **React 18+ Integration**: Built with `useSyncExternalStore` for optimal state sync
 - **Auto-Injected Modal**: Modal UI automatically renders via React Portal (opt-out available)
+- **Auto-Injected Transaction Overlays**: Transaction status UI automatically renders for all dApps (configurable)
 - **Six Convenient Hooks**: Purpose-built hooks for different use cases
 - **Full State Synchronization**: Complete state sync from modal-core
 - **SSR Support**: Safe server-side rendering with proper hydration
@@ -77,6 +78,20 @@ interface WalletMeshReactConfig {
   fontFamily?: string;
   borderRadius?: string;
   autoInjectModal?: boolean; // Default: true
+  autoInjectTransactionOverlays?: boolean; // Default: true
+  transactionOverlay?: {
+    enabled?: boolean;
+    disableNavigationGuard?: boolean;
+    headline?: string;
+    description?: string;
+    showBackgroundTransactions?: boolean;
+  };
+  backgroundTransactionIndicator?: {
+    enabled?: boolean;
+    position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    showCompleted?: boolean;
+    completedDuration?: number;
+  };
   debug?: boolean;
 }
 
@@ -92,6 +107,9 @@ function WalletmeshProvider({
 **Props:**
 - `config.appName` - **Required** - Your application name
 - `config.autoInjectModal` - Auto-inject modal into DOM (default: `true`)
+- `config.autoInjectTransactionOverlays` - Auto-inject transaction status overlays (default: `true`)
+- `config.transactionOverlay` - Configure full-screen transaction status overlay
+- `config.backgroundTransactionIndicator` - Configure floating transaction badge
 - All other modal-core configuration options supported
 
 ### Hooks
@@ -440,7 +458,7 @@ See the [Provider Pattern Guide](_media/PROVIDER_PATTERN_GUIDE.md) for more deta
 
 ```tsx
 // Disable auto-injection and render modal manually
-<WalletmeshProvider 
+<WalletmeshProvider
   config={{
     appName: 'Custom Modal Placement',
     autoInjectModal: false
@@ -454,6 +472,48 @@ See the [Provider Pattern Guide](_media/PROVIDER_PATTERN_GUIDE.md) for more deta
     {/* Manually place modal */}
     <WalletmeshModal />
   </div>
+</WalletmeshProvider>
+```
+
+### Transaction Overlay Configuration
+
+```tsx
+// Customize transaction overlays
+<WalletmeshProvider
+  config={{
+    appName: 'My DApp',
+    // Control auto-injection (default: true)
+    autoInjectTransactionOverlays: true,
+    // Configure full-screen overlay for sync transactions
+    transactionOverlay: {
+      enabled: true,
+      disableNavigationGuard: false,
+      headline: 'Processing Transaction',
+      description: 'Please wait while your transaction is processed',
+      showBackgroundTransactions: false, // Show async txs in overlay
+    },
+    // Configure floating badge for async transactions
+    backgroundTransactionIndicator: {
+      enabled: true,
+      position: 'bottom-right',
+      showCompleted: true,
+      completedDuration: 3000, // ms to show completed state
+    }
+  }}
+>
+  <App />
+</WalletmeshProvider>
+```
+
+```tsx
+// Disable transaction overlays entirely
+<WalletmeshProvider
+  config={{
+    appName: 'Custom Transaction UI',
+    autoInjectTransactionOverlays: false
+  }}
+>
+  <App />
 </WalletmeshProvider>
 ```
 
@@ -476,13 +536,88 @@ function CustomLayout() {
       <nav>Navigation</nav>
       <main>Content</main>
       <footer>Footer</footer>
-      
+
       {/* Custom modal placement */}
       <WalletmeshModal />
     </div>
   );
 }
 ```
+
+### Auto-Injected Transaction Overlays
+
+Transaction status overlays are **automatically injected** by the provider. No manual rendering required!
+
+#### AztecTransactionStatusOverlay
+
+Full-screen blocking overlay for synchronous transactions (e.g., `executeSync`).
+
+**Features:**
+- Shows complete transaction lifecycle: idle → simulating → proving → sending → pending → confirming → confirmed/failed
+- Auto-dismisses 2.5 seconds after showing success/failure state
+- Includes navigation guard to prevent accidental tab closure during transactions
+- Displays transaction hash and duration
+- Special emphasis on proof generation (takes 1-2 minutes for Aztec transactions)
+
+**Configuration:**
+```tsx
+<WalletmeshProvider
+  config={{
+    transactionOverlay: {
+      enabled: true,                    // Default: true
+      disableNavigationGuard: false,    // Default: false
+      headline: 'Custom Headline',      // Optional override
+      description: 'Custom Description', // Optional override
+      showBackgroundTransactions: false, // Show async txs too (default: false)
+    }
+  }}
+/>
+```
+
+#### BackgroundTransactionIndicator
+
+Floating badge for asynchronous background transactions (e.g., `execute`).
+
+**Features:**
+- Non-blocking UI that allows users to continue working
+- Expandable drawer showing transaction details
+- Automatically tracks and displays multiple active transactions
+- Configurable position (top-left, top-right, bottom-left, bottom-right)
+- Optional completed state display with configurable duration
+
+**Configuration:**
+```tsx
+<WalletmeshProvider
+  config={{
+    backgroundTransactionIndicator: {
+      enabled: true,              // Default: true
+      position: 'bottom-right',   // Default: 'bottom-right'
+      showCompleted: true,        // Show completed state (default: false)
+      completedDuration: 3000,    // ms to show completed (default: 2000)
+    }
+  }}
+/>
+```
+
+**Disabling Overlays:**
+```tsx
+// Disable all transaction overlays
+<WalletmeshProvider
+  config={{
+    autoInjectTransactionOverlays: false
+  }}
+/>
+
+// Disable specific overlays
+<WalletmeshProvider
+  config={{
+    transactionOverlay: { enabled: false },
+    backgroundTransactionIndicator: { enabled: false }
+  }}
+/>
+```
+
+**Note:** These overlays automatically subscribe to the transaction state from the Zustand store and require no additional setup. They work out of the box for all Aztec transactions.
 
 ## SSR Support
 

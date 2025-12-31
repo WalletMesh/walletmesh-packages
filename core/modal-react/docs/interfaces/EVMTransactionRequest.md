@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: EVMTransactionRequest
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:53
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:52
 
 EVM transaction request structure
 
@@ -16,7 +16,7 @@ EVM transaction request structure
 
 > `optional` **data**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:57
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:56
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:57
 
 > `optional` **from**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:55
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:54
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:55
 
 > `optional` **gas**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:58
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:57
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:58
 
 > `optional` **maxFeePerGas**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:59
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:58
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:59
 
 > `optional` **maxPriorityFeePerGas**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:60
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:59
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:60
 
 > `optional` **nonce**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:61
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:60
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:61
 
 > `optional` **to**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:54
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:53
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:54
 
 > `optional` **type**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:62
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:61
 
 ***
 
@@ -80,4 +80,4 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:62
 
 > `optional` **value**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:56
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:55

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -110,7 +110,7 @@ Session event types
 
 #### previousStatus
 
-> **previousStatus**: [`SessionStatus`](../type-aliases/SessionStatus.md)
+> **previousStatus**: `SessionStatus`
 
 #### sessionId
 
@@ -118,7 +118,7 @@ Session event types
 
 #### status
 
-> **status**: [`SessionStatus`](../type-aliases/SessionStatus.md)
+> **status**: `SessionStatus`
 
 ***
 

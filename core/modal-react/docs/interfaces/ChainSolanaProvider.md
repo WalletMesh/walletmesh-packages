@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ChainSolanaProvider
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:94
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:93
 
 Solana provider interface following Solana Wallet Standard
 
@@ -20,7 +20,7 @@ Solana provider interface following Solana Wallet Standard
 
 > **connect**(`options?`): `Promise`\<\{ `publicKey`: `string`; \}\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:98
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:97
 
 Connect to wallet
 
@@ -42,13 +42,15 @@ Connect to wallet
 
 > **disconnect**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:20
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:41
 
-Disconnect the provider
+Disconnect from provider
 
 #### Returns
 
 `Promise`\<`void`\>
+
+Promise that resolves when disconnection is complete
 
 #### Inherited from
 
@@ -56,21 +58,23 @@ Disconnect the provider
 
 ***
 
-### getAddresses()
+### getAccounts()
 
-> **getAddresses**(): `Promise`\<`string`[]\>
+> **getAccounts**(): `Promise`\<`string`[]\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:16
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:29
 
-Get the current account addresses
+Get connected accounts/addresses
 
 #### Returns
 
 `Promise`\<`string`[]\>
 
+Promise resolving to array of account addresses
+
 #### Inherited from
 
-[`BlockchainProvider`](BlockchainProvider.md).[`getAddresses`](BlockchainProvider.md#getaddresses)
+[`BlockchainProvider`](BlockchainProvider.md).[`getAccounts`](BlockchainProvider.md#getaccounts)
 
 ***
 
@@ -78,7 +82,7 @@ Get the current account addresses
 
 > **getCapabilities**(): `Promise`\<[`SolanaCapabilities`](SolanaCapabilities.md)\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:96
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:95
 
 Get wallet capabilities
 
@@ -92,13 +96,15 @@ Get wallet capabilities
 
 > **getChainId**(): `Promise`\<`string` \| `number`\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:18
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:35
 
-Get the current chain ID
+Get current chain ID
 
 #### Returns
 
 `Promise`\<`string` \| `number`\>
+
+Promise resolving to chain ID as string or number
 
 #### Inherited from
 
@@ -110,7 +116,7 @@ Get the current chain ID
 
 > **off**(`event`, `listener`): `void`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:24
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:55
 
 Remove event listener
 
@@ -120,9 +126,13 @@ Remove event listener
 
 `string`
 
+Event name to stop listening for
+
 ##### listener
 
 (...`args`) => `void`
+
+Callback function to remove
 
 #### Returns
 
@@ -138,7 +148,7 @@ Remove event listener
 
 > **on**(`event`, `listener`): `void`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:22
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:48
 
 Add event listener
 
@@ -148,9 +158,13 @@ Add event listener
 
 `string`
 
+Event name to listen for
+
 ##### listener
 
 (...`args`) => `void`
+
+Callback function to invoke when event occurs
 
 #### Returns
 
@@ -166,7 +180,7 @@ Add event listener
 
 > **removeAllListeners**(`event?`): `void`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:26
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:62
 
 Remove all event listeners
 
@@ -175,6 +189,9 @@ Remove all event listeners
 ##### event?
 
 `string`
+
+Optional event name to remove all listeners for.
+               If not provided, removes all listeners for all events.
 
 #### Returns
 
@@ -190,7 +207,7 @@ Remove all event listeners
 
 > **request**(`args`): `Promise`\<`unknown`\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:28
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:27
 
 Request method call for JSON-RPC communication
 
@@ -220,7 +237,7 @@ Request method call for JSON-RPC communication
 
 > **signAllTransactions**(`transactions`): `Promise`\<`unknown`[]\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:106
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:105
 
 Sign multiple transactions
 
@@ -240,7 +257,7 @@ Sign multiple transactions
 
 > **signAndSendTransaction**(`transaction`, `options?`): `Promise`\<\{ `signature`: `string`; \}\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:108
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:107
 
 Sign and send transaction
 
@@ -264,7 +281,7 @@ Sign and send transaction
 
 > **signMessage**(`message`): `Promise`\<\{ `publicKey`: `string`; `signature`: `Uint8Array`; \}\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:112
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:111
 
 Sign message
 
@@ -284,7 +301,7 @@ Sign message
 
 > **signTransaction**(`transaction`): `Promise`\<`unknown`\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:104
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:103
 
 Sign transaction
 
@@ -304,7 +321,7 @@ Sign transaction
 
 > `optional` **switchCluster**(`cluster`): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:117
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:116
 
 Switch to different Solana cluster
 

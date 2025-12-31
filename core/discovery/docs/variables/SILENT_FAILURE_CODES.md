@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > `const` `readonly` **SILENT\_FAILURE\_CODES**: `Set`\<`2001` \| `2003` \| `2004` \| `3001` \| `3002`\>
 
-Defined in: [core/discovery/src/core/constants.ts:644](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/core/constants.ts#L644)
+Defined in: [core/discovery/src/core/constants.ts:616](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/core/constants.ts#L616)
 
 Silent failure error codes for security and privacy protection.
 

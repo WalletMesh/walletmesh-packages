@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > `const` **createCapabilityRequirements**: `object`
 
-Defined in: [core/discovery/src/initiator/factory.ts:283](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator/factory.ts#L283)
+Defined in: [core/discovery/src/initiator/factory.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/initiator/factory.ts#L34)
 
 Helper functions to create common capability requirements for different blockchain ecosystems.
 
@@ -265,17 +265,18 @@ const requirements = createCapabilityRequirements.solana({
 ```typescript
 const requirements = createCapabilityRequirements.ethereum();
 // → {
-//   chains: ['eip155:1'],
-//   features: ['account-management', 'transaction-signing'],
-//   interfaces: ['eip-1193']
+//   technologies: [{ type: 'evm', interfaces: ['eip-1193'] }],
+//   features: ['account-management', 'transaction-signing']
 // }
 ```
 
 ```typescript
 const requirements = createCapabilityRequirements.multiChain({
-  chains: ['eip155:1', 'eip155:137', 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'],
-  features: ['account-management', 'transaction-signing', 'cross-chain-swaps'],
-  interfaces: ['eip-1193', 'solana-wallet-standard']
+  technologies: [
+    { type: 'evm', interfaces: ['eip-1193', 'eip-6963'] },
+    { type: 'solana', interfaces: ['solana-wallet-standard'] }
+  ],
+  features: ['account-management', 'transaction-signing', 'cross-chain-swaps']
 });
 ```
 

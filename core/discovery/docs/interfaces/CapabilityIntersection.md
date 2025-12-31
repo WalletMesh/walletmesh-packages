@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CapabilityIntersection
 
-Defined in: [core/discovery/src/types/capabilities.ts:163](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/capabilities.ts#L163)
+Defined in: [core/discovery/src/types/capabilities.ts:167](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L167)
 
 Result of capability intersection between requirements and responder capabilities.
 
@@ -24,7 +24,7 @@ requirements and responder capabilities.
 
 > `optional` **optional**: `object`
 
-Defined in: [core/discovery/src/types/capabilities.ts:184](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/capabilities.ts#L184)
+Defined in: [core/discovery/src/types/capabilities.ts:194](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L194)
 
 The intersection of optional/preferred capabilities.
 These were requested as nice-to-have and are supported by the wallet.
@@ -34,6 +34,12 @@ These were requested as nice-to-have and are supported by the wallet.
 > `optional` **features**: `string`[]
 
 Optional features that are supported.
+
+#### networks?
+
+> `optional` **networks**: `string`[]
+
+Optional networks that are supported (CAIP-2 format).
 
 #### technologies?
 
@@ -47,7 +53,7 @@ Optional technology matches.
 
 > **required**: `object`
 
-Defined in: [core/discovery/src/types/capabilities.ts:168](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/capabilities.ts#L168)
+Defined in: [core/discovery/src/types/capabilities.ts:172](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L172)
 
 The intersection of required capabilities.
 All of these were requested as mandatory and are supported by the wallet.
@@ -57,6 +63,13 @@ All of these were requested as mandatory and are supported by the wallet.
 > **features**: `string`[]
 
 Global features that overlap between requirements and responder support.
+
+#### networks?
+
+> `optional` **networks**: `string`[]
+
+Networks that overlap between requirements and responder support (CAIP-2 format).
+Only included if networks were specified in the request.
 
 #### technologies
 

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useWalletName**(): `null` \| `string`
 
-Defined in: [core/modal-react/src/hooks/granular/index.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/granular/index.ts#L192)
+Defined in: [core/modal-react/src/hooks/granular/index.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/granular/index.ts#L192)
 
 Hook to get wallet name from active wallet
 Re-renders only when wallet name changes

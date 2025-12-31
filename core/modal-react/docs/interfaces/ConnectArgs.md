@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ConnectArgs
 
-Defined in: [core/modal-react/src/hooks/useConnect.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConnect.ts#L52)
+Defined in: [core/modal-react/src/hooks/useConnect.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useConnect.ts#L58)
 
 Connection arguments
 
@@ -16,7 +16,7 @@ Connection arguments
 
 > `optional` **chain**: [`ChainConfig`](ChainConfig.md)
 
-Defined in: [core/modal-react/src/hooks/useConnect.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConnect.ts#L56)
+Defined in: [core/modal-react/src/hooks/useConnect.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useConnect.ts#L62)
 
 Chain to connect to - defaults to the wallet's default chain
 
@@ -26,6 +26,6 @@ Chain to connect to - defaults to the wallet's default chain
 
 > `optional` **walletId**: `string`
 
-Defined in: [core/modal-react/src/hooks/useConnect.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useConnect.ts#L54)
+Defined in: [core/modal-react/src/hooks/useConnect.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useConnect.ts#L60)
 
 Wallet ID to connect to - if not provided, shows wallet selection modal

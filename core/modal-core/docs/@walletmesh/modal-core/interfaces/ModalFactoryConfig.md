@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -21,7 +21,7 @@ Auto close delay in milliseconds
 
 ### client
 
-> **client**: [`InternalWalletMeshClient`](InternalWalletMeshClient.md)
+> **client**: [`WalletMeshClient`](WalletMeshClient.md)
 
 Wallet client for managing connections
 

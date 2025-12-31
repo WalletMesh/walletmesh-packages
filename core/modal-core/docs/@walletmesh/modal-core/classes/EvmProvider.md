@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -421,6 +421,35 @@ Callback function to call when event occurs
 #### Inherited from
 
 [`BaseWalletProvider`](BaseWalletProvider.md).[`on`](BaseWalletProvider.md#on)
+
+***
+
+### removeAllListeners()
+
+> **removeAllListeners**(`event?`): `void`
+
+Remove all event listeners
+
+#### Parameters
+
+##### event?
+
+`string`
+
+Optional event name to remove all listeners for.
+               If not provided, removes all listeners for all events.
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`EvmWalletProvider`](../interfaces/EvmWalletProvider.md).[`removeAllListeners`](../interfaces/EvmWalletProvider.md#removealllisteners)
+
+#### Inherited from
+
+[`BaseWalletProvider`](BaseWalletProvider.md).[`removeAllListeners`](BaseWalletProvider.md#removealllisteners)
 
 ***
 

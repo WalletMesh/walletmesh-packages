@@ -1,5 +1,15 @@
 # @walletmesh/aztec-helpers
 
+## 0.5.6
+
+### Patch Changes
+
+- 3bbe9b2: Add modal-core and modal-react packages
+- Updated dependencies [3bbe9b2]
+  - @walletmesh/aztec-rpc-wallet@0.5.6
+  - @walletmesh/jsonrpc@0.5.3
+  - @walletmesh/router@0.5.3
+
 ## 0.5.4
 
 ### Patch Changes

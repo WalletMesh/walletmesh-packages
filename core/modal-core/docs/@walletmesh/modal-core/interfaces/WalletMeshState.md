@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -63,6 +63,10 @@ State is normalized with:
 #### availableWalletIds
 
 > **availableWalletIds**: `string`[]
+
+#### backgroundTransactionIds
+
+> **backgroundTransactionIds**: `string`[]
 
 #### connectionTimestamps
 

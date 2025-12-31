@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SolanaTransactionParams
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:195
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:205
 
 Solana transaction parameters.
 
@@ -57,7 +57,7 @@ const solanaParams: SolanaTransactionParams = {
 
 > `optional` **autoSwitchChain**: `boolean`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:66
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:76
 
 Whether to automatically switch chains if the wallet is on a different chain.
 When true, the service will attempt to switch to the target chainId before sending.
@@ -73,7 +73,7 @@ Defaults to false if not specified.
 
 > `optional` **chainId**: `string`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:60
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:70
 
 Target chain ID for the transaction.
 If specified and different from current chain, may trigger chain switch.
@@ -88,7 +88,7 @@ If specified and different from current chain, may trigger chain switch.
 
 > `optional` **metadata**: `object`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:71
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:81
 
 Transaction metadata for tracking and UI purposes.
 This data is stored with the transaction but not sent on-chain.
@@ -121,7 +121,7 @@ Human-readable description of the transaction purpose
 
 > `optional` **options**: `object`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:205
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:215
 
 Options for sending the transaction.
 Controls simulation and retry behavior.
@@ -155,7 +155,7 @@ When false (default), transaction is simulated before sending to catch errors ea
 
 > **transaction**: `string`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:200
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:210
 
 Serialized transaction in base64 format.
 Must be a valid Solana transaction with all required fields except wallet signature.

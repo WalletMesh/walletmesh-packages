@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ChainSessionInfo
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:54
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:146
 
 Chain information within a session
 
@@ -32,7 +32,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1141
 
 > **chainType**: [`ChainType`](../enumerations/ChainType.md)
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1142
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1144
 
 #### Inherited from
 
@@ -44,7 +44,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1142
 
 > `optional` **group**: `string`
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1147
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1148
 
 #### Inherited from
 
@@ -56,7 +56,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1147
 
 > `optional` **icon**: `string`
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1148
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1146
 
 #### Inherited from
 
@@ -68,7 +68,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1148
 
 > `optional` **interfaces**: `string`[]
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1146
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1145
 
 #### Inherited from
 
@@ -80,7 +80,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1146
 
 > `optional` **isNative**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:56
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:148
 
 Whether this is the native chain for the wallet
 
@@ -90,7 +90,7 @@ Whether this is the native chain for the wallet
 
 > `optional` **label**: `string`
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1145
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1147
 
 #### Inherited from
 
@@ -114,7 +114,7 @@ Defined in: core/modal-core/dist/schemas/chains.d.ts:1143
 
 > **required**: `boolean`
 
-Defined in: core/modal-core/dist/schemas/chains.d.ts:1144
+Defined in: core/modal-core/dist/schemas/chains.d.ts:1142
 
 #### Inherited from
 

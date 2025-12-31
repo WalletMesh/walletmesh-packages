@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,4 +8,4 @@
 
 > **AdapterEvent** = keyof [`AdapterEvents`](AdapterEvents.md)
 
-Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:151
+Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:155

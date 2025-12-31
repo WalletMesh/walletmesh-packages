@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-helpers v0.5.4**](../README.md)
+[**@walletmesh/aztec-helpers v0.5.6**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **FunctionParameterInfo** = `object`
 
-Defined in: [helpers.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/helpers/src/helpers.ts#L73)
+Defined in: [helpers.ts:122](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/helpers.ts#L122)
 
 Represents information about a function parameter.
 
@@ -18,7 +18,7 @@ Represents information about a function parameter.
 
 > **name**: `string`
 
-Defined in: [helpers.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/helpers/src/helpers.ts#L75)
+Defined in: [helpers.ts:124](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/helpers.ts#L124)
 
 The name of the parameter.
 
@@ -28,6 +28,6 @@ The name of the parameter.
 
 > **type**: `string`
 
-Defined in: [helpers.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/helpers/src/helpers.ts#L77)
+Defined in: [helpers.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/helpers.ts#L126)
 
 The type of the parameter (e.g., 'field', 'boolean', or a struct name like 'MyStruct').

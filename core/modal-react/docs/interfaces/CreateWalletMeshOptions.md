@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CreateWalletMeshOptions
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:349
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:470
 
 Configuration options for the createWalletMesh factory function.
 
@@ -37,7 +37,7 @@ const client = createWalletMesh(config, {
 
 > `optional` **debug**: `boolean`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:373
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:494
 
 Enable additional debug logging.
 
@@ -59,7 +59,7 @@ false
 
 > `optional` **ssr**: `boolean`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:361
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:482
 
 Force SSR mode regardless of environment detection.
 

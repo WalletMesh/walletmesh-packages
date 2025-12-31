@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: DiscoveryInitiatorOptions
 
-Defined in: [core/discovery/src/initiator.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L40)
+Defined in: [core/discovery/src/initiator.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/initiator.ts#L63)
 
 Options for DiscoveryInitiator configuration.
 
@@ -20,7 +20,7 @@ Options for DiscoveryInitiator configuration.
 
 > `optional` **eventTarget**: `EventTarget`
 
-Defined in: [core/discovery/src/initiator.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L46)
+Defined in: [core/discovery/src/initiator.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/initiator.ts#L69)
 
 Custom event target for testing
 
@@ -30,7 +30,7 @@ Custom event target for testing
 
 > `optional` **logger**: [`Logger`](Logger.md)
 
-Defined in: [core/discovery/src/initiator.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L48)
+Defined in: [core/discovery/src/initiator.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/initiator.ts#L71)
 
 Custom logger instance
 
@@ -38,9 +38,9 @@ Custom logger instance
 
 ### security?
 
-> `optional` **security**: `string` \| [`SecurityPolicy`](SecurityPolicy.md)
+> `optional` **security**: [`SecurityPolicy`](SecurityPolicy.md) \| `"development"` \| `"testing"` \| `"production"` \| `"strict"`
 
-Defined in: [core/discovery/src/initiator.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L42)
+Defined in: [core/discovery/src/initiator.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/initiator.ts#L65)
 
 Security policy preset name or custom policy
 
@@ -50,6 +50,6 @@ Security policy preset name or custom policy
 
 > `optional` **timeout**: `number`
 
-Defined in: [core/discovery/src/initiator.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/initiator.ts#L44)
+Defined in: [core/discovery/src/initiator.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/initiator.ts#L67)
 
 Discovery timeout in milliseconds

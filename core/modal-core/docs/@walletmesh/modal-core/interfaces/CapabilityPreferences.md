@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -24,6 +24,15 @@ and prioritize wallets that go beyond the minimum requirements.
 
 Additional wallet features that would enhance the user experience.
 These are "nice to have" capabilities beyond the required features.
+
+***
+
+### networks?
+
+> `optional` **networks**: `string`[]
+
+Additional networks that would be beneficial (CAIP-2 format).
+These networks are not required but having them increases wallet ranking.
 
 ***
 

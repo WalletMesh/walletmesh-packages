@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -222,6 +222,20 @@ Get all connected wallets
 [`DiscoveryConnectionState`](../interfaces/DiscoveryConnectionState.md)[]
 
 Array of connected wallet states
+
+***
+
+### getConnectionManager()
+
+> **getConnectionManager**(): `null` \| [`DiscoveryConnectionManager`](../interfaces/DiscoveryConnectionManager.md)
+
+Get the connection manager for creating adapters
+
+#### Returns
+
+`null` \| [`DiscoveryConnectionManager`](../interfaces/DiscoveryConnectionManager.md)
+
+The connection manager instance, or null if not initialized
 
 ***
 
@@ -516,7 +530,7 @@ Subscribe to discovery events
 
 Event type to listen for
 
-`"discovery_started"` | `"discovery_completed"` | `"discovery_error"` | `"wallet_discovered"` | `"wallet_available"` | `"wallet_unavailable"` | `"announcement_sent"` | `"announcement_received"`
+`"discovery_started"` | `"discovery_completed"` | `"wallet_discovered"` | `"wallet_available"` | `"wallet_unavailable"` | `"discovery_error"` | `"announcement_sent"` | `"announcement_received"`
 
 ##### handler
 
@@ -548,7 +562,7 @@ Subscribe to discovery events once
 
 Event type to listen for
 
-`"discovery_started"` | `"discovery_completed"` | `"discovery_error"` | `"wallet_discovered"` | `"wallet_available"` | `"wallet_unavailable"` | `"announcement_sent"` | `"announcement_received"`
+`"discovery_started"` | `"discovery_completed"` | `"wallet_discovered"` | `"wallet_available"` | `"wallet_unavailable"` | `"discovery_error"` | `"announcement_sent"` | `"announcement_received"`
 
 ##### handler
 

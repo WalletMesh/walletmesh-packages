@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useAztecWallet**(`chain?`): [`AztecWalletInfo`](../interfaces/AztecWalletInfo.md)
 
-Defined in: [core/modal-react/src/hooks/useAztecWallet.ts:221](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecWallet.ts#L221)
+Defined in: [core/modal-react/src/hooks/useAztecWallet.ts:258](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecWallet.ts#L258)
 
 Hook that combines account and Aztec provider functionality
 
@@ -135,8 +135,11 @@ function ContractInteraction() {
     const contract = await Contract.at(contractAddress, TokenContract, aztecWallet);
     const interaction = contract.methods.transfer(recipient, amount);
 
-    const tx = await aztecWallet.wmExecuteTx(interaction);
-    const receipt = await tx.wait();
+    // Use standard Aztec transaction flow
+    const txRequest = await interaction.request();
+    const provenTx = await aztecWallet.proveTx(txRequest);
+    const txHash = await aztecWallet.sendTx(provenTx);
+    const receipt = await aztecWallet.getTxReceipt(txHash);
 
     console.log('Transaction complete:', receipt);
   };

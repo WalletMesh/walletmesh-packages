@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletConfig
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:610
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:733
 
 Configuration options for wallet filtering and ordering.
 
@@ -26,7 +26,7 @@ const walletConfig: WalletConfig = {
 
 > `optional` **custom**: [`WalletAdapter`](WalletAdapter.md)[]
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:636
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:759
 
 Custom wallet adapters to register.
 These are added to the registry in addition to discovered wallets.
@@ -38,7 +38,7 @@ Useful for development/testing wallets.
 
 > `optional` **exclude**: `string`[]
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:630
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:753
 
 Blacklist of wallet IDs to exclude.
 These wallets will not be shown.
@@ -49,7 +49,7 @@ These wallets will not be shown.
 
 > `optional` **filter**: (`adapter`) => `boolean`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:620
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:743
 
 Custom filter function for wallet adapters.
 Return true to include the wallet.
@@ -70,7 +70,7 @@ Return true to include the wallet.
 
 > `optional` **include**: `string`[]
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:625
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:748
 
 Whitelist of wallet IDs to include.
 Only these wallets will be shown if specified.
@@ -81,7 +81,7 @@ Only these wallets will be shown if specified.
 
 > `optional` **order**: `string`[]
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:615
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:738
 
 Preferred order of wallets in the UI.
 Wallets not in this list appear after ordered ones.

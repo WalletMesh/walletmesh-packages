@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **WalletMeshModal**(): `null` \| `ReactElement`\<`unknown`, `string` \| `JSXElementConstructor`\<`any`\>\>
 
-Defined in: [core/modal-react/src/components/WalletMeshModal.tsx:111](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/WalletMeshModal.tsx#L111)
+Defined in: [core/modal-react/src/components/WalletMeshModal.tsx:114](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshModal.tsx#L114)
 
 WalletMesh Modal Component
 

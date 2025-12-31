@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.2**](../../README.md)
+[**@walletmesh/router v0.5.3**](../../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **AllowAskDenyChainPermissions**\<`T`\> = `Map`\<[`ChainId`](../../index/type-aliases/ChainId.md), `Map`\<keyof `T`, [`AllowAskDenyState`](../enumerations/AllowAskDenyState.md)\>\>
 
-Defined in: [core/router/src/permissions/allowAskDeny.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/permissions/allowAskDeny.ts#L65)
+Defined in: [core/router/src/permissions/allowAskDeny.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/permissions/allowAskDeny.ts#L65)
 
 Nested map structure for storing permission states.
 Maps chain IDs to their method permissions, where each method

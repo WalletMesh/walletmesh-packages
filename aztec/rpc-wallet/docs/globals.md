@@ -1,8 +1,8 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.4**](README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.6**](README.md)
 
 ***
 
-# @walletmesh/aztec-rpc-wallet v0.5.4
+# @walletmesh/aztec-rpc-wallet v0.5.6
 
 ## Classes
 
@@ -14,19 +14,18 @@
 ## Interfaces
 
 - [AztecHandlerContext](interfaces/AztecHandlerContext.md)
+- [AztecSendOptions](interfaces/AztecSendOptions.md)
 - [AztecWalletContext](interfaces/AztecWalletContext.md)
 - [AztecWalletMethodMap](interfaces/AztecWalletMethodMap.md)
 
 ## Type Aliases
 
 - [AztecChainId](type-aliases/AztecChainId.md)
-- [AztecWalletErrorType](type-aliases/AztecWalletErrorType.md)
 
 ## Variables
 
 - [ALL\_AZTEC\_METHODS](variables/ALL_AZTEC_METHODS.md)
 - [AztecWalletErrorMap](variables/AztecWalletErrorMap.md)
-- [AztecWalletErrorType](variables/AztecWalletErrorType.md)
 - [AztecWalletSerializer](variables/AztecWalletSerializer.md)
 
 ## Functions

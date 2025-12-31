@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -257,6 +257,30 @@ console.log(`${allWallets.length} wallets available`);
 
 ***
 
+### getBuiltinWalletIds()
+
+> **getBuiltinWalletIds**(): `string`[]
+
+Get list of all built-in wallet IDs
+
+Returns an array of wallet IDs for all wallets that were registered
+as built-in wallets.
+
+#### Returns
+
+`string`[]
+
+Array of built-in wallet IDs
+
+#### Example
+
+```typescript
+const builtInIds = registry.getBuiltinWalletIds();
+console.log('Built-in wallets:', builtInIds);
+```
+
+***
+
 ### getDiscoveredWallet()
 
 > **getDiscoveredWallet**(`walletId`): `undefined` \| [`DiscoveredWalletInfo`](../interfaces/DiscoveredWalletInfo.md)
@@ -298,6 +322,39 @@ The ID of the wallet
 `boolean`
 
 True if the wallet has been discovered
+
+***
+
+### isBuiltinWallet()
+
+> **isBuiltinWallet**(`walletId`): `boolean`
+
+Check if a wallet is a built-in wallet
+
+Returns true if the wallet was registered using registerBuiltIn(),
+indicating it's a pre-registered wallet that's part of the core package.
+
+#### Parameters
+
+##### walletId
+
+`string`
+
+The ID of the wallet to check
+
+#### Returns
+
+`boolean`
+
+True if the wallet is built-in, false otherwise
+
+#### Example
+
+```typescript
+if (registry.isBuiltinWallet('debug-wallet')) {
+  console.log('This is a built-in wallet');
+}
+```
 
 ***
 
@@ -495,6 +552,42 @@ If an adapter with the same ID is already registered
 ```typescript
 const adapter = new MetaMaskAdapter();
 registry.register(adapter);
+```
+
+***
+
+### registerBuiltIn()
+
+> **registerBuiltIn**(`adapter`): `void`
+
+Register a built-in wallet adapter
+
+Registers a wallet adapter and marks it as built-in. Built-in adapters
+are pre-registered wallets that are part of the core package (e.g.,
+debug-wallet, aztec-example-wallet) and should not be treated as
+discovered wallets.
+
+#### Parameters
+
+##### adapter
+
+[`WalletAdapter`](../interfaces/WalletAdapter.md)
+
+The built-in wallet adapter to register
+
+#### Returns
+
+`void`
+
+#### Throws
+
+If an adapter with the same ID is already registered
+
+#### Example
+
+```typescript
+const adapter = new DebugWallet();
+registry.registerBuiltIn(adapter);
 ```
 
 ***

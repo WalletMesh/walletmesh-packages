@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,17 +6,27 @@
 
 # Interface: UseAztecBatchReturn
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L38)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L73)
 
 Batch transaction hook return type
 
 ## Properties
 
+### batchMode
+
+> **batchMode**: `null` \| `"atomic"` \| `"sequential"`
+
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:84](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L84)
+
+Current batch execution mode (null when not executing)
+
+***
+
 ### clearStatuses()
 
 > **clearStatuses**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L54)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L94)
 
 Clear transaction statuses
 
@@ -30,7 +40,7 @@ Clear transaction statuses
 
 > **completedTransactions**: `number`
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L50)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:90](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L90)
 
 Number of completed transactions
 
@@ -40,7 +50,7 @@ Number of completed transactions
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L56)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L96)
 
 Any overall batch error
 
@@ -48,9 +58,9 @@ Any overall batch error
 
 ### executeBatch()
 
-> **executeBatch**: (`interactions`) => `Promise`\<`TxReceipt`[]\>
+> **executeBatch**: (`interactions`, `options?`) => `Promise`\<`TxReceipt`[]\>
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L40)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L75)
 
 Execute a batch of transactions
 
@@ -59,6 +69,10 @@ Execute a batch of transactions
 ##### interactions
 
 `ContractFunctionInteraction`[]
+
+##### options?
+
+`BatchSendOptions`
 
 #### Returns
 
@@ -70,7 +84,7 @@ Execute a batch of transactions
 
 > **failedTransactions**: `number`
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L52)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:92](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L92)
 
 Number of failed transactions
 
@@ -80,7 +94,7 @@ Number of failed transactions
 
 > **isExecuting**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L44)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L82)
 
 Whether a batch is currently executing
 
@@ -90,7 +104,7 @@ Whether a batch is currently executing
 
 > **progress**: `number`
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L46)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L86)
 
 Overall batch progress (0-100)
 
@@ -100,7 +114,7 @@ Overall batch progress (0-100)
 
 > **totalTransactions**: `number`
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L48)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L88)
 
 Total number of transactions in current batch
 
@@ -110,6 +124,6 @@ Total number of transactions in current batch
 
 > **transactionStatuses**: [`BatchTransactionStatus`](BatchTransactionStatus.md)[]
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L42)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L80)
 
 Status of each transaction in the current/last batch

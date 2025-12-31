@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **isSandboxSupported**(): `boolean`
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:104
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:110
 
 Checks if the current environment supports iframe sandboxing
 

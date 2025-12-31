@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: AccountDiscoveryOptions
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:272
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:379
 
 Account discovery options for multi-account wallets
 
@@ -16,7 +16,7 @@ Account discovery options for multi-account wallets
 
 > `optional` **derivationPathTemplate**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:282
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:389
 
 Derivation path template (for HD wallets)
 
@@ -26,7 +26,7 @@ Derivation path template (for HD wallets)
 
 > `optional` **forceRefresh**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:280
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:387
 
 Whether to force refresh even for known accounts
 
@@ -36,7 +36,7 @@ Whether to force refresh even for known accounts
 
 > `optional` **gapLimit**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:284
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:391
 
 Gap limit for HD wallet discovery
 
@@ -46,7 +46,7 @@ Gap limit for HD wallet discovery
 
 > `optional` **includeBalances**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:278
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:385
 
 Whether to include account balances
 
@@ -56,7 +56,7 @@ Whether to include account balances
 
 > `optional` **limit**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:274
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:381
 
 Maximum number of accounts to discover
 
@@ -66,6 +66,6 @@ Maximum number of accounts to discover
 
 > `optional` **startIndex**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:276
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:383
 
 Starting index for account discovery

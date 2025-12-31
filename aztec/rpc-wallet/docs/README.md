@@ -1,4 +1,4 @@
-**@walletmesh/aztec-rpc-wallet v0.5.4**
+**@walletmesh/aztec-rpc-wallet v0.5.6**
 
 ***
 
@@ -96,6 +96,14 @@ async function main() {
   const txHash = await sentTx.getTxHash();
   console.log('Transaction sent with wmExecuteTx, hash:', txHash.toString());
   const receipt = await sentTx.getReceipt();
+
+  // Option A with custom send options (fee, nonce, cancellable)
+  const sendOptions = {
+    fee: customFeeOptions,      // Optional: Custom fee configuration
+    txNonce: 42,                 // Optional: Custom transaction nonce
+    cancellable: true            // Optional: Make transaction cancellable
+  };
+  const sentTxWithOptions = await wallet.wmExecuteTx(interaction, sendOptions);
 
   // Option B: Using standard aztec.js flow (only implemented for Aztec.js `Wallet` interface compatibility)
   const executionPayload = await interaction.request();
@@ -214,7 +222,7 @@ The main client-side wallet class that implements the `aztec.js` `Wallet` interf
 
 **WalletMesh Extended Methods on `AztecDappWallet`:**
 These methods simplify common dApp workflows by leveraging WalletMesh capabilities.
--   `wmExecuteTx(interaction: ContractFunctionInteraction): Promise<SentTx>` - High-level method to execute a transaction from a `ContractFunctionInteraction`. Handles payload creation, proving, and sending via the remote wallet.
+-   `wmExecuteTx(interaction: ContractFunctionInteraction, sendOptions?: AztecSendOptions): Promise<SentTx>` - High-level method to execute a transaction from a `ContractFunctionInteraction`. Handles payload creation, proving, and sending via the remote wallet. Optionally accepts `sendOptions` for custom fee configuration, transaction nonce, and cancellable flag.
 -   `wmSimulateTx(interaction: ContractFunctionInteraction): Promise<TxSimulationResult>` - High-level method to simulate a transaction from a `ContractFunctionInteraction`.
 -   `deployContract(artifact: ContractArtifact, args: unknown[], constructorName?: string): Promise<DeploySentTx>` - High-level method to deploy a contract.
 

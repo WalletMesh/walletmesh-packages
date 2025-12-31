@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionTrackingState
 
-Defined in: [core/discovery/src/types/security.ts:92](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L92)
+Defined in: [core/discovery/src/types/security.ts:92](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L92)
 
 Session tracking state for managing active discovery sessions.
 
@@ -24,7 +24,7 @@ enforce rate limits.
 
 > **lastCleanup**: `number`
 
-Defined in: [core/discovery/src/types/security.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L96)
+Defined in: [core/discovery/src/types/security.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L96)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/discovery/src/types/security.ts:96](https://github.com/WalletM
 
 > **requestCounts**: `Map`\<`string`, `object`[]\>
 
-Defined in: [core/discovery/src/types/security.ts:95](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L95)
+Defined in: [core/discovery/src/types/security.ts:95](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L95)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/discovery/src/types/security.ts:95](https://github.com/WalletM
 
 > **sessionTimestamps**: `Map`\<`string`, `Map`\<`string`, `number`\>\>
 
-Defined in: [core/discovery/src/types/security.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L94)
+Defined in: [core/discovery/src/types/security.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L94)
 
 ***
 
@@ -48,4 +48,4 @@ Defined in: [core/discovery/src/types/security.ts:94](https://github.com/WalletM
 
 > **usedSessions**: `Map`\<`string`, `Set`\<`string`\>\>
 
-Defined in: [core/discovery/src/types/security.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L93)
+Defined in: [core/discovery/src/types/security.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L93)

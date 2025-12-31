@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CreateSandboxedIconOptions
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:22
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:28
 
 Options for creating a sandboxed icon
 
@@ -16,7 +16,7 @@ Options for creating a sandboxed icon
 
 > `optional` **disabled**: `boolean`
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:38
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:44
 
 Whether the icon should appear disabled/greyed out
 
@@ -26,7 +26,7 @@ Whether the icon should appear disabled/greyed out
 
 > `optional` **disabledStyle**: `DisabledIconStyle`
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:40
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:46
 
 Custom styling for disabled state
 
@@ -36,7 +36,7 @@ Custom styling for disabled state
 
 > `optional` **fallbackIcon**: `string`
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:28
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:34
 
 Fallback icon data URI to use if CSP blocks the main icon
 
@@ -46,7 +46,7 @@ Fallback icon data URI to use if CSP blocks the main icon
 
 > **iconDataUri**: `string`
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:24
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:30
 
 Icon data URI
 
@@ -56,7 +56,7 @@ Icon data URI
 
 > `optional` **onCspError**: (`error`) => `void`
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:32
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:38
 
 Callback when CSP error is detected
 
@@ -76,7 +76,7 @@ Callback when CSP error is detected
 
 > `optional` **size**: `number`
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:26
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:32
 
 Size of the icon in pixels (default: 24)
 
@@ -86,6 +86,6 @@ Size of the icon in pixels (default: 24)
 
 > `optional` **timeout**: `number`
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:30
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:36
 
 Timeout in ms to detect CSP violations (default: 3000)

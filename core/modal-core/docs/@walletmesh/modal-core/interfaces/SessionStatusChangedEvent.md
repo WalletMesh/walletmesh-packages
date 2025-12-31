@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -12,7 +12,7 @@ Session status changed
 
 ### previousStatus
 
-> **previousStatus**: [`SessionStatus`](../type-aliases/SessionStatus.md)
+> **previousStatus**: `SessionStatus`
 
 ***
 
@@ -24,7 +24,7 @@ Session status changed
 
 ### status
 
-> **status**: [`SessionStatus`](../type-aliases/SessionStatus.md)
+> **status**: `SessionStatus`
 
 ***
 

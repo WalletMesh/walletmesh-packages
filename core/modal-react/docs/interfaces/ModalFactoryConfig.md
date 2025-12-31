@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -25,7 +25,7 @@ Auto close delay in milliseconds
 
 ### client
 
-> **client**: `InternalWalletMeshClient`
+> **client**: [`WalletMeshClient`](WalletMeshClient.md)
 
 Defined in: core/modal-core/dist/internal/factories/modalFactory.d.ts:36
 

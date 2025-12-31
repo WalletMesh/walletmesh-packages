@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -43,6 +43,12 @@ Loading state type for granular loading tracking
 ### operations?
 
 > `optional` **operations**: `Record`\<`string`, `boolean`\>
+
+***
+
+### reconnecting?
+
+> `optional` **reconnecting**: `boolean`
 
 ***
 

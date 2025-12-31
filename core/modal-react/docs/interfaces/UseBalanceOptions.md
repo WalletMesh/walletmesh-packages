@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseBalanceOptions
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L55)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L55)
 
 Balance query options
 
@@ -16,7 +16,7 @@ Balance query options
 
 > `optional` **address**: `string`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L57)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L57)
 
 Address to query balance for (defaults to connected address)
 
@@ -26,7 +26,7 @@ Address to query balance for (defaults to connected address)
 
 > `optional` **cacheTime**: `number`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L71)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L71)
 
 Cache time in milliseconds (default: 5 minutes)
 
@@ -36,7 +36,7 @@ Cache time in milliseconds (default: 5 minutes)
 
 > `optional` **chain**: `object`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L59)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L59)
 
 Chain to query on (defaults to current chain)
 
@@ -78,7 +78,7 @@ Chain to query on (defaults to current chain)
 
 > `optional` **enabled**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L67)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L67)
 
 Whether to enable the query (default: true)
 
@@ -88,7 +88,7 @@ Whether to enable the query (default: true)
 
 > `optional` **formatUnits**: `string`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L69)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L69)
 
 Format units (e.g., 'ether', 'gwei') - chain specific
 
@@ -98,7 +98,7 @@ Format units (e.g., 'ether', 'gwei') - chain specific
 
 > `optional` **staleTime**: `number`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L73)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L73)
 
 Stale time in milliseconds (data considered fresh within this time)
 
@@ -108,7 +108,7 @@ Stale time in milliseconds (data considered fresh within this time)
 
 > `optional` **token**: [`TokenInfo`](TokenInfo.md)
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L61)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L61)
 
 Token information for token balance queries (omit for native balance)
 
@@ -118,7 +118,7 @@ Token information for token balance queries (omit for native balance)
 
 > `optional` **watch**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L63)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L63)
 
 Whether to watch for balance changes (default: false)
 
@@ -128,6 +128,6 @@ Whether to watch for balance changes (default: false)
 
 > `optional` **watchInterval**: `number`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L65)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L65)
 
 Polling interval in milliseconds (default: 4000, only used if watch is true)

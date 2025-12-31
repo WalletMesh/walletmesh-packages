@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: DeploymentResult
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecDeploy.ts#L51)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L70)
 
 Deployment result
 
@@ -16,7 +16,7 @@ Deployment result
 
 > **address**: `string` \| `AztecAddress`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecDeploy.ts#L53)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:72](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L72)
 
 Deployed contract address
 
@@ -26,7 +26,7 @@ Deployed contract address
 
 > **contract**: `unknown`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecDeploy.ts#L55)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L74)
 
 Contract instance
 
@@ -36,7 +36,7 @@ Contract instance
 
 > **receipt**: `unknown`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecDeploy.ts#L57)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L76)
 
 Transaction receipt
 
@@ -46,6 +46,6 @@ Transaction receipt
 
 > **txHash**: `string`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecDeploy.ts#L59)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:78](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L78)
 
 Deployment transaction hash

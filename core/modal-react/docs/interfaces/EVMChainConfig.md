@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: EVMChainConfig
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:67
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:66
 
 EVM chain configuration for adding new chains
 
@@ -16,7 +16,7 @@ EVM chain configuration for adding new chains
 
 > `optional` **blockExplorerUrls**: `string`[]
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:76
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:75
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:76
 
 > **chainId**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:68
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:67
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:68
 
 > **chainName**: `string`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:69
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:68
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:69
 
 > `optional` **iconUrls**: `string`[]
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:77
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:76
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:77
 
 > **nativeCurrency**: `object`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:71
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:70
 
 #### decimals
 
@@ -68,4 +68,4 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:71
 
 > **rpcUrls**: `string`[]
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:70
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:69

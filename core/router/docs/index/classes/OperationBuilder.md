@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.2**](../../README.md)
+[**@walletmesh/router v0.5.3**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: OperationBuilder\<T\>
 
-Defined in: [core/router/src/operation.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/operation.ts#L50)
+Defined in: [core/router/src/operation.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/operation.ts#L50)
 
 A builder class that enables chaining multiple RPC method calls into a single operation.
 This provides a fluent interface for constructing sequences of wallet method calls
@@ -38,7 +38,7 @@ Tuple type tracking the sequence of method calls
 
 > **new OperationBuilder**\<`T`\>(`chainId`, `provider`, `calls`): `OperationBuilder`\<`T`\>
 
-Defined in: [core/router/src/operation.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/operation.ts#L58)
+Defined in: [core/router/src/operation.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/operation.ts#L58)
 
 **`Internal`**
 
@@ -74,7 +74,7 @@ An initial array of method calls (usually empty).
 
 > **call**\<`M`\>(`method`, `params?`): `OperationBuilder`\<readonly \[`T`, [`MethodCall`](../interfaces/MethodCall.md)\<`M`\>\]\>
 
-Defined in: [core/router/src/operation.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/operation.ts#L80)
+Defined in: [core/router/src/operation.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/operation.ts#L80)
 
 Adds a new method call to the operation chain.
 Returns a new builder instance with the updated call sequence.
@@ -121,7 +121,7 @@ const operation = provider.chain('eip155:1')
 
 > **execute**(`timeout?`): `Promise`\<[`ExecuteResult`](../type-aliases/ExecuteResult.md)\<`T`\>\>
 
-Defined in: [core/router/src/operation.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/operation.ts#L116)
+Defined in: [core/router/src/operation.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/operation.ts#L116)
 
 Executes all method calls in the operation chain in sequence.
 For a single call, returns the direct result.

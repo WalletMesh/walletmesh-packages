@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,11 +6,11 @@
 
 # Interface: WalletMeshClient
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:85
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:88
 
 Core WalletMesh client interface defining the contract for all implementations.
 
-This interface provides the essential methods needed for wallet management,
+This unified interface provides both public API methods and internal methods,
 ensuring consistent behavior across different environments (browser, SSR, testing).
 Framework adapters should program against this interface rather than concrete
 implementations.
@@ -21,6 +21,8 @@ implementations.
 - `connect()` - Establish wallet connections with optional modal UI
 - `disconnect()` - Terminate connections cleanly
 - `disconnectAll()` - Bulk disconnection support
+- `getConnection?()` - Get specific wallet connection (optional, internal)
+- `getConnections?()` - Get all connected wallets (optional, internal)
 
 ### State Management
 - `getState()` - Synchronous state access
@@ -33,9 +35,10 @@ implementations.
 - `modal` - Direct modal access for advanced use
 
 ### Optional Features
-- `switchChain()` - Cross-chain operations
+- `switchChain?()` - Cross-chain operations
 - `getServices()` - Business logic services
-- `initialize()` - Async initialization
+- `initialize?()` - Async initialization
+- Internal methods - Marked as optional for SSR compatibility
 
 ## Example
 
@@ -69,20 +72,24 @@ function useWallet(client: WalletMeshClient) {
 
 > `readonly` **isConnected**: `boolean`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:191
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:221
 
 Indicates whether any wallet is currently connected.
 
 ***
 
-### modal
+### modal?
 
-> `readonly` **modal**: `HeadlessModal`
+> `optional` **modal**: `HeadlessModal` \| [`ModalController`](ModalController.md)
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:92
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:97
 
-Headless modal instance for programmatic control.
-Provides access to modal state and actions without UI dependencies.
+Modal instance for programmatic control.
+Provides access to modal state, actions, and UI without dependencies.
+Optional to support two-phase construction pattern.
+
+SSR clients use HeadlessModal (subset of functionality).
+Browser clients use ModalController (full functionality).
 
 ## Methods
 
@@ -90,7 +97,7 @@ Provides access to modal state and actions without UI dependencies.
 
 > **closeModal**(): `void`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:153
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:183
 
 Closes the wallet selection modal.
 
@@ -106,7 +113,7 @@ Immediately hides the modal if it's currently visible.
 
 > **connect**(`walletId?`, `options?`): `Promise`\<`undefined` \| [`WalletConnection`](WalletConnection.md)\>
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:119
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:124
 
 Connects to a wallet.
 
@@ -135,11 +142,57 @@ Promise resolving to connection details or undefined
 
 ***
 
+### connectWithModal()
+
+> **connectWithModal**(`options?`): `Promise`\<`undefined` \| [`WalletConnection`](WalletConnection.md)\>
+
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:147
+
+Connects to a wallet by opening the modal and waiting for user selection.
+
+This is a convenience method that combines `openModal()` and `connect()` into a single call,
+simplifying the most common wallet connection pattern. The modal is automatically opened,
+and the method waits for the user to select and connect to a wallet.
+
+#### Parameters
+
+##### options?
+
+Optional connection options
+
+###### chainType?
+
+[`ChainType`](../enumerations/ChainType.md)
+
+Filter wallets by chain type (e.g., 'evm', 'solana')
+
+#### Returns
+
+`Promise`\<`undefined` \| [`WalletConnection`](WalletConnection.md)\>
+
+Promise resolving to connection details or undefined if cancelled
+
+#### Example
+
+```typescript
+// Simple connection with modal
+const connection = await client.connectWithModal();
+
+// Filter to EVM wallets only
+const connection = await client.connectWithModal({ chainType: ChainType.Evm });
+```
+
+#### Since
+
+1.1.0
+
+***
+
 ### destroy()
 
 > **destroy**(): `void`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:185
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:215
 
 Cleans up all resources and connections.
 
@@ -156,7 +209,7 @@ and ensure proper cleanup of event listeners and connections.
 
 > **disconnect**(`walletId?`): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:128
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:158
 
 Disconnects from wallet(s).
 
@@ -182,7 +235,7 @@ Promise that resolves when disconnection is complete
 
 > **disconnectAll**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:137
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:167
 
 Disconnects from all connected wallets.
 
@@ -201,7 +254,7 @@ Promise that resolves when all wallets are disconnected
 
 > **discoverWallets**(`options?`): `Promise`\<`any`[]\>
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:325
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:355
 
 Discovers available wallets in the user's environment.
 
@@ -241,7 +294,7 @@ const evmWallets = await client.discoverWallets({
 
 > **getActions**(): `HeadlessModalActions`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:199
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:229
 
 Gets available headless actions for programmatic control.
 
@@ -259,7 +312,7 @@ Object containing action methods
 
 > `optional` **getBalanceService**(): `unknown`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:255
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:285
 
 Gets the balance service for querying wallet balances.
 
@@ -277,7 +330,7 @@ Balance service instance
 
 > `optional` **getChainService**(): `unknown`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:231
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:261
 
 Gets the chain service for blockchain network operations.
 
@@ -295,7 +348,7 @@ Chain service instance
 
 > `optional` **getConnectionService**(): `unknown`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:239
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:269
 
 Gets the connection service for wallet connection management.
 
@@ -313,7 +366,7 @@ Connection service instance
 
 > `optional` **getDAppRpcService**(): `unknown`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:272
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:302
 
 Gets the dApp RPC service for direct blockchain communication.
 
@@ -332,7 +385,7 @@ dApp RPC service instance
 
 > `optional` **getPreferenceService**(): `unknown`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:263
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:293
 
 Gets the preference service for user preferences and history.
 
@@ -350,7 +403,7 @@ Preference service instance
 
 > **getPublicProvider**(`chainId`): `null` \| [`PublicProvider`](PublicProvider.md)
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:282
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:312
 
 Gets a public provider for read-only operations on the specified chain.
 
@@ -377,7 +430,7 @@ Public provider instance or null if not available
 
 > **getQueryManager**(): `unknown`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:223
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:253
 
 Gets the QueryManager for data fetching and caching.
 
@@ -393,7 +446,7 @@ QueryManager instance
 
 > **getServices**(): `object`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:212
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:242
 
 Gets all business logic services.
 
@@ -432,7 +485,7 @@ Object containing all available services
 
 > **getState**(): `HeadlessModalState`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:101
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:106
 
 Gets the current headless modal state.
 
@@ -451,7 +504,7 @@ Current modal state object
 
 > `optional` **getTransactionService**(): `unknown`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:247
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:277
 
 Gets the transaction service for blockchain transactions.
 
@@ -469,7 +522,7 @@ Transaction service instance
 
 > **getWalletAdapter**(`walletId`): `null` \| [`WalletAdapter`](WalletAdapter.md)
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:303
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:333
 
 Gets a wallet adapter by ID for provider-agnostic access.
 
@@ -497,7 +550,7 @@ The wallet adapter instance or null if not found
 
 > **getWalletProvider**(`chainId`): `null` \| `WalletProvider`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:292
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:322
 
 Gets the wallet provider for write operations on the specified chain.
 
@@ -524,7 +577,7 @@ Wallet provider instance or null if not connected
 
 > `optional` **initialize**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:178
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:208
 
 Initializes the client and all its services.
 
@@ -543,7 +596,7 @@ Promise that resolves when initialization is complete
 
 > **openModal**(`options?`): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:145
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:175
 
 Opens the wallet selection modal.
 
@@ -571,7 +624,7 @@ Promise that resolves when modal is opened
 
 > **subscribe**(`callback`): () => `void`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:108
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:113
 
 Subscribe to headless state changes.
 
@@ -599,7 +652,7 @@ Unsubscribe function to stop receiving updates
 
 > `optional` **switchChain**(`chainId`, `walletId?`): `Promise`\<\{ `chainId`: `string`; `chainType`: [`ChainType`](../enumerations/ChainType.md); `previousChainId`: `string`; `provider`: `unknown`; \}\>
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:164
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:194
 
 Switches to a different blockchain network.
 

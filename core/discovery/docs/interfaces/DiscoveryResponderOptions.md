@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: DiscoveryResponderOptions
 
-Defined in: [core/discovery/src/responder.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L34)
+Defined in: [core/discovery/src/responder.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder.ts#L37)
 
 Options for DiscoveryResponder configuration.
 
@@ -20,7 +20,7 @@ Options for DiscoveryResponder configuration.
 
 > `optional` **eventTarget**: `EventTarget`
 
-Defined in: [core/discovery/src/responder.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L40)
+Defined in: [core/discovery/src/responder.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder.ts#L43)
 
 Custom event target for testing
 
@@ -30,7 +30,7 @@ Custom event target for testing
 
 > `optional` **logger**: [`Logger`](Logger.md)
 
-Defined in: [core/discovery/src/responder.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L42)
+Defined in: [core/discovery/src/responder.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder.ts#L45)
 
 Custom logger instance
 
@@ -38,9 +38,9 @@ Custom logger instance
 
 ### security?
 
-> `optional` **security**: `string` \| [`SecurityPolicy`](SecurityPolicy.md)
+> `optional` **security**: [`SecurityPolicy`](SecurityPolicy.md) \| `"development"` \| `"testing"` \| `"production"` \| `"strict"`
 
-Defined in: [core/discovery/src/responder.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L36)
+Defined in: [core/discovery/src/responder.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder.ts#L39)
 
 Security policy preset name or custom policy
 
@@ -50,6 +50,6 @@ Security policy preset name or custom policy
 
 > `optional` **sessionOptions**: [`SessionOptions`](SessionOptions.md)
 
-Defined in: [core/discovery/src/responder.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/responder.ts#L38)
+Defined in: [core/discovery/src/responder.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder.ts#L41)
 
 Session management options

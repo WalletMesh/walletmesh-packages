@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionBuilder
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:493
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:620
 
 Session builder interface for creating sessions with fluent API
 
@@ -16,7 +16,7 @@ Session builder interface for creating sessions with fluent API
 
 > **build**(): `Promise`\<[`SessionState`](SessionState.md)\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:514
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:641
 
 Build the session
 
@@ -30,7 +30,7 @@ Build the session
 
 > **withAddresses**(`addresses`): `SessionBuilder`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:497
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:624
 
 Set addresses
 
@@ -50,7 +50,7 @@ Set addresses
 
 > **withChain**(`chain`): `SessionBuilder`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:499
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:626
 
 Set chain information
 
@@ -70,7 +70,7 @@ Set chain information
 
 > **withExpiration**(`expiresAt`): `SessionBuilder`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:512
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:639
 
 Set expiration
 
@@ -90,7 +90,7 @@ Set expiration
 
 > **withMetadata**(`metadata`): `SessionBuilder`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:510
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:637
 
 Set metadata
 
@@ -110,7 +110,7 @@ Set metadata
 
 > **withPermissions**(`permissions`): `SessionBuilder`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:508
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:635
 
 Set permissions
 
@@ -130,7 +130,7 @@ Set permissions
 
 > **withProvider**(`provider`, `metadata`): `SessionBuilder`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:501
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:628
 
 Set provider
 
@@ -168,7 +168,7 @@ Set provider
 
 > **withWallet**(`walletId`): `SessionBuilder`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:495
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:622
 
 Set wallet ID
 

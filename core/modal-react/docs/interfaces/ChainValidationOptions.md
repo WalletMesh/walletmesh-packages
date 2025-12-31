@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ChainValidationOptions
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:113](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L113)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:115](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L115)
 
 Chain validation options (from useEnsureChain)
 
@@ -16,7 +16,7 @@ Chain validation options (from useEnsureChain)
 
 > `optional` **autoSwitch**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:115](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L115)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:117](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L117)
 
 Whether to automatically switch to the required chain
 
@@ -26,7 +26,7 @@ Whether to automatically switch to the required chain
 
 > `optional` **errorMessage**: `string`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:117](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L117)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L119)
 
 Custom error message for chain mismatch
 
@@ -36,6 +36,6 @@ Custom error message for chain mismatch
 
 > `optional` **throwOnError**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L119)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:121](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L121)
 
 Whether to throw an error if chain switch fails

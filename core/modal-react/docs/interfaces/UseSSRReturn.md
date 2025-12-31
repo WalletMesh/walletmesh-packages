@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseSSRReturn
 
-Defined in: [core/modal-react/src/hooks/useSSR.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSSR.ts#L17)
+Defined in: [core/modal-react/src/hooks/useSSR.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSSR.ts#L17)
 
 SSR detection result
 
@@ -16,7 +16,7 @@ SSR detection result
 
 > **isBrowser**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useSSR.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSSR.ts#L21)
+Defined in: [core/modal-react/src/hooks/useSSR.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSSR.ts#L21)
 
 Whether code is running in browser
 
@@ -26,7 +26,7 @@ Whether code is running in browser
 
 > **isHydrated**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useSSR.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSSR.ts#L25)
+Defined in: [core/modal-react/src/hooks/useSSR.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSSR.ts#L25)
 
 Whether hydration is complete
 
@@ -36,7 +36,7 @@ Whether hydration is complete
 
 > **isMounted**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useSSR.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSSR.ts#L23)
+Defined in: [core/modal-react/src/hooks/useSSR.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSSR.ts#L23)
 
 Whether component has mounted on client
 
@@ -46,6 +46,6 @@ Whether component has mounted on client
 
 > **isServer**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useSSR.ts:19](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSSR.ts#L19)
+Defined in: [core/modal-react/src/hooks/useSSR.ts:19](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSSR.ts#L19)
 
 Whether code is running on server

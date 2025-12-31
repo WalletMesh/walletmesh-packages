@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createSandboxedIcons**(`icons`): `Promise`\<`HTMLIFrameElement`[]\>
 
-Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:96
+Defined in: core/modal-core/dist/api/utils/iconSandbox.d.ts:102
 
 Creates multiple sandboxed icons efficiently
 

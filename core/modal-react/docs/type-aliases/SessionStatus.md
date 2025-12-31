@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,8 +6,8 @@
 
 # Type Alias: SessionStatus
 
-> **SessionStatus** = `"initializing"` \| `"connecting"` \| `"connected"` \| `"switching"` \| `"disconnecting"` \| `"disconnected"` \| `"error"`
+> **SessionStatus** = `"connected"` \| `"connecting"` \| `"disconnected"` \| `"reconnecting"`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:50
+Defined in: core/modal-core/dist/utils/stateDerivation.d.ts:32
 
-Session status enumeration
+Session status type

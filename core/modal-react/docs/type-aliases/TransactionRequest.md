@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **TransactionRequest**\<`T`\> = `T` *extends* `"evm"` ? [`EVMTransactionParams`](../interfaces/EVMTransactionParams.md) : `T` *extends* `"solana"` ? [`SolanaTransactionParams`](../interfaces/SolanaTransactionParams.md) : `T` *extends* `"aztec"` ? `AztecTransactionParams` : `BaseTransactionParams`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:326
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:336
 
 Transaction request type that maps chain types to their specific parameter interfaces.
 

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Abstract Class: AbstractWalletAdapter
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:120
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:119
 
 Base Wallet Adapter - Foundation for wallet connection implementations
 
@@ -104,7 +104,7 @@ ADAPTER_PROVIDER_ARCHITECTURE.md for architecture details
 
 > `abstract` `readonly` **capabilities**: [`WalletCapabilities`](../interfaces/WalletCapabilities.md)
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:123
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:122
 
 Capabilities and requirements of this wallet
 
@@ -118,7 +118,7 @@ Capabilities and requirements of this wallet
 
 > `abstract` `readonly` **id**: `string`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:121
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:120
 
 Unique identifier for this wallet
 
@@ -132,7 +132,7 @@ Unique identifier for this wallet
 
 > `abstract` `readonly` **metadata**: [`WalletAdapterMetadata`](../interfaces/WalletAdapterMetadata.md)
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:122
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:121
 
 Display metadata for the wallet
 
@@ -146,7 +146,7 @@ Display metadata for the wallet
 
 > `readonly` **supportedProviders**: `Partial`\<`Record`\<[`ChainType`](../enumerations/ChainType.md), `ProviderClass`\>\>
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:128
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:127
 
 Default supported providers - empty by default
 Override in subclasses to specify supported provider classes
@@ -157,35 +157,13 @@ Override in subclasses to specify supported provider classes
 
 ## Accessors
 
-### connection
-
-#### Get Signature
-
-> **get** **connection**(): `null` \| [`WalletConnection`](../interfaces/WalletConnection.md)
-
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:172
-
-Get current connection (read-only)
-
-##### Returns
-
-`null` \| [`WalletConnection`](../interfaces/WalletConnection.md)
-
-Current connection if connected
-
-#### Implementation of
-
-[`WalletAdapter`](../interfaces/WalletAdapter.md).[`connection`](../interfaces/WalletAdapter.md#connection)
-
-***
-
 ### state
 
 #### Get Signature
 
 > **get** **state**(): [`WalletAdapterConnectionState`](../interfaces/WalletAdapterConnectionState.md)
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:168
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:182
 
 Get current connection state (read-only)
 
@@ -205,7 +183,7 @@ Current connection state
 
 > `abstract` **connect**(`options?`): `Promise`\<[`WalletConnection`](../interfaces/WalletConnection.md)\>
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:199
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:230
 
 Connect to the wallet
 
@@ -237,7 +215,7 @@ If connection fails
 
 > `abstract` **detect**(): `Promise`\<[`DetectionResult`](../interfaces/DetectionResult.md)\>
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:198
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:229
 
 Abstract methods that subclasses must implement
 
@@ -255,7 +233,7 @@ Abstract methods that subclasses must implement
 
 > `abstract` **disconnect**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:200
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:231
 
 Disconnect from the wallet
 
@@ -273,7 +251,7 @@ Disconnect from the wallet
 
 > `optional` **getJSONRPCTransport**(`_chainType`): `undefined` \| `JSONRPCTransport`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:225
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:256
 
 Default implementation returns undefined
 Override in subclasses to provide JSON-RPC transport
@@ -302,7 +280,7 @@ JSON-RPC transport instance or undefined if not supported
 
 > **getProvider**(`chainType`): `WalletProvider`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:232
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:263
 
 Get provider for a specific chain type
 
@@ -334,7 +312,7 @@ If chain type not supported or not connected
 
 > **hasProvider**(`chainType`): `boolean`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:237
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:268
 
 Check if a provider is available for a chain type
 
@@ -360,12 +338,22 @@ Type of blockchain to check
 
 > **install**(`context`): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:190
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:221
 
 Initialize the adapter with context
 
-Called by the framework when the adapter is registered. Subclasses can
-override to perform additional initialization but should call super.install().
+Called by the framework when the adapter is registered. This method sets up
+the adapter's logger, debug mode, and **automatically attempts to restore any
+previously persisted session from the Zustand store** to enable auto-reconnect
+across page refreshes.
+
+Subclasses can override to perform additional initialization but **must call
+super.install()** to ensure proper session restoration.
+
+**Session Restoration**: This method calls restoreSession which loads
+session data from the Zustand store and populates persistedSession.
+Subclasses can then check this field in their `connect()` method to implement
+automatic reconnection logic.
 
 #### Parameters
 
@@ -379,13 +367,26 @@ Adapter context with logger and configuration
 
 `Promise`\<`void`\>
 
+#### See
+
+ - restoreSession for session restoration details
+ - persistedSession for accessing restored session data
+
 #### Example
 
 ```typescript
 async install(context: AdapterContext): Promise<void> {
+  // Always call super first to restore session
   await super.install(context);
+
   // Additional initialization
   this.initializeCustomFeatures();
+
+  // Optionally check for persisted session
+  const session = this.getPersistedSession();
+  if (session) {
+    this.log('info', 'Found previous session, auto-reconnect available');
+  }
 }
 ```
 
@@ -399,7 +400,7 @@ async install(context: AdapterContext): Promise<void> {
 
 > **off**\<`E`\>(`event`, `handler`): `void`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:217
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:248
 
 Unsubscribe from an event
 
@@ -433,7 +434,7 @@ Unsubscribe from an event
 
 > **on**\<`E`\>(`event`, `handler`): `Unsubscribe`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:209
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:240
 
 Subscribe to adapter events
 
@@ -467,7 +468,7 @@ Subscribe to adapter events
 
 > **once**\<`E`\>(`event`, `handler`): `Unsubscribe`
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:213
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:244
 
 Subscribe to a one-time event
 
@@ -501,7 +502,7 @@ Subscribe to a one-time event
 
 > **uninstall**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:194
+Defined in: core/modal-core/dist/internal/wallets/base/AbstractWalletAdapter.d.ts:225
 
 Clean up adapter resources
 
