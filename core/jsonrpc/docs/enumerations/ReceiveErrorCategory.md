@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.3**](../README.md)
+[**@walletmesh/jsonrpc v0.5.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Enumeration: ReceiveErrorCategory
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:14](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L14)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:14](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L14)
 
 Error categories for receive errors
 
@@ -16,7 +16,7 @@ Error categories for receive errors
 
 > **METHOD**: `"METHOD"`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L20)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L20)
 
 Method errors - method not found or execution failure
 
@@ -26,7 +26,7 @@ Method errors - method not found or execution failure
 
 > **PARSE**: `"PARSE"`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:16](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L16)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:16](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L16)
 
 Parse errors - malformed JSON or invalid message structure
 
@@ -36,7 +36,7 @@ Parse errors - malformed JSON or invalid message structure
 
 > **TRANSPORT**: `"TRANSPORT"`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L22)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L22)
 
 Transport errors - communication failures
 
@@ -46,7 +46,7 @@ Transport errors - communication failures
 
 > **UNKNOWN**: `"UNKNOWN"`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L24)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L24)
 
 Unknown errors - unexpected failures
 
@@ -56,6 +56,6 @@ Unknown errors - unexpected failures
 
 > **VALIDATION**: `"VALIDATION"`
 
-Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L18)
+Defined in: [core/jsonrpc/src/error-handling/receiveErrorHandler.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/error-handling/receiveErrorHandler.ts#L18)
 
 Validation errors - invalid JSON-RPC format

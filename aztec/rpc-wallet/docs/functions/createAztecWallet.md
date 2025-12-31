@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.6**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.7**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createAztecWallet**(`provider`, `chainId`): `Promise`\<[`AztecDappWallet`](../classes/AztecDappWallet.md)\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:1173](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L1173)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:1173](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L1173)
 
 Helper function to create and initialize an AztecDappWallet instance.
 This is the recommended way to instantiate an Aztec wallet for dApp use,

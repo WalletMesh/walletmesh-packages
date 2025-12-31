@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-helpers v0.5.6**](../README.md)
+[**@walletmesh/aztec-helpers v0.5.7**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: EnhancedParameterInfo
 
-Defined in: [types.ts:16](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/types.ts#L16)
+Defined in: [types.ts:16](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/helpers/src/types.ts#L16)
 
 Enhanced parameter information that preserves full ABI type
 
@@ -19,7 +19,7 @@ from the contract artifact, enabling type-aware value formatting.
 
 > **abiType**: `AbiType`
 
-Defined in: [types.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/types.ts#L21)
+Defined in: [types.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/helpers/src/types.ts#L21)
 
 The full ABI type object from Aztec
 
@@ -29,7 +29,7 @@ The full ABI type object from Aztec
 
 > **name**: `string`
 
-Defined in: [types.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/types.ts#L18)
+Defined in: [types.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/helpers/src/types.ts#L18)
 
 The parameter name from the contract
 
@@ -39,6 +39,6 @@ The parameter name from the contract
 
 > **typeString**: `string`
 
-Defined in: [types.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/types.ts#L24)
+Defined in: [types.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/helpers/src/types.ts#L24)
 
 Human-readable type string for display

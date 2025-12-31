@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.6**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.7**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: AztecRouterProvider
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:97](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L97)
+Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:97](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L97)
 
 An extended [WalletRouterProvider](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/router/docs/index/classes/WalletRouterProvider.md) specifically for Aztec network interactions.
 
@@ -72,7 +72,7 @@ const address = await wallet.getAddress(); // AztecAddress instance
 
 > **new AztecRouterProvider**(`transport`, `options?`, `sessionId?`): `AztecRouterProvider`
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L111)
+Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L111)
 
 Constructs an instance of `AztecRouterProvider`.
 
@@ -621,7 +621,7 @@ If the request times out
 
 > **dispose**(): `void`
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:165](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L165)
+Defined in: [aztec/rpc-wallet/src/client/aztec-router-provider.ts:165](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/client/aztec-router-provider.ts#L165)
 
 Clean up resources when disposing the provider
 

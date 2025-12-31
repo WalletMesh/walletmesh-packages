@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ErrorBoundaryState
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:33](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L33)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:33](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L33)
 
 State for the WalletMeshErrorBoundary component
 
@@ -16,7 +16,7 @@ State for the WalletMeshErrorBoundary component
 
 > **error**: `unknown`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:37](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L37)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:37](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L37)
 
 The error that was caught, if any
 
@@ -26,7 +26,7 @@ The error that was caught, if any
 
 > **errorInfo**: `null` \| `ErrorInfo`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:39](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L39)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:39](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L39)
 
 Error info with component stack trace
 
@@ -36,6 +36,6 @@ Error info with component stack trace
 
 > **hasError**: `boolean`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:35](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L35)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:35](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L35)
 
 Whether an error has been caught

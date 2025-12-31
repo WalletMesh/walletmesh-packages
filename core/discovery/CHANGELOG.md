@@ -1,5 +1,11 @@
 # @walletmesh/discovery
 
+## 0.1.4
+
+### Patch Changes
+
+- 59804ec: Update all packages for aztec2
+
 ## 0.1.3
 
 ### Patch Changes

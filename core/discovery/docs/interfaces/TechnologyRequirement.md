@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.3**](../README.md)
+[**@walletmesh/discovery v0.1.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: TechnologyRequirement
 
-Defined in: [core/discovery/src/types/capabilities.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L24)
+Defined in: [core/discovery/src/types/capabilities.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/types/capabilities.ts#L24)
 
 Technology requirement for discovery.
 
@@ -25,7 +25,7 @@ specific chains.
 
 > `optional` **features**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L42)
+Defined in: [core/discovery/src/types/capabilities.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/types/capabilities.ts#L42)
 
 Technology-specific features required.
 These are features specific to this blockchain technology.
@@ -36,7 +36,7 @@ These are features specific to this blockchain technology.
 
 > **interfaces**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L36)
+Defined in: [core/discovery/src/types/capabilities.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/types/capabilities.ts#L36)
 
 Provider interfaces required for this technology.
 Listed in preference order - first match will be used.
@@ -48,7 +48,7 @@ Examples: 'eip-1193', 'solana-standard-wallet', 'aztec-connect-v2'
 
 > **type**: `"evm"` \| `"solana"` \| `"aztec"`
 
-Defined in: [core/discovery/src/types/capabilities.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L29)
+Defined in: [core/discovery/src/types/capabilities.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/types/capabilities.ts#L29)
 
 Blockchain technology type.
 Must be one of the supported technology types.

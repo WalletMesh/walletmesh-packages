@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.3**](../README.md)
+[**@walletmesh/discovery v0.1.4**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > `const` **RESPONDER\_PRESETS**: `Record`\<`string`, [`TechnologyCapability`](../interfaces/TechnologyCapability.md)\>
 
-Defined in: [core/discovery/src/presets/index.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/presets/index.ts#L149)
+Defined in: [core/discovery/src/presets/index.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/presets/index.ts#L149)
 
 Pre-configured technology capabilities for wallet responders.
 

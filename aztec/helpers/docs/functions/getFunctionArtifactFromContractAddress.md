@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-helpers v0.5.6**](../README.md)
+[**@walletmesh/aztec-helpers v0.5.7**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **getFunctionArtifactFromContractAddress**(`pxe`, `contractAddress`, `functionNameOrSelector`): `Promise`\<`FunctionArtifact`\>
 
-Defined in: [helpers.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/helpers.ts#L110)
+Defined in: [helpers.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/helpers/src/helpers.ts#L110)
 
 Retrieves the function artifact for a specific function within a contract.
 

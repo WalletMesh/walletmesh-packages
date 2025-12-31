@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ThemeTypography
 
-Defined in: [core/modal-react/src/theme/types.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L118)
+Defined in: [core/modal-react/src/theme/types.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/theme/types.ts#L118)
 
 Typography scale and settings
 
@@ -16,7 +16,7 @@ Typography scale and settings
 
 > **fontFamily**: `object`
 
-Defined in: [core/modal-react/src/theme/types.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L119)
+Defined in: [core/modal-react/src/theme/types.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/theme/types.ts#L119)
 
 #### mono
 
@@ -32,7 +32,7 @@ Defined in: [core/modal-react/src/theme/types.ts:119](https://github.com/WalletM
 
 > **fontSize**: `object`
 
-Defined in: [core/modal-react/src/theme/types.ts:123](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L123)
+Defined in: [core/modal-react/src/theme/types.ts:123](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/theme/types.ts#L123)
 
 #### 2xl
 
@@ -64,7 +64,7 @@ Defined in: [core/modal-react/src/theme/types.ts:123](https://github.com/WalletM
 
 > **fontWeight**: `object`
 
-Defined in: [core/modal-react/src/theme/types.ts:131](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L131)
+Defined in: [core/modal-react/src/theme/types.ts:131](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/theme/types.ts#L131)
 
 #### bold
 
@@ -88,7 +88,7 @@ Defined in: [core/modal-react/src/theme/types.ts:131](https://github.com/WalletM
 
 > **lineHeight**: `object`
 
-Defined in: [core/modal-react/src/theme/types.ts:137](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L137)
+Defined in: [core/modal-react/src/theme/types.ts:137](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/theme/types.ts#L137)
 
 #### normal
 

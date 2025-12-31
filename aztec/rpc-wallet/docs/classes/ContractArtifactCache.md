@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.6**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.7**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ContractArtifactCache
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/contractArtifactCache.ts#L30)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/contractArtifactCache.ts#L30)
 
 Manages an in-memory cache for Aztec ContractArtifacts.
 
@@ -38,7 +38,7 @@ to provide efficient artifact access to RPC method handlers.
 
 > **new ContractArtifactCache**(`wallet`): `ContractArtifactCache`
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/contractArtifactCache.ts#L52)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/contractArtifactCache.ts#L52)
 
 Creates a new `ContractArtifactCache` instance.
 
@@ -63,7 +63,7 @@ The `aztec.js` [Wallet](https://docs.aztec.network/reference/aztec.js/interfaces
 
 > **getContractArtifact**(`contractAddress`): `Promise`\<`ContractArtifact`\>
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/contractArtifactCache.ts#L91)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/contractArtifactCache.ts#L91)
 
 #### Parameters
 
@@ -81,7 +81,7 @@ Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:91](https://github.co
 
 > **rememberContractClass**(`artifact`): `Promise`\<`string`\>
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/contractArtifactCache.ts#L86)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/contractArtifactCache.ts#L86)
 
 #### Parameters
 
@@ -99,7 +99,7 @@ Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:86](https://github.co
 
 > **storeArtifactForAddress**(`address`, `artifact`): `void`
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/contractArtifactCache.ts#L82)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/contractArtifactCache.ts#L82)
 
 #### Parameters
 

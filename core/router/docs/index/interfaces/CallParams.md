@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.3**](../../README.md)
+[**@walletmesh/router v0.5.4**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CallParams
 
-Defined in: [core/router/src/types.ts:256](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L256)
+Defined in: [core/router/src/types.ts:256](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L256)
 
 Parameters required to invoke a single method on a specific chain.
 Used with the wm_call method to execute wallet operations.
@@ -25,7 +25,7 @@ Used with the wm_call method to execute wallet operations.
 
 > **call**: [`MethodCall`](MethodCall.md)
 
-Defined in: [core/router/src/types.ts:262](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L262)
+Defined in: [core/router/src/types.ts:262](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L262)
 
 Method call details including name and parameters
 
@@ -35,7 +35,7 @@ Method call details including name and parameters
 
 > **chainId**: `string`
 
-Defined in: [core/router/src/types.ts:258](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L258)
+Defined in: [core/router/src/types.ts:258](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L258)
 
 Target chain ID where the method will be executed
 
@@ -45,6 +45,6 @@ Target chain ID where the method will be executed
 
 > **sessionId**: `string`
 
-Defined in: [core/router/src/types.ts:260](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L260)
+Defined in: [core/router/src/types.ts:260](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L260)
 
 Session ID for authorization and context

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **ContractArtifact** = `AztecContractArtifact`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L39)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L39)
 
 Contract artifact type that handles different artifact formats
 from various Aztec contract packages. Automatically adds missing properties

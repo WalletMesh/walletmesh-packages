@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshConfig
 
-Defined in: [core/modal-react/src/types.ts:181](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L181)
+Defined in: [core/modal-react/src/types.ts:181](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L181)
 
 Headless WalletMesh configuration
 Pure business logic configuration without UI concerns
@@ -55,7 +55,7 @@ Should be a square image (recommended 256x256 or larger).
 
 > `optional` **appMetadata**: [`DAppMetadata`](DAppMetadata.md)
 
-Defined in: [core/modal-react/src/types.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L192)
+Defined in: [core/modal-react/src/types.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L192)
 
 dApp metadata for identification (auto-populated from appName/appDescription if not provided)
 
@@ -99,7 +99,7 @@ Used by wallets for verification and display.
 
 > **chains**: `object`[]
 
-Defined in: [core/modal-react/src/types.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L183)
+Defined in: [core/modal-react/src/types.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L183)
 
 Explicitly supported chains (required - no automatic chain selection)
 
@@ -303,7 +303,7 @@ Log prefix
 
 > `optional` **maxConnections**: `number`
 
-Defined in: [core/modal-react/src/types.ts:189](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L189)
+Defined in: [core/modal-react/src/types.ts:189](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L189)
 
 Maximum number of simultaneous wallet connections
 
@@ -362,6 +362,6 @@ Solana interfaces (e.g., ['solana-standard-wallet'])
 
 > `optional` **wallets**: [`WalletInfo`](WalletInfo.md)[]
 
-Defined in: [core/modal-react/src/types.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L186)
+Defined in: [core/modal-react/src/types.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L186)
 
 Wallet configurations - array of WalletInfo objects

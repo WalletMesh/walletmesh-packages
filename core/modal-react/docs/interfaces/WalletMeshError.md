@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshError
 
-Defined in: [core/modal-react/src/types/errors.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types/errors.ts#L38)
+Defined in: [core/modal-react/src/types/errors.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types/errors.ts#L38)
 
 ## Extends
 
@@ -30,7 +30,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.2/node\_modules/typescript/lib/li
 
 > **code**: [`WalletMeshErrorCode`](../enumerations/WalletMeshErrorCode.md)
 
-Defined in: [core/modal-react/src/types/errors.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types/errors.ts#L39)
+Defined in: [core/modal-react/src/types/errors.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types/errors.ts#L39)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [core/modal-react/src/types/errors.ts:39](https://github.com/WalletM
 
 > `optional` **details**: `unknown`
 
-Defined in: [core/modal-react/src/types/errors.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types/errors.ts#L41)
+Defined in: [core/modal-react/src/types/errors.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types/errors.ts#L41)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [core/modal-react/src/types/errors.ts:41](https://github.com/WalletM
 
 > **message**: `string`
 
-Defined in: [core/modal-react/src/types/errors.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types/errors.ts#L40)
+Defined in: [core/modal-react/src/types/errors.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types/errors.ts#L40)
 
 #### Overrides
 
@@ -70,7 +70,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.2/node\_modules/typescript/lib/li
 
 > `optional` **originalError**: `Error`
 
-Defined in: [core/modal-react/src/types/errors.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types/errors.ts#L42)
+Defined in: [core/modal-react/src/types/errors.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types/errors.ts#L42)
 
 ***
 

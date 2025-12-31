@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseSessionErrorReturn
 
-Defined in: [core/modal-react/src/hooks/useSessionError.ts:84](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSessionError.ts#L84)
+Defined in: [core/modal-react/src/hooks/useSessionError.ts:84](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSessionError.ts#L84)
 
 Return type for the useSessionError hook
 
@@ -16,7 +16,7 @@ Return type for the useSessionError hook
 
 > **clearSessionError**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useSessionError.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSessionError.ts#L93)
+Defined in: [core/modal-react/src/hooks/useSessionError.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSessionError.ts#L93)
 
 Manually clear the session error from the store
 
@@ -30,7 +30,7 @@ Manually clear the session error from the store
 
 > **sessionError**: `null` \| [`SessionError`](SessionError.md)
 
-Defined in: [core/modal-react/src/hooks/useSessionError.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSessionError.ts#L88)
+Defined in: [core/modal-react/src/hooks/useSessionError.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSessionError.ts#L88)
 
 Current session error, if any
 
@@ -40,7 +40,7 @@ Current session error, if any
 
 > **isSessionError**: (`error`) => `boolean`
 
-Defined in: [core/modal-react/src/hooks/useSessionError.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSessionError.ts#L99)
+Defined in: [core/modal-react/src/hooks/useSessionError.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSessionError.ts#L99)
 
 Check if any error is a session-related error
 This is a re-export of the utility function for convenience

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useAztecAuth**(): [`UseAztecAuthReturn`](../interfaces/UseAztecAuthReturn.md)
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecAuth.ts#L212)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:212](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L212)
 
 Hook for managing Aztec authorization witnesses
 

@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.3**](../README.md)
+[**@walletmesh/jsonrpc v0.5.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: JSONRPCRequest\<T, M, P\>
 
-Defined in: [core/jsonrpc/src/types.ts:242](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L242)
+Defined in: [core/jsonrpc/src/types.ts:242](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L242)
 
 Represents a JSON-RPC 2.0 request message.
 Requests can be either method calls (with an ID) or notifications (without an ID).
@@ -65,7 +65,7 @@ The parameters type for the method (defaults to JSONRPCParams)
 
 > `optional` **id**: [`JSONRPCID`](../type-aliases/JSONRPCID.md)
 
-Defined in: [core/jsonrpc/src/types.ts:254](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L254)
+Defined in: [core/jsonrpc/src/types.ts:254](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L254)
 
 The request ID.
 
@@ -75,7 +75,7 @@ The request ID.
 
 > **jsonrpc**: `"2.0"`
 
-Defined in: [core/jsonrpc/src/types.ts:248](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L248)
+Defined in: [core/jsonrpc/src/types.ts:248](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L248)
 
 The JSON-RPC version ('2.0').
 
@@ -85,7 +85,7 @@ The JSON-RPC version ('2.0').
 
 > **method**: `M`
 
-Defined in: [core/jsonrpc/src/types.ts:250](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L250)
+Defined in: [core/jsonrpc/src/types.ts:250](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L250)
 
 The method name.
 
@@ -95,6 +95,6 @@ The method name.
 
 > `optional` **params**: `P`
 
-Defined in: [core/jsonrpc/src/types.ts:252](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L252)
+Defined in: [core/jsonrpc/src/types.ts:252](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L252)
 
 The parameters of the method.

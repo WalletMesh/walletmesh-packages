@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.3**](../README.md)
+[**@walletmesh/discovery v0.1.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CapabilityRequirements
 
-Defined in: [core/discovery/src/types/capabilities.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L54)
+Defined in: [core/discovery/src/types/capabilities.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/types/capabilities.ts#L54)
 
 Capability requirements specification for responder discovery.
 
@@ -23,7 +23,7 @@ organized into technology-based requirements and global features.
 
 > **features**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L68)
+Defined in: [core/discovery/src/types/capabilities.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/types/capabilities.ts#L68)
 
 Global wallet features that must be available.
 These represent wallet-level functionalities beyond specific blockchain support,
@@ -36,7 +36,7 @@ See RESPONDER_FEATURES for standard values.
 
 > `optional` **networks**: `string`[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L77)
+Defined in: [core/discovery/src/types/capabilities.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/types/capabilities.ts#L77)
 
 Specific networks required (CAIP-2 format).
 Examples: 'eip155:1' (Ethereum mainnet), 'aztec:31337' (Aztec sandbox), 'solana:mainnet'
@@ -50,7 +50,7 @@ on multiple networks.
 
 > **technologies**: [`TechnologyRequirement`](TechnologyRequirement.md)[]
 
-Defined in: [core/discovery/src/types/capabilities.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/capabilities.ts#L60)
+Defined in: [core/discovery/src/types/capabilities.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/types/capabilities.ts#L60)
 
 Blockchain technologies that must be supported.
 Each technology includes its required interfaces and features.

@@ -1,8 +1,8 @@
-[**@walletmesh/modal-react v0.1.1**](README.md)
+[**@walletmesh/modal-react v0.1.2**](README.md)
 
 ***
 
-# @walletmesh/modal-react v0.1.1
+# @walletmesh/modal-react v0.1.2
 
 WalletMesh React Integration - Simplified Web3 Connection Library
 

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseAztecEventsReturn
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L29)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecEvents.ts#L29)
 
 Event subscription hook return type
 
@@ -16,7 +16,7 @@ Event subscription hook return type
 
 > **clearEvents**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L47)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecEvents.ts#L47)
 
 Clear all events from state
 
@@ -30,7 +30,7 @@ Clear all events from state
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L37)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecEvents.ts#L37)
 
 Any error that occurred
 
@@ -40,7 +40,7 @@ Any error that occurred
 
 > **events**: `unknown`[]
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L31)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecEvents.ts#L31)
 
 Array of events received (real-time + historical)
 
@@ -50,7 +50,7 @@ Array of events received (real-time + historical)
 
 > **isListening**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L33)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecEvents.ts#L33)
 
 Whether currently listening for events
 
@@ -60,7 +60,7 @@ Whether currently listening for events
 
 > **isLoading**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L35)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:35](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecEvents.ts#L35)
 
 Whether loading historical events
 
@@ -70,7 +70,7 @@ Whether loading historical events
 
 > **queryHistorical**: (`options?`) => `Promise`\<`unknown`[]\>
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L43)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecEvents.ts#L43)
 
 Query historical events
 
@@ -90,7 +90,7 @@ Query historical events
 
 > **queryPrivate**: (`recipients`, `options?`) => `Promise`\<`unknown`[]\>
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L45)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecEvents.ts#L45)
 
 Query private events
 
@@ -114,7 +114,7 @@ Query private events
 
 > **subscribe**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L39)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:39](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecEvents.ts#L39)
 
 Start listening for events
 
@@ -128,7 +128,7 @@ Start listening for events
 
 > **unsubscribe**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L41)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecEvents.ts#L41)
 
 Stop listening for events
 

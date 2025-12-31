@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.3**](../../README.md)
+[**@walletmesh/router v0.5.4**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: RouterEventMap
 
-Defined in: [core/router/src/types.ts:298](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L298)
+Defined in: [core/router/src/types.ts:298](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L298)
 
 Router event map for bi-directional communication.
 Defines events that can be emitted by the router for real-time state updates
@@ -26,7 +26,7 @@ and session management.
 
 > **connection:restored**: `object`
 
-Defined in: [core/router/src/types.ts:341](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L341)
+Defined in: [core/router/src/types.ts:341](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L341)
 
 Emitted when a session is successfully restored via reconnect
 
@@ -44,7 +44,7 @@ Emitted when a session is successfully restored via reconnect
 
 > **wm\_permissionsChanged**: `object`
 
-Defined in: [core/router/src/types.ts:321](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L321)
+Defined in: [core/router/src/types.ts:321](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L321)
 
 Emitted when a session's permissions are updated
 
@@ -62,7 +62,7 @@ Emitted when a session's permissions are updated
 
 > **wm\_sessionTerminated**: `object`
 
-Defined in: [core/router/src/types.ts:331](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L331)
+Defined in: [core/router/src/types.ts:331](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L331)
 
 Emitted when a session is terminated by the router
 
@@ -80,7 +80,7 @@ Emitted when a session is terminated by the router
 
 > **wm\_walletAvailabilityChanged**: `object`
 
-Defined in: [core/router/src/types.ts:351](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L351)
+Defined in: [core/router/src/types.ts:351](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L351)
 
 Emitted when a wallet's availability changes (added or removed)
 
@@ -98,7 +98,7 @@ Emitted when a wallet's availability changes (added or removed)
 
 > **wm\_walletStateChanged**: `object`
 
-Defined in: [core/router/src/types.ts:307](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L307)
+Defined in: [core/router/src/types.ts:307](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L307)
 
 Emitted when a wallet's state changes (e.g., account changes, network changes)
 

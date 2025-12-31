@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SwitchChainInfo
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L26)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSwitchChain.ts#L26)
 
 Chain information
 
@@ -16,7 +16,7 @@ Chain information
 
 > **chain**: `object`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L28)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSwitchChain.ts#L28)
 
 Chain configuration
 
@@ -58,7 +58,7 @@ Chain configuration
 
 > **chainType**: [`ChainType`](../enumerations/ChainType.md)
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L30)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSwitchChain.ts#L30)
 
 Chain type
 
@@ -68,7 +68,7 @@ Chain type
 
 > `optional` **icon**: `string`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L34)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSwitchChain.ts#L34)
 
 Chain icon URL
 
@@ -78,6 +78,6 @@ Chain icon URL
 
 > **name**: `string`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L32)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSwitchChain.ts#L32)
 
 Chain name

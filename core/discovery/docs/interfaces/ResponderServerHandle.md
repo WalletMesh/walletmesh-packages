@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.3**](../README.md)
+[**@walletmesh/discovery v0.1.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ResponderServerHandle
 
-Defined in: [core/discovery/src/responder/api.ts:9](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder/api.ts#L9)
+Defined in: [core/discovery/src/responder/api.ts:9](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/responder/api.ts#L9)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [core/discovery/src/responder/api.ts:9](https://github.com/WalletMes
 
 > **instance**: [`DiscoveryResponder`](../classes/DiscoveryResponder.md)
 
-Defined in: [core/discovery/src/responder/api.ts:10](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder/api.ts#L10)
+Defined in: [core/discovery/src/responder/api.ts:10](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/responder/api.ts#L10)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [core/discovery/src/responder/api.ts:10](https://github.com/WalletMe
 
 > **stop**: () => `void`
 
-Defined in: [core/discovery/src/responder/api.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder/api.ts#L11)
+Defined in: [core/discovery/src/responder/api.ts:11](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/responder/api.ts#L11)
 
 #### Returns
 

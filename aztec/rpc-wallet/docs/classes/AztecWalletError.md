@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.6**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.7**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: AztecWalletError
 
-Defined in: [aztec/rpc-wallet/src/errors.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/errors.ts#L96)
+Defined in: [aztec/rpc-wallet/src/errors.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/errors.ts#L96)
 
 Custom error class for representing errors specific to the Aztec RPC Wallet.
 It extends the base [JSONRPCError](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCError.md) from `@walletmesh/jsonrpc` and uses
@@ -34,7 +34,7 @@ if (!isConnected) {
 
 > **new AztecWalletError**(`errorType`, `data?`): `AztecWalletError`
 
-Defined in: [aztec/rpc-wallet/src/errors.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/errors.ts#L111)
+Defined in: [aztec/rpc-wallet/src/errors.ts:111](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/errors.ts#L111)
 
 Creates a new `AztecWalletError` instance.
 
@@ -69,7 +69,7 @@ Optional additional data associated with the error. This can be a string
 
 > `readonly` **aztecErrorType**: `AztecWalletErrorType`
 
-Defined in: [aztec/rpc-wallet/src/errors.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/errors.ts#L100)
+Defined in: [aztec/rpc-wallet/src/errors.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/errors.ts#L100)
 
 The specific Aztec wallet error type.
 

@@ -1,7 +1,7 @@
 {
   "name": "@walletmesh/aztec-example-wallet",
   "private": true,
-  "version": "0.5.6",
+  "version": "0.5.7",
   "type": "module",
   "publishConfig": {
     "publish": false

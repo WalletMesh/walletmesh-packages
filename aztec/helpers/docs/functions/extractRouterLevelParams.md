@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-helpers v0.5.6**](../README.md)
+[**@walletmesh/aztec-helpers v0.5.7**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **extractRouterLevelParams**\<`M`\>(`method`, `methodParams`): `undefined` \| [`RouterMethodParamMap`](../interfaces/RouterMethodParamMap.md)\[`M`\]
 
-Defined in: [middlewares/routerLevelExtractors.ts:300](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/middlewares/routerLevelExtractors.ts#L300)
+Defined in: [middlewares/routerLevelExtractors.ts:300](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/helpers/src/middlewares/routerLevelExtractors.ts#L300)
 
 Generic extractor that dispatches to the appropriate method-specific extractor
 based on the method name.

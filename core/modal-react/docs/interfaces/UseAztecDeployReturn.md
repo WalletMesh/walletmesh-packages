@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseAztecDeployReturn
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L86)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L86)
 
 Deployment hook return type
 
@@ -16,7 +16,7 @@ Deployment hook return type
 
 > **deploy**: (`artifact`, `args`, `options?`) => `Promise`\<`string`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:92](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L92)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:92](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L92)
 
 Deploy a contract asynchronously (non-blocking)
 Returns txStatusId immediately for background tracking
@@ -46,7 +46,7 @@ Transaction status notifications can be monitored via aztec_transactionStatus ev
 
 > **deployedAddress**: `null` \| `string` \| `AztecAddress`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:112](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L112)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:112](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L112)
 
 Last deployed contract address
 
@@ -56,7 +56,7 @@ Last deployed contract address
 
 > **deploySync**: (`artifact`, `args`, `options?`) => `Promise`\<[`DeploymentResult`](DeploymentResult.md)\>
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:98](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L98)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:98](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L98)
 
 Deploy a contract synchronously (blocking)
 Waits for deployment to complete and displays transaction overlay
@@ -86,7 +86,7 @@ Returns full deployment result with address, contract instance, and receipt
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:108](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L108)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:108](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L108)
 
 Any error that occurred during deployment
 
@@ -96,7 +96,7 @@ Any error that occurred during deployment
 
 > **isDeploying**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:104](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L104)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:104](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L104)
 
 Whether a deployment is currently in progress
 
@@ -106,7 +106,7 @@ Whether a deployment is currently in progress
 
 > **lastDeployment**: `null` \| [`DeploymentResult`](DeploymentResult.md)
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L114)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L114)
 
 Last deployment result
 
@@ -116,7 +116,7 @@ Last deployment result
 
 > **reset**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L116)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L116)
 
 Reset the deployment state
 
@@ -130,7 +130,7 @@ Reset the deployment state
 
 > **stage**: `AztecDeploymentStage`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L106)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L106)
 
 Current deployment stage
 
@@ -140,6 +140,6 @@ Current deployment stage
 
 > **txStatusId**: `null` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecDeploy.ts#L110)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L110)
 
 Transaction status ID for tracking the current/last deployment

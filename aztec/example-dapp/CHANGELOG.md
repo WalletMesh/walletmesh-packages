@@ -1,5 +1,15 @@
 # @walletmesh/aztec-example-dapp
 
+## 0.5.7
+
+### Patch Changes
+
+- 59804ec: Update all packages for aztec2
+- Updated dependencies [59804ec]
+  - @walletmesh/aztec-rpc-wallet@0.5.7
+  - @walletmesh/jsonrpc@0.5.4
+  - @walletmesh/modal-react@0.1.2
+
 ## 0.5.6
 
 ### Patch Changes

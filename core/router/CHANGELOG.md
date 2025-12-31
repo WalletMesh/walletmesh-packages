@@ -1,5 +1,13 @@
 # @walletmesh/router
 
+## 0.5.4
+
+### Patch Changes
+
+- 59804ec: Update all packages for aztec2
+- Updated dependencies [59804ec]
+  - @walletmesh/jsonrpc@0.5.4
+
 ## 0.5.3
 
 ### Patch Changes

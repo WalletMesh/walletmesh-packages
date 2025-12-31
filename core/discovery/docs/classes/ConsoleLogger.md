@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.3**](../README.md)
+[**@walletmesh/discovery v0.1.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ConsoleLogger
 
-Defined in: [core/discovery/src/core/logger.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/core/logger.ts#L45)
+Defined in: [core/discovery/src/core/logger.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/core/logger.ts#L45)
 
 Console logger implementation that writes to console.
 Used as the default logger when none is provided.
@@ -25,7 +25,7 @@ Used as the default logger when none is provided.
 
 > **new ConsoleLogger**(`prefix`): `ConsoleLogger`
 
-Defined in: [core/discovery/src/core/logger.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/core/logger.ts#L48)
+Defined in: [core/discovery/src/core/logger.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/core/logger.ts#L48)
 
 #### Parameters
 
@@ -43,7 +43,7 @@ Defined in: [core/discovery/src/core/logger.ts:48](https://github.com/WalletMesh
 
 > **debug**(`message`, `data?`): `void`
 
-Defined in: [core/discovery/src/core/logger.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/core/logger.ts#L52)
+Defined in: [core/discovery/src/core/logger.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/core/logger.ts#L52)
 
 Log debug message (only when debug is enabled)
 
@@ -75,7 +75,7 @@ Optional data to include with the message
 
 > **error**(`message`, `error?`): `void`
 
-Defined in: [core/discovery/src/core/logger.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/core/logger.ts#L76)
+Defined in: [core/discovery/src/core/logger.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/core/logger.ts#L76)
 
 Log error message
 
@@ -107,7 +107,7 @@ Optional error object or data to include
 
 > **info**(`message`, `data?`): `void`
 
-Defined in: [core/discovery/src/core/logger.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/core/logger.ts#L60)
+Defined in: [core/discovery/src/core/logger.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/core/logger.ts#L60)
 
 Log info message
 
@@ -139,7 +139,7 @@ Optional data to include with the message
 
 > **warn**(`message`, `data?`): `void`
 
-Defined in: [core/discovery/src/core/logger.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/core/logger.ts#L68)
+Defined in: [core/discovery/src/core/logger.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/core/logger.ts#L68)
 
 Log warning message
 

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useHasMounted**(): `boolean`
 
-Defined in: [core/modal-react/src/utils/ssr-walletmesh.ts:270](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/utils/ssr-walletmesh.ts#L270)
+Defined in: [core/modal-react/src/utils/ssr-walletmesh.ts:270](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/utils/ssr-walletmesh.ts#L270)
 
 Hook for detecting when component has mounted on client-side
 

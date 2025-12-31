@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.6**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.7**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **registerWalletAztecSerializers**(`node`): `void`
 
-Defined in: [aztec/rpc-wallet/src/wallet/serializers.ts:650](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/wallet/serializers.ts#L650)
+Defined in: [aztec/rpc-wallet/src/wallet/serializers.ts:650](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/wallet/serializers.ts#L650)
 
 Registers the [AztecWalletSerializer](../variables/AztecWalletSerializer.md) for all relevant Aztec JSON-RPC methods
 on a given [JSONRPCNode](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md) instance.

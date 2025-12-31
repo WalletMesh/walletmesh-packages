@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.3**](../../README.md)
+[**@walletmesh/router v0.5.4**](../../README.md)
 
 ***
 
@@ -8,4 +8,4 @@
 
 > `const` **defaultStore**: [`MemorySessionStore`](../classes/MemorySessionStore.md)
 
-Defined in: [core/router/src/session-store.ts:193](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/session-store.ts#L193)
+Defined in: [core/router/src/session-store.ts:193](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/session-store.ts#L193)
