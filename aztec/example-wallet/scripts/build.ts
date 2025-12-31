@@ -96,10 +96,13 @@ function runTypeScript(): void {
 function runVite(): void {
   console.log('Running Vite build...');
   try {
-    execSync('NODE_OPTIONS="--max-old-space-size=8192" vite build', {
+    execSync('pnpm exec vite build', {
       stdio: 'inherit',
       cwd: ROOT_DIR,
-      shell: true,
+      env: {
+        ...process.env,
+        NODE_OPTIONS: "--max-old-space-size=8192" 
+      }
     });
     console.log('Vite build completed');
   } catch (_error) {

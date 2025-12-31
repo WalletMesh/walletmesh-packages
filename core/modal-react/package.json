@@ -62,7 +62,7 @@
     "type-check": "tsc --noEmit",
     "clean": "rimraf dist tsconfig.build.tsbuildinfo tsconfig.tsbuildinfo",
     "rebuild": "pnpm clean && pnpm build",
-    "test": "NODE_OPTIONS='--max-old-space-size=16384' vitest run",
+    "test": "cross-env NODE_OPTIONS='--max-old-space-size=16384' vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "biome lint",
@@ -73,9 +73,9 @@
     "preversion": "pnpm test"
   },
   "peerDependencies": {
-    "@walletmesh/aztec-rpc-wallet": "^0.5.0",
     "@nemi-fi/wallet-sdk": "^1.0.0",
     "@solana/web3.js": "^1.0.0",
+    "@walletmesh/aztec-rpc-wallet": "^0.5.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   },
@@ -95,6 +95,7 @@
     "@walletmesh/modal-core": "workspace:*"
   },
   "devDependencies": {
+    "@aztec/aztec.js": "2.0.3",
     "@nemi-fi/wallet-sdk": "^1.0.0",
     "@solana/web3.js": "^1.95.8",
     "@testing-library/jest-dom": "^6.6.3",

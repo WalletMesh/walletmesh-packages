@@ -96,7 +96,7 @@ function runTypeScript(): void {
 function runVite(): void {
   console.log('Running Vite build...');
   try {
-    execSync('vite build', {
+    execSync('pnpm exec vite build', {
       stdio: 'inherit',
       cwd: ROOT_DIR,
     });
