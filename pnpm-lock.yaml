@@ -397,9 +397,6 @@ importers:
       '@walletmesh/aztec-rpc-wallet':
         specifier: workspace:*
         version: link:../../aztec/rpc-wallet
-      cross-env:
-        specifier: ^10.1.0
-        version: 10.1.0
       fake-indexeddb:
         specifier: ^6.2.4
         version: 6.2.4
@@ -458,6 +455,9 @@ importers:
       '@walletmesh/aztec-rpc-wallet':
         specifier: workspace:*
         version: link:../../aztec/rpc-wallet
+      cross-env:
+        specifier: ^10.1.0
+        version: 10.1.0
       dequal:
         specifier: ^2.0.3
         version: 2.0.3
@@ -4618,18 +4618,18 @@ packages:
     resolution: {integrity: sha512-fWMp40J+PEh9uXrYUD5Afqn4nrAFSYFfZeu+7XqyuCsFhwpTSJ4ZlnTz7JBED0Rht6dyKujVXWe8E/ns/Sqjng==}
     hasBin: true
     peerDependencies:
-      vite: '>=6.0.15'
+      vite: '>=6.1.6'
 
   vite-plugin-node-polyfills@0.24.0:
     resolution: {integrity: sha512-GA9QKLH+vIM8NPaGA+o2t8PDfFUl32J8rUp1zQfMKVJQiNkOX4unE51tR6ppl6iKw5yOrDAdSH7r/UIFLCVhLw==}
     peerDependencies:
-      vite: '>=6.0.15'
+      vite: '>=6.1.6'
 
   vite-plugin-static-copy@3.1.2:
     resolution: {integrity: sha512-aVmYOzptLVOI2b1jL+cmkF7O6uhRv1u5fvOkQgbohWZp2CbR22kn9ZqkCUIt9umKF7UhdbsEpshn1rf4720QFg==}
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
-      vite: '>=6.0.15'
+      vite: '>=6.1.6'
 
   vite-plugin-top-level-await@1.6.0:
     resolution: {integrity: sha512-bNhUreLamTIkoulCR9aDXbTbhLk6n1YE8NJUTTxl5RYskNRtzOR0ASzSjBVRtNdjIfngDXo11qOsybGLNsrdww==}
@@ -4786,6 +4786,7 @@ packages:
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
     engines: {node: '>=18'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
