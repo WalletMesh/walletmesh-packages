@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.3**](../../README.md)
+[**@walletmesh/router v0.5.4**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletRouterConfig
 
-Defined in: [core/router/src/router.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/router.ts#L64)
+Defined in: [core/router/src/router.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/router.ts#L64)
 
 Configuration options for the WalletRouter.
 
@@ -16,7 +16,7 @@ Configuration options for the WalletRouter.
 
 > `optional` **approvalQueue**: [`ApprovalQueueRouterConfig`](ApprovalQueueRouterConfig.md)
 
-Defined in: [core/router/src/router.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/router.ts#L119)
+Defined in: [core/router/src/router.ts:119](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/router.ts#L119)
 
 Optional approval queue configuration.
 When provided, enables request-based approval tracking to prevent
@@ -42,7 +42,7 @@ const router = new WalletRouter(transport, wallets, permissionManager, {
 
 > `optional` **debug**: `boolean`
 
-Defined in: [core/router/src/router.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/router.ts#L87)
+Defined in: [core/router/src/router.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/router.ts#L87)
 
 Optional flag to enable debug logging for router operations.
 If true, detailed logs will be output to the console.
@@ -61,7 +61,7 @@ false
 
 > `optional` **onSessionCreated**: (`sessionId`, `origin`) => `void`
 
-Defined in: [core/router/src/router.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/router.ts#L94)
+Defined in: [core/router/src/router.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/router.ts#L94)
 
 Optional callback invoked when a new session is created.
 Called after the session is successfully stored in the session store.
@@ -90,7 +90,7 @@ The origin that created the session
 
 > `optional` **onSessionDeleted**: (`sessionId`) => `void`
 
-Defined in: [core/router/src/router.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/router.ts#L100)
+Defined in: [core/router/src/router.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/router.ts#L100)
 
 Optional callback invoked when a session is deleted.
 Called after the session is removed from the session store.
@@ -113,7 +113,7 @@ The ID of the deleted session
 
 > `optional` **proxyConfig**: `Omit`\<`JSONRPCProxyConfig`, `"chainId"`\>
 
-Defined in: [core/router/src/router.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/router.ts#L79)
+Defined in: [core/router/src/router.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/router.ts#L79)
 
 Optional base configuration for JSONRPCProxy instances created by the router.
 This configuration is applied to each wallet proxy, with `chainId` being
@@ -129,7 +129,7 @@ JSONRPCProxyConfig from @walletmesh/jsonrpc
 
 > `optional` **sessionStore**: [`SessionStore`](SessionStore.md)
 
-Defined in: [core/router/src/router.ts:72](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/router.ts#L72)
+Defined in: [core/router/src/router.ts:72](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/router.ts#L72)
 
 Optional session store instance for persisting session data.
 Defaults to an in-memory store if not provided.

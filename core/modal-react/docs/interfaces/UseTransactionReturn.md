@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseTransactionReturn
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L56)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L56)
 
 Hook return type
 
@@ -16,7 +16,7 @@ Hook return type
 
 > **currentTransaction**: `null` \| [`CoreTransactionResult`](CoreTransactionResult.md)
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L64)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L64)
 
 Current transaction being processed
 
@@ -26,7 +26,7 @@ Current transaction being processed
 
 > **error**: `null` \| [`TransactionError`](TransactionError.md)
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L79)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L79)
 
 Error from last transaction
 
@@ -36,7 +36,7 @@ Error from last transaction
 
 > **estimateGas**: (`params`) => `Promise`\<`string`\>
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L94)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L94)
 
 Estimate gas for transaction (EVM only)
 
@@ -56,7 +56,7 @@ Estimate gas for transaction (EVM only)
 
 > **getTransaction**: (`hash`) => `undefined` \| [`CoreTransactionResult`](CoreTransactionResult.md)
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L85)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L85)
 
 Get transaction by hash
 
@@ -76,7 +76,7 @@ Get transaction by hash
 
 > **getTransactionById**: (`txId`) => `undefined` \| [`CoreTransactionResult`](CoreTransactionResult.md)
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L88)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:88](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L88)
 
 Get transaction by ID
 
@@ -96,7 +96,7 @@ Get transaction by ID
 
 > **isLoading**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L70)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:70](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L70)
 
 Whether a transaction is in progress
 
@@ -106,7 +106,7 @@ Whether a transaction is in progress
 
 > **isPending**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L73)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L73)
 
 Whether a transaction is pending (from mutation)
 
@@ -116,7 +116,7 @@ Whether a transaction is pending (from mutation)
 
 > **reset**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L82)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L82)
 
 Reset error state
 
@@ -130,7 +130,7 @@ Reset error state
 
 > **sendTransaction**: (`params`) => `Promise`\<[`CoreTransactionResult`](CoreTransactionResult.md)\>
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L58)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L58)
 
 Send a transaction
 
@@ -150,7 +150,7 @@ Send a transaction
 
 > **sendTransactionAsync**: (`params`) => `Promise`\<[`CoreTransactionResult`](CoreTransactionResult.md)\>
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L61)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L61)
 
 Mutate async for direct access to mutation
 
@@ -170,7 +170,7 @@ Mutate async for direct access to mutation
 
 > **simulateTransaction**: (`params`) => `Promise`\<`unknown`\>
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:97](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L97)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:97](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L97)
 
 Simulate transaction (Solana only)
 
@@ -190,7 +190,7 @@ Simulate transaction (Solana only)
 
 > **status**: [`TransactionStatus`](../type-aliases/TransactionStatus.md)
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L76)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L76)
 
 Current transaction status
 
@@ -200,7 +200,7 @@ Current transaction status
 
 > **transactions**: [`CoreTransactionResult`](CoreTransactionResult.md)[]
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L67)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L67)
 
 Transaction history for this session
 
@@ -210,7 +210,7 @@ Transaction history for this session
 
 > **waitForConfirmation**: (`hash`, `confirmations?`) => `Promise`\<[`CoreTransactionResult`](CoreTransactionResult.md)\>
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransaction.ts#L91)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L91)
 
 Wait for transaction confirmation
 

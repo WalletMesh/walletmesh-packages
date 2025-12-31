@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **EVMConnectButton**(`__namedParameters`): `Element`
 
-Defined in: [core/modal-react/src/components/EVMConnectButton.tsx:127](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/EVMConnectButton.tsx#L127)
+Defined in: [core/modal-react/src/components/EVMConnectButton.tsx:127](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/EVMConnectButton.tsx#L127)
 
 EVM-specific connect button that wraps WalletMeshConnectButton.
 Adds transaction status indicator and EVM-specific defaults.

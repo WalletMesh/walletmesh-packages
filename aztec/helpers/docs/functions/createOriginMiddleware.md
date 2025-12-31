@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-helpers v0.5.6**](../README.md)
+[**@walletmesh/aztec-helpers v0.5.7**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createOriginMiddleware**(`dappOrigin?`): `JSONRPCMiddleware`\<`RouterMethodMap`, `RouterContext`\>
 
-Defined in: [middlewares/originMiddleware.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/middlewares/originMiddleware.ts#L55)
+Defined in: [middlewares/originMiddleware.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/helpers/src/middlewares/originMiddleware.ts#L55)
 
 Creates middleware that injects the origin into the router context.
 The origin is determined by looking at the dApp that opened this wallet window.

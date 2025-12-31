@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-helpers v0.5.6**](../README.md)
+[**@walletmesh/aztec-helpers v0.5.7**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **getEnhancedParameterInfo**(`pxe`, `contractAddress`, `functionNameOrSelector`): `Promise`\<[`EnhancedParameterInfo`](../interfaces/EnhancedParameterInfo.md)[]\>
 
-Defined in: [helpers.ts:204](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/helpers.ts#L204)
+Defined in: [helpers.ts:204](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/helpers/src/helpers.ts#L204)
 
 Retrieves enhanced parameter information with full ABI types preserved
 

@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.3**](../README.md)
+[**@walletmesh/discovery v0.1.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: OriginValidator
 
-Defined in: [core/discovery/src/security.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L31)
+Defined in: [core/discovery/src/security.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L31)
 
 Origin validator implementing robust validation and anti-spoofing measures.
 
@@ -20,7 +20,7 @@ Origin validator implementing robust validation and anti-spoofing measures.
 
 > **new OriginValidator**(`policy?`, `logger?`): `OriginValidator`
 
-Defined in: [core/discovery/src/security.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L37)
+Defined in: [core/discovery/src/security.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L37)
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Defined in: [core/discovery/src/security.ts:37](https://github.com/WalletMesh/wa
 
 > **updatePolicy**(`policy`): `void`
 
-Defined in: [core/discovery/src/security.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L96)
+Defined in: [core/discovery/src/security.ts:96](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L96)
 
 Update the security policy.
 
@@ -62,7 +62,7 @@ Update the security policy.
 
 > **validateEventOrigin**(`eventOrigin`, `claimedOrigin`): [`OriginValidationResult`](../interfaces/OriginValidationResult.md)
 
-Defined in: [core/discovery/src/security.ts:105](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L105)
+Defined in: [core/discovery/src/security.ts:105](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L105)
 
 Validate that event origin matches the claimed origin.
 
@@ -86,7 +86,7 @@ Validate that event origin matches the claimed origin.
 
 > **validateOrigin**(`origin`): [`OriginValidationResult`](../interfaces/OriginValidationResult.md)
 
-Defined in: [core/discovery/src/security.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L51)
+Defined in: [core/discovery/src/security.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L51)
 
 Validate an origin against the security policy.
 

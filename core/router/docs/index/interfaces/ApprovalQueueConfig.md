@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.3**](../../README.md)
+[**@walletmesh/router v0.5.4**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ApprovalQueueConfig
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L44)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L44)
 
 Configuration options for the approval queue manager.
 
@@ -16,7 +16,7 @@ Configuration options for the approval queue manager.
 
 > `optional` **debug**: `boolean`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L50)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L50)
 
 Enable debug logging
 
@@ -26,7 +26,7 @@ Enable debug logging
 
 > `optional` **defaultTimeout**: `number`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L46)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L46)
 
 Default timeout in milliseconds. Defaults to 5 minutes (300000ms)
 
@@ -36,7 +36,7 @@ Default timeout in milliseconds. Defaults to 5 minutes (300000ms)
 
 > `optional` **onTimeout**: (`context`) => `void`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L48)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L48)
 
 Callback invoked when an approval request times out
 

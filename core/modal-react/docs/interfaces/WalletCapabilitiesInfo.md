@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletCapabilitiesInfo
 
-Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletCapabilities.ts#L20)
+Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletCapabilities.ts#L20)
 
 Wallet capabilities information
 
@@ -16,7 +16,7 @@ Wallet capabilities information
 
 > **capabilities**: `null` \| [`WalletCapabilities`](WalletCapabilities.md)
 
-Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletCapabilities.ts#L22)
+Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletCapabilities.ts#L22)
 
 The wallet capabilities
 
@@ -26,7 +26,7 @@ The wallet capabilities
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletCapabilities.ts#L26)
+Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletCapabilities.ts#L26)
 
 Error loading capabilities
 
@@ -36,7 +36,7 @@ Error loading capabilities
 
 > **isLoading**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletCapabilities.ts#L24)
+Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletCapabilities.ts#L24)
 
 Whether capabilities are being loaded
 
@@ -46,7 +46,7 @@ Whether capabilities are being loaded
 
 > **refresh**: () => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletCapabilities.ts#L34)
+Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletCapabilities.ts#L34)
 
 Refresh capabilities
 
@@ -60,7 +60,7 @@ Refresh capabilities
 
 > **supportsChain**: (`type`) => `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletCapabilities.ts#L28)
+Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletCapabilities.ts#L28)
 
 Check if a chain type is supported
 
@@ -80,7 +80,7 @@ Check if a chain type is supported
 
 > **supportsChainId**: (`chainId`) => `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletCapabilities.ts#L32)
+Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletCapabilities.ts#L32)
 
 Check if a chain is supported by chain ID
 
@@ -100,7 +100,7 @@ Check if a chain is supported by chain ID
 
 > **supportsMethod**: (`method`) => `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletCapabilities.ts#L30)
+Defined in: [core/modal-react/src/hooks/useWalletCapabilities.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletCapabilities.ts#L30)
 
 Check if a method is supported
 

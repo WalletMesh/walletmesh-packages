@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.3**](../../README.md)
+[**@walletmesh/router v0.5.4**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ApprovalContext
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L20)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L20)
 
 Context information for an approval request.
 Each request has its own context keyed by the unique JSON-RPC request ID.
@@ -17,7 +17,7 @@ Each request has its own context keyed by the unique JSON-RPC request ID.
 
 > **chainId**: `string`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L24)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L24)
 
 Chain ID where the request will be executed
 
@@ -27,7 +27,7 @@ Chain ID where the request will be executed
 
 > **method**: `string`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L26)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L26)
 
 Method name being called
 
@@ -37,7 +37,7 @@ Method name being called
 
 > `optional` **origin**: `string`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L30)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L30)
 
 Origin of the request (e.g., "https://app.example.com")
 
@@ -47,7 +47,7 @@ Origin of the request (e.g., "https://app.example.com")
 
 > `optional` **params**: `unknown`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L28)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L28)
 
 Method parameters
 
@@ -57,7 +57,7 @@ Method parameters
 
 > **queuedAt**: `number`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L38)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L38)
 
 Timestamp when the approval was queued
 
@@ -67,7 +67,7 @@ Timestamp when the approval was queued
 
 > **requestId**: `string` \| `number`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L22)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L22)
 
 Unique JSON-RPC request ID - the key that prevents race conditions
 
@@ -77,7 +77,7 @@ Unique JSON-RPC request ID - the key that prevents race conditions
 
 > `optional` **sessionId**: `string`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L32)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L32)
 
 Session ID for the request
 
@@ -87,7 +87,7 @@ Session ID for the request
 
 > **state**: [`ApprovalState`](../type-aliases/ApprovalState.md)
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L36)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L36)
 
 Current state of the approval
 
@@ -97,6 +97,6 @@ Current state of the approval
 
 > `optional` **txStatusId**: `string`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L34)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L34)
 
 Unique transaction status ID for correlation with transaction tracking

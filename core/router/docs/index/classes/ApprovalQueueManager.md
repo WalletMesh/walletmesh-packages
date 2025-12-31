@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.3**](../../README.md)
+[**@walletmesh/router v0.5.4**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ApprovalQueueManager
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L94)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L94)
 
 Manages a queue of pending approval requests with Promise-based blocking.
 
@@ -45,7 +45,7 @@ manager.resolveApproval('req-123', true); // or false to deny
 
 > **new ApprovalQueueManager**(`config`): `ApprovalQueueManager`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:107](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L107)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:107](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L107)
 
 #### Parameters
 
@@ -63,7 +63,7 @@ Defined in: [core/router/src/approval/ApprovalQueueManager.ts:107](https://githu
 
 > **cleanup**(`requestId`): `void`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:276](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L276)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:276](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L276)
 
 Clean up resources for a specific request ID.
 
@@ -85,7 +85,7 @@ The request ID to clean up
 
 > **cleanupAll**(): `void`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:295](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L295)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:295](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L295)
 
 Clean up all pending approvals.
 This will reject all pending Promises.
@@ -100,7 +100,7 @@ This will reject all pending Promises.
 
 > **getAllPending**(): [`ApprovalContext`](../interfaces/ApprovalContext.md)[]
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:248](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L248)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:248](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L248)
 
 Get all pending approval contexts.
 
@@ -116,7 +116,7 @@ Array of all pending approval contexts
 
 > **getPending**(`requestId`): `undefined` \| [`ApprovalContext`](../interfaces/ApprovalContext.md)
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:239](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L239)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:239](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L239)
 
 Get a pending approval context by request ID.
 
@@ -140,7 +140,7 @@ The approval context if found, undefined otherwise
 
 > **getPendingCount**(): `number`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:257](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L257)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:257](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L257)
 
 Get the count of pending approvals.
 
@@ -156,7 +156,7 @@ Number of pending approval requests
 
 > **hasPending**(`requestId`): `boolean`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:267](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L267)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:267](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L267)
 
 Check if there is a pending approval for a request ID.
 
@@ -180,7 +180,7 @@ true if there is a pending approval
 
 > **queueApproval**(`context`, `timeout?`): `Promise`\<`boolean`\>
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L136)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L136)
 
 Queue an approval request and block until it is resolved.
 
@@ -218,7 +218,7 @@ Error if the request times out or is already pending
 
 > **resolveApproval**(`requestId`, `approved`): `boolean`
 
-Defined in: [core/router/src/approval/ApprovalQueueManager.ts:210](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/approval/ApprovalQueueManager.ts#L210)
+Defined in: [core/router/src/approval/ApprovalQueueManager.ts:210](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/approval/ApprovalQueueManager.ts#L210)
 
 Resolve an approval request with the user's decision.
 

@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.3**](../README.md)
+[**@walletmesh/jsonrpc v0.5.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: JSONRPCMethodMap
 
-Defined in: [core/jsonrpc/src/types.ts:158](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L158)
+Defined in: [core/jsonrpc/src/types.ts:158](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L158)
 
 Maps method names to their definitions in a JSON-RPC interface.
 

@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.3**](../README.md)
+[**@walletmesh/discovery v0.1.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ProtocolError
 
-Defined in: [core/discovery/src/utils/validation.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L55)
+Defined in: [core/discovery/src/utils/validation.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L55)
 
 Protocol error with standardized error codes and categories.
 
@@ -28,7 +28,7 @@ management across the discovery protocol implementation.
 
 > **new ProtocolError**(`code`, `context?`, `customMessage?`): `ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L61)
+Defined in: [core/discovery/src/utils/validation.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L61)
 
 #### Parameters
 
@@ -58,7 +58,7 @@ Defined in: [core/discovery/src/utils/validation.ts:61](https://github.com/Walle
 
 > `readonly` **category**: [`ErrorCategory`](../type-aliases/ErrorCategory.md) \| `"unknown"`
 
-Defined in: [core/discovery/src/utils/validation.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L57)
+Defined in: [core/discovery/src/utils/validation.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L57)
 
 ***
 
@@ -78,7 +78,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.2/node\_modules/typescript/lib/li
 
 > `readonly` **code**: `number`
 
-Defined in: [core/discovery/src/utils/validation.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L56)
+Defined in: [core/discovery/src/utils/validation.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L56)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [core/discovery/src/utils/validation.ts:56](https://github.com/Walle
 
 > `readonly` `optional` **context**: `Record`\<`string`, `unknown`\>
 
-Defined in: [core/discovery/src/utils/validation.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L59)
+Defined in: [core/discovery/src/utils/validation.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L59)
 
 ***
 
@@ -118,7 +118,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.2/node\_modules/typescript/lib/li
 
 > `readonly` **silent**: `boolean`
 
-Defined in: [core/discovery/src/utils/validation.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L58)
+Defined in: [core/discovery/src/utils/validation.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L58)
 
 ***
 
@@ -160,7 +160,7 @@ not capture any frames.
 
 > `static` **capabilityNotSupported**(`capability`): `ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L94)
+Defined in: [core/discovery/src/utils/validation.ts:94](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L94)
 
 #### Parameters
 
@@ -248,7 +248,7 @@ a();
 
 > `static` **chainNotSupported**(`chain`): `ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:98](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L98)
+Defined in: [core/discovery/src/utils/validation.ts:98](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L98)
 
 #### Parameters
 
@@ -266,7 +266,7 @@ Defined in: [core/discovery/src/utils/validation.ts:98](https://github.com/Walle
 
 > `static` **invalidMessageFormat**(`reason`): `ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L106)
+Defined in: [core/discovery/src/utils/validation.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L106)
 
 #### Parameters
 
@@ -308,7 +308,7 @@ Indicates whether the argument provided is a built-in Error instance or not.
 
 > `static` **isProtocolError**(`error`): `error is ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L114)
+Defined in: [core/discovery/src/utils/validation.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L114)
 
 #### Parameters
 
@@ -326,7 +326,7 @@ Defined in: [core/discovery/src/utils/validation.ts:114](https://github.com/Wall
 
 > `static` **messageTooLarge**(`size`, `maxSize`): `ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L102)
+Defined in: [core/discovery/src/utils/validation.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L102)
 
 #### Parameters
 
@@ -348,7 +348,7 @@ Defined in: [core/discovery/src/utils/validation.ts:102](https://github.com/Wall
 
 > `static` **missingRequiredField**(`field`): `ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L110)
+Defined in: [core/discovery/src/utils/validation.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L110)
 
 #### Parameters
 
@@ -366,7 +366,7 @@ Defined in: [core/discovery/src/utils/validation.ts:110](https://github.com/Wall
 
 > `static` **originBlocked**(`origin`): `ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:90](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L90)
+Defined in: [core/discovery/src/utils/validation.ts:90](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L90)
 
 #### Parameters
 
@@ -384,7 +384,7 @@ Defined in: [core/discovery/src/utils/validation.ts:90](https://github.com/Walle
 
 > `static` **originValidationFailed**(`origin`, `reason?`): `ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:78](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L78)
+Defined in: [core/discovery/src/utils/validation.ts:78](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L78)
 
 #### Parameters
 
@@ -436,7 +436,7 @@ https://v8.dev/docs/stack-trace-api#customizing-stack-traces
 
 > `static` **rateLimitExceeded**(`origin`, `limit`): `ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L82)
+Defined in: [core/discovery/src/utils/validation.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L82)
 
 #### Parameters
 
@@ -458,7 +458,7 @@ Defined in: [core/discovery/src/utils/validation.ts:82](https://github.com/Walle
 
 > `static` **sessionReplayDetected**(`sessionId`, `origin`): `ProtocolError`
 
-Defined in: [core/discovery/src/utils/validation.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L86)
+Defined in: [core/discovery/src/utils/validation.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L86)
 
 #### Parameters
 
@@ -480,7 +480,7 @@ Defined in: [core/discovery/src/utils/validation.ts:86](https://github.com/Walle
 
 > `static` **shouldSilentlyFail**(`error`): `boolean`
 
-Defined in: [core/discovery/src/utils/validation.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/utils/validation.ts#L118)
+Defined in: [core/discovery/src/utils/validation.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/utils/validation.ts#L118)
 
 #### Parameters
 

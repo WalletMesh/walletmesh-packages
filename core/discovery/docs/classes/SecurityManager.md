@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.3**](../README.md)
+[**@walletmesh/discovery v0.1.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: SecurityManager
 
-Defined in: [core/discovery/src/security.ts:542](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L542)
+Defined in: [core/discovery/src/security.ts:542](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L542)
 
 Integrated security manager combining all security features.
 
@@ -20,7 +20,7 @@ Integrated security manager combining all security features.
 
 > **new SecurityManager**(`policy?`, `logger?`): `SecurityManager`
 
-Defined in: [core/discovery/src/security.ts:547](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L547)
+Defined in: [core/discovery/src/security.ts:547](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L547)
 
 #### Parameters
 
@@ -42,7 +42,7 @@ Defined in: [core/discovery/src/security.ts:547](https://github.com/WalletMesh/w
 
 > **dispose**(): `void`
 
-Defined in: [core/discovery/src/security.ts:609](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L609)
+Defined in: [core/discovery/src/security.ts:609](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L609)
 
 Cleanup resources.
 
@@ -56,7 +56,7 @@ Cleanup resources.
 
 > **getStats**(): `object`
 
-Defined in: [core/discovery/src/security.ts:592](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L592)
+Defined in: [core/discovery/src/security.ts:592](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L592)
 
 Get security statistics.
 
@@ -82,7 +82,7 @@ Get security statistics.
 
 > **updatePolicy**(`policy`): `void`
 
-Defined in: [core/discovery/src/security.ts:582](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L582)
+Defined in: [core/discovery/src/security.ts:582](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L582)
 
 Update security policy.
 
@@ -102,7 +102,7 @@ Update security policy.
 
 > **validateRequest**(`origin`, `sessionId`): `object`
 
-Defined in: [core/discovery/src/security.ts:556](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/security.ts#L556)
+Defined in: [core/discovery/src/security.ts:556](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/security.ts#L556)
 
 Validate a discovery request comprehensively.
 

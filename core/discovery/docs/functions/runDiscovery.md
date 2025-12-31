@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.3**](../README.md)
+[**@walletmesh/discovery v0.1.4**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **runDiscovery**(`params`): `Promise`\<[`QualifiedResponder`](../interfaces/QualifiedResponder.md)[]\>
 
-Defined in: [core/discovery/src/initiator/api.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/initiator/api.ts#L30)
+Defined in: [core/discovery/src/initiator/api.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/initiator/api.ts#L30)
 
 Run a single discovery cycle and resolve with qualified responders. The
 underlying session is disposed automatically once the promise settles.

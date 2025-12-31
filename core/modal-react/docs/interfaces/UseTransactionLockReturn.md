@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseTransactionLockReturn
 
-Defined in: [core/modal-react/src/hooks/useTransactionLock.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransactionLock.ts#L25)
+Defined in: [core/modal-react/src/hooks/useTransactionLock.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransactionLock.ts#L25)
 
 Return type for the useTransactionLock hook.
 
@@ -16,7 +16,7 @@ Return type for the useTransactionLock hook.
 
 > **isLocked**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useTransactionLock.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransactionLock.ts#L27)
+Defined in: [core/modal-react/src/hooks/useTransactionLock.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransactionLock.ts#L27)
 
 Whether the lock is currently held
 
@@ -26,7 +26,7 @@ Whether the lock is currently held
 
 > **lock**: () => `boolean`
 
-Defined in: [core/modal-react/src/hooks/useTransactionLock.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransactionLock.ts#L32)
+Defined in: [core/modal-react/src/hooks/useTransactionLock.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransactionLock.ts#L32)
 
 Attempt to acquire the lock.
 
@@ -42,7 +42,7 @@ true if lock was acquired, false if already locked
 
 > **unlock**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useTransactionLock.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransactionLock.ts#L34)
+Defined in: [core/modal-react/src/hooks/useTransactionLock.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransactionLock.ts#L34)
 
 Release the lock
 
@@ -56,7 +56,7 @@ Release the lock
 
 > **withLock**: \<`T`\>(`fn`) => `Promise`\<`T`\>
 
-Defined in: [core/modal-react/src/hooks/useTransactionLock.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useTransactionLock.ts#L40)
+Defined in: [core/modal-react/src/hooks/useTransactionLock.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransactionLock.ts#L40)
 
 Execute a function with automatic lock management.
 Acquires lock, executes function, releases lock on completion.

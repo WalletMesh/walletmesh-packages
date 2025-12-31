@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -10,7 +10,7 @@
 
 > **useWalletEvents**(): [`UseWalletEventsReturn`](../interfaces/UseWalletEventsReturn.md)
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletEvents.ts#L203)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:203](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletEvents.ts#L203)
 
 Wallet event subscription hook
 
@@ -66,7 +66,7 @@ off('chain:switched');
 
 > **useWalletEvents**\<`K`\>(`event`, `handler`, `options?`): [`UseWalletEventsReturn`](../interfaces/UseWalletEventsReturn.md)
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:204](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletEvents.ts#L204)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:204](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletEvents.ts#L204)
 
 Wallet event subscription hook
 
@@ -142,7 +142,7 @@ off('chain:switched');
 
 > **useWalletEvents**(`handlers`, `options?`): [`UseWalletEventsReturn`](../interfaces/UseWalletEventsReturn.md)
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:209](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletEvents.ts#L209)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:209](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletEvents.ts#L209)
 
 Wallet event subscription hook
 
@@ -208,7 +208,7 @@ off('chain:switched');
 
 > **useWalletEvents**(`events`, `options?`): [`UseWalletEventsReturn`](../interfaces/UseWalletEventsReturn.md)
 
-Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:210](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletEvents.ts#L210)
+Defined in: [core/modal-react/src/hooks/useWalletEvents.ts:210](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletEvents.ts#L210)
 
 Wallet event subscription hook
 

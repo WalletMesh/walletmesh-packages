@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseQueryInvalidationReturn
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L32)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L32)
 
 Hook return type for query invalidation utilities
 
@@ -16,7 +16,7 @@ Hook return type for query invalidation utilities
 
 > **invalidateAll**: (`options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L34)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L34)
 
 Invalidate all WalletMesh queries
 
@@ -36,7 +36,7 @@ Invalidate all WalletMesh queries
 
 > **invalidateBalance**: (`chain`, `address`, `options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L40)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L40)
 
 Invalidate balance for specific address and chain
 
@@ -94,7 +94,7 @@ Invalidate balance for specific address and chain
 
 > **invalidateBalances**: (`options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L37)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L37)
 
 Invalidate all balance queries
 
@@ -114,7 +114,7 @@ Invalidate all balance queries
 
 > **invalidateChain**: (`chain`, `options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L86)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L86)
 
 Invalidate specific chain
 
@@ -168,7 +168,7 @@ Invalidate specific chain
 
 > **invalidateChains**: (`options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:83](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L83)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:83](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L83)
 
 Invalidate all chain queries
 
@@ -188,7 +188,7 @@ Invalidate all chain queries
 
 > **invalidateContract**: (`chain`, `address`, `options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L64)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L64)
 
 Invalidate specific contract
 
@@ -246,7 +246,7 @@ Invalidate specific contract
 
 > **invalidateContractMethod**: (`chain`, `address`, `methodSig`, `params?`, `options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L71)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L71)
 
 Invalidate contract method calls
 
@@ -312,7 +312,7 @@ readonly `unknown`[]
 
 > **invalidateContracts**: (`options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L61)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L61)
 
 Invalidate all contract queries
 
@@ -332,7 +332,7 @@ Invalidate all contract queries
 
 > **invalidateContractsByChain**: (`chain`, `options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L80)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:80](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L80)
 
 Invalidate all contracts on a chain
 
@@ -386,7 +386,7 @@ Invalidate all contracts on a chain
 
 > **invalidateCustom**: (`queryKey`, `options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L89)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L89)
 
 Invalidate custom query pattern
 
@@ -410,7 +410,7 @@ readonly `unknown`[]
 
 > **invalidateTokenBalance**: (`chain`, `address`, `tokenAddress`, `options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L43)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L43)
 
 Invalidate token balance for specific token
 
@@ -472,7 +472,7 @@ Invalidate token balance for specific token
 
 > **invalidateTransaction**: (`chain`, `hash`, `options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L54)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L54)
 
 Invalidate specific transaction
 
@@ -530,7 +530,7 @@ Invalidate specific transaction
 
 > **invalidateTransactions**: (`options?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useQueryInvalidation.ts#L51)
+Defined in: [core/modal-react/src/hooks/useQueryInvalidation.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useQueryInvalidation.ts#L51)
 
 Invalidate all transaction queries
 

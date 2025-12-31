@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.3**](../../README.md)
+[**@walletmesh/router v0.5.4**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: BulkCallParams
 
-Defined in: [core/router/src/types.ts:270](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L270)
+Defined in: [core/router/src/types.ts:270](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L270)
 
 Parameters for executing multiple method calls in sequence on a specific chain.
 Used with the wm_bulkCall method to batch multiple operations efficiently.
@@ -26,7 +26,7 @@ All calls in the sequence must be permitted for the operation to succeed.
 
 > **calls**: [`MethodCall`](MethodCall.md)\<keyof [`RouterMethodMap`](RouterMethodMap.md)\>[]
 
-Defined in: [core/router/src/types.ts:276](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L276)
+Defined in: [core/router/src/types.ts:276](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L276)
 
 Array of method calls to execute in sequence
 
@@ -36,7 +36,7 @@ Array of method calls to execute in sequence
 
 > **chainId**: `string`
 
-Defined in: [core/router/src/types.ts:272](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L272)
+Defined in: [core/router/src/types.ts:272](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L272)
 
 Target chain ID where the methods will be executed
 
@@ -46,6 +46,6 @@ Target chain ID where the methods will be executed
 
 > **sessionId**: `string`
 
-Defined in: [core/router/src/types.ts:274](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L274)
+Defined in: [core/router/src/types.ts:274](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/types.ts#L274)
 
 Session ID for authorization and context

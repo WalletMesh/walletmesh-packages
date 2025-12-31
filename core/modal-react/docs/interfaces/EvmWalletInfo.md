@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: EvmWalletInfo
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L23)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L23)
 
 Consolidated EVM wallet information with both account and provider data
 
@@ -16,7 +16,7 @@ Consolidated EVM wallet information with both account and provider data
 
 > **address**: `null` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L28)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L28)
 
 Current account address
 
@@ -26,7 +26,7 @@ Current account address
 
 > **chain**: `null` \| \{ `chainId`: `string`; `chainType`: [`ChainType`](../enumerations/ChainType.md); `group?`: `string`; `icon?`: `string`; `interfaces?`: `string`[]; `label?`: `string`; `name`: `string`; `required`: `boolean`; \}
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L30)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L30)
 
 Current chain information
 
@@ -36,7 +36,7 @@ Current chain information
 
 > **chainId**: `null` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L32)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L32)
 
 Current chain ID
 
@@ -46,7 +46,7 @@ Current chain ID
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L44)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L44)
 
 Combined error from account or provider
 
@@ -56,7 +56,7 @@ Combined error from account or provider
 
 > **evmProvider**: `null` \| [`EVMProvider`](EVMProvider.md)
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L38)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L38)
 
 EVM provider instance with typed methods
 
@@ -66,7 +66,7 @@ EVM provider instance with typed methods
 
 > **isConnected**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L26)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L26)
 
 Whether wallet is connected
 
@@ -76,7 +76,7 @@ Whether wallet is connected
 
 > **isEvmChain**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L50)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L50)
 
 Whether on an EVM chain
 
@@ -86,7 +86,7 @@ Whether on an EVM chain
 
 > **isLoading**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L42)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L42)
 
 Whether currently initializing EVM provider
 
@@ -96,7 +96,7 @@ Whether currently initializing EVM provider
 
 > **isReady**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L40)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L40)
 
 Whether EVM provider is ready for use
 
@@ -106,7 +106,7 @@ Whether EVM provider is ready for use
 
 > **isTransacting**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L52)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L52)
 
 Whether currently processing a transaction
 
@@ -116,7 +116,7 @@ Whether currently processing a transaction
 
 > **status**: `"connecting"` \| `"connected"` \| `"error"` \| `"disconnected"` \| `"ready"`
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L48)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L48)
 
 Overall status combining connection and provider readiness
 
@@ -126,6 +126,6 @@ Overall status combining connection and provider readiness
 
 > **wallet**: `null` \| [`WalletInfo`](WalletInfo.md)
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useEvmWallet.ts#L34)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L34)
 
 Wallet information

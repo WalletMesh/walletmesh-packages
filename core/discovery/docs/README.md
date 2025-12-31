@@ -1,4 +1,4 @@
-**@walletmesh/discovery v0.1.3**
+**@walletmesh/discovery v0.1.4**
 
 ***
 

@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.3**](../../README.md)
+[**@walletmesh/router v0.5.4**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: LocalTransportOptions
 
-Defined in: [core/router/src/localTransport.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/localTransport.ts#L24)
+Defined in: [core/router/src/localTransport.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/localTransport.ts#L24)
 
 Configuration options for LocalTransport
 
@@ -26,7 +26,7 @@ const strictTransport = new LocalTransport({ throwOnError: true });
 
 > `optional` **throwOnError**: `boolean`
 
-Defined in: [core/router/src/localTransport.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/localTransport.ts#L38)
+Defined in: [core/router/src/localTransport.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/localTransport.ts#L38)
 
 Whether to throw errors instead of logging warnings.
 When true, errors in message handling will be thrown.

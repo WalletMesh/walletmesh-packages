@@ -1,5 +1,15 @@
 # @walletmesh/modal-core
 
+## 0.0.3
+
+### Patch Changes
+
+- 59804ec: Update all packages for aztec2
+- Updated dependencies [59804ec]
+  - @walletmesh/aztec-rpc-wallet@0.5.7
+  - @walletmesh/discovery@0.1.4
+  - @walletmesh/jsonrpc@0.5.4
+
 ## 0.0.2
 
 ### Patch Changes

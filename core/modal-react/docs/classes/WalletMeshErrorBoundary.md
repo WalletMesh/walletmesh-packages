@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: WalletMeshErrorBoundary
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:151](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L151)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:151](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L151)
 
 Error boundary component for WalletMesh applications
 
@@ -125,7 +125,7 @@ In production mode:
 
 > **new WalletMeshErrorBoundary**(`props`): `WalletMeshErrorBoundary`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:154](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L154)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:154](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L154)
 
 #### Parameters
 
@@ -252,7 +252,7 @@ Only kept in types for backwards compatibility. Will be removed in a future majo
 
 > **componentDidCatch**(`error`, `errorInfo`): `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:195](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L195)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:195](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L195)
 
 Lifecycle method called after an error has been thrown by a descendant component
 
@@ -537,7 +537,7 @@ lifecycle events from running.
 
 > **render**(): `ReactNode`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:482](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L482)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:482](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L482)
 
 Renders the component
 
@@ -557,7 +557,7 @@ Either the fallback UI if an error occurred, or the children
 
 > **resetErrorBoundary**(): `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:279](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L279)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:279](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L279)
 
 Reset the error boundary state to clear the error and re-render children
 
@@ -775,7 +775,7 @@ this from being invoked.
 
 > `static` **getDerivedStateFromError**(`error`): `Partial`\<[`ErrorBoundaryState`](../interfaces/ErrorBoundaryState.md)\>
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:176](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L176)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:176](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L176)
 
 Static lifecycle method called when an error is thrown in a descendant component
 

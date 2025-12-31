@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.3**](../README.md)
+[**@walletmesh/jsonrpc v0.5.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: TransportContext
 
-Defined in: [core/jsonrpc/src/types.ts:456](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L456)
+Defined in: [core/jsonrpc/src/types.ts:456](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L456)
 
 Context information provided by transports that have access to trusted metadata.
 Some transports (like postMessage-based transports) can provide browser-validated
@@ -36,7 +36,7 @@ const context: TransportContext = {
 
 > `optional` **metadata**: `Record`\<`string`, `unknown`\>
 
-Defined in: [core/jsonrpc/src/types.ts:480](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L480)
+Defined in: [core/jsonrpc/src/types.ts:480](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L480)
 
 Additional transport-specific metadata.
 
@@ -46,7 +46,7 @@ Additional transport-specific metadata.
 
 > `optional` **origin**: `string`
 
-Defined in: [core/jsonrpc/src/types.ts:462](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L462)
+Defined in: [core/jsonrpc/src/types.ts:462](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L462)
 
 The origin of the message sender.
 For browser transports, this is typically from MessageEvent.origin.
@@ -58,7 +58,7 @@ For forwarded messages, this may come from upstream context.
 
 > **transportType**: `string`
 
-Defined in: [core/jsonrpc/src/types.ts:475](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L475)
+Defined in: [core/jsonrpc/src/types.ts:475](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L475)
 
 The type of transport providing this context.
 Examples: 'popup', 'iframe', 'extension', 'local', 'websocket'
@@ -69,7 +69,7 @@ Examples: 'popup', 'iframe', 'extension', 'local', 'websocket'
 
 > **trustedSource**: `boolean`
 
-Defined in: [core/jsonrpc/src/types.ts:469](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L469)
+Defined in: [core/jsonrpc/src/types.ts:469](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L469)
 
 Whether the origin is browser-validated (trusted).
 - `true`: Origin comes from browser API (e.g., MessageEvent.origin)

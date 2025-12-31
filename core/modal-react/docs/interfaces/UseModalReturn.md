@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseModalReturn
 
-Defined in: [core/modal-react/src/types.ts:624](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L624)
+Defined in: [core/modal-react/src/types.ts:624](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L624)
 
 Modal hook return type
 
@@ -18,7 +18,7 @@ Provides modal control methods
 
 > **close**: () => `void`
 
-Defined in: [core/modal-react/src/types.ts:630](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L630)
+Defined in: [core/modal-react/src/types.ts:630](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L630)
 
 Close the modal
 
@@ -32,7 +32,7 @@ Close the modal
 
 > **isOpen**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:626](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L626)
+Defined in: [core/modal-react/src/types.ts:626](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L626)
 
 Whether modal is open
 
@@ -42,7 +42,7 @@ Whether modal is open
 
 > **open**: () => `void`
 
-Defined in: [core/modal-react/src/types.ts:628](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L628)
+Defined in: [core/modal-react/src/types.ts:628](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L628)
 
 Open the modal
 
@@ -56,7 +56,7 @@ Open the modal
 
 > **toggle**: () => `void`
 
-Defined in: [core/modal-react/src/types.ts:632](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L632)
+Defined in: [core/modal-react/src/types.ts:632](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L632)
 
 Toggle modal open/close
 

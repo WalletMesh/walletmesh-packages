@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.3**](../README.md)
+[**@walletmesh/discovery v0.1.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CapabilityMatchResult
 
-Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder/CapabilityMatcher.ts#L54)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/responder/CapabilityMatcher.ts#L54)
 
 Result of capability matching between responder and initiator requirements.
 
@@ -59,7 +59,7 @@ const result: CapabilityMatchResult = {
 
 > **canFulfill**: `boolean`
 
-Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder/CapabilityMatcher.ts#L55)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/responder/CapabilityMatcher.ts#L55)
 
 ***
 
@@ -67,7 +67,7 @@ Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:55](https://githu
 
 > **intersection**: `null` \| [`CapabilityIntersection`](CapabilityIntersection.md)
 
-Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder/CapabilityMatcher.ts#L56)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/responder/CapabilityMatcher.ts#L56)
 
 ***
 
@@ -75,7 +75,7 @@ Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:56](https://githu
 
 > **missing**: `object`
 
-Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/responder/CapabilityMatcher.ts#L57)
+Defined in: [core/discovery/src/responder/CapabilityMatcher.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/discovery/src/responder/CapabilityMatcher.ts#L57)
 
 #### features
 

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshReactConfig
 
-Defined in: [core/modal-react/src/types.ts:269](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L269)
+Defined in: [core/modal-react/src/types.ts:269](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L269)
 
 React-specific configuration for WalletMesh.
 
@@ -124,7 +124,7 @@ Should be a square image (recommended 256x256 or larger).
 
 > `optional` **appMetadata**: [`DAppMetadata`](DAppMetadata.md)
 
-Defined in: [core/modal-react/src/types.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L192)
+Defined in: [core/modal-react/src/types.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L192)
 
 dApp metadata for identification (auto-populated from appName/appDescription if not provided)
 
@@ -168,7 +168,7 @@ Used by wallets for verification and display.
 
 > `optional` **autoInjectModal**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:280](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L280)
+Defined in: [core/modal-react/src/types.ts:280](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L280)
 
 Whether to automatically inject the modal component into the DOM.
 
@@ -188,7 +188,7 @@ true
 
 > `optional` **autoInjectTransactionOverlays**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:389](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L389)
+Defined in: [core/modal-react/src/types.ts:389](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L389)
 
 Whether to automatically inject transaction status overlays.
 
@@ -218,7 +218,7 @@ true
 
 > `optional` **backgroundTransactionIndicator**: `object`
 
-Defined in: [core/modal-react/src/types.ts:480](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L480)
+Defined in: [core/modal-react/src/types.ts:480](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L480)
 
 Configuration for the background transaction indicator (non-blocking, for async transactions).
 
@@ -295,7 +295,7 @@ backgroundTransactionIndicator: {
 
 > **chains**: `object`[]
 
-Defined in: [core/modal-react/src/types.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L183)
+Defined in: [core/modal-react/src/types.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L183)
 
 Explicitly supported chains (required - no automatic chain selection)
 
@@ -341,7 +341,7 @@ Explicitly supported chains (required - no automatic chain selection)
 
 > `optional` **className**: `string`
 
-Defined in: [core/modal-react/src/types.ts:311](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L311)
+Defined in: [core/modal-react/src/types.ts:311](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L311)
 
 Additional CSS class names to apply to the modal component.
 
@@ -522,7 +522,7 @@ Log prefix
 
 > `optional` **maxConnections**: `number`
 
-Defined in: [core/modal-react/src/types.ts:189](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L189)
+Defined in: [core/modal-react/src/types.ts:189](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L189)
 
 Maximum number of simultaneous wallet connections
 
@@ -536,7 +536,7 @@ Maximum number of simultaneous wallet connections
 
 > `optional` **permissions**: `Record`\<`string`, `string`[]\>
 
-Defined in: [core/modal-react/src/types.ts:371](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L371)
+Defined in: [core/modal-react/src/types.ts:371](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L371)
 
 Chain-specific permissions configuration.
 
@@ -566,7 +566,7 @@ permissions: {
 
 > `optional` **portalTarget**: `string` \| `HTMLElement`
 
-Defined in: [core/modal-react/src/types.ts:298](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L298)
+Defined in: [core/modal-react/src/types.ts:298](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L298)
 
 Custom portal target for modal rendering.
 
@@ -639,7 +639,7 @@ Solana interfaces (e.g., ['solana-standard-wallet'])
 
 > `optional` **theme**: [`ThemeProviderConfig`](ThemeProviderConfig.md)
 
-Defined in: [core/modal-react/src/types.ts:321](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L321)
+Defined in: [core/modal-react/src/types.ts:321](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L321)
 
 Theme configuration for modal styling and behavior.
 
@@ -656,7 +656,7 @@ including color schemes, persistence, and customization options.
 
 > `optional` **transactionOverlay**: `object`
 
-Defined in: [core/modal-react/src/types.ts:413](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L413)
+Defined in: [core/modal-react/src/types.ts:413](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L413)
 
 Configuration for the transaction status overlay (blocking, for sync transactions).
 
@@ -766,7 +766,7 @@ transactionOverlay: {
 
 > `optional` **wallets**: [`WalletInfo`](WalletInfo.md)[]
 
-Defined in: [core/modal-react/src/types.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L186)
+Defined in: [core/modal-react/src/types.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L186)
 
 Wallet configurations - array of WalletInfo objects
 

@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.3**](../README.md)
+[**@walletmesh/jsonrpc v0.5.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: Serializer\<T\>
 
-Defined in: [core/jsonrpc/src/types.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L67)
+Defined in: [core/jsonrpc/src/types.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L67)
 
 Interface for serializing and deserializing values.
 Enables custom type conversion for complex objects that need special handling.
@@ -34,7 +34,7 @@ The type of value to serialize/deserialize
 
 > **deserialize**(`method`, `value`): `Promise`\<`T`\>
 
-Defined in: [core/jsonrpc/src/types.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L82)
+Defined in: [core/jsonrpc/src/types.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L82)
 
 Deserializes JSONRPCSerializedData back to the original type
 
@@ -64,7 +64,7 @@ The deserialized value
 
 > **serialize**(`method`, `value`): `Promise`\<[`JSONRPCSerializedData`](../type-aliases/JSONRPCSerializedData.md)\>
 
-Defined in: [core/jsonrpc/src/types.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L74)
+Defined in: [core/jsonrpc/src/types.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L74)
 
 Serializes a value to JSONRPCSerializedData
 

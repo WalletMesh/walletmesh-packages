@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.3**](../../README.md)
+[**@walletmesh/router v0.5.4**](../../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > `const` **RouterErrorMap**: `object`
 
-Defined in: [core/router/src/errors.ts:6](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/errors.ts#L6)
+Defined in: [core/router/src/errors.ts:6](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/router/src/errors.ts#L6)
 
 Error codes and messages for the multi-chain router
 

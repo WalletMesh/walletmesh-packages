@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.6**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.7**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createAztecWalletNode**(`wallet`, `pxe`, `transport`): [`JSONRPCNode`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md)\<[`AztecWalletMethodMap`](../interfaces/AztecWalletMethodMap.md), [`JSONRPCEventMap`](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/interfaces/JSONRPCEventMap.md), [`AztecHandlerContext`](../interfaces/AztecHandlerContext.md)\>
 
-Defined in: [aztec/rpc-wallet/src/wallet/create-node.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/wallet/create-node.ts#L76)
+Defined in: [aztec/rpc-wallet/src/wallet/create-node.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/wallet/create-node.ts#L76)
 
 Creates and configures a [JSONRPCNode](https://github.com/WalletMesh/walletmesh-packages/tree/main/core/jsonrpc/docs/classes/JSONRPCNode.md) to serve as an Aztec wallet endpoint.
 This node is intended to be used on the wallet-side (e.g., in a browser extension

@@ -1,5 +1,11 @@
 # @walletmesh/jsonrpc
 
+## 0.5.4
+
+### Patch Changes
+
+- 59804ec: Update all packages for aztec2
+
 ## 0.5.3
 
 ### Patch Changes

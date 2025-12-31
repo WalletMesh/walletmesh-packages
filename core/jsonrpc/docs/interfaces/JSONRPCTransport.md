@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.3**](../README.md)
+[**@walletmesh/jsonrpc v0.5.4**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: JSONRPCTransport
 
-Defined in: [core/jsonrpc/src/types.ts:557](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L557)
+Defined in: [core/jsonrpc/src/types.ts:557](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L557)
 
 Bidirectional transport interface for JSON-RPC communication.
 Implement this to provide the actual transport mechanism for message delivery and reception.
@@ -88,7 +88,7 @@ const httpTransport: JSONRPCTransport = {
 
 > `optional` **getMessageContext**(): `undefined` \| [`TransportContext`](TransportContext.md)
 
-Defined in: [core/jsonrpc/src/types.ts:631](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L631)
+Defined in: [core/jsonrpc/src/types.ts:631](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L631)
 
 Get trusted context information for the most recently received message.
 This method is optional and should only be implemented by transports that
@@ -151,7 +151,7 @@ class LocalTransport implements JSONRPCTransport {
 
 > **onMessage**(`callback`): `void`
 
-Defined in: [core/jsonrpc/src/types.ts:578](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L578)
+Defined in: [core/jsonrpc/src/types.ts:578](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L578)
 
 Register a callback to receive messages from the remote node.
 The JSONRPCNode will call this method during initialization to set up
@@ -176,7 +176,7 @@ Function to call when messages are received
 
 > **send**(`message`): `Promise`\<`void`\>
 
-Defined in: [core/jsonrpc/src/types.ts:568](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L568)
+Defined in: [core/jsonrpc/src/types.ts:568](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/jsonrpc/src/types.ts#L568)
 
 Sends a JSON-RPC message to the remote node.
 The implementation should handle message serialization and delivery.

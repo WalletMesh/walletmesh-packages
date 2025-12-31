@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.6**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.7**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **AztecChainId** = `` `aztec:${string}` ``
 
-Defined in: [aztec/rpc-wallet/src/types.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/types.ts#L76)
+Defined in: [aztec/rpc-wallet/src/types.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/aztec/rpc-wallet/src/types.ts#L76)
 
 Type-safe Aztec chain ID format following the CAIP-2 standard.
 

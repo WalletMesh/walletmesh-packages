@@ -1,5 +1,14 @@
 # @walletmesh/aztec-helpers
 
+## 0.5.7
+
+### Patch Changes
+
+- Updated dependencies [59804ec]
+  - @walletmesh/aztec-rpc-wallet@0.5.7
+  - @walletmesh/jsonrpc@0.5.4
+  - @walletmesh/router@0.5.4
+
 ## 0.5.6
 
 ### Patch Changes

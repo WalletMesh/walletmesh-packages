@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.1**](../README.md)
+[**@walletmesh/modal-react v0.1.2**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseBalanceReturn
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L81)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:81](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useBalance.ts#L81)
 
 Balance query return type
 
@@ -16,7 +16,7 @@ Balance query return type
 
 > **data**: `undefined` \| [`BalanceInfo`](BalanceInfo.md)
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:83](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L83)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:83](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useBalance.ts#L83)
 
 Balance data
 
@@ -26,7 +26,7 @@ Balance data
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L93)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:93](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useBalance.ts#L93)
 
 Error if any
 
@@ -36,7 +36,7 @@ Error if any
 
 > **invalidate**: () => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:97](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L97)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:97](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useBalance.ts#L97)
 
 Invalidate the balance cache
 
@@ -50,7 +50,7 @@ Invalidate the balance cache
 
 > **isError**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L91)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useBalance.ts#L91)
 
 Whether the query has errored
 
@@ -60,7 +60,7 @@ Whether the query has errored
 
 > **isFetching**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L87)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:87](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useBalance.ts#L87)
 
 Whether the query is fetching (includes background refetches)
 
@@ -70,7 +70,7 @@ Whether the query is fetching (includes background refetches)
 
 > **isLoading**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L85)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:85](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useBalance.ts#L85)
 
 Whether the query is loading
 
@@ -80,7 +80,7 @@ Whether the query is loading
 
 > **isRefetching**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L89)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useBalance.ts#L89)
 
 Whether the query is refetching
 
@@ -90,7 +90,7 @@ Whether the query is refetching
 
 > **refetch**: () => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:95](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L95)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:95](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useBalance.ts#L95)
 
 Refetch the balance
 
