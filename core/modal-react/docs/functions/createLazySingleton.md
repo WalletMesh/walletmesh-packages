@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createLazySingleton**\<`T`\>(`factory`): `object`
 
-Defined in: core/modal-core/dist/api/utils/lazy.d.ts:104
+Defined in: core/modal-core/dist/api/utils/lazy.d.ts:106
 
 Create a singleton factory with lazy initialization
 

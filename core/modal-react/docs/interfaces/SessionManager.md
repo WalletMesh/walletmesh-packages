@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionManager
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:207
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:314
 
 Session manager interface for unified session operations
 
@@ -16,7 +16,7 @@ Session manager interface for unified session operations
 
 > **addAccount**(`sessionId`, `account`): `Promise`\<[`SessionState`](SessionState.md)\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:243
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:350
 
 Add a new account to a session
 
@@ -40,7 +40,7 @@ Add a new account to a session
 
 > **cleanupExpiredSessions**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:267
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:374
 
 Clean up expired sessions
 
@@ -54,7 +54,7 @@ Clean up expired sessions
 
 > **compareSessions**(`sessionId1`, `sessionId2`): `null` \| [`SessionComparison`](SessionComparison.md)
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:263
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:370
 
 Compare two sessions
 
@@ -78,7 +78,7 @@ Compare two sessions
 
 > **createSession**(`params`): `Promise`\<[`SessionState`](SessionState.md)\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:211
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:318
 
 Create a new session
 
@@ -98,7 +98,7 @@ Create a new session
 
 > **discoverAccounts**(`sessionId`, `options?`): `Promise`\<`AccountInfo`[]\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:239
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:346
 
 Discover additional accounts for a session
 
@@ -122,7 +122,7 @@ Discover additional accounts for a session
 
 > **endSession**(`sessionId`): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:259
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:366
 
 End a session
 
@@ -142,7 +142,7 @@ End a session
 
 > **getActiveAccount**(`sessionId`): `null` \| `AccountInfo`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:255
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:362
 
 Get active account for a session
 
@@ -162,7 +162,7 @@ Get active account for a session
 
 > **getActiveSession**(): `null` \| [`SessionState`](SessionState.md)
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:219
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:326
 
 Get active session
 
@@ -176,7 +176,7 @@ Get active session
 
 > **getSession**(`sessionId`): `null` \| [`SessionState`](SessionState.md)
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:215
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:322
 
 Get session by ID
 
@@ -196,7 +196,7 @@ Get session by ID
 
 > **getSessionAccounts**(`sessionId`): `AccountInfo`[]
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:251
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:358
 
 Get all accounts for a session
 
@@ -216,7 +216,7 @@ Get all accounts for a session
 
 > **getWalletSessions**(`walletId`): [`SessionState`](SessionState.md)[]
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:223
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:330
 
 Get all sessions for a wallet
 
@@ -236,7 +236,7 @@ Get all sessions for a wallet
 
 > **removeAccount**(`sessionId`, `accountAddress`): `Promise`\<[`SessionState`](SessionState.md)\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:247
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:354
 
 Remove an account from a session
 
@@ -260,7 +260,7 @@ Remove an account from a session
 
 > **switchAccount**(`sessionId`, `accountAddress`): `Promise`\<[`SessionState`](SessionState.md)\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:235
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:342
 
 Switch active account within a session
 
@@ -284,7 +284,7 @@ Switch active account within a session
 
 > **switchChain**(`sessionId`, `chain`): `Promise`\<[`SessionState`](SessionState.md)\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:231
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:338
 
 Switch chain within a session (creates new session if needed)
 
@@ -338,7 +338,7 @@ Switch chain within a session (creates new session if needed)
 
 > **updateSessionStatus**(`sessionId`, `status`): `void`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:227
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:334
 
 Update session status
 
@@ -350,7 +350,7 @@ Update session status
 
 ##### status
 
-[`SessionStatus`](../type-aliases/SessionStatus.md)
+`SessionStatus`
 
 #### Returns
 

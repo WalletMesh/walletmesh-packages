@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: BalanceInfo
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L23)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L23)
 
 Balance information interface
 
@@ -16,7 +16,7 @@ Balance information interface
 
 > **decimals**: `number`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L31)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L31)
 
 The number of decimals for the currency/token
 
@@ -26,7 +26,7 @@ The number of decimals for the currency/token
 
 > **formatted**: `string`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L27)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L27)
 
 The balance as a decimal string
 
@@ -36,7 +36,7 @@ The balance as a decimal string
 
 > **symbol**: `string`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L29)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L29)
 
 The symbol of the currency/token
 
@@ -46,6 +46,6 @@ The symbol of the currency/token
 
 > **value**: `string`
 
-Defined in: [core/modal-react/src/hooks/useBalance.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useBalance.ts#L25)
+Defined in: [core/modal-react/src/hooks/useBalance.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useBalance.ts#L25)
 
 The balance value in the smallest unit (e.g., wei for ETH)

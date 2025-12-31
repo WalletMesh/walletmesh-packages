@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -6,12 +6,17 @@
 
 # Function: createWalletMeshClient()
 
-> **createWalletMeshClient**(`appName`, `additionalConfig`): [`WalletMeshClient`](../interfaces/WalletMeshClient.md)
+> **createWalletMeshClient**(`appName`, `additionalConfig`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../interfaces/WalletMeshClient.md)\>
 
-Creates a WalletMeshClient instance with sensible defaults
+Creates a WalletMeshClient instance with sensible defaults and automatic initialization.
 
-This is a convenience function that provides commonly used configurations
-for typical dApp scenarios.
+**This is the recommended API for most use cases.** The client is automatically initialized
+and ready to use immediately after the promise resolves.
+
+This async function:
+- Creates the client with sensible defaults
+- Automatically calls `initialize()`
+- Returns a fully initialized, ready-to-use client
 
 ## Parameters
 
@@ -29,18 +34,30 @@ Additional configuration options
 
 ## Returns
 
-[`WalletMeshClient`](../interfaces/WalletMeshClient.md)
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<[`WalletMeshClient`](../interfaces/WalletMeshClient.md)\>
 
-Configured WalletMeshClient instance
+Promise resolving to a fully initialized WalletMeshClient instance
 
-## Example
+## Examples
 
 ```typescript
-// Quick setup for development
-const client = createWalletMeshClient('My DApp', {
+// Recommended: Async with auto-initialization
+const client = await createWalletMeshClient('My DApp', {
   chains: [
     { chainId: '1', chainType: 'evm', name: 'Ethereum' },
     { chainId: '137', chainType: 'evm', name: 'Polygon' }
   ]
 });
+// Client is ready to use immediately
+const connection = await client.connectWithModal();
 ```
+
+```typescript
+// For advanced users who need manual control, use createWalletMeshClientSync
+const client = createWalletMeshClientSync('My DApp', config);
+await client.initialize(); // Manual initialization
+```
+
+## Since
+
+1.1.0

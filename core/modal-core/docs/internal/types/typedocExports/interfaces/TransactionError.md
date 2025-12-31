@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../../README.md)
 
 ***
 
@@ -158,7 +158,7 @@ Retry delay in milliseconds (for retry strategies)
 
 ### stage
 
-> **stage**: `"validation"` \| `"proving"` \| `"signing"` \| `"broadcasting"` \| `"preparation"` \| `"confirmation"`
+> **stage**: `"validation"` \| `"proving"` \| `"preparation"` \| `"signing"` \| `"broadcasting"` \| `"confirmation"`
 
 Transaction lifecycle stage where the error occurred.
 - `validation`: Parameters failed validation before sending

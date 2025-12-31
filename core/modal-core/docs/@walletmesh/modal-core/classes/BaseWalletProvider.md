@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -337,6 +337,31 @@ Callback function to call when event occurs
 #### Implementation of
 
 [`IBaseWalletProvider`](../interfaces/IBaseWalletProvider.md).[`on`](../interfaces/IBaseWalletProvider.md#on)
+
+***
+
+### removeAllListeners()
+
+> **removeAllListeners**(`event?`): `void`
+
+Remove all event listeners
+
+#### Parameters
+
+##### event?
+
+`string`
+
+Optional event name to remove all listeners for.
+               If not provided, removes all listeners for all events.
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+[`IBaseWalletProvider`](../interfaces/IBaseWalletProvider.md).[`removeAllListeners`](../interfaces/IBaseWalletProvider.md#removealllisteners)
 
 ***
 

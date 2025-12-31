@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,43 +6,113 @@
 
 # Interface: UseAztecTransactionReturn
 
-Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecTransaction.ts#L52)
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L33)
 
-Transaction hook return type
+Hook return type following Wagmi pattern
 
 ## Properties
+
+### activeTransaction
+
+> **activeTransaction**: `null` \| [`AztecTransactionResult`](AztecTransactionResult.md)
+
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L42)
+
+Currently active transaction (sync mode)
+
+***
+
+### backgroundCount
+
+> **backgroundCount**: `number`
+
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L60)
+
+Number of active background transactions
+
+***
+
+### backgroundTransactions
+
+> **backgroundTransactions**: [`AztecTransactionResult`](AztecTransactionResult.md)[]
+
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L58)
+
+All background transactions (async mode)
+
+***
 
 ### error
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecTransaction.ts#L63)
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L48)
 
-Any error that occurred
+Error from last transaction
 
 ***
 
 ### execute()
 
-> **execute**: (`transactionBuilder`, `options?`) => `Promise`\<[`AztecTransactionResult`](AztecTransactionResult.md)\>
+> **execute**: (`interaction`, `callbacks?`) => `Promise`\<`string`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecTransaction.ts#L54)
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L36)
 
-Execute a transaction with automatic handling
+Execute transaction asynchronously in background (returns immediately with txId)
 
 #### Parameters
 
-##### transactionBuilder
+##### interaction
 
-(`wallet`) => `Promise`\<`unknown`\>
+`ContractFunctionInteraction`
 
-##### options?
+##### callbacks?
 
-[`TransactionOptions`](TransactionOptions.md)
+[`TransactionCallbacks`](TransactionCallbacks.md)
 
 #### Returns
 
-`Promise`\<[`AztecTransactionResult`](AztecTransactionResult.md)\>
+`Promise`\<`string`\>
+
+***
+
+### executeSync()
+
+> **executeSync**: (`interaction`) => `Promise`\<`unknown`\>
+
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L38)
+
+Execute transaction synchronously with blocking overlay (waits for completion)
+
+#### Parameters
+
+##### interaction
+
+`ContractFunctionInteraction`
+
+#### Returns
+
+`Promise`\<`unknown`\>
+
+***
+
+### getTransaction()
+
+> **getTransaction**: (`txId`) => `undefined` \| [`AztecTransactionResult`](AztecTransactionResult.md)
+
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:64](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L64)
+
+Get transaction by ID
+
+#### Parameters
+
+##### txId
+
+`string`
+
+#### Returns
+
+`undefined` \| [`AztecTransactionResult`](AztecTransactionResult.md)
 
 ***
 
@@ -50,29 +120,29 @@ Execute a transaction with automatic handling
 
 > **isExecuting**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecTransaction.ts#L59)
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L54)
 
-Whether a transaction is currently executing
-
-***
-
-### lastResult
-
-> **lastResult**: `null` \| [`AztecTransactionResult`](AztecTransactionResult.md)
-
-Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecTransaction.ts#L67)
-
-Last transaction result
+Combined execution state - true if any transaction operation is in progress
 
 ***
 
-### provingProgress
+### isLoading
 
-> **provingProgress**: `number`
+> **isLoading**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecTransaction.ts#L69)
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L44)
 
-Current proving progress (0-100)
+Whether a sync transaction is currently executing (legacy)
+
+***
+
+### isWalletInteracting
+
+> **isWalletInteracting**: `boolean`
+
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L52)
+
+Whether the hook is currently waiting for wallet interaction (approval/signing)
 
 ***
 
@@ -80,9 +150,9 @@ Current proving progress (0-100)
 
 > **reset**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecTransaction.ts#L65)
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L66)
 
-Reset the transaction state
+Reset error state
 
 #### Returns
 
@@ -92,8 +162,8 @@ Reset the transaction state
 
 ### status
 
-> **status**: `"error"` \| `"proving"` \| `"idle"` \| `"preparing"` \| `"confirming"` \| `"success"` \| `"sending"`
+> **status**: [`TransactionStatus`](../type-aliases/TransactionStatus.md)
 
-Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecTransaction.ts#L61)
+Defined in: [core/modal-react/src/hooks/useAztecTransaction.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecTransaction.ts#L46)
 
 Current transaction status

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionLifecycle
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:125
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:232
 
 Session lifecycle tracking
 
@@ -16,7 +16,7 @@ Session lifecycle tracking
 
 > **activeTime**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:137
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:244
 
 Total time spent active (milliseconds)
 
@@ -26,7 +26,7 @@ Total time spent active (milliseconds)
 
 > **createdAt**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:127
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:234
 
 When the session was created
 
@@ -36,7 +36,7 @@ When the session was created
 
 > `optional` **expiresAt**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:133
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:240
 
 When the session expires (optional)
 
@@ -46,7 +46,7 @@ When the session expires (optional)
 
 > **lastAccessedAt**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:131
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:238
 
 When the session was last accessed
 
@@ -56,7 +56,7 @@ When the session was last accessed
 
 > **lastActiveAt**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:129
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:236
 
 When the session was last active
 
@@ -66,6 +66,6 @@ When the session was last active
 
 > **operationCount**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:135
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:242
 
 Number of operations performed in this session

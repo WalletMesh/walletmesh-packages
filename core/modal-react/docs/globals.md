@@ -1,8 +1,8 @@
-[**@walletmesh/modal-react v0.1.0**](README.md)
+[**@walletmesh/modal-react v0.1.1**](README.md)
 
 ***
 
-# @walletmesh/modal-react v0.1.0
+# @walletmesh/modal-react v0.1.1
 
 WalletMesh React Integration - Simplified Web3 Connection Library
 
@@ -117,3 +117,4 @@ Renames and re-exports [CoreTransactionResult](interfaces/CoreTransactionResult.
 - [serializeState](variables/serializeState.md)
 - [createComponentLogger](functions/createComponentLogger.md)
 - [getReactLogger](functions/getReactLogger.md)
+- [isSessionError](functions/isSessionError.md)

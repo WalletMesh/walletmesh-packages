@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -118,11 +118,7 @@ Type-safe event system
 
 ### wallet:connected
 
-> **wallet:connected**: `object`
-
-#### connection
-
-> **connection**: [`WalletConnection`](../interfaces/WalletConnection.md)
+> **wallet:connected**: `unknown`
 
 ***
 
@@ -133,3 +129,27 @@ Type-safe event system
 #### reason?
 
 > `optional` **reason**: `string`
+
+***
+
+### wallet:sessionTerminated
+
+> **wallet:sessionTerminated**: `object`
+
+#### chainType?
+
+> `optional` **chainType**: [`ChainType`](../enumerations/ChainType.md)
+
+#### reason?
+
+> `optional` **reason**: `string`
+
+#### sessionId
+
+> **sessionId**: `string`
+
+***
+
+### wallet:statusChanged
+
+> **wallet:statusChanged**: `unknown`

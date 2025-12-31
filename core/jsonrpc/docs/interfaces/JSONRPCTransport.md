@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.2**](../README.md)
+[**@walletmesh/jsonrpc v0.5.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: JSONRPCTransport
 
-Defined in: [core/jsonrpc/src/types.ts:501](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/types.ts#L501)
+Defined in: [core/jsonrpc/src/types.ts:557](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L557)
 
 Bidirectional transport interface for JSON-RPC communication.
 Implement this to provide the actual transport mechanism for message delivery and reception.
@@ -30,8 +30,9 @@ const wsTransport: JSONRPCTransport = {
   }
 };
 
-// postMessage transport with origin validation
+// postMessage transport with origin validation and context
 const windowTransport: JSONRPCTransport = {
+  lastOrigin: undefined as string | undefined,
   send: async message => {
     if (!targetWindow) {
       throw new Error('Target window not available');
@@ -41,10 +42,16 @@ const windowTransport: JSONRPCTransport = {
   onMessage: callback => {
     window.addEventListener('message', event => {
       if (event.origin === targetOrigin && event.data) {
+        this.lastOrigin = event.origin; // Capture trusted origin
         callback(event.data);
       }
     });
-  }
+  },
+  getMessageContext: () => ({
+    origin: this.lastOrigin,
+    trustedSource: true,
+    transportType: 'popup'
+  })
 };
 
 // HTTP long-polling transport
@@ -77,11 +84,74 @@ const httpTransport: JSONRPCTransport = {
 
 ## Methods
 
+### getMessageContext()?
+
+> `optional` **getMessageContext**(): `undefined` \| [`TransportContext`](TransportContext.md)
+
+Defined in: [core/jsonrpc/src/types.ts:631](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L631)
+
+Get trusted context information for the most recently received message.
+This method is optional and should only be implemented by transports that
+have access to trusted metadata (e.g., browser-validated origin from MessageEvent).
+
+Transports that implement this method can provide:
+- Browser-validated origin (from MessageEvent.origin, Chrome runtime sender, etc.)
+- Forwarded context from upstream (e.g., local transport forwarding router context)
+- Transport-specific metadata
+
+#### Returns
+
+`undefined` \| [`TransportContext`](TransportContext.md)
+
+TransportContext if available, undefined otherwise
+
+#### Example
+
+```typescript
+// PostMessage transport with browser-validated origin
+class PopupTransport implements JSONRPCTransport {
+  private lastMessageOrigin?: string;
+
+  onMessage(callback) {
+    window.addEventListener('message', (event: MessageEvent) => {
+      this.lastMessageOrigin = event.origin; // Browser-validated
+      callback(event.data);
+    });
+  }
+
+  getMessageContext(): TransportContext {
+    return {
+      origin: this.lastMessageOrigin,
+      trustedSource: true,  // Browser API
+      transportType: 'popup'
+    };
+  }
+}
+
+// Local transport forwarding router context
+class LocalTransport implements JSONRPCTransport {
+  private lastMessage?: any;
+
+  getMessageContext(): TransportContext | undefined {
+    if (this.lastMessage?._context?.origin) {
+      return {
+        origin: this.lastMessage._context.origin,
+        trustedSource: false, // Forwarded, not browser-validated
+        transportType: 'local'
+      };
+    }
+    return undefined;
+  }
+}
+```
+
+***
+
 ### onMessage()
 
 > **onMessage**(`callback`): `void`
 
-Defined in: [core/jsonrpc/src/types.ts:522](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/types.ts#L522)
+Defined in: [core/jsonrpc/src/types.ts:578](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L578)
 
 Register a callback to receive messages from the remote node.
 The JSONRPCNode will call this method during initialization to set up
@@ -106,7 +176,7 @@ Function to call when messages are received
 
 > **send**(`message`): `Promise`\<`void`\>
 
-Defined in: [core/jsonrpc/src/types.ts:512](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/types.ts#L512)
+Defined in: [core/jsonrpc/src/types.ts:568](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L568)
 
 Sends a JSON-RPC message to the remote node.
 The implementation should handle message serialization and delivery.

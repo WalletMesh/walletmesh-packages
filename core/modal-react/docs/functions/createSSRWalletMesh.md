@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createSSRWalletMesh**(`config`, `options?`): `Promise`
 
-Defined in: [core/modal-react/src/utils/ssr-walletmesh.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/utils/ssr-walletmesh.ts#L48)
+Defined in: [core/modal-react/src/utils/ssr-walletmesh.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/utils/ssr-walletmesh.ts#L48)
 
 Create a WalletMesh instance that automatically handles SSR/browser environments
 

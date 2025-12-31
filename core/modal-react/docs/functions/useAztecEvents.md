@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useAztecEvents**(`contractAddress?`, `artifact?`, `eventName?`, `autoSubscribe?`): [`UseAztecEventsReturn`](../interfaces/UseAztecEventsReturn.md)
 
-Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:148](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecEvents.ts#L148)
+Defined in: [core/modal-react/src/hooks/useAztecEvents.ts:174](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecEvents.ts#L174)
 
 Hook for subscribing to Aztec contract events
 
@@ -38,9 +38,9 @@ Name of the event to subscribe to (optional)
 
 ### autoSubscribe?
 
-`boolean` = `true`
+`boolean` = `false`
 
-Whether to automatically start subscription (default: true)
+Whether to automatically start subscription (default: false)
 
 ## Returns
 
@@ -54,6 +54,10 @@ Event subscription functions and state
 
 ## Remarks
 
+**IMPORTANT:** Event subscriptions are now opt-in by default (autoSubscribe: false).
+Call `subscribe()` manually or set autoSubscribe to true to enable automatic subscription.
+This prevents unnecessary event polling when subscriptions aren't needed.
+
 The hook provides:
 - Real-time event subscriptions with automatic polling
 - Historical event queries with block range filtering
@@ -64,12 +68,16 @@ The hook provides:
 Events are accumulated in the events array, with new events
 appended as they arrive. Use clearEvents() to reset.
 
+**Migration Note:** If you were relying on automatic subscription (v1 behavior),
+either call `subscribe()` in useEffect or pass `autoSubscribe: true`.
+
 ## Examples
 
 ```tsx
 import { useAztecEvents } from '@walletmesh/modal-react';
 import { TokenContractArtifact } from '@aztec/noir-contracts.js/Token';
 
+// Opt-in subscription (recommended)
 function TokenEvents({ tokenAddress }) {
   const {
     events,
@@ -81,11 +89,14 @@ function TokenEvents({ tokenAddress }) {
     tokenAddress,
     TokenContractArtifact,
     'Transfer'
+    // autoSubscribe defaults to false - call subscribe() manually
   );
 
-  // Query last 100 blocks on mount
+  // Query last 100 blocks and optionally start subscription
   useEffect(() => {
     queryHistorical({ fromBlock: -100 });
+    // Manually subscribe when needed
+    // subscribe();
   }, []);
 
   return (
@@ -102,6 +113,20 @@ function TokenEvents({ tokenAddress }) {
       ))}
     </div>
   );
+}
+```
+
+```tsx
+// Auto-subscribe (legacy v1 behavior)
+function AutoSubscribeExample({ tokenAddress }) {
+  const { events, isListening } = useAztecEvents(
+    tokenAddress,
+    TokenContractArtifact,
+    'Transfer',
+    true  // Pass true to auto-subscribe on mount
+  );
+
+  return <div>Events: {events.length} (auto-subscribed: {isListening})</div>;
 }
 ```
 

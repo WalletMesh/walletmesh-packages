@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-helpers v0.5.4**](../README.md)
+[**@walletmesh/aztec-helpers v0.5.6**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **getFunctionParameterInfoFromContractAddress**(`pxe`, `contractAddress`, `functionNameOrSelector`): `Promise`\<[`FunctionParameterInfo`](../type-aliases/FunctionParameterInfo.md)[]\>
 
-Defined in: [helpers.ts:89](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/helpers/src/helpers.ts#L89)
+Defined in: [helpers.ts:138](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/helpers/src/helpers.ts#L138)
 
 Retrieves simplified parameter information (name and type string) for a specific function.
 

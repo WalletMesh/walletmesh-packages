@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SolanaCapabilities
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:122
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:121
 
 Solana wallet capabilities
 
@@ -16,7 +16,7 @@ Solana wallet capabilities
 
 > `optional` **maxTransactionsPerRequest**: `number`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:124
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:123
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:124
 
 > `optional` **supportedMethods**: `string`[]
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:125
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:124
 
 ***
 
@@ -32,4 +32,4 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:125
 
 > `optional` **supportedTransactionVersions**: `0`[]
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:123
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:122

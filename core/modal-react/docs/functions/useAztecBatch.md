@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useAztecBatch**(): [`UseAztecBatchReturn`](../interfaces/UseAztecBatchReturn.md)
 
-Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:167](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useAztecBatch.ts#L167)
+Defined in: [core/modal-react/src/hooks/useAztecBatch.ts:257](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useAztecBatch.ts#L257)
 
 Hook for executing multiple Aztec transactions in batch
 
@@ -29,25 +29,39 @@ Batch transaction functions and state
 
 ## Remarks
 
-The hook provides:
-- Batch transaction execution
-- Individual transaction status tracking
-- Progress calculation
-- Error handling per transaction
-- Success/failure counting
+The hook provides two execution modes:
 
-Transactions are executed sequentially to avoid nonce issues,
-but the entire batch is tracked as a single operation.
+**Sequential Mode (default)**:
+- Transactions execute one-by-one
+- Each transaction gets its own proof
+- Individual transactions can fail independently
+- Detailed progress tracking for each transaction
+
+**Atomic Mode** (via `{ atomic: true }` option):
+- All transactions execute as a single atomic batch
+- Single proof for all operations (more efficient)
+- All operations succeed together or all fail together
+- Uses Aztec's native BatchCall functionality
+
+Features:
+- Batch transaction execution
+- Individual/unified transaction status tracking
+- Progress calculation
+- Error handling
+- Success/failure counting
 
 ## Examples
 
 ```tsx
 import { useAztecBatch, useAztecContract } from '@walletmesh/modal-react';
 
-function BatchTransfer({ tokenContract }) {
+function BatchTransfer({ tokenAddress, TokenArtifact }) {
   const { executeBatch, transactionStatuses, progress } = useAztecBatch();
+  const { contract: tokenContract } = useAztecContract(tokenAddress, TokenArtifact);
 
   const handleBatchTransfer = async () => {
+    if (!tokenContract) return;
+
     const interactions = [
       tokenContract.methods.transfer(address1, amount1),
       tokenContract.methods.transfer(address2, amount2),
@@ -64,7 +78,7 @@ function BatchTransfer({ tokenContract }) {
 
   return (
     <div>
-      <button onClick={handleBatchTransfer}>
+      <button onClick={handleBatchTransfer} disabled={!tokenContract}>
         Send Batch Transfers
       </button>
 
@@ -87,10 +101,45 @@ function BatchTransfer({ tokenContract }) {
 ```
 
 ```tsx
+// Atomic batch execution (all succeed or all fail together)
+function AtomicBatchTransfer({ tokenAddress, TokenArtifact }) {
+  const { executeBatch, progress, error } = useAztecBatch();
+  const { contract: tokenContract } = useAztecContract(tokenAddress, TokenArtifact);
+
+  const handleAtomicBatch = async () => {
+    if (!tokenContract) return;
+
+    const interactions = [
+      tokenContract.methods.transfer(address1, amount1),
+      tokenContract.methods.transfer(address2, amount2),
+      tokenContract.methods.transfer(address3, amount3),
+    ];
+
+    try {
+      // Execute as atomic batch - single transaction with one proof
+      const receipts = await executeBatch(interactions, { atomic: true });
+      console.log('All transfers completed atomically:', receipts);
+    } catch (error) {
+      console.error('Entire batch failed:', error);
+      // If any operation fails, ALL operations are reverted
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handleAtomicBatch} disabled={!tokenContract}>
+        Send Atomic Batch (All or Nothing)
+      </button>
+      {error && <p>Batch failed: {error.message}</p>}
+    </div>
+  );
+}
+```
+
+```tsx
 // Complex batch with different contract interactions
 function ComplexBatch() {
   const { executeBatch, completedTransactions, failedTransactions } = useAztecBatch();
-  const { aztecWallet } = useAztecWallet();
 
   const { contract: token1 } = useAztecContract(token1Address, TokenArtifact);
   const { contract: token2 } = useAztecContract(token2Address, TokenArtifact);

@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.2**](../../README.md)
+[**@walletmesh/router v0.5.3**](../../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createLocalTransportPair**(`options?`): \[[`LocalTransport`](../classes/LocalTransport.md), [`LocalTransport`](../classes/LocalTransport.md)\]
 
-Defined in: [core/router/src/localTransport.ts:178](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/localTransport.ts#L178)
+Defined in: [core/router/src/localTransport.ts:217](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/localTransport.ts#L217)
 
 Create a pair of connected local transports for bidirectional communication.
 This is the recommended way to connect a local wallet implementation to a router.

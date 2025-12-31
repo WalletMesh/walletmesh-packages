@@ -1,5 +1,11 @@
 # @walletmesh/discovery
 
+## 0.1.3
+
+### Patch Changes
+
+- 3bbe9b2: Add modal-core and modal-react packages
+
 ## 0.1.2
 
 ### Patch Changes

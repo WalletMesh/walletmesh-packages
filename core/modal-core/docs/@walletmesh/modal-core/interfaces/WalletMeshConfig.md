@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -194,9 +194,17 @@ Configures how the client discovers available wallets.
 
 Capability requirements for wallet matching
 
+##### capabilities.chains?
+
+> `optional` **chains**: `string`[]
+
 ##### capabilities.features?
 
 > `optional` **features**: `string`[]
+
+##### capabilities.interfaces?
+
+> `optional` **interfaces**: `string`[]
 
 ##### capabilities.technologies?
 

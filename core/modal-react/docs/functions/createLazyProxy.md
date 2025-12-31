@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createLazyProxy**\<`T`\>(`factory`): `T`
 
-Defined in: core/modal-core/dist/api/utils/lazy.d.ts:80
+Defined in: core/modal-core/dist/api/utils/lazy.d.ts:82
 
 Create a lazy proxy that initializes on first property access
 

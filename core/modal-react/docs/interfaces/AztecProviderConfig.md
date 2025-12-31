@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: AztecProviderConfig
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:21](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L21)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:21](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L21)
 
 Configuration options specific to Aztec dApps
 
@@ -16,7 +16,7 @@ Configuration options specific to Aztec dApps
 
 > `optional` **appDescription**: `string`
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:25](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L25)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:25](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L25)
 
 Optional application description
 
@@ -26,7 +26,7 @@ Optional application description
 
 > `optional` **appIcon**: `string`
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:29](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L29)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:29](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L29)
 
 Application icon URL
 
@@ -36,7 +36,7 @@ Application icon URL
 
 > `optional` **appMetadata**: `object`
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:31](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L31)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:31](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L31)
 
 Extended dApp metadata for identification and display
 
@@ -82,7 +82,7 @@ dApp homepage URL
 
 > **appName**: `string`
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:23](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L23)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:23](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L23)
 
 Application name displayed to users
 
@@ -92,9 +92,60 @@ Application name displayed to users
 
 > `optional` **appUrl**: `string`
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:27](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L27)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:27](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L27)
 
 Application URL (defaults to current origin)
+
+***
+
+### autoInjectTransactionOverlays?
+
+> `optional` **autoInjectTransactionOverlays**: `boolean`
+
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:140](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L140)
+
+Whether to auto-inject transaction overlays (default: true)
+
+When enabled, transaction status overlays are automatically rendered:
+- AztecTransactionStatusOverlay for sync transactions (executeSync)
+- BackgroundTransactionIndicator for async transactions (execute)
+
+***
+
+### backgroundTransactionIndicator?
+
+> `optional` **backgroundTransactionIndicator**: `object`
+
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:167](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L167)
+
+Configuration for the floating background transaction indicator
+
+Shows a non-blocking floating badge for asynchronous transactions that allows
+users to continue working while transactions process in the background.
+
+#### completedDuration?
+
+> `optional` **completedDuration**: `number`
+
+Duration to show completed state in milliseconds (default: 2000)
+
+#### enabled?
+
+> `optional` **enabled**: `boolean`
+
+Whether to enable the indicator (default: true)
+
+#### position?
+
+> `optional` **position**: `"top-left"` \| `"top-right"` \| `"bottom-left"` \| `"bottom-right"`
+
+Position of the indicator (default: 'bottom-right')
+
+#### showCompleted?
+
+> `optional` **showCompleted**: `boolean`
+
+Show completed transactions briefly before dismissing (default: false)
 
 ***
 
@@ -102,7 +153,7 @@ Application URL (defaults to current origin)
 
 > `optional` **chains**: `object`[]
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:74](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L74)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:74](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L74)
 
 Aztec chains to support (defaults to aztecSandbox for development)
 
@@ -161,7 +212,7 @@ chains: [
 
 > `optional` **debug**: `boolean`
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:83](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L83)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:83](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L83)
 
 Whether to enable debug mode (defaults to true in development)
 
@@ -171,7 +222,7 @@ Whether to enable debug mode (defaults to true in development)
 
 > `optional` **discovery**: `object`
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:131](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L131)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:131](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L131)
 
 Optional overrides for wallet discovery behaviour.
 
@@ -184,9 +235,17 @@ When omitted, sensible Aztec defaults are applied.
 
 Capability requirements for wallet matching
 
+##### capabilities.chains?
+
+> `optional` **chains**: `string`[]
+
 ##### capabilities.features?
 
 > `optional` **features**: `string`[]
+
+##### capabilities.interfaces?
+
+> `optional` **interfaces**: `string`[]
 
 ##### capabilities.technologies?
 
@@ -250,7 +309,7 @@ Discovery timeout in milliseconds
 
 > `optional` **discoveryTimeout**: `number`
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:85](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L85)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:85](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L85)
 
 Discovery timeout in milliseconds (defaults to 5000)
 
@@ -260,7 +319,7 @@ Discovery timeout in milliseconds (defaults to 5000)
 
 > `optional` **permissions**: `string`[]
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:123](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L123)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:123](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L123)
 
 Required permissions for the dApp
 
@@ -297,11 +356,54 @@ permissions: [
 
 ***
 
+### transactionOverlay?
+
+> `optional` **transactionOverlay**: `object`
+
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:148](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L148)
+
+Configuration for the full-screen transaction status overlay
+
+Shows detailed transaction progress for synchronous transactions including
+simulation, proof generation, sending, and confirmation stages.
+
+#### description?
+
+> `optional` **description**: `string`
+
+Custom description text
+
+#### disableNavigationGuard?
+
+> `optional` **disableNavigationGuard**: `boolean`
+
+Disable the navigation guard that warns before closing tab (default: false)
+
+#### enabled?
+
+> `optional` **enabled**: `boolean`
+
+Whether to enable the overlay (default: true)
+
+#### headline?
+
+> `optional` **headline**: `string`
+
+Custom headline text
+
+#### showBackgroundTransactions?
+
+> `optional` **showBackgroundTransactions**: `boolean`
+
+Show background transactions in this overlay too (default: false)
+
+***
+
 ### walletFilter()?
 
 > `optional` **walletFilter**: (`wallet`) => `boolean`
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:89](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L89)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:89](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L89)
 
 Custom wallet filter function
 
@@ -321,6 +423,6 @@ Custom wallet filter function
 
 > `optional` **wallets**: [`WalletInfo`](WalletInfo.md)[]
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:87](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L87)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:87](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L87)
 
 Custom wallets to include (e.g., test wallets)

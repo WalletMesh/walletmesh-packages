@@ -1,8 +1,8 @@
-[**@walletmesh/discovery v0.1.2**](README.md)
+[**@walletmesh/discovery v0.1.3**](README.md)
 
 ***
 
-# @walletmesh/discovery v0.1.2
+# @walletmesh/discovery v0.1.3
 
 Generic Cross-Blockchain Discovery Protocol
 
@@ -15,10 +15,6 @@ Features:
 - Enhanced security: Origin validation, session tracking, anti-spoofing
 - Privacy protection: Dual identifier system prevents tracking
 - CSP compliance: No Content Security Policy violations
-
-## Blockchain
-
-- [CHAIN\_TYPES](variables/CHAIN_TYPES.md)
 
 ## Capability
 
@@ -47,23 +43,15 @@ Features:
 - [CapabilityIntersection](interfaces/CapabilityIntersection.md)
 - [CapabilityPreferences](interfaces/CapabilityPreferences.md)
 - [CapabilityRequirements](interfaces/CapabilityRequirements.md)
-- [ChainCapability](interfaces/ChainCapability.md)
-- [ChainFeature](interfaces/ChainFeature.md)
 - [ExtensionResponderInfo](interfaces/ExtensionResponderInfo.md)
-- [NetworkInfo](interfaces/NetworkInfo.md)
-- [ParameterSpec](interfaces/ParameterSpec.md)
 - [PermissionModel](interfaces/PermissionModel.md)
 - [QualifiedResponder](interfaces/QualifiedResponder.md)
 - [ResponderFeature](interfaces/ResponderFeature.md)
 - [ResponderPlatform](interfaces/ResponderPlatform.md)
 - [TechnologyCapability](interfaces/TechnologyCapability.md)
-- [TechnologyMatch](interfaces/TechnologyMatch.md)
 - [TechnologyRequirement](interfaces/TechnologyRequirement.md)
-- [TransactionType](interfaces/TransactionType.md)
-- [ValidationRule](interfaces/ValidationRule.md)
 - [VerificationInfo](interfaces/VerificationInfo.md)
 - [WebResponderInfo](interfaces/WebResponderInfo.md)
-- [ChainType](type-aliases/ChainType.md)
 - [ResponderInfo](type-aliases/ResponderInfo.md)
 - [ResponderType](type-aliases/ResponderType.md)
 
@@ -80,13 +68,6 @@ Features:
 
 - [DISCOVERY\_EVENTS](variables/DISCOVERY_EVENTS.md)
 
-## Factory
-
-- [createCapabilityMatcher](functions/createCapabilityMatcher.md)
-- [createDiscoveryResponder](functions/createDiscoveryResponder.md)
-- [createInitiatorDiscoverySetup](functions/createInitiatorDiscoverySetup.md)
-- [createResponderDiscoverySetup](functions/createResponderDiscoverySetup.md)
-
 ## Features
 
 - [RESPONDER\_FEATURES](variables/RESPONDER_FEATURES.md)
@@ -94,7 +75,6 @@ Features:
 ## Helpers
 
 - [createCapabilityRequirements](variables/createCapabilityRequirements.md)
-- [createResponderInfo](variables/createResponderInfo.md)
 
 ## Interfaces
 
@@ -103,8 +83,16 @@ Features:
 ## Other
 
 - [ValidationError](classes/ValidationError.md)
+- [InitiatorSessionParams](interfaces/InitiatorSessionParams.md)
+- [ResponderServerHandle](interfaces/ResponderServerHandle.md)
+- [ResponderServerParams](interfaces/ResponderServerParams.md)
+- [TechnologyMatch](interfaces/TechnologyMatch.md)
 - [defaultLogger](variables/defaultLogger.md)
+- [createInitiatorSession](functions/createInitiatorSession.md)
+- [createResponderServer](functions/createResponderServer.md)
 - [isValidTransportConfig](functions/isValidTransportConfig.md)
+- [runDiscovery](functions/runDiscovery.md)
+- [startResponder](functions/startResponder.md)
 - [validateCapabilityPreferences](functions/validateCapabilityPreferences.md)
 - [validateCapabilityRequirements](functions/validateCapabilityRequirements.md)
 - [validateEventOrigin](functions/validateEventOrigin.md)

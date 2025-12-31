@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -13,12 +13,6 @@ UI service dependencies
 - [`BaseServiceDependencies`](BaseServiceDependencies.md)
 
 ## Properties
-
-### chainService?
-
-> `optional` **chainService**: [`ChainService`](../classes/ChainService.md)
-
-***
 
 ### logger
 

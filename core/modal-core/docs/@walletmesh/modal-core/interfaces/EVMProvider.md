@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -36,11 +36,13 @@ Add a new chain to the wallet
 
 > **disconnect**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
 
-Disconnect the provider
+Disconnect from provider
 
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+
+Promise that resolves when disconnection is complete
 
 #### Inherited from
 
@@ -48,19 +50,21 @@ Disconnect the provider
 
 ***
 
-### getAddresses()
+### getAccounts()
 
-> **getAddresses**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string`[]\>
+> **getAccounts**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string`[]\>
 
-Get the current account addresses
+Get connected accounts/addresses
 
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string`[]\>
 
+Promise resolving to array of account addresses
+
 #### Inherited from
 
-[`BlockchainProvider`](BlockchainProvider.md).[`getAddresses`](BlockchainProvider.md#getaddresses)
+[`BlockchainProvider`](BlockchainProvider.md).[`getAccounts`](BlockchainProvider.md#getaccounts)
 
 ***
 
@@ -68,11 +72,13 @@ Get the current account addresses
 
 > **getChainId**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string` \| `number`\>
 
-Get the current chain ID
+Get current chain ID
 
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`string` \| `number`\>
+
+Promise resolving to chain ID as string or number
 
 #### Inherited from
 
@@ -92,9 +98,13 @@ Remove event listener
 
 `string`
 
+Event name to stop listening for
+
 ##### listener
 
 (...`args`) => `void`
+
+Callback function to remove
 
 #### Returns
 
@@ -118,9 +128,13 @@ Add event listener
 
 `string`
 
+Event name to listen for
+
 ##### listener
 
 (...`args`) => `void`
+
+Callback function to invoke when event occurs
 
 #### Returns
 
@@ -143,6 +157,9 @@ Remove all event listeners
 ##### event?
 
 `string`
+
+Optional event name to remove all listeners for.
+               If not provided, removes all listeners for all events.
 
 #### Returns
 

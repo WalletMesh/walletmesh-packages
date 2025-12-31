@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.2**](../../README.md)
+[**@walletmesh/router v0.5.3**](../../README.md)
 
 ***
 
@@ -8,11 +8,23 @@
 
 > `const` **RouterErrorMap**: `object`
 
-Defined in: [core/router/src/errors.ts:6](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/errors.ts#L6)
+Defined in: [core/router/src/errors.ts:6](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/errors.ts#L6)
 
 Error codes and messages for the multi-chain router
 
 ## Type Declaration
+
+### duplicateRequestId
+
+> `readonly` **duplicateRequestId**: `object`
+
+#### duplicateRequestId.code
+
+> `readonly` **code**: `-32008` = `-32008`
+
+#### duplicateRequestId.message
+
+> `readonly` **message**: `"Duplicate request ID - approval already pending"` = `'Duplicate request ID - approval already pending'`
 
 ### insufficientPermissions
 

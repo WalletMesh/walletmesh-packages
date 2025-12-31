@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: CreateSessionParams
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:289
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:396
 
 Parameters for creating a new session
 
@@ -16,7 +16,7 @@ Parameters for creating a new session
 
 > `optional` **accountContext**: `Partial`\<[`AccountManagementContext`](AccountManagementContext.md)\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:314
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:424
 
 Optional account management context
 
@@ -26,7 +26,7 @@ Optional account management context
 
 > **accounts**: `AccountInfo`[]
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:293
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:400
 
 Connected accounts with full information
 
@@ -36,9 +36,50 @@ Connected accounts with full information
 
 > `optional` **activeAccountIndex**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:295
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:402
 
 Active account index (defaults to 0)
+
+***
+
+### adapterReconstruction?
+
+> `optional` **adapterReconstruction**: `object`
+
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:433
+
+Optional adapter reconstruction data for hydration
+This enables the client to recreate the adapter on page refresh
+
+#### adapterType
+
+> **adapterType**: `string`
+
+Adapter type identifier (e.g., 'discovery', 'metamask', 'phantom')
+
+#### blockchainType
+
+> **blockchainType**: `string`
+
+Blockchain technology type (e.g., 'evm', 'solana', 'aztec')
+
+#### transportConfig
+
+> **transportConfig**: `object`
+
+Transport configuration for recreating the transport
+
+##### transportConfig.config
+
+> **config**: `Record`\<`string`, `unknown`\>
+
+Transport-specific configuration
+
+##### transportConfig.type
+
+> **type**: `string`
+
+Transport type
 
 ***
 
@@ -46,7 +87,7 @@ Active account index (defaults to 0)
 
 > **chain**: [`ChainSessionInfo`](ChainSessionInfo.md)
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:297
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:404
 
 Chain information
 
@@ -56,7 +97,7 @@ Chain information
 
 > `optional` **expiresAt**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:316
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:426
 
 Optional session expiration
 
@@ -66,7 +107,7 @@ Optional session expiration
 
 > **metadata**: `Omit`\<`SessionStateMetadata`, `"chainSwitches"`\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:310
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:420
 
 Session metadata
 
@@ -76,19 +117,20 @@ Session metadata
 
 > **permissions**: [`SessionPermissions`](SessionPermissions.md)
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:308
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:418
 
 Initial permissions
 
 ***
 
-### provider
+### provider?
 
-> **provider**: [`BlockchainProvider`](BlockchainProvider.md)
+> `optional` **provider**: [`BlockchainProvider`](BlockchainProvider.md)
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:299
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:409
 
-Provider instance
+Provider instance (optional - can be retrieved from ProviderRegistry by sessionId)
+If not provided, must be stored in ProviderRegistry before calling createSession
 
 ***
 
@@ -96,7 +138,7 @@ Provider instance
 
 > **providerMetadata**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:301
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:411
 
 Provider metadata
 
@@ -122,7 +164,7 @@ Provider metadata
 
 > `optional` **sessionId**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:318
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:428
 
 Optional session ID (for reconnection)
 
@@ -132,7 +174,7 @@ Optional session ID (for reconnection)
 
 > **walletId**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:291
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:398
 
 Wallet ID
 
@@ -142,6 +184,6 @@ Wallet ID
 
 > `optional` **walletSessionContext**: `Omit`\<[`WalletSessionContext`](WalletSessionContext.md), `"walletMetadata"`\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:312
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:422
 
 Optional wallet session context

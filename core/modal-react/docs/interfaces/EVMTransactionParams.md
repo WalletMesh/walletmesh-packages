@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: EVMTransactionParams
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:115
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:125
 
 EVM (Ethereum Virtual Machine) transaction parameters.
 
@@ -54,7 +54,7 @@ const eip1559Params: EVMTransactionParams = {
 
 > `optional` **autoSwitchChain**: `boolean`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:66
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:76
 
 Whether to automatically switch chains if the wallet is on a different chain.
 When true, the service will attempt to switch to the target chainId before sending.
@@ -70,7 +70,7 @@ Defaults to false if not specified.
 
 > `optional` **chainId**: `string`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:60
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:70
 
 Target chain ID for the transaction.
 If specified and different from current chain, may trigger chain switch.
@@ -85,7 +85,7 @@ If specified and different from current chain, may trigger chain switch.
 
 > `optional` **data**: `string`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:130
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:140
 
 Transaction data for contract interactions.
 Hex-encoded function call or deployment bytecode.
@@ -96,7 +96,7 @@ Hex-encoded function call or deployment bytecode.
 
 > `optional` **from**: `string`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:155
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:165
 
 From address (optional, defaults to current connected account).
 Must match the connected wallet's address if provided.
@@ -107,7 +107,7 @@ Must match the connected wallet's address if provided.
 
 > `optional` **gas**: `string`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:135
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:145
 
 Gas limit override (as string).
 If not provided, will be estimated automatically with a safety buffer.
@@ -118,7 +118,7 @@ If not provided, will be estimated automatically with a safety buffer.
 
 > `optional` **maxFeePerGas**: `string`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:140
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:150
 
 Maximum fee per gas for EIP-1559 transactions (as string in wei).
 Total fee = (base fee + priority fee) * gas used, capped at this value.
@@ -129,7 +129,7 @@ Total fee = (base fee + priority fee) * gas used, capped at this value.
 
 > `optional` **maxPriorityFeePerGas**: `string`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:145
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:155
 
 Maximum priority fee (tip) per gas for EIP-1559 transactions (as string in wei).
 This is paid to miners/validators as an incentive.
@@ -140,7 +140,7 @@ This is paid to miners/validators as an incentive.
 
 > `optional` **metadata**: `object`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:71
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:81
 
 Transaction metadata for tracking and UI purposes.
 This data is stored with the transaction but not sent on-chain.
@@ -173,7 +173,7 @@ Human-readable description of the transaction purpose
 
 > `optional` **nonce**: `number`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:150
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:160
 
 Transaction nonce override.
 Useful for replacing stuck transactions or ensuring order.
@@ -184,7 +184,7 @@ Useful for replacing stuck transactions or ensuring order.
 
 > **to**: `string`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:120
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:130
 
 Target address for the transaction.
 Must be a valid Ethereum address (0x-prefixed, 40 hex characters).
@@ -195,7 +195,7 @@ Must be a valid Ethereum address (0x-prefixed, 40 hex characters).
 
 > `optional` **value**: `string`
 
-Defined in: core/modal-core/dist/services/transaction/types.d.ts:125
+Defined in: core/modal-core/dist/services/transaction/types.d.ts:135
 
 Value to send in wei (as string to handle large numbers).
 Use web3 utilities to convert from ether: web3.utils.toWei('1', 'ether')

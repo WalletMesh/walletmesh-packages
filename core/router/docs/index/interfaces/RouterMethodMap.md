@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.2**](../../README.md)
+[**@walletmesh/router v0.5.3**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: RouterMethodMap
 
-Defined in: [core/router/src/types.ts:414](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L414)
+Defined in: [core/router/src/types.ts:428](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L428)
 
 Router method map following JSON-RPC spec.
 Defines all available methods that can be called on the router,
@@ -22,11 +22,49 @@ their parameters, and return types.
 
 ## Properties
 
+### aztec\_status
+
+> **aztec\_status**: `object`
+
+Defined in: [core/router/src/types.ts:434](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L434)
+
+Aztec-specific status notifications (e.g., PXE readiness).
+
+#### params
+
+> **params**: `object`
+
+##### Index Signature
+
+\[`key`: `string`\]: `unknown`
+
+##### params.pxeReady?
+
+> `optional` **pxeReady**: `boolean`
+
+##### params.timestamp?
+
+> `optional` **timestamp**: `number`
+
+#### result
+
+> **result**: `undefined`
+
+#### Param
+
+Whether the PXE service is ready for requests
+
+#### Param
+
+Optional UNIX timestamp when status was emitted
+
+***
+
 ### wm\_bulkCall
 
 > **wm\_bulkCall**: [`WmBulkCallType`](WmBulkCallType.md)\<keyof `RouterMethodMap`\>
 
-Defined in: [core/router/src/types.ts:517](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L517)
+Defined in: [core/router/src/types.ts:545](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L545)
 
 Execute multiple method calls in sequence
 
@@ -62,7 +100,7 @@ const [balance, code] = await provider.bulkCall('eip155:1', [
 
 > **wm\_call**: [`WmCallType`](WmCallType.md)\<keyof `RouterMethodMap`\>
 
-Defined in: [core/router/src/types.ts:500](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L500)
+Defined in: [core/router/src/types.ts:528](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L528)
 
 Invoke a method on a specific chain
 
@@ -98,7 +136,7 @@ const balance = await provider.call('eip155:1', {
 
 > **wm\_connect**: `object`
 
-Defined in: [core/router/src/types.ts:435](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L435)
+Defined in: [core/router/src/types.ts:463](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L463)
 
 Create a new session with specified permissions
 
@@ -136,7 +174,7 @@ Object containing the new session ID and approved permissions
 
 > **wm\_disconnect**: `object`
 
-Defined in: [core/router/src/types.ts:450](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L450)
+Defined in: [core/router/src/types.ts:478](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L478)
 
 End an existing session
 
@@ -166,7 +204,7 @@ true if session was successfully ended
 
 > **wm\_getPermissions**: `object`
 
-Defined in: [core/router/src/types.ts:463](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L463)
+Defined in: [core/router/src/types.ts:491](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L491)
 
 Get current session permissions
 
@@ -204,7 +242,7 @@ Current permissions in human-readable format
 
 > **wm\_getSupportedMethods**: `object`
 
-Defined in: [core/router/src/types.ts:524](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L524)
+Defined in: [core/router/src/types.ts:552](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L552)
 
 Get supported methods for specified chains
 
@@ -234,7 +272,7 @@ Record mapping chain IDs to their supported method names
 
 > **wm\_reconnect**: `object`
 
-Defined in: [core/router/src/types.ts:420](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L420)
+Defined in: [core/router/src/types.ts:448](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L448)
 
 Attempt to reconnect to an existing session
 
@@ -272,7 +310,7 @@ Object containing reconnection status and current permissions
 
 > **wm\_updatePermissions**: `object`
 
-Defined in: [core/router/src/types.ts:477](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L477)
+Defined in: [core/router/src/types.ts:505](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L505)
 
 Update session permissions
 

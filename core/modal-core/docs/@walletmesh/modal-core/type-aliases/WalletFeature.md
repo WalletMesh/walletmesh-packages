@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -6,6 +6,6 @@
 
 # Type Alias: WalletFeature
 
-> **WalletFeature** = `"sign_message"` \| `"sign_typed_data"` \| `"encrypt"` \| `"decrypt"` \| `"multi_account"` \| `"hardware_wallet"` \| `"wallet_connect"`
+> **WalletFeature** = `"sign_message"` \| `"sign_typed_data"` \| `"sign_transaction"` \| `"encrypt"` \| `"decrypt"` \| `"multi_account"` \| `"hardware_wallet"` \| `"wallet_connect"`
 
 Features that a wallet can support

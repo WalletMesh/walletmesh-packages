@@ -1,5 +1,13 @@
 # @walletmesh/router
 
+## 0.5.3
+
+### Patch Changes
+
+- 3bbe9b2: Add modal-core and modal-react packages
+- Updated dependencies [3bbe9b2]
+  - @walletmesh/jsonrpc@0.5.3
+
 ## 0.5.2
 
 ### Patch Changes

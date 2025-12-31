@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > `const` **CAPABILITY\_PRESETS**: `Record`\<`string`, [`CapabilityRequirements`](../interfaces/CapabilityRequirements.md)\>
 
-Defined in: [core/discovery/src/presets/index.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/presets/index.ts#L44)
+Defined in: [core/discovery/src/presets/index.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/presets/index.ts#L44)
 
 Pre-configured capability requirements for popular blockchain ecosystems.
 

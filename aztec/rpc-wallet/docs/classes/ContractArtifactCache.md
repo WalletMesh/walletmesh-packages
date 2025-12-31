@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.4**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.6**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ContractArtifactCache
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/contractArtifactCache.ts#L28)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/contractArtifactCache.ts#L30)
 
 Manages an in-memory cache for Aztec ContractArtifacts.
 
@@ -38,7 +38,7 @@ to provide efficient artifact access to RPC method handlers.
 
 > **new ContractArtifactCache**(`wallet`): `ContractArtifactCache`
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/contractArtifactCache.ts#L50)
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:52](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/contractArtifactCache.ts#L52)
 
 Creates a new `ContractArtifactCache` instance.
 
@@ -63,19 +63,7 @@ The `aztec.js` [Wallet](https://docs.aztec.network/reference/aztec.js/interfaces
 
 > **getContractArtifact**(`contractAddress`): `Promise`\<`ContractArtifact`\>
 
-Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/contractArtifactCache.ts#L73)
-
-Retrieves the ContractArtifact for a given AztecAddress.
-
-This method implements a cache-aside pattern:
-1. It first checks if the artifact for the `contractAddress` is already in the cache.
-2. If found (cache hit), the cached artifact is returned immediately.
-3. If not found (cache miss):
-   a. It fetches the ContractMetadata for the `contractAddress` using the wallet.
-   b. It then fetches the ContractClassMetadata using the class ID from the contract metadata.
-      This class metadata is expected to contain the artifact.
-   c. The retrieved artifact is stored in the cache, associated with the `contractAddress`.
-   d. The artifact is then returned.
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:91](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/contractArtifactCache.ts#L91)
 
 #### Parameters
 
@@ -83,16 +71,46 @@ This method implements a cache-aside pattern:
 
 `AztecAddress`
 
-The AztecAddress of the contract whose artifact is to be retrieved.
-
 #### Returns
 
 `Promise`\<`ContractArtifact`\>
 
-A promise that resolves to the ContractArtifact.
+***
 
-#### Throws
+### rememberContractClass()
 
-if the contract instance or its class (and thus artifact)
-                           is not registered with the wallet or cannot be found.
-                           Also re-throws other errors encountered during wallet calls.
+> **rememberContractClass**(`artifact`): `Promise`\<`string`\>
+
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:86](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/contractArtifactCache.ts#L86)
+
+#### Parameters
+
+##### artifact
+
+`ContractArtifact`
+
+#### Returns
+
+`Promise`\<`string`\>
+
+***
+
+### storeArtifactForAddress()
+
+> **storeArtifactForAddress**(`address`, `artifact`): `void`
+
+Defined in: [aztec/rpc-wallet/src/contractArtifactCache.ts:82](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/contractArtifactCache.ts#L82)
+
+#### Parameters
+
+##### address
+
+`AztecAddress`
+
+##### artifact
+
+`ContractArtifact`
+
+#### Returns
+
+`void`

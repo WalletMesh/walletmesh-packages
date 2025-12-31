@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionOptions
 
-Defined in: [core/discovery/src/types/security.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L45)
+Defined in: [core/discovery/src/types/security.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L45)
 
 Session tracking and management options.
 
@@ -23,7 +23,7 @@ Essential for preventing session replay attacks and managing resource usage.
 
 > **cleanupInterval**: `number`
 
-Defined in: [core/discovery/src/types/security.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L47)
+Defined in: [core/discovery/src/types/security.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L47)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [core/discovery/src/types/security.ts:47](https://github.com/WalletM
 
 > **maxAge**: `number`
 
-Defined in: [core/discovery/src/types/security.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L46)
+Defined in: [core/discovery/src/types/security.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L46)
 
 ***
 
@@ -39,4 +39,4 @@ Defined in: [core/discovery/src/types/security.ts:46](https://github.com/WalletM
 
 > **maxSessionsPerOrigin**: `number`
 
-Defined in: [core/discovery/src/types/security.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/security.ts#L48)
+Defined in: [core/discovery/src/types/security.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/security.ts#L48)

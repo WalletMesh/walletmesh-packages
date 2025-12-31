@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -9,6 +9,14 @@
 Options for creating a WalletMeshClient
 
 ## Properties
+
+### autoInitialize?
+
+> `optional` **autoInitialize**: `boolean`
+
+Whether to automatically call initialize() after creation (default: false for sync compatibility)
+
+***
 
 ### logger?
 

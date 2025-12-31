@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -6,6 +6,6 @@
 
 # Type Alias: SessionStatus
 
-> **SessionStatus** = `"initializing"` \| `"connecting"` \| `"connected"` \| `"switching"` \| `"disconnecting"` \| `"disconnected"` \| `"error"`
+> **SessionStatus** = `"connected"` \| `"connecting"` \| `"disconnected"` \| `"reconnecting"`
 
-Session status enumeration
+Session status type

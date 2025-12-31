@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.2**](../../README.md)
+[**@walletmesh/router v0.5.3**](../../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ProviderSerializerRegistry
 
-Defined in: [core/router/src/provider-serialization.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/provider-serialization.ts#L18)
+Defined in: [core/router/src/provider-serialization.ts:18](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/provider-serialization.ts#L18)
 
 Registry for method-specific serializers in the router provider.
 This allows registering serializers for the actual wallet methods
@@ -28,7 +28,7 @@ This allows registering serializers for the actual wallet methods
 
 > **deserializeResult**(`method`, `result`): `Promise`\<`unknown`\>
 
-Defined in: [core/router/src/provider-serialization.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/provider-serialization.ts#L63)
+Defined in: [core/router/src/provider-serialization.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/provider-serialization.ts#L63)
 
 Deserialize a result from a method call
 
@@ -52,7 +52,7 @@ Deserialize a result from a method call
 
 > **get**(`method`): `undefined` \| `JSONRPCSerializer`\<`unknown`, `unknown`\>
 
-Defined in: [core/router/src/provider-serialization.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/provider-serialization.ts#L31)
+Defined in: [core/router/src/provider-serialization.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/provider-serialization.ts#L31)
 
 Get a serializer for a method, if registered
 
@@ -72,7 +72,7 @@ Get a serializer for a method, if registered
 
 > **has**(`method`): `boolean`
 
-Defined in: [core/router/src/provider-serialization.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/provider-serialization.ts#L38)
+Defined in: [core/router/src/provider-serialization.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/provider-serialization.ts#L38)
 
 Check if a method has a registered serializer
 
@@ -92,7 +92,7 @@ Check if a method has a registered serializer
 
 > **register**\<`P`, `R`\>(`method`, `serializer`): `void`
 
-Defined in: [core/router/src/provider-serialization.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/provider-serialization.ts#L24)
+Defined in: [core/router/src/provider-serialization.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/provider-serialization.ts#L24)
 
 Register a serializer for a specific method
 
@@ -126,7 +126,7 @@ Register a serializer for a specific method
 
 > **serializeCall**(`call`): `Promise`\<[`SerializedMethodCall`](../interfaces/SerializedMethodCall.md)\>
 
-Defined in: [core/router/src/provider-serialization.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/provider-serialization.ts#L45)
+Defined in: [core/router/src/provider-serialization.ts:45](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/provider-serialization.ts#L45)
 
 Serialize a method call (including its parameters)
 

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -17,21 +17,29 @@ based on discovered wallet metadata. Supports all chain types.
 
 ### Constructor
 
-> **new DiscoveryAdapter**(`qualifiedResponder`, `connectionManager`, `config`): `DiscoveryAdapter`
+> **new DiscoveryAdapter**(`adapterDataOrResponder`, `connectionManager`, `config`): `DiscoveryAdapter`
+
+Create a DiscoveryAdapter
 
 #### Parameters
 
-##### qualifiedResponder
+##### adapterDataOrResponder
 
 `unknown`
+
+Either minimal DiscoveryAdapterData or full QualifiedResponder
 
 ##### connectionManager
 
 [`DiscoveryConnectionManager`](../interfaces/DiscoveryConnectionManager.md)
 
+Connection manager for discovery protocol
+
 ##### config
 
 [`DiscoveryAdapterConfig`](../interfaces/DiscoveryAdapterConfig.md) = `{}`
+
+Optional adapter configuration
 
 #### Returns
 
@@ -187,6 +195,38 @@ Display metadata for the wallet
 
 ***
 
+### persistedSession
+
+> `protected` **persistedSession**: `undefined` \| [`SessionState`](../interfaces/SessionState.md)
+
+Cached persisted session data from Zustand store
+
+This field stores a SessionState object that was loaded from the Zustand store
+during the `install()` lifecycle method. It enables adapters to detect and
+restore previous wallet connections across page refreshes.
+
+**Architecture Note**: Prior to the Zustand migration (2025-01), adapters used
+WalletStorage with a separate AdapterSessionData interface. Now, adapters access
+the full SessionState from the unified Zustand store, providing richer context
+for reconnection flows.
+
+**Usage Pattern**:
+1. `install()` calls `restoreSession()` which populates this field
+2. Subclass `connect()` methods can check this field to enable auto-reconnect
+3. `cleanup()` clears this field on disconnect
+
+#### See
+
+ - [restoreSession](AbstractWalletAdapter.md#restoresession) for how this field is populated
+ - [persistSession](AbstractWalletAdapter.md#persistsession) for how session data is saved to the store
+ - [getPersistedSession](AbstractWalletAdapter.md#getpersistedsession) for accessing this field
+
+#### Inherited from
+
+[`AbstractWalletAdapter`](AbstractWalletAdapter.md).[`persistedSession`](AbstractWalletAdapter.md#persistedsession)
+
+***
+
 ### providers
 
 > `protected` **providers**: [`Map`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map)\<[`ChainType`](../enumerations/ChainType.md), [`WalletProvider`](../../../internal/types/typedocExports/type-aliases/WalletProvider.md)\>
@@ -196,18 +236,6 @@ Active provider instances by chain type
 #### Inherited from
 
 [`AbstractWalletAdapter`](AbstractWalletAdapter.md).[`providers`](AbstractWalletAdapter.md#providers)
-
-***
-
-### storage
-
-> `protected` **storage**: `null` \| `WalletStorage` = `null`
-
-Storage instance for session persistence
-
-#### Inherited from
-
-[`AbstractWalletAdapter`](AbstractWalletAdapter.md).[`storage`](AbstractWalletAdapter.md#storage)
 
 ***
 
@@ -236,26 +264,6 @@ Active transport instance
 
 ## Accessors
 
-### connection
-
-#### Get Signature
-
-> **get** **connection**(): `null` \| [`WalletConnection`](../interfaces/WalletConnection.md)
-
-Get current connection (read-only)
-
-##### Returns
-
-`null` \| [`WalletConnection`](../interfaces/WalletConnection.md)
-
-Current connection if connected
-
-#### Inherited from
-
-[`AbstractWalletAdapter`](AbstractWalletAdapter.md).[`connection`](AbstractWalletAdapter.md#connection)
-
-***
-
 ### state
 
 #### Get Signature
@@ -281,11 +289,40 @@ Current connection state
 > `protected` **cleanup**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
 
 INFRASTRUCTURE HELPER: Clean up all resources
-Called automatically on disconnect and uninstall
+
+Performs comprehensive cleanup of adapter resources including Zustand store
+session removal, provider cleanup, transport cleanup, and state reset.
+Called automatically on `disconnect()` and `uninstall()`.
+
+**Zustand Store Integration**: This method removes all sessions for this wallet
+from the Zustand store, ensuring that persisted session data is cleared when
+the user explicitly disconnects. The store access is wrapped in a try-catch to
+gracefully handle test environments where the store may not be fully initialized.
+
+**Cleanup Order**:
+1. Remove sessions from Zustand store (with graceful fallback)
+2. Clear cached persisted session reference
+3. Clean up wallet providers
+4. Clean up transport connections
+5. Remove all event listeners
+6. Reset connection state to disconnected
+
+**Error Handling Strategy**: Uses nested try-catch blocks:
+- Inner try-catch: Handles Zustand store access failures (e.g., in tests)
+- Outer try-catch: Handles any unexpected errors during cleanup
+
+This ensures cleanup continues even if individual steps fail, preventing
+resource leaks in edge cases.
 
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+
+#### See
+
+ - cleanupProviders for provider cleanup details
+ - cleanupTransport for transport cleanup details
+ - [persistSession](AbstractWalletAdapter.md#persistsession) for how sessions are saved
 
 #### Inherited from
 
@@ -545,7 +582,7 @@ Use this instead of direct state updates
 
 Event type (without 'wallet:' prefix)
 
-`"disconnected"` | `"accountsChanged"` | `"chainChanged"`
+`"disconnected"` | `"connected"` | `"accountsChanged"` | `"chainChanged"` | `"statusChanged"` | `"sessionTerminated"`
 
 ##### data
 
@@ -608,15 +645,48 @@ JSON-RPC transport instance or undefined if not supported
 
 ### getPersistedSession()
 
-> `protected` **getPersistedSession**(): `undefined` \| `AdapterSessionData`
+> `protected` **getPersistedSession**(): `undefined` \| [`SessionState`](../interfaces/SessionState.md)
 
 Get the persisted session data if available
 
+Returns the SessionState that was loaded from the Zustand store during
+`install()`. This provides access to previously persisted wallet connection
+data for implementing auto-reconnect flows.
+
+**Usage**: Subclasses typically call this method in their `connect()` implementation
+to check if a previous session exists and attempt automatic reconnection.
+
 #### Returns
 
-`undefined` \| `AdapterSessionData`
+`undefined` \| [`SessionState`](../interfaces/SessionState.md)
 
-The persisted session data or undefined
+The persisted SessionState from the Zustand store, or undefined if no session was found
+
+#### See
+
+ - [restoreSession](AbstractWalletAdapter.md#restoresession) for how this field is populated
+ - [persistedSession](AbstractWalletAdapter.md#persistedsession) for the internal storage field
+
+#### Example
+
+```typescript
+async connect(options?: ConnectOptions): Promise<WalletConnection> {
+  // Check for persisted session to enable auto-reconnect
+  const persistedSession = this.getPersistedSession();
+
+  if (persistedSession && !options?.forceNew) {
+    this.log('info', 'Found persisted session, attempting auto-reconnect');
+    try {
+      return await this.reconnectWithSession(persistedSession);
+    } catch (error) {
+      this.log('warn', 'Auto-reconnect failed, proceeding with new connection', error);
+    }
+  }
+
+  // Normal connection flow
+  return await this.doConnect(options);
+}
+```
 
 #### Inherited from
 
@@ -656,25 +726,26 @@ If chain type not supported or not connected
 
 ### getTransportConfig()
 
-> **getTransportConfig**(): `undefined` \| `TransportConfig`
+> **getTransportConfig**(): `unknown`
 
 Get transport config for debugging
 
 #### Returns
 
-`undefined` \| `TransportConfig`
+`unknown`
 
 ***
 
 ### getWalletMetadata()
 
-> **getWalletMetadata**(): [`QualifiedWallet`](../interfaces/QualifiedWallet.md)
+> **getWalletMetadata**(): `undefined` \| [`QualifiedWallet`](../interfaces/QualifiedWallet.md)
 
 Get the discovered wallet metadata
+Returns the QualifiedResponder if available (legacy path), otherwise undefined
 
 #### Returns
 
-[`QualifiedWallet`](../interfaces/QualifiedWallet.md)
+`undefined` \| [`QualifiedWallet`](../interfaces/QualifiedWallet.md)
 
 ***
 
@@ -708,8 +779,18 @@ Type of blockchain to check
 
 Initialize the adapter with context
 
-Called by the framework when the adapter is registered. Subclasses can
-override to perform additional initialization but should call super.install().
+Called by the framework when the adapter is registered. This method sets up
+the adapter's logger, debug mode, and **automatically attempts to restore any
+previously persisted session from the Zustand store** to enable auto-reconnect
+across page refreshes.
+
+Subclasses can override to perform additional initialization but **must call
+super.install()** to ensure proper session restoration.
+
+**Session Restoration**: This method calls [restoreSession](AbstractWalletAdapter.md#restoresession) which loads
+session data from the Zustand store and populates [persistedSession](AbstractWalletAdapter.md#persistedsession).
+Subclasses can then check this field in their `connect()` method to implement
+automatic reconnection logic.
 
 #### Parameters
 
@@ -723,13 +804,26 @@ Adapter context with logger and configuration
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
 
+#### See
+
+ - [restoreSession](AbstractWalletAdapter.md#restoresession) for session restoration details
+ - [persistedSession](AbstractWalletAdapter.md#persistedsession) for accessing restored session data
+
 #### Example
 
 ```typescript
 async install(context: AdapterContext): Promise<void> {
+  // Always call super first to restore session
   await super.install(context);
+
   // Additional initialization
   this.initializeCustomFeatures();
+
+  // Optionally check for persisted session
+  const session = this.getPersistedSession();
+  if (session) {
+    this.log('info', 'Found previous session, auto-reconnect available');
+  }
 }
 ```
 
@@ -869,7 +963,7 @@ Subscribe to a one-time event
 
 > `protected` **persistSession**(`connection`, `sessionId`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
 
-Persist session data to storage for recovery across page refreshes
+Override persistSession to save DiscoveryAdapter-specific data
 
 #### Parameters
 
@@ -877,19 +971,15 @@ Persist session data to storage for recovery across page refreshes
 
 [`WalletConnection`](../interfaces/WalletConnection.md)
 
-The wallet connection to persist
-
 ##### sessionId
 
 `string`
-
-The session ID to use
 
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
 
-#### Inherited from
+#### Overrides
 
 [`AbstractWalletAdapter`](AbstractWalletAdapter.md).[`persistSession`](AbstractWalletAdapter.md#persistsession)
 
@@ -899,15 +989,59 @@ The session ID to use
 
 > `protected` **restoreSession**(): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
 
-Restore a previously persisted session
+Restore a previously persisted session from Zustand store
 
-This method attempts to restore a session from storage but does not
-automatically reconnect. Subclasses should override this method to
-implement reconnection logic specific to their wallet type.
+This method is automatically called by `install()` during adapter initialization.
+It searches the Zustand store for a SessionState matching this wallet's ID and,
+if found, caches it in the [persistedSession](AbstractWalletAdapter.md#persistedsession) field for potential use
+during reconnection flows.
+
+**Important**: This method only **loads** session data; it does **not** automatically
+reconnect to the wallet. Subclasses should override this method (calling `super.restoreSession()`)
+to implement wallet-specific reconnection logic.
+
+**Architecture**: Prior to the Zustand migration (2025-01), this method used
+WalletStorage to load AdapterSessionData. Now it loads the full SessionState from
+the Zustand store, providing richer context including account information, chain
+details, and permissions.
+
+**Lifecycle**:
+1. `install()` calls this method
+2. Method queries Zustand store for sessions matching `this.id`
+3. If found, stores in `this.persistedSession`
+4. Updates session's `lastActiveAt` timestamp
+5. Subclass `connect()` can check `this.persistedSession` for auto-reconnect
+
+**Override Pattern**:
+```typescript
+protected async restoreSession(): Promise<void> {
+  // Call parent to load session data
+  await super.restoreSession();
+
+  // Check if we have a session to restore
+  const session = this.getPersistedSession();
+  if (!session) return;
+
+  // Implement wallet-specific reconnection
+  try {
+    await this.reconnectWithSession(session);
+    this.log('info', 'Auto-reconnected from persisted session');
+  } catch (error) {
+    this.log('warn', 'Auto-reconnect failed, user must reconnect manually', error);
+  }
+}
+```
 
 #### Returns
 
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`void`\>
+
+#### See
+
+ - [install](AbstractWalletAdapter.md#install) which calls this method automatically
+ - [persistedSession](AbstractWalletAdapter.md#persistedsession) which stores the loaded session
+ - [persistSession](AbstractWalletAdapter.md#persistsession) for how session data is saved
+ - [getPersistedSession](AbstractWalletAdapter.md#getpersistedsession) for accessing the restored session
 
 #### Inherited from
 
@@ -915,24 +1049,23 @@ implement reconnection logic specific to their wallet type.
 
 ***
 
-### setupProviderListeners()?
+### setupProviderListeners()
 
-> `protected` `optional` **setupProviderListeners**(`provider`): `void`
+> `protected` **setupProviderListeners**(`provider`): `void`
 
-Optional: Override to set up provider event listeners
-This is called automatically after provider creation
+Set up provider event listeners to forward events to adapter
 
 #### Parameters
 
 ##### provider
 
-[`WalletProvider`](../../../internal/types/typedocExports/type-aliases/WalletProvider.md)
+`unknown`
 
 #### Returns
 
 `void`
 
-#### Inherited from
+#### Overrides
 
 [`AbstractWalletAdapter`](AbstractWalletAdapter.md).[`setupProviderListeners`](AbstractWalletAdapter.md#setupproviderlisteners)
 
@@ -969,3 +1102,80 @@ Clean up adapter resources
 #### Inherited from
 
 [`AbstractWalletAdapter`](AbstractWalletAdapter.md).[`uninstall`](AbstractWalletAdapter.md#uninstall)
+
+***
+
+### extractAdapterData()
+
+> `static` **extractAdapterData**(`qualifiedResponder`): `DiscoveryAdapterData`
+
+Extract minimal adapter data from a QualifiedResponder
+
+This static method extracts only the essential information needed to
+construct a DiscoveryAdapter, without requiring the full QualifiedResponder
+object. This enables adapter persistence and recreation after page refresh.
+
+#### Parameters
+
+##### qualifiedResponder
+
+`unknown`
+
+The discovery protocol response
+
+#### Returns
+
+`DiscoveryAdapterData`
+
+Minimal data required to construct the adapter
+
+***
+
+### getWalletInfoFromResponder()
+
+> `static` **getWalletInfoFromResponder**(`responder`): `object`
+
+Extract wallet information from a QualifiedResponder
+Useful for displaying discovered wallets without instantiating the adapter
+
+#### Parameters
+
+##### responder
+
+[`QualifiedWallet`](../interfaces/QualifiedWallet.md)
+
+The qualified responder from discovery protocol
+
+#### Returns
+
+`object`
+
+Wallet metadata and capabilities
+
+##### chains
+
+> **chains**: [`ChainType`](../enumerations/ChainType.md)[]
+
+##### features
+
+> **features**: [`Set`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set)\<[`WalletFeature`](../type-aliases/WalletFeature.md)\>
+
+##### icon
+
+> **icon**: `string`
+
+##### id
+
+> **id**: `string`
+
+##### name
+
+> **name**: `string`
+
+##### rdns
+
+> **rdns**: `string`
+
+##### transportType
+
+> **transportType**: `string`

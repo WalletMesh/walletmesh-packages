@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,9 +6,16 @@
 
 # Interface: BlockchainProvider
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:14
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:25
 
 Common base interface for all blockchain providers
+
+This interface extends CommonProviderInterface to ensure consistency with
+the WalletProvider system.
+
+## Extends
+
+- `CommonProviderInterface`
 
 ## Extended by
 
@@ -21,27 +28,39 @@ Common base interface for all blockchain providers
 
 > **disconnect**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:20
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:41
 
-Disconnect the provider
+Disconnect from provider
 
 #### Returns
 
 `Promise`\<`void`\>
 
+Promise that resolves when disconnection is complete
+
+#### Inherited from
+
+`CommonProviderInterface.disconnect`
+
 ***
 
-### getAddresses()
+### getAccounts()
 
-> **getAddresses**(): `Promise`\<`string`[]\>
+> **getAccounts**(): `Promise`\<`string`[]\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:16
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:29
 
-Get the current account addresses
+Get connected accounts/addresses
 
 #### Returns
 
 `Promise`\<`string`[]\>
+
+Promise resolving to array of account addresses
+
+#### Inherited from
+
+`CommonProviderInterface.getAccounts`
 
 ***
 
@@ -49,13 +68,19 @@ Get the current account addresses
 
 > **getChainId**(): `Promise`\<`string` \| `number`\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:18
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:35
 
-Get the current chain ID
+Get current chain ID
 
 #### Returns
 
 `Promise`\<`string` \| `number`\>
+
+Promise resolving to chain ID as string or number
+
+#### Inherited from
+
+`CommonProviderInterface.getChainId`
 
 ***
 
@@ -63,7 +88,7 @@ Get the current chain ID
 
 > **off**(`event`, `listener`): `void`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:24
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:55
 
 Remove event listener
 
@@ -73,13 +98,21 @@ Remove event listener
 
 `string`
 
+Event name to stop listening for
+
 ##### listener
 
 (...`args`) => `void`
 
+Callback function to remove
+
 #### Returns
 
 `void`
+
+#### Inherited from
+
+`CommonProviderInterface.off`
 
 ***
 
@@ -87,7 +120,7 @@ Remove event listener
 
 > **on**(`event`, `listener`): `void`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:22
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:48
 
 Add event listener
 
@@ -97,13 +130,21 @@ Add event listener
 
 `string`
 
+Event name to listen for
+
 ##### listener
 
 (...`args`) => `void`
 
+Callback function to invoke when event occurs
+
 #### Returns
 
 `void`
+
+#### Inherited from
+
+`CommonProviderInterface.on`
 
 ***
 
@@ -111,7 +152,7 @@ Add event listener
 
 > **removeAllListeners**(`event?`): `void`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:26
+Defined in: core/modal-core/dist/api/types/commonProvider.d.ts:62
 
 Remove all event listeners
 
@@ -121,9 +162,16 @@ Remove all event listeners
 
 `string`
 
+Optional event name to remove all listeners for.
+               If not provided, removes all listeners for all events.
+
 #### Returns
 
 `void`
+
+#### Inherited from
+
+`CommonProviderInterface.removeAllListeners`
 
 ***
 
@@ -131,7 +179,7 @@ Remove all event listeners
 
 > **request**(`args`): `Promise`\<`unknown`\>
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:28
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:27
 
 Request method call for JSON-RPC communication
 

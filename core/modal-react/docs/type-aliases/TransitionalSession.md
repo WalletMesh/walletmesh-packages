@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,4 +8,4 @@
 
 > **TransitionalSession** = `Extract`\<[`DiscriminatedSessionState`](DiscriminatedSessionState.md), \{ `status`: `"connecting"` \| `"switching"` \| `"disconnecting"`; \}\>
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:487
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:614

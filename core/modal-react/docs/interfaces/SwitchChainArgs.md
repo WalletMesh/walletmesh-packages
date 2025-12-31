@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SwitchChainArgs
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L42)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L42)
 
 Switch chain arguments
 
@@ -16,7 +16,7 @@ Switch chain arguments
 
 > `optional` **addChainData**: `object`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L46)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L46)
 
 Optional chain addition data for chains not yet added to wallet
 
@@ -62,7 +62,7 @@ RPC URLs in order of preference
 
 > **chain**: `object`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSwitchChain.ts#L44)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSwitchChain.ts#L44)
 
 Chain to switch to
 

@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.2**](../../README.md)
+[**@walletmesh/router v0.5.3**](../../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createLocalTransport**(`remoteNode`, `options?`): [`LocalTransport`](../classes/LocalTransport.md)
 
-Defined in: [core/router/src/localTransport.ts:224](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/localTransport.ts#L224)
+Defined in: [core/router/src/localTransport.ts:263](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/localTransport.ts#L263)
 
 Create a local transport that connects to an existing JSONRPCNode.
 This is useful when you already have a node instance and want to

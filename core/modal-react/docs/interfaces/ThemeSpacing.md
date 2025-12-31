@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ThemeSpacing
 
-Defined in: [core/modal-react/src/theme/types.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L136)
+Defined in: [core/modal-react/src/theme/types.ts:147](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L147)
 
 Spacing scale for layout consistency
 
@@ -16,7 +16,7 @@ Spacing scale for layout consistency
 
 > **2xl**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:142](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L142)
+Defined in: [core/modal-react/src/theme/types.ts:153](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L153)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal-react/src/theme/types.ts:142](https://github.com/WalletM
 
 > **3xl**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:143](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L143)
+Defined in: [core/modal-react/src/theme/types.ts:154](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L154)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/modal-react/src/theme/types.ts:143](https://github.com/WalletM
 
 > **lg**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:140](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L140)
+Defined in: [core/modal-react/src/theme/types.ts:151](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L151)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/modal-react/src/theme/types.ts:140](https://github.com/WalletM
 
 > **md**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:139](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L139)
+Defined in: [core/modal-react/src/theme/types.ts:150](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L150)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [core/modal-react/src/theme/types.ts:139](https://github.com/WalletM
 
 > **sm**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:138](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L138)
+Defined in: [core/modal-react/src/theme/types.ts:149](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L149)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [core/modal-react/src/theme/types.ts:138](https://github.com/WalletM
 
 > **xl**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:141](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L141)
+Defined in: [core/modal-react/src/theme/types.ts:152](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L152)
 
 ***
 
@@ -64,4 +64,4 @@ Defined in: [core/modal-react/src/theme/types.ts:141](https://github.com/WalletM
 
 > **xs**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:137](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L137)
+Defined in: [core/modal-react/src/theme/types.ts:148](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L148)

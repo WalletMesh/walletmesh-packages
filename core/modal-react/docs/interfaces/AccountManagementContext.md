@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: AccountManagementContext
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:358
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:485
 
 Account management context for multi-account sessions
 
@@ -16,7 +16,7 @@ Account management context for multi-account sessions
 
 > **accountPermissions**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:375
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:502
 
 Account access permissions
 
@@ -44,7 +44,7 @@ Whether the user can switch between accounts
 
 > **activeAccountIndex**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:362
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:489
 
 Currently selected account index
 
@@ -54,7 +54,7 @@ Currently selected account index
 
 > **discoverySettings**: `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:366
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:493
 
 Account discovery settings
 
@@ -82,7 +82,7 @@ Maximum number of accounts to discover
 
 > **selectionHistory**: [`AccountSelectionRecord`](AccountSelectionRecord.md)[]
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:364
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:491
 
 Account selection history
 
@@ -92,6 +92,6 @@ Account selection history
 
 > **totalAccounts**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:360
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:487
 
 Total number of available accounts

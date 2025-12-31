@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.4**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.6**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > `const` **ALL\_AZTEC\_METHODS**: readonly \[`"aztec_getAddress"`, `"aztec_getCompleteAddress"`, `"aztec_getChainId"`, `"aztec_getVersion"`, `"aztec_sendTx"`, `"aztec_getTxReceipt"`, `"aztec_simulateTx"`, `"aztec_getNodeInfo"`, `"aztec_getBlockNumber"`, `"aztec_getCurrentBaseFees"`, `"aztec_registerSender"`, `"aztec_getSenders"`, `"aztec_removeSender"`, `"aztec_registerContract"`, `"aztec_registerContractClass"`, `"aztec_getContractMetadata"`, `"aztec_getContractClassMetadata"`, `"aztec_proveTx"`, `"aztec_profileTx"`, `"aztec_simulateUtility"`, `"aztec_getPrivateEvents"`, `"aztec_getPublicEvents"`, `"aztec_getPXEInfo"`, `"aztec_getBlock"`, `"aztec_createAuthWit"`, `"aztec_wmDeployContract"`, `"aztec_wmExecuteTx"`, `"aztec_wmSimulateTx"`\]
 
-Defined in: [aztec/rpc-wallet/src/client/helpers.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/client/helpers.ts#L17)
+Defined in: [aztec/rpc-wallet/src/client/helpers.ts:17](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/client/helpers.ts#L17)
 
 A comprehensive list of all JSON-RPC methods supported by the Aztec RPC wallet.
 This array includes standard Aztec wallet methods as well as WalletMesh-specific extensions (prefixed with `wm_`).

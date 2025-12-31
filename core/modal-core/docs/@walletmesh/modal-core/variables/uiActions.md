@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -292,6 +292,86 @@ Set global modal loading state (convenience method)
 ##### loading
 
 `boolean`
+
+#### Returns
+
+`void`
+
+### setSessionError()
+
+> **setSessionError**: (`store`, `error?`) => `void`
+
+Set session error (convenience method)
+
+Stores a session-related error in the UI state. This error will be
+detected by the useSessionError hook in modal-react.
+
+#### Parameters
+
+##### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+##### error?
+
+###### category
+
+`"user"` \| `"wallet"` \| `"network"` \| `"general"` \| `"validation"` \| `"sandbox"` = `errorCategorySchema`
+
+Error category
+
+###### cause?
+
+`unknown` = `...`
+
+Underlying cause of the error
+
+###### classification?
+
+`"network"` \| `"permission"` \| `"provider"` \| `"temporary"` \| `"permanent"` \| `"unknown"` = `...`
+
+Error classification for recovery purposes
+
+###### code
+
+`string` = `...`
+
+Error code identifier
+
+###### data?
+
+`Record`\<`string`, `unknown`\> = `...`
+
+Additional error data
+
+###### maxRetries?
+
+`number` = `...`
+
+Maximum number of retry attempts
+
+###### message
+
+`string` = `...`
+
+Human-readable error message
+
+###### recoveryStrategy?
+
+`"retry"` \| `"wait_and_retry"` \| `"manual_action"` \| `"none"` = `...`
+
+Recovery strategy for this error
+- 'retry': Can be retried immediately
+- 'wait_and_retry': Should wait before retrying
+- 'manual_action': Requires user intervention
+- 'none': Not recoverable (fatal error)
+- undefined: Not recoverable (default)
+
+###### retryDelay?
+
+`number` = `...`
+
+Retry delay in milliseconds (for retry strategies)
 
 #### Returns
 

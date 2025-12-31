@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -44,7 +44,7 @@ const adapter = registry.getAdapter('metamask');
 
 > **clear**(): `void`
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:351
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:402
 
 Clear all adapters
 
@@ -67,7 +67,7 @@ registry.clear(); // All adapters removed
 
 > **clearDiscoveredWallets**(): `void`
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:339
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:390
 
 Clear all discovered wallets
 
@@ -81,7 +81,7 @@ Clear all discovered wallets
 
 > **detectAvailableAdapters**(): `Promise`\<[`AvailableWallet`](../interfaces/AvailableWallet.md)[]\>
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:175
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:226
 
 Detect which adapters are available in the current environment
 
@@ -109,7 +109,7 @@ console.log(`Found ${available.length} wallets installed`);
 
 > **getAdapter**(`id`): `undefined` \| [`WalletAdapter`](../interfaces/WalletAdapter.md)
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:96
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:115
 
 Get a specific adapter by ID
 
@@ -145,7 +145,7 @@ if (adapter) {
 
 > **getAdaptersByFeature**(`feature`): [`WalletAdapter`](../interfaces/WalletAdapter.md)[]
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:158
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:209
 
 Get adapters that support a specific feature
 
@@ -179,7 +179,7 @@ const multiAccountAdapters = registry.getAdaptersByFeature('multi_account');
 
 > **getAdaptersForChain**(`chainType`): [`WalletAdapter`](../interfaces/WalletAdapter.md)[]
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:142
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:193
 
 Get adapters that support a specific chain type
 
@@ -213,7 +213,7 @@ const solanaAdapters = registry.getAdaptersForChain(ChainType.Solana);
 
 > **getAllAdapters**(): [`WalletAdapter`](../interfaces/WalletAdapter.md)[]
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:111
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:130
 
 Get all registered adapters
 
@@ -239,7 +239,7 @@ console.log(`${allAdapters.length} wallets available`);
 
 > **getAllDiscoveredWallets**(): `DiscoveredWalletInfo`[]
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:322
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:373
 
 Get all discovered wallets
 
@@ -255,7 +255,7 @@ Array of all discovered wallet information
 
 > **getAllWalletInfo**(): [`WalletInfo`](../interfaces/WalletInfo.md)[]
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:126
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:145
 
 Get wallet info for all registered wallets
 
@@ -277,11 +277,37 @@ console.log(`${allWallets.length} wallets available`);
 
 ***
 
+### getBuiltinWalletIds()
+
+> **getBuiltinWalletIds**(): `string`[]
+
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:177
+
+Get list of all built-in wallet IDs
+
+Returns an array of wallet IDs for all wallets that were registered
+as built-in wallets.
+
+#### Returns
+
+`string`[]
+
+Array of built-in wallet IDs
+
+#### Example
+
+```typescript
+const builtInIds = registry.getBuiltinWalletIds();
+console.log('Built-in wallets:', builtInIds);
+```
+
+***
+
 ### getDiscoveredWallet()
 
 > **getDiscoveredWallet**(`walletId`): `undefined` \| `DiscoveredWalletInfo`
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:316
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:367
 
 Get discovered wallet information
 
@@ -305,7 +331,7 @@ Wallet information if found
 
 > **hasDiscoveredWallet**(`walletId`): `boolean`
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:329
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:380
 
 Check if a wallet has been discovered
 
@@ -325,11 +351,46 @@ True if the wallet has been discovered
 
 ***
 
+### isBuiltinWallet()
+
+> **isBuiltinWallet**(`walletId`): `boolean`
+
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:162
+
+Check if a wallet is a built-in wallet
+
+Returns true if the wallet was registered using registerBuiltIn(),
+indicating it's a pre-registered wallet that's part of the core package.
+
+#### Parameters
+
+##### walletId
+
+`string`
+
+The ID of the wallet to check
+
+#### Returns
+
+`boolean`
+
+True if the wallet is built-in, false otherwise
+
+#### Example
+
+```typescript
+if (registry.isBuiltinWallet('debug-wallet')) {
+  console.log('This is a built-in wallet');
+}
+```
+
+***
+
 ### loadAdapters()
 
 > **loadAdapters**(`adapters`): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:192
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:243
 
 Load multiple adapters at once
 
@@ -363,7 +424,7 @@ await registry.loadAdapters([
 
 > **loadBuiltinAdapters**(`filter?`): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:373
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:424
 
 Load all built-in adapters
 
@@ -403,7 +464,7 @@ await registry.loadBuiltinAdapters('meta');
 
 > **loadFromPackage**(`packageName`, `options?`): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:395
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:446
 
 Load adapters from an npm package
 
@@ -462,7 +523,7 @@ await registry.loadFromPackage('@walletconnect/adapters', {
 
 > **on**(`event`, `handler`): `void`
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:284
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:335
 
 Subscribe to registry events
 
@@ -500,7 +561,7 @@ registry.on('adapter:registered', (adapter) => {
 
 > **register**(`adapter`): `void`
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:48
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:49
 
 Register a wallet adapter
 
@@ -533,11 +594,49 @@ registry.register(adapter);
 
 ***
 
+### registerBuiltIn()
+
+> **registerBuiltIn**(`adapter`): `void`
+
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:67
+
+Register a built-in wallet adapter
+
+Registers a wallet adapter and marks it as built-in. Built-in adapters
+are pre-registered wallets that are part of the core package (e.g.,
+debug-wallet, aztec-example-wallet) and should not be treated as
+discovered wallets.
+
+#### Parameters
+
+##### adapter
+
+[`WalletAdapter`](../interfaces/WalletAdapter.md)
+
+The built-in wallet adapter to register
+
+#### Returns
+
+`void`
+
+#### Throws
+
+If an adapter with the same ID is already registered
+
+#### Example
+
+```typescript
+const adapter = new DebugWallet();
+registry.registerBuiltIn(adapter);
+```
+
+***
+
 ### registerClass()
 
 > **registerClass**(`adapterClass`, `walletInfo`): `void`
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:64
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:83
 
 Register a wallet adapter class for lazy instantiation
 
@@ -575,7 +674,7 @@ registry.registerClass(AztecExampleWalletAdapter, walletInfo);
 
 > **registerDiscoveredWallet**(`walletInfo`): `void`
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:309
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:360
 
 Register discovered wallet information
 
@@ -612,7 +711,7 @@ registry.registerDiscoveredWallet({
 
 > **removeDiscoveredWallet**(`walletId`): `void`
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:335
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:386
 
 Remove discovered wallet information
 
@@ -634,7 +733,7 @@ The ID of the wallet to remove
 
 > **unregister**(`adapterId`): `void`
 
-Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:78
+Defined in: core/modal-core/dist/internal/registries/wallets/WalletRegistry.d.ts:97
 
 Unregister a wallet adapter
 

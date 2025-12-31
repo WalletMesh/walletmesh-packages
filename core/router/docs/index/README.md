@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.2**](../README.md)
+[**@walletmesh/router v0.5.3**](../README.md)
 
 ***
 
@@ -8,6 +8,7 @@
 
 ## Classes
 
+- [ApprovalQueueManager](classes/ApprovalQueueManager.md)
 - [LocalStorageSessionStore](classes/LocalStorageSessionStore.md)
 - [LocalTransport](classes/LocalTransport.md)
 - [MemorySessionStore](classes/MemorySessionStore.md)
@@ -19,6 +20,10 @@
 
 ## Interfaces
 
+- [ApprovalContext](interfaces/ApprovalContext.md)
+- [ApprovalQueueConfig](interfaces/ApprovalQueueConfig.md)
+- [ApprovalQueueMiddlewareConfig](interfaces/ApprovalQueueMiddlewareConfig.md)
+- [ApprovalQueueRouterConfig](interfaces/ApprovalQueueRouterConfig.md)
 - [BulkCallParams](interfaces/BulkCallParams.md)
 - [CallParams](interfaces/CallParams.md)
 - [LocalTransportOptions](interfaces/LocalTransportOptions.md)
@@ -39,6 +44,7 @@
 
 ## Type Aliases
 
+- [ApprovalState](type-aliases/ApprovalState.md)
 - [ChainId](type-aliases/ChainId.md)
 - [ChainPermissions](type-aliases/ChainPermissions.md)
 - [ExecuteResult](type-aliases/ExecuteResult.md)
@@ -46,6 +52,7 @@
 - [MethodParams](type-aliases/MethodParams.md)
 - [MethodResult](type-aliases/MethodResult.md)
 - [MethodResults](type-aliases/MethodResults.md)
+- [OnApprovalQueuedCallback](type-aliases/OnApprovalQueuedCallback.md)
 - [PermissionApprovalCallback](type-aliases/PermissionApprovalCallback.md)
 - [PermissionCheckCallback](type-aliases/PermissionCheckCallback.md)
 - [PermissionCleanupCallback](type-aliases/PermissionCleanupCallback.md)
@@ -59,5 +66,6 @@
 
 ## Functions
 
+- [createApprovalQueueMiddleware](functions/createApprovalQueueMiddleware.md)
 - [createLocalTransport](functions/createLocalTransport.md)
 - [createLocalTransportPair](functions/createLocalTransportPair.md)

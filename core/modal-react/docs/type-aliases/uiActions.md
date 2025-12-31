@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -18,7 +18,7 @@ UI action functions
 
 > **addDiscoveryError**: (`store`, `error`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:65
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:72
 
 Add discovery error
 
@@ -42,7 +42,7 @@ Add discovery error
 
 > **clearAllErrors**: (`store`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:49
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:56
 
 Clear all errors
 
@@ -62,7 +62,7 @@ Clear all errors
 
 > **clearDiscoveryErrors**: (`store`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:69
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:76
 
 Clear discovery errors
 
@@ -82,7 +82,7 @@ Clear discovery errors
 
 > **clearError**: (`store`, `context`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:45
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:52
 
 Clear error for a specific context
 
@@ -106,7 +106,7 @@ Clear error for a specific context
 
 > **clearViewHistory**: (`store`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:107
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:114
 
 Clear view history
 
@@ -126,7 +126,7 @@ Clear view history
 
 > **clearWalletFilter**: (`store`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:99
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:106
 
 Clear wallet filter
 
@@ -170,7 +170,7 @@ Close the wallet connection modal
 
 > **goBack**: (`store`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:103
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:110
 
 Navigate back in modal view history
 
@@ -324,11 +324,72 @@ Set global modal loading state (convenience method)
 
 ***
 
+### setSessionError()
+
+> **setSessionError**: (`store`, `error?`) => `void`
+
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:48
+
+Set session error (convenience method)
+
+Stores a session-related error in the UI state. This error will be
+detected by the useSessionError hook in modal-react.
+
+#### Parameters
+
+##### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+##### error?
+
+###### category
+
+`"wallet"` \| `"user"` \| `"network"` \| `"general"` \| `"validation"` \| `"sandbox"`
+
+###### cause?
+
+`unknown`
+
+###### classification?
+
+`"network"` \| `"permission"` \| `"provider"` \| `"temporary"` \| `"permanent"` \| `"unknown"`
+
+###### code
+
+`string`
+
+###### data?
+
+`Record`\<`string`, `unknown`\>
+
+###### maxRetries?
+
+`number`
+
+###### message
+
+`string`
+
+###### recoveryStrategy?
+
+`"none"` \| `"retry"` \| `"wait_and_retry"` \| `"manual_action"`
+
+###### retryDelay?
+
+`number`
+
+#### Returns
+
+`void`
+
+***
+
 ### setSwitchingChainData()
 
 > **setSwitchingChainData**: (`store`, `data?`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:73
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:80
 
 Set chain switching data for UI display
 
@@ -374,7 +435,7 @@ Set chain switching data for UI display
 
 > **setTargetChainType**: (`store`, `chainType?`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:53
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:60
 
 Set target chain type for wallet filtering
 
@@ -480,7 +541,7 @@ Set the current modal view
 
 > **setWalletFilter**: (`store`, `filter`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:91
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:98
 
 Set wallet filter function
 
@@ -510,7 +571,7 @@ Filter function or null to clear the filter
 
 > **startDiscovery**: (`store`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:57
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:64
 
 Start wallet discovery scan
 
@@ -530,7 +591,7 @@ Start wallet discovery scan
 
 > **stopDiscovery**: (`store`) => `void`
 
-Defined in: core/modal-core/dist/state/actions/ui.d.ts:61
+Defined in: core/modal-core/dist/state/actions/ui.d.ts:68
 
 Stop wallet discovery scan
 

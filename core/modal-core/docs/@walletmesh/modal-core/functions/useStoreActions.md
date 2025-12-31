@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -13,6 +13,257 @@ Hook-style action access for React components
 ## Returns
 
 `object`
+
+### aztecTransactions
+
+> **aztecTransactions**: `object` = `aztecTransactionActions`
+
+#### aztecTransactions.addAztecTransaction()
+
+> **addAztecTransaction**: (`store`, `transaction`) => `void`
+
+Add an Aztec transaction to the store
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+###### transaction
+
+[`AztecTransactionResult`](../interfaces/AztecTransactionResult.md)
+
+##### Returns
+
+`void`
+
+#### aztecTransactions.addToBackgroundTransactions()
+
+> **addToBackgroundTransactions**: (`store`, `txStatusId`) => `void`
+
+Add a transaction to background mode
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+###### txStatusId
+
+`string`
+
+##### Returns
+
+`void`
+
+#### aztecTransactions.clearCompletedBackgroundTransactions()
+
+> **clearCompletedBackgroundTransactions**: (`store`) => `void`
+
+Clear all completed background transactions
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+##### Returns
+
+`void`
+
+#### aztecTransactions.endTransactionStage()
+
+> **endTransactionStage**: (`store`, `txStatusId`, `stage`) => `void`
+
+End a transaction stage (set end time)
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+###### txStatusId
+
+`string`
+
+###### stage
+
+keyof [`TransactionStages`](../interfaces/TransactionStages.md)
+
+##### Returns
+
+`void`
+
+#### aztecTransactions.failAllActiveTransactions()
+
+> **failAllActiveTransactions**: (`store`, `reason`) => `void`
+
+Fail all active Aztec transactions when session ends
+
+Called when a wallet session is terminated or disconnected.
+Marks all non-complete transactions as failed and removes them from background list.
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+Zustand store instance
+
+###### reason
+
+`string` = `'Session disconnected'`
+
+Reason for session termination
+
+##### Returns
+
+`void`
+
+#### aztecTransactions.removeAztecTransaction()
+
+> **removeAztecTransaction**: (`store`, `txStatusId`) => `void`
+
+Remove an Aztec transaction from the store
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+###### txStatusId
+
+`string`
+
+##### Returns
+
+`void`
+
+#### aztecTransactions.removeFromBackgroundTransactions()
+
+> **removeFromBackgroundTransactions**: (`store`, `txStatusId`) => `void`
+
+Remove a transaction from background mode
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+###### txStatusId
+
+`string`
+
+##### Returns
+
+`void`
+
+#### aztecTransactions.startTransactionStage()
+
+> **startTransactionStage**: (`store`, `txStatusId`, `stage`) => `void`
+
+Start a transaction stage (set start time)
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+###### txStatusId
+
+`string`
+
+###### stage
+
+keyof [`TransactionStages`](../interfaces/TransactionStages.md)
+
+##### Returns
+
+`void`
+
+#### aztecTransactions.updateAztecTransaction()
+
+> **updateAztecTransaction**: (`store`, `txStatusId`, `updates`) => `void`
+
+Update arbitrary transaction fields (txHash, receipt, etc.)
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+###### txStatusId
+
+`string`
+
+###### updates
+
+`Partial`\<[`AztecTransactionResult`](../interfaces/AztecTransactionResult.md)\>
+
+##### Returns
+
+`void`
+
+#### aztecTransactions.updateAztecTransactionStatus()
+
+> **updateAztecTransactionStatus**: (`store`, `txStatusId`, `status`) => `void`
+
+Update transaction status and stage timing
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+###### txStatusId
+
+`string`
+
+###### status
+
+[`TransactionStatus`](../type-aliases/TransactionStatus.md)
+
+##### Returns
+
+`void`
+
+#### aztecTransactions.updateTransactionStage()
+
+> **updateTransactionStage**: (`store`, `txStatusId`, `stage`, `timing`) => `void`
+
+Update stage timing for a transaction
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+###### txStatusId
+
+`string`
+
+###### stage
+
+keyof [`TransactionStages`](../interfaces/TransactionStages.md)
+
+###### timing
+
+[`StageTiming`](../interfaces/StageTiming.md) | \{ `timestamp`: `number`; \}
+
+##### Returns
+
+`void`
 
 ### connections
 
@@ -326,7 +577,7 @@ Update session status
 
 ###### status
 
-[`SessionStatus`](../type-aliases/SessionStatus.md)
+`SessionStatus`
 
 ##### Returns
 
@@ -900,6 +1151,86 @@ Set global modal loading state (convenience method)
 ###### loading
 
 `boolean`
+
+##### Returns
+
+`void`
+
+#### ui.setSessionError()
+
+> **setSessionError**: (`store`, `error?`) => `void`
+
+Set session error (convenience method)
+
+Stores a session-related error in the UI state. This error will be
+detected by the useSessionError hook in modal-react.
+
+##### Parameters
+
+###### store
+
+`StoreApi`\<[`WalletMeshState`](../interfaces/WalletMeshState.md)\>
+
+###### error?
+
+###### category
+
+`"user"` \| `"wallet"` \| `"network"` \| `"general"` \| `"validation"` \| `"sandbox"` = `errorCategorySchema`
+
+Error category
+
+###### cause?
+
+`unknown` = `...`
+
+Underlying cause of the error
+
+###### classification?
+
+`"network"` \| `"permission"` \| `"provider"` \| `"temporary"` \| `"permanent"` \| `"unknown"` = `...`
+
+Error classification for recovery purposes
+
+###### code
+
+`string` = `...`
+
+Error code identifier
+
+###### data?
+
+`Record`\<`string`, `unknown`\> = `...`
+
+Additional error data
+
+###### maxRetries?
+
+`number` = `...`
+
+Maximum number of retry attempts
+
+###### message
+
+`string` = `...`
+
+Human-readable error message
+
+###### recoveryStrategy?
+
+`"retry"` \| `"wait_and_retry"` \| `"manual_action"` \| `"none"` = `...`
+
+Recovery strategy for this error
+- 'retry': Can be retried immediately
+- 'wait_and_retry': Should wait before retrying
+- 'manual_action': Requires user intervention
+- 'none': Not recoverable (fatal error)
+- undefined: Not recoverable (default)
+
+###### retryDelay?
+
+`number` = `...`
+
+Retry delay in milliseconds (for retry strategies)
 
 ##### Returns
 

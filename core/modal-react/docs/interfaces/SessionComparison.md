@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SessionComparison
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:190
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:297
 
 Session comparison result
 
@@ -16,7 +16,7 @@ Session comparison result
 
 > **compatibilityScore**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:202
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:309
 
 Overall compatibility score (0-1)
 
@@ -26,7 +26,7 @@ Overall compatibility score (0-1)
 
 > **equivalentPermissions**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:200
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:307
 
 Whether sessions have equivalent permissions
 
@@ -36,7 +36,7 @@ Whether sessions have equivalent permissions
 
 > **sameAddresses**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:194
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:301
 
 Whether sessions have the same addresses
 
@@ -46,7 +46,7 @@ Whether sessions have the same addresses
 
 > **sameChain**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:196
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:303
 
 Whether sessions are on the same chain
 
@@ -56,7 +56,7 @@ Whether sessions are on the same chain
 
 > **sameProvider**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:198
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:305
 
 Whether sessions have the same provider
 
@@ -66,6 +66,6 @@ Whether sessions have the same provider
 
 > **sameWallet**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:192
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:299
 
 Whether sessions are for the same wallet

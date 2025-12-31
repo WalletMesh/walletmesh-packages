@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -34,6 +34,45 @@ Active account index (defaults to 0)
 
 ***
 
+### adapterReconstruction?
+
+> `optional` **adapterReconstruction**: `object`
+
+Optional adapter reconstruction data for hydration
+This enables the client to recreate the adapter on page refresh
+
+#### adapterType
+
+> **adapterType**: `string`
+
+Adapter type identifier (e.g., 'discovery', 'metamask', 'phantom')
+
+#### blockchainType
+
+> **blockchainType**: `string`
+
+Blockchain technology type (e.g., 'evm', 'solana', 'aztec')
+
+#### transportConfig
+
+> **transportConfig**: `object`
+
+Transport configuration for recreating the transport
+
+##### transportConfig.config
+
+> **config**: `Record`\<`string`, `unknown`\>
+
+Transport-specific configuration
+
+##### transportConfig.type
+
+> **type**: `string`
+
+Transport type
+
+***
+
 ### chain
 
 > **chain**: [`ChainSessionInfo`](ChainSessionInfo.md)
@@ -66,11 +105,12 @@ Initial permissions
 
 ***
 
-### provider
+### provider?
 
-> **provider**: [`BlockchainProvider`](BlockchainProvider.md)
+> `optional` **provider**: [`BlockchainProvider`](BlockchainProvider.md)
 
-Provider instance
+Provider instance (optional - can be retrieved from ProviderRegistry by sessionId)
+If not provided, must be stored in ProviderRegistry before calling createSession
 
 ***
 

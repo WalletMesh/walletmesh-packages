@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.2**](../README.md)
+[**@walletmesh/jsonrpc v0.5.3**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **JSONRPCMiddleware**\<`T`, `C`\> = (`context`, `request`, `next`) => `Promise`\<[`JSONRPCResponse`](../interfaces/JSONRPCResponse.md)\<`T`\>\>
 
-Defined in: [core/jsonrpc/src/types.ts:410](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/types.ts#L410)
+Defined in: [core/jsonrpc/src/types.ts:410](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L410)
 
 Represents a middleware function that can intercept and modify JSON-RPC requests/responses.
 Middleware functions are executed in order before and after method handlers,

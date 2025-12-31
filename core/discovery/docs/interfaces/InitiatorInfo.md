@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: InitiatorInfo
 
-Defined in: [core/discovery/src/types/core.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L40)
+Defined in: [core/discovery/src/types/core.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L40)
 
 Initiator information for identification in discovery requests.
 
@@ -24,7 +24,7 @@ for Content Security Policy compliance.
 
 > `optional` **description**: `string`
 
-Defined in: [core/discovery/src/types/core.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L44)
+Defined in: [core/discovery/src/types/core.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L44)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/discovery/src/types/core.ts:44](https://github.com/WalletMesh/
 
 > `optional` **icon**: `string`
 
-Defined in: [core/discovery/src/types/core.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L42)
+Defined in: [core/discovery/src/types/core.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L42)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/discovery/src/types/core.ts:42](https://github.com/WalletMesh/
 
 > **name**: `string`
 
-Defined in: [core/discovery/src/types/core.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L41)
+Defined in: [core/discovery/src/types/core.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L41)
 
 ***
 
@@ -48,4 +48,4 @@ Defined in: [core/discovery/src/types/core.ts:41](https://github.com/WalletMesh/
 
 > **url**: `string`
 
-Defined in: [core/discovery/src/types/core.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L43)
+Defined in: [core/discovery/src/types/core.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L43)

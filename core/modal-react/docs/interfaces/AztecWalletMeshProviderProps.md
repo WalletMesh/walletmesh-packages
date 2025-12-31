@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: AztecWalletMeshProviderProps
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:137](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L137)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:182](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L182)
 
 Props for AztecWalletMeshProvider
 
@@ -20,7 +20,7 @@ Props for AztecWalletMeshProvider
 
 > **children**: `ReactNode`
 
-Defined in: [core/modal-react/src/types.ts:406](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L406)
+Defined in: [core/modal-react/src/types.ts:539](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L539)
 
 React children to render within the WalletMesh provider context.
 All children will have access to WalletMesh functionality through hooks.
@@ -35,7 +35,7 @@ All children will have access to WalletMesh functionality through hooks.
 
 > **config**: [`AztecProviderConfig`](AztecProviderConfig.md)
 
-Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:139](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L139)
+Defined in: [core/modal-react/src/components/AztecWalletMeshProvider.tsx:184](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/components/AztecWalletMeshProvider.tsx#L184)
 
 Aztec-specific configuration
 
@@ -45,7 +45,7 @@ Aztec-specific configuration
 
 > `optional` **queryClient**: `QueryClient`
 
-Defined in: [core/modal-react/src/types.ts:418](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L418)
+Defined in: [core/modal-react/src/types.ts:551](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L551)
 
 Optional QueryClient instance from @tanstack/react-query.
 If not provided, the provider will use the QueryClient from modal-core.

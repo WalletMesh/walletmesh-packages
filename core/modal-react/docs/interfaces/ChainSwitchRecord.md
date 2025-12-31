@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ChainSwitchRecord
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:142
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:249
 
 Chain switch record for tracking session history
 
@@ -16,7 +16,7 @@ Chain switch record for tracking session history
 
 > `optional` **error**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:156
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:263
 
 Error if switch failed
 
@@ -26,7 +26,7 @@ Error if switch failed
 
 > **fromChain**: `null` \| [`ChainSessionInfo`](ChainSessionInfo.md)
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:146
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:253
 
 Previous chain (null for initial connection)
 
@@ -36,7 +36,7 @@ Previous chain (null for initial connection)
 
 > **reason**: `"user_request"` \| `"dapp_request"` \| `"auto_switch"` \| `"fallback"`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:152
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:259
 
 Why the switch occurred
 
@@ -46,7 +46,7 @@ Why the switch occurred
 
 > **successful**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:154
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:261
 
 Whether the switch was successful
 
@@ -56,7 +56,7 @@ Whether the switch was successful
 
 > **switchId**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:144
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:251
 
 Unique identifier for this switch
 
@@ -66,7 +66,7 @@ Unique identifier for this switch
 
 > **timestamp**: `number`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:150
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:257
 
 When the switch occurred
 
@@ -76,6 +76,6 @@ When the switch occurred
 
 > **toChain**: [`ChainSessionInfo`](ChainSessionInfo.md)
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:148
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:255
 
 New chain

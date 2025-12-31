@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshConfig
 
-Defined in: [core/modal-react/src/types.ts:181](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L181)
+Defined in: [core/modal-react/src/types.ts:181](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L181)
 
 Headless WalletMesh configuration
 Pure business logic configuration without UI concerns
@@ -25,7 +25,7 @@ Pure business logic configuration without UI concerns
 
 > `optional` **appDescription**: `string`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:408
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:529
 
 Optional description of your application.
 Provides context to users when connecting wallets.
@@ -40,7 +40,7 @@ Provides context to users when connecting wallets.
 
 > `optional` **appIcon**: `string`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:418
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:539
 
 Icon URL for your application.
 Should be a square image (recommended 256x256 or larger).
@@ -55,7 +55,7 @@ Should be a square image (recommended 256x256 or larger).
 
 > `optional` **appMetadata**: [`DAppMetadata`](DAppMetadata.md)
 
-Defined in: [core/modal-react/src/types.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L192)
+Defined in: [core/modal-react/src/types.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L192)
 
 dApp metadata for identification (auto-populated from appName/appDescription if not provided)
 
@@ -69,7 +69,7 @@ dApp metadata for identification (auto-populated from appName/appDescription if 
 
 > **appName**: `string`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:403
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:524
 
 The name of your application.
 This is displayed in wallet connection prompts.
@@ -84,7 +84,7 @@ This is displayed in wallet connection prompts.
 
 > `optional` **appUrl**: `string`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:413
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:534
 
 URL of your application.
 Used by wallets for verification and display.
@@ -99,7 +99,7 @@ Used by wallets for verification and display.
 
 > **chains**: `object`[]
 
-Defined in: [core/modal-react/src/types.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L183)
+Defined in: [core/modal-react/src/types.ts:183](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L183)
 
 Explicitly supported chains (required - no automatic chain selection)
 
@@ -141,7 +141,7 @@ Explicitly supported chains (required - no automatic chain selection)
 
 > `optional` **debug**: `boolean`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:458
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:579
 
 Enable debug mode for additional logging.
 
@@ -161,7 +161,7 @@ false
 
 > `optional` **discovery**: `object`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:481
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:602
 
 Discovery configuration for wallet detection.
 Configures how the client discovers available wallets.
@@ -172,9 +172,17 @@ Configures how the client discovers available wallets.
 
 Capability requirements for wallet matching
 
+##### capabilities.chains?
+
+> `optional` **chains**: `string`[]
+
 ##### capabilities.features?
 
 > `optional` **features**: `string`[]
+
+##### capabilities.interfaces?
+
+> `optional` **interfaces**: `string`[]
 
 ##### capabilities.technologies?
 
@@ -242,7 +250,7 @@ Discovery timeout in milliseconds
 
 > `optional` **handleRehydration**: `boolean`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:464
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:585
 
 Whether the client should handle session rehydration automatically.
 Set to false if your framework (e.g., React) handles this separately.
@@ -263,7 +271,7 @@ true
 
 > `optional` **logger**: `object`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:515
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:638
 
 Logger configuration for debugging and monitoring.
 
@@ -295,7 +303,7 @@ Log prefix
 
 > `optional` **maxConnections**: `number`
 
-Defined in: [core/modal-react/src/types.ts:189](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L189)
+Defined in: [core/modal-react/src/types.ts:189](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L189)
 
 Maximum number of simultaneous wallet connections
 
@@ -305,7 +313,7 @@ Maximum number of simultaneous wallet connections
 
 > `optional` **projectId**: `string`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:442
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:563
 
 WalletConnect project ID.
 Required for WalletConnect integration.
@@ -321,7 +329,7 @@ Get one at https://cloud.walletconnect.com
 
 > `optional` **supportedInterfaces**: `object`
 
-Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:469
+Defined in: core/modal-core/dist/internal/client/WalletMeshClient.d.ts:590
 
 Supported interfaces per technology for discovery.
 Allows specifying which provider interfaces to use for each blockchain technology.
@@ -354,6 +362,6 @@ Solana interfaces (e.g., ['solana-standard-wallet'])
 
 > `optional` **wallets**: [`WalletInfo`](WalletInfo.md)[]
 
-Defined in: [core/modal-react/src/types.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L186)
+Defined in: [core/modal-react/src/types.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L186)
 
 Wallet configurations - array of WalletInfo objects

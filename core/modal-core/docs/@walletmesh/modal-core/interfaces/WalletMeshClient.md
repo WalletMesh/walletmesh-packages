@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 Core WalletMesh client interface defining the contract for all implementations.
 
-This interface provides the essential methods needed for wallet management,
+This unified interface provides both public API methods and internal methods,
 ensuring consistent behavior across different environments (browser, SSR, testing).
 Framework adapters should program against this interface rather than concrete
 implementations.
@@ -19,6 +19,8 @@ implementations.
 - `connect()` - Establish wallet connections with optional modal UI
 - `disconnect()` - Terminate connections cleanly
 - `disconnectAll()` - Bulk disconnection support
+- `getConnection?()` - Get specific wallet connection (optional, internal)
+- `getConnections?()` - Get all connected wallets (optional, internal)
 
 ### State Management
 - `getState()` - Synchronous state access
@@ -31,9 +33,10 @@ implementations.
 - `modal` - Direct modal access for advanced use
 
 ### Optional Features
-- `switchChain()` - Cross-chain operations
+- `switchChain?()` - Cross-chain operations
 - `getServices()` - Business logic services
-- `initialize()` - Async initialization
+- `initialize?()` - Async initialization
+- Internal methods - Marked as optional for SSR compatibility
 
 ## Example
 
@@ -71,12 +74,16 @@ Indicates whether any wallet is currently connected.
 
 ***
 
-### modal
+### modal?
 
-> `readonly` **modal**: [`HeadlessModal`](HeadlessModal.md)
+> `optional` **modal**: [`HeadlessModal`](HeadlessModal.md) \| [`ModalController`](ModalController.md)
 
-Headless modal instance for programmatic control.
-Provides access to modal state and actions without UI dependencies.
+Modal instance for programmatic control.
+Provides access to modal state, actions, and UI without dependencies.
+Optional to support two-phase construction pattern.
+
+SSR clients use HeadlessModal (subset of functionality).
+Browser clients use ModalController (full functionality).
 
 ## Methods
 
@@ -122,6 +129,50 @@ Optional wallet-specific connection options
 [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`undefined` \| [`WalletConnection`](WalletConnection.md)\>
 
 Promise resolving to connection details or undefined
+
+***
+
+### connectWithModal()
+
+> **connectWithModal**(`options?`): [`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`undefined` \| [`WalletConnection`](WalletConnection.md)\>
+
+Connects to a wallet by opening the modal and waiting for user selection.
+
+This is a convenience method that combines `openModal()` and `connect()` into a single call,
+simplifying the most common wallet connection pattern. The modal is automatically opened,
+and the method waits for the user to select and connect to a wallet.
+
+#### Parameters
+
+##### options?
+
+Optional connection options
+
+###### chainType?
+
+[`ChainType`](../enumerations/ChainType.md)
+
+Filter wallets by chain type (e.g., 'evm', 'solana')
+
+#### Returns
+
+[`Promise`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<`undefined` \| [`WalletConnection`](WalletConnection.md)\>
+
+Promise resolving to connection details or undefined if cancelled
+
+#### Example
+
+```typescript
+// Simple connection with modal
+const connection = await client.connectWithModal();
+
+// Filter to EVM wallets only
+const connection = await client.connectWithModal({ chainType: ChainType.Evm });
+```
+
+#### Since
+
+1.1.0
 
 ***
 

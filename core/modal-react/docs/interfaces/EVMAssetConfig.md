@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: EVMAssetConfig
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:82
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:81
 
 EVM asset configuration for wallet_watchAsset
 
@@ -16,7 +16,7 @@ EVM asset configuration for wallet_watchAsset
 
 > **options**: `object`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:84
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:83
 
 #### address
 
@@ -40,4 +40,4 @@ Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:84
 
 > **type**: `"ERC20"`
 
-Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:83
+Defined in: core/modal-core/dist/api/types/chainProviders.d.ts:82

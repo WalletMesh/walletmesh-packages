@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **EventData**\<`E`\> = [`AdapterEvents`](AdapterEvents.md)\[`E`\]
 
-Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:152
+Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:156
 
 ## Type Parameters
 

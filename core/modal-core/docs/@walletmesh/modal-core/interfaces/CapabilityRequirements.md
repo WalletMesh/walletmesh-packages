@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -25,6 +25,18 @@ Global wallet features that must be available.
 These represent wallet-level functionalities beyond specific blockchain support,
 such as hardware security, multi-account support, or session management.
 See RESPONDER_FEATURES for standard values.
+
+***
+
+### networks?
+
+> `optional` **networks**: `string`[]
+
+Specific networks required (CAIP-2 format).
+Examples: 'eip155:1' (Ethereum mainnet), 'aztec:31337' (Aztec sandbox), 'solana:mainnet'
+If specified, wallet must support at least one of these networks to match.
+Networks are independent of technology support - a wallet might support Aztec technology
+on multiple networks.
 
 ***
 

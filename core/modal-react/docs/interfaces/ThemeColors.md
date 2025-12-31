@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ThemeColors
 
-Defined in: [core/modal-react/src/theme/types.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L20)
+Defined in: [core/modal-react/src/theme/types.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L20)
 
 Color palette for a theme
 
@@ -16,7 +16,7 @@ Color palette for a theme
 
 > **accent**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L43)
+Defined in: [core/modal-react/src/theme/types.ts:43](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L43)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal-react/src/theme/types.ts:43](https://github.com/WalletMe
 
 > **accentHover**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L44)
+Defined in: [core/modal-react/src/theme/types.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L44)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/modal-react/src/theme/types.ts:44](https://github.com/WalletMe
 
 > **background**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L25)
+Defined in: [core/modal-react/src/theme/types.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L25)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/modal-react/src/theme/types.ts:25](https://github.com/WalletMe
 
 > **border**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L30)
+Defined in: [core/modal-react/src/theme/types.ts:30](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L30)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [core/modal-react/src/theme/types.ts:30](https://github.com/WalletMe
 
 > **borderError**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L62)
+Defined in: [core/modal-react/src/theme/types.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L62)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [core/modal-react/src/theme/types.ts:62](https://github.com/WalletMe
 
 > **borderFocus**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L61)
+Defined in: [core/modal-react/src/theme/types.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L61)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [core/modal-react/src/theme/types.ts:61](https://github.com/WalletMe
 
 > **borderHover**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L60)
+Defined in: [core/modal-react/src/theme/types.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L60)
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: [core/modal-react/src/theme/types.ts:60](https://github.com/WalletMe
 
 > **borderSuccess**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L63)
+Defined in: [core/modal-react/src/theme/types.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L63)
 
 ***
 
@@ -80,7 +80,7 @@ Defined in: [core/modal-react/src/theme/types.ts:63](https://github.com/WalletMe
 
 > **disabled**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L67)
+Defined in: [core/modal-react/src/theme/types.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L67)
 
 ***
 
@@ -88,7 +88,7 @@ Defined in: [core/modal-react/src/theme/types.ts:67](https://github.com/WalletMe
 
 > **disabledText**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L68)
+Defined in: [core/modal-react/src/theme/types.ts:68](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L68)
 
 ***
 
@@ -96,7 +96,7 @@ Defined in: [core/modal-react/src/theme/types.ts:68](https://github.com/WalletMe
 
 > **error**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L31)
+Defined in: [core/modal-react/src/theme/types.ts:31](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L31)
 
 ***
 
@@ -104,7 +104,7 @@ Defined in: [core/modal-react/src/theme/types.ts:31](https://github.com/WalletMe
 
 > **errorHover**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L49)
+Defined in: [core/modal-react/src/theme/types.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L49)
 
 ***
 
@@ -112,7 +112,7 @@ Defined in: [core/modal-react/src/theme/types.ts:49](https://github.com/WalletMe
 
 > **focusRing**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L66)
+Defined in: [core/modal-react/src/theme/types.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L66)
 
 ***
 
@@ -120,7 +120,7 @@ Defined in: [core/modal-react/src/theme/types.ts:66](https://github.com/WalletMe
 
 > **info**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L34)
+Defined in: [core/modal-react/src/theme/types.ts:34](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L34)
 
 ***
 
@@ -128,7 +128,7 @@ Defined in: [core/modal-react/src/theme/types.ts:34](https://github.com/WalletMe
 
 > **infoHover**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L50)
+Defined in: [core/modal-react/src/theme/types.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L50)
 
 ***
 
@@ -136,7 +136,79 @@ Defined in: [core/modal-react/src/theme/types.ts:50](https://github.com/WalletMe
 
 > **overlay**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L38)
+Defined in: [core/modal-react/src/theme/types.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L38)
+
+***
+
+### overlayBg
+
+> **overlayBg**: `string`
+
+Defined in: [core/modal-react/src/theme/types.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L71)
+
+***
+
+### overlayCardBg
+
+> **overlayCardBg**: `string`
+
+Defined in: [core/modal-react/src/theme/types.ts:72](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L72)
+
+***
+
+### overlayCardBorder
+
+> **overlayCardBorder**: `string`
+
+Defined in: [core/modal-react/src/theme/types.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L73)
+
+***
+
+### overlaySpinnerPrimary
+
+> **overlaySpinnerPrimary**: `string`
+
+Defined in: [core/modal-react/src/theme/types.ts:76](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L76)
+
+***
+
+### overlayStageActive
+
+> **overlayStageActive**: `string`
+
+Defined in: [core/modal-react/src/theme/types.ts:77](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L77)
+
+***
+
+### overlayStageCompleted
+
+> **overlayStageCompleted**: `string`
+
+Defined in: [core/modal-react/src/theme/types.ts:78](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L78)
+
+***
+
+### overlayStageIcon
+
+> **overlayStageIcon**: `string`
+
+Defined in: [core/modal-react/src/theme/types.ts:79](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L79)
+
+***
+
+### overlayTextPrimary
+
+> **overlayTextPrimary**: `string`
+
+Defined in: [core/modal-react/src/theme/types.ts:74](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L74)
+
+***
+
+### overlayTextSecondary
+
+> **overlayTextSecondary**: `string`
+
+Defined in: [core/modal-react/src/theme/types.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L75)
 
 ***
 
@@ -144,7 +216,7 @@ Defined in: [core/modal-react/src/theme/types.ts:38](https://github.com/WalletMe
 
 > **primary**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L22)
+Defined in: [core/modal-react/src/theme/types.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L22)
 
 ***
 
@@ -152,7 +224,7 @@ Defined in: [core/modal-react/src/theme/types.ts:22](https://github.com/WalletMe
 
 > **primaryActive**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L41)
+Defined in: [core/modal-react/src/theme/types.ts:41](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L41)
 
 ***
 
@@ -160,7 +232,7 @@ Defined in: [core/modal-react/src/theme/types.ts:41](https://github.com/WalletMe
 
 > **primaryHover**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L23)
+Defined in: [core/modal-react/src/theme/types.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L23)
 
 ***
 
@@ -168,7 +240,7 @@ Defined in: [core/modal-react/src/theme/types.ts:23](https://github.com/WalletMe
 
 > **secondary**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L24)
+Defined in: [core/modal-react/src/theme/types.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L24)
 
 ***
 
@@ -176,7 +248,7 @@ Defined in: [core/modal-react/src/theme/types.ts:24](https://github.com/WalletMe
 
 > **secondaryHover**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L42)
+Defined in: [core/modal-react/src/theme/types.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L42)
 
 ***
 
@@ -184,7 +256,7 @@ Defined in: [core/modal-react/src/theme/types.ts:42](https://github.com/WalletMe
 
 > **success**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L32)
+Defined in: [core/modal-react/src/theme/types.ts:32](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L32)
 
 ***
 
@@ -192,7 +264,7 @@ Defined in: [core/modal-react/src/theme/types.ts:32](https://github.com/WalletMe
 
 > **successHover**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L47)
+Defined in: [core/modal-react/src/theme/types.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L47)
 
 ***
 
@@ -200,7 +272,7 @@ Defined in: [core/modal-react/src/theme/types.ts:47](https://github.com/WalletMe
 
 > **surface**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L26)
+Defined in: [core/modal-react/src/theme/types.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L26)
 
 ***
 
@@ -208,7 +280,7 @@ Defined in: [core/modal-react/src/theme/types.ts:26](https://github.com/WalletMe
 
 > **surfaceElevated**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L37)
+Defined in: [core/modal-react/src/theme/types.ts:37](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L37)
 
 ***
 
@@ -216,7 +288,7 @@ Defined in: [core/modal-react/src/theme/types.ts:37](https://github.com/WalletMe
 
 > **surfaceHover**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L27)
+Defined in: [core/modal-react/src/theme/types.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L27)
 
 ***
 
@@ -224,7 +296,7 @@ Defined in: [core/modal-react/src/theme/types.ts:27](https://github.com/WalletMe
 
 > **text**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L28)
+Defined in: [core/modal-react/src/theme/types.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L28)
 
 ***
 
@@ -232,7 +304,7 @@ Defined in: [core/modal-react/src/theme/types.ts:28](https://github.com/WalletMe
 
 > **textInverse**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L55)
+Defined in: [core/modal-react/src/theme/types.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L55)
 
 ***
 
@@ -240,7 +312,7 @@ Defined in: [core/modal-react/src/theme/types.ts:55](https://github.com/WalletMe
 
 > **textMuted**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L54)
+Defined in: [core/modal-react/src/theme/types.ts:54](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L54)
 
 ***
 
@@ -248,7 +320,7 @@ Defined in: [core/modal-react/src/theme/types.ts:54](https://github.com/WalletMe
 
 > **textOnPrimary**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L56)
+Defined in: [core/modal-react/src/theme/types.ts:56](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L56)
 
 ***
 
@@ -256,7 +328,7 @@ Defined in: [core/modal-react/src/theme/types.ts:56](https://github.com/WalletMe
 
 > **textOnSecondary**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L57)
+Defined in: [core/modal-react/src/theme/types.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L57)
 
 ***
 
@@ -264,7 +336,7 @@ Defined in: [core/modal-react/src/theme/types.ts:57](https://github.com/WalletMe
 
 > **textPrimary**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L53)
+Defined in: [core/modal-react/src/theme/types.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L53)
 
 ***
 
@@ -272,7 +344,7 @@ Defined in: [core/modal-react/src/theme/types.ts:53](https://github.com/WalletMe
 
 > **textSecondary**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L29)
+Defined in: [core/modal-react/src/theme/types.ts:29](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L29)
 
 ***
 
@@ -280,7 +352,7 @@ Defined in: [core/modal-react/src/theme/types.ts:29](https://github.com/WalletMe
 
 > **warning**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L33)
+Defined in: [core/modal-react/src/theme/types.ts:33](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L33)
 
 ***
 
@@ -288,4 +360,4 @@ Defined in: [core/modal-react/src/theme/types.ts:33](https://github.com/WalletMe
 
 > **warningHover**: `string`
 
-Defined in: [core/modal-react/src/theme/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L48)
+Defined in: [core/modal-react/src/theme/types.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L48)

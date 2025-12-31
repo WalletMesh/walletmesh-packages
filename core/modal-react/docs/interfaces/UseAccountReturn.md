@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseAccountReturn
 
-Defined in: [core/modal-react/src/types.ts:506](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L506)
+Defined in: [core/modal-react/src/types.ts:639](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L639)
 
 Account hook return type
 Provides account information
@@ -17,7 +17,7 @@ Provides account information
 
 > **accounts**: `string`[]
 
-Defined in: [core/modal-react/src/types.ts:512](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L512)
+Defined in: [core/modal-react/src/types.ts:645](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L645)
 
 All connected accounts
 
@@ -27,7 +27,7 @@ All connected accounts
 
 > **address**: `null` \| `string`
 
-Defined in: [core/modal-react/src/types.ts:508](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L508)
+Defined in: [core/modal-react/src/types.ts:641](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L641)
 
 Primary account address
 
@@ -37,7 +37,7 @@ Primary account address
 
 > **chain**: `null` \| \{ `chainId`: `string`; `chainType`: [`ChainType`](../enumerations/ChainType.md); `group?`: `string`; `icon?`: `string`; `interfaces?`: `string`[]; `label?`: `string`; `name`: `string`; `required`: `boolean`; \}
 
-Defined in: [core/modal-react/src/types.ts:510](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L510)
+Defined in: [core/modal-react/src/types.ts:643](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L643)
 
 Current chain
 
@@ -47,7 +47,7 @@ Current chain
 
 > **connectedWallets**: [`WalletInfo`](WalletInfo.md)[]
 
-Defined in: [core/modal-react/src/types.ts:516](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L516)
+Defined in: [core/modal-react/src/types.ts:649](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L649)
 
 Connected wallets with account info
 
@@ -57,7 +57,7 @@ Connected wallets with account info
 
 > **isConnected**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:514](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L514)
+Defined in: [core/modal-react/src/types.ts:647](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L647)
 
 Whether any wallet is connected
 
@@ -67,6 +67,6 @@ Whether any wallet is connected
 
 > **provider**: `unknown`
 
-Defined in: [core/modal-react/src/types.ts:518](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L518)
+Defined in: [core/modal-react/src/types.ts:651](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L651)
 
 Current provider instance

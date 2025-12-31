@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletTransportInfo
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletTransport.ts#L36)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:36](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletTransport.ts#L36)
 
 Wallet transport information
 
@@ -16,7 +16,7 @@ Wallet transport information
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletTransport.ts#L48)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletTransport.ts#L48)
 
 Connection error if any
 
@@ -26,7 +26,7 @@ Connection error if any
 
 > **isAvailable**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletTransport.ts#L40)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:40](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletTransport.ts#L40)
 
 Whether transport is available
 
@@ -36,7 +36,7 @@ Whether transport is available
 
 > **isConnecting**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletTransport.ts#L42)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:42](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletTransport.ts#L42)
 
 Whether currently connecting
 
@@ -46,7 +46,7 @@ Whether currently connecting
 
 > **sessionId**: `null` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletTransport.ts#L44)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:44](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletTransport.ts#L44)
 
 Current session ID
 
@@ -56,7 +56,7 @@ Current session ID
 
 > **transport**: `null` \| [`WalletTransport`](WalletTransport.md)
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletTransport.ts#L38)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:38](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletTransport.ts#L38)
 
 The wallet transport instance
 
@@ -66,6 +66,6 @@ The wallet transport instance
 
 > **walletId**: `null` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useWalletTransport.ts#L46)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useWalletTransport.ts#L46)
 
 Wallet ID providing this transport

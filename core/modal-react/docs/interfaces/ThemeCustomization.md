@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ThemeCustomization
 
-Defined in: [core/modal-react/src/theme/types.ts:174](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L174)
+Defined in: [core/modal-react/src/theme/types.ts:185](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L185)
 
 Partial theme configuration for customization
 
@@ -16,7 +16,7 @@ Partial theme configuration for customization
 
 > `optional` **animation**: `Partial`\<[`ThemeAnimation`](ThemeAnimation.md)\>
 
-Defined in: [core/modal-react/src/theme/types.ts:178](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L178)
+Defined in: [core/modal-react/src/theme/types.ts:189](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L189)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [core/modal-react/src/theme/types.ts:178](https://github.com/WalletM
 
 > `optional` **borderRadius**: `Partial`\<[`ThemeBorderRadius`](ThemeBorderRadius.md)\>
 
-Defined in: [core/modal-react/src/theme/types.ts:181](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L181)
+Defined in: [core/modal-react/src/theme/types.ts:192](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L192)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/modal-react/src/theme/types.ts:181](https://github.com/WalletM
 
 > `optional` **colors**: `Partial`\<[`ThemeColors`](ThemeColors.md)\>
 
-Defined in: [core/modal-react/src/theme/types.ts:176](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L176)
+Defined in: [core/modal-react/src/theme/types.ts:187](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L187)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/modal-react/src/theme/types.ts:176](https://github.com/WalletM
 
 > `optional` **mode**: `ThemeMode`
 
-Defined in: [core/modal-react/src/theme/types.ts:175](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L175)
+Defined in: [core/modal-react/src/theme/types.ts:186](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L186)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [core/modal-react/src/theme/types.ts:175](https://github.com/WalletM
 
 > `optional` **shadows**: `Partial`\<[`ThemeShadows`](ThemeShadows.md)\>
 
-Defined in: [core/modal-react/src/theme/types.ts:177](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L177)
+Defined in: [core/modal-react/src/theme/types.ts:188](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L188)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [core/modal-react/src/theme/types.ts:177](https://github.com/WalletM
 
 > `optional` **spacing**: `Partial`\<[`ThemeSpacing`](ThemeSpacing.md)\>
 
-Defined in: [core/modal-react/src/theme/types.ts:180](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L180)
+Defined in: [core/modal-react/src/theme/types.ts:191](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L191)
 
 ***
 
@@ -64,4 +64,4 @@ Defined in: [core/modal-react/src/theme/types.ts:180](https://github.com/WalletM
 
 > `optional` **typography**: `Partial`\<[`ThemeTypography`](ThemeTypography.md)\>
 
-Defined in: [core/modal-react/src/theme/types.ts:179](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/theme/types.ts#L179)
+Defined in: [core/modal-react/src/theme/types.ts:190](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/theme/types.ts#L190)

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -84,7 +84,7 @@ Reconnection interval in milliseconds
 
 ### status
 
-> **status**: `"connecting"` \| `"connected"` \| `"error"` \| `"disconnected"` \| `"disconnecting"` \| `"idle"`
+> **status**: `"connecting"` \| `"connected"` \| `"error"` \| `"disconnected"` \| `"idle"` \| `"disconnecting"`
 
 Defined in: core/modal-core/dist/client/ConnectionManager.d.ts:27
 

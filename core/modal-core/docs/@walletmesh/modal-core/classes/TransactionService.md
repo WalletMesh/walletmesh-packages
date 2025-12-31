@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.1**](../../../README.md)
+[**@walletmesh/modal-core v0.0.2**](../../../README.md)
 
 ***
 
@@ -252,6 +252,43 @@ if (contractGasEstimate.maxFeePerGas) {
 
 ***
 
+### failAllActiveTransactions()
+
+> **failAllActiveTransactions**(`sessionId?`, `reason?`): `void`
+
+Fail all active transactions when session ends
+
+Called when a wallet session is terminated or disconnected.
+Marks all pending transactions as failed and cleans up polling resources.
+This prevents transactions from getting stuck in a polling state after disconnect.
+
+#### Parameters
+
+##### sessionId?
+
+`string`
+
+Optional session ID to match transactions
+
+##### reason?
+
+`string` = `'Session disconnected'`
+
+Reason for session termination
+
+#### Returns
+
+`void`
+
+#### Example
+
+```typescript
+// Called when session disconnects
+txService.failAllActiveTransactions('session-123', 'Session disconnected');
+```
+
+***
+
 ### getAllTransactions()
 
 > **getAllTransactions**(): [`TransactionResult`](../interfaces/TransactionResult.md)[]
@@ -308,7 +345,7 @@ The transaction result if found, null otherwise
 const transaction = txService.getTransaction('tx_1234567_abc');
 if (transaction) {
   console.log(`Status: ${transaction.status}`);
-  console.log(`Hash: ${transaction.hash}`);
+  console.log(`Hash: ${transaction.txHash}`);
 }
 ```
 

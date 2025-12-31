@@ -1,4 +1,4 @@
-[**@walletmesh/jsonrpc v0.5.2**](../README.md)
+[**@walletmesh/jsonrpc v0.5.3**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **FallbackMethodHandler**\<`C`\> = (`context`, `method`, `params`) => `Promise`\<[`MethodResponse`](MethodResponse.md)\<`unknown`\>\>
 
-Defined in: [core/jsonrpc/src/types.ts:738](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/jsonrpc/src/types.ts#L738)
+Defined in: [core/jsonrpc/src/types.ts:847](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/jsonrpc/src/types.ts#L847)
 
 Function type for handling unregistered JSON-RPC method calls.
 The fallback handler receives the context, method name, and raw parameters,

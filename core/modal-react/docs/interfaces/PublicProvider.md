@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: PublicProvider
 
-Defined in: core/modal-core/dist/api/types/providers.d.ts:265
+Defined in: core/modal-core/dist/api/types/providers.d.ts:274
 
 Public provider interface for read-only blockchain operations
 
@@ -19,7 +19,7 @@ allowing applications to control their infrastructure and costs.
 
 > **chainId**: `string`
 
-Defined in: core/modal-core/dist/api/types/providers.d.ts:276
+Defined in: core/modal-core/dist/api/types/providers.d.ts:285
 
 Get the chain ID this provider is connected to
 
@@ -29,7 +29,7 @@ Get the chain ID this provider is connected to
 
 > **chainType**: [`ChainType`](../enumerations/ChainType.md)
 
-Defined in: core/modal-core/dist/api/types/providers.d.ts:280
+Defined in: core/modal-core/dist/api/types/providers.d.ts:289
 
 Get the chain type (evm, solana, aztec)
 
@@ -39,7 +39,7 @@ Get the chain type (evm, solana, aztec)
 
 > **request**\<`T`\>(`args`): `Promise`\<`T`\>
 
-Defined in: core/modal-core/dist/api/types/providers.d.ts:269
+Defined in: core/modal-core/dist/api/types/providers.d.ts:278
 
 Make a read-only JSON-RPC request
 

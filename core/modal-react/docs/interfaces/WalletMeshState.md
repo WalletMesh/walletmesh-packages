@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshState
 
-Defined in: core/modal-core/dist/state/store.d.ts:37
+Defined in: core/modal-core/dist/state/store.d.ts:38
 
 Normalized WalletMesh state structure
 
@@ -22,7 +22,7 @@ State is normalized with:
 
 > **active**: `object`
 
-Defined in: core/modal-core/dist/state/store.d.ts:62
+Defined in: core/modal-core/dist/state/store.d.ts:63
 
 #### selectedWalletId
 
@@ -46,7 +46,7 @@ Defined in: core/modal-core/dist/state/store.d.ts:62
 
 > **entities**: `object`
 
-Defined in: core/modal-core/dist/state/store.d.ts:38
+Defined in: core/modal-core/dist/state/store.d.ts:39
 
 #### sessions
 
@@ -66,11 +66,15 @@ Defined in: core/modal-core/dist/state/store.d.ts:38
 
 > **meta**: `object`
 
-Defined in: core/modal-core/dist/state/store.d.ts:68
+Defined in: core/modal-core/dist/state/store.d.ts:69
 
 #### availableWalletIds
 
 > **availableWalletIds**: `string`[]
+
+#### backgroundTransactionIds
+
+> **backgroundTransactionIds**: `string`[]
 
 #### connectionTimestamps
 
@@ -94,7 +98,7 @@ Defined in: core/modal-core/dist/state/store.d.ts:68
 
 > **ui**: `object`
 
-Defined in: core/modal-core/dist/state/store.d.ts:43
+Defined in: core/modal-core/dist/state/store.d.ts:44
 
 #### currentView
 

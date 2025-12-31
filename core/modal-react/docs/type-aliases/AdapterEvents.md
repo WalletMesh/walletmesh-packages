@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -136,13 +136,9 @@ Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:140
 
 ### wallet:connected
 
-> **wallet:connected**: `object`
+> **wallet:connected**: `unknown`
 
 Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:144
-
-#### connection
-
-> **connection**: [`WalletConnection`](../interfaces/WalletConnection.md)
 
 ***
 
@@ -150,8 +146,36 @@ Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:144
 
 > **wallet:disconnected**: `object`
 
-Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:147
+Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:145
 
 #### reason?
 
 > `optional` **reason**: `string`
+
+***
+
+### wallet:sessionTerminated
+
+> **wallet:sessionTerminated**: `object`
+
+Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:149
+
+#### chainType?
+
+> `optional` **chainType**: [`ChainType`](../enumerations/ChainType.md)
+
+#### reason?
+
+> `optional` **reason**: `string`
+
+#### sessionId
+
+> **sessionId**: `string`
+
+***
+
+### wallet:statusChanged
+
+> **wallet:statusChanged**: `unknown`
+
+Defined in: core/modal-core/dist/internal/wallets/base/WalletAdapter.d.ts:148

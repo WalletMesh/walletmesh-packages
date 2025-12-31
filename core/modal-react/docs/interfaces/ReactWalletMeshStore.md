@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ReactWalletMeshStore
 
-Defined in: [core/modal-react/src/types.ts:113](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L113)
+Defined in: [core/modal-react/src/types.ts:113](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L113)
 
 Core headless store interface
 Framework-agnostic state management
@@ -17,7 +17,7 @@ Framework-agnostic state management
 
 > **dispatch**(`action`): `void`
 
-Defined in: [core/modal-react/src/types.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L116)
+Defined in: [core/modal-react/src/types.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L116)
 
 #### Parameters
 
@@ -41,7 +41,7 @@ Defined in: [core/modal-react/src/types.ts:116](https://github.com/WalletMesh/wa
 
 > **getState**(): [`ReactWalletMeshState`](ReactWalletMeshState.md)
 
-Defined in: [core/modal-react/src/types.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L114)
+Defined in: [core/modal-react/src/types.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L114)
 
 #### Returns
 
@@ -53,7 +53,7 @@ Defined in: [core/modal-react/src/types.ts:114](https://github.com/WalletMesh/wa
 
 > **subscribe**(`listener`): () => `void`
 
-Defined in: [core/modal-react/src/types.ts:115](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/types.ts#L115)
+Defined in: [core/modal-react/src/types.ts:115](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/types.ts#L115)
 
 #### Parameters
 

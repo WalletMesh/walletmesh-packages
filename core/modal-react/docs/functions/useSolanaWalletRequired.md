@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useSolanaWalletRequired**(`chain?`): `Required`\<`Pick`\<[`SolanaWalletInfo`](../interfaces/SolanaWalletInfo.md), `"address"` \| `"solanaProvider"`\>\> & [`SolanaWalletInfo`](../interfaces/SolanaWalletInfo.md)
 
-Defined in: [core/modal-react/src/hooks/useSolanaWallet.ts:287](https://github.com/WalletMesh/walletmesh-packages/blob/e38976d6233dc88d01687129bd58c6b4d8daf702/core/modal-react/src/hooks/useSolanaWallet.ts#L287)
+Defined in: [core/modal-react/src/hooks/useSolanaWallet.ts:287](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/modal-react/src/hooks/useSolanaWallet.ts#L287)
 
 Hook that throws an error if Solana wallet is not ready
 

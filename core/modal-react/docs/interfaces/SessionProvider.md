@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -6,19 +6,34 @@
 
 # Interface: SessionProvider
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:61
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:161
 
 Provider information in session context
+
+**IMPORTANT**: Provider instances are NOT stored in Zustand state!
+- `instance` is always `null` in state to prevent cross-origin errors
+- Actual provider instances are stored in ProviderRegistry
+- Use `getProviderForSession(sessionId)` to retrieve the real provider
+
+**Why**: Provider instances contain Window object references (popup, iframe)
+which cause Immer to throw cross-origin SecurityError when freezing state.
 
 ## Properties
 
 ### instance
 
-> **instance**: [`BlockchainProvider`](BlockchainProvider.md)
+> **instance**: `null` \| [`BlockchainProvider`](BlockchainProvider.md)
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:63
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:170
 
-Provider instance (chain-specific)
+Provider instance (ALWAYS null in state)
+
+The actual provider is stored in ProviderRegistry to avoid cross-origin errors.
+Use `getProviderForSession(sessionId)` from ProviderRegistry to get the real provider.
+
+#### See
+
+[ProviderRegistry](../classes/ProviderRegistry.md)
 
 ***
 
@@ -26,7 +41,7 @@ Provider instance (chain-specific)
 
 > **multiChainCapable**: `boolean`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:69
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:176
 
 Whether provider supports multi-chain
 
@@ -36,7 +51,7 @@ Whether provider supports multi-chain
 
 > **supportedMethods**: `string`[]
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:71
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:178
 
 Supported methods for this provider
 
@@ -46,7 +61,7 @@ Supported methods for this provider
 
 > **type**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:65
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:172
 
 Provider type identifier
 
@@ -56,6 +71,6 @@ Provider type identifier
 
 > **version**: `string`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:67
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:174
 
 Provider version

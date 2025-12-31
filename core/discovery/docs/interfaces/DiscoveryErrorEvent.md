@@ -1,4 +1,4 @@
-[**@walletmesh/discovery v0.1.2**](../README.md)
+[**@walletmesh/discovery v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: DiscoveryErrorEvent
 
-Defined in: [core/discovery/src/types/core.ts:97](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L97)
+Defined in: [core/discovery/src/types/core.ts:98](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L98)
 
 Discovery error event sent when discovery session fails.
 
@@ -24,7 +24,7 @@ Discovery error event sent when discovery session fails.
 
 > **errorCategory**: [`ErrorCategory`](../type-aliases/ErrorCategory.md)
 
-Defined in: [core/discovery/src/types/core.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L101)
+Defined in: [core/discovery/src/types/core.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L102)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [core/discovery/src/types/core.ts:101](https://github.com/WalletMesh
 
 > **errorCode**: `number`
 
-Defined in: [core/discovery/src/types/core.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L99)
+Defined in: [core/discovery/src/types/core.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L100)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [core/discovery/src/types/core.ts:99](https://github.com/WalletMesh/
 
 > **errorMessage**: `string`
 
-Defined in: [core/discovery/src/types/core.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L100)
+Defined in: [core/discovery/src/types/core.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L101)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [core/discovery/src/types/core.ts:100](https://github.com/WalletMesh
 
 > **sessionId**: `string`
 
-Defined in: [core/discovery/src/types/core.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L27)
+Defined in: [core/discovery/src/types/core.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L27)
 
 #### Inherited from
 
@@ -60,7 +60,7 @@ Defined in: [core/discovery/src/types/core.ts:27](https://github.com/WalletMesh/
 
 > **type**: `"discovery:wallet:error"`
 
-Defined in: [core/discovery/src/types/core.ts:98](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L98)
+Defined in: [core/discovery/src/types/core.ts:99](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L99)
 
 #### Overrides
 
@@ -72,7 +72,7 @@ Defined in: [core/discovery/src/types/core.ts:98](https://github.com/WalletMesh/
 
 > **version**: `"0.1.0"`
 
-Defined in: [core/discovery/src/types/core.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/7ea57a3bfc126e9ab8f0494eeebeb35f3de2db32/core/discovery/src/types/core.ts#L26)
+Defined in: [core/discovery/src/types/core.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/discovery/src/types/core.ts#L26)
 
 #### Inherited from
 

@@ -1,4 +1,4 @@
-[**@walletmesh/aztec-rpc-wallet v0.5.4**](../README.md)
+[**@walletmesh/aztec-rpc-wallet v0.5.6**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **createAztecWallet**(`provider`, `chainId`): `Promise`\<[`AztecDappWallet`](../classes/AztecDappWallet.md)\>
 
-Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:873](https://github.com/WalletMesh/walletmesh-packages/blob/441c37c9745b2e99f43add247d17e8d0e84a0495/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L873)
+Defined in: [aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts:1173](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/aztec/rpc-wallet/src/client/aztec-dapp-wallet.ts#L1173)
 
 Helper function to create and initialize an AztecDappWallet instance.
 This is the recommended way to instantiate an Aztec wallet for dApp use,
@@ -25,9 +25,9 @@ An [AztecRouterProvider](../classes/AztecRouterProvider.md) instance, which hand
 
 ### chainId
 
-`` `aztec:${string}` `` = `'aztec:mainnet'`
+`` `aztec:${string}` ``
 
-The Aztec chain ID (e.g., 'aztec:mainnet', 'aztec:31337') for the wallet. Defaults to 'aztec:mainnet'.
+The Aztec chain ID (e.g., 'aztec:mainnet', 'aztec:31337', 'aztec:testnet') for the wallet.
 
 ## Returns
 

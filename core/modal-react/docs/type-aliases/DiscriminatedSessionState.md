@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -8,6 +8,6 @@
 
 > **DiscriminatedSessionState** = [`SessionState`](../interfaces/SessionState.md) & `object` \| [`SessionState`](../interfaces/SessionState.md) & `object` \| [`SessionState`](../interfaces/SessionState.md) & `object` \| [`SessionState`](../interfaces/SessionState.md) & `object` \| [`SessionState`](../interfaces/SessionState.md) & `object` \| [`SessionState`](../interfaces/SessionState.md) & `object` \| [`SessionState`](../interfaces/SessionState.md) & `object`
 
-Defined in: core/modal-core/dist/api/types/sessionState.d.ts:447
+Defined in: core/modal-core/dist/api/types/sessionState.d.ts:574
 
 Discriminated union for session states based on status

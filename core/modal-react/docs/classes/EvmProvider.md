@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.0**](../README.md)
+[**@walletmesh/modal-react v0.1.1**](../README.md)
 
 ***
 
@@ -115,7 +115,7 @@ Logger instance for debugging
 
 > **disconnect**(): `Promise`\<`void`\>
 
-Defined in: core/modal-core/dist/internal/providers/base/BaseWalletProvider.d.ts:139
+Defined in: core/modal-core/dist/internal/providers/base/BaseWalletProvider.d.ts:146
 
 Disconnect from wallet
 
@@ -294,6 +294,37 @@ Callback function to call when event occurs
 #### Inherited from
 
 [`BaseWalletProvider`](BaseWalletProvider.md).[`on`](BaseWalletProvider.md#on)
+
+***
+
+### removeAllListeners()
+
+> **removeAllListeners**(`event?`): `void`
+
+Defined in: core/modal-core/dist/internal/providers/base/BaseWalletProvider.d.ts:140
+
+Remove all event listeners
+
+#### Parameters
+
+##### event?
+
+`string`
+
+Optional event name to remove all listeners for.
+               If not provided, removes all listeners for all events.
+
+#### Returns
+
+`void`
+
+#### Implementation of
+
+`EvmWalletProvider.removeAllListeners`
+
+#### Inherited from
+
+[`BaseWalletProvider`](BaseWalletProvider.md).[`removeAllListeners`](BaseWalletProvider.md#removealllisteners)
 
 ***
 

@@ -1,4 +1,4 @@
-[**@walletmesh/router v0.5.2**](../../README.md)
+[**@walletmesh/router v0.5.3**](../../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **PermissionGetCallback**\<`C`\> = (`context`, `chainIds?`) => `Promise`\<[`HumanReadableChainPermissions`](HumanReadableChainPermissions.md)\>
 
-Defined in: [core/router/src/types.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/c94d361eeb2b51b24d2b03a1f35e414d76e00d1a/core/router/src/types.ts#L116)
+Defined in: [core/router/src/types.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/446dec432cc153439780754190143ccaef5b7157/core/router/src/types.ts#L116)
 
 Callback for retrieving current permissions.
 Used to get the current permission state for display or verification.
