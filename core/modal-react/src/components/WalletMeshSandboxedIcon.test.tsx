@@ -29,6 +29,8 @@ vi.mock('./WalletMeshSandboxedIcon.js', () => ({
         : undefined;
 
       return (
+        // biome-ignore lint/a11y/noStaticElementInteractions: role is dynamically set based on onClick prop
+        // biome-ignore lint/a11y/useAriaPropsSupportedByRole: role is dynamically set based on onClick prop
         <div
           data-testid="sandboxed-icon"
           className={className}
@@ -36,7 +38,7 @@ vi.mock('./WalletMeshSandboxedIcon.js', () => ({
           onClick={onClick}
           onKeyDown={handleKeyDown}
           aria-label={alt}
-          role={onClick ? 'button' : undefined}
+          role={onClick ? 'button' : 'img'}
           tabIndex={onClick ? 0 : undefined}
           data-disabled={disabled}
           data-src={src}
@@ -67,6 +69,8 @@ vi.mock('./WalletMeshSandboxedIcon.js', () => ({
         : undefined;
 
       return (
+        // biome-ignore lint/a11y/noStaticElementInteractions: role is dynamically set based on onClick prop
+        // biome-ignore lint/a11y/useAriaPropsSupportedByRole: role is dynamically set based on onClick prop
         <div
           data-testid="sandboxed-icon"
           className={className}
@@ -74,7 +78,7 @@ vi.mock('./WalletMeshSandboxedIcon.js', () => ({
           onClick={handleClick}
           onKeyDown={handleKeyDown}
           aria-label={`${wallet.name} wallet icon${disabled ? ' (unsupported)' : ''}`}
-          role={onClick ? 'button' : undefined}
+          role={onClick ? 'button' : 'img'}
           tabIndex={onClick ? 0 : undefined}
           data-disabled={disabled}
           data-wallet-id={wallet.id}
@@ -178,7 +182,8 @@ describe('WalletMeshSandboxedIcon', () => {
     render(<WalletMeshSandboxedIcon src="data:image/svg+xml,<svg><circle r='10'/></svg>" alt="Test icon" />);
 
     const container = screen.getByTestId('sandboxed-icon');
-    expect(container).not.toHaveAttribute('role');
+    // When not clickable, the icon should have role="img" for accessibility
+    expect(container).toHaveAttribute('role', 'img');
     expect(container).not.toHaveAttribute('tabIndex');
   });
 

@@ -45,10 +45,6 @@
       "types": "./dist/providers/solana/lazy.d.ts",
       "import": "./dist/providers/solana/lazy.js"
     },
-    "./providers/nemi-account": {
-      "types": "./dist/api/providers/nemi-account.d.ts",
-      "import": "./dist/api/providers/nemi-account.js"
-    },
     "./testing": {
       "types": "./dist/testing/index.d.ts",
       "import": "./dist/testing/index.js"
@@ -113,7 +109,6 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "@nemi-fi/wallet-sdk": "^1.0.0",
     "@solana/web3.js": "^1.95.8",
     "@types/chrome": "^0.0.322",
     "@types/node": "^24.3.0",
@@ -125,15 +120,11 @@
     "vitest": "2.1.8"
   },
   "peerDependencies": {
-    "@nemi-fi/wallet-sdk": "^1.0.0",
     "@solana/web3.js": "^1.0.0",
     "@walletmesh/aztec-rpc-wallet": "^0.5.7"
   },
   "peerDependenciesMeta": {
     "@walletmesh/aztec-rpc-wallet": {
-      "optional": true
-    },
-    "@nemi-fi/wallet-sdk": {
       "optional": true
     },
     "@solana/web3.js": {

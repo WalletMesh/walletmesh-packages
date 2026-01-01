@@ -56,10 +56,7 @@ import type { ErrorHandler } from '../core/errors/errorHandler.js';
 import type { ModalError } from '../core/errors/types.js';
 import { isModalError } from '../core/errors/utils.js';
 import type { Logger } from '../core/logger/logger.js';
-import {
-	OriginValidator,
-	type OriginValidationResult,
-} from './validation/OriginValidator.js';
+import { OriginValidator, type OriginValidationResult } from './validation/OriginValidator.js';
 
 /**
  * Base implementation for all transport types

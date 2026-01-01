@@ -467,11 +467,13 @@ export function WalletMeshSandboxedIcon({
   });
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: role is dynamically set based on onClick prop
     <div
       className={className}
       style={containerStyle}
       onClick={handleClick}
       onKeyDown={handleKeyDown}
+      role={onClick ? 'button' : 'img'}
       {...a11yAttributes}
       {...containerConfig.attributes}
       data-has-error={hasError}

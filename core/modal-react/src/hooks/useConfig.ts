@@ -225,7 +225,6 @@ export function useConfig(): UseConfigReturn {
   const clearWalletFilter = useCallback(() => {
     // Note: clearWalletFilter is not available in the new uiActions
     store.setState((state) => {
-      // biome-ignore lint/performance/noDelete: Required for exactOptionalPropertyTypes
       delete state.ui.walletFilter;
     });
   }, [store]);

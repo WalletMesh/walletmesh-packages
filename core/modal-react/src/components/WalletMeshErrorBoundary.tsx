@@ -410,9 +410,7 @@ export class WalletMeshErrorBoundary extends Component<ErrorBoundaryProps, Error
           </h3>
         </div>
 
-        <p style={{ margin: '0 0 16px 0', lineHeight: '1.5' }} aria-label="Error details">
-          {userMessage}
-        </p>
+        <p style={{ margin: '0 0 16px 0', lineHeight: '1.5' }}>{userMessage}</p>
 
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {recoveryActions.map((action, idx) => (

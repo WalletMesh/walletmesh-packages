@@ -235,8 +235,7 @@ describe('WalletMeshErrorBoundary', () => {
       expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
 
       // Should extract the message from the object (ErrorTypeComponent throws { message: 'Object error', code: 500 })
-      const errorDetails = screen.getByLabelText('Error details');
-      expect(errorDetails.textContent).toBe('Object error');
+      expect(screen.getByText('Object error')).toBeInTheDocument();
     });
 
     it('should extract message from object errors if available', () => {
@@ -254,8 +253,7 @@ describe('WalletMeshErrorBoundary', () => {
       expect(errorContainer).toBeInTheDocument();
 
       // Should display the message from the object
-      const errorText = screen.getByLabelText('Error details').textContent;
-      expect(errorText).toBe('Custom object error message');
+      expect(screen.getByText('Custom object error message')).toBeInTheDocument();
 
       // Should NOT display [object Object]
       expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
@@ -276,8 +274,7 @@ describe('WalletMeshErrorBoundary', () => {
           </WalletMeshErrorBoundary>,
         );
 
-        const errorDetails = screen.getByLabelText('Error details');
-        expect(errorDetails.textContent).toBe(expectedContent);
+        expect(screen.getByText(expectedContent)).toBeInTheDocument();
         expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
 
         unmount();
@@ -302,8 +299,7 @@ describe('WalletMeshErrorBoundary', () => {
       expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
 
       // Should show a generic error message for empty objects
-      const errorDetails = screen.getByLabelText('Error details');
-      expect(errorDetails.textContent).toBe('An unexpected error occurred. Please try again.');
+      expect(screen.getByText('An unexpected error occurred. Please try again.')).toBeInTheDocument();
     });
 
     it('should handle objects with custom toString', () => {
@@ -326,8 +322,7 @@ describe('WalletMeshErrorBoundary', () => {
       expect(errorContainer).toBeInTheDocument();
 
       // Should use the custom toString method
-      const errorDetails = screen.getByLabelText('Error details');
-      expect(errorDetails.textContent).toBe('Custom error representation');
+      expect(screen.getByText('Custom error representation')).toBeInTheDocument();
       expect(screen.queryByText(/\[object Object\]/)).not.toBeInTheDocument();
     });
   });
@@ -701,8 +696,8 @@ describe('WalletMeshErrorBoundary', () => {
         </WalletMeshErrorBoundary>,
       );
 
-      const errorMessage = screen.getByLabelText(/Error details/);
-      expect(errorMessage).toBeInTheDocument();
+      // Error message is visible text in the error boundary
+      expect(screen.getByText('Accessible error')).toBeInTheDocument();
     });
   });
 
