@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.3**](../../../../README.md)
+[**@walletmesh/modal-core v0.0.4**](../../../../README.md)
 
 ***
 

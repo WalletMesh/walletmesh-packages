@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseAztecAuthReturn
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L48)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L48)
 
 Auth witness hook return type
 
@@ -16,7 +16,7 @@ Auth witness hook return type
 
 > **clearStoredWitnesses**: (`storageKey?`) => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L65)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L65)
 
 Clear stored auth witnesses
 
@@ -36,7 +36,7 @@ Clear stored auth witnesses
 
 > **createAuthWit**: (`interaction`, `description?`) => `Promise`\<`AuthWitnessWithMetadata`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L50)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L50)
 
 Create auth witness for a single interaction
 
@@ -60,7 +60,7 @@ Create auth witness for a single interaction
 
 > **createBatchAuthWit**: (`interactions`) => `Promise`\<`AuthWitnessWithMetadata`[]\>
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L55)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L55)
 
 Create auth witnesses for multiple interactions
 
@@ -80,7 +80,7 @@ Create auth witnesses for multiple interactions
 
 > **createMessageAuthWit**: (`message`, `description?`) => `Promise`\<`AuthWitnessWithMetadata`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L57)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L57)
 
 Create auth witness for a message
 
@@ -104,7 +104,7 @@ Create auth witness for a message
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L73)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L73)
 
 Any error that occurred
 
@@ -114,7 +114,7 @@ Any error that occurred
 
 > **getStoredWitnesses**: (`storageKey`) => `undefined` \| `AuthWitnessWithMetadata`[]
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L63)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L63)
 
 Retrieve stored auth witnesses
 
@@ -134,7 +134,7 @@ Retrieve stored auth witnesses
 
 > **isCreating**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L71)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L71)
 
 Whether currently creating auth witnesses
 
@@ -144,7 +144,7 @@ Whether currently creating auth witnesses
 
 > **removeStoredEntry**: (`id`) => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L69)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L69)
 
 Remove a specific stored entry
 
@@ -164,7 +164,7 @@ Remove a specific stored entry
 
 > **storedEntries**: [`AuthWitnessEntry`](AuthWitnessEntry.md)[]
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L67)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L67)
 
 List of all stored auth witness entries
 
@@ -174,7 +174,7 @@ List of all stored auth witness entries
 
 > **storeWitnesses**: (`witnesses`, `label?`) => `string`
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L61)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L61)
 
 Store auth witnesses and get storage key
 
@@ -198,7 +198,7 @@ Store auth witnesses and get storage key
 
 > **verifyAuthWit**: (`authWitness`, `expectedMessage?`) => `Promise`\<`boolean`\>
 
-Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecAuth.ts#L59)
+Defined in: [core/modal-react/src/hooks/useAztecAuth.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecAuth.ts#L59)
 
 Verify an auth witness
 

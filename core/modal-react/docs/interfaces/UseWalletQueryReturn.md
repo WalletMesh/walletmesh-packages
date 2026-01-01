@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: UseWalletQueryReturn\<TData\>
 
-Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletQuery.ts#L51)
+Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:51](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletQuery.ts#L51)
 
 Wallet query return type
 
@@ -22,7 +22,7 @@ Wallet query return type
 
 > **data**: `undefined` \| `TData`
 
-Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletQuery.ts#L53)
+Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:53](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletQuery.ts#L53)
 
 Query result data
 
@@ -32,7 +32,7 @@ Query result data
 
 > **error**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletQuery.ts#L63)
+Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:63](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletQuery.ts#L63)
 
 Error if any
 
@@ -42,7 +42,7 @@ Error if any
 
 > **isError**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletQuery.ts#L61)
+Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:61](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletQuery.ts#L61)
 
 Whether the query has errored
 
@@ -52,7 +52,7 @@ Whether the query has errored
 
 > **isFetching**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletQuery.ts#L57)
+Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:57](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletQuery.ts#L57)
 
 Whether the query is fetching (includes background refetches)
 
@@ -62,7 +62,7 @@ Whether the query is fetching (includes background refetches)
 
 > **isLoading**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletQuery.ts#L55)
+Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:55](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletQuery.ts#L55)
 
 Whether the query is loading
 
@@ -72,7 +72,7 @@ Whether the query is loading
 
 > **isRefetching**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletQuery.ts#L59)
+Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:59](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletQuery.ts#L59)
 
 Whether the query is refetching
 
@@ -82,7 +82,7 @@ Whether the query is refetching
 
 > **refetch**: () => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletQuery.ts#L65)
+Defined in: [core/modal-react/src/hooks/useWalletQuery.ts:65](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletQuery.ts#L65)
 
 Refetch the query
 

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-core v0.0.3**](../../README.md)
+[**@walletmesh/modal-core v0.0.4**](../../README.md)
 
 ***
 
@@ -127,7 +127,6 @@ try {
 - [TransactionService](classes/TransactionService.md)
 - [UIService](classes/UIService.md)
 - [WalletActionManager](classes/WalletActionManager.md)
-- [WalletMeshAccount](classes/WalletMeshAccount.md)
 - [WalletMeshDebugger](classes/WalletMeshDebugger.md)
 - [WalletMetadataManager](classes/WalletMetadataManager.md)
 - [WalletPreferenceService](classes/WalletPreferenceService.md)
@@ -320,7 +319,6 @@ try {
 - [ModalTransportMessageEvent](interfaces/ModalTransportMessageEvent.md)
 - [MultiWalletConnectionState](interfaces/MultiWalletConnectionState.md)
 - [MultiWalletState](interfaces/MultiWalletState.md)
-- [NemiAccount](interfaces/NemiAccount.md)
 - [NetworkDiagnostics](interfaces/NetworkDiagnostics.md)
 - [NodeInfo](interfaces/NodeInfo.md)
 - [NormalizedIconOptions](interfaces/NormalizedIconOptions.md)
@@ -699,7 +697,6 @@ try {
 - [createTransport](functions/createTransport.md)
 - [createUniversalController](functions/createUniversalController.md)
 - [createWalletActionManager](functions/createWalletActionManager.md)
-- [createWalletMeshAccount](functions/createWalletMeshAccount.md)
 - [createWalletMeshClient](functions/createWalletMeshClient.md)
 - [createWalletMeshClientWithConfig](functions/createWalletMeshClientWithConfig.md)
 - [ensureError](functions/ensureError.md)

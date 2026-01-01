@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletTransport
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletTransport.ts#L20)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:20](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletTransport.ts#L20)
 
 Wallet transport interface for low-level communication
 
@@ -16,7 +16,7 @@ Wallet transport interface for low-level communication
 
 > **connect**(): `Promise`\<`string`\>
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletTransport.ts#L21)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:21](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletTransport.ts#L21)
 
 #### Returns
 
@@ -28,7 +28,7 @@ Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:21](https://github
 
 > **disconnect**(): `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletTransport.ts#L22)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:22](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletTransport.ts#L22)
 
 #### Returns
 
@@ -40,7 +40,7 @@ Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:22](https://github
 
 > **getCapabilities**(): `Promise`\<`unknown`\>
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletTransport.ts#L24)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:24](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletTransport.ts#L24)
 
 #### Returns
 
@@ -52,7 +52,7 @@ Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:24](https://github
 
 > **getSessionId**(): `undefined` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletTransport.ts#L26)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:26](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletTransport.ts#L26)
 
 #### Returns
 
@@ -64,7 +64,7 @@ Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:26](https://github
 
 > **isConnected**(): `boolean`
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletTransport.ts#L25)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:25](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletTransport.ts#L25)
 
 #### Returns
 
@@ -76,7 +76,7 @@ Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:25](https://github
 
 > **off**(`event`, `handler`): `void`
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletTransport.ts#L28)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:28](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletTransport.ts#L28)
 
 #### Parameters
 
@@ -98,7 +98,7 @@ Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:28](https://github
 
 > **on**(`event`, `handler`): `void`
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletTransport.ts#L27)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:27](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletTransport.ts#L27)
 
 #### Parameters
 
@@ -120,7 +120,7 @@ Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:27](https://github
 
 > **request**\<`T`\>(`request`): `Promise`\<`T`\>
 
-Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useWalletTransport.ts#L23)
+Defined in: [core/modal-react/src/hooks/useWalletTransport.ts:23](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useWalletTransport.ts#L23)
 
 #### Type Parameters
 

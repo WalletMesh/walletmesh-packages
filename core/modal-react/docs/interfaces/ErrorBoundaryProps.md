@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: ErrorBoundaryProps
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:14](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L14)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:14](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L14)
 
 Props for the WalletMeshErrorBoundary component
 
@@ -16,7 +16,7 @@ Props for the WalletMeshErrorBoundary component
 
 > **children**: `ReactNode`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:16](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L16)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:16](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L16)
 
 Child components to render
 
@@ -26,7 +26,7 @@ Child components to render
 
 > `optional` **enableLogging**: `boolean`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:24](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L24)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:24](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L24)
 
 Whether to log errors to console (default: true)
 
@@ -36,7 +36,7 @@ Whether to log errors to console (default: true)
 
 > `optional` **fallback**: `ReactNode` \| (`props`) => `ReactNode`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:18](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L18)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:18](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L18)
 
 Fallback UI to display when an error occurs
 
@@ -46,7 +46,7 @@ Fallback UI to display when an error occurs
 
 > `optional` **logPrefix**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:26](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L26)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:26](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L26)
 
 Custom error message prefix for logging
 
@@ -56,7 +56,7 @@ Custom error message prefix for logging
 
 > `optional` **onError**: (`error`, `errorInfo`) => `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:22](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L22)
+Defined in: [core/modal-react/src/components/WalletMeshErrorBoundary.tsx:22](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshErrorBoundary.tsx#L22)
 
 Callback when an error is caught
 

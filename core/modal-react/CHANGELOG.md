@@ -1,5 +1,13 @@
 # @walletmesh/modal-react
 
+## 0.1.3
+
+### Patch Changes
+
+- 7b2169f: Fix build issues
+- Updated dependencies [7b2169f]
+  - @walletmesh/modal-core@0.0.4
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @walletmesh/modal-core
 
+## 0.0.4
+
+### Patch Changes
+
+- 7b2169f: Fix build issues
+
 ## 0.0.3
 
 ### Patch Changes

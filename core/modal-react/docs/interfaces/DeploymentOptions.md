@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: DeploymentOptions
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L46)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:46](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecDeploy.ts#L46)
 
 Deployment options
 
@@ -16,7 +16,7 @@ Deployment options
 
 > `optional` **onError**: (`error`) => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L60)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:60](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecDeploy.ts#L60)
 
 Callback when deployment fails
 
@@ -36,7 +36,7 @@ Callback when deployment fails
 
 > `optional` **onProgress**: (`stage`) => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L62)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:62](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecDeploy.ts#L62)
 
 Callback for deployment progress
 
@@ -56,7 +56,7 @@ Callback for deployment progress
 
 > `optional` **onStart**: () => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L48)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecDeploy.ts#L48)
 
 Callback when deployment starts
 
@@ -70,7 +70,7 @@ Callback when deployment starts
 
 > `optional` **onSuccess**: (`address`) => `void`
 
-Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAztecDeploy.ts#L58)
+Defined in: [core/modal-react/src/hooks/useAztecDeploy.ts:58](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAztecDeploy.ts#L58)
 
 Callback when deployment succeeds.
 

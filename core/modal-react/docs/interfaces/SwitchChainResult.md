@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: SwitchChainResult
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSwitchChain.ts#L67)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:67](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useSwitchChain.ts#L67)
 
 Switch chain result
 
@@ -16,7 +16,7 @@ Switch chain result
 
 > **chain**: `object`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSwitchChain.ts#L69)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:69](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useSwitchChain.ts#L69)
 
 New chain configuration
 
@@ -58,7 +58,7 @@ New chain configuration
 
 > **chainType**: [`ChainType`](../enumerations/ChainType.md)
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSwitchChain.ts#L71)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:71](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useSwitchChain.ts#L71)
 
 New chain type
 
@@ -68,7 +68,7 @@ New chain type
 
 > **previousChain**: `object`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSwitchChain.ts#L73)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:73](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useSwitchChain.ts#L73)
 
 Previous chain configuration
 
@@ -110,6 +110,6 @@ Previous chain configuration
 
 > **provider**: `unknown`
 
-Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useSwitchChain.ts#L75)
+Defined in: [core/modal-react/src/hooks/useSwitchChain.ts:75](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useSwitchChain.ts#L75)
 
 New provider instance
