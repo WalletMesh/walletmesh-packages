@@ -120,5 +120,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WalletMesh/walletmesh-packages.git"
   }
 }
