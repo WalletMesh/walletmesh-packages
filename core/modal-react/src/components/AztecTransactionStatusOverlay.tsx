@@ -262,7 +262,9 @@ export function AztecTransactionStatusOverlay({
   useEffect(() => {
     return () => {
       // Clear all pending dismiss timers on unmount
-      dismissTimersRef.current.forEach((timerId) => clearTimeout(timerId));
+      dismissTimersRef.current.forEach((timerId) => {
+        clearTimeout(timerId);
+      });
       dismissTimersRef.current.clear();
     };
   }, []);

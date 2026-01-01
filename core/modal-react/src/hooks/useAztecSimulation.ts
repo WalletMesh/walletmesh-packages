@@ -8,7 +8,10 @@
 
 import { ErrorFactory } from '@walletmesh/modal-core';
 import type { ContractFunctionInteraction } from '@walletmesh/modal-core/providers/aztec/lazy';
-import { simulateInteraction, simulateUtility as simulateUtilityFn } from '@walletmesh/modal-core/providers/aztec';
+import {
+  simulateInteraction,
+  simulateUtility as simulateUtilityFn,
+} from '@walletmesh/modal-core/providers/aztec';
 import { useCallback, useState } from 'react';
 import { useAztecWallet } from './useAztecWallet.js';
 
@@ -157,7 +160,8 @@ export function useAztecSimulation<TDecoded = unknown>(
         const values = (result as { values?: unknown[] })?.values;
         return (values?.[0] ?? result) as T;
       } catch (err) {
-        const simError = err instanceof Error ? err : ErrorFactory.transportError('Utility simulation failed');
+        const simError =
+          err instanceof Error ? err : ErrorFactory.transportError('Utility simulation failed');
         setError(simError);
         options.onError?.(simError);
         throw simError;

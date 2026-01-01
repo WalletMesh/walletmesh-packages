@@ -463,13 +463,15 @@ export function useTransaction(): UseTransactionReturn {
   /**
    * Get transaction by ID
    */
-  const getTransactionById = useCallback((txId: string): TransactionResult | undefined => {
-    const store = useWalletMeshStoreInstance();
-    if (!store) return undefined;
+  const getTransactionById = useCallback(
+    (txId: string): TransactionResult | undefined => {
+      if (!store) return undefined;
 
-    const state = store.getState();
-    return state.entities.transactions[txId];
-  }, []);
+      const state = store.getState();
+      return state.entities.transactions[txId];
+    },
+    [store],
+  );
 
   /**
    * Wait for transaction confirmation

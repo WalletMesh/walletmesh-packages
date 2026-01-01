@@ -104,7 +104,7 @@ export function BackgroundTransactionIndicator({
   // Get background transaction IDs (memoized with shallow comparison)
   const backgroundTxIds = useStoreWithEquality(
     (state) => state.meta.backgroundTransactionIds || [],
-    shallowEqual
+    shallowEqual,
   );
   const transactions = useStore((state) => state.entities.transactions);
 

@@ -52,7 +52,13 @@ export const aztecTransactionActions = {
         }
       } else {
         // If it's sync mode, set as active transaction
-        console.log('[aztecTransactionActions:addAztecTransaction] Setting active.transactionId to:', transaction.txStatusId, '(was:', state.active.transactionId, ')');
+        console.log(
+          '[aztecTransactionActions:addAztecTransaction] Setting active.transactionId to:',
+          transaction.txStatusId,
+          '(was:',
+          state.active.transactionId,
+          ')',
+        );
         state.active.transactionId = transaction.txStatusId;
       }
 

@@ -16,10 +16,3 @@ export type {
   WalletEventMap,
   ProviderClass,
 } from '../types/providers.js';
-
-// Nemi SDK Account provider
-export {
-  createWalletMeshAccount,
-  WalletMeshAccount,
-} from './nemi-account.js';
-export type { NemiAccount } from './nemi-account.js';

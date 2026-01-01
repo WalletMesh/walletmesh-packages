@@ -758,9 +758,9 @@ export class AztecExampleWalletAdapter extends AbstractWalletAdapter {
     // When reconnecting after page refresh, WalletMeshClientImpl passes adapterReconstruction in options
     const adapterReconstruction =
       persistedSession?.adapterReconstruction ||
-      (options as { adapterReconstruction?: unknown })?.adapterReconstruction as
+      ((options as { adapterReconstruction?: unknown })?.adapterReconstruction as
         | { sessionId?: string; transportConfig?: unknown }
-        | undefined;
+        | undefined);
     // Use sessionId from adapterReconstruction, or fall back to constructor-provided sessionId
     const sessionIdToReconnect = adapterReconstruction?.sessionId || this.sessionId;
     const shouldReconnect = !!(sessionIdToReconnect && options?.isReconnection);

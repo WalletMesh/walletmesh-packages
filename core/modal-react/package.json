@@ -73,7 +73,6 @@
     "preversion": "pnpm test"
   },
   "peerDependencies": {
-    "@nemi-fi/wallet-sdk": "^1.0.0",
     "@solana/web3.js": "^1.0.0",
     "@walletmesh/aztec-rpc-wallet": "^0.5.7",
     "react": "^18.0.0 || ^19.0.0",
@@ -81,9 +80,6 @@
   },
   "peerDependenciesMeta": {
     "@walletmesh/aztec-rpc-wallet": {
-      "optional": true
-    },
-    "@nemi-fi/wallet-sdk": {
       "optional": true
     },
     "@solana/web3.js": {
@@ -96,7 +92,6 @@
   },
   "devDependencies": {
     "@aztec/aztec.js": "2.0.3",
-    "@nemi-fi/wallet-sdk": "^1.0.0",
     "@solana/web3.js": "^1.95.8",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",

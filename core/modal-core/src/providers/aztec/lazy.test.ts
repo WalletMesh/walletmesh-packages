@@ -56,7 +56,7 @@ describe('LazyAztecRouterProvider', () => {
       expect.objectContaining({
         context: undefined,
         onSessionTerminated: expect.any(Function),
-      })
+      }),
     );
   });
 
