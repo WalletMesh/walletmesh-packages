@@ -1,5 +1,11 @@
 # @walletmesh/aztec-example-wallet
 
+## 0.5.8
+
+### Patch Changes
+
+- 7b2169f: Fix build issues
+
 ## 0.5.7
 
 ### Patch Changes

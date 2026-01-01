@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useEvmWalletRequired**(`chain?`): `Required`\<`Pick`\<[`EvmWalletInfo`](../interfaces/EvmWalletInfo.md), `"address"` \| `"evmProvider"`\>\> & [`EvmWalletInfo`](../interfaces/EvmWalletInfo.md)
 
-Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:288](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useEvmWallet.ts#L288)
+Defined in: [core/modal-react/src/hooks/useEvmWallet.ts:288](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useEvmWallet.ts#L288)
 
 Hook that throws an error if EVM wallet is not ready
 

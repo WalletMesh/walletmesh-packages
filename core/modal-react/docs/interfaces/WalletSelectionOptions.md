@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletSelectionOptions
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L110)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L110)
 
 Wallet selection options
 
@@ -16,7 +16,7 @@ Wallet selection options
 
 > `optional` **autoSelectSingle**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L118)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:118](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L118)
 
 Whether to auto-select if only one wallet is available
 
@@ -26,7 +26,7 @@ Whether to auto-select if only one wallet is available
 
 > `optional` **filterByChainType**: [`ChainType`](../enumerations/ChainType.md)[]
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L116)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:116](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L116)
 
 Filter wallets by supported chain types
 
@@ -36,7 +36,7 @@ Filter wallets by supported chain types
 
 > `optional` **persistPreference**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:112](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L112)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:112](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L112)
 
 Persist wallet preference to localStorage
 
@@ -46,6 +46,6 @@ Persist wallet preference to localStorage
 
 > `optional` **storageKey**: `string`
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L114)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:114](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L114)
 
 Storage key for persisted preference

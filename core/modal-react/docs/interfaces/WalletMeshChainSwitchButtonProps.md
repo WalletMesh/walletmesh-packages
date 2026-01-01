@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshChainSwitchButtonProps
 
-Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:27](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L27)
+Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:27](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L27)
 
 Props for WalletMeshChainSwitchButton component
 
@@ -16,7 +16,7 @@ Props for WalletMeshChainSwitchButton component
 
 > `optional` **chainIcon**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:33](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L33)
+Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:33](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L33)
 
 Optional icon URL for the chain
 
@@ -26,7 +26,7 @@ Optional icon URL for the chain
 
 > **chainName**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:31](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L31)
+Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:31](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L31)
 
 Display name for the chain
 
@@ -36,7 +36,7 @@ Display name for the chain
 
 > `optional` **className**: `string`
 
-Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:35](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L35)
+Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:35](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L35)
 
 Additional CSS class names
 
@@ -46,7 +46,7 @@ Additional CSS class names
 
 > `optional` **disabled**: `boolean`
 
-Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:37](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L37)
+Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:37](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L37)
 
 Whether the button is disabled
 
@@ -56,7 +56,7 @@ Whether the button is disabled
 
 > `optional` **onChainSwitch**: (`chain`) => `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:39](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L39)
+Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:39](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L39)
 
 Callback when chain switch is initiated
 
@@ -106,7 +106,7 @@ Callback when chain switch is initiated
 
 > `optional` **onError**: (`error`) => `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:43](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L43)
+Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:43](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L43)
 
 Callback when chain switch fails
 
@@ -126,7 +126,7 @@ Callback when chain switch fails
 
 > `optional` **onSuccess**: (`chain`) => `void`
 
-Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:41](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L41)
+Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:41](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L41)
 
 Callback when chain switch succeeds
 
@@ -176,7 +176,7 @@ Callback when chain switch succeeds
 
 > **targetChain**: `object`
 
-Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:29](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L29)
+Defined in: [core/modal-react/src/components/WalletMeshChainSwitchButton.tsx:29](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/components/WalletMeshChainSwitchButton.tsx#L29)
 
 Target chain to switch to
 

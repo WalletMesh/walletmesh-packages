@@ -1,4 +1,4 @@
-**@walletmesh/modal-core v0.0.3**
+**@walletmesh/modal-core v0.0.4**
 
 ***
 

@@ -1,5 +1,13 @@
 # @walletmesh/aztec-example-dapp
 
+## 0.5.8
+
+### Patch Changes
+
+- 7b2169f: Fix build issues
+- Updated dependencies [7b2169f]
+  - @walletmesh/modal-react@0.1.3
+
 ## 0.5.7
 
 ### Patch Changes

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: TransactionError
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L47)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:47](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useTransaction.ts#L47)
 
 ## Extends
 
@@ -66,7 +66,7 @@ Defined in: node\_modules/.pnpm/typescript@5.9.2/node\_modules/typescript/lib/li
 
 > `optional` **stage**: `"proving"` \| `"validation"` \| `"preparation"` \| `"signing"` \| `"broadcasting"` \| `"confirmation"`
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L48)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:48](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useTransaction.ts#L48)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [core/modal-react/src/hooks/useTransaction.ts:48](https://github.com
 
 > `optional` **transactionHash**: `string`
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L50)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:50](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useTransaction.ts#L50)
 
 ***
 
@@ -82,4 +82,4 @@ Defined in: [core/modal-react/src/hooks/useTransaction.ts:50](https://github.com
 
 > `optional` **transactionId**: `string`
 
-Defined in: [core/modal-react/src/hooks/useTransaction.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTransaction.ts#L49)
+Defined in: [core/modal-react/src/hooks/useTransaction.ts:49](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useTransaction.ts#L49)

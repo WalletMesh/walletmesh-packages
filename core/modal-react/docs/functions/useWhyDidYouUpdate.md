@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useWhyDidYouUpdate**\<`T`\>(`name`, `props`): `void`
 
-Defined in: [core/modal-react/src/utils/performance.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/utils/performance.ts#L66)
+Defined in: [core/modal-react/src/utils/performance.ts:66](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/utils/performance.ts#L66)
 
 Hook to track why a component re-rendered
 Compares current props with previous props to identify changes

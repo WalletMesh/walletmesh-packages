@@ -1,4 +1,4 @@
-**@walletmesh/modal-react v0.1.2**
+**@walletmesh/modal-react v0.1.3**
 
 ***
 

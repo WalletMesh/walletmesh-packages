@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: HeadlessWalletMesh
 
-Defined in: [core/modal-react/src/types.ts:123](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L123)
+Defined in: [core/modal-react/src/types.ts:123](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L123)
 
 Main headless WalletMesh interface
 Pure business logic without UI concerns
@@ -17,7 +17,7 @@ Pure business logic without UI concerns
 
 > `optional` **\_client**: `unknown`
 
-Defined in: [core/modal-react/src/types.ts:145](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L145)
+Defined in: [core/modal-react/src/types.ts:145](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L145)
 
 ***
 
@@ -25,7 +25,7 @@ Defined in: [core/modal-react/src/types.ts:145](https://github.com/WalletMesh/wa
 
 > **actions**: [`WalletMeshActions`](WalletMeshActions.md)
 
-Defined in: [core/modal-react/src/types.ts:128](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L128)
+Defined in: [core/modal-react/src/types.ts:128](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L128)
 
 ***
 
@@ -33,7 +33,7 @@ Defined in: [core/modal-react/src/types.ts:128](https://github.com/WalletMesh/wa
 
 > **providerVersion**: `number`
 
-Defined in: [core/modal-react/src/types.ts:142](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L142)
+Defined in: [core/modal-react/src/types.ts:142](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L142)
 
 ***
 
@@ -41,7 +41,7 @@ Defined in: [core/modal-react/src/types.ts:142](https://github.com/WalletMesh/wa
 
 > **queries**: [`WalletMeshQueries`](WalletMeshQueries.md)
 
-Defined in: [core/modal-react/src/types.ts:131](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L131)
+Defined in: [core/modal-react/src/types.ts:131](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L131)
 
 ***
 
@@ -49,7 +49,7 @@ Defined in: [core/modal-react/src/types.ts:131](https://github.com/WalletMesh/wa
 
 > **store**: [`ReactWalletMeshStore`](ReactWalletMeshStore.md)
 
-Defined in: [core/modal-react/src/types.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L125)
+Defined in: [core/modal-react/src/types.ts:125](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L125)
 
 ## Methods
 
@@ -57,7 +57,7 @@ Defined in: [core/modal-react/src/types.ts:125](https://github.com/WalletMesh/wa
 
 > **destroy**(): `void`
 
-Defined in: [core/modal-react/src/types.ts:139](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L139)
+Defined in: [core/modal-react/src/types.ts:139](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L139)
 
 #### Returns
 
@@ -69,7 +69,7 @@ Defined in: [core/modal-react/src/types.ts:139](https://github.com/WalletMesh/wa
 
 > **emit**(`event`, `data`): `void`
 
-Defined in: [core/modal-react/src/types.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L136)
+Defined in: [core/modal-react/src/types.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L136)
 
 #### Parameters
 
@@ -91,7 +91,7 @@ Defined in: [core/modal-react/src/types.ts:136](https://github.com/WalletMesh/wa
 
 > **off**(`event`, `handler`): `void`
 
-Defined in: [core/modal-react/src/types.ts:135](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L135)
+Defined in: [core/modal-react/src/types.ts:135](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L135)
 
 #### Parameters
 
@@ -113,7 +113,7 @@ Defined in: [core/modal-react/src/types.ts:135](https://github.com/WalletMesh/wa
 
 > **on**(`event`, `handler`): () => `void`
 
-Defined in: [core/modal-react/src/types.ts:134](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L134)
+Defined in: [core/modal-react/src/types.ts:134](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L134)
 
 #### Parameters
 

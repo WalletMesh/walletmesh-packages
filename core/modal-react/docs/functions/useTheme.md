@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > **useTheme**(): [`UseThemeReturn`](../interfaces/UseThemeReturn.md)
 
-Defined in: [core/modal-react/src/hooks/useTheme.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useTheme.ts#L110)
+Defined in: [core/modal-react/src/hooks/useTheme.ts:110](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useTheme.ts#L110)
 
 Hook for accessing theme state and controls
 

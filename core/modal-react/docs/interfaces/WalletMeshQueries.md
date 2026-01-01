@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshQueries
 
-Defined in: [core/modal-react/src/types.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L100)
+Defined in: [core/modal-react/src/types.ts:100](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L100)
 
 Headless WalletMesh queries interface
 Pure state queries without UI dependencies
@@ -17,7 +17,7 @@ Pure state queries without UI dependencies
 
 > **getAvailableWallets**(): [`WalletInfo`](WalletInfo.md)[]
 
-Defined in: [core/modal-react/src/types.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L101)
+Defined in: [core/modal-react/src/types.ts:101](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L101)
 
 #### Returns
 
@@ -29,7 +29,7 @@ Defined in: [core/modal-react/src/types.ts:101](https://github.com/WalletMesh/wa
 
 > **getConnectionStatus**(): [`ConnectionStatus`](../enumerations/ConnectionStatus.md)
 
-Defined in: [core/modal-react/src/types.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L102)
+Defined in: [core/modal-react/src/types.ts:102](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L102)
 
 #### Returns
 
@@ -41,7 +41,7 @@ Defined in: [core/modal-react/src/types.ts:102](https://github.com/WalletMesh/wa
 
 > **getCurrentError**(): `null` \| \{ `category`: `"wallet"` \| `"user"` \| `"network"` \| `"general"` \| `"validation"` \| `"sandbox"`; `cause?`: `unknown`; `classification?`: `"network"` \| `"permission"` \| `"provider"` \| `"temporary"` \| `"permanent"` \| `"unknown"`; `code`: `string`; `data?`: `Record`\<`string`, `unknown`\>; `maxRetries?`: `number`; `message`: `string`; `recoveryStrategy?`: `"none"` \| `"retry"` \| `"wait_and_retry"` \| `"manual_action"`; `retryDelay?`: `number`; \}
 
-Defined in: [core/modal-react/src/types.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L103)
+Defined in: [core/modal-react/src/types.ts:103](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L103)
 
 #### Returns
 
@@ -53,7 +53,7 @@ Defined in: [core/modal-react/src/types.ts:103](https://github.com/WalletMesh/wa
 
 > **getProvider**(): `unknown`
 
-Defined in: [core/modal-react/src/types.ts:104](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L104)
+Defined in: [core/modal-react/src/types.ts:104](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L104)
 
 #### Returns
 
@@ -65,7 +65,7 @@ Defined in: [core/modal-react/src/types.ts:104](https://github.com/WalletMesh/wa
 
 > **getProviderVersion**(): `number`
 
-Defined in: [core/modal-react/src/types.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L106)
+Defined in: [core/modal-react/src/types.ts:106](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L106)
 
 #### Returns
 
@@ -77,7 +77,7 @@ Defined in: [core/modal-react/src/types.ts:106](https://github.com/WalletMesh/wa
 
 > **isConnected**(): `boolean`
 
-Defined in: [core/modal-react/src/types.ts:105](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L105)
+Defined in: [core/modal-react/src/types.ts:105](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L105)
 
 #### Returns
 

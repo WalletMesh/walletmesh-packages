@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletAvailability
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L126)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:126](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L126)
 
 Wallet availability status
 
@@ -16,7 +16,7 @@ Wallet availability status
 
 > `optional` **installUrl**: `null` \| `string`
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L136)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:136](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L136)
 
 Install URL if wallet is not available
 
@@ -26,7 +26,7 @@ Install URL if wallet is not available
 
 > **isAvailable**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:130](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L130)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:130](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L130)
 
 Whether wallet is installed/available
 
@@ -36,7 +36,7 @@ Whether wallet is installed/available
 
 > **isConnected**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:134](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L134)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:134](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L134)
 
 Whether wallet is currently connected
 
@@ -46,7 +46,7 @@ Whether wallet is currently connected
 
 > **supportsCurrentChain**: `boolean`
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:132](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L132)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:132](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L132)
 
 Whether wallet supports current chain
 
@@ -56,6 +56,6 @@ Whether wallet supports current chain
 
 > **wallet**: [`WalletInfo`](WalletInfo.md)
 
-Defined in: [core/modal-react/src/hooks/useAccount.ts:128](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/hooks/useAccount.ts#L128)
+Defined in: [core/modal-react/src/hooks/useAccount.ts:128](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/hooks/useAccount.ts#L128)
 
 Wallet information

@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: InternalContextValue
 
-Defined in: [core/modal-react/src/WalletMeshContext.tsx:29](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/WalletMeshContext.tsx#L29)
+Defined in: [core/modal-react/src/WalletMeshContext.tsx:29](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/WalletMeshContext.tsx#L29)
 
 Internal context value interface providing basic WalletMesh client access
 This is the low-level context used internally by the React provider
@@ -17,7 +17,7 @@ This is the low-level context used internally by the React provider
 
 > **client**: `null` \| [`WalletMeshClient`](WalletMeshClient.md)
 
-Defined in: [core/modal-react/src/WalletMeshContext.tsx:31](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/WalletMeshContext.tsx#L31)
+Defined in: [core/modal-react/src/WalletMeshContext.tsx:31](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/WalletMeshContext.tsx#L31)
 
 The WalletMeshClient instance (null during SSR or initialization)
 
@@ -27,7 +27,7 @@ The WalletMeshClient instance (null during SSR or initialization)
 
 > **config**: [`WalletMeshConfig`](WalletMeshConfig.md)
 
-Defined in: [core/modal-react/src/WalletMeshContext.tsx:33](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/WalletMeshContext.tsx#L33)
+Defined in: [core/modal-react/src/WalletMeshContext.tsx:33](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/WalletMeshContext.tsx#L33)
 
 Configuration used to create the client
 
@@ -37,7 +37,7 @@ Configuration used to create the client
 
 > `optional` **initializationError**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/WalletMeshContext.tsx:37](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/WalletMeshContext.tsx#L37)
+Defined in: [core/modal-react/src/WalletMeshContext.tsx:37](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/WalletMeshContext.tsx#L37)
 
 Error that occurred during client initialization
 
@@ -47,6 +47,6 @@ Error that occurred during client initialization
 
 > `optional` **isInitializing**: `boolean`
 
-Defined in: [core/modal-react/src/WalletMeshContext.tsx:35](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/WalletMeshContext.tsx#L35)
+Defined in: [core/modal-react/src/WalletMeshContext.tsx:35](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/WalletMeshContext.tsx#L35)
 
 Whether the client is currently being initialized

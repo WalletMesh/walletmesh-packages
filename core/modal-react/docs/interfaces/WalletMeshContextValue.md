@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: WalletMeshContextValue
 
-Defined in: [core/modal-react/src/types.ts:558](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L558)
+Defined in: [core/modal-react/src/types.ts:558](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L558)
 
 WalletMesh React context value
 Provides access to headless instance and React-optimized state
@@ -17,7 +17,7 @@ Provides access to headless instance and React-optimized state
 
 > **close**: () => `void`
 
-Defined in: [core/modal-react/src/types.ts:587](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L587)
+Defined in: [core/modal-react/src/types.ts:587](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L587)
 
 Close the modal
 
@@ -31,7 +31,7 @@ Close the modal
 
 > **connect**: (`walletId?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/types.ts:575](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L575)
+Defined in: [core/modal-react/src/types.ts:575](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L575)
 
 Connect to a wallet with React-friendly error handling
 
@@ -51,7 +51,7 @@ Connect to a wallet with React-friendly error handling
 
 > **disconnect**: (`walletId?`) => `Promise`\<`void`\>
 
-Defined in: [core/modal-react/src/types.ts:577](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L577)
+Defined in: [core/modal-react/src/types.ts:577](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L577)
 
 Disconnect from a specific wallet
 
@@ -71,7 +71,7 @@ Disconnect from a specific wallet
 
 > `optional` **hasMounted**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:593](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L593)
+Defined in: [core/modal-react/src/types.ts:593](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L593)
 
 Whether component has mounted on client
 
@@ -81,7 +81,7 @@ Whether component has mounted on client
 
 > **initializationError**: `null` \| `Error`
 
-Defined in: [core/modal-react/src/types.ts:571](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L571)
+Defined in: [core/modal-react/src/types.ts:571](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L571)
 
 Error that occurred during initialization
 
@@ -91,7 +91,7 @@ Error that occurred during initialization
 
 > **isConnected**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:579](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L579)
+Defined in: [core/modal-react/src/types.ts:579](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L579)
 
 Whether any wallet is connected
 
@@ -101,7 +101,7 @@ Whether any wallet is connected
 
 > **isInitializing**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:569](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L569)
+Defined in: [core/modal-react/src/types.ts:569](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L569)
 
 Whether the WalletMesh client is currently being initialized
 
@@ -111,7 +111,7 @@ Whether the WalletMesh client is currently being initialized
 
 > **isOpen**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:583](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L583)
+Defined in: [core/modal-react/src/types.ts:583](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L583)
 
 Whether modal is open
 
@@ -121,7 +121,7 @@ Whether modal is open
 
 > `optional` **isSSR**: `boolean`
 
-Defined in: [core/modal-react/src/types.ts:591](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L591)
+Defined in: [core/modal-react/src/types.ts:591](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L591)
 
 Whether currently in SSR mode
 
@@ -131,7 +131,7 @@ Whether currently in SSR mode
 
 > **mesh**: `null` \| [`HeadlessWalletMesh`](HeadlessWalletMesh.md)
 
-Defined in: [core/modal-react/src/types.ts:561](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L561)
+Defined in: [core/modal-react/src/types.ts:561](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L561)
 
 The headless WalletMesh instance (null during initialization)
 
@@ -141,7 +141,7 @@ The headless WalletMesh instance (null during initialization)
 
 > **open**: () => `void`
 
-Defined in: [core/modal-react/src/types.ts:585](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L585)
+Defined in: [core/modal-react/src/types.ts:585](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L585)
 
 Open the modal
 
@@ -155,6 +155,6 @@ Open the modal
 
 > **state**: `null` \| [`ReactWalletMeshState`](ReactWalletMeshState.md)
 
-Defined in: [core/modal-react/src/types.ts:565](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/types.ts#L565)
+Defined in: [core/modal-react/src/types.ts:565](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/types.ts#L565)
 
 Current WalletMesh state (null during initialization)

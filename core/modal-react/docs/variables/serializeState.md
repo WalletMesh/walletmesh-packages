@@ -1,4 +1,4 @@
-[**@walletmesh/modal-react v0.1.2**](../README.md)
+[**@walletmesh/modal-react v0.1.3**](../README.md)
 
 ***
 
@@ -8,7 +8,7 @@
 
 > `const` **serializeState**: (`state`) => `string` = `ssrState.serialize`
 
-Defined in: [core/modal-react/src/utils/ssr-walletmesh.ts:177](https://github.com/WalletMesh/walletmesh-packages/blob/12c69c80bd306fd0702c0580f12668e94970ec0a/core/modal-react/src/utils/ssr-walletmesh.ts#L177)
+Defined in: [core/modal-react/src/utils/ssr-walletmesh.ts:177](https://github.com/WalletMesh/walletmesh-packages/blob/b1906ca43b241d63a6a2297002a6ed6bc2fa74f7/core/modal-react/src/utils/ssr-walletmesh.ts#L177)
 
 Serialize WalletMesh state for SSR hydration
 
