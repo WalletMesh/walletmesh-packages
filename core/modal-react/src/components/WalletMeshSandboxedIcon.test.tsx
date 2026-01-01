@@ -182,7 +182,8 @@ describe('WalletMeshSandboxedIcon', () => {
     render(<WalletMeshSandboxedIcon src="data:image/svg+xml,<svg><circle r='10'/></svg>" alt="Test icon" />);
 
     const container = screen.getByTestId('sandboxed-icon');
-    expect(container).not.toHaveAttribute('role');
+    // When not clickable, the icon should have role="img" for accessibility
+    expect(container).toHaveAttribute('role', 'img');
     expect(container).not.toHaveAttribute('tabIndex');
   });
 

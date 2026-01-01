@@ -10,6 +10,7 @@ WORKDIR /app
 # Copy package files from root
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 COPY create-package.sh ./
+COPY patches/ ./patches/
 
 # Copy all packages
 COPY core/ ./core/
